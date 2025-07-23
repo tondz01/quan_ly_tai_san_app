@@ -232,7 +232,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "49a62457187998fcf8fb4bfa95b024383cc17048"
+      resolved-ref: "12fbf4ea3af1f6a65a9bc477ad3d759deb31d2e3"
       url: "https://github.com/congcuong207/SeGayComponent.git"
     source: git
     version: "1.0.0+1"
