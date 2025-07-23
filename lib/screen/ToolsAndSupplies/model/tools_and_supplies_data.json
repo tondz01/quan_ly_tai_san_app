@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "name": "Test (MaCCDCTest)",
+    "importUnit": "Phòng CV",
+    "code": "MaCCDCTest",
+    "importDate": "09/04/2025",
+    "unit": "Bộ",
+    "quantity": 10,
+    "value": 3600000.00,
+    "referenceNumber": "",
+    "symbol": "",
+    "capacity": "",
+    "countryOfOrigin": "Anguilla",
+    "yearOfManufacture": "2025",
+    "note": "Mua mới"
+  },
+  {
+    "id": "2",
+    "name": "Bộ bàn ghế nhà ăn (BGNA0001)",
+    "importUnit": "Phòng CV",
+    "code": "BGNA0001",
+    "importDate": "11/06/2025",
+    "unit": "Bộ",
+    "quantity": 19,
+    "value": 190000000.00,
+    "referenceNumber": "ABC",
+    "symbol": "DEF",
+    "capacity": "",
+    "countryOfOrigin": "Ai Cập",
+    "yearOfManufacture": "2025",
+    "note": "Mua mới"
+  },
+  {
+    "id": "3",
+    "name": "Công cụ dụng cụ test (CCDC196)",
+    "importUnit": "Kho Công ty",
+    "code": "CCDC196",
+    "importDate": "01/06/2025",
+    "unit": "Đơn vị",
+    "quantity": 10,
+    "value": 215000000.00,
+    "referenceNumber": "",
+    "symbol": "",
+    "capacity": "",
+    "countryOfOrigin": "Ai Cập",
+    "yearOfManufacture": "2025",
+    "note": "Mua mới"
+  }
+] 
