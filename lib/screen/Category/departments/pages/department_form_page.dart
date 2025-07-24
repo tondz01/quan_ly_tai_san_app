@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_textfield.dart';
-import '../models/department.dart';
 
 class DepartmentFormPage extends StatefulWidget {
   final Department? department;

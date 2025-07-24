@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
 
 abstract class CapitalSourceEvent extends Equatable {
   const CapitalSourceEvent();

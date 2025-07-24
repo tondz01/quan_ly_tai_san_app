@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
-import '../models/department.dart';
 
 class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
   DepartmentBloc() : super(DepartmentInitial()) {

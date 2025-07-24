@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_form_page.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
-import '../bloc/project_bloc.dart';
-import '../bloc/project_event.dart';
-import '../bloc/project_state.dart';
-import 'project_form_page.dart';
 
 class ProjectListPage extends StatelessWidget {
   final VoidCallback? onAdd;

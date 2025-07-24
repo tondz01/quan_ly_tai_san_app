@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 
 abstract class DepartmentEvent extends Equatable {
   const DepartmentEvent();

@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'project_event.dart';
 import 'project_state.dart';
 

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 
 abstract class ProjectEvent extends Equatable {
   const ProjectEvent();
