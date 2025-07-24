@@ -1,6 +1,14 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
+import 'package:se_gay_components/common/sg_button_icon.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 
 class DetailAndEditView extends StatefulWidget {
@@ -15,41 +23,51 @@ class DetailAndEditView extends StatefulWidget {
 
 class _DetailAndEditViewState extends State<DetailAndEditView> {
   // Các controller để quản lý dữ liệu nhập liệu
-  late TextEditingController controllerImportUnit;
-  late TextEditingController controllerName;
-  late TextEditingController controllerCode;
-  late TextEditingController controllerImportDate;
-  late TextEditingController controllerUnit;
-  late TextEditingController controllerQuantity;
-  late TextEditingController controllerValue;
-  late TextEditingController controllerReferenceNumber;
-  late TextEditingController controllerSymbol;
-  late TextEditingController controllerCapacity;
-  late TextEditingController controllerCountryOfOrigin;
-  late TextEditingController controllerYearOfManufacture;
-  late TextEditingController controllerNote;
+  late TextEditingController controllerImportUnit = TextEditingController();
+  late TextEditingController controllerName = TextEditingController();
+  late TextEditingController controllerCode = TextEditingController();
+  late TextEditingController controllerImportDate = TextEditingController();
+  late TextEditingController controllerUnit = TextEditingController();
+  late TextEditingController controllerQuantity = TextEditingController();
+  late TextEditingController controllerValue = TextEditingController();
+  late TextEditingController controllerReferenceNumber =
+      TextEditingController();
+  late TextEditingController controllerSymbol = TextEditingController();
+  late TextEditingController controllerCapacity = TextEditingController();
+  late TextEditingController controllerCountryOfOrigin =
+      TextEditingController();
+  late TextEditingController controllerYearOfManufacture =
+      TextEditingController();
+  late TextEditingController controllerNote = TextEditingController();
+  late TextEditingController controllerDropdown = TextEditingController();
+
+  bool isEditing = false;
 
   @override
   void initState() {
+    isEditing = widget.isEditing;
     super.initState();
-    // Khởi tạo các controller với dữ liệu từ item
-    controllerImportUnit = TextEditingController(
-      text: widget.item?.importUnit ?? 'Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin',
-    );
-    controllerName = TextEditingController(text: widget.item?.name ?? 'Test');
-    controllerCode = TextEditingController(text: widget.item?.code ?? 'MaCCDCTest');
-    controllerImportDate = TextEditingController(text: widget.item?.importDate ?? '09/04/2025');
-    controllerUnit = TextEditingController(text: widget.item?.unit ?? 'Bộ');
-    controllerQuantity = TextEditingController(text: (widget.item?.quantity ?? 10).toString());
-    controllerValue = TextEditingController(text: (widget.item?.value ?? 3600000).toString());
-    controllerReferenceNumber = TextEditingController(text: widget.item?.referenceNumber ?? '');
-    controllerSymbol = TextEditingController(text: widget.item?.symbol ?? '');
-    controllerCapacity = TextEditingController(text: widget.item?.capacity ?? '');
-    controllerCountryOfOrigin = TextEditingController(text: widget.item?.countryOfOrigin ?? 'Anguilla');
-    controllerYearOfManufacture = TextEditingController(text: widget.item?.yearOfManufacture ?? '2025');
-    controllerNote = TextEditingController(text: widget.item?.note ?? 'Mua mới');
   }
 
+  final List<DropdownMenuItem<String>> itemsPhongBan = [
+    const DropdownMenuItem(value: 'Ban giám đốc', child: Text('Ban giám đốc')),
+    const DropdownMenuItem(
+      value: 'Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin',
+      child: Text('Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin'),
+    ),
+    const DropdownMenuItem(
+      value: 'Công ty CP Cơ điện Uông bí - Vinacomin',
+      child: Text('Công ty CP Cơ điện Uông bí - Vinacomin'),
+    ),
+    const DropdownMenuItem(
+      value: 'Công ty TNHH Nam Hưng',
+      child: Text('Công ty TNHH Nam Hưng'),
+    ),
+    const DropdownMenuItem(
+      value: 'Phòng hành chính',
+      child: Text('Phòng hành chính'),
+    ),
+  ];
   @override
   void dispose() {
     // Giải phóng các controller
@@ -69,132 +87,209 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
     super.dispose();
   }
 
+  void findPhongBan(String? value) {
+    log('message');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDetailRow(
-            label: 'tas.import_unit'.tr,
-            controller: controllerImportUnit,
-            isEditing: widget.isEditing,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SGButtonIcon(
+          text: isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
+          borderRadius: 10,
+          width: Get.width * 0.12 <= 120 ? 120 : Get.width * 0.12,
+          defaultBGColor:
+              isEditing
+                  ? SGAppColors.colorInputDisable
+                  : ColorValue.oldLavender,
+          colorHover: Colors.blueAccent,
+          colorTextHover: Colors.white,
+          isOutlined: true,
+          borderWidth: 3,
+          onPressed: () {
+            setState(() {
+              isEditing = !isEditing;
+            });
+          },
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          _buildDetailRow(
-            label: 'tas.name'.tr,
-            controller: controllerName,
-            isEditing: widget.isEditing,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow(
+                label: 'tas.import_unit'.tr,
+                controller: controllerImportUnit,
+                isEditing: isEditing,
+                textContent: widget.item!.importUnit,
+                isDropdown: true,
+              ),
+              _buildDetailRow(
+                label: 'tas.name'.tr,
+                controller: controllerName,
+                isEditing: isEditing,
+                textContent: widget.item!.name,
+              ),
+              _buildDetailRow(
+                label: 'tas.code'.tr,
+                controller: controllerCode,
+                isEditing: isEditing,
+                textContent: widget.item!.code,
+              ),
+              _buildDetailRow(
+                label: 'tas.import_date'.tr,
+                controller: controllerImportDate,
+                isEditing: isEditing,
+                textContent: widget.item!.importDate,
+              ),
+              _buildDetailRow(
+                label: 'tas.unit'.tr,
+                controller: controllerUnit,
+                isEditing: isEditing,
+                textContent: widget.item!.unit,
+              ),
+              _buildDetailRow(
+                label: 'tas.quantity'.tr,
+                controller: controllerQuantity,
+                isEditing: isEditing,
+                textContent: widget.item!.quantity.toString(),
+              ),
+              _buildDetailRow(
+                label: 'tas.value'.tr,
+                controller: controllerValue,
+                isEditing: isEditing,
+                textContent: widget.item!.referenceNumber,
+              ),
+              _buildDetailRow(
+                label: 'tas.reference_number'.tr,
+                controller: controllerReferenceNumber,
+                isEditing: isEditing,
+                textContent: widget.item!.referenceNumber,
+              ),
+              _buildDetailRow(
+                label: 'tas.symbol'.tr,
+                controller: controllerSymbol,
+                isEditing: isEditing,
+                textContent: widget.item!.symbol,
+              ),
+              _buildDetailRow(
+                label: 'tas.capacity'.tr,
+                controller: controllerCapacity,
+                isEditing: isEditing,
+                textContent: widget.item!.capacity,
+              ),
+              _buildDetailRow(
+                label: 'tas.country_of_origin'.tr,
+                controller: controllerCountryOfOrigin,
+                isEditing: isEditing,
+                textContent: widget.item!.countryOfOrigin,
+              ),
+              _buildDetailRow(
+                label: 'tas.year_of_manufacture'.tr,
+                controller: controllerYearOfManufacture,
+                isEditing: isEditing,
+                textContent: widget.item!.yearOfManufacture,
+              ),
+              _buildDetailRow(
+                label: 'tas.note'.tr,
+                controller: controllerNote,
+                isEditing: isEditing,
+                textContent: widget.item!.note,
+              ),
+            ],
           ),
-          _buildDetailRow(
-            label: 'tas.code'.tr,
-            controller: controllerCode,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.import_date'.tr,
-            controller: controllerImportDate,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.unit'.tr,
-            controller: controllerUnit,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.quantity'.tr,
-            controller: controllerQuantity,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.value'.tr,
-            controller: controllerValue,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.reference_number'.tr,
-            controller: controllerReferenceNumber,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.symbol'.tr,
-            controller: controllerSymbol,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.capacity'.tr,
-            controller: controllerCapacity,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.country_of_origin'.tr,
-            controller: controllerCountryOfOrigin,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.year_of_manufacture'.tr,
-            controller: controllerYearOfManufacture,
-            isEditing: widget.isEditing,
-          ),
-          _buildDetailRow(
-            label: 'tas.note'.tr,
-            controller: controllerNote,
-            isEditing: widget.isEditing,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  String _formatCurrency(double value) {
-    return value
-        .toStringAsFixed(2)
-        .replaceAll('.00', '')
-        .replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
-  }
+  // String _formatCurrency(double value) {
+  //   return value
+  //       .toStringAsFixed(2)
+  //       .replaceAll('.00', '')
+  //       .replaceAllMapped(
+  //         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+  //         (Match m) => '${m[1]}.',
+  //       );
+  // }
 
   Widget _buildDetailRow({
     required String label,
+    required String textContent,
     required TextEditingController controller,
     required bool isEditing,
+    bool isDropdown = false,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 180,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
+    if (!isDropdown) {
+      controller.text = textContent;
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 180,
+          child: Text(
+            '$label :',
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.black87.withOpacity(0.6),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        isDropdown
+            ? Expanded(
+              child: SGDropdownInputButton<String>(
+                // width: Get.width * 0.12 <= 120 ? 120 : Get.width * 0.12,
+                height: 35,
+                controller: controller,
+                textOverflow: TextOverflow.ellipsis,
+                value: label,
+                items: itemsPhongBan,
+                colorBorder: SGAppColors.neutral400,
+                showUnderlineBorderOnly: true,
+                enableSearch: false,
+                isClearController: false,
+                isShowSuffixIcon: true,
+                hintText: 'Chọn ${label.toLowerCase()}',
+                textAlign: TextAlign.left,
+                textAlignItem: TextAlign.left,
+                sizeBorderCircular: 10,
+                contentPadding: const EdgeInsets.only(
+                  left: 10,
+                  top: 8,
+                  bottom: 8,
+                ),
+                onChanged: (value) {
+                  log('message');
+                  controller.text = value ?? '';
+                },
+              ),
+            )
+            : Expanded(
+              child: SGInputText(
+                height: 35,
+                controller: controller,
+                borderRadius: 10,
+                enabled: isEditing,
+                textAlign: TextAlign.left,
+                readOnly: !isEditing,
+                onlyLine: true,
+                color: Colors.black,
+                showBorder: isEditing,
+                hintText: !isEditing ? '' : '${'common.hint'.tr} $label',
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: SGInputText(
-              controller: controller,
-              borderRadius: 10,
-              enabled: isEditing,
-              readOnly: !isEditing,
-              onlyLine: true,
-              showBorder: isEditing,
-              hintText: '${'common.hint'.tr} $label',
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 }

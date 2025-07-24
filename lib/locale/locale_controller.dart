@@ -17,7 +17,7 @@ class MyLocale implements Translations {
     "COMMON": {
       "common.search": "Tìm kiếm",
       "common.add": "Thêm mới",
-      "common.edit": "Sửa",
+      "common.edit": "Sửa thông tin",
       "common.delete": "Xóa",
       "common.detail": "Chi tiết",
       "common.export": "Xuất",
@@ -39,13 +39,14 @@ class MyLocale implements Translations {
       "tas.year_of_manufacture": "Năm sản xuất",
       "tas.note": "Ghi chú",
       "tas.info_tools_supplies": "Thông tin công cụ dụng cụ - Vật tư",
+      "tas.create_ccdc": "Tạo phiếu nhập ccdc",
     }
   };
   Map<String, Map<String, String>> en = {
     "COMMON": {
       "common.search": "Search",
       "common.add": "Add",
-      "common.edit": "Edit",
+      "common.edit": "Edit information",
       "common.delete": "Delete",
       "common.detail": "Detail",
       "common.export": "Export",
@@ -67,6 +68,7 @@ class MyLocale implements Translations {
       "tas.year_of_manufacture": "Year of Manufacture",
       "tas.note": "Note",
       "tas.info_tools_supplies": "Tools and Supplies Information",
+      "tas.create_ccdc": "Create CCDC",
     }
   };
 }

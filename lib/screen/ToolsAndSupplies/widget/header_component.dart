@@ -57,6 +57,8 @@ Widget _buildHeaderNameScreen() {
     children: [
       SGButtonIcon(
         text: 'Mới',
+        width: 50,
+        height: 35,
         defaultBGColor: ColorValue.oldLavender,
         isOutlined: true,
         colorHover: Colors.blue,

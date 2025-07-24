@@ -71,6 +71,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
       },
       builder: (context, state) {
         return Scaffold(
+          
           body: Consumer<ToolsAndSuppliesProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
