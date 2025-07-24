@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/capital_source/views/capital_source_manager.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/departments/views/department_manager.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/project_manager/views/project_manager.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/views/staff_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital_source_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/views/department_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/views/project_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/views/staff_manager.dart';
 import 'package:se_gay_components/web_base/sg_sidebar/sg_sidebar.dart';
 
 final List<MenuItem> menuItems = [

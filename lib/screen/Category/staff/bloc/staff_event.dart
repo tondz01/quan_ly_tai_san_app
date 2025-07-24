@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 abstract class StaffEvent extends Equatable {
   const StaffEvent();

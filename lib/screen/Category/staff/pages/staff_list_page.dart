@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/bloc/staff_state.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';

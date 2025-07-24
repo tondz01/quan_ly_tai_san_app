@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/models/staff.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/pages/staff_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/pages/staff_list_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/pages/staff_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/pages/staff_list_page.dart';
 
 class StaffManager extends StatefulWidget {
   const StaffManager({super.key});

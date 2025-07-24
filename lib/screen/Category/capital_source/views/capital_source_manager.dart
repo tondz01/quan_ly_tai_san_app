@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/capital_source/pages/capital_source_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/capital_source/pages/capital_source_list_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/pages/capital_source_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/pages/capital_source_list_page.dart';
 
 class CapitalSourceManager extends StatefulWidget {
   const CapitalSourceManager({super.key});

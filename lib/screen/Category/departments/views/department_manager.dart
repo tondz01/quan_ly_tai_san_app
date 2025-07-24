@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/departments/pages/department_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/departments/pages/department_list_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_list_page.dart';
 
 class DepartmentManager extends StatefulWidget {
   const DepartmentManager({super.key});
