@@ -1,46 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/provider/tools_and_supplies_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/tools_and_supplies_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/bloc_providers.dart';
+import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
+import 'package:quan_ly_tai_san_app/injection.dart';
+import 'package:quan_ly_tai_san_app/routes/app_route_conf.dart';
 
-class App extends GetView {
+class App extends StatelessWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final router = locator<AppRouteConf>().router;
     return MultiBlocProvider(
-      providers: [
-        BlocProvider<ToolsAndSuppliesBloc>(create: (BuildContext context) => ToolsAndSuppliesBloc()),
-      ],
+      providers: blocProvider,
       child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (context) => ToolsAndSuppliesProvider(),),
-        ],
+        providers: providers,
         child: GestureDetector(
           onTap: () {
-            Get.focusScope!.unfocus();
+            primaryFocus?.unfocus();
             FocusScope.of(context).unfocus();
           },
-          child: ScreenUtilInit(
-            // designSize: ,
-            minTextAdapt: true,
-            splitScreenMode: true,
-            builder: (context, child) {
-              return GetMaterialApp(
-                debugShowCheckedModeBanner: false,
-                title: 'Quan Ly Tai San',
-                theme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(
-                    seedColor: Colors.deepPurple,
-                  ),
-                ),
-                home: ToolsAndSuppliesView(),
-              );
-            },
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            routerConfig: router,
           ),
         ),
       ),

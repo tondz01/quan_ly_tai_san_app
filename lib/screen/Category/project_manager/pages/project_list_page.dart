@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/proje
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 import '../bloc/project_bloc.dart';
 import '../bloc/project_event.dart';
 import '../bloc/project_state.dart';
@@ -22,10 +23,7 @@ class ProjectListPage extends StatelessWidget {
             title: const Text('Xác nhận xóa'),
             content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Hủy'),
-              ),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Hủy')),
               ElevatedButton(
                 onPressed: () {
                   context.read<ProjectBloc>().add(DeleteProject(project));
@@ -73,9 +71,7 @@ class ProjectListPage extends StatelessWidget {
                     if (state is ProjectLoaded) {
                       final projects = state.projects;
                       if (projects.isEmpty) {
-                        return const Center(
-                          child: Text('Chưa có dự án nào.'),
-                        );
+                        return const Center(child: Text('Chưa có dự án nào.'));
                       }
                       return SingleChildScrollView(
                         child: SgTable<Project>(
@@ -83,14 +79,14 @@ class ProjectListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-      
+
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,
                           showHorizontalLines: true,
                           allowRowSelection: true,
                           onSelectionChanged: (selectedItems) {
-                            print(MediaQuery.of(context).size.width);
+                            SGLog.debug('ProjectListPage', 'onSelectionChanged: ${MediaQuery.of(context).size.width}');
                           },
                           // Bật tính năng hiển thị cột hành động
                           showActions: true,
@@ -117,10 +113,7 @@ class ProjectListPage extends StatelessWidget {
                             _showDeleteDialog(context, item);
                           },
                           columns: [
-                            TableColumnBuilder.createTextColumn<Project>(
-                              title: 'Mã',
-                              getValue: (item) => item.code,
-                            ),
+                            TableColumnBuilder.createTextColumn<Project>(title: 'Mã', getValue: (item) => item.code),
                             TableColumnBuilder.createTextColumn<Project>(
                               title: 'Tên',
                               getValue: (item) => item.name,
@@ -135,8 +128,7 @@ class ProjectListPage extends StatelessWidget {
                             ),
                             TableColumnBuilder.createTextColumn<Project>(
                               title: 'Có hiệu lực',
-                              getValue:
-                                  (item) => item.isActive ? 'Có' : 'Không',
+                              getValue: (item) => item.isActive ? 'Có' : 'Không',
                             ),
                           ],
                           data: projects,
