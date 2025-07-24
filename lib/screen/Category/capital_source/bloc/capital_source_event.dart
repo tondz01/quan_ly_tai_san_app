@@ -1,0 +1,36 @@
+import 'package:equatable/equatable.dart';
+import '../models/capital_source.dart';
+
+abstract class CapitalSourceEvent extends Equatable {
+  const CapitalSourceEvent();
+  @override
+  List<Object?> get props => [];
+}
+
+class LoadCapitalSources extends CapitalSourceEvent {
+  final List<CapitalSource> capitalSources;
+  const LoadCapitalSources(this.capitalSources);
+  @override
+  List<Object?> get props => [capitalSources];
+}
+
+class AddCapitalSource extends CapitalSourceEvent {
+  final CapitalSource capitalSource;
+  const AddCapitalSource(this.capitalSource);
+  @override
+  List<Object?> get props => [capitalSource];
+}
+
+class UpdateCapitalSource extends CapitalSourceEvent {
+  final CapitalSource capitalSource;
+  const UpdateCapitalSource(this.capitalSource);
+  @override
+  List<Object?> get props => [capitalSource];
+}
+
+class DeleteCapitalSource extends CapitalSourceEvent {
+  final CapitalSource capitalSource;
+  const DeleteCapitalSource(this.capitalSource);
+  @override
+  List<Object?> get props => [capitalSource];
+} 

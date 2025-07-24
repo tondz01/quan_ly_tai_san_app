@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/capital_source/bloc/capital_source_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/capital_source/bloc/capital_source_event.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/bloc/department_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/bloc/department_event.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/project.dart';
@@ -76,6 +82,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         BlocProvider<StaffBloc>(
           create: (_) => StaffBloc()..add(LoadStaffs(sampleStaffDTOs())),
+        ),
+        BlocProvider<DepartmentBloc>(
+          create: (_) => DepartmentBloc()..add(LoadDepartments(sampleDepartments())),
+        ),
+        BlocProvider<CapitalSourceBloc>(
+          create: (_) => CapitalSourceBloc()..add(LoadCapitalSources(sampleCapitalSources())),
         ),
         
       ],
