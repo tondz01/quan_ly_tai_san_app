@@ -1,7 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
-import 'package:se_gay_components/common/sg_button.dart';
+import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -53,15 +55,17 @@ Widget _buildHeaderNameScreen() {
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      // SGButton(
-      //   width: 50,
-      //   height: 35,
-      //   borderRadius: 5,
-      //   onclick: () {},
-      //   text: 'Mới',
-      //   textSize: 14,
-      //   color: ColorValue.oldLavender,
-      // ),
+      SGButtonIcon(
+        text: 'Mới',
+        defaultBGColor: ColorValue.oldLavender,
+        isOutlined: true,
+        colorHover: Colors.blue,
+        borderWidth: 3,
+        onPressed: () {
+          log('message');
+        },
+      ),
+      // SGButton(text: 'Mới'),
       const SizedBox(width: 8),
       Flexible(
         child: SGText(
