@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/core/utils/bloc_providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/injection.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_conf.dart';
+import 'package:se_gay_components/common/sg_popup_controller.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -20,6 +21,7 @@ class App extends StatelessWidget {
           onTap: () {
             primaryFocus?.unfocus();
             FocusScope.of(context).unfocus();
+            SGPopupManager().closeAllPopups();
           },
           child: MaterialApp.router(
             debugShowCheckedModeBanner: false,

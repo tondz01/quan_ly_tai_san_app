@@ -16,15 +16,7 @@ class Header extends StatefulWidget {
   final String? imageLogoLeft;
   final String? imageLogoRight;
 
-  const Header({
-    super.key,
-    this.height = 65,
-    this.padding,
-    this.margin,
-    this.decoration,
-    this.imageLogoLeft,
-    this.imageLogoRight,
-  });
+  const Header({super.key, this.height = 65, this.padding, this.margin, this.decoration, this.imageLogoLeft, this.imageLogoRight});
 
   @override
   State<Header> createState() => _HeaderState();
@@ -72,19 +64,21 @@ class _HeaderState extends State<Header> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     spacing: 10,
                     children: [
-                      SGButtonV2.secondary(
-                        text: "Lọc",
-                        iconChild: Icon(Icons.filter_list),
-                        onclick: (context) {
-                          // Xử lý sự kiện click
-                        },
-                      ),
-                      SGButtonV2.icon(
-                        iconChild: SvgPicture.asset(AppSvgs.iconSetting,width: 40,),
+                      SGButtonV2(
+                        width: 34,
+                        height: 34,
+                        buttonType: SGButtonType.icon,
+                        padding: EdgeInsets.all(8),
+                        iconChild: SvgPicture.asset(AppSvgs.iconSetting),
                         onclick: (_) {},
                       ),
                       SGButtonIconWithPopup(
-                        iconChild: Padding(padding: const EdgeInsets.all(9), child: SvgPicture.asset(AppSvgs.iconChat)),
+                        colorBackgroundButton: Colors.grey.shade100,
+                        widthButton: 34,
+                        heightButton: 34,
+                        buttonType: SGButtonType.icon,
+                        paddingButton: EdgeInsets.all(8),
+                        iconChildButton: SvgPicture.asset(AppSvgs.iconChat),
                         popupOffset: const Offset(-83, 10),
                         popupId: 'header_chat',
                         popupItems: [
@@ -103,7 +97,12 @@ class _HeaderState extends State<Header> {
                         ],
                       ),
                       SGButtonIconWithPopup(
-                        iconChild: Padding(padding: const EdgeInsets.all(9), child: SvgPicture.asset(AppSvgs.iconTime)),
+                        colorBackgroundButton: Colors.grey.shade100,
+                        widthButton: 34,
+                        heightButton: 34,
+                        buttonType: SGButtonType.icon,
+                        paddingButton: EdgeInsets.all(8),
+                        iconChildButton: SvgPicture.asset(AppSvgs.iconTime),
                         popupOffset: const Offset(-83, 10),
                         popupId: 'header_time',
                         popupItems: [
