@@ -113,7 +113,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                   child: Container(
                     alignment: Alignment.center,
                     child: Text(
-                      isEdit ? 'Cập nhật thông tin dự án' : 'Thêm mới dự án',
+                      isEdit ? 'Cập nhật thông tin phòng ban' : 'Thêm mới phòng ban',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

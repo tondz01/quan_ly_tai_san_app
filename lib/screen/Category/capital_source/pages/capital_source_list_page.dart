@@ -28,7 +28,9 @@ class CapitalSourceListPage extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  context.read<CapitalSourceBloc>().add(DeleteCapitalSource(capitalSource));
+                  context.read<CapitalSourceBloc>().add(
+                    DeleteCapitalSource(capitalSource),
+                  );
                   Navigator.of(ctx).pop();
                 },
                 child: const Text('Xóa'),
@@ -47,26 +49,52 @@ class CapitalSourceListPage extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SGButton(
-                  text: 'Thêm nguồn vốn',
-                  onPressed: () {
-                    if (onAdd != null) {
-                      onAdd!();
-                    } else {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => BlocProvider.value(
-                                value: context.read<CapitalSourceBloc>(),
-                                child: const CapitalSourceFormPage(),
-                              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Tìm kiếm nguồn vốn',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
                         ),
-                      );
-                    }
-                  },
+                        onChanged: (value) {
+                          context.read<CapitalSourceBloc>().add(
+                            SearchCapitalSource(value),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 25),
+                    SGButton(
+                      text: 'Thêm nguồn vốn',
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 20,
+                      ),
+                      onPressed: () {
+                        if (onAdd != null) {
+                          onAdd!();
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BlocProvider.value(
+                                    value: context.read<CapitalSourceBloc>(),
+                                    child: const CapitalSourceFormPage(),
+                                  ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(width: 25),
+                  ],
                 ),
+
                 SizedBox(height: 8),
                 BlocBuilder<CapitalSourceBloc, CapitalSourceState>(
                   builder: (context, state) {
@@ -83,7 +111,7 @@ class CapitalSourceListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-      
+
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,
@@ -106,8 +134,11 @@ class CapitalSourceListPage extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder:
                                       (_) => BlocProvider.value(
-                                        value: context.read<CapitalSourceBloc>(),
-                                        child: CapitalSourceFormPage(capitalSource: item),
+                                        value:
+                                            context.read<CapitalSourceBloc>(),
+                                        child: CapitalSourceFormPage(
+                                          capitalSource: item,
+                                        ),
                                       ),
                                 ),
                               );

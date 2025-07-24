@@ -28,7 +28,9 @@ class DepartmentListPage extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  context.read<DepartmentBloc>().add(DeleteDepartment(department));
+                  context.read<DepartmentBloc>().add(
+                    DeleteDepartment(department),
+                  );
                   Navigator.of(ctx).pop();
                 },
                 child: const Text('Xóa'),
@@ -47,26 +49,49 @@ class DepartmentListPage extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SGButton(
-                  text: 'Thêm dự án',
-                  onPressed: () {
-                    if (onAdd != null) {
-                      onAdd!();
-                    } else {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => BlocProvider.value(
-                                value: context.read<DepartmentBloc>(),
-                                child: const DepartmentFormPage(),
-                              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Tìm kiếm phòng ban',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
                         ),
-                      );
-                    }
-                  },
+                        onChanged: (value) {
+                          context.read<DepartmentBloc>().add(
+                            SearchDepartment(value),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 25),
+                    SGButton(
+                      text: 'Thêm phòng ban',
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      onPressed: () {
+                        if (onAdd != null) {
+                          onAdd!();
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BlocProvider.value(
+                                    value: context.read<DepartmentBloc>(),
+                                    child: const DepartmentFormPage(),
+                                  ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(width: 25),
+                  ],
                 ),
+
                 SizedBox(height: 8),
                 BlocBuilder<DepartmentBloc, DepartmentState>(
                   builder: (context, state) {
@@ -74,7 +99,7 @@ class DepartmentListPage extends StatelessWidget {
                       final departments = state.departments;
                       if (departments.isEmpty) {
                         return const Center(
-                          child: Text('Chưa có dự án nào.'),
+                          child: Text('Chưa có phòng ban nào.'),
                         );
                       }
                       return SingleChildScrollView(
@@ -83,7 +108,7 @@ class DepartmentListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-      
+
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,
@@ -107,7 +132,9 @@ class DepartmentListPage extends StatelessWidget {
                                   builder:
                                       (_) => BlocProvider.value(
                                         value: context.read<DepartmentBloc>(),
-                                        child: DepartmentFormPage(department: item),
+                                        child: DepartmentFormPage(
+                                          department: item,
+                                        ),
                                       ),
                                 ),
                               );
@@ -135,7 +162,16 @@ class DepartmentListPage extends StatelessWidget {
                               title: 'Quản lý',
                               width: 150,
                               align: TextAlign.start,
-                              getValue: (item) => context.read<DepartmentBloc>().staffs.firstWhere((staff) => staff.staffId == item.managerId).name,
+                              getValue:
+                                  (item) =>
+                                      context
+                                          .read<DepartmentBloc>()
+                                          .staffs
+                                          .firstWhere(
+                                            (staff) =>
+                                                staff.staffId == item.managerId,
+                                          )
+                                          .name,
                             ),
                             TableColumnBuilder.createTextColumn<Department>(
                               title: 'Nhân viên',
@@ -147,7 +183,6 @@ class DepartmentListPage extends StatelessWidget {
                               align: TextAlign.start,
                               width: 250,
                             ),
-                            
                           ],
                           data: departments,
                           onRowTap: (item) {},

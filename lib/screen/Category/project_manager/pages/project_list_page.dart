@@ -47,35 +47,54 @@ class ProjectListPage extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SGButton(
-                  text: 'Thêm dự án',
-                  onPressed: () {
-                    if (onAdd != null) {
-                      onAdd!();
-                    } else {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => BlocProvider.value(
-                                value: context.read<ProjectBloc>(),
-                                child: const ProjectFormPage(),
-                              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Tìm kiếm dự án',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
                         ),
-                      );
-                    }
-                  },
+                        onChanged: (value) {
+                          context.read<ProjectBloc>().add(SearchProject(value));
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 25),
+                    SGButton(
+                      text: 'Thêm dự án',
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      onPressed: () {
+                        if (onAdd != null) {
+                          onAdd!();
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BlocProvider.value(
+                                    value: context.read<ProjectBloc>(),
+                                    child: const ProjectFormPage(),
+                                  ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(width: 25),
+                  ],
                 ),
                 SizedBox(height: 8),
+
                 BlocBuilder<ProjectBloc, ProjectState>(
                   builder: (context, state) {
                     if (state is ProjectLoaded) {
                       final projects = state.projects;
                       if (projects.isEmpty) {
-                        return const Center(
-                          child: Text('Chưa có dự án nào.'),
-                        );
+                        return const Center(child: Text('Chưa có dự án nào.'));
                       }
                       return SingleChildScrollView(
                         child: SgTable<Project>(
@@ -83,7 +102,7 @@ class ProjectListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-      
+
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,

@@ -4,9 +4,19 @@ import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'staff_event.dart';
 
 class StaffBloc extends Bloc<StaffEvent, StaffState> {
+  List<StaffDTO> _allStaffs = [];
   StaffBloc() : super(StaffInitial()) {
     on<LoadStaffs>((event, emit) {
-      emit(StaffLoaded(List.from(event.staffs)));
+      _allStaffs = List.from(event.staffs);
+      emit(StaffLoaded(_allStaffs));
+    });
+    on<SearchStaff>((event, emit) {
+      final keyword = event.keyword.toLowerCase();
+      final filtered = _allStaffs.where((s) =>
+        s.name.toLowerCase().contains(keyword) ||
+        s.staffId.toLowerCase().contains(keyword)
+      ).toList();
+      emit(StaffLoaded(filtered));
     });
     on<AddStaff>((event, emit) {
       if (state is StaffLoaded) {

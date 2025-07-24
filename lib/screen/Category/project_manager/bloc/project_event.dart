@@ -33,4 +33,11 @@ class DeleteProject extends ProjectEvent {
   const DeleteProject(this.project);
   @override
   List<Object?> get props => [project];
+}
+
+class SearchProject extends ProjectEvent {
+  final String keyword;
+  const SearchProject(this.keyword);
+  @override
+  List<Object?> get props => [keyword];
 } 

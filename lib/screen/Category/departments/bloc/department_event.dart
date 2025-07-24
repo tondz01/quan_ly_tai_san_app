@@ -33,4 +33,11 @@ class DeleteDepartment extends DepartmentEvent {
   const DeleteDepartment(this.department);
   @override
   List<Object?> get props => [department];
+}
+
+class SearchDepartment extends DepartmentEvent {
+  final String keyword;
+  const SearchDepartment(this.keyword);
+  @override
+  List<Object?> get props => [keyword];
 } 

@@ -5,9 +5,19 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/models/departmen
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
+  List<Department> _allDepartments = [];
   DepartmentBloc() : super(DepartmentInitial()) {
     on<LoadDepartments>((event, emit) {
-      emit(DepartmentLoaded(List.from(event.departments)));
+      _allDepartments = List.from(event.departments);
+      emit(DepartmentLoaded(_allDepartments));
+    });
+    on<SearchDepartment>((event, emit) {
+      final keyword = event.keyword.toLowerCase();
+      final filtered = _allDepartments.where((d) =>
+        d.departmentName.toLowerCase().contains(keyword) ||
+        d.departmentId.toLowerCase().contains(keyword)
+      ).toList();
+      emit(DepartmentLoaded(filtered));
     });
     on<AddDepartment>((event, emit) {
       if (state is DepartmentLoaded) {

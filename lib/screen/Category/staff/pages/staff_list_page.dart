@@ -47,25 +47,45 @@ class StaffListPage extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SGButton(
-                  text: 'Thêm dự án',
-                  onPressed: () {
-                    if (onAdd != null) {
-                      onAdd!();
-                    } else {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => BlocProvider.value(
-                                value: context.read<StaffBloc>(),
-                                child: const StaffFormPage(),
-                              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end, 
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Tìm kiếm nhân viên',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
                         ),
-                      );
-                    }
-                  },
+                        onChanged: (value) {
+                          context.read<StaffBloc>().add(SearchStaff(value));
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 25),
+                    SGButton(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      text: 'Thêm nhân viên',
+                      onPressed: () {
+                        if (onAdd != null) {
+                          onAdd!();
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BlocProvider.value(
+                                    value: context.read<StaffBloc>(),
+                                    child: const StaffFormPage(),
+                                  ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(width: 25),
+                  ],
                 ),
                 SizedBox(height: 8),
                 BlocBuilder<StaffBloc, StaffState>(
@@ -73,9 +93,7 @@ class StaffListPage extends StatelessWidget {
                     if (state is StaffLoaded) {
                       final staffs = state.staffs;
                       if (staffs.isEmpty) {
-                        return const Center(
-                          child: Text('Chưa có dự án nào.'),
-                        );
+                        return const Center(child: Text('Chưa có nhân viên nào.'));
                       }
                       return SingleChildScrollView(
                         child: SgTable<StaffDTO>(
@@ -83,14 +101,13 @@ class StaffListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-      
+
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,
                           showHorizontalLines: true,
                           allowRowSelection: true,
-                          onSelectionChanged: (selectedItems) {
-                          },
+                          onSelectionChanged: (selectedItems) {},
                           // Bật tính năng hiển thị cột hành động
                           showActions: true,
                           actionColumnTitle: 'Thao tác',
@@ -124,7 +141,7 @@ class StaffListPage extends StatelessWidget {
                               title: 'Tên nhân viên',
                               getValue: (item) => item.name,
                               align: TextAlign.start,
-                              width: 150
+                              width: 150,
                             ),
                             TableColumnBuilder.createTextColumn<StaffDTO>(
                               title: 'Số điện thoại',
@@ -135,8 +152,7 @@ class StaffListPage extends StatelessWidget {
                               title: 'Email',
                               getValue: (item) => item.email,
                               align: TextAlign.start,
-                              width: 200
-
+                              width: 200,
                             ),
                             TableColumnBuilder.createTextColumn<StaffDTO>(
                               title: 'Hoạt động',

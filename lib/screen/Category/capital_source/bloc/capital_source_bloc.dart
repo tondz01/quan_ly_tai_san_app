@@ -4,9 +4,19 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
 
 class CapitalSourceBloc extends Bloc<CapitalSourceEvent, CapitalSourceState> {
+  List<CapitalSource> _allCapitalSources = [];
   CapitalSourceBloc() : super(CapitalSourceInitial()) {
     on<LoadCapitalSources>((event, emit) {
-      emit(CapitalSourceLoaded(List.from(event.capitalSources)));
+      _allCapitalSources = List.from(event.capitalSources);
+      emit(CapitalSourceLoaded(_allCapitalSources));
+    });
+    on<SearchCapitalSource>((event, emit) {
+      final keyword = event.keyword.toLowerCase();
+      final filtered = _allCapitalSources.where((c) =>
+        c.name.toLowerCase().contains(keyword) ||
+        c.code.toLowerCase().contains(keyword)
+      ).toList();
+      emit(CapitalSourceLoaded(filtered));
     });
     on<AddCapitalSource>((event, emit) {
       if (state is CapitalSourceLoaded) {

@@ -33,4 +33,11 @@ class DeleteCapitalSource extends CapitalSourceEvent {
   const DeleteCapitalSource(this.capitalSource);
   @override
   List<Object?> get props => [capitalSource];
+}
+
+class SearchCapitalSource extends CapitalSourceEvent {
+  final String keyword;
+  const SearchCapitalSource(this.keyword);
+  @override
+  List<Object?> get props => [keyword];
 } 
