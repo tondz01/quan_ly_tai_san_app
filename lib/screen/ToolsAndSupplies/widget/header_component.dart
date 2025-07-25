@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/enum/type_size_screen.dart';
+import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
