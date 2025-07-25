@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/app.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/tools_and_supplies_view.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
 void main() {
   runApp(App());

@@ -4,7 +4,7 @@ class MyLocale implements Translations {
   @override
   Map<String, Map<String, String>> get keys => {
     "vn": {
-      ...en["COMMON"]!,
+      ...vn["COMMON"]!,
       ...vn["TOOLS_AND_SUPPLIES"]!,
     },
     "en": {

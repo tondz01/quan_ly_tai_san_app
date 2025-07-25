@@ -3,10 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/screen/note/note_screen.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/provider/tools_and_supplies_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/tools_and_supplies_view.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
 class App extends GetView {
   const App({super.key});
@@ -36,13 +37,17 @@ class App extends GetView {
                 title: 'Quan Ly Tai San',
                 translations: MyLocale(),
                 locale: const Locale('vn', 'VN'),
-                fallbackLocale: const Locale('en', 'US'),
+                fallbackLocale: const Locale('vn', 'US'),
                 theme: ThemeData(
                   colorScheme: ColorScheme.fromSeed(
                     seedColor: Colors.deepPurple,
                   ),
                 ),
-                home: ToolsAndSuppliesView(),
+                routes: {
+                  '/': (context) => ToolsAndSuppliesView(),
+                  '/note_screen': (context) => const NoteScreen(),
+                },
+                initialRoute: '/', // Thay đổi thành / để xem trang chính
               );
             },
           ),

@@ -2,10 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/bloc/tools_and_supplies_event.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/bloc/tools_and_supplies_state.dart';
-import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/detail_and_edit.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
@@ -13,6 +15,20 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   List<ToolsAndSuppliesDto>? get dataPage => _dataPage;
   get data => _data;
   get columns => _columns;
+  String? get error => _error;
+  String? get subScreen => _subScreen;
+
+  Widget? get body => _body;
+
+  set subScreen(String? value) {
+    _subScreen = value;
+    notifyListeners();
+  }
+
+  set body(Widget? value) {
+    _body = value;
+    notifyListeners();
+  }
 
   set dataPage(List<ToolsAndSuppliesDto>? value) {
     _dataPage = value;
@@ -35,18 +51,21 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   ];
 
   String? _error;
-  String? get error => _error;
+  String? _subScreen;
+
+  Widget? _body;
 
   bool _isLoading = false;
 
   List<ToolsAndSuppliesDto>? _data;
   List<ToolsAndSuppliesDto>? _dataPage;
-
   List<SgTableColumn<ToolsAndSuppliesDto>> _columns = [];
 
   void onInit(BuildContext context) {
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
+    // Initialize body without triggering notification
+    _body = ToolsAndSuppliesList(provider: this);
     log('message onInit');
     getListToolsAndSupplies(context);
   }
@@ -64,9 +83,12 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   void getListToolsAndSupplies(BuildContext context) {
     _isLoading = true;
-    context.read<ToolsAndSuppliesBloc>().add(
-      GetListToolsAndSuppliesEvent(context),
-    );
+    // Delay the event dispatch to avoid build phase conflicts
+    Future.microtask(() {
+      context.read<ToolsAndSuppliesBloc>().add(
+        GetListToolsAndSuppliesEvent(context),
+      );
+    });
   }
 
   void _updatePagination() {
@@ -88,8 +110,27 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
-
     log('message pageProducts: ${dataPage!.length}');
+  }
+
+  void onChangeScreen({
+    required ToolsAndSuppliesDto? item,
+    required bool isMainScreen,
+    required bool isEdit,
+  }) {
+    // Use Future.microtask to avoid build phase conflicts
+    log('message onChangeScreen');
+    Future.microtask(() {
+      if (!isMainScreen) {
+        _subScreen = item == null ? 'Mới' : item.name;
+        _body = DetailAndEditView(item: item, isEditing: isEdit);
+      } else {
+        _subScreen = '';
+        _subScreen = null;
+        _body = ToolsAndSuppliesList(provider: this);
+      }
+      notifyListeners();
+    });
   }
 
   void onPageChanged(int page) {
@@ -99,6 +140,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void onRowsPerPageChanged(int? value) {
+    log('message onRowsPerPageChanged: $value');
     if (value == null) return;
     rowsPerPage = value;
     currentPage = 1;
@@ -108,42 +150,38 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   void updateItem(ToolsAndSuppliesDto updatedItem) {
     if (_data == null) return;
-    
-    // Tìm vị trí của item cần cập nhật
+
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-    
+
     if (index != -1) {
-      // Cập nhật item trong danh sách
       _data![index] = updatedItem;
-      
-      // Cập nhật lại trang hiện tại
+
       _updatePagination();
-      
-      // Thông báo UI cập nhật
+
       notifyListeners();
-      
+
       log('Đã cập nhật item có ID: ${updatedItem.id}');
     } else {
       log('Không tìm thấy item có ID: ${updatedItem.id}');
     }
   }
-  
+
   void deleteItem(String id) {
     if (_data == null) return;
-    
+
     // Tìm vị trí của item cần xóa
     int index = _data!.indexWhere((item) => item.id == id);
-    
+
     if (index != -1) {
       // Xóa item khỏi danh sách
       _data!.removeAt(index);
-      
+
       // Cập nhật lại trang hiện tại
       _updatePagination();
-      
+
       // Thông báo UI cập nhật
       notifyListeners();
-      
+
       log('Đã xóa item có ID: $id');
     } else {
       log('Không tìm thấy item có ID: $id');
