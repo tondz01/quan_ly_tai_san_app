@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/pages/staff_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class StaffListPage extends StatelessWidget {
+class DepartmentListPage extends StatelessWidget {
   final VoidCallback? onAdd;
-  final void Function(StaffDTO)? onEdit;
-  const StaffListPage({super.key, this.onAdd, this.onEdit});
+  final void Function(Department)? onEdit;
+  const DepartmentListPage({super.key, this.onAdd, this.onEdit});
 
-  void _showDeleteDialog(BuildContext context, StaffDTO staff) {
+  void _showDeleteDialog(BuildContext context, Department department) {
     showDialog(
       context: context,
       builder:
@@ -28,7 +28,9 @@ class StaffListPage extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  context.read<StaffBloc>().add(DeleteStaff(staff));
+                  context.read<DepartmentBloc>().add(
+                    DeleteDepartment(department),
+                  );
                   Navigator.of(ctx).pop();
                 },
                 child: const Text('Xóa'),
@@ -50,24 +52,26 @@ class StaffListPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end, 
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          labelText: 'Tìm kiếm nhân viên',
+                          labelText: 'Tìm kiếm phòng ban',
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(),
                         ),
                         onChanged: (value) {
-                          context.read<StaffBloc>().add(SearchStaff(value));
+                          context.read<DepartmentBloc>().add(
+                            SearchDepartment(value),
+                          );
                         },
                       ),
                     ),
                     SizedBox(width: 25),
                     SGButton(
+                      text: 'Thêm phòng ban',
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      text: 'Thêm nhân viên',
                       onPressed: () {
                         if (onAdd != null) {
                           onAdd!();
@@ -76,8 +80,8 @@ class StaffListPage extends StatelessWidget {
                             MaterialPageRoute(
                               builder:
                                   (_) => BlocProvider.value(
-                                    value: context.read<StaffBloc>(),
-                                    child: const StaffFormPage(),
+                                    value: context.read<DepartmentBloc>(),
+                                    child: const DepartmentFormPage(),
                                   ),
                             ),
                           );
@@ -87,16 +91,19 @@ class StaffListPage extends StatelessWidget {
                     SizedBox(width: 25),
                   ],
                 ),
+
                 SizedBox(height: 8),
-                BlocBuilder<StaffBloc, StaffState>(
+                BlocBuilder<DepartmentBloc, DepartmentState>(
                   builder: (context, state) {
-                    if (state is StaffLoaded) {
-                      final staffs = state.staffs;
-                      if (staffs.isEmpty) {
-                        return const Center(child: Text('Chưa có nhân viên nào.'));
+                    if (state is DepartmentLoaded) {
+                      final departments = state.departments;
+                      if (departments.isEmpty) {
+                        return const Center(
+                          child: Text('Chưa có phòng ban nào.'),
+                        );
                       }
                       return SingleChildScrollView(
-                        child: SgTable<StaffDTO>(
+                        child: SgTable<Department>(
                           // textHeaderColor: SGAppColors.error50,
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
@@ -107,7 +114,9 @@ class StaffListPage extends StatelessWidget {
                           showVerticalLines: true,
                           showHorizontalLines: true,
                           allowRowSelection: true,
-                          onSelectionChanged: (selectedItems) {},
+                          onSelectionChanged: (selectedItems) {
+                            print(MediaQuery.of(context).size.width);
+                          },
                           // Bật tính năng hiển thị cột hành động
                           showActions: true,
                           actionColumnTitle: 'Thao tác',
@@ -122,8 +131,10 @@ class StaffListPage extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder:
                                       (_) => BlocProvider.value(
-                                        value: context.read<StaffBloc>(),
-                                        child: StaffFormPage(staff: item),
+                                        value: context.read<DepartmentBloc>(),
+                                        child: DepartmentFormPage(
+                                          department: item,
+                                        ),
                                       ),
                                 ),
                               );
@@ -133,58 +144,51 @@ class StaffListPage extends StatelessWidget {
                             _showDeleteDialog(context, item);
                           },
                           columns: [
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Mã nhân viên',
-                              getValue: (item) => item.staffId,
+                            TableColumnBuilder.createTextColumn<Department>(
+                              title: 'Mã đơn vị',
+                              getValue: (item) => item.departmentId,
                             ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Tên nhân viên',
-                              getValue: (item) => item.name,
+                            TableColumnBuilder.createTextColumn<Department>(
+                              title: 'Nhóm đơn vị',
+                              getValue: (item) => item.departmentGroup,
+                            ),
+                            TableColumnBuilder.createTextColumn<Department>(
+                              title: 'Tên phòng/ban',
+                              getValue: (item) => item.departmentName,
+                              width: 250,
                               align: TextAlign.start,
+                            ),
+                            TableColumnBuilder.createTextColumn<Department>(
+                              title: 'Quản lý',
                               width: 150,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Số điện thoại',
-                              getValue: (item) => item.tel,
                               align: TextAlign.start,
+                              getValue:
+                                  (item) =>
+                                      context
+                                          .read<DepartmentBloc>()
+                                          .staffs
+                                          .firstWhere(
+                                            (staff) =>
+                                                staff.staffId == item.managerId,
+                                          )
+                                          .name,
                             ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Email',
-                              getValue: (item) => item.email,
+                            TableColumnBuilder.createTextColumn<Department>(
+                              title: 'Nhân viên',
+                              getValue: (item) => item.employeeCount,
+                            ),
+                            TableColumnBuilder.createTextColumn<Department>(
+                              title: 'Phòng/ Ban cấp trên',
+                              getValue: (item) => item.parentRoom,
                               align: TextAlign.start,
-                              width: 200,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Hoạt động',
-                              getValue: (item) => item.activity,
-                              align: TextAlign.start,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Hạn chót cho hoạt động tiếp theo',
-                              getValue: (item) => item.timeForActivity,
-                              align: TextAlign.center,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Phòng ban',
-                              getValue: (item) => item.department,
-                              align: TextAlign.center,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Chức vụ',
-                              getValue: (item) => item.position,
-                              align: TextAlign.center,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Người quản lý',
-                              getValue: (item) => item.staffOwner,
-                              align: TextAlign.start,
+                              width: 250,
                             ),
                           ],
-                          data: staffs,
+                          data: departments,
                           onRowTap: (item) {},
                         ),
                       );
-                    } else if (state is StaffError) {
+                    } else if (state is DepartmentError) {
                       return Center(child: Text(state.message));
                     }
                     return const Center(child: CircularProgressIndicator());

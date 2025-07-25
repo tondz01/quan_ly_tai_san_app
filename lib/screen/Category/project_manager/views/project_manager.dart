@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/project_manager/pages/project_list_page.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/project_manager/pages/project_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_list_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 
 class ProjectManager extends StatefulWidget {
   const ProjectManager({super.key});

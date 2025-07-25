@@ -76,6 +76,7 @@ class StaffDTO extends Equatable {
 }
 
 List<StaffDTO> sampleStaffDTOs() => [
-  StaffDTO(name: "Cấn Công Cường", tel: "0386328935", email: "congcuong108@gmai.com", activity: "", timeForActivity: "", department: "IT", position: "Nhân viên", staffId: "459117", staffOwner: "")
+  StaffDTO(name: "Cấn Công Cường", tel: "0386328935", email: "congcuong108@gmai.com", activity: "", timeForActivity: "", department: "IT", position: "Nhân viên", staffId: "01", staffOwner: ""),
+  StaffDTO(name: "Đỗ Thành Tôn", tel: "0386328935", email: "thanhtonvk@gmai.com", activity: "", timeForActivity: "", department: "IT", position: "Nhân viên", staffId: "02", staffOwner: "")
 
 ]; 

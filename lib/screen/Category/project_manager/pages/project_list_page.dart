@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_form_page.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
-import '../bloc/project_bloc.dart';
-import '../bloc/project_event.dart';
-import '../bloc/project_state.dart';
-import 'project_form_page.dart';
 
 class ProjectListPage extends StatelessWidget {
   final VoidCallback? onAdd;
@@ -45,27 +44,48 @@ class ProjectListPage extends StatelessWidget {
           const SizedBox(height: 16),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SGButton(
-                  text: 'Thêm dự án',
-                  onPressed: () {
-                    if (onAdd != null) {
-                      onAdd!();
-                    } else {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (_) => BlocProvider.value(
-                                value: context.read<ProjectBloc>(),
-                                child: const ProjectFormPage(),
-                              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Tìm kiếm dự án',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
                         ),
-                      );
-                    }
-                  },
+                        onChanged: (value) {
+                          context.read<ProjectBloc>().add(SearchProject(value));
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 25),
+                    SGButton(
+                      text: 'Thêm dự án',
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                      onPressed: () {
+                        if (onAdd != null) {
+                          onAdd!();
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder:
+                                  (_) => BlocProvider.value(
+                                    value: context.read<ProjectBloc>(),
+                                    child: const ProjectFormPage(),
+                                  ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    SizedBox(width: 25),
+                  ],
                 ),
                 SizedBox(height: 8),
+
                 BlocBuilder<ProjectBloc, ProjectState>(
                   builder: (context, state) {
                     if (state is ProjectLoaded) {

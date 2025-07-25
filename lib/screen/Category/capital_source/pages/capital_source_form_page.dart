@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/sg_textfield.dart';
 
-class ProjectFormPage extends StatefulWidget {
-  final Project? project;
+
+class CapitalSourceFormPage extends StatefulWidget {
+  final CapitalSource? capitalSource;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
-  const ProjectFormPage({super.key, this.project, this.index, this.onCancel, this.onSaved});
+  const CapitalSourceFormPage({super.key, this.capitalSource, this.index, this.onCancel, this.onSaved});
 
   @override
-  State<ProjectFormPage> createState() => _ProjectFormPageState();
+  State<CapitalSourceFormPage> createState() => _CapitalSourceFormPageState();
 }
 
-class _ProjectFormPageState extends State<ProjectFormPage> {
+class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _codeController;
   late TextEditingController _nameController;
@@ -27,10 +28,10 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   @override
   void initState() {
     super.initState();
-    _codeController = TextEditingController(text: widget.project?.code ?? '');
-    _nameController = TextEditingController(text: widget.project?.name ?? '');
-    _noteController = TextEditingController(text: widget.project?.note ?? '');
-    _isActive = widget.project?.isActive ?? true;
+    _codeController = TextEditingController(text: widget.capitalSource?.code ?? '');
+    _nameController = TextEditingController(text: widget.capitalSource?.name ?? '');
+    _noteController = TextEditingController(text: widget.capitalSource?.note ?? '');
+    _isActive = widget.capitalSource?.isActive ?? true;
   }
 
   @override
@@ -43,16 +44,16 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      final project = Project(
+      final capitalSource = CapitalSource(
         code: _codeController.text.trim(),
         name: _nameController.text.trim(),
         note: _noteController.text.trim(),
         isActive: _isActive,
       );
-      if (widget.project == null) {
-        context.read<ProjectBloc>().add(AddProject(project));
+      if (widget.capitalSource == null) {
+        context.read<CapitalSourceBloc>().add(AddCapitalSource(capitalSource));
       } else {
-        context.read<ProjectBloc>().add(UpdateProject(project));
+        context.read<CapitalSourceBloc>().add(UpdateCapitalSource(capitalSource));
       }
       if (widget.onSaved != null) {
         widget.onSaved!();
@@ -64,7 +65,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.project != null;
+    final isEdit = widget.capitalSource != null;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -77,7 +78,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                   child: Container(
                     alignment: Alignment.center,
                     child: Text(
-                      isEdit ? 'Cập nhật thông tin dự án' : 'Thêm mới dự án',
+                      isEdit ? 'Cập nhật thông tin nguồn vốn' : 'Thêm mới nguồn vốn',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -116,7 +117,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                                 Expanded(
                                   child: SGTextField(
                                     controller: _codeController,
-                                    label: 'Mã dự án',
+                                    label: 'Mã nguồn kinh phí',
                                     prefixIcon: Icon(
                                       Icons.code,
                                       color: Colors.orange,
@@ -124,7 +125,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                                     validator:
                                         (v) =>
                                             v == null || v.isEmpty
-                                                ? 'Nhập mã dự án'
+                                                ? 'Nhập mã nguồn kinh phí'
                                                 : null,
                                   ),
                                 ),
@@ -132,7 +133,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                                 Expanded(
                                   child: SGTextField(
                                     controller: _nameController,
-                                    label: 'Tên dự án',
+                                    label: 'Tên nguồn kinh phí',
                                     prefixIcon: Icon(
                                       Icons.title,
                                       color: Colors.orange,
@@ -140,7 +141,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                                     validator:
                                         (v) =>
                                             v == null || v.isEmpty
-                                                ? 'Nhập tên dự án'
+                                                ? 'Nhập tên nguồn kinh phí'
                                                 : null,
                                     minLines: 1,
                                     maxLines: 3,

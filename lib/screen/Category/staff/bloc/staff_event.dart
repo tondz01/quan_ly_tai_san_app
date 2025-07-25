@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 abstract class StaffEvent extends Equatable {
   const StaffEvent();
@@ -33,4 +33,11 @@ class DeleteStaff extends StaffEvent {
   const DeleteStaff(this.staff);
   @override
   List<Object?> get props => [staff];
+}
+
+class SearchStaff extends StaffEvent {
+  final String keyword;
+  const SearchStaff(this.keyword);
+  @override
+  List<Object?> get props => [keyword];
 } 
