@@ -13,8 +13,8 @@ List<SingleChildWidget> get blocProvider {
     // BlocProvider<BaseBloc>(
     //   create: (_) => BaseBloc(),
     // ),
-    BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects(sampleProjects()))),
-    BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs(sampleStaffDTOs()))),
+    // BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects(sampleProjects()))),
+    // BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs(sampleStaffDTOs()))),
     BlocProvider<ToolsAndSuppliesBloc>(create: (_) => ToolsAndSuppliesBloc()),
   ];
 }

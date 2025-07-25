@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/projec
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ProjectListPage extends StatelessWidget {
   final VoidCallback? onAdd;
