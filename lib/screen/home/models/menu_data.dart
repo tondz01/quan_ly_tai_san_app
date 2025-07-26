@@ -11,17 +11,25 @@ class MenuItem {
   final int index;
   final List<SubMenuItem> reportSubItems;
   final List<SubMenuGroup> projectGroups;
+  final String route;
 
   // Constructor với tham số index tùy chọn
-  const MenuItem._internal({required this.label, required this.index, this.icon, this.reportSubItems = const [], this.projectGroups = const []});
+  const MenuItem._internal({required this.label, required this.index, this.icon, this.reportSubItems = const [], this.projectGroups = const [], this.route = '/'});
 
   // Factory constructor tự động tạo index
-  factory MenuItem({required String label, IconData? icon, int? index, List<SubMenuItem> reportSubItems = const [], List<SubMenuGroup> projectGroups = const []}) {
+  factory MenuItem({
+    required String label,
+    IconData? icon,
+    int? index,
+    List<SubMenuItem> reportSubItems = const [],
+    List<SubMenuGroup> projectGroups = const [],
+    String route = '',
+  }) {
     // Nếu index được chỉ định, sử dụng nó
     // Nếu không, dùng giá trị tiếp theo và tăng biến đếm
     final actualIndex = index ?? _nextIndex++;
 
-    return MenuItem._internal(label: label, index: actualIndex, icon: icon, reportSubItems: reportSubItems, projectGroups: projectGroups);
+    return MenuItem._internal(label: label, index: actualIndex, icon: icon, reportSubItems: reportSubItems, projectGroups: projectGroups, route: route);
   }
 }
 
@@ -58,29 +66,23 @@ class AppMenuData {
     MenuItem(
       label: 'Quản lý dự án',
       projectGroups: [
-        SubMenuGroup(
-          title: 'Dự án',
-          items: [SubMenuItem(label: 'Danh sách dự án', route: '/'), SubMenuItem(label: 'Thêm dự án mới', route: '/'), SubMenuItem(label: 'Dự án đã hoàn thành', route: '/')],
-        ),
-        SubMenuGroup(title: 'Hợp đồng', items: [SubMenuItem(label: 'Danh sách hợp đồng', route: '/'), SubMenuItem(label: 'Hợp đồng đã ký', route: '/')]),
+        SubMenuGroup(title: 'Dự án', items: [SubMenuItem(label: 'Danh sách dự án'), SubMenuItem(label: 'Thêm dự án mới'), SubMenuItem(label: 'Dự án đã hoàn thành')]),
+        SubMenuGroup(title: 'Hợp đồng', items: [SubMenuItem(label: 'Danh sách hợp đồng'), SubMenuItem(label: 'Hợp đồng đã ký')]),
       ],
     ),
-    MenuItem(
-      label: 'Quản lý nhân viên',
-      reportSubItems: [SubMenuItem(label: 'Báo cáo ngày', route: '/'), SubMenuItem(label: 'Báo cáo tuần', route: '/'), SubMenuItem(label: 'Báo cáo tháng', route: '/')],
-    ),
+    MenuItem(label: 'Quản lý nhân viên', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
     MenuItem(
       label: 'Quản lý tài sản',
       projectGroups: [
-        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc', route: '/'), SubMenuItem(label: 'Thiết bị điện tử', route: '/')]),
-        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng', route: '/'), SubMenuItem(label: 'Dụng cụ lắp đặt', route: '/')]),
+        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc'), SubMenuItem(label: 'Thiết bị điện tử')]),
+        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng'), SubMenuItem(label: 'Dụng cụ lắp đặt')]),
       ],
     ),
     MenuItem(
       label: 'Công cụ dụng cụ',
       projectGroups: [
-        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc', route: '/'), SubMenuItem(label: 'Thiết bị điện tử', route: '/')]),
-        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng', route: '/'), SubMenuItem(label: 'Dụng cụ lắp đặt', route: '/')]),
+        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc'), SubMenuItem(label: 'Thiết bị điện tử')]),
+        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng'), SubMenuItem(label: 'Dụng cụ lắp đặt')]),
       ],
     ),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
