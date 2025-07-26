@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/enum/type_size_screen.dart';
@@ -8,6 +6,42 @@ import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
+class HeaderComponent extends StatefulWidget {
+  const HeaderComponent({
+    super.key,
+    required this.controller,
+    required this.onSearchChanged,
+    required this.onTap,
+    required this.onNew,
+    required this.mainScreen,
+    required this.subScreen,
+  });
+  final TextEditingController controller;
+  final Function(String) onSearchChanged;
+  final Function()? onTap;
+  final Function()? onNew;
+  final String? mainScreen;
+  final String? subScreen;
+
+  @override
+  State<HeaderComponent> createState() => _HeaderComponentState();
+}
+
+class _HeaderComponentState extends State<HeaderComponent> {
+  @override
+  Widget build(BuildContext context) {
+    return buildHeader(
+      context.width,
+      widget.controller,
+      widget.onSearchChanged,
+      subScreen: widget.subScreen,
+      onTap: widget.onTap,
+      onNew: widget.onNew,
+      mainScreen: widget.mainScreen,
+    );
+  }
+}
+
 Widget buildHeader(
   double width,
   TextEditingController controller,
@@ -15,6 +49,7 @@ Widget buildHeader(
   String? subScreen,
   Function()? onTap,
   Function()? onNew,
+  String? mainScreen,
 }) {
   final typeSize = TypeSizeScreenExtension.getSizeScreen(width);
   return typeSize == TypeSizeScreen.extraSmall ||
@@ -24,6 +59,7 @@ Widget buildHeader(
         controller,
         onSearchChanged,
         subScreen,
+        mainScreen,
         onNew,
         onTap,
       )
@@ -32,6 +68,7 @@ Widget buildHeader(
         controller,
         onSearchChanged,
         subScreen,
+        mainScreen,
         onNew,
         onTap,
       );
@@ -42,6 +79,7 @@ Widget _buildHeaderScreenLarge(
   TextEditingController controller,
   Function(String) onSearchChanged,
   String? subScreen,
+  String? mainScreen,
   Function()? onNew,
   Function()? onTap,
 ) {
@@ -49,9 +87,10 @@ Widget _buildHeaderScreenLarge(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      _buildHeaderNameScreen(subScreen, onNew, onTap),
-      const SizedBox(width: 16),
-      Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
+      _buildHeaderNameScreen(mainScreen, subScreen, onNew, onTap),
+      if (subScreen != null && subScreen.isNotEmpty) const SizedBox(width: 16),
+      if (subScreen == null || subScreen.isEmpty)
+        Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
     ],
   );
 }
@@ -61,6 +100,7 @@ Widget _buildHeaderScreenSmall(
   TextEditingController controller,
   Function(String) onSearchChanged,
   String? subScreen,
+  String? mainScreen,
   Function()? onNew,
   Function()? onTap,
 ) {
@@ -68,14 +108,20 @@ Widget _buildHeaderScreenSmall(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      _buildHeaderNameScreen(subScreen, onNew, onTap),
-      const SizedBox(height: 5),
-      _buildSearchField(width, controller, onSearchChanged),
+      _buildHeaderNameScreen(mainScreen, subScreen, onNew, onTap),
+      if (subScreen != null && subScreen.isNotEmpty) const SizedBox(height: 5),
+      if (subScreen == null || subScreen.isEmpty)
+        _buildSearchField(width, controller, onSearchChanged),
     ],
   );
 }
 
-Widget _buildHeaderNameScreen(String? subScreen, Function()? onNew, Function()? onTap) {
+Widget _buildHeaderNameScreen(
+  String? mainScreen,
+  String? subScreen,
+  Function()? onNew,
+  Function()? onTap,
+) {
   bool isSubScreen = subScreen != null && subScreen.isNotEmpty;
   // log()
   return Row(

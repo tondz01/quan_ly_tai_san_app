@@ -3,6 +3,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/screen/note/note_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
@@ -11,6 +12,7 @@ import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
+import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 
 class DetailAndEditView extends StatefulWidget {
@@ -69,7 +71,7 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
       child: Text('Phòng Kế toán'),
     ),
   ];
-  
+
   @override
   void dispose() {
     // Giải phóng các controller
@@ -102,23 +104,32 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SGButtonIcon(
-            text: isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
-            borderRadius: 10,
-            width: Get.width * 0.12 <= 120 ? 120 : Get.width * 0.12,
-            defaultBGColor:
-                isEditing
-                    ? SGAppColors.colorInputDisable
-                    : ColorValue.oldLavender,
-            colorHover: Colors.blueAccent,
-            colorTextHover: Colors.white,
-            isOutlined: true,
-            borderWidth: 3,
-            onPressed: () {
-              setState(() {
-                isEditing = !isEditing;
-              });
-            },
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SGButtonIcon(
+                text: isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
+                borderRadius: 10,
+                width: Get.width * 0.12 <= 200 ? 200 : Get.width * 0.12,
+                defaultBGColor:
+                    isEditing
+                        ? SGAppColors.colorInputDisable
+                        : ColorValue.oldLavender,
+                colorHover: Colors.blueAccent,
+                colorTextHover: Colors.white,
+                isOutlined: true,
+                borderWidth: 3,
+                onPressed: () {
+                  setState(() {
+                    isEditing = !isEditing;
+                  });
+                },
+              ),
+              SgIndicator(
+                steps: ['Nháp', 'Khóa'],
+                currentStep: !isEditing && widget.item != null ? 1 : 0,
+              ),
+            ],
           ),
 
           const SizedBox(height: 10),
@@ -139,25 +150,20 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
           _buildNoteSection(),
         ],
       );
-    }else{
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 3,
-          child: _buildTableDetail(),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          flex: 2,
-          child: _buildNoteSection(),
-        ),
-      ],
-    );}
+    } else {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 3, child: _buildTableDetail()),
+          const SizedBox(width: 10),
+          Expanded(flex: 2, child: _buildNoteSection()),
+        ],
+      );
+    }
   }
-  
+
   Widget _buildNoteSection() {
-    return Container(
+    return SizedBox(
       height: 400,
       // padding: const EdgeInsets.all(8),
       // decoration: BoxDecoration(
@@ -237,12 +243,14 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
             controller: controllerQuantity,
             isEditing: isEditing,
             textContent: widget.item?.quantity.toString() ?? '0',
+            inputType: TextInputType.number,
           ),
           _buildDetailRow(
             label: 'tas.value'.tr,
             controller: controllerValue,
             isEditing: isEditing,
-            textContent: widget.item?.referenceNumber ?? '0.0',
+            textContent: widget.item?.value.toString() ?? '0.0',
+            inputType: TextInputType.number,
           ),
           _buildDetailRow(
             label: 'tas.reference_number'.tr,
@@ -293,11 +301,10 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
     required TextEditingController controller,
     required bool isEditing,
     bool isDropdown = false,
+    bool isValidate = false,
+    TextInputType? inputType,
   }) {
-    controller.text = textContent;
-    if (isDropdown && isEditing) {
-      controller.text = '';
-    }
+    log('message $inputType');
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -313,54 +320,63 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
           ),
         ),
         const SizedBox(width: 16),
-        isDropdown && isEditing
-            ? Expanded(
-              child: SGDropdownInputButton<String>(
-                // width: Get.width * 0.12 <= 120 ? 120 : Get.width * 0.12,
-                height: 35,
-                controller: controller,
-                textOverflow: TextOverflow.ellipsis,
-                value: textContent,
-                defaultValue: textContent,
-                items: itemsPhongBan,
-                colorBorder: SGAppColors.neutral400,
-                showUnderlineBorderOnly: true,
-                enableSearch: false,
-                isClearController: false,
-                fontSize: 16,
-                isShowSuffixIcon: true,
-                hintText: 'Chọn ${label.toLowerCase()}',
-                textAlign: TextAlign.left,
-                textAlignItem: TextAlign.left,
-                sizeBorderCircular: 10,
-                contentPadding: const EdgeInsets.only(
-                  left: 10,
-                  top: 8,
-                  bottom: 8,
-                ),
-                onChanged: (value) {
-                  log('message');
-                  controller.text = value ?? '';
-                },
-              ),
-            )
-            : Expanded(
-              child: SGInputText(
-                height: 35,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                controller: controller,
-                borderRadius: 10,
-                enabled: isEditing,
-                textAlign: TextAlign.left,
-                readOnly: !isEditing,
-                onlyLine: true,
-                color: Colors.black,
-                showBorder: isEditing,
-                hintText: !isEditing ? '' : '${'common.hint'.tr} $label',
-              ),
-            ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              isDropdown && isEditing
+                  ? SGDropdownInputButton<String>(
+                    height: 35,
+                    controller: controller,
+                    textOverflow: TextOverflow.ellipsis,
+                    // Use value directly rather than setting controller.text
+                    value: textContent,
+                    defaultValue: textContent,
+                    items: itemsPhongBan,
+                    colorBorder: SGAppColors.neutral400,
+                    showUnderlineBorderOnly: true,
+                    enableSearch: false,
+                    isClearController: false,
+                    fontSize: 16,
+                    inputType: inputType,
+                    isShowSuffixIcon: true,
+                    hintText: 'Chọn ${label.toLowerCase()}',
+                    textAlign: TextAlign.left,
+                    textAlignItem: TextAlign.left,
+                    sizeBorderCircular: 10,
+                    contentPadding: const EdgeInsets.only(
+                      left: 10,
+                      top: 8,
+                      bottom: 8,
+                    ),
+                    onChanged: (value) {
+                      log('message');
+                      if (value != null) {
+                        controller.text = value;
+                      }
+                    },
+                  )
+                  : SGInputText(
+                    height: 35,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    controller: controller..text = textContent,
+                    borderRadius: 10,
+                    enabled: isEditing,
+                    textAlign: TextAlign.left,
+                    readOnly: !isEditing,
+                    inputFormatters: inputType == TextInputType.number
+                        ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))]
+                        : null,
+                    onlyLine: true,
+                    color: Colors.black,
+                    showBorder: isEditing,
+                    hintText: !isEditing ? '' : '${'common.hint'.tr} $label',
+                  ),
+              if (isValidate) const Divider(height: 1, color: Colors.red),
+            ],
+          ),
+        ),
       ],
     );
   }
 }
-

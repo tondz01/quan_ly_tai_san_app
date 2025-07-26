@@ -1,0 +1,107 @@
+[
+  {
+    "id": "1",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "22/06/2025",
+    "requester": "Ecotel",
+    "creator": "Ecotel",
+    "movementDetails": ["11111 - Test (M) PT"],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "22/06/2025",
+    "approver": "Khúc Thanh Huyền",
+    "status": "Nhập",
+    "isEffective": false
+  },
+  {
+    "id": "2",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "22/06/2025",
+    "requester": "Ecotel",
+    "creator": "Ecotel",
+    "movementDetails": [],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "22/06/2025",
+    "approver": "Khúc Thanh Huyền",
+    "status": "Nhập",
+    "isEffective": false
+  },
+  {
+    "id": "3",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "01/04/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Khúc Thanh Huyền",
+    "movementDetails": [
+      "K.20:VH.0001 - Phần mềm văn phòng",
+      "B.18:MCL.0001 - Máy cấp liệu lắc",
+      "B.2:BS00.1.0003 - Băng tải BS00"
+    ],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "01/04/2025",
+    "approver": "Phạm Xuân Vinh",
+    "status": "Từ chối",
+    "isEffective": false
+  },
+  {
+    "id": "4",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": "000011/QD-TUB",
+    "decisionDate": "01/03/2025",
+    "requester": "Khúc Thanh Huyền",
+    "creator": "Khúc Thanh Huyền",
+    "movementDetails": ["TestPT001 - Test phương tiện"],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "01/03/2025",
+    "approver": "Khúc Thanh Huyền",
+    "status": "Hoàn thành",
+    "isEffective": true
+  },
+  {
+    "id": "5",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "01/03/2025",
+    "requester": "Khúc Thanh Huyền",
+    "creator": "Khúc Thanh Huyền",
+    "movementDetails": ["TS00000001 - Test tài sản"],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "01/03/2025",
+    "approver": "Khúc Thanh Huyền",
+    "status": "Hủy",
+    "isEffective": false
+  },
+  {
+    "id": "6",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": "000004/QD-TUB",
+    "decisionDate": "01/03/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Xuân Vinh",
+    "movementDetails": ["K.20:VH.0001 - Phần mềm văn phòng"],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "01/03/2025",
+    "approver": "Nguyễn Văn Hùng",
+    "status": "Từ chối",
+    "isEffective": false
+  },
+  {
+    "id": "7",
+    "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
+    "decisionNumber": "000003/QD-TUB",
+    "decisionDate": "01/03/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "B.18:MCL.0001 - Máy cấp liệu lắc", 
+      "B.2:BS00.1.0007 - Băng tải DTS-S..."
+    ],
+    "receivingUnit": "Kho Công ty",
+    "effectiveDate": "01/03/2025",
+    "approver": "Nguyễn Văn Hùng",
+    "status": "Hoàn thành",
+    "isEffective": true
+  }
+] 

@@ -1,18 +1,22 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/detail_and_edit.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class ToolsAndSuppliesProvider with ChangeNotifier {
+class AssetTransferProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
-  List<ToolsAndSuppliesDto>? get dataPage => _dataPage;
+  List<AssetTransferDto>? get dataPage => _dataPage;
   get data => _data;
   get columns => _columns;
   String? get error => _error;
@@ -30,10 +34,12 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  set dataPage(List<ToolsAndSuppliesDto>? value) {
+  set dataPage(List<AssetTransferDto>? value) {
     _dataPage = value;
     notifyListeners();
   }
+
+  int typeAssetTransfer = 1;
 
   late int totalEntries;
   late int totalPages;
@@ -52,20 +58,23 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   String? _error;
   String? _subScreen;
+  String mainScreen = '';
 
   Widget? _body;
 
   bool _isLoading = false;
 
-  List<ToolsAndSuppliesDto>? _data;
-  List<ToolsAndSuppliesDto>? _dataPage;
-  List<SgTableColumn<ToolsAndSuppliesDto>> _columns = [];
+  List<AssetTransferDto>? _data;
+  List<AssetTransferDto>? _dataPage;
+  List<SgTableColumn<AssetTransferDto>> _columns = [];
 
-  void onInit(BuildContext context) {
+  void onInit(BuildContext context, int typeAssetTransfer) {
+    this.typeAssetTransfer = typeAssetTransfer;
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
     // Initialize body without triggering notification
-    _body = ToolsAndSuppliesList(provider: this);
+    _body = AssetTransferList(provider: this, mainScreen: onSetMainScreen());
+    onChangeScreen(item: null, isMainScreen: true, isEdit: false);
     log('message onInit');
     getListToolsAndSupplies(context);
   }
@@ -82,23 +91,20 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void onTapBackHeader() {
-    log('message onTap');
     onChangeScreen(item: null, isMainScreen: true, isEdit: false);
     notifyListeners();
   }
 
   void onTapNewHeader() {
-    log('message onTapNew');
     onChangeScreen(item: null, isMainScreen: false, isEdit: true);
     notifyListeners();
   }
 
   void getListToolsAndSupplies(BuildContext context) {
     _isLoading = true;
-    // Delay the event dispatch to avoid build phase conflicts
     Future.microtask(() {
-      context.read<ToolsAndSuppliesBloc>().add(
-        GetListToolsAndSuppliesEvent(context),
+      context.read<AssetTransferBloc>().add(
+        GetListAssetTransferEvent(context, typeAssetTransfer),
       );
     });
   }
@@ -126,20 +132,26 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void onChangeScreen({
-    required ToolsAndSuppliesDto? item,
+    required AssetTransferDto? item,
     required bool isMainScreen,
     required bool isEdit,
   }) {
     // Use Future.microtask to avoid build phase conflicts
     log('message onChangeScreen');
     Future.microtask(() {
+      mainScreen =
+          typeAssetTransfer == 1
+              ? 'Cấp phát tài sản'
+              : typeAssetTransfer == 2
+              ? 'Thu hồi tài sản'
+              : 'Điều động tài sản';
       if (!isMainScreen) {
-        _subScreen = item == null ? 'Mới' : item.name;
-        _body = DetailAndEditView(item: item, isEditing: isEdit);
+        _subScreen = item == null ? 'Mới' : item.documentName ?? '';
+        _body = Container();
       } else {
         _subScreen = '';
         _subScreen = null;
-        _body = ToolsAndSuppliesList(provider: this);
+        _body = AssetTransferList(provider: this, mainScreen: mainScreen);
       }
       notifyListeners();
     });
@@ -160,7 +172,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateItem(ToolsAndSuppliesDto updatedItem) {
+  void updateItem(AssetTransferDto updatedItem) {
     if (_data == null) return;
 
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
@@ -200,9 +212,9 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
   }
 
-  getListToolsAndSuppliesSuccess(
+  getListAssetTransferSuccess(
     BuildContext context,
-    GetListToolsAndSuppliesSuccessState state,
+    GetListAssetTransferSuccessState state,
   ) {
     _error = null;
     if (state.data.isEmpty) {
@@ -216,68 +228,102 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  String onSetMainScreen() {
+    return mainScreen =
+        typeAssetTransfer == 1
+            ? 'Cấp phát tài sản'
+            : typeAssetTransfer == 2
+            ? 'Thu hồi tài sản'
+            : 'Điều động tài sản';
+  }
+
   void onSetColumns() {
     _columns = [
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Công cụ dụng cụ',
-        getValue: (item) => item.name,
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Tên phiếu',
+        getValue: (item) => item.documentName ?? '',
         width: 170,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Đơn vị nhập',
-        getValue: (item) => item.importUnit,
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Số quyết định',
+        getValue: (item) => item.decisionNumber ?? '',
+        width: 120,
+      ),
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Ngày quyết định',
+        getValue: (item) => item.decisionDate ?? '',
+        width: 120,
+      ),
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Người đề nghị',
+        getValue: (item) => item.requester ?? '',
+        width: 150,
+      ),
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Người lập phiếu',
+        getValue: (item) => item.creator ?? '',
+        width: 150,
+      ),
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Chi tiết điều động',
+        getValue: (item) => item.movementDetails?.join(', ') ?? '',
         width: 170,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Mã công cụ dụng cụ',
-        getValue: (item) => item.code,
-        width: 170,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Ngày nhập',
-        getValue: (item) => item.importDate,
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Đơn vị giao',
+        getValue: (item) => item.sendingUnit ?? '',
         width: 120,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Đơn vị tính',
-        getValue: (item) => item.unit,
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Đơn vị nhận',
+        getValue: (item) => item.receivingUnit ?? '',
         width: 120,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Số lượng',
-        getValue: (item) => item.quantity.toString(),
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'TGGN từ Ngày',
+        getValue: (item) => item.effectiveDate ?? '',
         width: 120,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Giá trị',
-        getValue: (item) => item.value.toString(),
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Trình duyệt Ban giám đốc',
+        getValue: (item) => item.approver ?? '',
         width: 120,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Số ký hiệu',
-        getValue: (item) => item.referenceNumber,
+      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+        title: 'Trạng thái',
+        getValue: (item) => item.status ?? '',
         width: 120,
       ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Ký hiệu',
-        getValue: (item) => item.symbol,
+      SgTableColumn<AssetTransferDto>(
+        title: 'Có hiệu lực',
+        cellBuilder: (item) => showEffective(item.isEffective ?? false),
+        sortValueGetter: (item) => item.isEffective,
+        searchValueGetter:
+            (item) => (item.isEffective ?? false) ? 'Có' : 'Không',
+        cellAlignment: TextAlign.center,
+        titleAlignment: TextAlign.center,
         width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Công suất',
-        getValue: (item) => item.capacity,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Nước sản xuất',
-        getValue: (item) => item.countryOfOrigin,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Năm sản xuất',
-        getValue: (item) => item.yearOfManufacture,
-        width: 120,
+        searchable: true,
       ),
     ];
+  }
+
+  Widget showEffective(bool isEffective) {
+    return SizedBox(
+      width: 24,
+      height: 24,
+      child: Checkbox(
+        value: isEffective,
+        onChanged: null, // Checkbox is read-only, no setState in provider
+        activeColor: const Color(0xFF80C9CB), // màu xanh nhạt
+        checkColor: Colors.white, // dấu tick màu trắng
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(2), // vuông góc
+        ),
+        materialTapTargetSize:
+            MaterialTapTargetSize.shrinkWrap, // thu nhỏ vùng tap
+        visualDensity: VisualDensity.compact, // giảm padding
+      ),
+    );
   }
 }

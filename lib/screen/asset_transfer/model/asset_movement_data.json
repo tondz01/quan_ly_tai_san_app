@@ -1,0 +1,188 @@
+[
+  {
+    "id": "1",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": "000035/QD-TUB",
+    "decisionDate": "28/06/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": ["K.20:VH.0004 - Phần mềm quản lý..."],
+    "sendingUnit": "Phòng KT",
+    "receivingUnit": "Phân xưởng KT2",
+    "effectiveDate": "28/06/2025",
+    "approver": "Trần Hoàng Anh",
+    "status": "Duyệt",
+    "isEffective": true
+  },
+  {
+    "id": "2",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": "000032/QD-TUB",
+    "decisionDate": "19/06/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "G.7.V.0051 - Lò xuyến vỉa mức +...",
+      "A.3:ATM.14.0007 - Átt tủ mặt PN lò..."
+    ],
+    "sendingUnit": "Phân xưởng khai thác dạo lò...",
+    "receivingUnit": "Phân xưởng khai thác dạo lò...",
+    "effectiveDate": "19/06/2025",
+    "approver": "Trần Hoàng Anh",
+    "status": "Duyệt",
+    "isEffective": true
+  },
+  {
+    "id": "3",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "19/06/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "K.20:VH.0001 - Phần mềm văn phòng",
+      "K.20:VH.0002 - Phần mềm thông minh..."
+    ],
+    "sendingUnit": "Phòng CV",
+    "receivingUnit": "Phòng KT",
+    "effectiveDate": "19/06/2025",
+    "approver": "Trần Hoàng Anh",
+    "status": "Chờ xác nhận",
+    "isEffective": false
+  },
+  {
+    "id": "4",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "19/06/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "K.20:VH.0001 - Phần mềm văn phòng",
+      "K.20:VH.0002 - Phần mềm thông minh..."
+    ],
+    "sendingUnit": "Phòng CV",
+    "receivingUnit": "Phòng KT",
+    "effectiveDate": "19/06/2025",
+    "approver": "Trần Hoàng Anh",
+    "status": "Chờ xác nhận",
+    "isEffective": false
+  },
+  {
+    "id": "5",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "19/06/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "K.20:VH.0001 - Phần mềm văn phòng",
+      "K.20:VH.0002 - Phần mềm thông minh..."
+    ],
+    "sendingUnit": "Phòng CV",
+    "receivingUnit": "Phòng KT",
+    "effectiveDate": "19/06/2025",
+    "approver": "Lê Đức Đà",
+    "status": "Từ chối",
+    "isEffective": false
+  },
+  {
+    "id": "6",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": "000027/QD-TUB",
+    "decisionDate": "14/05/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Nguyễn Văn Hùng",
+    "movementDetails": ["Nhập tài sản mới từ kho (băng cào..."],
+    "sendingUnit": "Phân xưởng KT1",
+    "receivingUnit": "Phân xưởng KT2",
+    "effectiveDate": "14/05/2025",
+    "approver": "Trần Hoàng Anh",
+    "status": "Hoàn thành",
+    "isEffective": true
+  },
+  {
+    "id": "7",
+    "documentName": "Đề nghị Điều động tài sản, trang thiết bị",
+    "decisionNumber": "000019/QD-TUB",
+    "decisionDate": "02/04/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "K.20:VH.0003 - Phần mềm bản quyền",
+      "20032SST02 - Thiết bị đo vận tốc..."
+    ],
+    "sendingUnit": "Phòng KT",
+    "receivingUnit": "Phân xưởng khai thác dạo lò...",
+    "effectiveDate": "02/04/2025",
+    "approver": "Trần Hoàng Anh",
+    "status": "Duyệt",
+    "isEffective": true
+  },
+  {
+    "id": "8",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": null,
+    "decisionDate": "29/03/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "K.20:VH.0003 - Phần mềm bản quyền",
+      "K.20:VH.0004 - Phần mềm quản lý..."
+    ],
+    "sendingUnit": "Phòng KT",
+    "receivingUnit": "Phân xưởng khai thác dạo lò...",
+    "effectiveDate": "29/03/2025",
+    "approver": "Nguyễn Văn Hùng",
+    "status": "Chờ xác nhận",
+    "isEffective": false
+  },
+  {
+    "id": "9",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": "000009/QD-TUB",
+    "decisionDate": "15/08/2024",
+    "requester": "Vũ Nam",
+    "creator": "Vũ Nam",
+    "movementDetails": ["TEST CD 0001 - Màn hình theo dõi..."],
+    "sendingUnit": "Phòng CV",
+    "receivingUnit": "Công đoàn",
+    "effectiveDate": "15/08/2024",
+    "approver": "Vũ Nam",
+    "status": "Hoàn thành",
+    "isEffective": true
+  },
+  {
+    "id": "10",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": "000007/QD-TUB",
+    "decisionDate": "01/03/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": ["K.20:VH.0002 - Phần mềm thông minh..."],
+    "sendingUnit": "Phòng CV",
+    "receivingUnit": "Phòng KT",
+    "effectiveDate": "01/03/2025",
+    "approver": "Nguyễn Văn Hùng",
+    "status": "Từ chối",
+    "isEffective": false
+  },
+  {
+    "id": "11",
+    "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
+    "decisionNumber": "000005/QD-TUB",
+    "decisionDate": "01/03/2025",
+    "requester": "Phạm Văn Bốn",
+    "creator": "Phạm Văn Bốn",
+    "movementDetails": [
+      "K.20:VH.0004 - Phần mềm quản lý...",
+      "K.20:VH.0003 - Phần mềm bản quyền"
+    ],
+    "sendingUnit": "Phòng CV",
+    "receivingUnit": "Phòng KT",
+    "effectiveDate": "01/03/2025",
+    "approver": "Nguyễn Văn Hùng",
+    "status": "Hoàn thành",
+    "isEffective": true
+  }
+] 

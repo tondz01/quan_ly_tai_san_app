@@ -1,9 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/message_compose_form.dart';
 import 'package:quan_ly_tai_san_app/screen/note/component/popup_receiver_component.dart';
 import 'package:quan_ly_tai_san_app/screen/note/component/send_message_component.dart';
+import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
+import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -40,6 +44,9 @@ class _NoteViewState extends State<NoteView> {
   bool _showComposeForm = false;
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
+  bool isSendMessage = false;
+  bool isNote = false;
+  bool isActivity = false;
   void _hidePopup() {
     _overlayEntry?.remove();
     _overlayEntry = null;
@@ -141,57 +148,26 @@ class _NoteViewState extends State<NoteView> {
           children: [
             Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: buildInputField(
-                    context,
+                _buildTabBar(),
+                const Divider(height: 1),
+                if (isSendMessage)
+                  FormInputSendMessage(
                     controller: _contentSendController,
                     layerLink: _layerLink,
                     overlayEntry: _overlayEntry,
                     hidePopup: _hidePopup,
+                    onClickSendMessage: () {
+                      _sendMessage('namvh', _contentSendController.text);
+                      _contentSendController.clear();
+                      isSendMessage = false;
+                    },
                   ),
-                ),
-                const Divider(height: 1),
-                _buildTabBar(),
-                const Divider(height: 1),
+                // const Divider(height: 1),
                 _buildDateHeader(),
                 const Divider(height: 1),
                 Expanded(child: _buildNotesList()),
               ],
             ),
-            if (_showComposeForm)
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  setState(() {
-                    _showComposeForm = false;
-                  });
-                },
-                child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: Center(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap:
-                            () {}, // Ngăn chặn việc đóng form khi nhấn vào form
-                        child: MessageComposeForm(
-                          onSend: _sendMessage,
-                          onCancel: () {
-                            setState(() {
-                              _showComposeForm = false;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -216,52 +192,110 @@ class _NoteViewState extends State<NoteView> {
       //   color: Colors.grey[100],
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: List.generate(_tabTitles.length, (index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _selectedTabIndex = index;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _selectedTabIndex == index
-                            ? const Color(0xFF703070)
-                            : Colors.grey[200],
-                    foregroundColor:
-                        _selectedTabIndex == index
-                            ? Colors.white
-                            : Colors.black87,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  child: Text(
-                    _tabTitles[index],
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight:
-                          _selectedTabIndex == index
-                              ? FontWeight.w500
-                              : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-          _buildActionBar(),
-        ],
+        children: [_buildHeaderActionLeft(), _buildActionBar()],
       ),
+    );
+  }
+
+  Widget _buildHeaderActionLeft() {
+    return Row(
+      children: [
+        SGButtonIcon(
+          width: 60,
+          height: 35,
+          text: 'Gửi tin',
+          sizeText: 12,
+          colorText: isSendMessage ? ColorValue.oldLavender : Colors.white,
+          borderRadius: 5,
+          defaultBGColor: isSendMessage ? Colors.white : ColorValue.oldLavender,
+          isBorder: false,
+          isOutlined: false,
+          isHover: false,
+          decoration:
+              isSendMessage
+                  ? BoxDecoration(
+                    color:
+                        isSendMessage ? Colors.white : ColorValue.oldLavender,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: ColorValue.oldLavender, width: 2),
+                  )
+                  : null,
+          onPressed: () {
+            setState(() {
+              isSendMessage = !isSendMessage;
+              log('isSendMessage: $isSendMessage');
+            });
+          },
+        ),
+        const SizedBox(width: 5),
+        SGButtonIcon(
+          width: 70,
+          height: 35,
+          text: 'Ghi chú',
+          sizeText: 12,
+          colorText: !isNote ? SGAppColors.neutral900 : ColorValue.oldLavender,
+          borderRadius: 5,
+          defaultBGColor:
+              isNote
+                  ? ColorValue.oldLavender.withOpacity(0.5)
+                  : SGAppColors.colorC0C0C0,
+          isBorder: false,
+          isOutlined: false,
+          isHover: false,
+          decoration:
+              isNote
+                  ? BoxDecoration(
+                    color:
+                        isNote
+                            ? ColorValue.oldLavender.withOpacity(0.2)
+                            : ColorValue.oldLavender,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: ColorValue.oldLavender, width: 2),
+                  )
+                  : null,
+          onPressed: () {
+            setState(() {
+              isNote = !isNote;
+              log('isNote: $isNote');
+            });
+          },
+        ),
+
+        const SizedBox(width: 5),
+        SGButtonIcon(
+          width: 80,
+          height: 35,
+          text: 'Hoạt động',
+          sizeText: 12,
+          colorText:
+              !isActivity ? SGAppColors.neutral900 : ColorValue.oldLavender,
+          borderRadius: 5,
+          defaultBGColor:
+              isActivity
+                  ? ColorValue.oldLavender.withOpacity(0.5)
+                  : SGAppColors.colorC0C0C0,
+          isBorder: false,
+          isOutlined: false,
+          isHover: false,
+          decoration:
+              isActivity
+                  ? BoxDecoration(
+                    color:
+                        isActivity
+                            ? ColorValue.oldLavender.withOpacity(0.2)
+                            : ColorValue.oldLavender,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: ColorValue.oldLavender, width: 2),
+                  )
+                  : null,
+          onPressed: () {
+            setState(() {
+              isActivity = !isActivity;
+              log('isActivity: $isActivity');
+            });
+          },
+        ),
+      ],
     );
   }
 
