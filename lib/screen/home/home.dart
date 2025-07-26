@@ -65,8 +65,12 @@ class _HomeState extends State<Home> {
         popupPadding: const EdgeInsets.symmetric(vertical: 2),
         onTap:
             () => setState(() {
-              _selectedIndex = item.index;
-              _selectedSubIndex = 0;
+              if (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) {
+                _selectedIndex = item.index;
+                if (item.route.isNotEmpty) {
+                  context.go(item.route);
+                }
+              }
             }),
         subItems: item.reportSubItems.isNotEmpty ? _buildSubItems(item.index) : null,
         subItemGroups: item.projectGroups.isNotEmpty ? _buildSubItemGroups(item.index, item.projectGroups) : null,
