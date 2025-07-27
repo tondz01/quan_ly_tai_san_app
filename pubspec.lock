@@ -126,6 +126,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_screenutil:
     dependency: "direct main"
     description:
@@ -265,7 +270,7 @@ packages:
     source: hosted
     version: "1.16.0"
   nested:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: nested
       sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
@@ -309,7 +314,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "80dc74bd3f02ec465b11d81b92c4af4ae5147ebb"
+      resolved-ref: "45daaa35ea88cdac895d467c945c7b0f74de9662"
       url: "https://github.com/congcuong207/SeGayComponent.git"
     source: git
     version: "1.0.0+1"

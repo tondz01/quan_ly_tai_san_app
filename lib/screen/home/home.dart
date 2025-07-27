@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
@@ -92,7 +94,8 @@ class _HomeState extends State<Home> {
               _selectedSubIndex = subIndex;
               _popupManager.closeAllPopups();
               if (subItem.route.isNotEmpty) {
-                context.go(subItem.route);
+                log('subItem.route: ${subItem.extra}');
+                context.go(subItem.route, extra: subItem.extra);
               }
             }),
       );
@@ -119,7 +122,8 @@ class _HomeState extends State<Home> {
                   _selectedSubIndex = subIndex;
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
-                    context.go(item.route);
+                    log('item.extra: ${item.extra}');
+                    context.go(item.route, extra: item.extra);
                   }
                 }),
           );

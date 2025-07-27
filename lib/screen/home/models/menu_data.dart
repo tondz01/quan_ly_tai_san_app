@@ -38,8 +38,9 @@ class SubMenuItem {
   final String label;
   final IconData? icon;
   final String route;
+  final String? extra;
 
-  const SubMenuItem({required this.label, this.icon, this.route = '/'});
+  const SubMenuItem({required this.label, this.icon, this.route = '/', this.extra});
 }
 
 /// Class đại diện cho một nhóm các mục trong submenu
@@ -85,8 +86,33 @@ class AppMenuData {
         SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng'), SubMenuItem(label: 'Dụng cụ lắp đặt')]),
       ],
     ),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
+    MenuItem(
+      label: 'Quản lý CCDC - Vật tư',
+      reportSubItems: 
+        [SubMenuItem(label: 'Công cụ dụng cụ - Vật tư',route: AppRoute.toolsAndSupplies.path),
+      ],
+    ),
+    MenuItem(
+      label: 'Điều động tài sản ',
+      reportSubItems: 
+      [
+          SubMenuItem(
+          label: 'Cấp phát tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "1",
+        ),
+        SubMenuItem(
+          label: 'Thu hồi tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "2",
+        ),
+        SubMenuItem(
+          label: 'Điều chuyển tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "3",
+        ),
+      ],
+    ),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
