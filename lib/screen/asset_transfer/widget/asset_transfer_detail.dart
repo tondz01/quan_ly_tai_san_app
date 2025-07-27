@@ -388,6 +388,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   Widget _buildAssetMovementTable() {
+    log('_buildAssetMovementTable: ${widget.item?.movementDetails!.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -399,8 +400,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
           ),
         ),
         SgEditableTable<MovementDetailDto>(
-          initialData:
-              isEditing ? widget.item?.movementDetails ?? [] : const [],
+          initialData: widget.item?.movementDetails ?? [],
           createEmptyItem: MovementDetailDto.empty,
           rowHeight: 40.0,
           headerBackgroundColor: Colors.grey.shade50,
