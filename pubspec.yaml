@@ -52,6 +52,8 @@ dependencies:
   nested: ^1.0.0
   flutter_svg: ^2.2.0
   bloc_concurrency: ^0.3.0
+  csv: ^6.0.0
+  bloc: ^9.0.0
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +81,8 @@ flutter:
   assets:
     - assets/images/
     - assets/svgs/
+    - assets/data/
+    - assets/data/thong_tin_tai_san/
     - lib/screen/ToolsAndSupplies/model/tools_and_supplies_data.json
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -11,20 +11,19 @@ class AppBlocObserver extends BlocObserver {
 
   @override
   void onChange(BlocBase bloc, Change change) {
-    SGLog.debug('AppBlocObserver', 'Bloc: ${bloc.runtimeType} | ${change.currentState} | ${change.nextState}');
+    SGLog.debug('AppBlocObserver', 'Bloc: ${bloc.runtimeType}');
     super.onChange(bloc, change);
   }
 
   @override
   void onTransition(Bloc bloc, Transition transition) {
-    SGLog.debug('AppBlocObserver', 'Bloc: ${bloc.runtimeType} | ${transition.event} | ${transition.nextState}');
+    SGLog.debug('AppBlocObserver', 'Bloc: ${bloc.runtimeType}');
     final buffer =
         StringBuffer()
           ..write('Bloc: ${bloc.runtimeType} | ')
           ..writeln('${transition.event.runtimeType}')
           ..write('Transition: ${transition.currentState.runtimeType}')
-          ..writeln(' => ${transition.nextState.runtimeType}')
-          ..write('New State: ${transition.nextState.toString()}');
+          ..writeln(' => ${transition.nextState.runtimeType}');
     SGLog.debug('AppBlocObserver', buffer.toString());
     super.onTransition(bloc, transition);
   }

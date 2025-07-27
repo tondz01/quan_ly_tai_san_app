@@ -119,7 +119,7 @@ class _HomeState extends State<Home> {
                   _selectedSubIndex = subIndex;
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
-                    context.go(item.route);
+                    context.go(item.route,);
                   }
                 }),
           );

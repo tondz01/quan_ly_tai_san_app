@@ -1,3 +1,6 @@
+import 'package:quan_ly_tai_san_app/screen/Category/project_manager/views/project_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/ToolsAndSupplies/tools_and_supplies_view.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/asset/views/asset_view.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
@@ -24,6 +27,21 @@ class AppRouteConf {
           GoRoute(path: AppRoute.exemple2.path, name: AppRoute.exemple2.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const ExempleScreen2())),
           GoRoute(path: AppRoute.exemple3.path, name: AppRoute.exemple3.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const ExempleScreen3())),
           GoRoute(path: AppRoute.exemple4.path, name: AppRoute.exemple4.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const ExempleScreen4())),
+
+          GoRoute(path: AppRoute.assetManagement.path, redirect: (_, __) => AppRoute.assetManagement.path),
+          GoRoute(path: AppRoute.asset.path, name: AppRoute.asset.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const AssetView())),
+          GoRoute(
+            path: AppRoute.assetDepreciation.path,
+            name: AppRoute.assetDepreciation.name,
+            pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const AssetView()),
+          ),
+          GoRoute(path: AppRoute.assetGroup.path, name: AppRoute.assetGroup.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const AssetView())),
+          GoRoute(path: AppRoute.assetModel.path, name: AppRoute.assetModel.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const AssetView())),
+          GoRoute(
+            path: AppRoute.assetAttachment.path,
+            name: AppRoute.assetAttachment.name,
+            pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const AssetView()),
+          ),
         ],
       ),
       // GoRoute(

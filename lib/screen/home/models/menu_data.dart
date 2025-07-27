@@ -64,10 +64,13 @@ class AppMenuData {
       ],
     ),
     MenuItem(
-      label: 'Quản lý dự án',
-      projectGroups: [
-        SubMenuGroup(title: 'Dự án', items: [SubMenuItem(label: 'Danh sách dự án'), SubMenuItem(label: 'Thêm dự án mới'), SubMenuItem(label: 'Dự án đã hoàn thành')]),
-        SubMenuGroup(title: 'Hợp đồng', items: [SubMenuItem(label: 'Danh sách hợp đồng'), SubMenuItem(label: 'Hợp đồng đã ký')]),
+      label: 'Thẻ tài sản',
+      reportSubItems: [
+        SubMenuItem(label: 'Tài sản', route: AppRoute.asset.path),
+        SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path),
+        SubMenuItem(label: 'Mô hình tài sản', route: AppRoute.assetModel.path),
+        SubMenuItem(label: 'Mhóm tài sản', route: AppRoute.assetGroup.path),
+        SubMenuItem(label: 'Phụ lục tài sản', route: AppRoute.assetAttachment.path),
       ],
     ),
     MenuItem(label: 'Quản lý nhân viên', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
