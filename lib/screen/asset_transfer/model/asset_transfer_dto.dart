@@ -1,18 +1,29 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+
 class AssetTransferDto {
   final String? id;
   final String? documentName; // Tên phiếu
   final String? decisionNumber; // Số quyết định
   final String? decisionDate; // Ngày quyết định
   final String? requester; // Người đề nghị
+  final String? requestingUnit; // Người lập phiếu
   final String? creator; // Người lập phiếu
-  final List<String>? movementDetails; // Chi tiết điều động
-  final String? sendingUnit; // Đơn vị gửi
+  final List<MovementDetailDto>? movementDetails; // Chi tiết điều động
+  final String? deliveringUnit; // Đơn vị giao
   final String? receivingUnit; // Đơn vị nhận
+  final String? proposingUnit; // Đơn vị đề nghị
+  final String? deliveryLocation; // Địa điểm Giao Nhận
   final String? effectiveDate; // TGCN từ Ngày
+  final String? effectiveDateTo; // TGCN đến Ngày
+  final bool? preparerInitialed; // Người lập phiếu ký nháy
+  final bool? requireManagerApproval; // Quan trọng, cần TP xác nhận
+  final bool? deputyConfirmed; // Phó phòng xác nhận
+  final String? rejectionReason; // Lý do từ chối
+  final String? departmentApproval; // Trình duyệt cấp phòng
   final String? approver; // Trình duyệt Ban giám đốc
-  final String? status; // Trạng thái
+  final int? status; // Trạng thái
   final bool? isEffective; // Có hiệu lực
 
   AssetTransferDto({
@@ -21,11 +32,20 @@ class AssetTransferDto {
     this.decisionNumber,
     this.decisionDate,
     this.requester,
+    this.requestingUnit,
     this.creator,
     this.movementDetails,
-    this.sendingUnit,
+    this.deliveringUnit,
     this.receivingUnit,
+    this.proposingUnit,
+    this.deliveryLocation,
     this.effectiveDate,
+    this.effectiveDateTo,
+    this.preparerInitialed,
+    this.requireManagerApproval,
+    this.deputyConfirmed,
+    this.rejectionReason,
+    this.departmentApproval,
     this.approver,
     this.status,
     this.isEffective,
@@ -38,13 +58,26 @@ class AssetTransferDto {
       decisionNumber: json['decisionNumber'],
       decisionDate: json['decisionDate'],
       requester: json['requester'],
+      requestingUnit: json['requestingUnit'],
       creator: json['creator'],
       movementDetails: json['movementDetails'] != null
-          ? List<String>.from(json['movementDetails'])
+          ? List<MovementDetailDto>.from(
+              json['movementDetails'].map((detail) => 
+                detail is Map<String, dynamic> 
+                  ? MovementDetailDto.fromJson(detail)
+                  : MovementDetailDto(name: detail)))
           : null,
-      sendingUnit: json['sendingUnit'],
+      deliveringUnit: json['sendingUnit'],
       receivingUnit: json['receivingUnit'],
+      proposingUnit: json['proposingUnit'],
+      deliveryLocation: json['deliveryLocation'],
       effectiveDate: json['effectiveDate'],
+      effectiveDateTo: json['effectiveDateTo'],
+      preparerInitialed: json['preparerInitialed'],
+      requireManagerApproval: json['requireManagerApproval'],
+      deputyConfirmed: json['deputyConfirmed'],
+      rejectionReason: json['rejectionReason'],
+      departmentApproval: json['departmentApproval'],
       approver: json['approver'],
       status: json['status'],
       isEffective: json['isEffective'],
@@ -58,11 +91,20 @@ class AssetTransferDto {
       'decisionNumber': decisionNumber,
       'decisionDate': decisionDate,
       'requester': requester,
+      'requestingUnit': requestingUnit,
       'creator': creator,
       'movementDetails': movementDetails,
-      'sendingUnit': sendingUnit,
+      'sendingUnit': deliveringUnit,
       'receivingUnit': receivingUnit,
+      'proposingUnit': proposingUnit,
+      'deliveryLocation': deliveryLocation,
       'effectiveDate': effectiveDate,
+      'effectiveDateTo': effectiveDateTo,
+      'preparerInitialed': preparerInitialed,
+      'requireManagerApproval': requireManagerApproval,
+      'deputyConfirmed': deputyConfirmed,
+      'rejectionReason': rejectionReason,
+      'departmentApproval': departmentApproval,
       'approver': approver,
       'status': status,
       'isEffective': isEffective,

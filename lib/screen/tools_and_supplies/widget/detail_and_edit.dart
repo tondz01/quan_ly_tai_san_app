@@ -5,10 +5,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:quan_ly_tai_san_app/screen/note/note_screen.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
-import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
@@ -98,6 +97,8 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
   @override
   Widget build(BuildContext context) {
     log('widget.item?.importUnit : ${widget.item?.importUnit}');
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
@@ -110,7 +111,7 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
               SGButtonIcon(
                 text: isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
                 borderRadius: 10,
-                width: Get.width * 0.12 <= 200 ? 200 : Get.width * 0.12,
+                width: screenWidth * 0.12 <= 120 ? 120 : screenWidth * 0.12,
                 defaultBGColor:
                     isEditing
                         ? SGAppColors.colorInputDisable

@@ -6,12 +6,30 @@
     "decisionDate": "01/04/2025",
     "requester": "Dương Văn Hoàng",
     "creator": "Dương Văn Hoàng",
-    "movementDetails": ["666666 - Test- Phương tiện truyền dẫn"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "1",
+        "name": "666666 - Test- Phương tiện truyền dẫn",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Công ty CP Cơ điện Uông bí - Vinacomin",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "01/04/2025",
+    "effectiveDateTo": "01/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Đoàn Ngọc Hà",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -21,12 +39,30 @@
     "decisionDate": "12/03/2025",
     "requester": "Vũ Nam",
     "creator": "Vũ Nam",
-    "movementDetails": ["20032SST03 - Bảnh xe"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "2",
+        "name": "20032SST03 - Bảnh xe",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "12/03/2025",
+    "effectiveDateTo": "12/03/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": false,
+    "rejectionReason": "Test",
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Vũ Nam",
-    "status": "Từ chối",
+    "status": 5,
     "isEffective": false
   },
   {
@@ -37,15 +73,47 @@
     "requester": "Vũ Nam",
     "creator": "Vũ Nam",
     "movementDetails": [
-      "TEST CD 0001 - Mặn hình theo dõi", 
-      "B.18:MCL0001 - Máy cấp liệu lắc", 
-      "B.2:BS00.1.0007 - Băng tải DTS-S..."
+      {
+        "id": "1",
+        "assetId": "3",
+        "name": "TEST CD 0001 - Mặn hình theo dõi",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "3",
+        "name": "B.18:MCL0001 - Máy cấp liệu lắc",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "3",
+        "assetId": "3",
+        "name": "B.18:MCL0001 - Máy cấp liệu lắc",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Kho Công ty",
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "09/05/2024",
+    "effectiveDateTo": "09/05/2024",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Vũ Nam",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -55,12 +123,30 @@
     "decisionDate": "21/03/2025",
     "requester": "Vũ Nam",
     "creator": "Vũ Nam",
-    "movementDetails": ["TS00000001 - Test tài sản"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "4",
+        "name": "TS00000001 - Test tài sản",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "21/03/2025",
+    "effectiveDateTo": "21/03/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Vũ Nam",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   },
   {
@@ -71,14 +157,32 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "Động cơ băng tải (test) (B.2:BS00...",
-      "11111 - sản phẩm test 1"
+      {
+        "id": "1",
+        "assetId": "5",
+        "name": "Động cơ băng tải (test) (B.2:BS00...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "5",
+        "name": "11111 - sản phẩm test 1",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Kho Công ty",
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phân xưởng KT1",
     "effectiveDate": "01/07/2025",
+    "effectiveDateTo": "01/07/2025",
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Nhập",
+    "status": 0,
     "isEffective": false
   },
   {
@@ -88,12 +192,30 @@
     "decisionDate": "27/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
-    "movementDetails": ["Test phương tiện truyền dẫn (03..."],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "6",
+        "name": "Test phương tiện truyền dẫn (03...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phân xưởng khai thác dầu lò 1",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "27/06/2025",
+    "effectiveDateTo": "27/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   },
   {
@@ -103,12 +225,30 @@
     "decisionDate": "20/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
-    "movementDetails": ["11111 - Test (M) PT"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "7",
+        "name": "11111 - Test (M) PT",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "20/06/2025",
+    "effectiveDateTo": "20/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -118,12 +258,30 @@
     "decisionDate": "20/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
-    "movementDetails": ["11111 - Test (M) PT"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "8",
+        "name": "11111 - Test (M) PT",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "20/06/2025",
+    "effectiveDateTo": "20/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -133,12 +291,30 @@
     "decisionDate": "19/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
-    "movementDetails": ["11111 - sản phẩm test 1"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "9",
+        "name": "11111 - sản phẩm test 1",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "19/06/2025",
+    "effectiveDateTo": "19/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Chờ xác nhận",
+    "status": 1,
     "isEffective": false
   },
   {
@@ -149,14 +325,29 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "2112 - Test (M) phương tiện",
-      "TEST CD 0001 - Test (M) máy móc"
+      {
+        "id": "1",
+        "assetId": "10",
+        "name": "2112 - Test (M) phương tiện",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Kho Công ty",
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "19/06/2025",
+    "effectiveDateTo": "19/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   },
   {
@@ -166,12 +357,30 @@
     "decisionDate": "14/05/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Vũ Nam",
-    "movementDetails": ["Nhập tài sản mới từ kho (băng cào..."],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "11",
+        "name": "Nhập tài sản mới từ kho (băng cào...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phân xưởng KT1",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "14/05/2025",
+    "effectiveDateTo": "14/05/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   },
   {
@@ -182,11 +391,19 @@
     "requester": "Khúc Thanh Huyền",
     "creator": "Khúc Thanh Huyền",
     "movementDetails": [],
-    "sendingUnit": "Kho Công ty",
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "20/04/2025",
+    "effectiveDateTo": "20/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Phạm Xuân Vinh",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -196,12 +413,30 @@
     "decisionDate": "01/05/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Vũ Nam",
-    "movementDetails": ["2112 - Test (M) phương tiện"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "13",
+        "name": "2112 - Test (M) phương tiện",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Công đoàn",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "01/05/2025",
+    "effectiveDateTo": "01/05/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Trình Duyệt",
+    "status": 3,
     "isEffective": false
   },
   {
@@ -211,12 +446,30 @@
     "decisionDate": "15/04/2025",
     "requester": "Khúc Thanh Huyền",
     "creator": "Khúc Thanh Huyền",
-    "movementDetails": ["2112 - Test (M) phương tiện"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "14",
+        "name": "2112 - Test (M) phương tiện",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "15/04/2025",
+    "effectiveDateTo": "15/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": "Test",
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Từ chối",
+    "status": 5,
     "isEffective": false
   },
   {
@@ -226,12 +479,30 @@
     "decisionDate": "15/04/2025",
     "requester": "Khúc Thanh Huyền",
     "creator": "Khúc Thanh Huyền",
-    "movementDetails": ["11111 - sản phẩm test 1"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "15",
+        "name": "11111 - sản phẩm test 1",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "15/04/2025",
+    "effectiveDateTo": "15/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -241,12 +512,30 @@
     "decisionDate": "01/04/2025",
     "requester": "Khúc Thanh Huyền",
     "creator": "Khúc Thanh Huyền",
-    "movementDetails": ["20032SST04 - Bơm điện"],
-    "sendingUnit": "Kho Công ty",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "16",
+        "name": "20032SST04 - Bơm điện",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Kho Công ty",
     "receivingUnit": "Phòng CV",
+    "proposingUnit": "Phòng CV",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "01/04/2025",
+    "effectiveDateTo": "01/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   }
-] 
+]

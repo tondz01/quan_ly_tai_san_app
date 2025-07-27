@@ -6,12 +6,30 @@
     "decisionDate": "28/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
-    "movementDetails": ["K.20:VH.0004 - Phần mềm quản lý..."],
-    "sendingUnit": "Phòng KT",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "1",
+        "name": "K.20:VH.0004 - Phần mềm quản lý...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Phòng KT",
     "receivingUnit": "Phân xưởng KT2",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "28/06/2025",
+    "effectiveDateTo": "28/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -22,14 +40,37 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "G.7.V.0051 - Lò xuyến vỉa mức +...",
-      "A.3:ATM.14.0007 - Átt tủ mặt PN lò..."
+      {
+        "id": "1",
+        "assetId": "2",
+        "name": "G.7.V.0051 - Lò xuyến vỉa mức +...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "2",
+        "name": "A.3:ATM.14.0007 - Átt tủ mặt PN lò...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phân xưởng khai thác dạo lò...",
+    "deliveringUnit": "Phân xưởng khai thác dạo lò...",
     "receivingUnit": "Phân xưởng khai thác dạo lò...",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "19/06/2025",
+    "effectiveDateTo": "19/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
     "approver": "Trần Hoàng Anh",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -40,14 +81,29 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "K.20:VH.0001 - Phần mềm văn phòng",
-      "K.20:VH.0002 - Phần mềm thông minh..."
+      {
+        "id": "1",
+        "assetId": "3",
+        "name": "K.20:VH.0001 - Phần mềm văn phòng...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phòng CV",
+    "deliveringUnit": "Phòng CV",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "19/06/2025",
+    "effectiveDateTo": "19/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": false,
+    "deputyConfirmed": false,
+    "rejectionReason": "Test",
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Chờ xác nhận",
+    "status": 1,
     "isEffective": false
   },
   {
@@ -58,14 +114,38 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "K.20:VH.0001 - Phần mềm văn phòng",
-      "K.20:VH.0002 - Phần mềm thông minh..."
+      {
+        "id": "1",
+        "assetId": "4",
+        "name": "K.20:VH.0001 - Phần mềm văn phòng...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "4",
+        "name": "K.20:VH.0002 - Phần mềm thông minh...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phòng CV",
+    "deliveringUnit": "Phòng CV",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "19/06/2025",
+    "effectiveDateTo": "19/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": false,
+    "deputyConfirmed": false,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Chờ xác nhận",
+    "status": 1,
     "isEffective": false
   },
   {
@@ -76,14 +156,38 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "K.20:VH.0001 - Phần mềm văn phòng",
-      "K.20:VH.0002 - Phần mềm thông minh..."
+      {
+        "id": "1",
+        "assetId": "5",
+        "name": "K.20:VH.0001 - Phần mềm văn phòng...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "5",
+        "name": "K.20:VH.0002 - Phần mềm thông minh...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phòng CV",
+    "deliveringUnit": "Phòng CV",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "19/06/2025",
+    "effectiveDateTo": "19/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": false,
+    "rejectionReason": "Test",
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Lê Đức Đà",
-    "status": "Từ chối",
+    "status": 5,
     "isEffective": false
   },
   {
@@ -93,12 +197,30 @@
     "decisionDate": "14/05/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Nguyễn Văn Hùng",
-    "movementDetails": ["Nhập tài sản mới từ kho (băng cào..."],
-    "sendingUnit": "Phân xưởng KT1",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "6",
+        "name": "Nhập tài sản mới từ kho (băng cào...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Phân xưởng KT1",
     "receivingUnit": "Phân xưởng KT2",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "14/05/2025",
+    "effectiveDateTo": "20/06/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   },
   {
@@ -109,14 +231,38 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "K.20:VH.0003 - Phần mềm bản quyền",
-      "20032SST02 - Thiết bị đo vận tốc..."
+      {
+        "id": "1",
+        "assetId": "7",
+        "name": "K.20:VH.0003 - Phần mềm bản quyền",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "7",
+        "name": "20032SST02 - Thiết bị đo vận tốc...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phòng KT",
+    "deliveringUnit": "Phòng KT",
     "receivingUnit": "Phân xưởng khai thác dạo lò...",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "02/04/2025",
+    "effectiveDateTo": "20/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Trần Hoàng Anh",
-    "status": "Duyệt",
+    "status": 4,
     "isEffective": true
   },
   {
@@ -127,14 +273,38 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "K.20:VH.0003 - Phần mềm bản quyền",
-      "K.20:VH.0004 - Phần mềm quản lý..."
+      {
+        "id": "1",
+        "assetId": "8",
+        "name": "K.20:VH.0003 - Phần mềm bản quyền",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "8",
+        "name": "K.20:VH.0004 - Phần mềm quản lý...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phòng KT",
+    "deliveringUnit": "Phòng KT",
     "receivingUnit": "Phân xưởng khai thác dạo lò...",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "29/03/2025",
+    "effectiveDateTo": "20/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": false,
+    "deputyConfirmed": false,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Chờ xác nhận",
+    "status": 1,
     "isEffective": false
   },
   {
@@ -144,12 +314,30 @@
     "decisionDate": "15/08/2024",
     "requester": "Vũ Nam",
     "creator": "Vũ Nam",
-    "movementDetails": ["TEST CD 0001 - Màn hình theo dõi..."],
-    "sendingUnit": "Phòng CV",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "9",
+        "name": "TEST CD 0001 - Màn hình theo dõi...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Phòng CV",
     "receivingUnit": "Công đoàn",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "15/08/2024",
+    "effectiveDateTo": "15/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Vũ Nam",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   },
   {
@@ -159,12 +347,29 @@
     "decisionDate": "01/03/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
-    "movementDetails": ["K.20:VH.0002 - Phần mềm thông minh..."],
-    "sendingUnit": "Phòng CV",
+    "movementDetails": [
+      {
+        "id": "1",
+        "assetId": "10",
+        "name": "K.20:VH.0002 - Phần mềm thông minh...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
+    ],
+    "deliveringUnit": "Phòng CV",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "01/03/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": false,
+    "rejectionReason": "Test",
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Từ chối",
+    "status": 5,
     "isEffective": false
   },
   {
@@ -175,14 +380,38 @@
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
     "movementDetails": [
-      "K.20:VH.0004 - Phần mềm quản lý...",
-      "K.20:VH.0003 - Phần mềm bản quyền"
+      {
+        "id": "1",
+        "assetId": "11",
+        "name": "K.20:VH.0004 - Phần mềm quản lý...",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      },
+      {
+        "id": "2",
+        "assetId": "11",
+        "name": "K.20:VH.0003 - Phần mềm bản quyền",
+        "measurementUnit": "Cái",
+        "quantity": "1",
+        "setCondition": "Tốt",
+        "note": "Test"
+      }
     ],
-    "sendingUnit": "Phòng CV",
+    "deliveringUnit": "Phòng CV",
     "receivingUnit": "Phòng KT",
+    "proposingUnit": "Phòng KT",
+    "deliveryLocation": "Kho Công ty",
     "effectiveDate": "01/03/2025",
+    "effectiveDateTo": "01/04/2025",
+    "preparerInitialed": true,
+    "requireManagerApproval": true,
+    "deputyConfirmed": true,
+    "rejectionReason": null,
+    "departmentApproval": "Lê Đức Đà",
     "approver": "Nguyễn Văn Hùng",
-    "status": "Hoàn thành",
+    "status": 7,
     "isEffective": true
   }
 ] 

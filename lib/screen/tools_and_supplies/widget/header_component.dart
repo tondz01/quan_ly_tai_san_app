@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quan_ly_tai_san_app/enum/type_size_screen.dart';
-import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -15,6 +15,7 @@ class HeaderComponent extends StatefulWidget {
     required this.onNew,
     required this.mainScreen,
     required this.subScreen,
+    this.child,
   });
   final TextEditingController controller;
   final Function(String) onSearchChanged;
@@ -22,7 +23,7 @@ class HeaderComponent extends StatefulWidget {
   final Function()? onNew;
   final String? mainScreen;
   final String? subScreen;
-
+  final Widget? child;
   @override
   State<HeaderComponent> createState() => _HeaderComponentState();
 }
@@ -38,6 +39,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
       onTap: widget.onTap,
       onNew: widget.onNew,
       mainScreen: widget.mainScreen,
+      child: widget.child,
     );
   }
 }
@@ -50,6 +52,7 @@ Widget buildHeader(
   Function()? onTap,
   Function()? onNew,
   String? mainScreen,
+  Widget? child,
 }) {
   final typeSize = TypeSizeScreenExtension.getSizeScreen(width);
   return typeSize == TypeSizeScreen.extraSmall ||
@@ -62,6 +65,7 @@ Widget buildHeader(
         mainScreen,
         onNew,
         onTap,
+        child,
       )
       : _buildHeaderScreenLarge(
         width,
@@ -70,7 +74,8 @@ Widget buildHeader(
         subScreen,
         mainScreen,
         onNew,
-        onTap,
+        onTap,  
+        child,
       );
 }
 
@@ -82,6 +87,7 @@ Widget _buildHeaderScreenLarge(
   String? mainScreen,
   Function()? onNew,
   Function()? onTap,
+  Widget? child,
 ) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -91,6 +97,7 @@ Widget _buildHeaderScreenLarge(
       if (subScreen != null && subScreen.isNotEmpty) const SizedBox(width: 16),
       if (subScreen == null || subScreen.isEmpty)
         Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
+      if (child != null) child,
     ],
   );
 }
@@ -103,6 +110,7 @@ Widget _buildHeaderScreenSmall(
   String? mainScreen,
   Function()? onNew,
   Function()? onTap,
+  Widget? child,
 ) {
   return Column(
     mainAxisSize: MainAxisSize.min,
@@ -112,6 +120,7 @@ Widget _buildHeaderScreenSmall(
       if (subScreen != null && subScreen.isNotEmpty) const SizedBox(height: 5),
       if (subScreen == null || subScreen.isEmpty)
         _buildSearchField(width, controller, onSearchChanged),
+      if (child != null) child,
     ],
   );
 }
@@ -150,7 +159,7 @@ Widget _buildHeaderNameScreen(
             onTap: !isSubScreen ? null : onTap,
             child: SGText(
               color: isSubScreen ? ColorValue.tealBlue : Colors.black,
-              text: "tas.info_tools_supplies".tr,
+              text: mainScreen ?? "tas.info_tools_supplies".tr,
               overflow: TextOverflow.ellipsis,
             ),
           ),

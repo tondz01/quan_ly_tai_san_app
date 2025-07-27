@@ -4,21 +4,53 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/detail_and_edit.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+
+enum FilterStatus {
+  all('Tất cả'),
+  request('Yêu cầu'),
+  confirm('Chờ xác nhận'),
+  approve('Chờ duyệt'),
+  reject('Bị từ chối'),
+  complete('Đã hoàn thành');
+
+  final String label;
+  const FilterStatus(this.label);
+}
 
 class AssetTransferProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   List<AssetTransferDto>? get dataPage => _dataPage;
   get data => _data;
   get columns => _columns;
+  get listStatus => _listStatus;
+
+  // Truy cập trạng thái filter
+  bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
+  bool get isShowRequest => _filterStatus[FilterStatus.request] ?? false;
+  bool get isShowConfirm => _filterStatus[FilterStatus.confirm] ?? false;
+  bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
+  bool get isShowReject => _filterStatus[FilterStatus.reject] ?? false;
+  bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
+
+  // Thuộc tính cho tìm kiếm
+  String get searchTerm => _searchTerm;
+  set searchTerm(String value) {
+    _searchTerm = value;
+    _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
+    notifyListeners();
+  }
+
   String? get error => _error;
   String? get subScreen => _subScreen;
 
@@ -39,6 +71,143 @@ class AssetTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Phương thức chung để cập nhật trạng thái filter
+  void setFilterStatus(FilterStatus status, bool? value) {
+    log('message setFilterStatus: $status, $value');
+
+    // Actualizar el estado del filtro
+    _filterStatus[status] = value ?? false;
+
+    // Si se seleccionó "Todos", actualizar los demás filtros
+    if (status == FilterStatus.all && value == true) {
+      // Desmarcar todos los demás filtros
+      for (var key in _filterStatus.keys) {
+        if (key != FilterStatus.all) {
+          _filterStatus[key] = false;
+        }
+      }
+    }
+    // Si se seleccionó otro filtro y está activado, desmarcar "Todos"
+    else if (status != FilterStatus.all && value == true) {
+      _filterStatus[FilterStatus.all] = false;
+    }
+
+    // Recreate _listStatus to reflect new state
+    onSetListStatus();
+
+    // Aplicar filtros
+    _applyFilters();
+
+    // Notify listeners of the change
+    notifyListeners();
+  }
+
+  // Phương thức lọc dữ liệu theo status đã chọn và nội dung tìm kiếm
+  void _applyFilters() {
+    if (_data == null) return;
+
+    log('Aplicando filtros con ${_data!.length} elementos');
+
+    // Kiểm tra xem có filter nào được chọn không
+    bool hasActiveFilter = _filterStatus.entries
+        .where((entry) => entry.key != FilterStatus.all)
+        .any((entry) => entry.value == true);
+
+    // Lọc theo trạng thái
+    List<AssetTransferDto> statusFiltered;
+    if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
+      statusFiltered = List.from(_data!);
+      log('Filtro por estado: todos los datos (${statusFiltered.length})');
+    } else {
+      statusFiltered =
+          _data!.where((item) {
+            // Lấy status từ item
+            int itemStatus = item.status ?? 0;
+
+            // Kiểm tra từng trạng thái đã chọn
+            if (_filterStatus[FilterStatus.request] == true &&
+                (itemStatus == 1 || itemStatus == 2)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.confirm] == true &&
+                itemStatus == 3) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.approve] == true &&
+                (itemStatus == 4 || itemStatus == 5)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.reject] == true &&
+                (itemStatus == 6 || itemStatus == 7)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.complete] == true &&
+                (itemStatus == 8)) {
+              return true;
+            }
+
+            return false;
+          }).toList();
+
+      log('Filtro por estado: ${statusFiltered.length} elementos');
+    }
+
+    // Lọc tiếp theo nội dung tìm kiếm
+    if (_searchTerm.isNotEmpty) {
+      String searchLower = _searchTerm.toLowerCase();
+      _filteredData =
+          statusFiltered.where((item) {
+            return
+            // Tên phiếu
+            (item.documentName?.toLowerCase().contains(searchLower) ?? false) ||
+                // Số quyết định
+                (item.decisionNumber?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                // Người đề nghị
+                (item.requester?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                // Người lập phiếu
+                (item.creator?.toLowerCase().contains(searchLower) ?? false) ||
+                // Chi tiết điều động
+                (item.movementDetails?.any(
+                      (detail) =>
+                          detail.name?.toLowerCase().contains(searchLower) ??
+                          false,
+                    ) ??
+                    false) ||
+                // Đơn vị giao/nhận
+                (item.deliveringUnit?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.receivingUnit?.toLowerCase().contains(searchLower) ??
+                    false);
+          }).toList();
+
+      log('Filtro por búsqueda: ${_filteredData.length} elementos');
+    } else {
+      _filteredData = statusFiltered;
+    }
+
+    // Sau khi lọc, cập nhật lại phân trang
+    _updatePagination();
+  }
+
+  // Lưu trữ trạng thái filter trong Map
+  final Map<FilterStatus, bool> _filterStatus = {
+    FilterStatus.all: false,
+    FilterStatus.request: false,
+    FilterStatus.confirm: false,
+    FilterStatus.approve: false,
+    FilterStatus.reject: false,
+    FilterStatus.complete: false,
+  };
+
+  // Nội dung tìm kiếm
+  String _searchTerm = '';
+
   int typeAssetTransfer = 1;
 
   late int totalEntries;
@@ -56,6 +225,9 @@ class AssetTransferProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
+  // List status
+  late List<ListStatus> _listStatus;
+
   String? _error;
   String? _subScreen;
   String mainScreen = '';
@@ -66,12 +238,18 @@ class AssetTransferProvider with ChangeNotifier {
 
   List<AssetTransferDto>? _data;
   List<AssetTransferDto>? _dataPage;
+  // Danh sách dữ liệu đã được lọc
+  List<AssetTransferDto> _filteredData = [];
   List<SgTableColumn<AssetTransferDto>> _columns = [];
 
   void onInit(BuildContext context, int typeAssetTransfer) {
     this.typeAssetTransfer = typeAssetTransfer;
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
+
+    // Khởi tạo danh sách trạng thái
+    onSetListStatus();
+
     // Initialize body without triggering notification
     _body = AssetTransferList(provider: this, mainScreen: onSetMainScreen());
     onChangeScreen(item: null, isMainScreen: true, isEdit: false);
@@ -100,6 +278,22 @@ class AssetTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Cập nhật danh sách trạng thái
+  void onSetListStatus() {
+    _listStatus = [
+      for (var status in FilterStatus.values)
+        ListStatus(
+          text: status.label,
+          isEffective: _filterStatus[status] ?? false,
+          onChanged: (value) {
+            // Actualize el estado directamente y luego notifique
+            setFilterStatus(status, value);
+            // No es necesario llamar a notifyListeners aquí porque setFilterStatus ya lo hace
+          },
+        ),
+    ];
+  }
+
   void getListToolsAndSupplies(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
@@ -110,7 +304,8 @@ class AssetTransferProvider with ChangeNotifier {
   }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
+    // Sử dụng _filteredData thay vì _data
+    totalEntries = _filteredData.length;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
@@ -122,8 +317,8 @@ class AssetTransferProvider with ChangeNotifier {
     }
 
     dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        _filteredData.isNotEmpty
+            ? _filteredData.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
@@ -147,7 +342,7 @@ class AssetTransferProvider with ChangeNotifier {
               : 'Điều động tài sản';
       if (!isMainScreen) {
         _subScreen = item == null ? 'Mới' : item.documentName ?? '';
-        _body = Container();
+        _body = AssetTransferDetail(item: item, isEditing: isEdit);
       } else {
         _subScreen = '';
         _subScreen = null;
@@ -219,8 +414,10 @@ class AssetTransferProvider with ChangeNotifier {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
+      _filteredData = [];
     } else {
       _data = state.data;
+      _filteredData = List.from(_data!);
       _isLoading = false;
       onSetColumns();
       _updatePagination();
@@ -266,12 +463,25 @@ class AssetTransferProvider with ChangeNotifier {
       ),
       TableColumnBuilder.createTextColumn<AssetTransferDto>(
         title: 'Chi tiết điều động',
-        getValue: (item) => item.movementDetails?.join(', ') ?? '',
+        getValue:
+            (item) =>
+                item.movementDetails
+                    ?.map((detail) => detail.name ?? '')
+                    .join('\n') ??
+                '',
         width: 170,
+      ),
+      SgTableColumn<AssetTransferDto>(
+        title: 'Có hiệu lực',
+        cellBuilder: (item) => showMovementDetails(item.movementDetails ?? []),
+        cellAlignment: TextAlign.center,
+        titleAlignment: TextAlign.center,
+        width: 120,
+        searchable: true,
       ),
       TableColumnBuilder.createTextColumn<AssetTransferDto>(
         title: 'Đơn vị giao',
-        getValue: (item) => item.sendingUnit ?? '',
+        getValue: (item) => item.deliveringUnit ?? '',
         width: 120,
       ),
       TableColumnBuilder.createTextColumn<AssetTransferDto>(
@@ -291,7 +501,7 @@ class AssetTransferProvider with ChangeNotifier {
       ),
       TableColumnBuilder.createTextColumn<AssetTransferDto>(
         title: 'Trạng thái',
-        getValue: (item) => item.status ?? '',
+        getValue: (item) => getStatus(item.status ?? 0),
         width: 120,
       ),
       SgTableColumn<AssetTransferDto>(
@@ -306,6 +516,29 @@ class AssetTransferProvider with ChangeNotifier {
         searchable: true,
       ),
     ];
+  }
+
+  String getStatus(int status) {
+    switch (status) {
+      case 0:
+        return 'Nháp';
+      case 1:
+        return 'Chờ xác nhận';
+      case 2:
+        return 'Xác nhận';
+      case 3:
+        return 'Trình Duyệt';
+      case 4:
+        return 'Duyệt';
+      case 5:
+        return 'Từ chối';
+      case 6:
+        return 'Hủy';
+      case 7:
+        return 'Hoàn thành';
+      default:
+        return '';
+    }
   }
 
   Widget showEffective(bool isEffective) {
@@ -323,6 +556,44 @@ class AssetTransferProvider with ChangeNotifier {
         materialTapTargetSize:
             MaterialTapTargetSize.shrinkWrap, // thu nhỏ vùng tap
         visualDensity: VisualDensity.compact, // giảm padding
+      ),
+    );
+  }
+
+  Widget showMovementDetails(List<MovementDetailDto> movementDetails) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children:
+                movementDetails
+                    .map(
+                      (detail) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        margin: const EdgeInsets.only(bottom: 2),
+                        decoration: BoxDecoration(
+                          color: ColorValue.paleRose,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: SGText(
+                          text: detail.name ?? '',
+                          size: 12,
+                          fontWeight: FontWeight.w500,
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    )
+                    .toList(),
+          ),
+        ),
       ),
     );
   }

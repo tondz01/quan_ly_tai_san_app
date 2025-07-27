@@ -1,15 +1,11 @@
 // ignore_for_file: deprecated_member_use
-
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/common/message_compose_form.dart';
-import 'package:quan_ly_tai_san_app/screen/note/component/popup_receiver_component.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/note/component/send_message_component.dart';
-import 'package:quan_ly_tai_san_app/utils/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 
 class NoteItem {
   final String avatar;
