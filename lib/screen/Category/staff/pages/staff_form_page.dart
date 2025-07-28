@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
@@ -34,6 +35,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _positionController;
   late TextEditingController _staffIdController;
   late TextEditingController _staffOwnerController;
+
   @override
   void initState() {
     super.initState();
@@ -100,262 +102,172 @@ class _StaffFormPageState extends State<StaffFormPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.staff != null;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        margin: EdgeInsets.only(top: 16),
-        padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      isEdit
-                          ? 'Cập nhật thông tin nhân viên'
-                          : 'Thêm mới nhân viên',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.8,
+          ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F9FC),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              sectionTitle(
+                Icons.person,
+                isEdit ? 'Cập nhật thông tin nhân viên' : 'Thêm mới nhân viên',
+                'Nhập thông tin nhân viên.',
+              ),
+              sectionCard(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      sectionTitle(Icons.info_outline, 'Thông tin nhân viên'),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _staffIdController,
+                              decoration: inputDecoration('Mã nhân viên', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập mã nhân viên' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _nameController,
+                              decoration: inputDecoration('Tên nhân viên', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập tên nhân viên' : null,
+                            ),
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.start,
-                    ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _emailController,
+                              decoration: inputDecoration('Email', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập email' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _telController,
+                              decoration: inputDecoration('Số điện thoại', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập số điện thoại' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _activityController,
+                              decoration: inputDecoration('Hoạt động', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập hoạt động' : null,
+                              minLines: 1,
+                              maxLines: 3,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _timeForActivityController,
+                              decoration: inputDecoration('Hạn chót cho hoạt động tiếp theo', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập hạn chót cho hoạt động tiếp theo' : null,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _positionController,
+                              decoration: inputDecoration('Chức vụ', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập chức vụ' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _departmentController,
+                              decoration: inputDecoration('Phòng ban', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập phòng ban' : null,
+                              minLines: 1,
+                              maxLines: 3,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _staffOwnerController,
+                        decoration: inputDecoration('Người quản lý', required: true),
+                        validator: (v) => v == null || v.isEmpty ? 'Nhập người quản lý' : null,
+                        minLines: 1,
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          OutlinedButton(
+                            onPressed: () {
+                              if (widget.onCancel != null) {
+                                widget.onCancel!();
+                              } else {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7B8EC8),
+                              side: const BorderSide(color: Color(0xFFE6EAF3)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Hủy'),
+                          ),
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: _save,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2264E5),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                            ),
+                            child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 32.0,
-                horizontal: 32.0,
               ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Colors.grey.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _staffIdController,
-                                    label: 'Mã nhân viên',
-                                    prefixIcon: Icon(
-                                      Icons.person,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập mã nhân viên'
-                                                : null,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                  ),
-                                ),
-                                const SizedBox(width: 25),
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _nameController,
-                                    label: 'Tên nhân viên',
-                                    prefixIcon: Icon(
-                                      Icons.person,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập tên nhân viên'
-                                                : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _emailController,
-                                    label: 'Email',
-                                    prefixIcon: Icon(
-                                      Icons.email,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập email'
-                                                : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 25),
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _telController,
-                                    label: 'Số điện thoại',
-                                    prefixIcon: Icon(
-                                      Icons.phone,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập số điện thoại'
-                                                : null,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _activityController,
-                                    label: 'Hoạt động',
-                                    prefixIcon: Icon(
-                                      Icons.note_alt,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập hoạt động'
-                                                : null,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                  ),
-                                ),
-                                const SizedBox(width: 25),
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _timeForActivityController,
-                                    label: 'Hạn chót cho hoạt động tiếp theo',
-                                    prefixIcon: Icon(
-                                      Icons.calendar_month,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập hạn chót cho hoạt động tiếp theo'
-                                                : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _positionController,
-                                    label: 'Chức vụ',
-                                    prefixIcon: Icon(
-                                      Icons.work,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập chức vụ'
-                                                : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 25),
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _departmentController,
-                                    label: 'Phòng ban',
-                                    prefixIcon: Icon(
-                                      Icons.home,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập phòng ban'
-                                                : null,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: SGTextField(
-                                    controller: _staffOwnerController,
-                                    label: 'Người quản lý',
-                                    prefixIcon: Icon(
-                                      Icons.person,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập người quản lý'
-                                                : null,
-                                    minLines: 1,
-                                    maxLines: 3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        SGButton(
-                          text: 'Hủy',
-                          onPressed: () {
-                            if (widget.onCancel != null) {
-                              widget.onCancel!();
-                            } else {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          mainColor: Colors.blueAccent,
-                        ),
-                        const SizedBox(width: 16),
-                        SGButton(
-                          text: isEdit ? 'Cập nhật' : 'Thêm mới',
-                          onPressed: _save,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

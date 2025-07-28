@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/models/asset.dart';
-import 'package:se_gay_components/common/sg_button.dart';
-import 'package:se_gay_components/common/sg_textfield.dart';
 
 class AssetFormPage extends StatefulWidget {
   final AssetDTO? asset;
@@ -25,7 +23,6 @@ class AssetFormPage extends StatefulWidget {
 
 class _AssetFormPageState extends State<AssetFormPage> {
   final _formKey = GlobalKey<FormState>();
-  // Tạo controller cho tất cả 30 trường
   late TextEditingController _assetIdController;
   late TextEditingController _originalPriceController;
   late TextEditingController _initialDepreciationValueController;
@@ -55,6 +52,18 @@ class _AssetFormPageState extends State<AssetFormPage> {
   late TextEditingController _initialUsageUnitController;
   late TextEditingController _currentUnitController;
   bool _initialUnitCreated = false;
+
+  final List<String> assetGroups = [
+    '1 - Nhà cửa, công trình gắn liền với đất',
+    '2 - Máy móc, thiết bị',
+    '3 - Phương tiện vận tải',
+    '4 - Công cụ, dụng cụ',
+  ];
+  final List<String> depreciationMethods = [
+    'Đường thẳng',
+    'Số dư giảm dần',
+    'Sản lượng',
+  ];
 
   @override
   void initState() {
@@ -123,6 +132,56 @@ class _AssetFormPageState extends State<AssetFormPage> {
     super.dispose();
   }
 
+  InputDecoration _inputDecoration(String label, {bool required = false, String? hint}) {
+    return InputDecoration(
+      labelText: required ? '$label *' : label,
+      hintText: hint,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    );
+  }
+
+  Widget _sectionTitle(IconData icon, String title, [String? desc]) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(right: 12, top: 2),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEAF1FF),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFF7B8EC8), size: 24),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            if (desc != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(desc, style: const TextStyle(color: Color(0xFF687082), fontSize: 13)),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _sectionCard({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE6EAF3)),
+      ),
+      child: child,
+    );
+  }
+
   void _save() {
     if (_formKey.currentState!.validate()) {
       final asset = AssetDTO(
@@ -172,217 +231,334 @@ class _AssetFormPageState extends State<AssetFormPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.asset != null;
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Container(
-        margin: EdgeInsets.only(top: 16),
-        padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F9FC),
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Text(
-                        isEdit ? 'Cập nhật thông tin tài sản' : 'Thêm mới tài sản',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.start,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 32.0,
-                  horizontal: 32.0,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Form(
-                  key: _formKey,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _sectionTitle(Icons.inventory_2, isEdit ? 'Cập nhật tài sản' : 'Thêm tài sản', 'Nhập thông tin tài sản.'),
+                _sectionCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Column(
-                            children: [
-                              // Tất cả 30 trường được chia thành các nhóm
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _assetIdController, label: 'Mã tài sản', validator: (v) => v == null || v.isEmpty ? 'Nhập mã tài sản' : null)),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _originalPriceController, label: 'Nguyên giá', validator: (v) => v == null || v.isEmpty ? 'Nhập nguyên giá' : null)),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _initialDepreciationValueController, label: 'Giá trị khấu hao ban đầu')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _initialDepreciationPeriodController, label: 'Kỳ khấu hao ban đầu')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _liquidationValueController, label: 'Giá trị thanh lý')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _assetModelController, label: 'Mô hình tài sản')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _depreciationMethodController, label: 'Phương pháp khấu hao')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _depreciationPeriodsController, label: 'Số kỳ khấu hao')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _assetAccountController, label: 'Tài khoản tài sản')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _depreciationAccountController, label: 'Tài khoản khấu hao')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _costAccountController, label: 'Tài khoản chi phí')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _assetGroupController, label: 'Nhóm tài sản')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _entryDateController, label: 'Ngày vào sổ')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _usageDateController, label: 'Ngày sử dụng')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _projectController, label: 'Dự án')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _fundingSourceController, label: 'Nguồn kinh phí')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _symbolController, label: 'Ký hiệu')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _symbolNumberController, label: 'Số ký hiệu')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _capacityController, label: 'Công suất')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _countryOfOriginController, label: 'Nước sản xuất')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _yearOfManufactureController, label: 'Năm sản xuất')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _reasonForIncreaseController, label: 'Lý do tăng')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _statusController, label: 'Hiện trạng')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _quantityController, label: 'Số lượng')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _unitController, label: 'Đơn vị tính')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _noteController, label: 'Ghi chú')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(child: SGTextField(controller: _initialUsageUnitController, label: 'Đơn vị sử dụng ban đầu')),
-                                  const SizedBox(width: 25),
-                                  Expanded(child: SGTextField(controller: _currentUnitController, label: 'Đơn vị hiện thời')),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Checkbox(
-                                          value: _initialUnitCreated,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _initialUnitCreated = value ?? false;
-                                            });
-                                          },
-                                        ),
-                                        const Text('Khởi tạo Đơn vị ban đầu'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
+                      _sectionTitle(Icons.info_outline, 'Thông tin tài sản'),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _assetIdController,
+                              decoration: _inputDecoration('Mã tài sản', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập mã tài sản' : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _originalPriceController,
+                              decoration: _inputDecoration('Nguyên giá', required: true),
+                              validator: (v) => v == null || v.isEmpty ? 'Nhập nguyên giá' : null,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          SGButton(
-                            text: 'Hủy',
-                            onPressed: () {
-                              if (widget.onCancel != null) {
-                                widget.onCancel!();
-                              } else {
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            mainColor: Colors.blueAccent,
+                          Expanded(
+                            child: TextFormField(
+                              controller: _initialDepreciationValueController,
+                              decoration: _inputDecoration('Giá trị khấu hao ban đầu'),
+                            ),
                           ),
                           const SizedBox(width: 16),
-                          SGButton(
-                            text: isEdit ? 'Cập nhật' : 'Thêm mới',
-                            onPressed: _save,
+                          Expanded(
+                            child: TextFormField(
+                              controller: _initialDepreciationPeriodController,
+                              decoration: _inputDecoration('Kỳ khấu hao ban đầu'),
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _liquidationValueController,
+                              decoration: _inputDecoration('Giá trị thanh lý'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _assetModelController,
+                              decoration: _inputDecoration('Mô hình tài sản'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: depreciationMethods.contains(_depreciationMethodController.text) ? _depreciationMethodController.text : null,
+                              decoration: _inputDecoration('Phương pháp khấu hao'),
+                              items: depreciationMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
+                              onChanged: (v) => setState(() => _depreciationMethodController.text = v ?? ''),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _depreciationPeriodsController,
+                              decoration: _inputDecoration('Số kỳ khấu hao'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _assetAccountController,
+                              decoration: _inputDecoration('Tài khoản tài sản'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _depreciationAccountController,
+                              decoration: _inputDecoration('Tài khoản khấu hao'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _costAccountController,
+                              decoration: _inputDecoration('Tài khoản chi phí'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: assetGroups.contains(_assetGroupController.text) ? _assetGroupController.text : null,
+                              decoration: _inputDecoration('Nhóm tài sản'),
+                              items: assetGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+                              onChanged: (v) => setState(() => _assetGroupController.text = v ?? ''),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _entryDateController,
+                              decoration: _inputDecoration('Ngày vào sổ'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _usageDateController,
+                              decoration: _inputDecoration('Ngày sử dụng'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _projectController,
+                              decoration: _inputDecoration('Dự án'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _fundingSourceController,
+                              decoration: _inputDecoration('Nguồn kinh phí'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _symbolController,
+                              decoration: _inputDecoration('Ký hiệu'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _symbolNumberController,
+                              decoration: _inputDecoration('Số ký hiệu'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _capacityController,
+                              decoration: _inputDecoration('Công suất'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _countryOfOriginController,
+                              decoration: _inputDecoration('Nước sản xuất'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _yearOfManufactureController,
+                              decoration: _inputDecoration('Năm sản xuất'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _reasonForIncreaseController,
+                              decoration: _inputDecoration('Lý do tăng'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _statusController,
+                              decoration: _inputDecoration('Hiện trạng'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _quantityController,
+                              decoration: _inputDecoration('Số lượng'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _unitController,
+                              decoration: _inputDecoration('Đơn vị tính'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _noteController,
+                              decoration: _inputDecoration('Ghi chú'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _initialUsageUnitController,
+                              decoration: _inputDecoration('Đơn vị sử dụng ban đầu'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _currentUnitController,
+                              decoration: _inputDecoration('Đơn vị hiện thời'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _initialUnitCreated,
+                            onChanged: (value) {
+                              setState(() {
+                                _initialUnitCreated = value ?? false;
+                              });
+                            },
+                          ),
+                          const Text('Khởi tạo Đơn vị ban đầu'),
                         ],
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        if (widget.onCancel != null) {
+                          widget.onCancel!();
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF7B8EC8),
+                        side: const BorderSide(color: Color(0xFFE6EAF3)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Hủy'),
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2264E5),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                      ),
+                      child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
