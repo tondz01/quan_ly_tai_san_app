@@ -7,6 +7,7 @@ class MyLocale implements Translations {
       ...vn["COMMON"]!,
       ...vn["TOOLS_AND_SUPPLIES"]!,
       ...vn["ASSET_TRANSFER"]!,
+      ...vn["ASSET_HANDOVER"]!,
     },
     "en_US": {
       ...en["COMMON"]!,
@@ -24,6 +25,10 @@ class MyLocale implements Translations {
       "common.detail": "Chi tiết",
       "common.export": "Xuất",
       "common.hint": "Nhập dữ liệu",
+      "common.confirm": "Xác nhận",
+      "common.cancel": "Hủy",
+      "common.quantity": "Số lượng",
+      "common.unit": "Đơn vị tính",
     },    
     "TOOLS_AND_SUPPLIES": {
       // "tas.title": "Công cụ và dụng cụ",
@@ -62,6 +67,28 @@ class MyLocale implements Translations {
       "at.status": "Trạng thái",
       "at.viewer_departments": "Phòng ban được xem phiếu",
       "at.viewerUsers": "Nhân sự được xem phiếu",
+    },
+
+    "ASSET_HANDOVER": {
+      "ah.handover_number": "Số phiếu bàn giao",
+      "ah.document_name": "Bàn giao tài sản",
+      "ah.decision_number": "Quyết định điều động số",
+      "ah.order": "Lệnh điều động",
+      "ah.sender_unit": "Đơn vị giao",
+      "ah.receiver_unit": "Đơn vị nhận",
+      "ah.transfer_date": "Ngày bàn giao",
+      "ah.leader": "Lãnh đạo",
+      "ah.state": "Trạng thái",
+      "ah.issuing_unit_representative": "Đại diện Đơn vị ban hành QĐ",
+      "ah.unit_confirm": "Đã xác nhận",
+      "ah.deliverer_representative": "Đại diện bên giao",
+      "ah.deliverer_confirm": "Đại diện bên giao Đã xác nhận",
+      "ah.receiver_representative": "Đại diện bên nhận",
+      "ah.receiver_confirm": "Đại diện bên nhận Đã xác nhận",
+      "ah.representative_unit": "Đơn vị Đại diện",
+      "ah.representative_unit_confirm": "Đơn vị Đại diện Đã xác nhận",
+      "ah.property_handover_minutes": "Thời gian bàn giao tài sản",
+      "ah.asset_handover_details": "Chi tiết bàn giao tài sản",
     }
 
   };

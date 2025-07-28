@@ -1,4 +1,4 @@
-import 'package:go_router/go_router.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
@@ -52,6 +52,14 @@ class AppRouteConf {
                     ? int.tryParse(state.extra as String) ?? 0
                     : 0,
               ),
+            ),
+          ),
+          GoRoute(
+            path: AppRoute.assetHandover.path,
+            name: AppRoute.assetHandover.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const AssetHandoverView(),
             ),
           ),
           // GoRoute(

@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
@@ -15,61 +17,58 @@ import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 
-class AssetTransferDetail extends StatefulWidget {
-  final AssetTransferDto? item;
+class AssetHandoverDetail extends StatefulWidget {
+  final AssetHandoverDto? item;
   final bool isEditing;
 
-  const AssetTransferDetail({super.key, this.item, this.isEditing = false});
+  const AssetHandoverDetail({super.key, this.item, this.isEditing = false});
 
   @override
-  State<AssetTransferDetail> createState() => _AssetTransferDetailState();
+  State<AssetHandoverDetail> createState() => _AssetHandoverDetailState();
 }
 
-class _AssetTransferDetailState extends State<AssetTransferDetail> {
-  late TextEditingController controllerDecisionNumber = TextEditingController();
+class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
+  late TextEditingController controllerHandoverNumber = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
-  late TextEditingController controllerDeliveringUnit = TextEditingController();
-  late TextEditingController controllerReceivingUnit = TextEditingController();
-  late TextEditingController controllerRequester = TextEditingController();
-  late TextEditingController controllerProposingUnit = TextEditingController();
-  late TextEditingController controllerQuantity = TextEditingController();
-  late TextEditingController controllerDepartmentApproval =
+  late TextEditingController controllerOrder = TextEditingController();
+  late TextEditingController controllerSenderUnit = TextEditingController();
+  late TextEditingController controllerReceiverUnit = TextEditingController();
+  late TextEditingController controllerTransferDate = TextEditingController();
+  late TextEditingController controllerLeader = TextEditingController();
+  late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
-  late TextEditingController controllerEffectiveDate = TextEditingController();
-  late TextEditingController controllerEffectiveDateTo =
+  late TextEditingController controllerDelivererRepresentative =
       TextEditingController();
-  late TextEditingController controllerApprover = TextEditingController();
-  late TextEditingController controllerDeliveryLocation =
+  late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
-  late TextEditingController controllerViewerDepartments =
+  late TextEditingController controllerRepresentativeUnit =
       TextEditingController();
-  late TextEditingController controllerViewerUsers = TextEditingController();
-  late TextEditingController controllerReason = TextEditingController();
-  late TextEditingController controllerBase = TextEditingController();
-  late TextEditingController controllerArticle1 = TextEditingController();
-  late TextEditingController controllerArticle2 = TextEditingController();
-  late TextEditingController controllerArticle3 = TextEditingController();
-  late TextEditingController controllerDestination = TextEditingController();
 
   bool isEditing = false;
 
-  bool isPreparerInitialed = false;
-  bool isRequireManagerApproval = false;
-  bool isDeputyConfirmed = false;
+  bool isUnitConfirm = false;
+  bool isDelivererConfirm = false;
+  bool isReceiverConfirm = false;
+  bool isRepresentativeUnitConfirm = false;
 
   String? proposingUnit;
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
+  AssetHandoverDetailDto? itemDetail;
+
   @override
   void initState() {
     isEditing = widget.isEditing;
-    if (widget.item != null && widget.item!.status == 0) {
+    itemDetail = widget.item!.assetHandoverDetails;
+    if (widget.item != null && widget.item!.state == 1) {
       isEditing = true;
     }
-    isPreparerInitialed = widget.item?.preparerInitialed ?? false;
-    isRequireManagerApproval = widget.item?.requireManagerApproval ?? false;
-    isDeputyConfirmed = widget.item?.deputyConfirmed ?? false;
+    isUnitConfirm = itemDetail?.isUnitConfirm ?? false;
+    isDelivererConfirm = itemDetail?.isDelivererConfirm ?? false;
+    isReceiverConfirm = itemDetail?.isReceiverConfirm ?? false;
+    isRepresentativeUnitConfirm =
+        itemDetail?.isRepresentativeUnitConfirm ?? false;
 
     for (final term in contractTerms) {
       contractTermsControllers[term] = TextEditingController();
@@ -131,20 +130,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   @override
   void dispose() {
     // Giải phóng các controller
-    controllerDecisionNumber.dispose();
+    controllerHandoverNumber.dispose();
     controllerDocumentName.dispose();
-    controllerDeliveringUnit.dispose();
-    controllerReceivingUnit.dispose();
-    controllerRequester.dispose();
-    controllerProposingUnit.dispose();
-    controllerQuantity.dispose();
-    controllerDepartmentApproval.dispose();
-    controllerEffectiveDate.dispose();
-    controllerEffectiveDateTo.dispose();
-    controllerApprover.dispose();
-    controllerDeliveryLocation.dispose();
-    controllerViewerDepartments.dispose();
-    controllerViewerUsers.dispose();
+    controllerOrder.dispose();
+    controllerSenderUnit.dispose();
+    controllerReceiverUnit.dispose();
 
     // Dispose de los controladores de términos del contrato
     for (final controller in contractTermsControllers.values) {
@@ -237,15 +227,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             SgIndicator(
               steps: [
                 'Nháp',
-                'Chờ xác nhận',
+                'Sẵn sàng',
                 'Xác nhận',
                 'Trình duyệt',
-                'Duyệt',
-                'Từ chối',
-                'Hủy',
                 'Hoàn thành',
+                'Hủy',
               ],
-              currentStep: widget.item?.status ?? 0,
+              currentStep: widget.item?.state ?? 0,
             ),
           ],
         ),
@@ -261,117 +249,110 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildDetailRow(
-                label: 'at.decision_number'.tr,
-                controller: controllerDecisionNumber,
+                label: 'ah.handover_number'.tr,
+                controller: controllerHandoverNumber,
                 isEditing: false,
-                textContent: widget.item?.decisionNumber ?? '',
+                textContent: '',
+                isShowHint: false,
               ),
               _buildDetailRow(
-                label: 'at.document_name'.tr,
+                label: 'ah.document_name'.tr,
                 controller: controllerDocumentName,
                 isEditing: false,
-                textContent: widget.item?.documentName ?? '',
+                textContent: widget.item?.name ?? '',
               ),
               _buildDetailRow(
-                label: 'at.delivering_unit'.tr,
-                controller: controllerDeliveringUnit,
+                label: 'ah.order'.tr,
+                controller: controllerOrder,
                 isEditing: isEditing,
-                textContent: widget.item?.deliveringUnit ?? '',
+                textContent: widget.item?.order ?? '',
+              ),
+              _buildDetailRow(
+                label: 'ah.sender_unit'.tr,
+                controller: controllerSenderUnit,
+                isEditing: isEditing,
+                textContent: widget.item?.senderUnit ?? '',
                 isDropdown: true,
                 items: itemsrReceivingUnit,
               ),
               _buildDetailRow(
-                label: 'at.receiving_unit'.tr,
-                controller: controllerReceivingUnit,
+                label: 'ah.receiver_unit'.tr,
+                controller: controllerReceiverUnit,
                 isEditing: isEditing,
-                textContent: widget.item?.receivingUnit ?? '',
+                textContent: widget.item?.receiverUnit ?? '',
                 isDropdown: true,
+                items: itemsrReceivingUnit,
               ),
               _buildDetailRow(
-                label: 'at.requester'.tr,
-                controller: controllerRequester,
+                label: 'ah.transfer_date'.tr,
+                controller: controllerTransferDate,
                 isEditing: isEditing,
-                textContent: widget.item?.requester ?? '',
+                textContent: widget.item?.transferDate ?? '',
+              ),
+              _buildDetailRow(
+                label: 'ah.leader'.tr,
+                controller: controllerLeader,
+                isEditing: isEditing,
+                textContent: itemDetail?.leader ?? '',
+              ),
+              // detail
+              _buildDetailRow(
+                label: 'ah.issuing_unit_representative'.tr,
+                controller: controllerIssuingUnitRepresentative,
+                isEditing: isEditing,
+                textContent: itemDetail?.issuingUnitRepresentative ?? '',
                 isDropdown: true,
                 items: itemsRequester,
-                onChanged: (value) {
-                  setState(() {
-                    proposingUnit =
-                        users.firstWhere((user) => user.id == value).department;
-                    log('proposingUnit: $proposingUnit');
-                  });
-                  log('value: $value');
-                },
               ),
               _buildDetailCheckBox(
-                label: 'at.preparer_initialed'.tr,
-                valueBoolean: isPreparerInitialed,
+                label: 'ah.unit_confirm'.tr,
+                valueBoolean: isUnitConfirm,
                 isEditing: isEditing,
-                isEnable: false,
+                isEnable: true,
+              ),
+              _buildDetailRow(
+                label: 'ah.deliverer_representative'.tr,
+                controller: controllerDelivererRepresentative,
+                isEditing: isEditing,
+                textContent: itemDetail?.delivererRepresentative ?? '',
+                isDropdown: true,
+                items: itemsRequester,
               ),
               _buildDetailCheckBox(
-                label: 'at.require_manager_approval'.tr,
-                valueBoolean: isRequireManagerApproval,
+                label: 'ah.deliverer_confirm'.tr,
+                valueBoolean: isDelivererConfirm,
                 isEditing: isEditing,
-                isEnable: false,
-              ),
-              if (isRequireManagerApproval)
-                _buildDetailCheckBox(
-                  label: 'at.deputy_confirmed'.tr,
-                  valueBoolean: isDeputyConfirmed,
-                  isEditing: isEditing,
-                  isEnable: false,
-                ),
-              _buildDetailRow(
-                label: 'at.proposing_unit'.tr,
-                controller: controllerProposingUnit,
-                isEditing: false,
-                textContent: proposingUnit ?? '',
-                inputType: TextInputType.number,
+                isEnable: true,
               ),
               _buildDetailRow(
-                label: 'at.department_approval'.tr,
-                controller: controllerDepartmentApproval,
+                label: 'ah.receiver_representative'.tr,
+                controller: controllerReceiverRepresentative,
                 isEditing: isEditing,
-                textContent: widget.item?.departmentApproval ?? '',
+                textContent: itemDetail?.receiverRepresentative ?? '',
+                isDropdown: true,
+                items: itemsRequester,
+              ),
+              _buildDetailCheckBox(
+                label: 'ah.receiver_confirm'.tr,
+                valueBoolean: isReceiverConfirm,
+                isEditing: isEditing,
+                isEnable: true,
               ),
               _buildDetailRow(
-                label: 'at.effective_date'.tr,
-                controller: controllerEffectiveDate,
+                label: 'ah.representative_unit'.tr,
+                controller: controllerRepresentativeUnit,
                 isEditing: isEditing,
-                textContent: widget.item?.effectiveDate ?? '',
+                textContent: itemDetail?.representativeUnit ?? '',
+                isDropdown: true,
+                items: itemsRequester,
               ),
-              _buildDetailRow(
-                label: 'at.effective_date_to'.tr,
-                controller: controllerEffectiveDateTo,
+              _buildDetailCheckBox(
+                label: 'ah.representative_unit_confirm'.tr,
+                valueBoolean: isRepresentativeUnitConfirm,
                 isEditing: isEditing,
-                textContent: widget.item?.effectiveDateTo ?? '',
+                isEnable: true,
               ),
-              _buildDetailRow(
-                label: 'at.approver'.tr,
-                controller: controllerApprover,
-                isEditing: isEditing,
-                textContent: widget.item?.approver ?? '',
-              ),
-              _buildDetailRow(
-                label: 'at.delivery_location'.tr,
-                controller: controllerDeliveryLocation,
-                isEditing: isEditing,
-                textContent: widget.item?.deliveryLocation ?? '',
-              ),
-              _buildDetailRow(
-                label: 'at.viewer_departments'.tr,
-                controller: controllerViewerDepartments,
-                isEditing: isEditing,
-                textContent: '',
-              ),
-              _buildDetailRow(
-                label: 'at.viewerUsers'.tr,
-                controller: controllerViewerUsers,
-                isEditing: isEditing,
-                textContent: '',
-              ),
-              _buildContracterms(),
+
               const SizedBox(height: 20),
               _buildAssetMovementTable(),
             ],
@@ -382,7 +363,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   Widget _buildAssetMovementTable() {
-    log('_buildAssetMovementTable: ${widget.item?.movementDetails!.length}');
+    log(
+      '_buildAssetMovementTable: ${widget.item?.assetHandoverMovements!.length}',
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -393,9 +376,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
-        SgEditableTable<MovementDetailDto>(
-          initialData: widget.item?.movementDetails ?? [],
-          createEmptyItem: MovementDetailDto.empty,
+        SgEditableTable<AssetHandoverMovementDto>(
+          initialData: widget.item?.assetHandoverMovements ?? [],
+          createEmptyItem: AssetHandoverMovementDto.empty,
           rowHeight: 40.0,
           headerBackgroundColor: Colors.grey.shade50,
           oddRowBackgroundColor: Colors.white,
@@ -408,7 +391,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             log('Asset movement data changed: ${data.length} items');
           },
           columns: [
-            SgEditableColumn<MovementDetailDto>(
+            SgEditableColumn<AssetHandoverMovementDto>(
               field: 'asset',
               title: 'Tài sản',
               titleAlignment: TextAlign.center,
@@ -417,7 +400,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               setValue: (item, value) => item.name = value,
               sortValueGetter: (item) => item.name,
             ),
-            SgEditableColumn<MovementDetailDto>(
+            SgEditableColumn<AssetHandoverMovementDto>(
               field: 'unit',
               title: 'Đơn vị tính',
               titleAlignment: TextAlign.center,
@@ -426,7 +409,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               setValue: (item, value) => item.measurementUnit = value,
               sortValueGetter: (item) => item.measurementUnit,
             ),
-            SgEditableColumn<MovementDetailDto>(
+            SgEditableColumn<AssetHandoverMovementDto>(
               field: 'quantity',
               title: 'Số lượng',
               titleAlignment: TextAlign.center,
@@ -436,7 +419,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               sortValueGetter:
                   (item) => int.tryParse(item.quantity ?? '0') ?? 0,
             ),
-            SgEditableColumn<MovementDetailDto>(
+            SgEditableColumn<AssetHandoverMovementDto>(
               field: 'condition',
               title: 'Tình trạng kỹ thuật',
               titleAlignment: TextAlign.center,
@@ -445,14 +428,14 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               setValue: (item, value) => item.setCondition = value,
               sortValueGetter: (item) => item.setCondition,
             ),
-            SgEditableColumn<MovementDetailDto>(
-              field: 'note',
-              title: 'Ghi chú',
+            SgEditableColumn<AssetHandoverMovementDto>(
+              field: 'countryOfOrigin',
+              title: 'Nước sản xuất',
               titleAlignment: TextAlign.center,
               width: 150,
-              getValue: (item) => item.note,
-              setValue: (item, value) => item.note = value,
-              sortValueGetter: (item) => item.note,
+              getValue: (item) => item.countryOfOrigin,
+              setValue: (item, value) => item.countryOfOrigin = value,
+              sortValueGetter: (item) => item.countryOfOrigin,
             ),
           ],
         ),
@@ -460,19 +443,126 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     );
   }
 
-  Widget _buildContracterms() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...contractTerms.map(
-          (term) => _buildDetailRow(
-            label: term,
-            controller: contractTermsControllers[term]!,
-            isEditing: isEditing,
-            textContent: '',
-          ),
-        ),
-      ],
+  Widget _buildAsserHandoverDetail() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Kiểm tra nếu màn hình đủ rộng để hiển thị 2 cột
+        bool isWideScreen = constraints.maxWidth > 800;
+        
+        if (isWideScreen) {
+          // Layout 2 cột
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cột trái
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildDetailRow(
+                      label: 'ah.deliverer_representative'.tr,
+                      controller: controllerDelivererRepresentative,
+                      isEditing: isEditing,
+                      textContent: itemDetail?.delivererRepresentative ?? '',
+                      isDropdown: true,
+                      items: itemsRequester,
+                    ),
+                    _buildDetailCheckBox(
+                      label: 'ah.deliverer_confirm'.tr,
+                      valueBoolean: isDelivererConfirm,
+                      isEditing: isEditing,
+                      isEnable: true,
+                    ),
+                    _buildDetailRow(
+                      label: 'ah.receiver_representative'.tr,
+                      controller: controllerReceiverRepresentative,
+                      isEditing: isEditing,
+                      textContent: itemDetail?.receiverRepresentative ?? '',
+                      isDropdown: true,
+                      items: itemsRequester,
+                    ),
+                    _buildDetailCheckBox(
+                      label: 'ah.receiver_confirm'.tr,
+                      valueBoolean: isReceiverConfirm,
+                      isEditing: isEditing,
+                      isEnable: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              // Cột phải
+              Expanded(
+                child: Column(
+                  children: [
+                    _buildDetailRow(
+                      label: 'ah.representative_unit'.tr,
+                      controller: controllerRepresentativeUnit,
+                      isEditing: isEditing,
+                      textContent: itemDetail?.representativeUnit ?? '',
+                      isDropdown: true,
+                      items: itemsRequester,
+                    ),
+                    _buildDetailCheckBox(
+                      label: 'ah.representative_unit_confirm'.tr,
+                      valueBoolean: isRepresentativeUnitConfirm,
+                      isEditing: isEditing,
+                      isEnable: true,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        } else {
+          // Layout 1 cột cho màn hình nhỏ
+          return Column(
+            children: [
+              _buildDetailRow(
+                label: 'ah.deliverer_representative'.tr,
+                controller: controllerDelivererRepresentative,
+                isEditing: isEditing,
+                textContent: itemDetail?.delivererRepresentative ?? '',
+                isDropdown: true,
+                items: itemsRequester,
+              ),
+              _buildDetailCheckBox(
+                label: 'ah.deliverer_confirm'.tr,
+                valueBoolean: isDelivererConfirm,
+                isEditing: isEditing,
+                isEnable: true,
+              ),
+              _buildDetailRow(
+                label: 'ah.receiver_representative'.tr,
+                controller: controllerReceiverRepresentative,
+                isEditing: isEditing,
+                textContent: itemDetail?.receiverRepresentative ?? '',
+                isDropdown: true,
+                items: itemsRequester,
+              ),
+              _buildDetailCheckBox(
+                label: 'ah.receiver_confirm'.tr,
+                valueBoolean: isReceiverConfirm,
+                isEditing: isEditing,
+                isEnable: true,
+              ),
+              _buildDetailRow(
+                label: 'ah.representative_unit'.tr,
+                controller: controllerRepresentativeUnit,
+                isEditing: isEditing,
+                textContent: itemDetail?.representativeUnit ?? '',
+                isDropdown: true,
+                items: itemsRequester,
+              ),
+              _buildDetailCheckBox(
+                label: 'ah.representative_unit_confirm'.tr,
+                valueBoolean: isRepresentativeUnitConfirm,
+                isEditing: isEditing,
+                isEnable: true,
+              ),
+            ],
+          );
+        }
+      },
     );
   }
 
@@ -487,6 +577,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     TextInputType? inputType,
     List<DropdownMenuItem<String>>? items,
     Function(String)? onChanged,
+    bool isShowHint = true,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -525,7 +616,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                       fontSize: 16,
                       inputType: inputType,
                       isShowSuffixIcon: true,
-                      hintText: 'Chọn ${label.toLowerCase()}',
+                      hintText: isShowHint ? 'Chọn ${label.toLowerCase()}' : '',
                       textAlign: TextAlign.left,
                       textAlignItem: TextAlign.left,
                       sizeBorderCircular: 10,
@@ -557,7 +648,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                       onlyLine: true,
                       color: Colors.black,
                       showBorder: isEditing,
-                      hintText: !isEditing ? '' : '${'common.hint'.tr} $label',
+                      hintText:
+                          !isEditing
+                              ? ''
+                              : isShowHint
+                              ? '${'common.hint'.tr} $label'
+                              : '',
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
                     ),
                 if (isValidate) const Divider(height: 1, color: Colors.red),
@@ -577,12 +673,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }) {
     // Primero, obtener el valor actual para este checkbox
     bool currentValue = valueBoolean;
-    if (label == 'at.preparer_initialed'.tr) {
-      currentValue = isPreparerInitialed;
-    } else if (label == 'at.require_manager_approval'.tr) {
-      currentValue = isRequireManagerApproval;
-    } else if (label == 'at.deputy_confirmed'.tr) {
-      currentValue = isDeputyConfirmed;
+    if (label == 'ah.preparer_initialed'.tr) {
+      currentValue = isUnitConfirm;
+    } else if (label == 'ah.require_manager_approval'.tr) {
+      currentValue = isDelivererConfirm;
+    } else if (label == 'ah.deputy_confirmed'.tr) {
+      currentValue = isReceiverConfirm;
     }
 
     return Padding(
@@ -611,21 +707,26 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                       ? (newValue) {
                         setState(() {
                           // Actualizar el estado correcto según el label
-                          if (label == 'at.preparer_initialed'.tr) {
-                            isPreparerInitialed = newValue ?? false;
+                          if (label == 'ah.preparer_initialed'.tr) {
+                            isUnitConfirm = newValue ?? false;
                             log(
-                              'isPreparerInitialed cambiado a: $isPreparerInitialed',
+                              'isPreparerInitialed cambiado a: $isUnitConfirm',
                             );
                           } else if (label ==
-                              'at.require_manager_approval'.tr) {
-                            isRequireManagerApproval = newValue ?? false;
+                              'ah.require_manager_approval'.tr) {
+                            isDelivererConfirm = newValue ?? false;
                             log(
-                              'isRequireManagerApproval cambiado a: $isRequireManagerApproval',
+                              'isRequireManagerApproval cambiado a: $isDelivererConfirm',
                             );
-                          } else if (label == 'at.deputy_confirmed'.tr) {
-                            isDeputyConfirmed = newValue ?? false;
+                          } else if (label == 'ah.deputy_confirmed'.tr) {
+                            isReceiverConfirm = newValue ?? false;
                             log(
-                              'isDeputyConfirmed cambiado a: $isDeputyConfirmed',
+                              'isDeputyConfirmed cambiado a: $isReceiverConfirm',
+                            );
+                          } else if (label == 'ah.representative_unit'.tr) {
+                            isRepresentativeUnitConfirm = newValue ?? false;
+                            log(
+                              'isRepresentativeUnitConfirm cambiado a: $isRepresentativeUnitConfirm',
                             );
                           }
                         });
