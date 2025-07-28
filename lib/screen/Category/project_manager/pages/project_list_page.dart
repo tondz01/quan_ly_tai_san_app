@@ -43,14 +43,17 @@ class ProjectListPage extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          Expanded(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+            width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
                       child: TextField(
                         decoration: InputDecoration(
                           labelText: 'Tìm kiếm dự án',
@@ -62,7 +65,6 @@ class ProjectListPage extends StatelessWidget {
                         },
                       ),
                     ),
-                    SizedBox(width: 25),
                     SGButton(
                       text: 'Thêm dự án',
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -82,11 +84,10 @@ class ProjectListPage extends StatelessWidget {
                         }
                       },
                     ),
-                    SizedBox(width: 25),
                   ],
                 ),
                 SizedBox(height: 8),
-
+            
                 BlocBuilder<ProjectBloc, ProjectState>(
                   builder: (context, state) {
                     if (state is ProjectLoaded) {
@@ -100,7 +101,7 @@ class ProjectListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-
+            
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,

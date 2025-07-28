@@ -41,8 +41,6 @@ class App extends StatelessWidget {
             locale: const Locale('vi', 'VN'),
             fallbackLocale: const Locale('en', 'US'),
             translations: MyLocale(),
-            theme: ThemeData.light(),
-            darkTheme: ThemeData.dark(),
             routerDelegate: router.routerDelegate,
             routeInformationParser: router.routeInformationParser,
             routeInformationProvider: router.routeInformationProvider,

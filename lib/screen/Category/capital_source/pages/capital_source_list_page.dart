@@ -47,14 +47,17 @@ class CapitalSourceListPage extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          Expanded(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+            width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
                       child: TextField(
                         decoration: InputDecoration(
                           labelText: 'Tìm kiếm nguồn vốn',
@@ -68,7 +71,7 @@ class CapitalSourceListPage extends StatelessWidget {
                         },
                       ),
                     ),
-                    SizedBox(width: 25),
+                    Spacer(),
                     SGButton(
                       text: 'Thêm nguồn vốn',
                       padding: EdgeInsets.symmetric(
@@ -91,7 +94,6 @@ class CapitalSourceListPage extends StatelessWidget {
                         }
                       },
                     ),
-                    SizedBox(width: 25),
                   ],
                 ),
 

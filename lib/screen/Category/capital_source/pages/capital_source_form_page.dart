@@ -69,7 +69,8 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-        margin: EdgeInsets.only(right: 50, top: 16),
+        margin: EdgeInsets.only(top: 16),
+        padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
         child: Column(
           children: [
             Row(

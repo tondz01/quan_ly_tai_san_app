@@ -45,26 +45,29 @@ class StaffListPage extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 16),
-          Expanded(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+            width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end, 
+                  mainAxisSize: MainAxisSize.max,
                   children: [
-                    Expanded(
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.5,
                       child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Tìm kiếm nhân viên',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: 'Tìm kiếm nhân viên',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            context.read<StaffBloc>().add(SearchStaff(value));
+                          },
                         ),
-                        onChanged: (value) {
-                          context.read<StaffBloc>().add(SearchStaff(value));
-                        },
-                      ),
                     ),
-                    SizedBox(width: 25),
+                    Spacer(),
                     SGButton(
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                       text: 'Thêm nhân viên',
@@ -76,15 +79,14 @@ class StaffListPage extends StatelessWidget {
                             MaterialPageRoute(
                               builder:
                                   (_) => BlocProvider.value(
-                                    value: context.read<StaffBloc>(),
-                                    child: const StaffFormPage(),
-                                  ),
+                                value: context.read<StaffBloc>(),
+                                child: const StaffFormPage(),
+                              ),
                             ),
                           );
                         }
                       },
                     ),
-                    SizedBox(width: 25),
                   ],
                 ),
                 SizedBox(height: 8),
@@ -101,7 +103,7 @@ class StaffListPage extends StatelessWidget {
                           headerBackgroundColor: Colors.blue,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
-
+            
                           gridLineColor: Colors.grey.shade300,
                           gridLineWidth: 1.0,
                           showVerticalLines: true,

@@ -1,5 +1,10 @@
 import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
+import 'package:quan_ly_tai_san_app/screen/category/asset/views/asset_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital_source_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/views/department_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/views/project_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/views/staff_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
@@ -60,6 +65,46 @@ class AppRouteConf {
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
               child: const AssetHandoverView(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoute.staffManager.path,
+            name: AppRoute.staffManager.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: StaffManager(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoute.projectManager.path,
+            name: AppRoute.projectManager.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: ProjectManager(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoute.departmentManager.path,
+            name: AppRoute.departmentManager.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: DepartmentManager(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoute.capitalSource.path,
+            name: AppRoute.capitalSource.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: CapitalSourceManager(),
+            ),
+          ),
+          GoRoute(
+            path: AppRoute.assetManager.path,
+            name: AppRoute.assetManager.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: AssetManager(),
             ),
           ),
           // GoRoute(
