@@ -51,6 +51,7 @@ dependencies:
   go_router: ^16.0.0
   flutter_svg: ^2.2.0
   nested: ^1.0.0
+  file_picker: ^10.2.0
 
 dev_dependencies:
   flutter_test:

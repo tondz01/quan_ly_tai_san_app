@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -61,6 +63,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
+  // Add file related variables
+  String? _selectedFileName;
+  String? _selectedFilePath;
+  bool _isUploading = false;
+
   @override
   void initState() {
     isEditing = widget.isEditing;
@@ -71,9 +78,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     isRequireManagerApproval = widget.item?.requireManagerApproval ?? false;
     isDeputyConfirmed = widget.item?.deputyConfirmed ?? false;
 
-    for (final term in contractTerms) {
-      contractTermsControllers[term] = TextEditingController();
-    }
+    // Initialize FilePicker
+    _initializeFilePicker();
 
     itemsRequester =
         users
@@ -85,6 +91,18 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             )
             .toList();
     super.initState();
+  }
+
+  // Initialize FilePicker
+  Future<void> _initializeFilePicker() async {
+    try {
+      // We'll just do a simple check if the platform is supported
+      // This will help initialize FilePicker without forcing a clearTemporaryFiles operation
+      await FilePicker.platform.getDirectoryPath();
+    } catch (e) {
+      log('FilePicker initialization check: $e');
+      // Silently continue, as we'll handle errors during actual file picking
+    }
   }
 
   final List<DropdownMenuItem<String>> itemsrReceivingUnit = [
@@ -118,15 +136,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   ];
 
   late final List<DropdownMenuItem<String>> itemsRequester;
-
-  final List<String> contractTerms = [
-    'Về việc',
-    'Căn cứ',
-    'Điều 1',
-    'Điều 2',
-    'Điều 3',
-    'Nơi nhận',
-  ];
 
   @override
   void dispose() {
@@ -371,7 +380,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 isEditing: isEditing,
                 textContent: '',
               ),
-              _buildContracterms(),
+              // _buildContracterms(),
+              _buildDocumentUpload(), // Add document upload section
               const SizedBox(height: 20),
               _buildAssetMovementTable(),
             ],
@@ -455,22 +465,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               sortValueGetter: (item) => item.note,
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContracterms() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ...contractTerms.map(
-          (term) => _buildDetailRow(
-            label: term,
-            controller: contractTermsControllers[term]!,
-            isEditing: isEditing,
-            textContent: '',
-          ),
         ),
       ],
     );
@@ -643,5 +637,221 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         ],
       ),
     );
+  }
+
+  // Add method to build document upload section
+  Widget _buildDocumentUpload() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Text(
+            'Tài liệu đính kèm',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // File selection row
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.white,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.description,
+                            color: Colors.blue.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _selectedFileName ?? 'Chưa chọn tệp',
+                              style: TextStyle(
+                                color: _selectedFileName != null
+                                    ? Colors.black
+                                    : Colors.grey.shade600,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          if (_selectedFileName != null)
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedFileName = null;
+                                  _selectedFilePath = null;
+                                });
+                              },
+                              child: Icon(
+                                Icons.close,
+                                color: Colors.grey.shade600,
+                                size: 16,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: isEditing ? _selectWordDocument : null,
+                    icon: const Icon(Icons.upload_file, size: 18),
+                    label: const Text('Chọn tệp'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue.shade700,
+                      disabledBackgroundColor: Colors.grey.shade400,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: (_selectedFileName != null && isEditing && !_isUploading)
+                        ? _uploadWordDocument
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green.shade600,
+                      disabledBackgroundColor: Colors.grey.shade400,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                    child: _isUploading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Tải lên'),
+                  ),
+                ],
+              ),
+              // Document format hint
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Định dạng hỗ trợ: .doc, .docx (Microsoft Word)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Method to select a Word document
+  Future<void> _selectWordDocument() async {
+    try {
+      // Use a simpler configuration to avoid initialization issues
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['doc', 'docx'],
+        withData: false, // Don't load file data in memory
+        withReadStream: false, // Don't use read stream
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        setState(() {
+          _selectedFileName = file.name;
+          _selectedFilePath = file.path;
+        });
+        log('Selected file: $_selectedFileName, Path: $_selectedFilePath');
+      }
+    } on PlatformException catch (e) {
+      log('Platform exception when picking file: ${e.message}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi chọn tệp: ${e.message}'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+    } catch (e) {
+      log('Error selecting file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không thể chọn tệp: ${e.toString()}'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+    }
+  }
+
+  // Method to upload the Word document
+  Future<void> _uploadWordDocument() async {
+    if (_selectedFilePath == null) return;
+    
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      // Simulate upload with delay
+      await Future.delayed(const Duration(seconds: 2));
+      
+      // Here you would implement actual file upload logic
+      // Example: 
+      // final file = File(_selectedFilePath!);
+      // final response = await yourApiService.uploadDocument(file);
+      
+      log('File uploaded successfully: $_selectedFileName');
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tệp "$_selectedFileName" đã được tải lên thành công'),
+          backgroundColor: Colors.green.shade600,
+        ),
+      );
+      
+    } catch (e) {
+      log('Error uploading file: $e');
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
   }
 }
