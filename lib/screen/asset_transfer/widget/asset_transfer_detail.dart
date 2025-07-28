@@ -173,7 +173,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
   Widget _showResponsive() {
     final size = MediaQuery.of(context).size;
-    if (size.width < 1444) {
+    if (size.width < 1532) {
       return Column(
         children: [
           _buildTableDetail(),
@@ -545,7 +545,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                       borderRadius: 10,
                       enabled: isEnable ? isEditing : false,
                       textAlign: TextAlign.left,
-                      readOnly: !isEditing,
+                      readOnly: isEditing,
                       inputFormatters:
                           inputType == TextInputType.number
                               ? [

@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_ev
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -331,8 +332,7 @@ class AssetHandoverProvider with ChangeNotifier {
       
       if (!isMainScreen) {
         _subScreen = item == null ? 'Mới' : item.name ?? '';
-        _body = Container();
-        // AssetHandoverDetail(item: item, isEditing: isEdit);
+        _body = AssetHandoverDetail(item: item, isEditing: isEdit);
       } else {
         _subScreen = '';
         mainScreen = 'Biên bản bàn giao tài sản';

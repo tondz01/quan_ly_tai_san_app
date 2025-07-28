@@ -9,7 +9,6 @@ import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
@@ -20,8 +19,14 @@ import 'package:se_gay_components/common/sg_input_text.dart';
 class AssetHandoverDetail extends StatefulWidget {
   final AssetHandoverDto? item;
   final bool isEditing;
+  final bool isNew;
 
-  const AssetHandoverDetail({super.key, this.item, this.isEditing = false});
+  const AssetHandoverDetail({
+    super.key,
+    this.item,
+    this.isEditing = false,
+    this.isNew = false,
+  });
 
   @override
   State<AssetHandoverDetail> createState() => _AssetHandoverDetailState();
@@ -60,8 +65,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   @override
   void initState() {
     isEditing = widget.isEditing;
-    itemDetail = widget.item!.assetHandoverDetails;
-    if (widget.item != null && widget.item!.state == 1) {
+    if (widget.item != null) {
+      if (widget.item!.state == 1) {
+        isEditing = true;
+      }
+      itemDetail = widget.item!.assetHandoverDetails;
+    } else if (widget.isNew) {
       isEditing = true;
     }
     isUnitConfirm = itemDetail?.isUnitConfirm ?? false;
@@ -251,14 +260,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               _buildDetailRow(
                 label: 'ah.handover_number'.tr,
                 controller: controllerHandoverNumber,
-                isEditing: false,
+                isEditing: isEditing,
                 textContent: '',
                 isShowHint: false,
               ),
               _buildDetailRow(
                 label: 'ah.document_name'.tr,
                 controller: controllerDocumentName,
-                isEditing: false,
+                isEditing: isEditing,
                 textContent: widget.item?.name ?? '',
               ),
               _buildDetailRow(
@@ -294,65 +303,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 controller: controllerLeader,
                 isEditing: isEditing,
                 textContent: itemDetail?.leader ?? '',
+                isDropdown: true,
+                items: itemsRequester,
               ),
               // detail
-              _buildDetailRow(
-                label: 'ah.issuing_unit_representative'.tr,
-                controller: controllerIssuingUnitRepresentative,
-                isEditing: isEditing,
-                textContent: itemDetail?.issuingUnitRepresentative ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.unit_confirm'.tr,
-                valueBoolean: isUnitConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-              _buildDetailRow(
-                label: 'ah.deliverer_representative'.tr,
-                controller: controllerDelivererRepresentative,
-                isEditing: isEditing,
-                textContent: itemDetail?.delivererRepresentative ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.deliverer_confirm'.tr,
-                valueBoolean: isDelivererConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-              _buildDetailRow(
-                label: 'ah.receiver_representative'.tr,
-                controller: controllerReceiverRepresentative,
-                isEditing: isEditing,
-                textContent: itemDetail?.receiverRepresentative ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.receiver_confirm'.tr,
-                valueBoolean: isReceiverConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-              _buildDetailRow(
-                label: 'ah.representative_unit'.tr,
-                controller: controllerRepresentativeUnit,
-                isEditing: isEditing,
-                textContent: itemDetail?.representativeUnit ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.representative_unit_confirm'.tr,
-                valueBoolean: isRepresentativeUnitConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-
+              _buildAsserHandoverDetail(),
               const SizedBox(height: 20),
               _buildAssetMovementTable(),
             ],
@@ -363,9 +318,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   Widget _buildAssetMovementTable() {
-    log(
-      '_buildAssetMovementTable: ${widget.item?.assetHandoverMovements!.length}',
-    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -448,7 +400,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       builder: (context, constraints) {
         // Kiểm tra nếu màn hình đủ rộng để hiển thị 2 cột
         bool isWideScreen = constraints.maxWidth > 800;
-        
+
         if (isWideScreen) {
           // Layout 2 cột
           return Row(
@@ -458,6 +410,20 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               Expanded(
                 child: Column(
                   children: [
+                    _buildDetailRow(
+                      label: 'ah.issuing_unit_representative'.tr,
+                      controller: controllerIssuingUnitRepresentative,
+                      isEditing: isEditing,
+                      textContent: itemDetail?.issuingUnitRepresentative ?? '',
+                      isDropdown: true,
+                      items: itemsRequester,
+                    ),
+                    _buildDetailCheckBox(
+                      label: 'ah.unit_confirm'.tr,
+                      valueBoolean: isUnitConfirm,
+                      isEditing: isEditing,
+                      isEnable: true,
+                    ),
                     _buildDetailRow(
                       label: 'ah.deliverer_representative'.tr,
                       controller: controllerDelivererRepresentative,
@@ -472,6 +438,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                       isEditing: isEditing,
                       isEnable: true,
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              // Cột phải
+              Expanded(
+                child: Column(
+                  children: [
                     _buildDetailRow(
                       label: 'ah.receiver_representative'.tr,
                       controller: controllerReceiverRepresentative,
@@ -486,14 +460,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                       isEditing: isEditing,
                       isEnable: true,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 20),
-              // Cột phải
-              Expanded(
-                child: Column(
-                  children: [
                     _buildDetailRow(
                       label: 'ah.representative_unit'.tr,
                       controller: controllerRepresentativeUnit,
@@ -517,6 +483,20 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           // Layout 1 cột cho màn hình nhỏ
           return Column(
             children: [
+              _buildDetailRow(
+                label: 'ah.issuing_unit_representative'.tr,
+                controller: controllerIssuingUnitRepresentative,
+                isEditing: isEditing,
+                textContent: itemDetail?.issuingUnitRepresentative ?? '',
+                isDropdown: true,
+                items: itemsRequester,
+              ),
+              _buildDetailCheckBox(
+                label: 'ah.unit_confirm'.tr,
+                valueBoolean: isUnitConfirm,
+                isEditing: isEditing,
+                isEnable: true,
+              ),
               _buildDetailRow(
                 label: 'ah.deliverer_representative'.tr,
                 controller: controllerDelivererRepresentative,
