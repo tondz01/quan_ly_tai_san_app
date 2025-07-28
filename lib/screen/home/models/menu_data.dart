@@ -113,7 +113,16 @@ class AppMenuData {
         ),
       ],
     ),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
+    MenuItem(
+      label: 'Bàn giao tài sản',
+      reportSubItems: [
+        SubMenuItem(
+          label: 'Biên bản bàn giao tài sản',
+          route: AppRoute.assetHandover.path,
+        ),
+        SubMenuItem(label: 'Chi tiết Bàn giao tài sản'),
+      ],
+    ),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
     MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),

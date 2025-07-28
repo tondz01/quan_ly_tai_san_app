@@ -33,7 +33,7 @@ class NoteView extends StatefulWidget {
 }
 
 class _NoteViewState extends State<NoteView> {
-  int _selectedTabIndex = 0;
+  final int _selectedTabIndex = 0;
   final List<String> _tabTitles = ['Gửi tin', 'Ghi chú', 'Hoạt động'];
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _contentSendController = TextEditingController();

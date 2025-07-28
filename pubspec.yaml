@@ -50,6 +50,7 @@ dependencies:
   bloc_concurrency: ^0.3.0
   go_router: ^16.0.0
   flutter_svg: ^2.2.0
+  nested: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
     - lib/screen/asset_transfer/model/asset_movement_data.json
     - lib/screen/asset_transfer/model/asset_allocation_data.json
     - lib/screen/asset_transfer/model/asset_recovery_data.json
+    - lib/screen/asset_handover/model/asset_handover.json
     - assets/images/
     - assets/icons/
     - assets/svgs/
