@@ -597,4 +597,76 @@ class AssetTransferProvider with ChangeNotifier {
       ),
     );
   }
+
+  // Add method to create a new asset transfer
+  Future<void> createAssetTransfer(AssetTransferDto item) async {
+    // In a real app, this would call an API or repository
+    // For now, we'll just add it to our local data
+    
+    log('Creating new asset transfer: ${item.documentName}');
+    
+    // Generate a mock ID for the new item
+    final newItem = AssetTransferDto(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      documentName: item.documentName,
+      decisionNumber: item.decisionNumber,
+      decisionDate: item.decisionDate,
+      subject: item.subject,
+      requester: item.requester,
+      creator: 'Current User', // Would come from authentication service
+      movementDetails: item.movementDetails,
+      deliveringUnit: item.deliveringUnit,
+      receivingUnit: item.receivingUnit,
+      proposingUnit: item.proposingUnit,
+      deliveryLocation: item.deliveryLocation,
+      effectiveDate: item.effectiveDate,
+      effectiveDateTo: item.effectiveDateTo,
+      preparerInitialed: item.preparerInitialed,
+      requireManagerApproval: item.requireManagerApproval,
+      deputyConfirmed: item.deputyConfirmed,
+      departmentApproval: item.departmentApproval,
+      approver: item.approver,
+      status: 0, // Draft status
+      isEffective: false,
+      documentFilePath: item.documentFilePath,
+      documentFileName: item.documentFileName,
+    );
+    
+    // Add to our data list
+    if (_data == null) {
+      _data = [];
+    }
+    _data!.add(newItem);
+    
+    // Update filtered data and pagination
+    _filteredData = List.from(_data!);
+    _updatePagination();
+    
+    // Notify listeners of the change
+    notifyListeners();
+  }
+
+  // Add method to update an existing asset transfer
+  Future<void> updateAssetTransfer(AssetTransferDto updatedItem) async {
+    // In a real app, this would call an API or repository
+    // For now, we'll just update our local data
+    
+    if (_data == null || updatedItem.id == null) return;
+    
+    log('Updating asset transfer: ${updatedItem.id}');
+    
+    int index = _data!.indexWhere((item) => item.id == updatedItem.id);
+    
+    if (index != -1) {
+      // Update the item with all the new data
+      _data![index] = updatedItem;
+      
+      // Update filtered data and pagination
+      _filteredData = List.from(_data!);
+      _updatePagination();
+      
+      // Notify listeners of the change
+      notifyListeners();
+    }
+  }
 }
