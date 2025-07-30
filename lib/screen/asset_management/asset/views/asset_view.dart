@@ -7,8 +7,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_eve
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset/models/asset_model.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
-import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/common/table/sg_table_with_provider.dart';
 import 'package:se_gay_components/themes/sg_app_font.dart';
 import 'dart:async';
 
@@ -197,9 +197,13 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
       },
       onRowsPerPageChanged: (pageSize) {
         if (pageSize != null) {
+          // Tính toán trang mới dựa trên vị trí hiện tại trong dữ liệu
+          final int firstItemCurrentPage = (state.currentPage - 1) * state.pageSize + 1;
+          final int newPage = ((firstItemCurrentPage - 1) ~/ pageSize) + 1;
+          
           context.read<AssetBloc>().add(
             LoadAssetsWithPagination(
-              page: 1,
+              page: newPage, // Giữ vị trí tương đối thay vì quay về trang 1
               pageSize: pageSize,
               searchQuery: state.searchQuery,
               department: state.department,
@@ -431,7 +435,8 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
     const BorderSide borderSide = BorderSide(color: Color(0xFFBDBDBD), width: 0.5);
     
     return RepaintBoundary(
-      child: SgTable<AssetModel>(
+      child: SgTableWithProvider<AssetModel>(
+        key: ValueKey('asset_table_${widget.state.hashCode}'),
         headerBackgroundColor: headerBgColor,
         evenRowBackgroundColor: evenRowBgColor,
         oddRowBackgroundColor: oddRowBgColor,
