@@ -48,7 +48,9 @@ class CapitalSourceListPage extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.05,
+            ),
             width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,44 +58,58 @@ class CapitalSourceListPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Tìm kiếm nguồn vốn',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: SGButton(
+                          text: 'Mới',
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 5,
+                          ),
+                          mainColor: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          onPressed: () {
+                            if (onAdd != null) {
+                              onAdd!();
+                            } else {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => BlocProvider.value(
+                                        value:
+                                            context.read<CapitalSourceBloc>(),
+                                        child: const CapitalSourceFormPage(),
+                                      ),
+                                ),
+                              );
+                            }
+                          },
                         ),
-                        onChanged: (value) {
-                          context.read<CapitalSourceBloc>().add(
-                            SearchCapitalSource(value),
-                          );
-                        },
                       ),
                     ),
-                    Spacer(),
-                    SGButton(
-                      text: 'Thêm nguồn vốn',
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 20,
-                      ),
-                      onPressed: () {
-                        if (onAdd != null) {
-                          onAdd!();
-                        } else {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => BlocProvider.value(
-                                    value: context.read<CapitalSourceBloc>(),
-                                    child: const CapitalSourceFormPage(),
-                                  ),
+                    Expanded(
+                      child: SizedBox(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Tìm kiếm nguồn vốn',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                          );
-                        }
-                      },
+                            isDense: true,
+                          ),
+                          onChanged: (value) {
+                            context.read<CapitalSourceBloc>().add(
+                              SearchCapitalSource(value),
+                            );
+                          },
+                        ),
+                      ),
                     ),
+                    Expanded(child: SizedBox()),
                   ],
                 ),
 
@@ -110,7 +126,8 @@ class CapitalSourceListPage extends StatelessWidget {
                       return SingleChildScrollView(
                         child: SgTable<CapitalSource>(
                           // textHeaderColor: SGAppColors.error50,
-                          headerBackgroundColor: Colors.blue,
+                          headerBackgroundColor: Colors.grey.shade300,
+                                widthScreen: MediaQuery.of(context).size.width,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
 
@@ -159,17 +176,21 @@ class CapitalSourceListPage extends StatelessWidget {
                               getValue: (item) => item.name,
                               width: MediaQuery.of(context).size.width / 4,
                               align: TextAlign.start,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<CapitalSource>(
                               title: 'Ghi chú',
                               getValue: (item) => item.note,
                               width: MediaQuery.of(context).size.width / 4,
                               align: TextAlign.start,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<CapitalSource>(
                               title: 'Có hiệu lực',
                               getValue:
                                   (item) => item.isActive ? 'Có' : 'Không',
+                              isFullWidth: true
+
                             ),
                           ],
                           data: capitalSources,

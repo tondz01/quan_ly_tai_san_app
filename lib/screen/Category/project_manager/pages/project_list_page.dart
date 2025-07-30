@@ -44,7 +44,7 @@ class ProjectListPage extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
             width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,37 +52,50 @@ class ProjectListPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Tìm kiếm dự án',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: SGButton(
+                          text: 'Mới',  
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                          mainColor: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          onPressed: () {
+                            if (onAdd != null) {
+                              onAdd!();
+                            } else {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => BlocProvider.value(
+                                        value: context.read<ProjectBloc>(),
+                                        child: const ProjectFormPage(),
+                                      ),
+                                ),
+                              );
+                            }
+                          },
                         ),
-                        onChanged: (value) {
-                          context.read<ProjectBloc>().add(SearchProject(value));
-                        },
                       ),
                     ),
-                    SGButton(
-                      text: 'Thêm dự án',
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      onPressed: () {
-                        if (onAdd != null) {
-                          onAdd!();
-                        } else {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => BlocProvider.value(
-                                    value: context.read<ProjectBloc>(),
-                                    child: const ProjectFormPage(),
-                                  ),
-                            ),
-                          );
-                        }
-                      },
+                    Expanded(
+                      child: SizedBox(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Tìm kiếm dự án',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            isDense: true,
+                          ),
+                          onChanged: (value) {
+                            context.read<ProjectBloc>().add(SearchProject(value));
+                          },
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: SizedBox(),
                     ),
                   ],
                 ),
@@ -98,7 +111,8 @@ class ProjectListPage extends StatelessWidget {
                       return SingleChildScrollView(
                         child: SgTable<Project>(
                           // textHeaderColor: SGAppColors.error50,
-                          headerBackgroundColor: Colors.blue,
+                          headerBackgroundColor: Colors.grey.shade300,
+                                widthScreen: MediaQuery.of(context).size.width,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
             
@@ -141,16 +155,19 @@ class ProjectListPage extends StatelessWidget {
                               getValue: (item) => item.name,
                               width: MediaQuery.of(context).size.width / 4,
                               align: TextAlign.start,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<Project>(
                               title: 'Ghi chú',
                               getValue: (item) => item.note,
                               width: MediaQuery.of(context).size.width / 4,
                               align: TextAlign.start,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<Project>(
                               title: 'Có hiệu lực',
                               getValue: (item) => item.isActive ? 'Có' : 'Không',
+                              isFullWidth: true
                             ),
                           ],
                           data: projects,

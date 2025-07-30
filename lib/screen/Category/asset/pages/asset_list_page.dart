@@ -17,37 +17,40 @@ class AssetListPage extends StatelessWidget {
   void _showDeleteDialog(BuildContext context, AssetDTO asset) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: const Text('Bạn có chắc chắn muốn xóa tài sản này?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Hủy'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Xác nhận xóa'),
+            content: const Text('Bạn có chắc chắn muốn xóa tài sản này?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Hủy'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  context.read<AssetBloc>().add(DeleteAsset(asset));
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('Xóa'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<AssetBloc>().add(DeleteAsset(asset));
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Xóa'),
-          ),
-        ],
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final ScrollController horizontalScrollController = ScrollController();
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           Expanded(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.05,
+              ),
               width: MediaQuery.of(context).size.width,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,38 +58,55 @@ class AssetListPage extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            labelText: 'Tìm kiếm tài sản',
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(),
+                      Expanded(
+                        child: Container(
+                          alignment: Alignment.centerLeft,
+                          child: SGButton(
+                            text: 'Mới',
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 5,
+                            ),
+                            mainColor: Colors.deepPurple,
+                            fontWeight: FontWeight.bold,
+                            onPressed: () {
+                              if (onAdd != null) {
+                                onAdd!();
+                              } else {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => BlocProvider.value(
+                                          value: context.read<AssetBloc>(),
+                                          child: const AssetFormPage(),
+                                        ),
+                                  ),
+                                );
+                              }
+                            },
                           ),
-                          onChanged: (value) {
-                            context.read<AssetBloc>().add(SearchAsset(value));
-                          },
                         ),
                       ),
-                      Spacer(),
-                      SGButton(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        text: 'Thêm tài sản',
-                        onPressed: () {
-                          if (onAdd != null) {
-                            onAdd!();
-                          } else {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => BlocProvider.value(
-                                  value: context.read<AssetBloc>(),
-                                  child: const AssetFormPage(),
-                                ),
+                      Expanded(
+                        child: SizedBox(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Tìm kiếm tài sản',
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
                               ),
-                            );
-                          }
-                        },
+                              isDense: true,
+                            ),
+                            onChanged: (value) {
+                              context.read<AssetBloc>().add(SearchAsset(value));
+                            },
+                          ),
+                        ),
                       ),
+                      Expanded(child: SizedBox()),
                     ],
                   ),
                   SizedBox(height: 8),
@@ -95,7 +115,9 @@ class AssetListPage extends StatelessWidget {
                       if (state is AssetLoaded) {
                         final assets = state.assets;
                         if (assets.isEmpty) {
-                          return const Center(child: Text('Chưa có tài sản nào.'));
+                          return const Center(
+                            child: Text('Chưa có tài sản nào.'),
+                          );
                         }
                         return Expanded(
                           child: Scrollbar(
@@ -106,7 +128,8 @@ class AssetListPage extends StatelessWidget {
                               scrollDirection: Axis.horizontal,
                               physics: const BouncingScrollPhysics(),
                               child: SgTable<AssetDTO>(
-                                headerBackgroundColor: Colors.blue,
+                                headerBackgroundColor: Colors.grey.shade300,
+                                widthScreen: MediaQuery.of(context).size.width,
                                 evenRowBackgroundColor: Colors.grey.shade200,
                                 oddRowBackgroundColor: Colors.white,
                                 gridLineColor: Colors.grey.shade300,
@@ -125,10 +148,11 @@ class AssetListPage extends StatelessWidget {
                                   } else {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => BlocProvider.value(
-                                          value: context.read<AssetBloc>(),
-                                          child: AssetFormPage(asset: item),
-                                        ),
+                                        builder:
+                                            (_) => BlocProvider.value(
+                                              value: context.read<AssetBloc>(),
+                                              child: AssetFormPage(asset: item),
+                                            ),
                                       ),
                                     );
                                   }
@@ -137,35 +161,160 @@ class AssetListPage extends StatelessWidget {
                                   _showDeleteDialog(context, item);
                                 },
                                 columns: [
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Mã tài sản', getValue: (item) => item.assetId, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Nguyên giá', getValue: (item) => item.originalPrice, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Giá trị khấu hao ban đầu', getValue: (item) => item.initialDepreciationValue, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Kỳ khấu hao ban đầu', getValue: (item) => item.initialDepreciationPeriod, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Giá trị thanh lý', getValue: (item) => item.liquidationValue, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Mô hình tài sản', getValue: (item) => item.assetModel, width: 200),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Phương pháp khấu hao', getValue: (item) => item.depreciationMethod, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Số kỳ khấu hao', getValue: (item) => item.depreciationPeriods, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Tài khoản tài sản', getValue: (item) => item.assetAccount, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Tài khoản khấu hao', getValue: (item) => item.depreciationAccount, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Tài khoản chi phí', getValue: (item) => item.costAccount, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Nhóm tài sản', getValue: (item) => item.assetGroup, width: 200),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Ngày vào sổ', getValue: (item) => item.entryDate, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Ngày sử dụng', getValue: (item) => item.usageDate, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Dự án', getValue: (item) => item.project, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Nguồn kinh phí', getValue: (item) => item.fundingSource, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Ký hiệu', getValue: (item) => item.symbol, width: 100),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Số ký hiệu', getValue: (item) => item.symbolNumber, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Công suất', getValue: (item) => item.capacity, width: 100),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Nước sản xuất', getValue: (item) => item.countryOfOrigin, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Năm sản xuất', getValue: (item) => item.yearOfManufacture, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Lý do tăng', getValue: (item) => item.reasonForIncrease, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Hiện trạng', getValue: (item) => item.status, width: 120),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Số lượng', getValue: (item) => item.quantity, width: 100),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Đơn vị tính', getValue: (item) => item.unit, width: 100),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Ghi chú', getValue: (item) => item.note, width: 150),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Khởi tạo Đơn vị ban đầu', getValue: (item) => item.initialUnitCreated ? 'Có' : 'Không', width: 180),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Đơn vị sử dụng ban đầu', getValue: (item) => item.initialUsageUnit, width: 180),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(title: 'Đơn vị hiện thời', getValue: (item) => item.currentUnit, width: 150),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Mã tài sản',
+                                    getValue: (item) => item.assetId,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Nguyên giá',
+                                    getValue: (item) => item.originalPrice,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Giá trị khấu hao ban đầu',
+                                    getValue:
+                                        (item) => item.initialDepreciationValue,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Kỳ khấu hao ban đầu',
+                                    getValue:
+                                        (item) =>
+                                            item.initialDepreciationPeriod,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Giá trị thanh lý',
+                                    getValue: (item) => item.liquidationValue,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Mô hình tài sản',
+                                    getValue: (item) => item.assetModel,
+                                    width: 200,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Phương pháp khấu hao',
+                                    getValue: (item) => item.depreciationMethod,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Số kỳ khấu hao',
+                                    getValue:
+                                        (item) => item.depreciationPeriods,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Tài khoản tài sản',
+                                    getValue: (item) => item.assetAccount,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Tài khoản khấu hao',
+                                    getValue:
+                                        (item) => item.depreciationAccount,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Tài khoản chi phí',
+                                    getValue: (item) => item.costAccount,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Nhóm tài sản',
+                                    getValue: (item) => item.assetGroup,
+                                    width: 200,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Ngày vào sổ',
+                                    getValue: (item) => item.entryDate,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Ngày sử dụng',
+                                    getValue: (item) => item.usageDate,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Dự án',
+                                    getValue: (item) => item.project,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Nguồn kinh phí',
+                                    getValue: (item) => item.fundingSource,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Ký hiệu',
+                                    getValue: (item) => item.symbol,
+                                    width: 100,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Số ký hiệu',
+                                    getValue: (item) => item.symbolNumber,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Công suất',
+                                    getValue: (item) => item.capacity,
+                                    width: 100,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Nước sản xuất',
+                                    getValue: (item) => item.countryOfOrigin,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Năm sản xuất',
+                                    getValue: (item) => item.yearOfManufacture,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Lý do tăng',
+                                    getValue: (item) => item.reasonForIncrease,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Hiện trạng',
+                                    getValue: (item) => item.status,
+                                    width: 120,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Số lượng',
+                                    getValue: (item) => item.quantity,
+                                    width: 100,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Đơn vị tính',
+                                    getValue: (item) => item.unit,
+                                    width: 100,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Ghi chú',
+                                    getValue: (item) => item.note,
+                                    width: 150,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Khởi tạo Đơn vị ban đầu',
+                                    getValue:
+                                        (item) =>
+                                            item.initialUnitCreated
+                                                ? 'Có'
+                                                : 'Không',
+                                    width: 180,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Đơn vị sử dụng ban đầu',
+                                    getValue: (item) => item.initialUsageUnit,
+                                    width: 180,
+                                  ),
+                                  TableColumnBuilder.createTextColumn<AssetDTO>(
+                                    title: 'Đơn vị hiện thời',
+                                    getValue: (item) => item.currentUnit,
+                                    width: 150,
+                                  ),
                                 ],
                                 data: assets,
                                 onRowTap: (item) {},
@@ -187,4 +336,4 @@ class AssetListPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

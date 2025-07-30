@@ -48,49 +48,66 @@ class DepartmentListPage extends StatelessWidget {
         children: [
           const SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.05,
+            ),
             width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Tìm kiếm phòng ban',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: SGButton(
+                          text: 'Mới',
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 5,
+                          ),
+                          mainColor: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          onPressed: () {
+                            if (onAdd != null) {
+                              onAdd!();
+                            } else {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => BlocProvider.value(
+                                        value: context.read<DepartmentBloc>(),
+                                        child: const DepartmentFormPage(),
+                                      ),
+                                ),
+                              );
+                            }
+                          },
                         ),
-                        onChanged: (value) {
-                          context.read<DepartmentBloc>().add(
-                            SearchDepartment(value),
-                          );
-                        },
                       ),
                     ),
-                    Spacer(),
-                    SGButton(
-                      text: 'Thêm phòng ban',
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      onPressed: () {
-                        if (onAdd != null) {
-                          onAdd!();
-                        } else {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => BlocProvider.value(
-                                    value: context.read<DepartmentBloc>(),
-                                    child: const DepartmentFormPage(),
-                                  ),
+                    Expanded(
+                      child: SizedBox(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Tìm kiếm phòng ban',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                          );
-                        }
-                      },
+                            isDense: true,
+                          ),
+                          onChanged: (value) {
+                            context.read<DepartmentBloc>().add(
+                              SearchDepartment(value),
+                            );
+                          },
+                        ),
+                      ),
                     ),
+                    Expanded(child: SizedBox()),
                   ],
                 ),
 
@@ -107,7 +124,8 @@ class DepartmentListPage extends StatelessWidget {
                       return SingleChildScrollView(
                         child: SgTable<Department>(
                           // textHeaderColor: SGAppColors.error50,
-                          headerBackgroundColor: Colors.blue,
+                          headerBackgroundColor: Colors.grey.shade300,
+                                widthScreen: MediaQuery.of(context).size.width,
                           evenRowBackgroundColor: Colors.grey.shade200,
                           oddRowBackgroundColor: Colors.white,
 
@@ -153,16 +171,17 @@ class DepartmentListPage extends StatelessWidget {
                             TableColumnBuilder.createTextColumn<Department>(
                               title: 'Nhóm đơn vị',
                               getValue: (item) => item.departmentGroup,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<Department>(
                               title: 'Tên phòng/ban',
                               getValue: (item) => item.departmentName,
                               width: 250,
                               align: TextAlign.start,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<Department>(
                               title: 'Quản lý',
-                              width: 150,
                               align: TextAlign.start,
                               getValue:
                                   (item) =>
@@ -174,16 +193,19 @@ class DepartmentListPage extends StatelessWidget {
                                                 staff.staffId == item.managerId,
                                           )
                                           .name,
+                              isFullWidth: true
                             ),
                             TableColumnBuilder.createTextColumn<Department>(
                               title: 'Nhân viên',
                               getValue: (item) => item.employeeCount,
+                              isFullWidth: true
+
                             ),
                             TableColumnBuilder.createTextColumn<Department>(
                               title: 'Phòng/ Ban cấp trên',
                               getValue: (item) => item.parentRoom,
                               align: TextAlign.start,
-                              width: 250,
+                                                            isFullWidth: true
                             ),
                           ],
                           data: departments,
