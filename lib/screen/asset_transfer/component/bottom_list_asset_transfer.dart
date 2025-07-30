@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/download_file.dart';
-import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/popup_show_detail.dart';
@@ -206,7 +205,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
     return url.isNotEmpty
         ? InkWell(
           onTap: () {
-            downloadFile(url, name);
+            downloadFile(url, name, context);
           },
           borderRadius: BorderRadius.circular(6),
           child: Container(

@@ -44,7 +44,7 @@ List<SgTableColumn<AssetHandoverDto>> createColumns(
     ),
     SgTableColumn<AssetHandoverDto>(
       title: 'Tài liệu duyệt',
-      cellBuilder: (item) => showFile(url),
+      cellBuilder: (item) => showFile(url, context),
       cellAlignment: TextAlign.center,
       titleAlignment: TextAlign.center,
       width: columnWidths['Tài liệu duyệt']!,
@@ -76,11 +76,11 @@ List<SgTableColumn<AssetHandoverDto>> createColumns(
   ];
 }
 
-Widget showFile(String url) {
+Widget showFile(String url, BuildContext context) {
   return url.isNotEmpty
       ? InkWell(
         onTap: () {
-          downloadFile(url, 'Bàn giao tài sản');
+          downloadFile(url, 'Bàn giao tài sản', context);
         },
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),

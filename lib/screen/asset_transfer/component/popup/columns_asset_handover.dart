@@ -4,7 +4,6 @@ import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 abstract class AssetHandoverColumns {
   static Color getStatusColor(int status) {

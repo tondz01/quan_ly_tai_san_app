@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
-import 'package:se_gay_components/common/sg_button.dart';
-import 'package:se_gay_components/common/sg_textfield.dart';
 
 class ProjectFormPage extends StatefulWidget {
   final Project? project;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
-  const ProjectFormPage({super.key, this.project, this.index, this.onCancel, this.onSaved});
+  const ProjectFormPage({
+    super.key,
+    this.project,
+    this.index,
+    this.onCancel,
+    this.onSaved,
+  });
 
   @override
   State<ProjectFormPage> createState() => _ProjectFormPageState();
@@ -67,59 +72,57 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     final isEdit = widget.project != null;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        margin: EdgeInsets.only(right: 50, top: 16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      isEdit ? 'Cập nhật thông tin dự án' : 'Thêm mới dự án',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.8,
+          ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F9FC),
+            borderRadius: BorderRadius.circular(16),
+          ),
+
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32.0,
+                  horizontal: 32.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    width: 1,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 32.0,
-                horizontal: 32.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Colors.grey.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Column(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      sectionTitle(
+                        Icons.account_tree,
+                        isEdit ? 'Cập nhật dự án' : 'Thêm mới dự án',
+                        'Nhập thông tin dự án mới.',
+                      ),
+                      sectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            sectionTitle(Icons.info_outline, 'Thông tin dự án'),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
-                                  child: SGTextField(
+                                  child: TextFormField(
                                     controller: _codeController,
-                                    label: 'Mã dự án',
-                                    prefixIcon: Icon(
-                                      Icons.code,
-                                      color: Colors.orange,
+                                    decoration: inputDecoration(
+                                      'Mã dự án',
+                                      required: true,
                                     ),
                                     validator:
                                         (v) =>
@@ -128,43 +131,41 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                                                 : null,
                                   ),
                                 ),
-                                const SizedBox(width: 25),
+                                const SizedBox(width: 16),
                                 Expanded(
-                                  child: SGTextField(
+                                  child: TextFormField(
                                     controller: _nameController,
-                                    label: 'Tên dự án',
-                                    prefixIcon: Icon(
-                                      Icons.title,
-                                      color: Colors.orange,
+                                    decoration: inputDecoration(
+                                      'Tên dự án',
+                                      required: true,
                                     ),
                                     validator:
                                         (v) =>
                                             v == null || v.isEmpty
                                                 ? 'Nhập tên dự án'
                                                 : null,
-                                    minLines: 1,
-                                    maxLines: 3,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            SGTextField(
+                            TextFormField(
                               controller: _noteController,
-                              label: 'Ghi chú',
-                              prefixIcon: Icon(
-                                Icons.note_alt,
-                                color: Colors.orange,
+                              decoration: inputDecoration(
+                                'Ghi chú',
+                                required: true,
                               ),
-                              minLines: 1,
-                              maxLines: 3,
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập ghi chú'
+                                          : null,
                             ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
                                 Checkbox(
                                   value: _isActive,
-                                  activeColor: Colors.orange,
                                   onChanged:
                                       (v) =>
                                           setState(() => _isActive = v ?? true),
@@ -176,33 +177,52 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                               ],
                             ),
                           ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        SGButton(
-                          text: 'Hủy',
-                          onPressed: () {
-                            if (widget.onCancel != null) {
-                              widget.onCancel!();
-                            } else {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          mainColor: Colors.blueAccent,
                         ),
-                        const SizedBox(width: 16),
-                        SGButton(text: isEdit ? 'Cập nhật':'Thêm mới', onPressed: _save),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          OutlinedButton(
+                            onPressed: () {
+                              if (widget.onCancel != null) {
+                                widget.onCancel!();
+                              } else {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7B8EC8),
+                              side: const BorderSide(color: Color(0xFFE6EAF3)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Hủy'),
+                          ),
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: _save,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2264E5),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                            ),
+                            child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
