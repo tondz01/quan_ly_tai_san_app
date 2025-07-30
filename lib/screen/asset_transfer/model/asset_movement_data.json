@@ -6,6 +6,7 @@
     "decisionDate": "28/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -39,6 +40,7 @@
     "decisionDate": "19/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -80,6 +82,7 @@
     "decisionDate": "19/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -113,6 +116,7 @@
     "decisionDate": "19/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -155,6 +159,7 @@
     "decisionDate": "19/06/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -197,6 +202,7 @@
     "decisionDate": "14/05/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Nguyễn Văn Hùng",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -230,6 +236,7 @@
     "decisionDate": "02/04/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -272,6 +279,7 @@
     "decisionDate": "29/03/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -314,6 +322,7 @@
     "decisionDate": "15/08/2024",
     "requester": "Vũ Nam",
     "creator": "Vũ Nam",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -347,6 +356,7 @@
     "decisionDate": "01/03/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",
@@ -379,6 +389,7 @@
     "decisionDate": "01/03/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 2,
     "movementDetails": [
       {
         "id": "1",

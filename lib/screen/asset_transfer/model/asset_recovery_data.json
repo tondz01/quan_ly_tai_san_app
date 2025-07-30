@@ -6,6 +6,7 @@
     "decisionDate": "22/06/2025",
     "requester": "Ecotel",
     "creator": "Ecotel",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",
@@ -39,6 +40,7 @@
     "decisionDate": "22/06/2025",
     "requester": "Ecotel",
     "creator": "Ecotel",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",
@@ -72,6 +74,7 @@
     "decisionDate": "01/04/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Khúc Thanh Huyền",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",
@@ -123,6 +126,7 @@
     "decisionDate": "01/03/2025",
     "requester": "Khúc Thanh Huyền",
     "creator": "Khúc Thanh Huyền",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",
@@ -156,6 +160,7 @@
     "decisionDate": "01/03/2025",
     "requester": "Khúc Thanh Huyền",
     "creator": "Khúc Thanh Huyền",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",
@@ -189,6 +194,7 @@
     "decisionDate": "01/03/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Xuân Vinh",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",
@@ -222,6 +228,7 @@
     "decisionDate": "01/03/2025",
     "requester": "Phạm Văn Bốn",
     "creator": "Phạm Văn Bốn",
+    "type": 3,
     "movementDetails": [
       {
         "id": "1",

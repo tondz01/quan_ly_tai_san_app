@@ -7,6 +7,7 @@ class AssetTransferDto {
   final String? documentName; // Tên phiếu
   final String? decisionNumber; // Số quyết định
   final String? decisionDate; // Ngày quyết định
+  final int? type;
   final String? subject; // Trích yêu
   final String? requester; // Người đề nghị
   final String? requestingUnit; // Người lập phiếu
@@ -34,6 +35,7 @@ class AssetTransferDto {
     this.documentName,
     this.decisionNumber,
     this.decisionDate,
+    this.type,
     this.subject,
     this.requester,
     this.requestingUnit,
@@ -63,6 +65,7 @@ class AssetTransferDto {
       documentName: json['documentName'],
       decisionNumber: json['decisionNumber'],
       decisionDate: json['decisionDate'],
+      type: json['type'],
       subject: json['subject'],
       requester: json['requester'],
       requestingUnit: json['requestingUnit'],
@@ -99,6 +102,7 @@ class AssetTransferDto {
       'documentName': documentName,
       'decisionNumber': decisionNumber,
       'decisionDate': decisionDate,
+      'type': type,
       'subject': subject,
       'requester': requester,
       'requestingUnit': requestingUnit,

@@ -105,7 +105,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                   title: HeaderComponent(
                     controller: _searchController,
                     onSearchChanged: (value) {
-                      // Cập nhật trạng thái tìm kiếm trong provider
                       provider.searchTerm = value;
                     },
                     onTap: provider.onTapBackHeader,

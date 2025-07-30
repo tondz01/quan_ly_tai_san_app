@@ -342,7 +342,8 @@ class AssetTransferProvider with ChangeNotifier {
               : 'Điều động tài sản';
       if (!isMainScreen) {
         _subScreen = item == null ? 'Mới' : item.documentName ?? '';
-        _body = AssetTransferDetail(item: item, isEditing: isEdit);
+        log('message item: ${item == null}');
+        _body = AssetTransferDetail(item: item, isEditing: isEdit, provider: this);
       } else {
         _subScreen = '';
         _subScreen = null;
