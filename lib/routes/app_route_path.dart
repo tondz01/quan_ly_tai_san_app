@@ -7,7 +7,8 @@ enum AppRoute {
   exemple4(path: "/exemple/4", name: "exemple-4"),
   toolsAndSupplies(path: "/tools-and-supplies", name: "tools-and-supplies"),
   assetTransfer(path: "/asset-transfer", name: "asset-transfer"),
-  assetHandover(path: "/asset-handover", name: "asset-handover");
+  assetHandover(path: "/asset-handover", name: "asset-handover"),
+  assetHandoverDetail(path: "/asset-handover-detail", name: "asset-handover-detail");
 
   final String path;
   final String? name;

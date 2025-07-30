@@ -5,99 +5,21 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-import 'popup/columns_asset_handover.dart';
+import 'columns_asset_handover_component.dart';
 
-class PropertyHandoverMinutes {
-  static void showPopup(BuildContext context, List<AssetHandoverDto> data) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    final popupWidth =
-        screenWidth < 1100 ? screenWidth * 0.95 : screenWidth * 0.9;
-    final popupHeight =
-        screenHeight < 800 ? screenHeight * 0.9 : screenHeight * 0.8;
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            width: popupWidth,
-            height: popupHeight,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
-            child: Column(
-              children: [
-                _buildHeader(context),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: _PropertyHandoverMinutesContent(data: data),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  static Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.description, color: Colors.blue.shade700, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: SGText(
-              text: 'Biên bản Bàn giao',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.blue.shade800,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(Icons.close, color: Colors.blue.shade700),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PropertyHandoverMinutesContent extends StatefulWidget {
+class BotttomTableAssetHandover extends StatefulWidget {
   final List<AssetHandoverDto> data;
-  const _PropertyHandoverMinutesContent({required this.data});
+  const BotttomTableAssetHandover({super.key, required this.data});
 
   @override
-  State<_PropertyHandoverMinutesContent> createState() =>
-      _PropertyHandoverMinutesContentState();
+  State<BotttomTableAssetHandover> createState() =>
+      _BotttomTableAssetHandoverState();
 }
 
-class _PropertyHandoverMinutesContentState
-    extends State<_PropertyHandoverMinutesContent> {
+class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
   static const Map<String, Color> _statusColors = {
     'Nháp': ColorValue.silverGray,
     'Sẵn sàng': ColorValue.lightAmber,
@@ -121,11 +43,14 @@ class _PropertyHandoverMinutesContentState
   @override
   Widget build(BuildContext context) {
     log(MediaQuery.of(context).size.width.toString());
+    log("widget.data.length: ${widget.data.length}");
     return Container(
+      height: MediaQuery.of(context).size.height * 0.4,
       decoration: _buildContainerDecoration(),
       child: Column(
         children: [
           _buildTableHeader(),
+          const SizedBox(height: 10),
           if (_isSmallScreen) _buildScrollIndicator(),
           Expanded(child: _buildTable()),
         ],
@@ -299,17 +224,17 @@ class _PropertyHandoverMinutesContentState
 
   List<SgTableColumn<AssetHandoverDto>> _buildSmallScreenColumns() {
     const columnWidths = {
-      'Quyết định điều động': 150.0,
-      'Lệnh điều động': 200.0,
-      'Ngày bàn giao': 120.0,
-      'Chi tiết bàn giao': 200.0,
-      'Đơn vị giao': 150.0,
-      'Đơn vị nhận': 150.0,
-      'Trạng thái': 120.0,
-      'Actions': 100.0,
+      'Phiếu ký nội sinh': 150.0,
+      'Ngày ký': 120.0,
+      'Ngày hiệu lực': 120.0,
+      'Trình duyệt ban giám đốc': 150.0,
+      'Tài liệu duyệt': 150.0,
+      'Có hiệu lực': 120.0,
+      'Ký số': 150.0,
+      'Actions': 150.0,
     };
 
-    return _createColumns(context, columnWidths);
+    return createColumns(context, columnWidths);
   }
 
   List<SgTableColumn<AssetHandoverDto>> _buildLargeScreenColumns() {
@@ -317,87 +242,21 @@ class _PropertyHandoverMinutesContentState
     final availableWidth = screenWidth - 40;
 
     final columnWidths = {
-      'Quyết định điều động': availableWidth * 0.12,
-      'Lệnh điều động': availableWidth * 0.17,
-      'Ngày bàn giao': availableWidth * 0.1,
-      'Chi tiết bàn giao': availableWidth * 0.17,
-      'Đơn vị giao': availableWidth * 0.11,
-      'Đơn vị nhận': availableWidth * 0.11,
-      'Trạng thái': availableWidth * 0.12,
-      'Actions': availableWidth * 0.1,
+      'Phiếu ký nội sinh': availableWidth * 0.13,
+      'Ngày ký': availableWidth * 0.12,
+      'Ngày hiệu lực': availableWidth * 0.12,
+      'Trình duyệt ban giám đốc': availableWidth * 0.12,
+      'Tài liệu duyệt': availableWidth * 0.15,
+      'Có hiệu lực': availableWidth * 0.1,
+      'Ký số': availableWidth * 0.12,
+      'Actions': availableWidth * 0.13,
     };
 
-    return _createColumns(context, columnWidths);
+    return createColumns(context, columnWidths);
   }
 
   int _getCountByState(String key) {
     final status = _statusValues[key] ?? 0;
     return widget.data.where((item) => item.state == status).length;
-  }
-
-  List<SgTableColumn<AssetHandoverDto>> _createColumns(
-    BuildContext context,
-    Map<String, double> columnWidths,
-  ) {
-    return [
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Quyết định điều động',
-        textColor: Colors.black87,
-        getValue: (item) => item.decisionNumber ?? '',
-        fontSize: 12,
-        width: columnWidths['Quyết định điều động']!,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Lệnh điều động',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.order ?? '',
-        width: columnWidths['Lệnh điều động']!,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Ngày bàn giao',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.transferDate ?? '',
-        width: columnWidths['Ngày bàn giao']!,
-      ),
-      SgTableColumn<AssetHandoverDto>(
-        title: 'Chi tiết bàn giao',
-        cellBuilder:
-            (item) => AssetHandoverColumns.buildMovementDetails(item.assetHandoverMovements ?? []),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: columnWidths['Chi tiết bàn giao']!,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Đơn vị giao',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.senderUnit ?? '',
-        width: columnWidths['Đơn vị giao']!,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Đơn vị nhận',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.receiverUnit ?? '',
-        width: columnWidths['Đơn vị nhận']!,
-      ),
-      SgTableColumn<AssetHandoverDto>(
-        title: 'Trạng thái',
-        cellBuilder: (item) => AssetHandoverColumns.buildStatus(item.state ?? 0),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: columnWidths['Trạng thái']!,
-      ),
-      SgTableColumn<AssetHandoverDto>(
-        title: '',
-        cellBuilder: (item) => AssetHandoverColumns.buildActions(context, item),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: columnWidths['Actions']!,
-        searchable: true,
-      ),
-    ];
   }
 }

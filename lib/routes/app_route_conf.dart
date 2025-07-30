@@ -54,14 +54,14 @@ class AppRouteConf {
               ),
             ),
           ),
-          GoRoute(
-            path: AppRoute.assetHandover.path,
-            name: AppRoute.assetHandover.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const AssetHandoverView(),
+            GoRoute(
+              path: AppRoute.assetHandover.path,
+              name: AppRoute.assetHandover.name,
+              pageBuilder: (context, state) => NoTransitionPage(
+                key: state.pageKey,
+                child: const AssetHandoverView(),
+              ),
             ),
-          ),
           // GoRoute(
           //   name: AppRoute.liveVideoVar.name,
           //   pageBuilder: (_, __) => const NoTransitionPage(child: LiveVideoV2Page()),

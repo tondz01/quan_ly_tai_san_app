@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/download_file.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -14,7 +15,11 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 class BottomListAssetTransfer extends StatefulWidget {
   final AssetTransferProvider provider;
   final List<AssetHandoverDto> listAssetHandover;
-  const BottomListAssetTransfer({super.key, required this.provider, required this.listAssetHandover});
+  const BottomListAssetTransfer({
+    super.key,
+    required this.provider,
+    required this.listAssetHandover,
+  });
 
   @override
   State<BottomListAssetTransfer> createState() =>
@@ -22,6 +27,9 @@ class BottomListAssetTransfer extends StatefulWidget {
 }
 
 class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
+  String url =
+      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+
   bool isShowPhieuCapPhat = false;
 
   Map<String, Color> listStatus = {
@@ -36,63 +44,12 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
   };
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Collapse Header
-        InkWell(
-          onTap: () {
-            setState(() {
-              isShowPhieuCapPhat = !isShowPhieuCapPhat;
-            });
-          },
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue.shade200, width: 1),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.description, color: Colors.blue.shade700, size: 20),
-                SizedBox(width: 12),
-                Expanded(
-                  child: SGText(
-                    text: 'Phiếu duyệt cấp phát tài sản',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blue.shade800,
-                    ),
-                  ),
-                ),
-                buildTooltipStatus(),
-                Icon(
-                  isShowPhieuCapPhat ? Icons.expand_less : Icons.expand_more,
-                  color: Colors.blue.shade700,
-                  size: 24,
-                ),
-              ],
-            ),
-          ),
-        ),
-        // Collapse Content
-        if (isShowPhieuCapPhat) ...[
-          SizedBox(height: 8),
-          AnimatedContainer(
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            child: onShowPhieuCapPhat(),
-          ),
-        ],
-      ],
-    );
+    return onShowPhieuCapPhat();
   }
 
   Widget onShowPhieuCapPhat() {
     final screenWidth = MediaQuery.of(context).size.width;
-    final availableWidth = screenWidth - 42; // Trừ padding và margin
+    final availableWidth = screenWidth - 50; // Trừ padding và margin
 
     // Tính toán width cho từng cột dựa trên tỷ lệ
     final columnWidths = {
@@ -100,10 +57,10 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
       'Ngày ký': availableWidth * 0.1, // 12%
       'Ngày có hiệu lực': availableWidth * 0.1, // 12%
       'Trình duyệt Ban giám đốc': availableWidth * 0.15, // 15%
-      'Tài liệu duyệt': availableWidth * 0.17, // 20%
+      'Tài liệu duyệt': availableWidth * 0.15, // 20%
       'Ký số': availableWidth * 0.1, // 8%
       'Trạng thái': availableWidth * 0.15, // 12%
-      'Actions': availableWidth * 0.1, // 1%
+      'Actions': availableWidth * 0.12, // 1%
     };
 
     return Container(
@@ -133,17 +90,27 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
               ),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Danh sách phiếu cấp phát tài sản (${widget.provider.data.length})',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.table_chart,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Danh sách phiếu cấp phát tài sản (${widget.provider.data.length})',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
                 ),
+                buildTooltipStatus(),
               ],
             ),
           ),
@@ -183,7 +150,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
                   ),
                   SgTableColumn<AssetTransferDto>(
                     title: 'Tài liệu duyệt',
-                    cellBuilder: (item) => showFile(item.documentName ?? ''),
+                    cellBuilder: (item) => showFile(url, item.documentName ?? ''),
                     sortValueGetter: (item) => item.documentFileName ?? '',
                     searchValueGetter: (item) => item.documentFileName ?? '',
                     cellAlignment: TextAlign.center,
@@ -235,19 +202,11 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
     return '';
   }
 
-  Widget showFile(String url) {
+  Widget showFile(String url, String name) {
     return url.isNotEmpty
         ? InkWell(
           onTap: () {
-            showDialog(
-              context: context,
-              builder:
-                  (context) => WebViewCommon(
-                    url: 'https://ams.sscdx.com.vn/web#',
-                    title: url,
-                    showAppBar: true,
-                  ),
-            );
+            downloadFile(url, name);
           },
           borderRadius: BorderRadius.circular(6),
           child: Container(
@@ -268,7 +227,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
                 SizedBox(width: 4),
                 Flexible(
                   child: Text(
-                    url,
+                    name,
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.blue.shade700,
@@ -290,19 +249,42 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
       children: [
         Container(
           decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.red.shade200, width: 1),
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.book_outlined,
+              size: 16,
+              color: ColorValue.lightAmber,
+            ),
+            tooltip: 'Biên bản bản giao',
+            color: Colors.green.shade700,
+            onPressed:
+                () => PropertyHandoverMinutes.showPopup(
+                  context,
+                  widget.listAssetHandover
+                      .where((itemAH) => itemAH.id == item.idAssetHandover)
+                      .toList(),
+                ),
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            padding: const EdgeInsets.all(4),
+          ),
+        ),
+        SizedBox(width: 8),
+        Container(
+          decoration: BoxDecoration(
             color: Colors.green.shade50,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.green.shade200, width: 1),
           ),
           child: IconButton(
-            icon: Icon(Icons.visibility, size: 16),
+            icon: Icon(Icons.visibility, size: 16, color: ColorValue.cyan),
             tooltip: 'Xem',
             color: Colors.green.shade700,
-            onPressed:
-                () => PropertyHandoverMinutes.showPopup(
-                  context,
-                  widget.listAssetHandover.where((itemAH) => itemAH.id == item.idAssetHandover).toList(),
-                ),
+            onPressed: null,
+
             // showDialog(
             //   context: context,
             //   builder:

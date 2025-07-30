@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 
 import 'bloc/asset_handover_bloc.dart';
@@ -10,6 +12,7 @@ import 'bloc/asset_handover_state.dart';
 import 'provider/asset_handover_provider.dart';
 
 class AssetHandoverView extends StatefulWidget {
+
   const AssetHandoverView({super.key});
 
   @override
@@ -17,32 +20,86 @@ class AssetHandoverView extends StatefulWidget {
 }
 
 class _AssetHandoverViewState extends State<AssetHandoverView> {
+  AssetHandoverDto? assetHandoverData;
+  Map<String, dynamic>? menuSelectionData;
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
 
   @override
   void initState() {
     super.initState();
-     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetHandoverProvider>(
-        context,
-        listen: false,
-      ).onInit(context);
-    });
+    _initData();
   }
 
-  // @override
-  // void didUpdateWidget(AssetHandoverView oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   _initData();
-  // }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Lấy data từ router sau khi dependencies đã được thiết lập
+    final extra = GoRouterState.of(context).extra;
+    log('Extra data from router: $extra');
+    
+    if (extra is Map<String, dynamic>) {
+      assetHandoverData = extra['AssetHandoverDto'] as AssetHandoverDto?;
+      menuSelectionData = extra['menuSelection'] as Map<String, dynamic>?;
+      
+      if (assetHandoverData != null) {
+        _handleAssetHandoverData(assetHandoverData!);
+      }
+      
+      if (menuSelectionData != null) {
+        _updateMenuSelection();
+      }
+    } else if (extra is AssetHandoverDto) {
+      assetHandoverData = extra;
+      if (assetHandoverData != null) {
+        _handleAssetHandoverData(assetHandoverData!);
+      }
+    }
+  }
+
+  void _updateMenuSelection() {
+    if (menuSelectionData != null) {
+      final selectedIndex = menuSelectionData!['selectedIndex'] as int?;
+      final selectedSubIndex = menuSelectionData!['selectedSubIndex'] as int?;
+      
+      if (selectedIndex != null && selectedSubIndex != null) {
+        log('Updating menu selection: index=$selectedIndex, subIndex=$selectedSubIndex');
+        // Có thể thêm logic để cập nhật menu selection ở đây nếu cần
+      }
+    }
+  }
+
+  void _handleAssetHandoverData(AssetHandoverDto assetHandoverDto) {
+    log('Received AssetHandoverDto: ${assetHandoverDto.name}');
+    
+    final provider = Provider.of<AssetHandoverProvider>(context, listen: false);
+    
+    // Khởi tạo provider và chuyển đến detail screen
+    provider.onInit(context);
+    provider.onChangeScreen(
+      item: assetHandoverDto,
+      isMainScreen: false,
+      isEdit: false,
+    );
+  }
+
+  @override
+  void didUpdateWidget(AssetHandoverView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _initData();
+  }
 
   void _initData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetHandoverProvider>(
+      final provider = Provider.of<AssetHandoverProvider>(
         context,
         listen: false,
-      ).onInit(context);
+      );
+
+      // Chỉ khởi tạo nếu không có data từ router
+      if (assetHandoverData == null) {
+        provider.onInit(context);
+      }
     });
   }
 

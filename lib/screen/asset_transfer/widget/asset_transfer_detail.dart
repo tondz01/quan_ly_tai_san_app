@@ -622,6 +622,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 widget.item?.movementDetails ?? [],
                 isEditing,
               ),
+              
+              const SizedBox(height: 10),
               BottomListAssetTransfer(
                 provider: widget.provider,
                 listAssetHandover: listAssetHandover,
