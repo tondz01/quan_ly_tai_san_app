@@ -1,6 +1,7 @@
 [
   {
     "id": "1",
+    "idAssetHandover": "6",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "22/06/2025",
@@ -35,6 +36,7 @@
   },
   {
     "id": "2",
+    "idAssetHandover": "6",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "22/06/2025",
@@ -69,6 +71,7 @@
   },
   {
     "id": "3",
+    "idAssetHandover": "6",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "01/04/2025",
@@ -121,6 +124,7 @@
   },
   {
     "id": "4",
+    "idAssetHandover": "6",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": "000011/QD-TUB",
     "decisionDate": "01/03/2025",
@@ -155,6 +159,7 @@
   },
   {
     "id": "5",
+    "idAssetHandover": "7",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "01/03/2025",
@@ -189,6 +194,7 @@
   },
   {
     "id": "6",
+    "idAssetHandover": "6",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": "000004/QD-TUB",
     "decisionDate": "01/03/2025",
@@ -223,6 +229,7 @@
   },
   {
     "id": "7",
+    "idAssetHandover": "6",
     "documentName": "Đề nghị Thu hồi tài sản, trang thiết bị",
     "decisionNumber": "000003/QD-TUB",
     "decisionDate": "01/03/2025",

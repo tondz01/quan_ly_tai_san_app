@@ -1,6 +1,7 @@
 [
   {
     "id": "1",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": "000035/QD-TUB",
     "decisionDate": "28/06/2025",
@@ -35,6 +36,7 @@
   },
   {
     "id": "2",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": "000032/QD-TUB",
     "decisionDate": "19/06/2025",
@@ -77,6 +79,7 @@
   },
   {
     "id": "3",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "19/06/2025",
@@ -111,6 +114,7 @@
   },
   {
     "id": "4",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "19/06/2025",
@@ -154,6 +158,7 @@
   },
   {
     "id": "5",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "19/06/2025",
@@ -197,6 +202,7 @@
   },
   {
     "id": "6",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": "000027/QD-TUB",
     "decisionDate": "14/05/2025",
@@ -231,6 +237,7 @@
   },
   {
     "id": "7",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị Điều động tài sản, trang thiết bị",
     "decisionNumber": "000019/QD-TUB",
     "decisionDate": "02/04/2025",
@@ -274,6 +281,7 @@
   },
   {
     "id": "8",
+    "idAssetHandover": "4",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "29/03/2025",
@@ -317,6 +325,7 @@
   },
   {
     "id": "9",
+    "idAssetHandover": "5",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": "000009/QD-TUB",
     "decisionDate": "15/08/2024",
@@ -351,6 +360,7 @@
   },
   {
     "id": "10",
+    "idAssetHandover": "4",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": "000007/QD-TUB",
     "decisionDate": "01/03/2025",
@@ -384,6 +394,7 @@
   },
   {
     "id": "11",
+    "idAssetHandover": "4",
     "documentName": "Đề nghị Điều chuyển tài sản, trang thiết bị",
     "decisionNumber": "000005/QD-TUB",
     "decisionDate": "01/03/2025",

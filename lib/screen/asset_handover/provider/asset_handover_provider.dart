@@ -479,7 +479,6 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   String getStatus(int status) {
-    log('message getStatus: $status');
     switch (status) {
       case 0:
         return 'Nháp';

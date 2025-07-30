@@ -5,12 +5,18 @@ import 'dart:developer';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/bottom_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/bottom_list_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
@@ -82,6 +88,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
+  final List<AssetHandoverDto> listAssetHandover = [];
+
   Map<String, bool> _validationErrors = {};
 
   bool _validateForm() {
@@ -140,6 +148,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   @override
   void initState() {
     super.initState();
+    _callGetListAssetHandover();
     isEditing = widget.isEditing;
     if (widget.item != null && widget.item!.status == 0) {
       isEditing = true;
@@ -293,11 +302,47 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       isEditing = true;
       isRefreshing = true;
     }
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 10.0),
-        child: _showResponsive(),
+
+    return MultiBlocListener(
+      listeners: [
+        // Lắng nghe từ AssetHandoverBloc
+        BlocListener<AssetHandoverBloc, AssetHandoverState>(
+          listener: (context, state) {
+            if (state is GetListAssetHandoverSuccessState) {
+              // Handle successful data loading
+              listAssetHandover.clear();
+              listAssetHandover.addAll(state.data);
+              log('Asset handover data loaded successfully');
+            } else if (state is GetListAssetHandoverFailedState) {
+            } else if (state is AssetHandoverLoadingState) {
+              // Show loading indicator
+              setState(() {
+                _isUploading = true;
+              });
+            } else if (state is AssetHandoverLoadingDismissState) {
+              // Hide loading indicator
+              setState(() {
+                _isUploading = false;
+              });
+            }
+          },
+        ),
+
+        // Lắng nghe từ bloc khác (ví dụ: NoteBloc)
+        // BlocListener<NoteBloc, NoteState>(
+        //   listener: (context, state) {
+        //     if (state is NoteCreatedSuccessState) {
+        //       // Handle note creation success
+        //     }
+        //   },
+        // ),
+      ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 10.0),
+          child: _showResponsive(),
+        ),
       ),
     );
   }
@@ -374,37 +419,37 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                         context: context,
                         builder:
                             (context) => AlertDialog(
-                              title: Text('Xác nhận hủy'),
-                              content: Text(
-                                'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(
-                                        context,
-                                      ), // Close dialog
-                                  child: Text('Không'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context); // Close dialog
-                                    // Access provider to navigate back
-                                    final provider =
-                                        Provider.of<AssetTransferProvider>(
-                                          context,
-                                          listen: false,
-                                        );
-                                    provider.onChangeScreen(
-                                      item: null,
-                                      isMainScreen: true,
-                                      isEdit: false,
-                                    );
-                                  },
-                                  child: Text('Có'),
-                                ),
-                              ],
+                          title: Text('Xác nhận hủy'),
+                          content: Text(
+                            'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.pop(
+                                context,
+                              ), // Close dialog
+                              child: Text('Không'),
                             ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Close dialog
+                                // Access provider to navigate back
+                                final provider =
+                                    Provider.of<AssetTransferProvider>(
+                                  context,
+                                  listen: false,
+                                );
+                                provider.onChangeScreen(
+                                  item: null,
+                                  isMainScreen: true,
+                                  isEdit: false,
+                                );
+                              },
+                              child: Text('Có'),
+                            ),
+                          ],
+                        ),
                       );
                     },
                     mainColor: SGAppColors.dark,
@@ -577,7 +622,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 widget.item?.movementDetails ?? [],
                 isEditing,
               ),
-              BottomDetail(provider: widget.provider)
+              BottomListAssetTransfer(
+                provider: widget.provider,
+                listAssetHandover: listAssetHandover,
+              ),
             ],
           ),
         ),
@@ -1172,5 +1220,23 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         _controllersInitialized = false;
       });
     });
+  }
+
+  void _callGetListAssetHandover() {
+    try {
+      final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
+
+      assetHandoverBloc.add(GetListAssetHandoverEvent(context));
+
+      log('Calling getListAssetHandover from AssetHandoverBloc');
+    } catch (e) {
+      log('Error calling getListAssetHandover: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

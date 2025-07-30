@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_
 
 class AssetTransferDto {
   final String? id;
+  final String? idAssetHandover; // Lệnh điều động
   final String? documentName; // Tên phiếu
   final String? decisionNumber; // Số quyết định
   final String? decisionDate; // Ngày quyết định
@@ -32,6 +33,7 @@ class AssetTransferDto {
 
   AssetTransferDto({
     this.id,
+    this.idAssetHandover,
     this.documentName,
     this.decisionNumber,
     this.decisionDate,
@@ -62,6 +64,7 @@ class AssetTransferDto {
   factory AssetTransferDto.fromJson(Map<String, dynamic> json) {
     return AssetTransferDto(
       id: json['id'],
+      idAssetHandover: json['idAssetHandover'],
       documentName: json['documentName'],
       decisionNumber: json['decisionNumber'],
       decisionDate: json['decisionDate'],
@@ -99,6 +102,7 @@ class AssetTransferDto {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'idAssetHandover': idAssetHandover,
       'documentName': documentName,
       'decisionNumber': decisionNumber,
       'decisionDate': decisionDate,

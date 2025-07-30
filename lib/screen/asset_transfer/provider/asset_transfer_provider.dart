@@ -343,7 +343,11 @@ class AssetTransferProvider with ChangeNotifier {
       if (!isMainScreen) {
         _subScreen = item == null ? 'Mới' : item.documentName ?? '';
         log('message item: ${item == null}');
-        _body = AssetTransferDetail(item: item, isEditing: isEdit, provider: this);
+        _body = AssetTransferDetail(
+          item: item,
+          isEditing: isEdit,
+          provider: this,
+        );
       } else {
         _subScreen = '';
         _subScreen = null;
@@ -599,13 +603,59 @@ class AssetTransferProvider with ChangeNotifier {
     );
   }
 
+  Widget showStatus(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color: getColorStatus(status),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text: getStatus(status),
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color getColorStatus(int status) {
+    switch (status) {
+      case 0:
+        return ColorValue.silverGray;
+      case 1:
+        return ColorValue.lightAmber;
+      case 2:
+        return ColorValue.mediumGreen;
+      case 3:
+        return ColorValue.lightBlue;
+      case 4:
+        return ColorValue.cyan;
+      case 5:
+        return ColorValue.brightRed;
+      case 6:
+        return ColorValue.coral;
+      case 7:
+        return ColorValue.forestGreen;
+      default:
+        return ColorValue.paleRose;
+    }
+  }
+
   // Add method to create a new asset transfer
   Future<void> createAssetTransfer(AssetTransferDto item) async {
     // In a real app, this would call an API or repository
     // For now, we'll just add it to our local data
-    
+
     log('Creating new asset transfer: ${item.documentName}');
-    
+
     // Generate a mock ID for the new item
     final newItem = AssetTransferDto(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -632,17 +682,17 @@ class AssetTransferProvider with ChangeNotifier {
       documentFilePath: item.documentFilePath,
       documentFileName: item.documentFileName,
     );
-    
+
     // Add to our data list
     if (_data == null) {
       _data = [];
     }
     _data!.add(newItem);
-    
+
     // Update filtered data and pagination
     _filteredData = List.from(_data!);
     _updatePagination();
-    
+
     // Notify listeners of the change
     notifyListeners();
   }
@@ -651,21 +701,21 @@ class AssetTransferProvider with ChangeNotifier {
   Future<void> updateAssetTransfer(AssetTransferDto updatedItem) async {
     // In a real app, this would call an API or repository
     // For now, we'll just update our local data
-    
+
     if (_data == null || updatedItem.id == null) return;
-    
+
     log('Updating asset transfer: ${updatedItem.id}');
-    
+
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-    
+
     if (index != -1) {
       // Update the item with all the new data
       _data![index] = updatedItem;
-      
+
       // Update filtered data and pagination
       _filteredData = List.from(_data!);
       _updatePagination();
-      
+
       // Notify listeners of the change
       notifyListeners();
     }

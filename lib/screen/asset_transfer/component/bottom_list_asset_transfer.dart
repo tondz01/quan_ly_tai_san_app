@@ -2,22 +2,38 @@
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/popup_show_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class BottomDetail extends StatefulWidget {
+class BottomListAssetTransfer extends StatefulWidget {
   final AssetTransferProvider provider;
-  const BottomDetail({super.key, required this.provider});
+  final List<AssetHandoverDto> listAssetHandover;
+  const BottomListAssetTransfer({super.key, required this.provider, required this.listAssetHandover});
 
   @override
-  State<BottomDetail> createState() => _BottomDetailState();
+  State<BottomListAssetTransfer> createState() =>
+      _BottomListAssetTransferState();
 }
 
-class _BottomDetailState extends State<BottomDetail> {
+class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
   bool isShowPhieuCapPhat = false;
+
+  Map<String, Color> listStatus = {
+    'Nháp': ColorValue.silverGray,
+    'Chờ xác nhận': ColorValue.lightAmber,
+    'Xác nhận': ColorValue.mediumGreen,
+    'Trình Duyệt': ColorValue.lightBlue,
+    'Duyệt': ColorValue.cyan,
+    'Từ chối': ColorValue.brightRed,
+    'Hủy': ColorValue.coral,
+    'Hoàn thành': ColorValue.forestGreen,
+  };
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -42,8 +58,8 @@ class _BottomDetailState extends State<BottomDetail> {
                 Icon(Icons.description, color: Colors.blue.shade700, size: 20),
                 SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Phiếu duyệt cấp phát tài sản',
+                  child: SGText(
+                    text: 'Phiếu duyệt cấp phát tài sản',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -51,6 +67,7 @@ class _BottomDetailState extends State<BottomDetail> {
                     ),
                   ),
                 ),
+                buildTooltipStatus(),
                 Icon(
                   isShowPhieuCapPhat ? Icons.expand_less : Icons.expand_more,
                   color: Colors.blue.shade700,
@@ -79,12 +96,13 @@ class _BottomDetailState extends State<BottomDetail> {
 
     // Tính toán width cho từng cột dựa trên tỷ lệ
     final columnWidths = {
-      'Phiếu ký nội sinh': availableWidth * 0.20, // 20%
-      'Ngày ký': availableWidth * 0.12, // 12%
-      'Ngày có hiệu lực': availableWidth * 0.12, // 12%
-      'Trình duyệt Ban giám đốc': availableWidth * 0.18, // 18%
-      'Tài liệu duyệt': availableWidth * 0.20, // 20%
-      'Ký số': availableWidth * 0.08, // 8%
+      'Phiếu ký nội sinh': availableWidth * 0.15, // 20%
+      'Ngày ký': availableWidth * 0.1, // 12%
+      'Ngày có hiệu lực': availableWidth * 0.1, // 12%
+      'Trình duyệt Ban giám đốc': availableWidth * 0.15, // 15%
+      'Tài liệu duyệt': availableWidth * 0.17, // 20%
+      'Ký số': availableWidth * 0.1, // 8%
+      'Trạng thái': availableWidth * 0.15, // 12%
       'Actions': availableWidth * 0.1, // 1%
     };
 
@@ -181,6 +199,14 @@ class _BottomDetailState extends State<BottomDetail> {
                     width: columnWidths['Ký số']!,
                   ),
                   SgTableColumn<AssetTransferDto>(
+                    title: 'Trạng thái',
+                    cellBuilder:
+                        (item) => widget.provider.showStatus(item.status ?? 0),
+                    cellAlignment: TextAlign.center,
+                    titleAlignment: TextAlign.center,
+                    width: columnWidths['Trạng thái']!,
+                  ),
+                  SgTableColumn<AssetTransferDto>(
                     title: '',
                     cellBuilder: (item) => viewAction(item),
                     cellAlignment: TextAlign.center,
@@ -273,15 +299,19 @@ class _BottomDetailState extends State<BottomDetail> {
             tooltip: 'Xem',
             color: Colors.green.shade700,
             onPressed:
-                () => showDialog(
-                  context: context,
-                  builder:
-                      (context) => WebViewCommon(
-                        url: 'https://ams.sscdx.com.vn/web#',
-                        title: item.documentName ?? 'Tài liệu',
-                        showAppBar: true,
-                      ),
+                () => PropertyHandoverMinutes.showPopup(
+                  context,
+                  widget.listAssetHandover.where((itemAH) => itemAH.id == item.idAssetHandover).toList(),
                 ),
+            // showDialog(
+            //   context: context,
+            //   builder:
+            //       (context) => WebViewCommon(
+            //         url: 'https://ams.sscdx.com.vn/web#',
+            //         title: item.documentName ?? 'Tài liệu',
+            //         showAppBar: true,
+            //       ),
+            // ),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             padding: const EdgeInsets.all(4),
           ),
@@ -309,5 +339,70 @@ class _BottomDetailState extends State<BottomDetail> {
         ),
       ],
     );
+  }
+
+  Widget buildTooltipStatus() {
+    return Row(
+      children:
+          listStatus.entries
+              .map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: Row(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.all(4),
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: entry.value,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      SGText(
+                        text: '${entry.key} (${getCountByState(entry.key)})',
+                        style: TextStyle(fontSize: 12, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
+    );
+  }
+
+  int getCountByState(String key) {
+    int status;
+    switch (key) {
+      case 'Nháp':
+        status = 0;
+        break;
+      case 'Chờ xác nhận':
+        status = 1;
+        break;
+      case 'Xác nhận':
+        status = 2;
+        break;
+      case 'Trình Duyệt':
+        status = 3;
+        break;
+      case 'Duyệt':
+        status = 4;
+        break;
+      case 'Từ chối':
+        status = 5;
+        break;
+      case 'Hủy':
+        status = 6;
+        break;
+      case 'Hoàn thành':
+        status = 7;
+      default:
+        status = 0;
+    }
+    final count =
+        widget.provider.data.where((item) => item.status == status).length;
+    return count;
   }
 }

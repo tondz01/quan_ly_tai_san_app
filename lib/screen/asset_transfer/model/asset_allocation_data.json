@@ -1,6 +1,7 @@
 [
   {
     "id": "1",
+    "idAssetHandover": "1",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000017/QD-TUB",
     "decisionDate": "01/04/2025",
@@ -35,6 +36,7 @@
   },
   {
     "id": "2",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "12/03/2025",
@@ -69,6 +71,7 @@
   },
   {
     "id": "3",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000008/QD-TUB",
     "decisionDate": "09/05/2024",
@@ -121,6 +124,7 @@
   },
   {
     "id": "4",
+    "idAssetHandover": "3",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000002/QD-TUB",
     "decisionDate": "21/03/2025",
@@ -155,6 +159,7 @@
   },
   {
     "id": "5",
+    "idAssetHandover": "4",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "01/07/2025",
@@ -192,6 +197,7 @@
   },
   {
     "id": "6",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000034/QD-TUB",
     "decisionDate": "27/06/2025",
@@ -226,6 +232,7 @@
   },
   {
     "id": "7",
+    "idAssetHandover": "5",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000030/QD-TUB",
     "decisionDate": "20/06/2025",
@@ -259,6 +266,7 @@
   },
   {
     "id": "8",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000031/QD-TUB",
     "decisionDate": "20/06/2025",
@@ -293,6 +301,7 @@
   },
   {
     "id": "9",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "19/06/2025",
@@ -327,6 +336,7 @@
   },
   {
     "id": "10",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000029/QD-TUB",
     "decisionDate": "19/06/2025",
@@ -361,6 +371,7 @@
   },
   {
     "id": "11",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000026/QD-TUB",
     "decisionDate": "14/05/2025",
@@ -395,6 +406,7 @@
   },
   {
     "id": "12",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000025/QD-TUB",
     "decisionDate": "20/04/2025",
@@ -419,6 +431,7 @@
   },
   {
     "id": "13",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "01/05/2025",
@@ -453,6 +466,7 @@
   },
   {
     "id": "14",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": null,
     "decisionDate": "15/04/2025",
@@ -487,6 +501,7 @@
   },
   {
     "id": "15",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000024/QD-TUB",
     "decisionDate": "15/04/2025",
@@ -521,6 +536,7 @@
   },
   {
     "id": "16",
+    "idAssetHandover": "2",
     "documentName": "Đề nghị cấp phát tài sản, trang thiết bị",
     "decisionNumber": "000023/QD-TUB",
     "decisionDate": "01/04/2025",
