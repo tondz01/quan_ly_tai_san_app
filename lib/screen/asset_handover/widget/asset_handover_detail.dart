@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/component/bottom_table_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
@@ -17,6 +19,7 @@ import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 
 class AssetHandoverDetail extends StatefulWidget {
+  final AssetHandoverProvider provider;
   final AssetHandoverDto? item;
   final bool isEditing;
   final bool isNew;
@@ -26,6 +29,7 @@ class AssetHandoverDetail extends StatefulWidget {
     this.item,
     this.isEditing = false,
     this.isNew = false,
+    required this.provider,
   });
 
   @override
@@ -243,6 +247,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 'Hủy',
               ],
               currentStep: widget.item?.state ?? 0,
+              fontSize: 10,
             ),
           ],
         ),
@@ -310,6 +315,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               _buildAsserHandoverDetail(),
               const SizedBox(height: 20),
               _buildAssetMovementTable(),
+              const SizedBox(height: 20),
+              if (widget.item != null)
+                BotttomTableAssetHandover(
+                  data: [widget.item!],
+                )
+              else
+                const SizedBox.shrink(),
             ],
           ),
         ),

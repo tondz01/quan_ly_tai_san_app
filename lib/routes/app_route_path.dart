@@ -7,6 +7,7 @@ enum AppRoute {
   exemple4(path: "/exemple/4", name: "exemple-4"),
   toolsAndSupplies(path: "/tools-and-supplies", name: "tools-and-supplies"),
   assetTransfer(path: "/asset-transfer", name: "asset-transfer"),
+  assetHandoverDetail(path: "/asset-handover-detail", name: "asset-handover-detail"),
   staffManager(path: "/staff_manager", name: "staff_manager"),
   departmentManager(path: "/department_manager", name: "department_manager"),
   capitalSource(path: "/capital-source", name: "capital-source"),

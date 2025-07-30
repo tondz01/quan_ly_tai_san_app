@@ -332,7 +332,12 @@ class AssetHandoverProvider with ChangeNotifier {
       
       if (!isMainScreen) {
         _subScreen = item == null ? 'Mới' : item.name ?? '';
-        _body = AssetHandoverDetail(item: item, isEditing: isEdit);
+        _body = AssetHandoverDetail(
+          provider: this,
+          item: item, 
+          isEditing: isEdit,
+          isNew: item == null,
+        );
       } else {
         _subScreen = '';
         mainScreen = 'Biên bản bàn giao tài sản';
@@ -479,7 +484,6 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   String getStatus(int status) {
-    log('message getStatus: $status');
     switch (status) {
       case 0:
         return 'Nháp';

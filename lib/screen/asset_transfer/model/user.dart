@@ -95,6 +95,55 @@ final List<User> users = [
       id: '10',
       name: 'Ngô Tiến Sĩ',
       department: 'Phân xưởng khai thác đào lò 17',
+      role: 3,
+    ),
+    User(
+      id: '11',
+      name: 'Lê Đức Đà',
+      department: 'Phân xưởng khai thác đào lò 17',
       role: 2,
     ),
+    User(
+      id: '11',
+      name: 'Đoàn Ngọc Hà',
+      department: 'Phòng KT',
+      role: 2,
+    ),
+    User(
+      id: '12',
+      name: 'Dương Văn Hoàng',
+      department: 'Công ty CP Cơ điện Uông bí - Vinacomin',
+      role: 1,
+    ),
+    User(
+      id: '13',
+      name: 'Khúc Thanh Huyền',
+      department: 'Phòng CV',
+      role: 3,
+    ),
+    User(
+      id: '14',
+      name: 'Phạm Xuân Vinh',
+      department: 'Phòng CV',
+      role: 3,
+    ),
+    User(
+      id: '15',
+      name: 'Vũ Nam',
+      department: 'Kho Công ty',
+      role: 3,
+    ),
+    User(
+      id: '16',
+      name: 'Trần Hoàng Anh',
+      department: 'Kho Công ty',
+      role: 3,
+    ),
+    User(
+      id: '17',
+      name: 'Nguyễn Văn Hưng',
+      department: 'Kho Công ty',
+      role: 3,
+    ),
+    
   ];

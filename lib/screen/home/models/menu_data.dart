@@ -77,13 +77,6 @@ class AppMenuData {
       ],
     ),
     MenuItem(
-      label: 'Công cụ dụng cụ',
-      projectGroups: [
-        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc'), SubMenuItem(label: 'Thiết bị điện tử')]),
-        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng'), SubMenuItem(label: 'Dụng cụ lắp đặt')]),
-      ],
-    ),
-    MenuItem(
       label: 'Quản lý CCDC - Vật tư',
       reportSubItems: 
         [SubMenuItem(label: 'Công cụ dụng cụ - Vật tư',route: AppRoute.toolsAndSupplies.path),

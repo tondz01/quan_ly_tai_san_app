@@ -27,85 +27,118 @@ class AppRouteConf {
           return Home(child: child);
         },
         routes: [
-          GoRoute(path: AppRoute.exemple.path, redirect: (_, __) => AppRoute.exemple1.path),
-          GoRoute(path: AppRoute.exemple1.path, name: AppRoute.exemple1.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const ExempleScreen1())),
-          GoRoute(path: AppRoute.exemple2.path, name: AppRoute.exemple2.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const ExempleScreen2())),
-          GoRoute(path: AppRoute.exemple3.path, name: AppRoute.exemple3.name, pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: const ExempleScreen3())),
+          GoRoute(
+            path: AppRoute.exemple.path,
+            redirect: (_, __) => AppRoute.exemple1.path,
+          ),
+          GoRoute(
+            path: AppRoute.exemple1.path,
+            name: AppRoute.exemple1.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ExempleScreen1(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.exemple2.path,
+            name: AppRoute.exemple2.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ExempleScreen2(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.exemple3.path,
+            name: AppRoute.exemple3.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ExempleScreen3(),
+                ),
+          ),
           GoRoute(
             path: AppRoute.exemple4.path,
             name: AppRoute.exemple4.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const ExempleScreen4(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ExempleScreen4(),
+                ),
           ),
           GoRoute(
             path: AppRoute.toolsAndSupplies.path,
             name: AppRoute.toolsAndSupplies.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const ToolsAndSuppliesView(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ToolsAndSuppliesView(),
+                ),
           ),
           GoRoute(
             path: AppRoute.assetTransfer.path,
             name: AppRoute.assetTransfer.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: AssetTransferView(
-                typeAssetTransfer: state.extra != null && state.extra is String
-                    ? int.tryParse(state.extra as String) ?? 0
-                    : 0,
-              ),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: AssetTransferView(
+                    typeAssetTransfer:
+                        state.extra != null && state.extra is String
+                            ? int.tryParse(state.extra as String) ?? 0
+                            : 0,
+                  ),
+                ),
           ),
           GoRoute(
             path: AppRoute.assetHandover.path,
             name: AppRoute.assetHandover.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const AssetHandoverView(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const AssetHandoverView(),
+                ),
           ),
           GoRoute(
             path: AppRoute.staffManager.path,
             name: AppRoute.staffManager.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: StaffManager(),
-            ),
+            pageBuilder:
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: StaffManager()),
           ),
           GoRoute(
             path: AppRoute.projectManager.path,
             name: AppRoute.projectManager.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: ProjectManager(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: ProjectManager(),
+                ),
           ),
           GoRoute(
             path: AppRoute.departmentManager.path,
             name: AppRoute.departmentManager.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: DepartmentManager(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: DepartmentManager(),
+                ),
           ),
           GoRoute(
             path: AppRoute.capitalSource.path,
             name: AppRoute.capitalSource.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: CapitalSourceManager(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: CapitalSourceManager(),
+                ),
           ),
           GoRoute(
             path: AppRoute.assetManager.path,
             name: AppRoute.assetManager.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: AssetManager(),
-            ),
+            pageBuilder:
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: AssetManager()),
           ),
           // GoRoute(
           //   name: AppRoute.liveVideoVar.name,

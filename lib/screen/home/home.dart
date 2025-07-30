@@ -32,6 +32,68 @@ class _HomeState extends State<Home> {
     super.initState();
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
+    
+    // Lắng nghe thay đổi route để cập nhật selectedIndex
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateSelectedIndexFromRoute();
+    });
+  }
+
+  @override
+  void didUpdateWidget(Home oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Cập nhật selectedIndex khi widget được update
+    _updateSelectedIndexFromRoute();
+  }
+
+  void _updateSelectedIndexFromRoute() {
+    final currentLocation = GoRouterState.of(context).uri.path;
+    final extra = GoRouterState.of(context).extra;
+    
+    log('Current route: $currentLocation, extra: $extra');
+    
+    // Tìm menu item tương ứng với route hiện tại
+    for (int i = 0; i < _menuData.menuItems.length; i++) {
+      final menuItem = _menuData.menuItems[i];
+      
+      // Kiểm tra route chính
+      if (menuItem.route == currentLocation) {
+        _updateSelectedIndex(i, 0);
+        return;
+      }
+      
+      // Kiểm tra subItems
+      for (int j = 0; j < menuItem.reportSubItems.length; j++) {
+        final subItem = menuItem.reportSubItems[j];
+        if (subItem.route == currentLocation) {
+          _updateSelectedIndex(i, j);
+          return;
+        }
+      }
+      
+      // Kiểm tra projectGroups
+      for (int groupIndex = 0; groupIndex < menuItem.projectGroups.length; groupIndex++) {
+        final group = menuItem.projectGroups[groupIndex];
+        for (int itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
+          final item = group.items[itemIndex];
+          if (item.route == currentLocation) {
+            final subIndex = groupIndex * 100 + itemIndex;
+            _updateSelectedIndex(i, subIndex);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  void _updateSelectedIndex(int index, int subIndex) {
+    if (_selectedIndex != index || _selectedSubIndex != subIndex) {
+      setState(() {
+        _selectedIndex = index;
+        _selectedSubIndex = subIndex;
+      });
+      log('Updated selectedIndex: $_selectedIndex, selectedSubIndex: $_selectedSubIndex');
+    }
   }
 
   @override

@@ -4,9 +4,12 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_
 
 class AssetTransferDto {
   final String? id;
+  final String? idAssetHandover; // Lệnh điều động
   final String? documentName; // Tên phiếu
   final String? decisionNumber; // Số quyết định
   final String? decisionDate; // Ngày quyết định
+  final int? type;
+  final String? subject; // Trích yêu
   final String? requester; // Người đề nghị
   final String? requestingUnit; // Người lập phiếu
   final String? creator; // Người lập phiếu
@@ -25,12 +28,17 @@ class AssetTransferDto {
   final String? approver; // Trình duyệt Ban giám đốc
   final int? status; // Trạng thái
   final bool? isEffective; // Có hiệu lực
+  final String? documentFilePath; // Đường dẫn file
+  final String? documentFileName; // Tên file
 
   AssetTransferDto({
     this.id,
+    this.idAssetHandover,
     this.documentName,
     this.decisionNumber,
     this.decisionDate,
+    this.type,
+    this.subject,
     this.requester,
     this.requestingUnit,
     this.creator,
@@ -49,14 +57,19 @@ class AssetTransferDto {
     this.approver,
     this.status,
     this.isEffective,
+    this.documentFilePath,
+    this.documentFileName,
   });
 
   factory AssetTransferDto.fromJson(Map<String, dynamic> json) {
     return AssetTransferDto(
       id: json['id'],
+      idAssetHandover: json['idAssetHandover'],
       documentName: json['documentName'],
       decisionNumber: json['decisionNumber'],
       decisionDate: json['decisionDate'],
+      type: json['type'],
+      subject: json['subject'],
       requester: json['requester'],
       requestingUnit: json['requestingUnit'],
       creator: json['creator'],
@@ -81,15 +94,20 @@ class AssetTransferDto {
       approver: json['approver'],
       status: json['status'],
       isEffective: json['isEffective'],
+      documentFilePath: json['documentFilePath'],
+      documentFileName: json['documentFileName'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'idAssetHandover': idAssetHandover,
       'documentName': documentName,
       'decisionNumber': decisionNumber,
       'decisionDate': decisionDate,
+      'type': type,
+      'subject': subject,
       'requester': requester,
       'requestingUnit': requestingUnit,
       'creator': creator,
@@ -108,6 +126,8 @@ class AssetTransferDto {
       'approver': approver,
       'status': status,
       'isEffective': isEffective,
+      'documentFilePath': documentFilePath,
+      'documentFileName': documentFileName,
     };
   }
 

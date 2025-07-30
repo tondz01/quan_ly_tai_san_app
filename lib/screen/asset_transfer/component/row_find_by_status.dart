@@ -96,7 +96,7 @@ class _FilterCheckboxes extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          SGText(text: filter.label),
+          SGText(text: filter.label, size: 14,),
         ],
       ),
     );
