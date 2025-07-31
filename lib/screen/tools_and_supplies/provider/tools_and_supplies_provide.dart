@@ -200,6 +200,23 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
   }
 
+  void addNewItem(ToolsAndSuppliesDto newItem) {
+    if (_data == null) {
+      _data = [];
+    }
+
+    // Thêm item mới vào đầu danh sách
+    _data!.insert(0, newItem);
+
+    // Cập nhật lại trang hiện tại
+    _updatePagination();
+
+    // Thông báo UI cập nhật
+    notifyListeners();
+
+    log('Đã thêm item mới có ID: ${newItem.id}');
+  }
+
   getListToolsAndSuppliesSuccess(
     BuildContext context,
     GetListToolsAndSuppliesSuccessState state,
