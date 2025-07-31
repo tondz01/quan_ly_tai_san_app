@@ -57,13 +57,9 @@ class AppMenuData {
   final List<MenuItem> menuItems = [
     MenuItem(
       label: 'Tổng quan',
-      reportSubItems: [
-        SubMenuItem(label: 'Exemple 1', route: AppRoute.exemple1.path),
-        SubMenuItem(label: 'Exemple 2', route: AppRoute.exemple2.path),
-        SubMenuItem(label: 'Exemple 3', route: AppRoute.exemple3.path),
-        SubMenuItem(label: 'Exemple 4', route: AppRoute.exemple4.path),
-      ],
+      route: AppRoute.dashboard.path,
     ),
+    
     MenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path),
     MenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path),
     MenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path),

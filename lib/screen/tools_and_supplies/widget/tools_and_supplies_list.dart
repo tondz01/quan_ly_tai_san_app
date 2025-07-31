@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -24,42 +25,63 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       children: [
         if (widget.provider.data != null)
           Expanded(
-            child: Scrollbar(
-              controller: horizontalController,
-              thumbVisibility: true,
-              thickness: 4,
-              notificationPredicate:
-                  (notification) =>
-                      notification.metrics.axis == Axis.horizontal,
-              child: SingleChildScrollView(
-                controller: horizontalController,
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 1400),
-                    child: _buildTable(
-                      searchTerm,
-                      widget.provider.columns,
-                      widget.provider.dataPage ?? [],
-                      onViewAction: (item) {},
-                      onEditAction: (item) {},
-                      onDeleteAction: (item) {
-                        _showDeleteConfirmationDialog(
-                          context,
-                          item,
-                          widget.provider,
-                        );
-                      },
-                      onRowTap: (item) {
-                        widget.provider.onChangeScreen(
-                          item: item,
-                          isMainScreen: false,
-                          isEdit: false,
-                        );
-                      },
-                      onSelectionChanged: (items) {},
-                      onCustomFilter: (item) => false,
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorValue.neutral300.withOpacity(0.4),
+                    spreadRadius: 0,
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                  BoxShadow(
+                    color: ColorValue.neutral200.withOpacity(0.2),
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Scrollbar(
+                  controller: horizontalController,
+                  thumbVisibility: true,
+                  thickness: 4,
+                  notificationPredicate:
+                      (notification) =>
+                          notification.metrics.axis == Axis.horizontal,
+                  child: SingleChildScrollView(
+                    controller: horizontalController,
+                    scrollDirection: Axis.horizontal,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: _buildTable(
+                        searchTerm,
+                        widget.provider.columns,
+                        widget.provider.dataPage ?? [],
+                        onViewAction: (item) {},
+                        onEditAction: (item) {},
+                        onDeleteAction: (item) {
+                          _showDeleteConfirmationDialog(
+                            context,
+                            item,
+                            widget.provider,
+                          );
+                        },
+                        onRowTap: (item) {
+                          widget.provider.onChangeScreen(
+                            item: item,
+                            isMainScreen: false,
+                            isEdit: false,
+                          );
+                        },
+                        onSelectionChanged: (items) {},
+                        onCustomFilter: (item) => false,
+                      ),
                     ),
                   ),
                 ),
@@ -83,21 +105,19 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
     Function(ToolsAndSuppliesDto)? onCustomFilter,
   }) {
     return SgTable<ToolsAndSuppliesDto>(
-      headerBackgroundColor: Colors.blue,
-      evenRowBackgroundColor: Colors.grey.shade200,
+      headerBackgroundColor: ColorValue.primaryBlue,
+      textHeaderColor: Colors.white,
+      evenRowBackgroundColor: ColorValue.neutral50,
       oddRowBackgroundColor: Colors.white,
-      selectedRowColor: Colors.lightBlue.shade100,
-      checkedRowColor: const Color(
-        0xFFE8F4FE,
-      ), // Light blue background for checked rows
-      gridLineColor: Colors.grey.shade300,
+      selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+      gridLineColor: ColorValue.neutral200,
       gridLineWidth: 1.0,
       showVerticalLines: true,
       showHorizontalLines: true,
       allowRowSelection: true,
       searchTerm: searchTerm,
-
-      showCheckboxes: true, // on, off checkbox
+      rowHeight: 56.0,
+      showCheckboxes: true,
       onSelectionChanged: (selectedItems) {
         onSelectionChanged?.call(selectedItems);
       },
@@ -109,10 +129,10 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       },
       showActions: true,
       actionColumnTitle: 'Thao tác',
-      actionColumnWidth: 150,
-      actionViewColor: Colors.green,
-      actionEditColor: Colors.blue,
-      actionDeleteColor: Colors.red,
+      actionColumnWidth: 160,
+      actionViewColor: ColorValue.success,
+      actionEditColor: ColorValue.primaryBlue,
+      actionDeleteColor: ColorValue.error,
       onViewAction: (item) {
         onViewAction?.call(item);
       },

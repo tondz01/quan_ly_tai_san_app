@@ -1,7 +1,10 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
@@ -25,7 +28,7 @@ class AssetHandoverList extends StatefulWidget {
 class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
-  
+
   @override
   Widget build(BuildContext context) {
     // Usar Consumer para reaccionar a cambios en el provider
@@ -37,36 +40,57 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             const SizedBox(height: 10),
             if (provider.data != null)
               Expanded(
-                child: Scrollbar(
-                  controller: horizontalController,
-                  thumbVisibility: true,
-                  thickness: 4,
-                  notificationPredicate:
-                      (notification) =>
-                          notification.metrics.axis == Axis.horizontal,
-                  child: SingleChildScrollView(
-                    controller: horizontalController,
-                    scrollDirection: Axis.horizontal,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 1400),
-                        child: _buildTable(
-                          searchTerm,
-                          provider.columns,
-                          provider.dataPage ?? [], // Usar dataPage que ya contiene los datos filtrados
-                          onViewAction: (item) {},
-                          onEditAction: (item) {},
-                          onDeleteAction: (item) {},
-                          onRowTap: (item) {
-                            provider.onChangeScreen(
-                              item: item,
-                              isMainScreen: false,
-                              isEdit: false,
-                            );
-                          },
-                          onSelectionChanged: (items) {},
-                          onCustomFilter: (item) => false,
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColorValue.neutral300.withOpacity(0.4),
+                        spreadRadius: 0,
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                      BoxShadow(
+                        color: ColorValue.neutral200.withOpacity(0.2),
+                        spreadRadius: 0,
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Scrollbar(
+                      controller: horizontalController,
+                      thumbVisibility: true,
+                      thickness: 4,
+                      notificationPredicate:
+                          (notification) =>
+                              notification.metrics.axis == Axis.horizontal,
+                      child: SingleChildScrollView(
+                        controller: horizontalController,
+                        scrollDirection: Axis.horizontal,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: _buildTable(
+                            searchTerm,
+                            provider.columns,
+                            provider.dataPage ?? [],
+                            onViewAction: (item) {},
+                            onEditAction: (item) {},
+                            onDeleteAction: (item) {},
+                            onRowTap: (item) {
+                              provider.onChangeScreen(
+                                item: item,
+                                isMainScreen: false,
+                                isEdit: false,
+                              );
+                            },
+                            onSelectionChanged: (items) {},
+                            onCustomFilter: (item) => false,
+                          ),
                         ),
                       ),
                     ),
@@ -76,7 +100,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             _buildPaginationControls(provider),
           ],
         );
-      }
+      },
     );
   }
 
@@ -93,21 +117,19 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   }) {
     log('Construyendo tabla con ${data.length} elementos');
     return SgTable<AssetHandoverDto>(
-      key: ValueKey(data.length), // Agregar key para forzar reconstrucción
-      headerBackgroundColor: Colors.blue,
-      evenRowBackgroundColor: Colors.grey.shade200,
+      key: ValueKey(data.length),
+      headerBackgroundColor: ColorValue.primaryBlue,
+      textHeaderColor: Colors.white,
+      evenRowBackgroundColor: ColorValue.neutral50,
       oddRowBackgroundColor: Colors.white,
-      selectedRowColor: Colors.lightBlue.shade100,
-      checkedRowColor: const Color(
-        0xFFE8F4FE,
-      ),
-      gridLineColor: Colors.grey.shade300,
+      selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+      gridLineColor: ColorValue.neutral200,
       gridLineWidth: 1.0,
       showVerticalLines: true,
       showHorizontalLines: true,
       allowRowSelection: true,
       searchTerm: searchTerm,
-
+      rowHeight: 56.0,
       showCheckboxes: true,
       onSelectionChanged: (selectedItems) {
         onSelectionChanged?.call(selectedItems);
@@ -120,10 +142,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       },
       showActions: true,
       actionColumnTitle: 'Thao tác',
-      actionColumnWidth: 150,
-      actionViewColor: Colors.green,
-      actionEditColor: Colors.blue,
-      actionDeleteColor: Colors.red,
+      actionColumnWidth: 160,
+      actionViewColor: ColorValue.success,
+      actionEditColor: ColorValue.primaryBlue,
+      actionDeleteColor: ColorValue.error,
       onViewAction: (item) {
         onViewAction?.call(item);
       },

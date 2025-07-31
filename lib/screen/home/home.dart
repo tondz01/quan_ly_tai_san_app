@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/widget/header.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
@@ -204,9 +204,23 @@ class _HomeState extends State<Home> {
       header: Header(imageLogoLeft: AppImage.imageLogo),
       sidebar: Column(
         children: [
-          const Divider(color: SGAppColors.neutral300, height: 1),
-          Padding(
-            padding: const EdgeInsets.only(top: 6, left: 24, right: 24, bottom: 6),
+          Divider(
+            color: ColorValue.neutral200,
+            height: 1,
+            thickness: 1,
+          ),
+          Container(
+            padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: ColorValue.neutral200.withOpacity(0.3),
+                  offset: const Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
             child: SGSidebarHorizontal(
               items: sidebarItems,
               onShowSubItems: (subItems) {
@@ -217,26 +231,31 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Content
-          widget.child,
+      body: Container(
+        decoration: BoxDecoration(
+          color: ColorValue.neutral50,
+        ),
+        child: Stack(
+          children: [
+            // Content
+            widget.child,
 
-          // Thêm barrier chỉ hiển thị khi popup đang mở
-          if (_isPopupOpen)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  SGLog.debug("Home", "Barrier tapped");
-                  primaryFocus?.unfocus();
-                  FocusScope.of(context).unfocus();
-                  _popupManager.closeAllPopups();
-                },
-                behavior: HitTestBehavior.translucent,
-                child: Container(color: Colors.transparent),
+            // Thêm barrier chỉ hiển thị khi popup đang mở
+            if (_isPopupOpen)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    SGLog.debug("Home", "Barrier tapped");
+                    primaryFocus?.unfocus();
+                    FocusScope.of(context).unfocus();
+                    _popupManager.closeAllPopups();
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(color: Colors.transparent),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

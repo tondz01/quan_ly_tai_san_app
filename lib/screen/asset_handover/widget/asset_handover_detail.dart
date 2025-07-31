@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/component/bottom_table_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
@@ -316,12 +315,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               const SizedBox(height: 20),
               _buildAssetMovementTable(),
               const SizedBox(height: 20),
-              if (widget.item != null)
-                BottomTableAssetHandover(
-                  data: [widget.item!],
-                )
-              else
-                const SizedBox.shrink(),
+              // if (widget.item != null)
+              //   BottomTableAssetHandover(
+              //     data: [widget.item!],
+              //   )
+              // else
+              //   const SizedBox.shrink(),
             ],
           ),
         ),
@@ -571,89 +570,86 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     Function(String)? onChanged,
     bool isShowHint = true,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 180,
-            child: Text(
-              '$label :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !isEditing ? Colors.black87.withOpacity(0.6) : Colors.black,
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 180,
+          child: Text(
+            '$label :',
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color:
+                  !isEditing ? Colors.black87.withOpacity(0.6) : Colors.black,
             ),
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                isDropdown && isEditing
-                    ? SGDropdownInputButton<String>(
-                      height: 35,
-                      controller: controller,
-                      textOverflow: TextOverflow.ellipsis,
-                      // Use value directly rather than setting controller.text
-                      value: textContent,
-                      defaultValue: textContent,
-                      items: items ?? [],
-                      colorBorder: SGAppColors.neutral400,
-                      showUnderlineBorderOnly: true,
-                      enableSearch: false,
-                      isClearController: false,
-                      fontSize: 16,
-                      inputType: inputType,
-                      isShowSuffixIcon: true,
-                      hintText: isShowHint ? 'Chọn ${label.toLowerCase()}' : '',
-                      textAlign: TextAlign.left,
-                      textAlignItem: TextAlign.left,
-                      sizeBorderCircular: 10,
-                      contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
-                      onChanged: (value) {
-                        if (value != null) {
-                          log('value: $value');
-                          // controller.text = value;
-                          onChanged?.call(value);
-                        }
-                      },
-                    )
-                    : SGInputText(
-                      height: 35,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      controller: controller..text = textContent,
-                      borderRadius: 10,
-                      enabled: isEnable ? isEditing : false,
-                      textAlign: TextAlign.left,
-                      readOnly: !isEditing,
-                      inputFormatters:
-                          inputType == TextInputType.number
-                              ? [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9.,]'),
-                                ),
-                              ]
-                              : null,
-                      onlyLine: true,
-                      color: Colors.black,
-                      showBorder: isEditing,
-                      hintText:
-                          !isEditing
-                              ? ''
-                              : isShowHint
-                              ? '${'common.hint'.tr} $label'
-                              : '',
-                      padding: const EdgeInsets.only(top: 8, bottom: 8),
-                    ),
-                if (isValidate) const Divider(height: 1, color: Colors.red),
-              ],
-            ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              isDropdown && isEditing
+                  ? SGDropdownInputButton<String>(
+                    height: 35,
+                    controller: controller,
+                    textOverflow: TextOverflow.ellipsis,
+                    // Use value directly rather than setting controller.text
+                    value: textContent,
+                    defaultValue: textContent,
+                    items: items ?? [],
+                    colorBorder: SGAppColors.neutral400,
+                    showUnderlineBorderOnly: true,
+                    enableSearch: false,
+                    isClearController: false,
+                    fontSize: 16,
+                    inputType: inputType,
+                    isShowSuffixIcon: true,
+                    hintText: isShowHint ? 'Chọn ${label.toLowerCase()}' : '',
+                    textAlign: TextAlign.left,
+                    textAlignItem: TextAlign.left,
+                    sizeBorderCircular: 10,
+                    contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
+                    onChanged: (value) {
+                      if (value != null) {
+                        log('value: $value');
+                        // controller.text = value;
+                        onChanged?.call(value);
+                      }
+                    },
+                  )
+                  : SGInputText(
+                    height: 35,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    controller: controller..text = textContent,
+                    borderRadius: 10,
+                    enabled: isEnable ? isEditing : false,
+                    textAlign: TextAlign.left,
+                    readOnly: !isEditing,
+                    inputFormatters:
+                        inputType == TextInputType.number
+                            ? [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.,]'),
+                              ),
+                            ]
+                            : null,
+                    onlyLine: true,
+                    color: Colors.black,
+                    showBorder: isEditing,
+                    hintText:
+                        !isEditing
+                            ? ''
+                            : isShowHint
+                            ? '${'common.hint'.tr} $label'
+                            : '',
+                    padding: const EdgeInsets.only(top: 8, bottom: 8),
+                  ),
+              if (isValidate) const Divider(height: 1, color: Colors.red),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

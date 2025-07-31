@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:ui' as ui;
+
+// Conditional imports for web
+import 'web_view_web.dart' if (dart.library.io) 'web_view_stub.dart';
 
 class WebViewCommon extends StatefulWidget {
   final String url;
@@ -16,14 +15,14 @@ class WebViewCommon extends StatefulWidget {
   final Map<String, String>? headers;
 
   const WebViewCommon({
-    Key? key,
+    super.key,
     required this.url,
     this.title,
     this.showAppBar = true,
     this.enableJavaScript = true,
     this.enableZoom = true,
     this.headers,
-  }) : super(key: key);
+  });
 
   @override
   State<WebViewCommon> createState() => _WebViewCommonState();
@@ -41,16 +40,7 @@ class _WebViewCommonState extends State<WebViewCommon> {
 
     if (kIsWeb) {
       // Đăng ký iframe view
-      // ignore: undefined_prefixed_name
-      ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
-        final iframe =
-            html.IFrameElement()
-              ..src = widget.url
-              ..style.border = 'none'
-              ..width = '100%'
-              ..height = '100%';
-        return iframe;
-      });
+      WebViewHelper.registerViewFactory(_viewId, widget.url);
       setState(() {
         _isLoading = false;
       });
@@ -137,7 +127,7 @@ class _WebViewCommonState extends State<WebViewCommon> {
         if (kIsWeb) ...[
           IconButton(
             icon: Icon(Icons.open_in_new, size: 24.sp),
-            onPressed: () => html.window.open(widget.url, '_blank'),
+            onPressed: () => WebViewHelper.openInNewTab(widget.url),
           ),
         ],
       ],
@@ -246,12 +236,12 @@ class WebViewPopup extends StatelessWidget {
   final double height;
 
   const WebViewPopup({
-    Key? key,
+    super.key,
     required this.url,
     this.title,
     this.width = 800,
     this.height = 600,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +297,7 @@ class WebViewPopup extends StatelessWidget {
                       tooltip: 'Mở trong tab mới',
                       color: Colors.blue.shade700,
                       onPressed: () {
-                        html.window.open(url, '_blank');
+                        WebViewHelper.openInNewTab(url);
                       },
                       constraints: const BoxConstraints(
                         minWidth: 32,

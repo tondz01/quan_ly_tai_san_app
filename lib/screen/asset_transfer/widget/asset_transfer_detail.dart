@@ -14,17 +14,17 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/bottom_list_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
-import 'package:se_gay_components/common/sg_button.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 
 class AssetTransferDetail extends StatefulWidget {
   final AssetTransferDto? item;
@@ -403,15 +403,21 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             if (isEditing)
               Row(
                 children: [
-                  SGButton(
+                  MaterialTextButton(
                     text: 'Lưu',
+                    icon: Icons.save,
+                    backgroundColor: ColorValue.success,
+                    foregroundColor: Colors.white,
                     onPressed: () {
                       _saveAssetTransfer(context);
                     },
                   ),
-                  const SizedBox(width: 5),
-                  SGButton(
+                  const SizedBox(width: 8),
+                  MaterialTextButton(
                     text: 'Hủy',
+                    icon: Icons.cancel,
+                    backgroundColor: ColorValue.error,
+                    foregroundColor: Colors.white,
                     onPressed: () {
                       // Confirm before canceling if there are changes
                       showDialog(
@@ -451,7 +457,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                         ),
                       );
                     },
-                    mainColor: SGAppColors.dark,
                   ),
                 ],
               ),
@@ -616,11 +621,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               ),
               _buildDocumentUpload(), // Add document upload section
               const SizedBox(height: 20),
-              assetTransferMovementTable(
-                context,
-                widget.item?.movementDetails ?? [],
-                isEditing,
-              ),
+              // assetTransferMovementTable(
+              //   context,
+              //   widget.item?.movementDetails ?? [],
+              //   isEditing,
+              // ),
               
               const SizedBox(height: 10),
               BottomListAssetTransfer(
@@ -861,7 +866,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               // File selection row
               Row(
                 children: [
-                  Expanded(
+                  Flexible(
                     child: Container(
                       height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -880,7 +885,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                             size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Expanded(
+                          Flexible(
                             child: Text(
                               _selectedFileName ?? 'Chưa chọn tệp',
                               style: TextStyle(

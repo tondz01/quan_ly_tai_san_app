@@ -57,25 +57,6 @@ Future<void> downloadForWeb(
   }
 }
 
-String _getDownloadPath(String fileName) {
-  try {
-    // Thử lấy thông tin từ browser
-    String userAgent = html.window.navigator.userAgent.toLowerCase();
-
-    if (userAgent.contains('windows')) {
-      return 'C:\\Users\\[Username]\\Downloads\\$fileName';
-    } else if (userAgent.contains('mac')) {
-      return '/Users/[Username]/Downloads/$fileName';
-    } else if (userAgent.contains('linux')) {
-      return '/home/[Username]/Downloads/$fileName';
-    } else {
-      return 'Downloads/$fileName';
-    }
-  } catch (e) {
-    return 'Downloads/$fileName';
-  }
-}
-
 void _showNotification(BuildContext context, String message, bool isSuccess) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(

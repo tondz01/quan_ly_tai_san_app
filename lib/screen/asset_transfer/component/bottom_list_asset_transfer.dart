@@ -30,6 +30,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
   String url =
       'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FQuy%E1%BA%BFt%20%C4%91%E1%BB%8Bnh%20C%E1%BA%A5p%20ph%C3%A1t%20t%C3%A0i%20s%E1%BA%A3n%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=cddb7a63-4c00-4954-99a8-afc27deb1996';
 
+final ScrollController scrollController = ScrollController();
   bool isShowPhieuCapPhat = false;
 
   Map<String, Color> listStatus = {
@@ -116,73 +117,88 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
           ),
           // Table Content
           Expanded(
-            child: SingleChildScrollView(
-              child: movementDetailTable(
-                data: widget.provider.data,
-                columns: [
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Phiếu ký nội sinh',
-                    textColor: Colors.black87,
-                    getValue: (item) => getName(item.type ?? 0),
-                    fontSize: 12,
-                    width: columnWidths['Phiếu ký nội sinh']!,
+            child: Scrollbar(
+              controller: scrollController,
+              thumbVisibility: true,
+              thickness: 4,
+              notificationPredicate:
+                  (notification) =>
+                      notification.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: scrollController,
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: movementDetailTable(
+                    data: widget.provider.data,
+                    columns: [
+                      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                        title: 'Phiếu ký nội sinh',
+                        textColor: Colors.black87,
+                        getValue: (item) => getName(item.type ?? 0),
+                        fontSize: 12,
+                        width: columnWidths['Phiếu ký nội sinh']!,
+                      ),
+                      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                        title: 'Ngày ký',
+                        textColor: Colors.black87,
+                        fontSize: 12,
+                        getValue: (item) => item.decisionDate ?? '',
+                        width: columnWidths['Ngày ký']!,
+                      ),
+                      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                        title: 'Ngày có hiệu lực',
+                        textColor: Colors.black87,
+                        fontSize: 12,
+                        getValue: (item) => item.effectiveDate ?? '',
+                        width: columnWidths['Ngày có hiệu lực']!,
+                      ),
+                      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                        title: 'Trình duyệt Ban giám đốc',
+                        textColor: Colors.black87,
+                        fontSize: 12,
+                        getValue: (item) => item.approver ?? '',
+                        width: columnWidths['Trình duyệt Ban giám đốc']!,
+                      ),
+                      SgTableColumn<AssetTransferDto>(
+                        title: 'Tài liệu duyệt',
+                        cellBuilder:
+                            (item) => showFile(url, item.documentName ?? ''),
+                        sortValueGetter: (item) => item.documentFileName ?? '',
+                        searchValueGetter:
+                            (item) => item.documentFileName ?? '',
+                        cellAlignment: TextAlign.center,
+                        titleAlignment: TextAlign.center,
+                        width: columnWidths['Tài liệu duyệt']!,
+                        searchable: true,
+                      ),
+                      TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                        title: 'Ký số',
+                        textColor: Colors.black87,
+                        fontSize: 12,
+                        getValue: (item) => item.id ?? '',
+                        width: columnWidths['Ký số']!,
+                      ),
+                      SgTableColumn<AssetTransferDto>(
+                        title: 'Trạng thái',
+                        cellBuilder:
+                            (item) =>
+                                widget.provider.showStatus(item.status ?? 0),
+                        cellAlignment: TextAlign.center,
+                        titleAlignment: TextAlign.center,
+                        width: columnWidths['Trạng thái']!,
+                      ),
+                      SgTableColumn<AssetTransferDto>(
+                        title: '',
+                        cellBuilder: (item) => viewAction(item),
+                        cellAlignment: TextAlign.center,
+                        titleAlignment: TextAlign.center,
+                        width: columnWidths['Actions']!,
+                        searchable: true,
+                      ),
+                    ],
                   ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Ngày ký',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.decisionDate ?? '',
-                    width: columnWidths['Ngày ký']!,
-                  ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Ngày có hiệu lực',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.effectiveDate ?? '',
-                    width: columnWidths['Ngày có hiệu lực']!,
-                  ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Trình duyệt Ban giám đốc',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.approver ?? '',
-                    width: columnWidths['Trình duyệt Ban giám đốc']!,
-                  ),
-                  SgTableColumn<AssetTransferDto>(
-                    title: 'Tài liệu duyệt',
-                    cellBuilder:
-                        (item) => showFile(url, item.documentName ?? ''),
-                    sortValueGetter: (item) => item.documentFileName ?? '',
-                    searchValueGetter: (item) => item.documentFileName ?? '',
-                    cellAlignment: TextAlign.center,
-                    titleAlignment: TextAlign.center,
-                    width: columnWidths['Tài liệu duyệt']!,
-                    searchable: true,
-                  ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Ký số',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.id ?? '',
-                    width: columnWidths['Ký số']!,
-                  ),
-                  SgTableColumn<AssetTransferDto>(
-                    title: 'Trạng thái',
-                    cellBuilder:
-                        (item) => widget.provider.showStatus(item.status ?? 0),
-                    cellAlignment: TextAlign.center,
-                    titleAlignment: TextAlign.center,
-                    width: columnWidths['Trạng thái']!,
-                  ),
-                  SgTableColumn<AssetTransferDto>(
-                    title: '',
-                    cellBuilder: (item) => viewAction(item),
-                    cellAlignment: TextAlign.center,
-                    titleAlignment: TextAlign.center,
-                    width: columnWidths['Actions']!,
-                    searchable: true,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -285,7 +301,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
             tooltip: 'Xem',
             color: Colors.green.shade700,
             onPressed:
-                   () => showWebViewPopup(
+                () => showWebViewPopup(
                   context,
                   url: url,
                   title: item.documentName ?? 'Tài liệu',

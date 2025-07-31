@@ -383,7 +383,8 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
           ),
         ),
         const SizedBox(width: 16),
-        Expanded(
+        SizedBox(
+          width: double.infinity,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
