@@ -7,20 +7,16 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_eve
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset/models/asset_model.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
-import 'package:se_gay_components/common/table/sg_table_with_provider.dart';
 import 'package:se_gay_components/themes/sg_app_font.dart';
-import 'dart:async';
 
 class AssetView extends StatelessWidget {
   const AssetView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: _AssetViewBody(),
-    );
+    return const Scaffold(backgroundColor: Colors.white, body: _AssetViewBody());
   }
 }
 
@@ -32,35 +28,20 @@ class _AssetViewBody extends StatelessWidget {
     return BlocConsumer<AssetBloc, AssetState>(
       listener: (context, state) {
         if (state is AssetError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Lỗi: ${state.message}')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${state.message}')));
         }
       },
       builder: (context, state) {
         // Load dữ liệu khi widget được tạo
         if (state is AssetInitial) {
           context.read<AssetBloc>().add(
-            LoadAssetsWithPagination(
-              page: 1, 
-              pageSize: context.read<AssetBloc>().defaultPageSize,
-            ),
+            LoadAssetsWithPagination(page: 1, pageSize: context.read<AssetBloc>().defaultPageSize),
           );
-          return const Center(
-            child: CupertinoActivityIndicator(
-              radius: 12.0, 
-              color: ColorValue.colorFE9F43,
-            ),
-          );
+          return const Center(child: CupertinoActivityIndicator(radius: 12.0, color: ColorValue.colorFE9F43));
         }
 
         if (state is AssetLoading) {
-          return const Center(
-            child: CupertinoActivityIndicator(
-              radius: 12.0, 
-              color: ColorValue.colorFE9F43,
-            ),
-          );
+          return const Center(child: CupertinoActivityIndicator(radius: 12.0, color: ColorValue.colorFE9F43));
         }
 
         if (state is AssetPaginatedLoaded) {
@@ -87,15 +68,6 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
   String searchQuery = '';
   final TextEditingController controllerDropdownPage = TextEditingController();
 
-  // Thêm biến để điều chỉnh tốc độ cuộn
-  double scrollVelocity = 2.0;
-  bool isProgrammaticScroll = false;
-  Timer? _scrollTimer;
-
-  // Cache cho columns để tránh tính toán lại
-  List<SgTableColumn<AssetModel>>? _cachedColumns;
-  double? _cachedScreenWidth;
-
   @override
   void initState() {
     super.initState();
@@ -106,13 +78,7 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
   @override
   void didUpdateWidget(AssetPaginatedContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    // Invalidate cache nếu state thay đổi
-    if (oldWidget.state != widget.state) {
-      _cachedColumns = null;
-      _cachedScreenWidth = null;
-    }
-    
+
     searchQuery = widget.state.searchQuery ?? '';
     if (controllerDropdownPage.text != widget.state.pageSize.toString()) {
       controllerDropdownPage.text = widget.state.pageSize.toString();
@@ -121,10 +87,8 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
 
   @override
   void dispose() {
-    _scrollTimer?.cancel();
     controllerDropdownPage.dispose();
     horizontalController.dispose();
-    _cachedColumns = null; // Clear cache
     super.dispose();
   }
 
@@ -136,43 +100,32 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
         Text('Tài sản', style: SGAppFont.headline6(fontWeight: FontWeight.w400)),
         const SizedBox(height: 16),
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return ScrollbarTheme(
-                data: const ScrollbarThemeData(
-                  thumbColor: WidgetStatePropertyAll(Color(0xFF78909C)),
-                  thickness: WidgetStatePropertyAll(8.0),
-                  radius: Radius.circular(4),
-                ),
-                child: Scrollbar(
-                  controller: horizontalController,
-                  thumbVisibility: true,
-                  notificationPredicate: (notification) => 
-                      notification.metrics.axis == Axis.horizontal,
-                  child: SingleChildScrollView(
-                    controller: horizontalController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(
-                      parent: AlwaysScrollableScrollPhysics(),
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    key: PageStorageKey<String>(
-                      'asset_table_horizontal_${widget.state.hashCode}'
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _buildTable(
-                        widget.state.assets,
-                        onViewAction: (item) {},
-                        onEditAction: (item) {},
-                        onDeleteAction: (item) {},
-                        onRowTap: (item) {},
-                      ),
-                    ),
+          child: ScrollbarTheme(
+            data: const ScrollbarThemeData(
+              thumbColor: WidgetStatePropertyAll(Color(0xFF78909C)),
+              thickness: WidgetStatePropertyAll(8.0),
+              radius: Radius.circular(4),
+            ),
+            child: Scrollbar(
+              controller: horizontalController,
+              thumbVisibility: true,
+              notificationPredicate: (notification) => notification.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: horizontalController,
+                scrollDirection: Axis.horizontal,
+                physics: const ClampingScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildTable(
+                    widget.state.assets,
+                    onViewAction: (item) {},
+                    onEditAction: (item) {},
+                    onDeleteAction: (item) {},
+                    onRowTap: (item) {},
                   ),
                 ),
-              );
-            },
+              ),
+            ),
           ),
         ),
         _buildPagination(widget.state),
@@ -200,7 +153,7 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
           // Tính toán trang mới dựa trên vị trí hiện tại trong dữ liệu
           final int firstItemCurrentPage = (state.currentPage - 1) * state.pageSize + 1;
           final int newPage = ((firstItemCurrentPage - 1) ~/ pageSize) + 1;
-          
+
           context.read<AssetBloc>().add(
             LoadAssetsWithPagination(
               page: newPage, // Giữ vị trí tương đối thay vì quay về trang 1
@@ -216,29 +169,8 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
   }
 
   List<SgTableColumn<AssetModel>> _buildColumns() {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    
-    // Cache columns nếu kích thước màn hình không thay đổi
-    if (_cachedColumns != null && _cachedScreenWidth == screenWidth) {
-      return _cachedColumns!;
-    }
-
-    // Tối ưu tính toán kích thước cột
-    const int columnsCount = 19; // 1 cột checkbox + 18 cột dữ liệu
-    const double defaultColumnWidth = 120.0; // Tăng một chút để dễ đọc
-    const double minColumnWidth = 80.0; // Kích thước tối thiểu
-
-    // Tính toán column width một cách thông minh
-    double columnWidth = defaultColumnWidth;
-    final double totalDefaultWidth = defaultColumnWidth * columnsCount;
-    
-    if (totalDefaultWidth > screenWidth) {
-      // Nếu quá rộng, điều chỉnh nhưng không nhỏ hơn min
-      final double calculatedWidth = (screenWidth * 0.95) / columnsCount;
-      columnWidth = calculatedWidth > minColumnWidth ? calculatedWidth : minColumnWidth;
-    }
-
-    _cachedColumns = [
+    const double columnWidth = 120.0;
+    return [
       TableColumnBuilder.createTextColumn<AssetModel>(
         title: 'Mã tài sản',
         width: columnWidth,
@@ -411,9 +343,6 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
         maxLines: 1,
       ),
     ];
-    
-    _cachedScreenWidth = screenWidth;
-    return _cachedColumns!;
   }
 
   Widget _buildTable(
@@ -433,39 +362,34 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
     const Color activeColor = Color(0xFF4CAF50);
     const Color checkColor = Colors.white;
     const BorderSide borderSide = BorderSide(color: Color(0xFFBDBDBD), width: 0.5);
-    
-    return RepaintBoundary(
-      child: SgTableWithProvider<AssetModel>(
-        key: ValueKey('asset_table_${widget.state.hashCode}'),
-        headerBackgroundColor: headerBgColor,
-        evenRowBackgroundColor: evenRowBgColor,
-        oddRowBackgroundColor: oddRowBgColor,
-        selectedRowColor: selectedRowColor,
-        checkedRowColor: checkedRowColor,
-        gridLineColor: gridLineColor,
-        gridLineWidth: 1,
-        showVerticalLines: true,
-        showHorizontalLines: true,
-        showLastLineLeftRight: true,
-        showLastLineTopBottom: true,
-        allowRowSelection: true,
-        searchTerm: '',
-        showCheckboxes: true,
-        onSelectionChanged: (selectedItems) {},
-        customFilter: (item) => true,
-        checkboxColumnWidth: 42,
-        rowHeight: 42,
-        columns: _buildColumns(),
-        data: data,
-        onRowTap: onRowTap,
-        scaleCheckbox: 0.8,
-        activeColor: activeColor,
-        checkColor: checkColor,
-        side: borderSide,
-        shape: const BeveledRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(0)),
-        ),
-      ),
+
+    return SgTable<AssetModel>(
+      headerBackgroundColor: headerBgColor,
+      evenRowBackgroundColor: evenRowBgColor,
+      oddRowBackgroundColor: oddRowBgColor,
+      selectedRowColor: selectedRowColor,
+      checkedRowColor: checkedRowColor,
+      gridLineColor: gridLineColor,
+      gridLineWidth: 1,
+      showVerticalLines: true,
+      showHorizontalLines: true,
+      showLastLineLeftRight: true,
+      showLastLineTopBottom: true,
+      allowRowSelection: true,
+      searchTerm: '',
+      showCheckboxes: true,
+      onSelectionChanged: (selectedItems) {},
+      customFilter: (item) => true,
+      checkboxColumnWidth: 42,
+      rowHeight: 42,
+      columns: _buildColumns(),
+      data: data,
+      onRowTap: onRowTap,
+      scaleCheckbox: 0.8,
+      activeColor: activeColor,
+      checkColor: checkColor,
+      side: borderSide,
+      shape: const BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(0))),
     );
   }
 }
