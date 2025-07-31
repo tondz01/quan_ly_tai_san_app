@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/download_file.dart';
-import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/popup/columns_asset_handover.dart';
@@ -155,13 +154,7 @@ Widget buildActions(BuildContext context, AssetHandoverDto item) {
         icon: Icons.visibility,
         color: Colors.green,
         tooltip: 'Xem',
-        onPressed: () => () => showWebViewPopup(
-                  context,
-                  url: url,
-                  title: 'Biên bản bàn giao tài sản',
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.height * 0.9,
-                ),
+        onPressed: () => _showDocument(context, item),
       ),
       const SizedBox(width: 8),
       AssetHandoverColumns.buildActionButton(
@@ -193,4 +186,18 @@ String getDateOfSigning(String dateStr) {
 
   String newDateStr = DateFormat('yyyy-MM-dd').format(newDate);
   return newDateStr;
+}
+
+void _showDocument(BuildContext context, AssetHandoverDto item) {
+  // Tạo data với thông tin menu selection
+  // Map<String, dynamic> navigationData = {
+  //   'AssetHandoverDto': item,
+  //   'menuSelection': {
+  //     'selectedIndex': 8, // Index của "Bàn giao tài sản"
+  //     'selectedSubIndex': 0, // Index của "Biên bản bàn giao tài sản"
+  //   },
+  // };
+
+  // context.go(AppRoute.assetHandover.path, extra: navigationData);
+  // Navigator.of(context).pop();
 }

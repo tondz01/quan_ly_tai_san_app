@@ -18,7 +18,7 @@ class TableBaseView<T> extends StatefulWidget {
   final ScrollController? horizontalController;
 
   @override
-  State<TableBaseView> createState() => _TableBaseViewState();
+  State<TableBaseView<T>> createState() => _TableBaseViewState<T>();
 }
 
 class _TableBaseViewState<T> extends State<TableBaseView<T>> {

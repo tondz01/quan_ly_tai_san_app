@@ -268,7 +268,6 @@ final ScrollController scrollController = ScrollController();
           decoration: BoxDecoration(
             color: Colors.red.shade50,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.shade200, width: 1),
           ),
           child: IconButton(
             icon: Icon(
@@ -294,7 +293,6 @@ final ScrollController scrollController = ScrollController();
           decoration: BoxDecoration(
             color: Colors.green.shade50,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.green.shade200, width: 1),
           ),
           child: IconButton(
             icon: Icon(Icons.visibility, size: 16, color: ColorValue.cyan),
@@ -318,7 +316,6 @@ final ScrollController scrollController = ScrollController();
           decoration: BoxDecoration(
             color: Colors.red.shade50,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.shade200, width: 1),
           ),
           child: IconButton(
             icon: Icon(Icons.delete, size: 16),

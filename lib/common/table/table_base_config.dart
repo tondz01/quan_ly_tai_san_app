@@ -6,7 +6,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-abstract class TableBaseConfig<T> {
+abstract class TableBaseConfig {
   static Widget tableBase<T>({
     required List<SgTableColumn<T>> columns,
     required List<T> data,
@@ -46,7 +46,7 @@ abstract class TableBaseConfig<T> {
     );
   }
 
-  Widget viewActionBase(
+  Widget viewActionBase<T>(
     T item, {
     bool isDisableDelete = false,
     Function(T item)? onView,
@@ -59,7 +59,6 @@ abstract class TableBaseConfig<T> {
         tooltip: 'Sửa',
         iconColor: Colors.orange,
         backgroundColor: Colors.orange.shade50,
-        borderColor: Colors.orange.shade200,
         onPressed: () => onEdit?.call(item),
       ),
       ActionButtonConfig(
@@ -67,7 +66,6 @@ abstract class TableBaseConfig<T> {
         tooltip: 'Xem',
         iconColor: Colors.blue,
         backgroundColor: Colors.blue.shade50,
-        borderColor: Colors.blue.shade200,
         onPressed: () => onView?.call(item),
       ),
       ActionButtonConfig(
@@ -75,7 +73,6 @@ abstract class TableBaseConfig<T> {
         tooltip: isDisableDelete ? null : 'Xóa',
         iconColor: isDisableDelete ? Colors.grey : Colors.red,
         backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
         onPressed: isDisableDelete ? null : () => onDelete?.call(item),
         isDisabled: isDisableDelete,
       ),
@@ -98,6 +95,28 @@ abstract class TableBaseConfig<T> {
       fontSize: fontSize,
       width: width,
       searchable: searchable,
+    );
+  }
+
+  static SgTableColumn<T> columnWidgetBase<T>({
+    required String title,
+    required double width,
+    required Widget Function(T) cellBuilder,
+    String Function(T)? sortValueGetter,
+    String Function(T)? searchValueGetter,
+    TextAlign? cellAlignment,
+    TextAlign? titleAlignment,
+    bool? searchable = false,
+  }) {
+    return SgTableColumn<T>(
+      title: title,
+      cellBuilder: cellBuilder,
+      sortValueGetter: sortValueGetter ?? (item) => '',
+      searchValueGetter: searchValueGetter ?? (item) => '',
+      cellAlignment: cellAlignment ?? TextAlign.center,
+      titleAlignment: titleAlignment ?? TextAlign.center,
+      width: width,
+      searchable: searchable ?? false,
     );
   }
 }

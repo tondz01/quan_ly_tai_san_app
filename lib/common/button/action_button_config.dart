@@ -39,7 +39,7 @@ Widget viewActionButtons<T>(List<ActionButtonConfig<T>> actions) {
                   child: IconButton(
                     icon: Icon(action.icon, size: 16, color: action.iconColor),
                     tooltip: action.tooltip,
-                    color: action.iconColor,
+                    // color: action.iconColor,
                     onPressed: action.isDisabled ? null : action.onPressed,
                     constraints: const BoxConstraints(
                       minWidth: 32,
@@ -52,6 +52,6 @@ Widget viewActionButtons<T>(List<ActionButtonConfig<T>> actions) {
               ],
             );
           }).toList()
-          ..removeLast(),
+          // ..removeLast(),
   );
 }

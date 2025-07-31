@@ -87,16 +87,16 @@ class AppTheme {
       ),
       
       // IconButton theme
-      iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(
-          foregroundColor: ColorValue.primaryBlue,
-          backgroundColor: ColorValue.neutral100,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.all(8),
-        ),
-      ),
+      // iconButtonTheme: IconButtonThemeData(
+      //   style: IconButton.styleFrom(
+      //     foregroundColor: ColorValue.primaryBlue,
+      //     backgroundColor: ColorValue.neutral100,
+      //     shape: RoundedRectangleBorder(
+      //       borderRadius: BorderRadius.circular(8),
+      //     ),
+      //     padding: const EdgeInsets.all(8),
+      //   ),
+      // ),
       
       // FloatingActionButton theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(

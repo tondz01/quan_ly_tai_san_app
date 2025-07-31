@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_st
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/bottom_list_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/table_asset_transfer_by_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
@@ -628,7 +629,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               // ),
               
               const SizedBox(height: 10),
-              BottomListAssetTransfer(
+              TableAssetTransferByDetail(
                 provider: widget.provider,
                 listAssetHandover: listAssetHandover,
               ),
