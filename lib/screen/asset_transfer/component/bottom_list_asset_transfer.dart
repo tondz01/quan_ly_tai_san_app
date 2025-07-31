@@ -47,6 +47,8 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
   }
 
   Widget onShowPhieuCapPhat() {
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
     final screenWidth = MediaQuery.of(context).size.width;
     final availableWidth = screenWidth - 50; // Trừ padding và margin
 
@@ -100,7 +102,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Danh sách phiếu cấp phát tài sản (${widget.provider.data.length})',
+                      'Danh sách phiếu cấp phát tài sản ( ${widget.provider.data.length})',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -115,72 +117,87 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
           ),
           // Table Content
           Expanded(
-            child: SingleChildScrollView(
-              child: movementDetailTable(
-                data: widget.provider.data,
-                columns: [
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Phiếu ký nội sinh',
-                    textColor: Colors.black87,
-                    getValue: (item) => getName(item.type ?? 0),
-                    fontSize: 12,
-                    width: columnWidths['Phiếu ký nội sinh']!,
+            child: Scrollbar(
+              thumbVisibility: true,
+              controller: verticalScrollController,
+              child: SingleChildScrollView(
+                controller: verticalScrollController,
+                scrollDirection: Axis.vertical,
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  controller: horizontalScrollController,
+                  notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                  child: SingleChildScrollView(
+                    controller: horizontalScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: movementDetailTable(
+                      data: widget.provider.data,
+                      columns: [
+                        TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                          title: 'Phiếu ký nội sinh',
+                          textColor: Colors.black87,
+                          getValue: (item) => getName(item.type ?? 0),
+                          fontSize: 12,
+                          width: columnWidths['Phiếu ký nội sinh']!,
+                        ),
+                        TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                          title: 'Ngày ký',
+                          textColor: Colors.black87,
+                          fontSize: 12,
+                          getValue: (item) => item.decisionDate ?? '',
+                          width: columnWidths['Ngày ký']!,
+                        ),
+                        TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                          title: 'Ngày có hiệu lực',
+                          textColor: Colors.black87,
+                          fontSize: 12,
+                          getValue: (item) => item.effectiveDate ?? '',
+                          width: columnWidths['Ngày có hiệu lực']!,
+                        ),
+                        TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                          title: 'Trình duyệt Ban giám đốc',
+                          textColor: Colors.black87,
+                          fontSize: 12,
+                          getValue: (item) => item.approver ?? '',
+                          width: columnWidths['Trình duyệt Ban giám đốc']!,
+                        ),
+                        SgTableColumn<AssetTransferDto>(
+                          title: 'Tài liệu duyệt',
+                          cellBuilder: (item) => showFile(url, item.documentName ?? ''),
+                          sortValueGetter: (item) => item.documentFileName ?? '',
+                          searchValueGetter: (item) => item.documentFileName ?? '',
+                          cellAlignment: TextAlign.center,
+                          titleAlignment: TextAlign.center,
+                          width: columnWidths['Tài liệu duyệt']!,
+                          searchable: true,
+                        ),
+                        TableColumnBuilder.createTextColumn<AssetTransferDto>(
+                          title: 'Ký số',
+                          textColor: Colors.black87,
+                          fontSize: 12,
+                          getValue: (item) => item.id ?? '',
+                          width: columnWidths['Ký số']!,
+                        ),
+                        SgTableColumn<AssetTransferDto>(
+                          title: 'Trạng thái',
+                          cellBuilder:
+                              (item) => widget.provider.showStatus(item.status ?? 0),
+                          cellAlignment: TextAlign.center,
+                          titleAlignment: TextAlign.center,
+                          width: columnWidths['Trạng thái']!,
+                        ),
+                        SgTableColumn<AssetTransferDto>(
+                          title: '',
+                          cellBuilder: (item) => viewAction(item),
+                          cellAlignment: TextAlign.center,
+                          titleAlignment: TextAlign.center,
+                          width: columnWidths['Actions']!,
+                          searchable: true,
+                        ),
+                      ],
+                    ),
                   ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Ngày ký',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.decisionDate ?? '',
-                    width: columnWidths['Ngày ký']!,
-                  ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Ngày có hiệu lực',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.effectiveDate ?? '',
-                    width: columnWidths['Ngày có hiệu lực']!,
-                  ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Trình duyệt Ban giám đốc',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.approver ?? '',
-                    width: columnWidths['Trình duyệt Ban giám đốc']!,
-                  ),
-                  SgTableColumn<AssetTransferDto>(
-                    title: 'Tài liệu duyệt',
-                    cellBuilder: (item) => showFile(url, item.documentName ?? ''),
-                    sortValueGetter: (item) => item.documentFileName ?? '',
-                    searchValueGetter: (item) => item.documentFileName ?? '',
-                    cellAlignment: TextAlign.center,
-                    titleAlignment: TextAlign.center,
-                    width: columnWidths['Tài liệu duyệt']!,
-                    searchable: true,
-                  ),
-                  TableColumnBuilder.createTextColumn<AssetTransferDto>(
-                    title: 'Ký số',
-                    textColor: Colors.black87,
-                    fontSize: 12,
-                    getValue: (item) => item.id ?? '',
-                    width: columnWidths['Ký số']!,
-                  ),
-                  SgTableColumn<AssetTransferDto>(
-                    title: 'Trạng thái',
-                    cellBuilder:
-                        (item) => widget.provider.showStatus(item.status ?? 0),
-                    cellAlignment: TextAlign.center,
-                    titleAlignment: TextAlign.center,
-                    width: columnWidths['Trạng thái']!,
-                  ),
-                  SgTableColumn<AssetTransferDto>(
-                    title: '',
-                    cellBuilder: (item) => viewAction(item),
-                    cellAlignment: TextAlign.center,
-                    titleAlignment: TextAlign.center,
-                    width: columnWidths['Actions']!,
-                    searchable: true,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -249,7 +266,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
         Container(
           decoration: BoxDecoration(
             color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Colors.red.shade200, width: 1),
           ),
           child: IconButton(
@@ -275,7 +292,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
         Container(
           decoration: BoxDecoration(
             color: Colors.green.shade50,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Colors.green.shade200, width: 1),
           ),
           child: IconButton(
@@ -302,7 +319,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
         Container(
           decoration: BoxDecoration(
             color: Colors.red.shade50,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(5),
             border: Border.all(color: Colors.red.shade200, width: 1),
           ),
           child: IconButton(
@@ -315,7 +332,7 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
                         ? null
                         : widget.provider.deleteItem(item.id ?? ''),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            padding: const EdgeInsets.all(4),
+          
           ),
         ),
       ],

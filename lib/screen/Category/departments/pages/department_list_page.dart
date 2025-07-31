@@ -7,7 +7,6 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
-import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -44,6 +43,9 @@ class DepartmentListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -146,98 +148,70 @@ class DepartmentListPage extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: SingleChildScrollView(
-                                                      child: SgTable<Department>(
-                              headerBackgroundColor: ColorValue.primaryBlue,
-                              textHeaderColor: Colors.white,
-                              widthScreen: MediaQuery.of(context).size.width,
-                            evenRowBackgroundColor: ColorValue.neutral50,
-                            oddRowBackgroundColor: Colors.white,
-                            selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                            checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                            gridLineColor: ColorValue.neutral200,
-                            gridLineWidth: 1.0,
-                            showVerticalLines: true,
-                            showHorizontalLines: true,
-                            allowRowSelection: true,
-                            rowHeight: 56.0,
-                            onSelectionChanged: (selectedItems) {
-                              print(MediaQuery.of(context).size.width);
-                            },
-                            showActions: true,
-                            actionColumnTitle: 'Thao tác',
-                            actionColumnWidth: 160,
-                            actionViewColor: ColorValue.success,
-                            actionEditColor: ColorValue.primaryBlue,
-                            actionDeleteColor: ColorValue.error,
-                            onEditAction: (item) {
-                            if (onEdit != null) {
-                              onEdit!(item);
-                            } else {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => BlocProvider.value(
-                                        value: context.read<DepartmentBloc>(),
-                                        child: DepartmentFormPage(
-                                          department: item,
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: verticalScrollController,
+                            child: SingleChildScrollView(
+                              controller: verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: horizontalScrollController,
+                                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                                child: SingleChildScrollView(
+                                  controller: horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: SgTable<Department>(
+                                    headerBackgroundColor: ColorValue.primaryBlue,
+                                    textHeaderColor: Colors.white,
+                                    widthScreen: MediaQuery.of(context).size.width,
+                                    evenRowBackgroundColor: ColorValue.neutral50,
+                                    oddRowBackgroundColor: Colors.white,
+                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                    gridLineColor: ColorValue.neutral200,
+                                    gridLineWidth: 1.0,
+                                    showVerticalLines: true,
+                                    showHorizontalLines: true,
+                                    allowRowSelection: true,
+                                    rowHeight: 56.0,
+                                    showActions: true,
+                                    actionColumnTitle: 'Thao tác',
+                                    actionColumnWidth: 160,
+                                    actionViewColor: ColorValue.success,
+                                    actionEditColor: ColorValue.primaryBlue,
+                                    actionDeleteColor: ColorValue.error,
+                                    onEditAction: (item) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<DepartmentBloc>(),
+                                            child: DepartmentFormPage(department: item),
+                                          ),
                                         ),
+                                      );
+                                    },
+                                    onDeleteAction: (item) {
+                                      _showDeleteDialog(context, item);
+                                    },
+                                    columns: [
+                                      TableColumnBuilder.createTextColumn<Department>(
+                                        title: 'Mã phòng ban',
+                                        getValue: (item) => item.departmentId,
+                                        width: 150,
                                       ),
+                                      TableColumnBuilder.createTextColumn<Department>(
+                                        title: 'Tên phòng ban',
+                                        getValue: (item) => item.departmentName,
+                                        width: 200,
+                                      ),
+                                    ],
+                                    data: departments,
+                                    onRowTap: (item) {},
+                                  ),
                                 ),
-                              );
-                            }
-                          },
-                          onDeleteAction: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          columns: [
-                            TableColumnBuilder.createTextColumn<Department>(
-                              title: 'Mã đơn vị',
-                              getValue: (item) => item.departmentId,
+                              ),
                             ),
-                            TableColumnBuilder.createTextColumn<Department>(
-                              title: 'Nhóm đơn vị',
-                              getValue: (item) => item.departmentGroup,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<Department>(
-                              title: 'Tên phòng/ban',
-                              getValue: (item) => item.departmentName,
-                              width: 250,
-                              align: TextAlign.start,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<Department>(
-                              title: 'Quản lý',
-                              align: TextAlign.start,
-                              getValue:
-                                  (item) =>
-                                      context
-                                          .read<DepartmentBloc>()
-                                          .staffs
-                                          .firstWhere(
-                                            (staff) =>
-                                                staff.staffId == item.managerId,
-                                          )
-                                          .name,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<Department>(
-                              title: 'Nhân viên',
-                              getValue: (item) => item.employeeCount,
-                              isFullWidth: true
-
-                            ),
-                            TableColumnBuilder.createTextColumn<Department>(
-                              title: 'Phòng/ Ban cấp trên',
-                              getValue: (item) => item.parentRoom,
-                              align: TextAlign.start,
-                                                            isFullWidth: true
-                            ),
-                          ],
-                          data: departments,
-                          onRowTap: (item) {},
-                        ),
                           ),
                         ),
                       );

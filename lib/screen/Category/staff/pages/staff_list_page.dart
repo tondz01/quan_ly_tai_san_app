@@ -7,7 +7,6 @@ import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart'
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/pages/staff_form_page.dart';
-import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -42,6 +41,9 @@ class StaffListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -138,101 +140,75 @@ class StaffListPage extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: SingleChildScrollView(
-                            child: SgTable<StaffDTO>(
-                              headerBackgroundColor: ColorValue.primaryBlue,
-                              textHeaderColor: Colors.white,
-                              widthScreen: MediaQuery.of(context).size.width,
-                              evenRowBackgroundColor: ColorValue.neutral50,
-                              oddRowBackgroundColor: Colors.white,
-                              selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                              checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                              gridLineColor: ColorValue.neutral200,
-                              gridLineWidth: 1.0,
-                              showVerticalLines: true,
-                              showHorizontalLines: true,
-                              allowRowSelection: true,
-                              rowHeight: 56.0,
-                              onSelectionChanged: (selectedItems) {},
-                              showActions: true,
-                              actionColumnTitle: 'Thao tác',
-                              actionColumnWidth: 160,
-                              actionViewColor: ColorValue.success,
-                              actionEditColor: ColorValue.primaryBlue,
-                              actionDeleteColor: ColorValue.error,
-                          onEditAction: (item) {
-                            if (onEdit != null) {
-                              onEdit!(item);
-                            } else {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => BlocProvider.value(
-                                        value: context.read<StaffBloc>(),
-                                        child: StaffFormPage(staff: item),
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: verticalScrollController,
+                            child: SingleChildScrollView(
+                              controller: verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: horizontalScrollController,
+                                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                                child: SingleChildScrollView(
+                                  controller: horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: SgTable<StaffDTO>(
+                                    headerBackgroundColor: ColorValue.primaryBlue,
+                                    textHeaderColor: Colors.white,
+                                    widthScreen: MediaQuery.of(context).size.width,
+                                    evenRowBackgroundColor: ColorValue.neutral50,
+                                    oddRowBackgroundColor: Colors.white,
+                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                    gridLineColor: ColorValue.neutral200,
+                                    gridLineWidth: 1.0,
+                                    showVerticalLines: true,
+                                    showHorizontalLines: true,
+                                    allowRowSelection: true,
+                                    rowHeight: 56.0,
+                                    showActions: true,
+                                    actionColumnTitle: 'Thao tác',
+                                    actionColumnWidth: 160,
+                                    actionViewColor: ColorValue.success,
+                                    actionEditColor: ColorValue.primaryBlue,
+                                    actionDeleteColor: ColorValue.error,
+                                    onEditAction: (item) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<StaffBloc>(),
+                                            child: StaffFormPage(staff: item),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    onDeleteAction: (item) {
+                                      _showDeleteDialog(context, item);
+                                    },
+                                    columns: [
+                                      TableColumnBuilder.createTextColumn<StaffDTO>(
+                                        title: 'Mã nhân viên',
+                                        getValue: (item) => item.staffId,
+                                        width: 150,
                                       ),
+                                      TableColumnBuilder.createTextColumn<StaffDTO>(
+                                        title: 'Tên nhân viên',
+                                        getValue: (item) => item.name,
+                                        width: 200,
+                                      ),
+                                      TableColumnBuilder.createTextColumn<StaffDTO>(
+                                        title: 'Email',
+                                        getValue: (item) => item.email,
+                                        width: 250,
+                                      ),
+                                    ],
+                                    data: staffs,
+                                    onRowTap: (item) {},
+                                  ),
                                 ),
-                              );
-                            }
-                          },
-                          onDeleteAction: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          columns: [
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Mã nhân viên',
-                              getValue: (item) => item.staffId,
+                              ),
                             ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Tên nhân viên',
-                              getValue: (item) => item.name,
-                              align: TextAlign.start,
-                              isFullWidth: true
-
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Số điện thoại',
-                              getValue: (item) => item.tel,
-                              align: TextAlign.start,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Email',
-                              getValue: (item) => item.email,
-                              align: TextAlign.start,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Hoạt động',
-                              getValue: (item) => item.activity,
-                              align: TextAlign.start,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Hạn chót cho hoạt động tiếp theo',
-                              getValue: (item) => item.timeForActivity,
-                              align: TextAlign.center,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Phòng ban',
-                              getValue: (item) => item.department,
-                              align: TextAlign.center,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Chức vụ',
-                              getValue: (item) => item.position,
-                              align: TextAlign.center,
-                            ),
-                            TableColumnBuilder.createTextColumn<StaffDTO>(
-                              title: 'Người quản lý',
-                              getValue: (item) => item.staffOwner,
-                              align: TextAlign.start,
-                            ),
-                          ],
-                          data: staffs,
-                          onRowTap: (item) {},
-                        ),
                           ),
                         ),
                       );

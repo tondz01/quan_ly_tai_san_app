@@ -7,7 +7,6 @@ import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_event.dart'
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/models/asset.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/pages/asset_form_page.dart';
-import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -42,8 +41,9 @@ class AssetListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ScrollController horizontalScrollController = ScrollController();
-
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -145,202 +145,219 @@ class AssetListPage extends StatelessWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
-                              child: SgTable<AssetDTO>(
-                                headerBackgroundColor: ColorValue.primaryBlue,
-                                textHeaderColor: Colors.white,
-                                widthScreen: MediaQuery.of(context).size.width,
-                                evenRowBackgroundColor: ColorValue.neutral50,
-                                oddRowBackgroundColor: Colors.white,
-                                selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                                checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                                gridLineColor: ColorValue.neutral200,
-                                gridLineWidth: 1.0,
-                                showVerticalLines: true,
-                                showHorizontalLines: true,
-                                allowRowSelection: true,
-                                rowHeight: 56.0,
-                                showActions: true,
-                                actionColumnTitle: 'Thao tác',
-                                actionColumnWidth: 160,
-                                actionViewColor: ColorValue.success,
-                                actionEditColor: ColorValue.primaryBlue,
-                                actionDeleteColor: ColorValue.error,
-                                onEditAction: (item) {
-                                  if (onEdit != null) {
-                                    onEdit!(item);
-                                  } else {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder:
-                                            (_) => BlocProvider.value(
-                                              value: context.read<AssetBloc>(),
-                                              child: AssetFormPage(asset: item),
-                                            ),
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: verticalScrollController,
+                                child: SingleChildScrollView(
+                                  controller: verticalScrollController,
+                                  scrollDirection: Axis.vertical,
+                                  child: Scrollbar(
+                                    thumbVisibility: true,
+                                    controller: horizontalScrollController,
+                                    notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                                    child: SingleChildScrollView(
+                                      controller: horizontalScrollController,
+                                      scrollDirection: Axis.horizontal,
+                                      child: SgTable<AssetDTO>(
+                                        headerBackgroundColor: ColorValue.primaryBlue,
+                                        textHeaderColor: Colors.white,
+                                        widthScreen: MediaQuery.of(context).size.width,
+                                        evenRowBackgroundColor: ColorValue.neutral50,
+                                        oddRowBackgroundColor: Colors.white,
+                                        selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                        checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                        gridLineColor: ColorValue.neutral200,
+                                        gridLineWidth: 1.0,
+                                        showVerticalLines: true,
+                                        showHorizontalLines: true,
+                                        allowRowSelection: true,
+                                        rowHeight: 56.0,
+                                        showActions: true,
+                                        actionColumnTitle: 'Thao tác',
+                                        actionColumnWidth: 160,
+                                        actionViewColor: ColorValue.success,
+                                        actionEditColor: ColorValue.primaryBlue,
+                                        actionDeleteColor: ColorValue.error,
+                                        onEditAction: (item) {
+                                          if (onEdit != null) {
+                                            onEdit!(item);
+                                          } else {
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (_) => BlocProvider.value(
+                                                      value: context.read<AssetBloc>(),
+                                                      child: AssetFormPage(asset: item),
+                                                    ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        onDeleteAction: (item) {
+                                          _showDeleteDialog(context, item);
+                                        },
+                                        columns: [
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Mã tài sản',
+                                            getValue: (item) => item.assetId,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Nguyên giá',
+                                            getValue: (item) => item.originalPrice,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Giá trị khấu hao ban đầu',
+                                            getValue:
+                                                (item) => item.initialDepreciationValue,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Kỳ khấu hao ban đầu',
+                                            getValue:
+                                                (item) =>
+                                                    item.initialDepreciationPeriod,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Giá trị thanh lý',
+                                            getValue: (item) => item.liquidationValue,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Mô hình tài sản',
+                                            getValue: (item) => item.assetModel,
+                                            width: 200,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Phương pháp khấu hao',
+                                            getValue: (item) => item.depreciationMethod,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Số kỳ khấu hao',
+                                            getValue:
+                                                (item) => item.depreciationPeriods,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Tài khoản tài sản',
+                                            getValue: (item) => item.assetAccount,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Tài khoản khấu hao',
+                                            getValue:
+                                                (item) => item.depreciationAccount,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Tài khoản chi phí',
+                                            getValue: (item) => item.costAccount,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Nhóm tài sản',
+                                            getValue: (item) => item.assetGroup,
+                                            width: 200,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Ngày vào sổ',
+                                            getValue: (item) => item.entryDate,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Ngày sử dụng',
+                                            getValue: (item) => item.usageDate,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Dự án',
+                                            getValue: (item) => item.project,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Nguồn kinh phí',
+                                            getValue: (item) => item.fundingSource,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Ký hiệu',
+                                            getValue: (item) => item.symbol,
+                                            width: 100,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Số ký hiệu',
+                                            getValue: (item) => item.symbolNumber,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Công suất',
+                                            getValue: (item) => item.capacity,
+                                            width: 100,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Nước sản xuất',
+                                            getValue: (item) => item.countryOfOrigin,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Năm sản xuất',
+                                            getValue: (item) => item.yearOfManufacture,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Lý do tăng',
+                                            getValue: (item) => item.reasonForIncrease,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Hiện trạng',
+                                            getValue: (item) => item.status,
+                                            width: 120,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Số lượng',
+                                            getValue: (item) => item.quantity,
+                                            width: 100,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Đơn vị tính',
+                                            getValue: (item) => item.unit,
+                                            width: 100,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Ghi chú',
+                                            getValue: (item) => item.note,
+                                            width: 150,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Khởi tạo Đơn vị ban đầu',
+                                            getValue:
+                                                (item) =>
+                                                    item.initialUnitCreated
+                                                        ? 'Có'
+                                                        : 'Không',
+                                            width: 180,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Đơn vị sử dụng ban đầu',
+                                            getValue: (item) => item.initialUsageUnit,
+                                            width: 180,
+                                          ),
+                                          TableColumnBuilder.createTextColumn<AssetDTO>(
+                                            title: 'Đơn vị hiện thời',
+                                            getValue: (item) => item.currentUnit,
+                                            width: 150,
+                                          ),
+                                        ],
+                                        data: assets,
+                                        onRowTap: (item) {},
                                       ),
-                                    );
-                                  }
-                                },
-                                onDeleteAction: (item) {
-                                  _showDeleteDialog(context, item);
-                                },
-                                columns: [
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Mã tài sản',
-                                    getValue: (item) => item.assetId,
-                                    width: 120,
+                                    ),
                                   ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Nguyên giá',
-                                    getValue: (item) => item.originalPrice,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Giá trị khấu hao ban đầu',
-                                    getValue:
-                                        (item) => item.initialDepreciationValue,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Kỳ khấu hao ban đầu',
-                                    getValue:
-                                        (item) =>
-                                            item.initialDepreciationPeriod,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Giá trị thanh lý',
-                                    getValue: (item) => item.liquidationValue,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Mô hình tài sản',
-                                    getValue: (item) => item.assetModel,
-                                    width: 200,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Phương pháp khấu hao',
-                                    getValue: (item) => item.depreciationMethod,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Số kỳ khấu hao',
-                                    getValue:
-                                        (item) => item.depreciationPeriods,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Tài khoản tài sản',
-                                    getValue: (item) => item.assetAccount,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Tài khoản khấu hao',
-                                    getValue:
-                                        (item) => item.depreciationAccount,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Tài khoản chi phí',
-                                    getValue: (item) => item.costAccount,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Nhóm tài sản',
-                                    getValue: (item) => item.assetGroup,
-                                    width: 200,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Ngày vào sổ',
-                                    getValue: (item) => item.entryDate,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Ngày sử dụng',
-                                    getValue: (item) => item.usageDate,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Dự án',
-                                    getValue: (item) => item.project,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Nguồn kinh phí',
-                                    getValue: (item) => item.fundingSource,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Ký hiệu',
-                                    getValue: (item) => item.symbol,
-                                    width: 100,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Số ký hiệu',
-                                    getValue: (item) => item.symbolNumber,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Công suất',
-                                    getValue: (item) => item.capacity,
-                                    width: 100,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Nước sản xuất',
-                                    getValue: (item) => item.countryOfOrigin,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Năm sản xuất',
-                                    getValue: (item) => item.yearOfManufacture,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Lý do tăng',
-                                    getValue: (item) => item.reasonForIncrease,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Hiện trạng',
-                                    getValue: (item) => item.status,
-                                    width: 120,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Số lượng',
-                                    getValue: (item) => item.quantity,
-                                    width: 100,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Đơn vị tính',
-                                    getValue: (item) => item.unit,
-                                    width: 100,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Ghi chú',
-                                    getValue: (item) => item.note,
-                                    width: 150,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Khởi tạo Đơn vị ban đầu',
-                                    getValue:
-                                        (item) =>
-                                            item.initialUnitCreated
-                                                ? 'Có'
-                                                : 'Không',
-                                    width: 180,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Đơn vị sử dụng ban đầu',
-                                    getValue: (item) => item.initialUsageUnit,
-                                    width: 180,
-                                  ),
-                                  TableColumnBuilder.createTextColumn<AssetDTO>(
-                                    title: 'Đơn vị hiện thời',
-                                    getValue: (item) => item.currentUnit,
-                                    width: 150,
-                                  ),
-                                ],
-                                data: assets,
-                                onRowTap: (item) {},
+                                ),
                               ),
                             ),
                           ),

@@ -7,7 +7,6 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/pages/capital_source_form_page.dart';
-import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -44,6 +43,9 @@ class CapitalSourceListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -148,81 +150,75 @@ class CapitalSourceListPage extends StatelessWidget {
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: SingleChildScrollView(
-                                                      child: SgTable<CapitalSource>(
-                              headerBackgroundColor: ColorValue.primaryBlue,
-                              textHeaderColor: Colors.white,
-                              widthScreen: MediaQuery.of(context).size.width,
-                            evenRowBackgroundColor: ColorValue.neutral50,
-                            oddRowBackgroundColor: Colors.white,
-                            selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                            checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                            gridLineColor: ColorValue.neutral200,
-                            gridLineWidth: 1.0,
-                            showVerticalLines: true,
-                            showHorizontalLines: true,
-                            allowRowSelection: true,
-                            rowHeight: 56.0,
-                            onSelectionChanged: (selectedItems) {
-                              print(MediaQuery.of(context).size.width);
-                            },
-                            showActions: true,
-                            actionColumnTitle: 'Thao tác',
-                            actionColumnWidth: 160,
-                            actionViewColor: ColorValue.success,
-                            actionEditColor: ColorValue.primaryBlue,
-                            actionDeleteColor: ColorValue.error,
-                            onEditAction: (item) {
-                            if (onEdit != null) {
-                              onEdit!(item);
-                            } else {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => BlocProvider.value(
-                                        value:
-                                            context.read<CapitalSourceBloc>(),
-                                        child: CapitalSourceFormPage(
-                                          capitalSource: item,
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: verticalScrollController,
+                            child: SingleChildScrollView(
+                              controller: verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: horizontalScrollController,
+                                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                                child: SingleChildScrollView(
+                                  controller: horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: SgTable<CapitalSource>(
+                                    headerBackgroundColor: ColorValue.primaryBlue,
+                                    textHeaderColor: Colors.white,
+                                    widthScreen: MediaQuery.of(context).size.width,
+                                    evenRowBackgroundColor: ColorValue.neutral50,
+                                    oddRowBackgroundColor: Colors.white,
+                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                    gridLineColor: ColorValue.neutral200,
+                                    gridLineWidth: 1.0,
+                                    showVerticalLines: true,
+                                    showHorizontalLines: true,
+                                    allowRowSelection: true,
+                                    rowHeight: 56.0,
+                                    showActions: true,
+                                    actionColumnTitle: 'Thao tác',
+                                    actionColumnWidth: 160,
+                                    actionViewColor: ColorValue.success,
+                                    actionEditColor: ColorValue.primaryBlue,
+                                    actionDeleteColor: ColorValue.error,
+                                    onEditAction: (item) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<CapitalSourceBloc>(),
+                                            child: CapitalSourceFormPage(capitalSource: item),
+                                          ),
                                         ),
+                                      );
+                                    },
+                                    onDeleteAction: (item) {
+                                      _showDeleteDialog(context, item);
+                                    },
+                                    columns: [
+                                      TableColumnBuilder.createTextColumn<CapitalSource>(
+                                        title: 'Mã nguồn vốn',
+                                        getValue: (item) => item.code,
+                                        width: 150,
                                       ),
+                                      TableColumnBuilder.createTextColumn<CapitalSource>(
+                                        title: 'Tên nguồn vốn',
+                                        getValue: (item) => item.name,
+                                        width: 200,
+                                      ),
+                                      TableColumnBuilder.createTextColumn<CapitalSource>(
+                                        title: 'Ghi chú',
+                                        getValue: (item) => item.note,
+                                        width: 300,
+                                      ),
+                                    ],
+                                    data: capitalSources,
+                                    onRowTap: (item) {},
+                                  ),
                                 ),
-                              );
-                            }
-                          },
-                          onDeleteAction: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          columns: [
-                            TableColumnBuilder.createTextColumn<CapitalSource>(
-                              title: 'Mã nguồn kinh phí',
-                              getValue: (item) => item.code,
+                              ),
                             ),
-                            TableColumnBuilder.createTextColumn<CapitalSource>(
-                              title: 'Tên nguồn kinh phí',
-                              getValue: (item) => item.name,
-                              width: MediaQuery.of(context).size.width / 4,
-                              align: TextAlign.start,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<CapitalSource>(
-                              title: 'Ghi chú',
-                              getValue: (item) => item.note,
-                              width: MediaQuery.of(context).size.width / 4,
-                              align: TextAlign.start,
-                              isFullWidth: true
-                            ),
-                            TableColumnBuilder.createTextColumn<CapitalSource>(
-                              title: 'Có hiệu lực',
-                              getValue:
-                                  (item) => item.isActive ? 'Có' : 'Không',
-                              isFullWidth: true
-
-                            ),
-                          ],
-                          data: capitalSources,
-                          onRowTap: (item) {},
-                        ),
                           ),
                         ),
                       );

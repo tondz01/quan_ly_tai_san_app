@@ -20,6 +20,9 @@ class BotttomTableAssetHandover extends StatefulWidget {
 }
 
 class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
+  final verticalScrollController = ScrollController();
+  final horizontalScrollController = ScrollController();
+
   static const Map<String, Color> _statusColors = {
     'Nháp': ColorValue.silverGray,
     'Sẵn sàng': ColorValue.lightAmber,
@@ -165,7 +168,24 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
   }
 
   Widget _buildTable() {
-    return SingleChildScrollView(child: _buildTableWidget());
+    return Scrollbar(
+      thumbVisibility: true,
+      controller: verticalScrollController,
+      child: SingleChildScrollView(
+        controller: verticalScrollController,
+        scrollDirection: Axis.vertical,
+        child: Scrollbar(
+          thumbVisibility: true,
+          controller: horizontalScrollController,
+          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+          child: SingleChildScrollView(
+            controller: horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: _buildTableWidget(),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildTableWidget() {

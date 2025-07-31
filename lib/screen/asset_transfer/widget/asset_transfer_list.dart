@@ -96,56 +96,60 @@ class _AssetTransferListState extends State<AssetTransferList> {
     Function(AssetTransferDto)? onDeleteAction,
     Function(AssetTransferDto)? onRowTap,
     Function(List<AssetTransferDto>)? onSelectionChanged,
-    Function(AssetTransferDto)? onCustomFilter,
+    bool Function(AssetTransferDto)? onCustomFilter,
   }) {
     log('Construyendo tabla con ${data.length} elementos');
-    return SgTable<AssetTransferDto>(
-        key: ValueKey(data.length),
-        headerBackgroundColor: ColorValue.primaryBlue,
-        textHeaderColor: Colors.white,
-        evenRowBackgroundColor: ColorValue.neutral50,
-        oddRowBackgroundColor: Colors.white,
-        selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-        checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-        gridLineColor: ColorValue.neutral200,
-        gridLineWidth: 1.0,
-        showVerticalLines: true,
-        showHorizontalLines: true,
-        allowRowSelection: true,
-        searchTerm: searchTerm,
-        rowHeight: 56.0,
-        showCheckboxes: true,
-        onSelectionChanged: (selectedItems) {
-          onSelectionChanged?.call(selectedItems);
-        },
-        customFilter: (item) {
-          if (onCustomFilter?.call(item) == true) {
-            return false;
-          }
-          return true;
-        },
-        showActions: true,
-        actionColumnTitle: 'Thao tác',
-        actionColumnWidth: 160,
-        actionViewColor: ColorValue.success,
-        actionEditColor: ColorValue.primaryBlue,
-        actionDeleteColor: ColorValue.error,
-        onViewAction: (item) {
-          onViewAction?.call(item);
-        },
-        onEditAction: (item) {
-          onEditAction?.call(item);
-        },
-        onDeleteAction: (item) {
-          onDeleteAction?.call(item);
-        },
-        columns: columns,
-        data: data,
-        onRowTap: (item) {
-          log('message onRowTap called');
-          onRowTap?.call(item);
-        },
-      );
+    
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
+    
+    return Scrollbar(
+      thumbVisibility: true,
+      controller: verticalScrollController,
+      child: SingleChildScrollView(
+        controller: verticalScrollController,
+        scrollDirection: Axis.vertical,
+        child: Scrollbar(
+          thumbVisibility: true,
+          controller: horizontalScrollController,
+          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+          child: SingleChildScrollView(
+            controller: horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: SgTable<AssetTransferDto>(
+              key: ValueKey(data.length),
+              headerBackgroundColor: ColorValue.primaryBlue,
+              textHeaderColor: Colors.white,
+              widthScreen: MediaQuery.of(context).size.width,
+              evenRowBackgroundColor: ColorValue.neutral50,
+              oddRowBackgroundColor: Colors.white,
+              selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+              checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+              gridLineColor: ColorValue.neutral200,
+              gridLineWidth: 1.0,
+              showVerticalLines: true,
+              showHorizontalLines: true,
+              allowRowSelection: true,
+              rowHeight: 56.0,
+              showActions: true,
+              actionColumnTitle: 'Thao tác',
+              actionColumnWidth: 160,
+              actionViewColor: ColorValue.success,
+              actionEditColor: ColorValue.primaryBlue,
+              actionDeleteColor: ColorValue.error,
+              onViewAction: onViewAction,
+              onEditAction: onEditAction,
+              onDeleteAction: onDeleteAction,
+              columns: columns,
+              data: data,
+              onRowTap: (item) {
+                onRowTap?.call(item);
+              },
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildPaginationControls(AssetTransferProvider provider) {
