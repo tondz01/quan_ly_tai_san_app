@@ -85,7 +85,6 @@ flutter:
     - lib/screen/asset_transfer/model/asset_recovery_data.json
     - lib/screen/asset_handover/model/asset_handover.json
     - assets/images/
-    - assets/icons/
     - assets/svgs/
 
 
