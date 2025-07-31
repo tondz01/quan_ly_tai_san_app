@@ -414,17 +414,13 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 _updateCellValue(rowIndex, column.field, value);
               },
             )
-          : Align(
-              alignment: column.cellAlignment == TextAlign.center
-                  ? Alignment.center
-                  : column.cellAlignment == TextAlign.right
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-              child: Text(
-                controller.text,
-                style: const TextStyle(fontSize: 14),
-              ),
+          : Expanded(
+            child: Text(
+              controller.text,
+              textAlign: column.titleAlignment,
+              style: const TextStyle(fontSize: 14),
             ),
+          ),
     );
   }
 
@@ -442,6 +438,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 : Alignment.centerLeft,
         child: Text(
           value?.toString() ?? '',
+          textAlign: column.titleAlignment,
           style: const TextStyle(fontSize: 14),
         ),
       ),

@@ -10,16 +10,17 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 import 'columns_asset_handover_component.dart';
 
-class BotttomTableAssetHandover extends StatefulWidget {
+class BottomTableAssetHandover extends StatefulWidget {
   final List<AssetHandoverDto> data;
-  const BotttomTableAssetHandover({super.key, required this.data});
+  const BottomTableAssetHandover({super.key, required this.data});
 
   @override
-  State<BotttomTableAssetHandover> createState() =>
-      _BotttomTableAssetHandoverState();
+  State<BottomTableAssetHandover> createState() =>
+      _BottomTableAssetHandoverState();
 }
 
-class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
+class _BottomTableAssetHandoverState extends State<BottomTableAssetHandover> {
+  final ScrollController _scrollController = ScrollController();
   static const Map<String, Color> _statusColors = {
     'Nháp': ColorValue.silverGray,
     'Sẵn sàng': ColorValue.lightAmber,
@@ -200,14 +201,18 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
       ),
       child:
           _isSmallScreen
-              ? SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: columns.fold<double>(
-                    0,
-                    (sum, column) => sum + (column.width ?? 0),
+              ? Scrollbar(
+                controller: _scrollController,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: columns.fold<double>(
+                      0,
+                      (sum, column) => sum + (column.width ?? 0),
+                    ),
+                    child: table,
                   ),
-                  child: table,
                 ),
               )
               : table,

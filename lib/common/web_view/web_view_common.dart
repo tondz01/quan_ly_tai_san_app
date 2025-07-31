@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:ui' as ui;
 
 class WebViewCommon extends StatefulWidget {
   final String url;
@@ -25,51 +30,59 @@ class WebViewCommon extends StatefulWidget {
 }
 
 class _WebViewCommonState extends State<WebViewCommon> {
-  late final WebViewController _controller;
+  late final WebViewController? _controller;
   bool _isLoading = true;
   String? _errorMessage;
+  final String _viewId = 'webview_${UniqueKey()}';
 
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
+
+    if (kIsWeb) {
+      // Đăng ký iframe view
+      // ignore: undefined_prefixed_name
+      ui.platformViewRegistry.registerViewFactory(_viewId, (int viewId) {
+        final iframe =
+            html.IFrameElement()
+              ..src = widget.url
+              ..style.border = 'none'
+              ..width = '100%'
+              ..height = '100%';
+        return iframe;
+      });
+      setState(() {
+        _isLoading = false;
+      });
+    } else {
+      _initializeWebView();
+    }
   }
 
   void _initializeWebView() {
-    _controller = WebViewController()
-      ..setJavaScriptMode(
-        widget.enableJavaScript 
-          ? JavaScriptMode.unrestricted 
-          : JavaScriptMode.disabled,
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Có thể hiển thị progress bar ở đây
-          },
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-              _errorMessage = null;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
-          onWebResourceError: (WebResourceError error) {
-            setState(() {
-              _isLoading = false;
-              _errorMessage = 'Lỗi tải trang: ${error.description}';
-            });
-          },
-        ),
-      )
-      ..loadRequest(
-        Uri.parse(widget.url),
-        headers: widget.headers ?? {},
-      );
+    _controller =
+        WebViewController()
+          ..setJavaScriptMode(
+            widget.enableJavaScript
+                ? JavaScriptMode.unrestricted
+                : JavaScriptMode.disabled,
+          )
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted:
+                  (_) => setState(() {
+                    _isLoading = true;
+                    _errorMessage = null;
+                  }),
+              onPageFinished: (_) => setState(() => _isLoading = false),
+              onWebResourceError:
+                  (error) => setState(() {
+                    _isLoading = false;
+                    _errorMessage = 'Lỗi tải trang: ${error.description}';
+                  }),
+            ),
+          )
+          ..loadRequest(Uri.parse(widget.url), headers: widget.headers ?? {});
   }
 
   @override
@@ -84,95 +97,74 @@ class _WebViewCommonState extends State<WebViewCommon> {
     return AppBar(
       title: Text(
         widget.title ?? 'Tài liệu',
-        style: TextStyle(
-          fontSize: 18.sp,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600),
       ),
       backgroundColor: Colors.white,
       foregroundColor: Colors.black87,
       elevation: 1,
       actions: [
-        IconButton(
-          icon: Icon(Icons.refresh, size: 24.sp),
-          onPressed: () {
-            _controller.reload();
-          },
-        ),
-        PopupMenuButton<String>(
-          onSelected: (value) {
-            switch (value) {
-              case 'back':
-                _controller.goBack();
-                break;
-              case 'forward':
-                _controller.goForward();
-                break;
-              case 'reload':
-                _controller.reload();
-                break;
-              case 'share':
-                _shareUrl();
-                break;
-            }
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'back',
-              child: Row(
-                children: [
-                  Icon(Icons.arrow_back, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text('Quay lại'),
+        if (!kIsWeb) ...[
+          IconButton(
+            icon: Icon(Icons.refresh, size: 24.sp),
+            onPressed: () => _controller?.reload(),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'back':
+                  _controller?.goBack();
+                  break;
+                case 'forward':
+                  _controller?.goForward();
+                  break;
+                case 'reload':
+                  _controller?.reload();
+                  break;
+                case 'share':
+                  _shareUrl();
+                  break;
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  _popupItem('back', Icons.arrow_back, 'Quay lại'),
+                  _popupItem('forward', Icons.arrow_forward, 'Tiến tới'),
+                  _popupItem('reload', Icons.refresh, 'Tải lại'),
+                  _popupItem('share', Icons.share, 'Chia sẻ'),
                 ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'forward',
-              child: Row(
-                children: [
-                  Icon(Icons.arrow_forward, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text('Tiến tới'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'reload',
-              child: Row(
-                children: [
-                  Icon(Icons.refresh, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text('Tải lại'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'share',
-              child: Row(
-                children: [
-                  Icon(Icons.share, size: 20.sp),
-                  SizedBox(width: 8.w),
-                  Text('Chia sẻ'),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
+        if (kIsWeb) ...[
+          IconButton(
+            icon: Icon(Icons.open_in_new, size: 24.sp),
+            onPressed: () => html.window.open(widget.url, '_blank'),
+          ),
+        ],
       ],
     );
   }
 
+  PopupMenuItem<String> _popupItem(String value, IconData icon, String text) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [Icon(icon, size: 20.sp), SizedBox(width: 8.w), Text(text)],
+      ),
+    );
+  }
+
   Widget _buildBody() {
+    if (kIsWeb) {
+      return HtmlElementView(viewType: _viewId);
+    }
+
     if (_errorMessage != null) {
       return _buildErrorWidget();
     }
 
     return Stack(
       children: [
-        WebViewWidget(
-          controller: _controller,
-        ),
+        WebViewWidget(controller: _controller!),
         if (_isLoading) _buildLoadingWidget(),
       ],
     );
@@ -193,10 +185,7 @@ class _WebViewCommonState extends State<WebViewCommon> {
             SizedBox(height: 16.h),
             Text(
               'Đang tải tài liệu...',
-              style: TextStyle(
-                fontSize: 16.sp,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16.sp, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -205,51 +194,146 @@ class _WebViewCommonState extends State<WebViewCommon> {
   }
 
   Widget _buildErrorWidget() {
-    return Container(
-      color: Colors.white,
-      child: Center(
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64.sp, color: Colors.red[300]),
+          SizedBox(height: 16.h),
+          Text(
+            'Không thể tải tài liệu',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            _errorMessage ?? 'Đã xảy ra lỗi không xác định',
+            style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                _errorMessage = null;
+                _isLoading = true;
+              });
+              _controller?.reload();
+            },
+            icon: Icon(Icons.refresh, size: 20.sp),
+            label: Text('Thử lại'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _shareUrl() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Chức năng chia sẻ sẽ được thêm sau')),
+    );
+  }
+}
+
+// Widget popup cho WebView
+class WebViewPopup extends StatelessWidget {
+  final String url;
+  final String? title;
+  final double width;
+  final double height;
+
+  const WebViewPopup({
+    Key? key,
+    required this.url,
+    this.title,
+    this.width = 800,
+    this.height = 600,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64.sp,
-              color: Colors.red[300],
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'Không thể tải tài liệu',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[800],
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              _errorMessage ?? 'Đã xảy ra lỗi không xác định',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _errorMessage = null;
-                  _isLoading = true;
-                });
-                _controller.reload();
-              },
-              icon: Icon(Icons.refresh, size: 20.sp),
-              label: Text('Thử lại'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 24.w,
-                  vertical: 12.h,
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
                 ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title ?? 'Tài liệu',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  // Button mở trong tab mới
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.blue.shade200, width: 1),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.open_in_new, size: 16),
+                      tooltip: 'Mở trong tab mới',
+                      color: Colors.blue.shade700,
+                      onPressed: () {
+                        html.window.open(url, '_blank');
+                      },
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                  ),
+                  // Button đóng
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            // Divider
+            const Divider(height: 1),
+            // Content
+            Expanded(
+              child: WebViewCommon(
+                url: url,
+                title: title,
+                showAppBar: false,
+                enableZoom: true,
+                enableJavaScript: true,
               ),
             ),
           ],
@@ -257,62 +341,21 @@ class _WebViewCommonState extends State<WebViewCommon> {
       ),
     );
   }
-
-  void _shareUrl() {
-    // Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Chức năng chia sẻ sẽ được thêm sau'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 }
 
-// Widget helper để tạo web view với URL cụ thể
-class PDFViewer extends StatelessWidget {
-  final String url;
-  final String? title;
-
-  const PDFViewer({
-    Key? key,
-    required this.url,
-    this.title,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return WebViewCommon(
-      url: url,
-      title: title ?? 'Xem tài liệu',
-      enableZoom: true,
-      enableJavaScript: true,
-    );
-  }
-}
-
-// Widget helper để tạo web view cho tài liệu quyết định
-class DecisionDocumentViewer extends StatelessWidget {
-  final String documentUrl;
-  final String documentTitle;
-
-  const DecisionDocumentViewer({
-    Key? key,
-    required this.documentUrl,
-    this.documentTitle = 'Quyết định',
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return WebViewCommon(
-      url: documentUrl,
-      title: documentTitle,
-      enableZoom: true,
-      enableJavaScript: true,
-      headers: {
-        'Accept': 'application/pdf,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'vi-VN,vi;q=0.9,en;q=0.8',
-      },
-    );
-  }
+// Helper function để show WebView popup
+void showWebViewPopup(
+  BuildContext context, {
+  required String url,
+  String? title,
+  double width = 800,
+  double height = 600,
+}) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder:
+        (context) =>
+            WebViewPopup(url: url, title: title, width: width, height: height),
+  );
 }

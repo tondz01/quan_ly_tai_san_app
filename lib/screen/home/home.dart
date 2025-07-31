@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/widget/header.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
@@ -198,9 +199,9 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
-
+    log('AppImage.imageLogo: ${AppImage.imageLogo}');
     return MainWrapper(
-      header: Header(),
+      header: Header(imageLogoLeft: AppImage.imageLogo),
       sidebar: Column(
         children: [
           const Divider(color: SGAppColors.neutral300, height: 1),

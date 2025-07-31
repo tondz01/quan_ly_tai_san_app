@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/download_file.dart';
+import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/popup_show_detail.dart';
@@ -27,7 +28,7 @@ class BottomListAssetTransfer extends StatefulWidget {
 
 class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
   String url =
-      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FQuy%E1%BA%BFt%20%C4%91%E1%BB%8Bnh%20C%E1%BA%A5p%20ph%C3%A1t%20t%C3%A0i%20s%E1%BA%A3n%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=cddb7a63-4c00-4954-99a8-afc27deb1996';
 
   bool isShowPhieuCapPhat = false;
 
@@ -149,7 +150,8 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
                   ),
                   SgTableColumn<AssetTransferDto>(
                     title: 'Tài liệu duyệt',
-                    cellBuilder: (item) => showFile(url, item.documentName ?? ''),
+                    cellBuilder:
+                        (item) => showFile(url, item.documentName ?? ''),
                     sortValueGetter: (item) => item.documentFileName ?? '',
                     searchValueGetter: (item) => item.documentFileName ?? '',
                     cellAlignment: TextAlign.center,
@@ -282,17 +284,14 @@ class _BottomListAssetTransferState extends State<BottomListAssetTransfer> {
             icon: Icon(Icons.visibility, size: 16, color: ColorValue.cyan),
             tooltip: 'Xem',
             color: Colors.green.shade700,
-            onPressed: null,
-
-            // showDialog(
-            //   context: context,
-            //   builder:
-            //       (context) => WebViewCommon(
-            //         url: 'https://ams.sscdx.com.vn/web#',
-            //         title: item.documentName ?? 'Tài liệu',
-            //         showAppBar: true,
-            //       ),
-            // ),
+            onPressed:
+                   () => showWebViewPopup(
+                  context,
+                  url: url,
+                  title: item.documentName ?? 'Tài liệu',
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.9,
+                ),
             constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             padding: const EdgeInsets.all(4),
           ),

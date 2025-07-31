@@ -52,6 +52,21 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
     super.initState();
   }
 
+  @override
+  void didUpdateWidget(DetailAndEditView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item != widget.item) {
+      log('message didUpdateWidget');
+      isEditing = widget.isEditing;
+      controllerImportUnit.text = widget.item?.importUnit ?? '';
+      controllerName.text = widget.item?.name ?? '';
+      controllerCode.text = widget.item?.code ?? '';
+      controllerImportDate.text = widget.item?.importDate ?? '';
+      controllerUnit.text = widget.item?.unit ?? '';
+      controllerQuantity.text = widget.item?.quantity.toString() ?? '0';
+      controllerValue.text = widget.item?.value.toString() ?? '0.0';
+    }
+  }
   final List<DropdownMenuItem<String>> itemsPhongBan = [
     const DropdownMenuItem(value: 'Ban giám đốc', child: Text('Ban giám đốc')),
     const DropdownMenuItem(value: 'Phòng CV', child: Text('Phòng CV')),

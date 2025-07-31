@@ -74,7 +74,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                   },
                   onTap: provider.onTapBackHeader,
                   onNew: provider.onTapNewHeader,
-                  mainScreen: 'ToolsAndSupplies',
+                  mainScreen: 'Quản lý CCDC - Vật tư',
                   subScreen: provider.subScreen,
                 ),
               ),

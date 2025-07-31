@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/core/utils/bloc_providers.dart';
@@ -16,37 +17,44 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = locator<AppRouteConf>().router;
-    return MultiBlocProvider(
-      providers: blocProvider,
-      child: MultiProvider(
-        providers: providers,
-        child: GestureDetector(
-          onTap: () {
-            primaryFocus?.unfocus();
-            FocusScope.of(context).unfocus();
-            SGPopupManager().closeAllPopups();
-          },
-          child: GetMaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            title: 'Quan Ly Tai San',
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('vi', 'VN'),
-              Locale('en', 'US'),
-            ],
-            locale: const Locale('vi', 'VN'),
-            fallbackLocale: const Locale('en', 'US'),
-            translations: MyLocale(),
-            routerDelegate: router.routerDelegate,
-            routeInformationParser: router.routeInformationParser,
-            routeInformationProvider: router.routeInformationProvider,
+    return ScreenUtilInit(
+      designSize: const Size(1920, 1080), // Kích thước thiết kế
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MultiBlocProvider(
+          providers: blocProvider,
+          child: MultiProvider(
+            providers: providers,
+            child: GestureDetector(
+              onTap: () {
+                primaryFocus?.unfocus();
+                FocusScope.of(context).unfocus();
+                SGPopupManager().closeAllPopups();
+              },
+              child: GetMaterialApp.router(
+                debugShowCheckedModeBanner: false,
+                title: 'Quan Ly Tai San',
+                localizationsDelegates: const [
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: const [
+                  Locale('vi', 'VN'),
+                  Locale('en', 'US'),
+                ],
+                locale: const Locale('vi', 'VN'),
+                fallbackLocale: const Locale('en', 'US'),
+                translations: MyLocale(),
+                routerDelegate: router.routerDelegate,
+                routeInformationParser: router.routeInformationParser,
+                routeInformationProvider: router.routeInformationProvider,
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

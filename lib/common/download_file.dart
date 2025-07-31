@@ -4,11 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
+// Conditional import cho web
+import 'download_file_web.dart' if (dart.library.io) 'download_file_stub.dart';
+
 Future<void> downloadFile(String url, String fileName, BuildContext context) async {
   try {
     if (kIsWeb) {
-      // Web platform - show notification that web download is not supported yet
-      _showNotification(context, '⚠️ Download trên Web chưa được hỗ trợ', false);
+      // Web platform - sử dụng html.AnchorElement để download
+      await downloadForWeb(url, fileName, context);
     } else if (Platform.isWindows) {
       // Windows platform
       await _downloadForWindows(url, fileName, context);
@@ -30,9 +33,22 @@ Future<void> _downloadForWindows(String url, String fileName, BuildContext conte
   try {
     Dio dio = Dio();
     
-    // Lấy thư mục Documents trên Windows
-    Directory directory = await getApplicationDocumentsDirectory();
-    String savePath = '${directory.path}/$fileName';
+    // Thử lấy thư mục Downloads trước, nếu không có thì dùng Documents
+    String savePath;
+    try {
+      // Lấy thư mục Downloads từ environment variable
+      String? downloadsPath = Platform.environment['USERPROFILE'];
+      if (downloadsPath != null) {
+        savePath = '$downloadsPath\\Downloads\\$fileName';
+      } else {
+        Directory directory = await getApplicationDocumentsDirectory();
+        savePath = '${directory.path}\\$fileName';
+      }
+    } catch (e) {
+      // Fallback về Documents nếu không lấy được Downloads
+      Directory directory = await getApplicationDocumentsDirectory();
+      savePath = '${directory.path}\\$fileName';
+    }
     
     await dio.download(
       url,
@@ -44,7 +60,7 @@ Future<void> _downloadForWindows(String url, String fileName, BuildContext conte
       },
     );
     
-    _showNotification(context, '✅ File đã được tải xuống thành công!\nĐường dẫn: $savePath', true);
+    _showNotification(context, '✅ File đã được tải xuống thành công!\nTên file: $fileName\nĐường dẫn: $savePath', true);
   } catch (e) {
     _showNotification(context, '❌ Download thất bại: $e', false);
   }
@@ -68,7 +84,7 @@ Future<void> _downloadForAndroid(String url, String fileName, BuildContext conte
       },
     );
     
-    _showNotification(context, '✅ File đã được tải xuống thành công!\nĐường dẫn: $savePath', true);
+    _showNotification(context, '✅ File đã được tải xuống thành công!\nTên file: $fileName\nĐường dẫn: $savePath', true);
   } catch (e) {
     _showNotification(context, '❌ Download thất bại: $e', false);
   }
@@ -91,11 +107,13 @@ Future<void> _downloadForIOS(String url, String fileName, BuildContext context) 
       },
     );
     
-    _showNotification(context, '✅ File đã được tải xuống thành công!\nĐường dẫn: $savePath', true);
+    _showNotification(context, '✅ File đã được tải xuống thành công!\nTên file: $fileName\nĐường dẫn: $savePath', true);
   } catch (e) {
     _showNotification(context, '❌ Download thất bại: $e', false);
   }
 }
+
+
 
 void _showNotification(BuildContext context, String message, bool isSuccess) {
   ScaffoldMessenger.of(context).showSnackBar(

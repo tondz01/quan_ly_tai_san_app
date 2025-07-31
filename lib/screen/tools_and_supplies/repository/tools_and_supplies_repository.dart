@@ -11,7 +11,7 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class ToolsAndSuppliesRepository extends ApiBase {
   // Path to the local JSON file for mock data
-  static const String _mockDataPath = 'lib/screen/ToolsAndSupplies/model/tools_and_supplies_data.json';
+  static const String _mockDataPath = 'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
 
   Future<Map<String, dynamic>> getListToolsAndSupplies() async {
     List<ToolsAndSuppliesDto> list = [];

@@ -312,12 +312,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 items: itemsRequester,
               ),
               // detail
-              _buildAsserHandoverDetail(),
+              _buildAssetHandoverDetail(),
               const SizedBox(height: 20),
               _buildAssetMovementTable(),
               const SizedBox(height: 20),
               if (widget.item != null)
-                BotttomTableAssetHandover(
+                BottomTableAssetHandover(
                   data: [widget.item!],
                 )
               else
@@ -407,7 +407,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     );
   }
 
-  Widget _buildAsserHandoverDetail() {
+  Widget _buildAssetHandoverDetail() {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Kiểm tra nếu màn hình đủ rộng để hiển thị 2 cột
