@@ -1,4 +1,5 @@
 enum AppRoute {
+  dashboard(path: "/dashboard", name: "dashboard"),
   projectManager(path: "/project-manager", name: "project-manager"),
   exemple(path: "/exemple", name: "exemple"),
   exemple1(path: "/exemple/1", name: "exemple-1"),

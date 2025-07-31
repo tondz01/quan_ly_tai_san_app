@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
@@ -110,26 +111,49 @@ class StaffListPage extends StatelessWidget {
                       if (staffs.isEmpty) {
                         return const Center(child: Text('Chưa có nhân viên nào.'));
                       }
-                      return SingleChildScrollView(
-                        child: SgTable<StaffDTO>(
-                          // textHeaderColor: SGAppColors.error50,
-                          headerBackgroundColor: Colors.grey.shade300,
-                                widthScreen: MediaQuery.of(context).size.width,
-                          evenRowBackgroundColor: Colors.grey.shade200,
-                          oddRowBackgroundColor: Colors.white,
-            
-                          gridLineColor: Colors.grey.shade300,
-                          gridLineWidth: 1.0,
-                          showVerticalLines: true,
-                          showHorizontalLines: true,
-                          allowRowSelection: true,
-                          onSelectionChanged: (selectedItems) {},
-                          // Bật tính năng hiển thị cột hành động
-                          showActions: true,
-                          actionColumnTitle: 'Thao tác',
-                          actionColumnWidth: 150,
-                          actionEditColor: Colors.blue,
-                          actionDeleteColor: Colors.red,
+                                            return Container(
+                        margin: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorValue.neutral300.withOpacity(0.4),
+                              spreadRadius: 0,
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                            BoxShadow(
+                              color: ColorValue.neutral200.withOpacity(0.2),
+                              spreadRadius: 0,
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: SingleChildScrollView(
+                            child: SgTable<StaffDTO>(
+                              headerBackgroundColor: ColorValue.primaryBlue,
+                              widthScreen: MediaQuery.of(context).size.width,
+                              evenRowBackgroundColor: ColorValue.neutral50,
+                              oddRowBackgroundColor: Colors.white,
+                              selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                              checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                              gridLineColor: ColorValue.neutral200,
+                              gridLineWidth: 1.0,
+                              showVerticalLines: true,
+                              showHorizontalLines: true,
+                              allowRowSelection: true,
+                              rowHeight: 56.0,
+                              onSelectionChanged: (selectedItems) {},
+                              showActions: true,
+                              actionColumnTitle: 'Thao tác',
+                              actionColumnWidth: 160,
+                              actionViewColor: ColorValue.success,
+                              actionEditColor: ColorValue.primaryBlue,
+                              actionDeleteColor: ColorValue.error,
                           onEditAction: (item) {
                             if (onEdit != null) {
                               onEdit!(item);
@@ -202,6 +226,8 @@ class StaffListPage extends StatelessWidget {
                           ],
                           data: staffs,
                           onRowTap: (item) {},
+                        ),
+                          ),
                         ),
                       );
                     } else if (state is StaffError) {

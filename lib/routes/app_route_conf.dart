@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital
 import 'package:quan_ly_tai_san_app/screen/category/departments/views/department_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/views/project_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/views/staff_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
@@ -18,7 +19,7 @@ class AppRouteConf {
   GoRouter get router => _router;
 
   late final _router = GoRouter(
-    initialLocation: AppRoute.exemple.path,
+    initialLocation: AppRoute.dashboard.path,
     debugLogDiagnostics: true,
     errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
@@ -27,6 +28,14 @@ class AppRouteConf {
           return Home(child: child);
         },
         routes: [
+          GoRoute(
+            path: AppRoute.dashboard.path,
+            name: AppRoute.dashboard.name,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const DashboardScreen(),
+            ),
+          ),
           GoRoute(
             path: AppRoute.exemple.path,
             redirect: (_, __) => AppRoute.exemple1.path,
