@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
@@ -136,17 +137,11 @@ Widget _buildHeaderNameScreen(
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      SGButtonIcon(
+      MaterialTextButton(
         text: 'Mới',
-        width: 50,
-        height: 35,
-        defaultBGColor: isSubScreen ? Colors.white : ColorValue.oldLavender,
-        isOutlined: true,
-        isBorder: true,
-        colorHover: Colors.blue,
-        colorBorder: ColorValue.oldLavender,
-        colorText: isSubScreen ? ColorValue.oldLavender : Colors.white,
-        borderWidth: 3,
+        icon: Icons.add,
+        backgroundColor: isSubScreen ? Colors.white : ColorValue.primaryBlue,
+        foregroundColor: isSubScreen ? ColorValue.primaryBlue : Colors.white,
         onPressed: onNew,
       ),
       // SGButton(text: 'Mới'),

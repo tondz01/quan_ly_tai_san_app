@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
@@ -108,18 +109,13 @@ class _DetailAndEditViewState extends State<DetailAndEditView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              SGButtonIcon(
+              MaterialTextButton(
                 text: isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
-                borderRadius: 10,
-                width: screenWidth * 0.12 <= 120 ? 120 : screenWidth * 0.12,
-                defaultBGColor:
-                    isEditing
-                        ? SGAppColors.colorInputDisable
-                        : ColorValue.oldLavender,
-                colorHover: Colors.blueAccent,
-                colorTextHover: Colors.white,
-                isOutlined: true,
-                borderWidth: 3,
+                icon: isEditing ? Icons.add : Icons.edit,
+                backgroundColor: isEditing
+                    ? ColorValue.neutral300
+                    : ColorValue.primaryBlue,
+                foregroundColor: Colors.white,
                 onPressed: () {
                   setState(() {
                     isEditing = !isEditing;

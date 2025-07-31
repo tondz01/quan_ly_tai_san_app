@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
@@ -58,11 +59,15 @@ class StaffListPage extends StatelessWidget {
                     Expanded(
                       child: Container(
                         alignment: Alignment.centerLeft,
-                        child: SGButton(
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        child: MaterialTextButton(
                           text: 'Mới',
-                          fontWeight: FontWeight.bold,
-                          mainColor: Colors.deepPurple,
+                          icon: Icons.add,
+                          backgroundColor: ColorValue.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
                           onPressed: () {
                             if (onAdd != null) {
                               onAdd!();
@@ -136,6 +141,7 @@ class StaffListPage extends StatelessWidget {
                           child: SingleChildScrollView(
                             child: SgTable<StaffDTO>(
                               headerBackgroundColor: ColorValue.primaryBlue,
+                              textHeaderColor: Colors.white,
                               widthScreen: MediaQuery.of(context).size.width,
                               evenRowBackgroundColor: ColorValue.neutral50,
                               oddRowBackgroundColor: Colors.white,

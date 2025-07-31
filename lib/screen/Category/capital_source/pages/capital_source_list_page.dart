@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_event.dart';
@@ -62,14 +63,15 @@ class CapitalSourceListPage extends StatelessWidget {
                     Expanded(
                       child: Container(
                         alignment: Alignment.centerLeft,
-                        child: SGButton(
+                        child: MaterialTextButton(
                           text: 'Mới',
-                          padding: EdgeInsets.symmetric(
+                          icon: Icons.add,
+                          backgroundColor: ColorValue.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
                             horizontal: 20,
-                            vertical: 5,
+                            vertical: 12,
                           ),
-                          mainColor: Colors.deepPurple,
-                          fontWeight: FontWeight.bold,
                           onPressed: () {
                             if (onAdd != null) {
                               onAdd!();
@@ -147,9 +149,10 @@ class CapitalSourceListPage extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: SingleChildScrollView(
-                          child: SgTable<CapitalSource>(
-                            headerBackgroundColor: ColorValue.primaryBlue,
-                            widthScreen: MediaQuery.of(context).size.width,
+                                                      child: SgTable<CapitalSource>(
+                              headerBackgroundColor: ColorValue.primaryBlue,
+                              textHeaderColor: Colors.white,
+                              widthScreen: MediaQuery.of(context).size.width,
                             evenRowBackgroundColor: ColorValue.neutral50,
                             oddRowBackgroundColor: Colors.white,
                             selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),

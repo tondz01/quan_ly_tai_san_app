@@ -91,6 +91,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   }) {
     return SgTable<ToolsAndSuppliesDto>(
         headerBackgroundColor: ColorValue.primaryBlue,
+        textHeaderColor: Colors.white,
         evenRowBackgroundColor: ColorValue.neutral50,
         oddRowBackgroundColor: Colors.white,
         selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),

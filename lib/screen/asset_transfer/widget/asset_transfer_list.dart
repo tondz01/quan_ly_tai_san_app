@@ -102,6 +102,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
     return SgTable<AssetTransferDto>(
         key: ValueKey(data.length),
         headerBackgroundColor: ColorValue.primaryBlue,
+        textHeaderColor: Colors.white,
         evenRowBackgroundColor: ColorValue.neutral50,
         oddRowBackgroundColor: Colors.white,
         selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),

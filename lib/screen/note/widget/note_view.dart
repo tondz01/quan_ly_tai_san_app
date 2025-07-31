@@ -2,6 +2,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/note/component/send_message_component.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
@@ -196,26 +197,11 @@ class _NoteViewState extends State<NoteView> {
   Widget _buildHeaderActionLeft() {
     return Row(
       children: [
-        SGButtonIcon(
-          width: 60,
-          height: 35,
+        MaterialTextButton(
           text: 'Gửi tin',
-          sizeText: 12,
-          colorText: isSendMessage ? ColorValue.oldLavender : Colors.white,
-          borderRadius: 5,
-          defaultBGColor: isSendMessage ? Colors.white : ColorValue.oldLavender,
-          isBorder: false,
-          isOutlined: false,
-          isHover: false,
-          decoration:
-              isSendMessage
-                  ? BoxDecoration(
-                    color:
-                        isSendMessage ? Colors.white : ColorValue.oldLavender,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: ColorValue.oldLavender, width: 2),
-                  )
-                  : null,
+          icon: Icons.send,
+          backgroundColor: isSendMessage ? Colors.white : ColorValue.primaryBlue,
+          foregroundColor: isSendMessage ? ColorValue.primaryBlue : Colors.white,
           onPressed: () {
             setState(() {
               isSendMessage = !isSendMessage;
@@ -223,32 +209,12 @@ class _NoteViewState extends State<NoteView> {
             });
           },
         ),
-        const SizedBox(width: 5),
-        SGButtonIcon(
-          width: 70,
-          height: 35,
+        const SizedBox(width: 8),
+        MaterialTextButton(
           text: 'Ghi chú',
-          sizeText: 12,
-          colorText: !isNote ? SGAppColors.neutral900 : ColorValue.oldLavender,
-          borderRadius: 5,
-          defaultBGColor:
-              isNote
-                  ? ColorValue.oldLavender.withOpacity(0.5)
-                  : SGAppColors.colorC0C0C0,
-          isBorder: false,
-          isOutlined: false,
-          isHover: false,
-          decoration:
-              isNote
-                  ? BoxDecoration(
-                    color:
-                        isNote
-                            ? ColorValue.oldLavender.withOpacity(0.2)
-                            : ColorValue.oldLavender,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: ColorValue.oldLavender, width: 2),
-                  )
-                  : null,
+          icon: Icons.note,
+          backgroundColor: isNote ? ColorValue.primaryBlue : ColorValue.neutral200,
+          foregroundColor: isNote ? Colors.white : ColorValue.neutral700,
           onPressed: () {
             setState(() {
               isNote = !isNote;
@@ -257,33 +223,12 @@ class _NoteViewState extends State<NoteView> {
           },
         ),
 
-        const SizedBox(width: 5),
-        SGButtonIcon(
-          width: 80,
-          height: 35,
+        const SizedBox(width: 8),
+        MaterialTextButton(
           text: 'Hoạt động',
-          sizeText: 12,
-          colorText:
-              !isActivity ? SGAppColors.neutral900 : ColorValue.oldLavender,
-          borderRadius: 5,
-          defaultBGColor:
-              isActivity
-                  ? ColorValue.oldLavender.withOpacity(0.5)
-                  : SGAppColors.colorC0C0C0,
-          isBorder: false,
-          isOutlined: false,
-          isHover: false,
-          decoration:
-              isActivity
-                  ? BoxDecoration(
-                    color:
-                        isActivity
-                            ? ColorValue.oldLavender.withOpacity(0.2)
-                            : ColorValue.oldLavender,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: ColorValue.oldLavender, width: 2),
-                  )
-                  : null,
+          icon: Icons.timeline,
+          backgroundColor: isActivity ? ColorValue.primaryBlue : ColorValue.neutral200,
+          foregroundColor: isActivity ? Colors.white : ColorValue.neutral700,
           onPressed: () {
             setState(() {
               isActivity = !isActivity;

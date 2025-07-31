@@ -102,6 +102,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     return SgTable<AssetHandoverDto>(
         key: ValueKey(data.length),
         headerBackgroundColor: ColorValue.primaryBlue,
+        textHeaderColor: Colors.white,
         evenRowBackgroundColor: ColorValue.neutral50,
         oddRowBackgroundColor: Colors.white,
         selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),

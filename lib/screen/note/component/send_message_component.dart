@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/note/component/popup_receiver_component.dart';
 import 'package:se_gay_components/common/sg_button_icon.dart';
@@ -148,37 +149,13 @@ class _FormInputSendMessageState extends State<FormInputSendMessage> {
                 ),
               ),
               const SizedBox(height: 10),
-              SGButtonIcon(
-                width: 50,
-                height: 35,
+              MaterialTextButton(
                 text: 'Gửi',
-                sizeText: 12,
-                colorText:
-                    isSendMessage
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.6),
-                borderRadius: 5,
-                defaultBGColor:
-                    isSendMessage
-                        ? ColorValue.oldLavender
-                        : ColorValue.oldLavender.withOpacity(0.6),
-                isBorder: false,
-                isOutlined: false,
-                isHover: false,
-                // decoration:
-                //     isSendMessage
-                //         ? BoxDecoration(
-                //           color:
-                //               isSendMessage
-                //                   ? Colors.white
-                //                   : ColorValue.oldLavender,
-                //           borderRadius: BorderRadius.circular(5),
-                //           border: Border.all(
-                //             color: ColorValue.tealBlue,
-                //             width: 3,
-                //           ),
-                //         )
-                //         : null,
+                icon: Icons.send,
+                backgroundColor: isSendMessage
+                    ? ColorValue.primaryBlue
+                    : ColorValue.primaryBlue.withOpacity(0.6),
+                foregroundColor: Colors.white,
                 onPressed: () {
                   setState(() {
                     if (isSendMessage) {

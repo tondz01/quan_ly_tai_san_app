@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_event.dart';
@@ -62,30 +63,31 @@ class AssetListPage extends StatelessWidget {
                       Expanded(
                         child: Container(
                           alignment: Alignment.centerLeft,
-                          child: SGButton(
-                            text: 'Mới',
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 5,
-                            ),
-                            mainColor: Colors.deepPurple,
-                            fontWeight: FontWeight.bold,
-                            onPressed: () {
-                              if (onAdd != null) {
-                                onAdd!();
-                              } else {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder:
-                                        (_) => BlocProvider.value(
-                                          value: context.read<AssetBloc>(),
-                                          child: const AssetFormPage(),
-                                        ),
-                                  ),
-                                );
-                              }
-                            },
+                                                  child: MaterialTextButton(
+                          text: 'Mới',
+                          icon: Icons.add,
+                          backgroundColor: ColorValue.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
                           ),
+                          onPressed: () {
+                            if (onAdd != null) {
+                              onAdd!();
+                            } else {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => BlocProvider.value(
+                                        value: context.read<AssetBloc>(),
+                                        child: const AssetFormPage(),
+                                      ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
                         ),
                       ),
                       Expanded(
@@ -145,6 +147,7 @@ class AssetListPage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                               child: SgTable<AssetDTO>(
                                 headerBackgroundColor: ColorValue.primaryBlue,
+                                textHeaderColor: Colors.white,
                                 widthScreen: MediaQuery.of(context).size.width,
                                 evenRowBackgroundColor: ColorValue.neutral50,
                                 oddRowBackgroundColor: Colors.white,
