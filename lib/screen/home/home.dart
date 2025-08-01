@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/widget/header.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
@@ -30,6 +33,68 @@ class _HomeState extends State<Home> {
     super.initState();
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
+    
+    // Lắng nghe thay đổi route để cập nhật selectedIndex
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateSelectedIndexFromRoute();
+    });
+  }
+
+  @override
+  void didUpdateWidget(Home oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Cập nhật selectedIndex khi widget được update
+    _updateSelectedIndexFromRoute();
+  }
+
+  void _updateSelectedIndexFromRoute() {
+    final currentLocation = GoRouterState.of(context).uri.path;
+    final extra = GoRouterState.of(context).extra;
+    
+    log('Current route: $currentLocation, extra: $extra');
+    
+    // Tìm menu item tương ứng với route hiện tại
+    for (int i = 0; i < _menuData.menuItems.length; i++) {
+      final menuItem = _menuData.menuItems[i];
+      
+      // Kiểm tra route chính
+      if (menuItem.route == currentLocation) {
+        _updateSelectedIndex(i, 0);
+        return;
+      }
+      
+      // Kiểm tra subItems
+      for (int j = 0; j < menuItem.reportSubItems.length; j++) {
+        final subItem = menuItem.reportSubItems[j];
+        if (subItem.route == currentLocation) {
+          _updateSelectedIndex(i, j);
+          return;
+        }
+      }
+      
+      // Kiểm tra projectGroups
+      for (int groupIndex = 0; groupIndex < menuItem.projectGroups.length; groupIndex++) {
+        final group = menuItem.projectGroups[groupIndex];
+        for (int itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
+          final item = group.items[itemIndex];
+          if (item.route == currentLocation) {
+            final subIndex = groupIndex * 100 + itemIndex;
+            _updateSelectedIndex(i, subIndex);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  void _updateSelectedIndex(int index, int subIndex) {
+    if (_selectedIndex != index || _selectedSubIndex != subIndex) {
+      setState(() {
+        _selectedIndex = index;
+        _selectedSubIndex = subIndex;
+      });
+      log('Updated selectedIndex: $_selectedIndex, selectedSubIndex: $_selectedSubIndex');
+    }
   }
 
   @override
@@ -92,7 +157,8 @@ class _HomeState extends State<Home> {
               _selectedSubIndex = subIndex;
               _popupManager.closeAllPopups();
               if (subItem.route.isNotEmpty) {
-                context.go(subItem.route);
+                log('subItem.route: ${subItem.extra}');
+                context.go(subItem.route, extra: subItem.extra);
               }
             }),
       );
@@ -119,7 +185,8 @@ class _HomeState extends State<Home> {
                   _selectedSubIndex = subIndex;
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
-                    context.go(item.route,);
+                    log('item.extra: ${item.extra}');
+                    context.go(item.route, extra: item.extra);
                   }
                 }),
           );
@@ -137,9 +204,23 @@ class _HomeState extends State<Home> {
       header: Header(),
       sidebar: Column(
         children: [
-          const Divider(color: SGAppColors.neutral300, height: 1),
-          Padding(
-            padding: const EdgeInsets.only(top: 6, left: 24, right: 24, bottom: 6),
+          Divider(
+            color: ColorValue.neutral200,
+            height: 1,
+            thickness: 1,
+          ),
+          Container(
+            padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: ColorValue.neutral200.withOpacity(0.3),
+                  offset: const Offset(0, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
             child: SGSidebarHorizontal(
               items: sidebarItems,
               onShowSubItems: (subItems) {
@@ -150,26 +231,31 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Content
-          widget.child,
+      body: Container(
+        decoration: BoxDecoration(
+          color: ColorValue.neutral50,
+        ),
+        child: Stack(
+          children: [
+            // Content
+            widget.child,
 
-          // Thêm barrier chỉ hiển thị khi popup đang mở
-          if (_isPopupOpen)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  SGLog.debug("Home", "Barrier tapped");
-                  primaryFocus?.unfocus();
-                  FocusScope.of(context).unfocus();
-                  _popupManager.closeAllPopups();
-                },
-                behavior: HitTestBehavior.translucent,
-                child: Container(color: Colors.transparent),
+            // Thêm barrier chỉ hiển thị khi popup đang mở
+            if (_isPopupOpen)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () {
+                    SGLog.debug("Home", "Barrier tapped");
+                    primaryFocus?.unfocus();
+                    FocusScope.of(context).unfocus();
+                    _popupManager.closeAllPopups();
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: Container(color: Colors.transparent),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

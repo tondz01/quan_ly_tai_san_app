@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_form_page.dart';
-import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -38,55 +39,76 @@ class ProjectListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final verticalScrollController = ScrollController();
+    final horizontalScrollController = ScrollController();
+    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           const SizedBox(height: 16),
-          Expanded(
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
+            width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Tìm kiếm dự án',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(),
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: MaterialTextButton(
+                          text: 'Mới',
+                          icon: Icons.add,
+                          backgroundColor: ColorValue.primaryBlue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          onPressed: () {
+                            if (onAdd != null) {
+                              onAdd!();
+                            } else {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => BlocProvider.value(
+                                        value: context.read<ProjectBloc>(),
+                                        child: const ProjectFormPage(),
+                                      ),
+                                ),
+                              );
+                            }
+                          },
                         ),
-                        onChanged: (value) {
-                          context.read<ProjectBloc>().add(SearchProject(value));
-                        },
                       ),
                     ),
-                    SizedBox(width: 25),
-                    SGButton(
-                      text: 'Thêm dự án',
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                      onPressed: () {
-                        if (onAdd != null) {
-                          onAdd!();
-                        } else {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder:
-                                  (_) => BlocProvider.value(
-                                    value: context.read<ProjectBloc>(),
-                                    child: const ProjectFormPage(),
-                                  ),
-                            ),
-                          );
-                        }
-                      },
+                    Expanded(
+                      child: SizedBox(
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                            labelText: 'Tìm kiếm dự án',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            isDense: true,
+                          ),
+                          onChanged: (value) {
+                            context.read<ProjectBloc>().add(SearchProject(value));
+                          },
+                        ),
+                      ),
                     ),
-                    SizedBox(width: 25),
+                    Expanded(
+                      child: SizedBox(),
+                    ),
                   ],
                 ),
                 SizedBox(height: 8),
-
+            
                 BlocBuilder<ProjectBloc, ProjectState>(
                   builder: (context, state) {
                     if (state is ProjectLoaded) {
@@ -94,66 +116,98 @@ class ProjectListPage extends StatelessWidget {
                       if (projects.isEmpty) {
                         return const Center(child: Text('Chưa có dự án nào.'));
                       }
-                      return SingleChildScrollView(
-                        child: SgTable<Project>(
-                          // textHeaderColor: SGAppColors.error50,
-                          headerBackgroundColor: Colors.blue,
-                          evenRowBackgroundColor: Colors.grey.shade200,
-                          oddRowBackgroundColor: Colors.white,
-
-                          gridLineColor: Colors.grey.shade300,
-                          gridLineWidth: 1.0,
-                          showVerticalLines: true,
-                          showHorizontalLines: true,
-                          allowRowSelection: true,
-                          onSelectionChanged: (selectedItems) {
-                            SGLog.debug('ProjectListPage', 'onSelectionChanged: ${MediaQuery.of(context).size.width}');
-                          },
-                          // Bật tính năng hiển thị cột hành động
-                          showActions: true,
-                          actionColumnTitle: 'Thao tác',
-                          actionColumnWidth: 150,
-                          actionEditColor: Colors.blue,
-                          actionDeleteColor: Colors.red,
-                          onEditAction: (item) {
-                            if (onEdit != null) {
-                              onEdit!(item);
-                            } else {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => BlocProvider.value(
-                                        value: context.read<ProjectBloc>(),
-                                        child: ProjectFormPage(project: item),
-                                      ),
-                                ),
-                              );
-                            }
-                          },
-                          onDeleteAction: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          columns: [
-                            TableColumnBuilder.createTextColumn<Project>(title: 'Mã', getValue: (item) => item.code),
-                            TableColumnBuilder.createTextColumn<Project>(
-                              title: 'Tên',
-                              getValue: (item) => item.name,
-                              width: MediaQuery.of(context).size.width / 4,
-                              align: TextAlign.start,
+                                            return Container(
+                        margin: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorValue.neutral300.withOpacity(0.4),
+                              spreadRadius: 0,
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
-                            TableColumnBuilder.createTextColumn<Project>(
-                              title: 'Ghi chú',
-                              getValue: (item) => item.note,
-                              width: MediaQuery.of(context).size.width / 4,
-                              align: TextAlign.start,
-                            ),
-                            TableColumnBuilder.createTextColumn<Project>(
-                              title: 'Có hiệu lực',
-                              getValue: (item) => item.isActive ? 'Có' : 'Không',
+                            BoxShadow(
+                              color: ColorValue.neutral200.withOpacity(0.2),
+                              spreadRadius: 0,
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
                           ],
-                          data: projects,
-                          onRowTap: (item) {},
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Scrollbar(
+                            thumbVisibility: true,
+                            controller: verticalScrollController,
+                            child: SingleChildScrollView(
+                              controller: verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                controller: horizontalScrollController,
+                                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+                                child: SingleChildScrollView(
+                                  controller: horizontalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: SgTable<Project>(
+                                    headerBackgroundColor: ColorValue.primaryBlue,
+                                    textHeaderColor: Colors.white,
+                                    widthScreen: MediaQuery.of(context).size.width,
+                                    evenRowBackgroundColor: ColorValue.neutral50,
+                                    oddRowBackgroundColor: Colors.white,
+                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                    gridLineColor: ColorValue.neutral200,
+                                    gridLineWidth: 1.0,
+                                    showVerticalLines: true,
+                                    showHorizontalLines: true,
+                                    allowRowSelection: true,
+                                    rowHeight: 56.0,
+                                    showActions: true,
+                                    actionColumnTitle: 'Thao tác',
+                                    actionColumnWidth: 160,
+                                    actionViewColor: ColorValue.success,
+                                    actionEditColor: ColorValue.primaryBlue,
+                                    actionDeleteColor: ColorValue.error,
+                                    onEditAction: (item) {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => BlocProvider.value(
+                                            value: context.read<ProjectBloc>(),
+                                            child: ProjectFormPage(project: item),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    onDeleteAction: (item) {
+                                      _showDeleteDialog(context, item);
+                                    },
+                                    columns: [
+                                      TableColumnBuilder.createTextColumn<Project>(
+                                        title: 'Mã dự án',
+                                        getValue: (item) => item.code,
+                                        width: 150,
+                                      ),
+                                      TableColumnBuilder.createTextColumn<Project>(
+                                        title: 'Tên dự án',
+                                        getValue: (item) => item.name,
+                                        width: 200,
+                                      ),
+                                      TableColumnBuilder.createTextColumn<Project>(
+                                        title: 'Ghi chú',
+                                        getValue: (item) => item.note,
+                                        width: 300,
+                                      ),
+                                    ],
+                                    data: projects,
+                                    onRowTap: (item) {},
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       );
                     } else if (state is ProjectError) {

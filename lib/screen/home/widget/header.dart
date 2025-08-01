@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:quan_ly_tai_san_app/core/constants/index.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:se_gay_components/common/sg_button_v2.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_button_icon_with_popup.dart';
@@ -39,7 +41,16 @@ class _HeaderState extends State<Header> {
       height: widget.height,
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       margin: widget.margin,
-      decoration: widget.decoration,
+      decoration: widget.decoration ?? BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: ColorValue.neutral200.withOpacity(0.5),
+            offset: const Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
       child: Row(
         children: [
           widget.imageLogoLeft != null ? SvgPicture.asset(widget.imageLogoLeft!) : SvgPicture.asset(AppSvgs.iconLogo),
@@ -47,83 +58,104 @@ class _HeaderState extends State<Header> {
           Expanded(
             child: Row(
               children: [
-                SGInputText(
-                  height: 34,
-                  width: 280,
-                  prefixIcon: Padding(padding: const EdgeInsets.all(8.0), child: SvgPicture.asset(AppSvgs.iconSearch)),
+                // Search input with Material Design
+                MaterialSearchField(
                   controller: TextEditingController(),
-                  borderRadius: 6,
-                  padding: const EdgeInsets.all(1),
-                  fontSize: 14,
                   hintText: 'Tìm kiếm ...',
                   onChanged: (value) {},
                 ),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
-                    spacing: 10,
                     children: [
-                      SGButtonV2(
-                        width: 34,
-                        height: 34,
-                        buttonType: SGButtonType.icon,
-                        padding: EdgeInsets.all(8),
-                        iconChild: SvgPicture.asset(AppSvgs.iconSetting),
-                        onclick: (_) {},
+                      // Settings button
+                      MaterialIconButton(
+                        icon: Icons.settings,
+                        onPressed: () {},
+                        tooltip: 'Cài đặt',
                       ),
-                      SGButtonIconWithPopup(
-                        colorBackgroundButton: Colors.grey.shade100,
-                        widthButton: 34,
-                        heightButton: 34,
-                        buttonType: SGButtonType.icon,
-                        paddingButton: EdgeInsets.all(8),
-                        iconChildButton: SvgPicture.asset(AppSvgs.iconChat),
-                        popupOffset: const Offset(-83, 10),
-                        popupId: 'header_chat',
-                        popupItems: [
-                          SGPopupMenuItem(
-                            content: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildTimeOption('Today'),
-                                _buildTimeOption('Yesterday'),
-                                _buildTimeOption('Last 7 days'),
-                                _buildTimeOption('This month'),
-                                _buildTimeOption('Custom range'),
-                              ],
-                            ),
+                      const SizedBox(width: 8),
+                      // Chat button with popup
+                      PopupMenuButton<String>(
+                        offset: const Offset(-83, 10),
+                        child: MaterialIconButton(
+                          icon: Icons.chat_bubble_outline,
+                          onPressed: null,
+                          tooltip: 'Chat',
+                        ),
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'today',
+                            child: _buildTimeOption('Today'),
+                          ),
+                          PopupMenuItem(
+                            value: 'yesterday',
+                            child: _buildTimeOption('Yesterday'),
+                          ),
+                          PopupMenuItem(
+                            value: 'last7days',
+                            child: _buildTimeOption('Last 7 days'),
+                          ),
+                          PopupMenuItem(
+                            value: 'thismonth',
+                            child: _buildTimeOption('This month'),
+                          ),
+                          PopupMenuItem(
+                            value: 'custom',
+                            child: _buildTimeOption('Custom range'),
                           ),
                         ],
+                        onSelected: (value) {
+                          SGLog.debug('Header', '$value selected');
+                        },
                       ),
-                      SGButtonIconWithPopup(
-                        colorBackgroundButton: Colors.grey.shade100,
-                        widthButton: 34,
-                        heightButton: 34,
-                        buttonType: SGButtonType.icon,
-                        paddingButton: EdgeInsets.all(8),
-                        iconChildButton: SvgPicture.asset(AppSvgs.iconTime),
-                        popupOffset: const Offset(-83, 10),
-                        popupId: 'header_time',
-                        popupItems: [
-                          SGPopupMenuItem(
-                            content: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildTimeOption('Today'),
-                                _buildTimeOption('Yesterday'),
-                                _buildTimeOption('Last 7 days'),
-                                _buildTimeOption('This month'),
-                                _buildTimeOption('Custom range'),
-                              ],
-                            ),
+                      const SizedBox(width: 8),
+                      // Time button with popup
+                      PopupMenuButton<String>(
+                        offset: const Offset(-83, 10),
+                        child: MaterialIconButton(
+                          icon: Icons.access_time,
+                          onPressed: null,
+                          tooltip: 'Thời gian',
+                        ),
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'today',
+                            child: _buildTimeOption('Today'),
+                          ),
+                          PopupMenuItem(
+                            value: 'yesterday',
+                            child: _buildTimeOption('Yesterday'),
+                          ),
+                          PopupMenuItem(
+                            value: 'last7days',
+                            child: _buildTimeOption('Last 7 days'),
+                          ),
+                          PopupMenuItem(
+                            value: 'thismonth',
+                            child: _buildTimeOption('This month'),
+                          ),
+                          PopupMenuItem(
+                            value: 'custom',
+                            child: _buildTimeOption('Custom range'),
                           ),
                         ],
+                        onSelected: (value) {
+                          SGLog.debug('Header', '$value selected');
+                        },
                       ),
-                      const SizedBox(width: 5),
-                      const CircleAvatar(
+                      const SizedBox(width: 16),
+                      // User avatar
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: ColorValue.primaryLightBlue,
+                        child: CircleAvatar(
                         radius: 18,
-                        backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=3'), // random avatar
+                          backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=3'),
+                          backgroundColor: Colors.white,
+                        ),
                       ),
                     ],
                   ),

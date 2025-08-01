@@ -38,8 +38,9 @@ class SubMenuItem {
   final String label;
   final IconData? icon;
   final String route;
+  final String? extra;
 
-  const SubMenuItem({required this.label, this.icon, this.route = '/'});
+  const SubMenuItem({required this.label, this.icon, this.route = '/', this.extra});
 }
 
 /// Class đại diện cho một nhóm các mục trong submenu
@@ -56,61 +57,58 @@ class AppMenuData {
   final List<MenuItem> menuItems = [
     MenuItem(
       label: 'Tổng quan',
-      reportSubItems: [
-        SubMenuItem(label: 'Exemple 1', route: AppRoute.exemple1.path),
-        SubMenuItem(label: 'Exemple 2', route: AppRoute.exemple2.path),
-        SubMenuItem(label: 'Exemple 3', route: AppRoute.exemple3.path),
-        SubMenuItem(label: 'Exemple 4', route: AppRoute.exemple4.path),
-      ],
+      route: AppRoute.dashboard.path,
     ),
-    MenuItem(
-      label: 'Thẻ tài sản',
-      reportSubItems: [
-        SubMenuItem(label: 'Tài sản', route: AppRoute.asset.path),
-        SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path),
-        SubMenuItem(label: 'Mô hình tài sản', route: AppRoute.assetModel.path),
-        SubMenuItem(label: 'Mhóm tài sản', route: AppRoute.assetGroup.path),
-        SubMenuItem(label: 'Phụ lục tài sản', route: AppRoute.assetAttachment.path),
-      ],
-    ),
-    MenuItem(label: 'Quản lý nhân viên', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
+    
+    MenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path),
+    MenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path),
+    MenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path),
+    MenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path),
     MenuItem(
       label: 'Quản lý tài sản',
       projectGroups: [
-        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc'), SubMenuItem(label: 'Thiết bị điện tử')]),
-        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng'), SubMenuItem(label: 'Dụng cụ lắp đặt')]),
+        SubMenuGroup(title: 'Phương tiện', items: [SubMenuItem(label: 'Phương tiện', route: AppRoute.assetManager.path)]),
+        SubMenuGroup(title: 'Máy móc, trang thiết bị', items: [SubMenuItem(label: 'Máy móc, trang thiết bị', route: AppRoute.assetManager.path)]),
+        SubMenuGroup(title: 'Nhà cửa và kiến trúc', items: [SubMenuItem(label: 'Nhà cửa và kiến trúc', route: AppRoute.assetManager.path)]),
       ],
     ),
     MenuItem(
-      label: 'Công cụ dụng cụ',
-      projectGroups: [
-        SubMenuGroup(title: 'Công cụ', items: [SubMenuItem(label: 'Máy móc'), SubMenuItem(label: 'Thiết bị điện tử')]),
-        SubMenuGroup(title: 'Dụng cụ', items: [SubMenuItem(label: 'Dụng cụ văn phòng'), SubMenuItem(label: 'Dụng cụ lắp đặt')]),
+      label: 'Quản lý CCDC - Vật tư',
+      reportSubItems: 
+        [SubMenuItem(label: 'Công cụ dụng cụ - Vật tư',route: AppRoute.toolsAndSupplies.path),
       ],
     ),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
-    MenuItem(label: 'Cài đặt', reportSubItems: [SubMenuItem(label: 'Báo cáo ngày'), SubMenuItem(label: 'Báo cáo tuần'), SubMenuItem(label: 'Báo cáo tháng')]),
+    MenuItem(
+      label: 'Điều động tài sản ',
+      reportSubItems: 
+      [
+          SubMenuItem(
+          label: 'Cấp phát tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "1",
+        ),
+        SubMenuItem(
+          label: 'Thu hồi tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "2",
+        ),
+        SubMenuItem(
+          label: 'Điều chuyển tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "3",
+        ),
+      ],
+    ),
+    MenuItem(
+      label: 'Bàn giao tài sản',
+      reportSubItems: [
+        SubMenuItem(
+          label: 'Biên bản bàn giao tài sản',
+          route: AppRoute.assetHandover.path,
+        ),
+        SubMenuItem(label: 'Chi tiết Bàn giao tài sản'),
+      ],
+    ),
   ];
 
   // Chuyển đổi SubMenuItem thành SGSidebarSubItem

@@ -3,16 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
-import 'package:se_gay_components/common/sg_button.dart';
-import 'package:se_gay_components/common/sg_textfield.dart';
-
+import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 
 class CapitalSourceFormPage extends StatefulWidget {
   final CapitalSource? capitalSource;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
-  const CapitalSourceFormPage({super.key, this.capitalSource, this.index, this.onCancel, this.onSaved});
+  const CapitalSourceFormPage({
+    super.key,
+    this.capitalSource,
+    this.index,
+    this.onCancel,
+    this.onSaved,
+  });
 
   @override
   State<CapitalSourceFormPage> createState() => _CapitalSourceFormPageState();
@@ -63,100 +67,78 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
     }
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.capitalSource != null;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        margin: EdgeInsets.only(right: 50, top: 16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Text(
-                      isEdit ? 'Cập nhật thông tin nguồn vốn' : 'Thêm mới nguồn vốn',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.start,
-                    ),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.8,
+          ),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF7F9FC),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 32.0,
+                  horizontal: 32.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                vertical: 32.0,
-                horizontal: 32.0,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(
-                  color: Colors.grey.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Column(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      sectionTitle(
+                        Icons.account_balance_wallet,
+                        isEdit ? 'Cập nhật nguồn vốn' : 'Thêm mới nguồn vốn',
+                        'Nhập thông tin nguồn vốn.',
+                      ),
+                      sectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            sectionTitle(Icons.info_outline, 'Thông tin nguồn vốn'),
+                            const SizedBox(height: 16),
                             Row(
                               children: [
                                 Expanded(
-                                  child: SGTextField(
+                                  child: TextFormField(
                                     controller: _codeController,
-                                    label: 'Mã nguồn kinh phí',
-                                    prefixIcon: Icon(
-                                      Icons.code,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập mã nguồn kinh phí'
-                                                : null,
+                                    decoration: inputDecoration('Mã nguồn kinh phí', required: true),
+                                    validator: (v) => v == null || v.isEmpty ? 'Nhập mã nguồn kinh phí' : null,
                                   ),
                                 ),
-                                const SizedBox(width: 25),
+                                const SizedBox(width: 16),
                                 Expanded(
-                                  child: SGTextField(
+                                  child: TextFormField(
                                     controller: _nameController,
-                                    label: 'Tên nguồn kinh phí',
-                                    prefixIcon: Icon(
-                                      Icons.title,
-                                      color: Colors.orange,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập tên nguồn kinh phí'
-                                                : null,
-                                    minLines: 1,
-                                    maxLines: 3,
+                                    decoration: inputDecoration('Tên nguồn kinh phí', required: true),
+                                    validator: (v) => v == null || v.isEmpty ? 'Nhập tên nguồn kinh phí' : null,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            SGTextField(
+                            TextFormField(
                               controller: _noteController,
-                              label: 'Ghi chú',
-                              prefixIcon: Icon(
-                                Icons.note_alt,
-                                color: Colors.orange,
-                              ),
+                              decoration: inputDecoration('Ghi chú'),
                               minLines: 1,
                               maxLines: 3,
                             ),
@@ -165,10 +147,7 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
                               children: [
                                 Checkbox(
                                   value: _isActive,
-                                  activeColor: Colors.orange,
-                                  onChanged:
-                                      (v) =>
-                                          setState(() => _isActive = v ?? true),
+                                  onChanged: (v) => setState(() => _isActive = v ?? true),
                                 ),
                                 const Text(
                                   'Có hiệu lực',
@@ -177,33 +156,52 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
                               ],
                             ),
                           ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        SGButton(
-                          text: 'Hủy',
-                          onPressed: () {
-                            if (widget.onCancel != null) {
-                              widget.onCancel!();
-                            } else {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          mainColor: Colors.blueAccent,
                         ),
-                        const SizedBox(width: 16),
-                        SGButton(text: isEdit ? 'Cập nhật':'Thêm mới', onPressed: _save),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          OutlinedButton(
+                            onPressed: () {
+                              if (widget.onCancel != null) {
+                                widget.onCancel!();
+                              } else {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7B8EC8),
+                              side: const BorderSide(color: Color(0xFFE6EAF3)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('Hủy'),
+                          ),
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: _save,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2264E5),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                            ),
+                            child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
