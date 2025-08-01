@@ -11,6 +11,7 @@ abstract class TableBaseConfig {
     required List<SgTableColumn<T>> columns,
     required List<T> data,
     String? searchTerm,
+    Function(T item)? onRowTap,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -34,14 +35,16 @@ abstract class TableBaseConfig {
         ),
         searchTerm: searchTerm,
         rowHoverColor: ColorValue.accentLightCyan,
-        rowHoverDuration: const Duration(milliseconds: 100),
+        rowHoverDuration: const Duration(milliseconds: 10),
         headerBackgroundColor: Colors.grey.shade100,
         oddRowBackgroundColor: Colors.white,
         evenRowBackgroundColor: Colors.grey.shade50,
-        selectedRowColor: Colors.grey.shade100,
+        selectedRowColor: ColorValue.accentLightCyan,
+        showCheckboxes : true,
         showVerticalLines: false,
         showHorizontalLines: true,
         columns: columns,
+        onRowTap: onRowTap
       ),
     );
   }

@@ -11,12 +11,13 @@ class TableBaseView<T> extends StatefulWidget {
     required this.columns,
     required this.data,
     this.horizontalController,
+    this.onRowTap,
   });
   final String searchTerm;
   final List<SgTableColumn<T>> columns;
   final List<T> data;
   final ScrollController? horizontalController;
-
+  final Function(T item)? onRowTap;
   @override
   State<TableBaseView<T>> createState() => _TableBaseViewState<T>();
 }
@@ -59,6 +60,9 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
             columns: newColumns,
             data: widget.data,
             searchTerm: widget.searchTerm,
+            onRowTap: (item) {
+              widget.onRowTap?.call(item);
+            },
           ),
         ),
       ),

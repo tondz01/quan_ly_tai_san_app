@@ -3,18 +3,19 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/table_asset_transfer_by_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetTransferView extends StatefulWidget {
   final int typeAssetTransfer;
 
-  const AssetTransferView({
-    super.key,
-    required this.typeAssetTransfer,
-  });
+  const AssetTransferView({super.key, required this.typeAssetTransfer});
 
   @override
   State<AssetTransferView> createState() => _AssetTransferViewState();
@@ -35,7 +36,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   @override
   void didUpdateWidget(AssetTransferView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Recargar si cambia el tipo de transferencia de activos
     if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
       currentType = widget.typeAssetTransfer;
       _initData();
@@ -43,7 +43,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   }
 
   void _initData() {
-    log('initData $currentType');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AssetTransferProvider>(
         context,
@@ -56,6 +55,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AssetTransferProvider>(context, listen: false).onDispose();
+    });
   }
 
   String _getScreenTitle() {
@@ -76,19 +78,15 @@ class _AssetTransferViewState extends State<AssetTransferView> {
     return BlocConsumer<AssetTransferBloc, AssetTransferState>(
       listener: (context, state) {
         if (state is AssetTransferLoadingState) {
-          // Mostrar loading
         } else if (state is GetListAssetTransferSuccessState) {
           log('GetListAssetTransferSuccessState');
-          context
-              .read<AssetTransferProvider>()
-              .getListAssetTransferSuccess(context, state);
-        } else if (state is GetListAssetTransferFailedState) {
-          // Manejar error
-        }
+          context.read<AssetTransferProvider>().getListAssetTransferSuccess(
+            context,
+            state,
+          );
+        } else if (state is GetListAssetTransferFailedState) {}
       },
       builder: (context, state) {
-        // Usar el ChangeNotifierProvider.value en lugar de Consumer
-        // Esto asegura que todos los cambios en el provider actualizan la UI
         return ChangeNotifierProvider.value(
           value: context.read<AssetTransferProvider>(),
           child: Consumer<AssetTransferProvider>(
@@ -107,17 +105,70 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
-                    onTap: provider.onTapBackHeader,
-                    onNew: provider.onTapNewHeader,
+                    onTap: () {
+                      // provider.onChangeDetailAssetTransfer(null);
+                    },
+                    onNew: () {
+                      provider.onChangeDetailAssetTransfer(null);
+                    },
                     mainScreen: _getScreenTitle(),
                     subScreen: provider.subScreen,
                   ),
                 ),
-                body: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: provider.body,
+                body: Column(
+                  children: [
+                    Flexible(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          childInput: AssetTransferDetail(provider: provider),
+                          childTableView: TableAssetTransferByDetail(
+                            provider: provider,
+                          ),
+                          isShowInput: provider.isShowInput,
+                          isShowCollapse: provider.isShowCollapse,
+                          onExpandedChanged: (isExpanded) {
+                            log('isExpanded: $isExpanded');
+                            provider.isShowCollapse = isExpanded;
+                          },
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: (provider.data?.length ?? 0) >= 5,
+                      child: SGPaginationControls(
+                        totalPages: provider.totalPages,
+                        currentPage: provider.currentPage,
+                        rowsPerPage: provider.rowsPerPage,
+                        controllerDropdownPage:
+                            provider.controllerDropdownPage!,
+                        items: provider.items,
+                        onPageChanged: provider.onPageChanged,
+                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                      ),
+                    ),
+                  ],
                 ),
               );
+
+              // Scaffold(
+              //   appBar: AppBar(
+              //     title: HeaderComponent(
+              //       controller: _searchController,
+              //       onSearchChanged: (value) {
+              //         provider.searchTerm = value;
+              //       },
+              //       onTap: provider.onTapBackHeader,
+              //       onNew: provider.onTapNewHeader,
+              //       mainScreen: _getScreenTitle(),
+              //       subScreen: provider.subScreen,
+              //     ),
+              //   ),
+              //   body: Padding(
+              //     padding: const EdgeInsets.all(8.0),
+              //     child: provider.body,
+              //   ),
+              // );
             },
           ),
         );

@@ -31,7 +31,6 @@ class _AssetTransferListState extends State<AssetTransferList> {
 
   @override
   Widget build(BuildContext context) {
-    // Usar Consumer para reaccionar a cambios en el provider
     return Consumer<AssetTransferProvider>(
       builder: (context, provider, child) {
         return Column(
@@ -82,11 +81,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                             onEditAction: (item) {},
                             onDeleteAction: (item) {},
                             onRowTap: (item) {
-                              provider.onChangeScreen(
-                                item: item,
-                                isMainScreen: false,
-                                isEdit: false,
-                              );
+                              provider.onChangeDetailAssetTransfer(item);
                             },
                             onSelectionChanged: (items) {},
                             onCustomFilter: (item) => false,

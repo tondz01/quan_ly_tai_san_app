@@ -52,7 +52,6 @@ class _FilterCheckboxes extends StatelessWidget {
     FilterStatus filter,
     AssetHandoverProvider provider,
   ) {
-    // Sử dụng các getter công khai thay vì truy cập trực tiếp vào thuộc tính private
     bool isChecked = false;
     switch (filter) {
       case FilterStatus.all:

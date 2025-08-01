@@ -1,12 +1,18 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
@@ -16,12 +22,7 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class TableAssetTransferByDetail extends StatefulWidget {
   final AssetTransferProvider provider;
-  final List<AssetHandoverDto> listAssetHandover;
-  const TableAssetTransferByDetail({
-    super.key,
-    required this.provider,
-    required this.listAssetHandover,
-  });
+  const TableAssetTransferByDetail({super.key, required this.provider});
 
   @override
   State<TableAssetTransferByDetail> createState() =>
@@ -31,6 +32,7 @@ class TableAssetTransferByDetail extends StatefulWidget {
 class _TableAssetTransferByDetailState
     extends State<TableAssetTransferByDetail> {
   String url = '';
+  bool isUploading = false;
 
   Map<String, Color> listStatus = {
     'Nháp': ColorValue.silverGray,
@@ -42,6 +44,12 @@ class _TableAssetTransferByDetailState
     'Hủy': ColorValue.coral,
     'Hoàn thành': ColorValue.forestGreen,
   };
+  final List<AssetHandoverDto> listAssetHandover = [];
+  @override
+  void initState() {
+    super.initState();
+    _callGetListAssetHandover();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +87,7 @@ class _TableAssetTransferByDetailState
       ),
       TableBaseConfig.columnTable<AssetTransferDto>(
         title: 'Ký số',
-        width: 100,
+        width: 120,
         getValue: (item) => item.id ?? '',
       ),
 
@@ -97,65 +105,92 @@ class _TableAssetTransferByDetailState
       ),
     ];
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.4,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AssetHandoverBloc, AssetHandoverState>(
+          listener: (context, state) {
+            if (state is GetListAssetHandoverSuccessState) {
+              listAssetHandover.clear();
+              listAssetHandover.addAll(state.data);
+              log('Asset handover data loaded successfully');
+            } else if (state is GetListAssetHandoverFailedState) {
+            } else if (state is AssetHandoverLoadingState) {
+              // Show loading indicator
+              setState(() {
+                isUploading = true;
+              });
+            } else if (state is AssetHandoverLoadingDismissState) {
+              // Hide loading indicator
+              setState(() {
+                isUploading = false;
+              });
+            }
+          },
+        ),
+      ],
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.table_chart,
+                        color: Colors.grey.shade600,
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Danh sách phiếu cấp phát tài sản (${widget.provider.data.length})',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  buildTooltipStatus(),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.table_chart,
-                      color: Colors.grey.shade600,
-                      size: 18,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Danh sách phiếu cấp phát tài sản (${widget.provider.data.length})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-                buildTooltipStatus(),
-              ],
+            Expanded(
+              child: TableBaseView<AssetTransferDto>(
+                searchTerm: '',
+                columns: columns,
+                data: widget.provider.data,
+                horizontalController: ScrollController(),
+                onRowTap: (item) {
+                  widget.provider.onChangeDetailAssetTransfer(item);
+                },
+              ),
             ),
-          ),
-          Expanded(
-            child: TableBaseView<AssetTransferDto>(
-              searchTerm: '',
-              columns: columns,
-              data: widget.provider.data,
-              horizontalController: ScrollController(),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -171,7 +206,7 @@ class _TableAssetTransferByDetailState
         onPressed:
             () => PropertyHandoverMinutes.showPopup(
               context,
-              widget.listAssetHandover
+              listAssetHandover
                   .where((itemAH) => itemAH.id == item.idAssetHandover)
                   .toList(),
             ),
@@ -202,7 +237,6 @@ class _TableAssetTransferByDetailState
               if (item.status != 0) {widget.provider.deleteItem(item.id ?? '')},
             },
       ),
-     
     ]);
   }
 
@@ -238,36 +272,20 @@ class _TableAssetTransferByDetailState
   }
 
   int getCountByState(String key) {
-    int status;
-    switch (key) {
-      case 'Nháp':
-        status = 0;
-        break;
-      case 'Chờ xác nhận':
-        status = 1;
-        break;
-      case 'Xác nhận':
-        status = 2;
-        break;
-      case 'Trình Duyệt':
-        status = 3;
-        break;
-      case 'Duyệt':
-        status = 4;
-        break;
-      case 'Từ chối':
-        status = 5;
-        break;
-      case 'Hủy':
-        status = 6;
-        break;
-      case 'Hoàn thành':
-        status = 7;
-      default:
-        status = 0;
-    }
+    const statusMap = {
+      'Nháp': 0,
+      'Chờ xác nhận': 1,
+      'Xác nhận': 2,
+      'Trình Duyệt': 3,
+      'Duyệt': 4,
+      'Từ chối': 5,
+      'Hủy': 6,
+      'Hoàn thành': 7,
+    };
     final count =
-        widget.provider.data.where((item) => item.status == status).length;
+        widget.provider.data
+            .where((item) => item.status == statusMap[key])
+            .length;
     return count;
   }
 
@@ -281,5 +299,19 @@ class _TableAssetTransferByDetailState
         return 'Phiếu duyệt chuyển tài sản';
     }
     return '';
+  }
+
+  void _callGetListAssetHandover() {
+    try {
+      final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
+      assetHandoverBloc.add(GetListAssetHandoverEvent(context));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
