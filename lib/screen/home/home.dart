@@ -199,7 +199,6 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
-    log('AppImage.imageLogo: ${AppImage.imageLogo}');
     return MainWrapper(
       header: Header(imageLogoLeft: AppImage.imageLogo),
       sidebar: Column(

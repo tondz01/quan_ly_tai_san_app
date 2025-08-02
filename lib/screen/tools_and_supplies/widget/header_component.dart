@@ -11,10 +11,10 @@ class HeaderComponent extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onSearchChanged,
-    required this.onTap,
+    this.onTap,
     required this.onNew,
     required this.mainScreen,
-    required this.subScreen,
+    this.subScreen,
     this.child,
   });
   final TextEditingController controller;

@@ -55,9 +55,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetTransferProvider>(context, listen: false).onDispose();
-    });
+  
   }
 
   String _getScreenTitle() {
@@ -124,11 +122,11 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                           childInput: AssetTransferDetail(provider: provider),
                           childTableView: TableAssetTransferByDetail(
                             provider: provider,
+                            typeAssetTransfer: currentType,
                           ),
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,
                           onExpandedChanged: (isExpanded) {
-                            log('isExpanded: $isExpanded');
                             provider.isShowCollapse = isExpanded;
                           },
                         ),
@@ -150,25 +148,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                   ],
                 ),
               );
-
-              // Scaffold(
-              //   appBar: AppBar(
-              //     title: HeaderComponent(
-              //       controller: _searchController,
-              //       onSearchChanged: (value) {
-              //         provider.searchTerm = value;
-              //       },
-              //       onTap: provider.onTapBackHeader,
-              //       onNew: provider.onTapNewHeader,
-              //       mainScreen: _getScreenTitle(),
-              //       subScreen: provider.subScreen,
-              //     ),
-              //   ),
-              //   body: Padding(
-              //     padding: const EdgeInsets.all(8.0),
-              //     child: provider.body,
-              //   ),
-              // );
             },
           ),
         );

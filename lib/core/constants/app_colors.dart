@@ -52,5 +52,7 @@ abstract class ColorValue {
   static const Color divider = Color(0xFFBDBDBD);
   static const Color background = Color(0xFFFAFAFA);
   static const Color tealAccent = Color(0xFF009688);
+  static const Color darkGrey = Color(0xFF424242);
+  static const Color teal = Color(0xFF00796B);
   
 }

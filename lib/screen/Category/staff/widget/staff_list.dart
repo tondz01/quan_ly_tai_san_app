@@ -1,0 +1,191 @@
+// ignore_for_file: deprecated_member_use
+
+import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
+import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:se_gay_components/common/sg_text.dart';
+
+class StaffList extends StatefulWidget {
+  final List<StaffDTO> data;
+  final void Function(StaffDTO)? onChangeDetail;
+  final void Function(StaffDTO)? onEdit;
+  final void Function(StaffDTO)? onDelete;
+  const StaffList({
+    super.key,
+    required this.data,
+    this.onChangeDetail,
+    this.onEdit,
+    this.onDelete,
+  });
+
+  @override
+  State<StaffList> createState() => _StaffListState();
+}
+
+class _StaffListState extends State<StaffList> {
+  List<StaffDTO> selectedItems = [];
+
+  @override
+  Widget build(BuildContext context) {
+    final columns = [
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Mã nhân viên',
+        getValue: (item) => item.staffId,
+        width: 70,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Tên nhân viên',
+        getValue: (item) => item.name,
+        titleAlignment: TextAlign.start,
+        width: 150,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Số điện thoại',
+        getValue: (item) => item.tel,
+        titleAlignment: TextAlign.start,
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Email',
+        getValue: (item) => item.email,
+        titleAlignment: TextAlign.start,
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Hoạt động',
+        getValue: (item) => item.activity,
+        titleAlignment: TextAlign.start,
+        width: 150,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Hạn chót cho hoạt động tiếp theo',
+        getValue: (item) => item.timeForActivity,
+        titleAlignment: TextAlign.center,
+        width: 150,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Phòng ban',
+        getValue: (item) => item.department,
+        titleAlignment: TextAlign.center,
+        width: 150,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Chức vụ',
+        getValue: (item) => item.position,
+        titleAlignment: TextAlign.center,
+        width: 100,
+      ),
+      TableBaseConfig.columnTable<StaffDTO>(
+        title: 'Người quản lý',
+        getValue: (item) => item.staffOwner,
+        titleAlignment: TextAlign.start,
+        width: 150,
+      ),
+      TableBaseConfig.columnWidgetBase<StaffDTO>(
+        title: '',
+        cellBuilder:
+            (item) => TableBaseConfig.viewActionBase<StaffDTO>(
+              item: item,
+              onEdit: (item) {
+                widget.onEdit?.call(item);
+              },
+              onDelete: (item) {
+                widget.onDelete?.call(item);
+              },
+            ),
+        width: 120,
+        searchable: true,
+      ),
+    ];
+    return Container(
+      height: MediaQuery.of(context).size.height - 170,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        // mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Row(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.table_chart,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Danh sách nhân viên',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    SGText(
+                      text:
+                          'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    IconButton(
+                      onPressed: () {
+                        // TODO: Xóa nhân viên đã chọn
+                      },
+                      icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TableBaseView<StaffDTO>(
+              searchTerm: '',
+              columns: columns,
+              data: widget.data,
+              horizontalController: ScrollController(),
+              onRowTap: (item) {
+                widget.onChangeDetail?.call(item);
+              },
+              onSelectionChanged: (items) {
+                setState(() {
+                  selectedItems = items;
+                });
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

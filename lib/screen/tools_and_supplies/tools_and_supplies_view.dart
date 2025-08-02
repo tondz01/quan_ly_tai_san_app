@@ -3,9 +3,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
+import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'bloc/tools_and_supplies_state.dart';
 import 'provider/tools_and_supplies_provide.dart';
 
@@ -68,19 +72,51 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                 title: HeaderComponent(
                   controller: _searchController,
                   onSearchChanged: (value) {
-                    setState(() {
-                      searchTerm = value;
-                    });
+                    provider.onSearchToolsAndSupplies(value);
                   },
-                  onTap: provider.onTapBackHeader,
-                  onNew: provider.onTapNewHeader,
+                  onTap: () {
+                    // provider.onChangeDetailAssetTransfer(null);
+                  },
+                  onNew: () {
+                    provider.onChangeDetail(context, null);
+                  },
                   mainScreen: 'Quản lý CCDC - Vật tư',
                   subScreen: provider.subScreen,
                 ),
               ),
-              body: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: provider.body,
+              body: Column(
+                children: [
+                  Flexible(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        childInput: ToolsAndSuppliesDetail(
+                          item: provider.item,
+                        ),
+                        childTableView: ToolsAndSuppliesList(
+                          provider: provider,
+                        ),
+                        isShowInput: provider.isShowInput,
+                        isShowCollapse: provider.isShowCollapse,
+                        onExpandedChanged: (isExpanded) {
+                          provider.isShowCollapse = isExpanded;
+                        },
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: (provider.data?.length ?? 0) >= 5,
+                    child: SGPaginationControls(
+                      totalPages: provider.totalPages,
+                      currentPage: provider.currentPage,
+                      rowsPerPage: provider.rowsPerPage,
+                      controllerDropdownPage: provider.controllerDropdownPage!,
+                      items: provider.items,
+                      onPageChanged: provider.onPageChanged,
+                      onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    ),
+                  ),
+                ],
               ),
             );
           },

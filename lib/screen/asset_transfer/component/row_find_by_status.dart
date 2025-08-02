@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-
-class ListStatus {
-  final String text;
-  final bool isEffective;
-  final Function(bool?)? onChanged;
-
-  ListStatus({required this.text, required this.isEffective, this.onChanged});
-}
 
 class RowFindByStatus extends StatelessWidget {
   const RowFindByStatus({super.key, required this.provider});
@@ -28,77 +20,96 @@ class _FilterCheckboxes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AssetTransferProvider>(context);
-    final filters = [
-      FilterStatus.all,
-      FilterStatus.request,
-      FilterStatus.confirm,
-      FilterStatus.approve,
-      FilterStatus.reject,
-      FilterStatus.complete,
-    ];
+    
+    // Tạo map filter states từ provider
+    final filterStates = {
+      'all': provider.isShowAll,
+      'draft': provider.isShowDraft,
+      'waitingForConfirmation': provider.isShowWaitingForConfirmation,
+      'confirmed': provider.isShowConfirmed,
+      'browser': provider.isShowBrowser,
+      'approve': provider.isShowApprove,
+      'reject': provider.isShowReject,
+      'cancel': provider.isShowCancel,
+      'complete': provider.isShowComplete,
+    };
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        for (final filter in filters)
-          _buildFilterCheckbox(context, filter, provider),
-      ],
+    // Tạo map filter counts từ provider
+    final filterCounts = {
+      'all': provider.allCount,
+      'draft': provider.draftCount,
+      'waitingForConfirmation': provider.waitingForConfirmationCount,
+      'confirmed': provider.confirmedCount,
+      'browser': provider.browserCount,
+      'approve': provider.approveCount,
+      'reject': provider.rejectCount,
+      'cancel': provider.cancelCount,
+      'complete': provider.completeCount,
+    };
+
+    // Tạo map filter colors từ FilterStatus enum
+    final filterColors = {
+      'all': FilterStatus.all.activeColor,
+      'draft': FilterStatus.draft.activeColor,
+      'waitingForConfirmation': FilterStatus.waitingForConfirmation.activeColor,
+      'confirmed': FilterStatus.confirmed.activeColor,
+      'browser': FilterStatus.browser.activeColor,
+      'approve': FilterStatus.approve.activeColor,
+      'reject': FilterStatus.reject.activeColor,
+      'cancel': FilterStatus.cancel.activeColor,
+      'complete': FilterStatus.complete.activeColor,
+    };
+
+    // Tạo options sử dụng FilterOptionBuilder
+    final options = FilterOptionBuilder.createAssetTransferOptionsWithCount(
+      filterStates: filterStates,
+      filterCounts: filterCounts,
+      filterColors: filterColors,
+      onFilterChanged: (id, value) {
+        // Map id về FilterStatus enum
+        FilterStatus? status;
+        switch (id) {
+          case 'all':
+            status = FilterStatus.all;
+            break;
+          case 'draft':
+            status = FilterStatus.draft;
+            break;
+          case 'waitingForConfirmation':
+            status = FilterStatus.waitingForConfirmation;
+            break;
+          case 'confirmed':
+            status = FilterStatus.confirmed;
+            break;
+          case 'browser':
+            status = FilterStatus.browser;
+            break;
+          case 'approve':
+            status = FilterStatus.approve;
+            break;
+          case 'reject':
+            status = FilterStatus.reject;
+            break;
+          case 'cancel':
+            status = FilterStatus.cancel;
+            break;
+          case 'complete':
+            status = FilterStatus.complete;
+            break;
+        }
+        
+        if (status != null) {
+          provider.setFilterStatus(status, value);
+        }
+      },
     );
-  }
 
-  Widget _buildFilterCheckbox(
-    BuildContext context,
-    FilterStatus filter,
-    AssetTransferProvider provider,
-  ) {
-    // Sử dụng các getter công khai thay vì truy cập trực tiếp vào thuộc tính private
-    bool isChecked = false;
-    switch (filter) {
-      case FilterStatus.all:
-        isChecked = provider.isShowAll;
-        break;
-      case FilterStatus.request:
-        isChecked = provider.isShowRequest;
-        break;
-      case FilterStatus.confirm:
-        isChecked = provider.isShowConfirm;
-        break;
-      case FilterStatus.approve:
-        isChecked = provider.isShowApprove;
-        break;
-      case FilterStatus.reject:
-        isChecked = provider.isShowReject;
-        break;
-      case FilterStatus.complete:
-        isChecked = provider.isShowComplete;
-        break;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: Checkbox(
-              value: isChecked,
-              onChanged: (value) {
-                provider.setFilterStatus(filter, value);
-              },
-              activeColor: const Color(0xFF80C9CB),
-              checkColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(2),
-              ),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-          ),
-          const SizedBox(width: 8),
-          SGText(text: filter.label, size: 14,),
-        ],
-      ),
+    return CommonFilterCheckbox(
+      options: options,
+      checkColor: Colors.white,
+      textColor: Colors.black87,
+      mainAxisAlignment: MainAxisAlignment.end,
+      showCount: true,
     );
   }
 }

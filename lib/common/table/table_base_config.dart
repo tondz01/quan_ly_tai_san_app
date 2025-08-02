@@ -12,6 +12,7 @@ abstract class TableBaseConfig {
     required List<T> data,
     String? searchTerm,
     Function(T item)? onRowTap,
+    Function(List<T> items)? onSelectionChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -40,45 +41,49 @@ abstract class TableBaseConfig {
         oddRowBackgroundColor: Colors.white,
         evenRowBackgroundColor: Colors.grey.shade50,
         selectedRowColor: ColorValue.accentLightCyan,
-        showCheckboxes : true,
+        showCheckboxes: true,
         showVerticalLines: false,
         showHorizontalLines: true,
         columns: columns,
-        onRowTap: onRowTap
+        onSelectionChanged: onSelectionChanged,
+        onRowTap: onRowTap,
       ),
     );
   }
 
-  Widget viewActionBase<T>(
-    T item, {
+  static Widget viewActionBase<T>({
+    required T item,
     bool isDisableDelete = false,
     Function(T item)? onView,
     Function(T item)? onEdit,
     Function(T item)? onDelete,
   }) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.edit,
-        tooltip: 'Sửa',
-        iconColor: Colors.orange,
-        backgroundColor: Colors.orange.shade50,
-        onPressed: () => onEdit?.call(item),
-      ),
-      ActionButtonConfig(
-        icon: Icons.visibility,
-        tooltip: 'Xem',
-        iconColor: Colors.blue,
-        backgroundColor: Colors.blue.shade50,
-        onPressed: () => onView?.call(item),
-      ),
-      ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: isDisableDelete ? null : 'Xóa',
-        iconColor: isDisableDelete ? Colors.grey : Colors.red,
-        backgroundColor: Colors.red.shade50,
-        onPressed: isDisableDelete ? null : () => onDelete?.call(item),
-        isDisabled: isDisableDelete,
-      ),
+      if (onEdit != null)
+        ActionButtonConfig(
+          icon: Icons.edit,
+          tooltip: 'Sửa',
+          iconColor: Colors.orange,
+          backgroundColor: Colors.orange.shade50,
+          onPressed: () => onEdit.call(item),
+        ),
+      if (onView != null)
+        ActionButtonConfig(
+          icon: Icons.visibility,
+          tooltip: 'Xem',
+          iconColor: Colors.blue,
+          backgroundColor: Colors.blue.shade50,
+          onPressed: () => onView.call(item),
+        ),
+      if (onDelete != null)
+        ActionButtonConfig(
+          icon: Icons.delete,
+          tooltip: isDisableDelete ? null : 'Xóa',
+          iconColor: isDisableDelete ? Colors.grey : Colors.red,
+          backgroundColor: Colors.red.shade50,
+          onPressed: isDisableDelete ? null : () => onDelete.call(item),
+          isDisabled: isDisableDelete,
+        ),
     ]);
   }
 

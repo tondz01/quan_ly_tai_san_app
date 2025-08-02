@@ -14,7 +14,7 @@ class CommonFormInput extends StatefulWidget {
     required this.textContent,
     required this.controller,
     required this.isEditing,
-    bool isDropdown = false,
+    this.isDropdown = false,
     this.inputType,
     this.items,
     this.onChanged,
@@ -25,7 +25,7 @@ class CommonFormInput extends StatefulWidget {
   final String textContent;
   final TextEditingController controller;
   final bool isEditing;
-  final bool isDropdown = false;
+  final bool isDropdown;
   final bool isEnable = true;
   final TextInputType? inputType;
   final List<DropdownMenuItem<String>>? items;
@@ -79,7 +79,9 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       defaultValue: widget.textContent,
                       items: widget.items ?? [],
                       colorBorder:
-                          widget.validationErrors![widget.fieldName] == true
+                          (widget.validationErrors != null && 
+                           widget.fieldName != null &&
+                           widget.validationErrors![widget.fieldName] == true)
                               ? Colors.red
                               : SGAppColors.neutral400,
                       showUnderlineBorderOnly: true,
@@ -106,11 +108,13 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       },
                     )
                     : SGInputText(
-                      height: 35,
+                      height: 40,
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      // expandable: true,
+                      maxLines: 2,
                       controller:
                           widget
-                              .controller, // Remove the ..text = textContent assignment
+                              .controller..text = widget.textContent, // Remove the ..text = textContent assignment
                       borderRadius: 10,
                       enabled: widget.isEnable ? widget.isEditing : false,
                       textAlign: TextAlign.left,
@@ -132,7 +136,9 @@ class _CommonFormInputState extends State<CommonFormInput> {
                               ? ''
                               : '${'common.hint'.tr} ${widget.label}',
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
+                      fontSize: 14,
                       onChanged: (value) {
+                        widget.onChanged?.call(value);
                         // Clear validation error when text changes
                         if (hasError) {
                           setState(() {

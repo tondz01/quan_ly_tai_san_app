@@ -2,7 +2,6 @@
 
 import 'dart:developer';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,11 +9,13 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
@@ -40,34 +41,9 @@ class AssetTransferDetail extends StatefulWidget {
 }
 
 // GlobalKey để truy cập widget từ bên ngoài
-final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey = GlobalKey<_AssetTransferDetailState>();
+final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
+    GlobalKey<_AssetTransferDetailState>();
 
-/*
-CÁCH SỬ DỤNG WIDGET VỚI KHẢ NĂNG LÀM MỚI:
-
-1. Sử dụng GlobalKey để truy cập widget:
-   AssetTransferDetail(
-     key: assetTransferDetailKey,
-     provider: provider,
-     isEditing: true,
-     isNew: false,
-   )
-
-2. Làm mới widget từ bên ngoài:
-   assetTransferDetailKey.currentState?.refreshWidget();
-
-3. Widget sẽ tự động làm mới khi:
-   - Provider item thay đổi
-   - isNew thay đổi
-   - isEditing thay đổi
-   - Widget được rebuild với dữ liệu mới
-
-4. Các trường hợp làm mới tự động:
-   - Khi chuyển từ xem chi tiết sang tạo mới
-   - Khi chuyển từ tạo mới sang chỉnh sửa
-   - Khi provider cập nhật item mới
-   - Khi widget được gọi lại với tham số khác
-*/
 class _AssetTransferDetailState extends State<AssetTransferDetail> {
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
@@ -95,12 +71,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   late TextEditingController controllerDestination = TextEditingController();
 
   bool isEditing = false;
-
   bool isPreparerInitialed = false;
   bool isRequireManagerApproval = false;
   bool isDeputyConfirmed = false;
   bool _isUploading = false;
   bool isRefreshing = false;
+  bool isNew = false;
 
   String? proposingUnit;
   bool _controllersInitialized = false;
@@ -174,6 +150,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     item = widget.provider.item;
     _callGetListAssetHandover();
     isEditing = widget.isEditing;
+
     if (item != null && item!.status == 0) {
       isEditing = true;
     }
@@ -197,6 +174,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       // Initialize selected file if available
       _selectedFileName = item?.documentFileName;
       _selectedFilePath = item?.documentFilePath;
+      isPreparerInitialed = item?.preparerInitialed ?? false;
+      isRequireManagerApproval = item?.requireManagerApproval ?? false;
+      isDeputyConfirmed = item?.deputyConfirmed ?? false;
+      proposingUnit = item?.proposingUnit;
 
       _controllersInitialized = true;
     } else if (item == null && !_controllersInitialized) {
@@ -213,13 +194,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       controllerDeliveryLocation.text = '';
       controllerProposingUnit.text = '';
 
-      _controllersInitialized = true;
+      _controllersInitialized = false;
+      _selectedFileName = null;
+      _selectedFilePath = null;
+      isPreparerInitialed = false;
+      isRequireManagerApproval = false;
+      isDeputyConfirmed = false;
     }
-
-    isPreparerInitialed = item?.preparerInitialed ?? false;
-    isRequireManagerApproval = item?.requireManagerApproval ?? false;
-    isDeputyConfirmed = item?.deputyConfirmed ?? false;
-    proposingUnit = item?.proposingUnit;
 
     if (proposingUnit != null &&
         proposingUnit!.isNotEmpty &&
@@ -241,22 +222,19 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   @override
   void didUpdateWidget(AssetTransferDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Kiểm tra nếu provider item thay đổi
     if (widget.provider.item != oldWidget.provider.item) {
-      log('AssetTransferDetail: Provider item changed, refreshing widget');
       _refreshWidget();
     }
-    
+
     // Kiểm tra nếu isNew thay đổi
     if (widget.isNew != oldWidget.isNew) {
-      log('AssetTransferDetail: isNew changed, refreshing widget');
       _refreshWidget();
     }
-    
+
     // Kiểm tra nếu isEditing thay đổi
     if (widget.isEditing != oldWidget.isEditing) {
-      log('AssetTransferDetail: isEditing changed, refreshing widget');
       _refreshWidget();
     }
   }
@@ -266,71 +244,32 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     setState(() {
       // Reset item từ provider
       item = widget.provider.item;
-      
+      log('message item: $item');
+      isNew = item == null;
+
       // Reset editing state
       isEditing = widget.isEditing;
       if (item != null && item!.status == 0) {
         isEditing = true;
       }
-      
+
       // Reset các biến trạng thái
       isPreparerInitialed = item?.preparerInitialed ?? false;
       isRequireManagerApproval = item?.requireManagerApproval ?? false;
       isDeputyConfirmed = item?.deputyConfirmed ?? false;
       proposingUnit = item?.proposingUnit;
-      
+
       // Reset file upload
       _selectedFileName = item?.documentFileName;
       _selectedFilePath = item?.documentFilePath;
-      
-      // Clear validation errors
+
       _validationErrors.clear();
-      
-      // Reset initialization flag để cho phép khởi tạo lại controllers
+
       _controllersInitialized = false;
-      
-      // Reset loading states
+
       _isUploading = false;
       isRefreshing = false;
     });
-    
-    // Khởi tạo lại controllers với dữ liệu mới
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeControllers();
-    });
-  }
-
-  // Method để khởi tạo controllers
-  void _initializeControllers() {
-    if (item != null) {
-      // Initialize controllers with existing values
-      controllerSubject.text = item?.subject ?? '';
-      controllerDocumentName.text = item?.documentName ?? '';
-      controllerDeliveringUnit.text = item?.deliveringUnit ?? '';
-      controllerReceivingUnit.text = item?.receivingUnit ?? '';
-      controllerRequester.text = item?.requester ?? '';
-      controllerDepartmentApproval.text = item?.departmentApproval ?? '';
-      controllerEffectiveDate.text = item?.effectiveDate ?? '';
-      controllerEffectiveDateTo.text = item?.effectiveDateTo ?? '';
-      controllerApprover.text = item?.approver ?? '';
-      controllerDeliveryLocation.text = item?.deliveryLocation ?? '';
-      controllerProposingUnit.text = proposingUnit ?? '';
-    } else {
-      // Initialize controllers for new items (empty strings)
-      controllerSubject.clear();
-      controllerDocumentName.clear();
-      controllerDeliveringUnit.clear();
-      controllerReceivingUnit.clear();
-      controllerRequester.clear();
-      controllerDepartmentApproval.clear();
-      controllerEffectiveDate.clear();
-      controllerEffectiveDateTo.clear();
-      controllerApprover.clear();
-      controllerDeliveryLocation.clear();
-      controllerProposingUnit.clear();
-    }
-    
-    _controllersInitialized = true;
   }
 
   final List<DropdownMenuItem<String>> itemsrReceivingUnit = [
@@ -401,10 +340,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     log('screenWidth: $screenWidth');
-    
-    // Kiểm tra và làm mới widget nếu cần
+
     _checkAndRefreshWidget();
-    
+
     if (item == null && !isRefreshing) {
       log('item == null');
       onReload();
@@ -493,14 +431,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context); // Close dialog
-                                    // Access provider to navigate back
-                                    // final provider =
-                                    //     Provider.of<AssetTransferProvider>(
-                                    //       context,
-                                    //       listen: false,
-                                    //     );
-                                    // provider.isShowInput = true;
-                                    // provider.onChangeDetailAssetTransfer(null);
                                   },
                                   child: Text('Có'),
                                 ),
@@ -560,7 +490,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller: controllerDeliveringUnit,
                 isEditing: isEditing,
                 textContent: item?.deliveringUnit ?? '',
-                isDropdown: true,
+                isDropdown: false,
                 items: itemsrReceivingUnit,
                 fieldName: 'deliveringUnit',
                 validationErrors: _validationErrors,
@@ -597,24 +527,39 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 fieldName: 'requester',
                 validationErrors: _validationErrors,
               ),
-              _buildDetailCheckBox(
+              CommonCheckboxInput(
                 label: 'at.preparer_initialed'.tr,
-                valueBoolean: isPreparerInitialed,
+                value: isPreparerInitialed,
                 isEditing: isEditing,
                 isEnable: false,
+                onChanged: (newValue) {
+                  setState(() {
+                    isPreparerInitialed = newValue;
+                  });
+                },
               ),
-              _buildDetailCheckBox(
+              CommonCheckboxInput(
                 label: 'at.require_manager_approval'.tr,
-                valueBoolean: isRequireManagerApproval,
+                value: isRequireManagerApproval,
                 isEditing: isEditing,
                 isEnable: false,
+                onChanged: (newValue) {
+                  setState(() {
+                    isRequireManagerApproval = newValue;
+                  });
+                },
               ),
               if (isRequireManagerApproval)
-                _buildDetailCheckBox(
+                CommonCheckboxInput(
                   label: 'at.deputy_confirmed'.tr,
-                  valueBoolean: isDeputyConfirmed,
+                  value: isDeputyConfirmed,
                   isEditing: isEditing,
                   isEnable: false,
+                  onChanged: (newValue) {
+                    setState(() {
+                      isDeputyConfirmed = newValue;
+                    });
+                  },
                 ),
               CommonFormInput(
                 label: 'at.proposing_unit'.tr,
@@ -671,7 +616,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
-                  log('Approver selected: $value');
                   var selectedUser = users.firstWhere(
                     (user) => user.id == value,
                   );
@@ -689,7 +633,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                   setState(() {
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
-                    
+
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');
                     }
@@ -702,12 +646,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 hintText: 'Định dạng hỗ trợ: .doc, .docx (Microsoft Word)',
                 allowedExtensions: ['doc', 'docx'],
               ),
+
               // const SizedBox(height: 20),
-              // assetTransferMovementTable(
-              //   context,
-              //   item?.movementDetails ?? [],
-              //   isEditing,
-              // ),
+              assetTransferMovementTable(
+                context,
+                item?.movementDetails ?? [],
+                isEditing,
+              ),
 
               //
             ],
@@ -716,84 +661,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       ],
     );
   }
-
-  Widget _buildDetailCheckBox({
-    required String label,
-    required bool valueBoolean,
-    required bool isEditing,
-    required bool isEnable,
-  }) {
-    // Primero, obtener el valor actual para este checkbox
-    bool currentValue = valueBoolean;
-    if (label == 'at.preparer_initialed'.tr) {
-      currentValue = isPreparerInitialed;
-    } else if (label == 'at.require_manager_approval'.tr) {
-      currentValue = isRequireManagerApproval;
-    } else if (label == 'at.deputy_confirmed'.tr) {
-      currentValue = isDeputyConfirmed;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 180,
-            child: Text(
-              '$label :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !isEnable ? Colors.black : Colors.black87.withOpacity(0.6),
-              ),
-            ),
-          ),
-          const SizedBox(width: 18),
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: Checkbox(
-              value: currentValue,
-              onChanged:
-                  !isEnable
-                      ? (newValue) {
-                        setState(() {
-                          // Actualizar el estado correcto según el label
-                          if (label == 'at.preparer_initialed'.tr) {
-                            isPreparerInitialed = newValue ?? false;
-                            log(
-                              'isPreparerInitialed cambiado a: $isPreparerInitialed',
-                            );
-                          } else if (label ==
-                              'at.require_manager_approval'.tr) {
-                            isRequireManagerApproval = newValue ?? false;
-                            log(
-                              'isRequireManagerApproval cambiado a: $isRequireManagerApproval',
-                            );
-                          } else if (label == 'at.deputy_confirmed'.tr) {
-                            isDeputyConfirmed = newValue ?? false;
-                            log(
-                              'isDeputyConfirmed cambiado a: $isDeputyConfirmed',
-                            );
-                          }
-                        });
-                      }
-                      : null,
-              activeColor: const Color(0xFF80C9CB),
-              checkColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(2),
-              ),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
   Future<void> _uploadWordDocument() async {
     if (_selectedFilePath == null) return;
@@ -844,7 +711,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     }
 
     setState(() {
-      _isUploading = true; // Show loading state while saving
+      _isUploading = true;
     });
 
     try {
@@ -926,23 +793,19 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   void onReload() {
-    log('AssetTransferDetail: onReload called');
     _refreshWidget();
   }
 
   void refreshWidget() {
-    log('AssetTransferDetail: refreshWidget called from outside');
     _refreshWidget();
   }
 
   void _checkAndRefreshWidget() {
     if (widget.provider.item != item) {
-      log('AssetTransferDetail: Provider item changed in build, refreshing widget');
       _refreshWidget();
     }
-    
+
     if (widget.isNew == true && item != null) {
-      log('AssetTransferDetail: isNew is true but item exists, refreshing widget');
       _refreshWidget();
     }
   }

@@ -9,32 +9,31 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
-  all('Tất cả'),
-  draft('Nháp'),
-  ready('Sẵn sàng'),
-  confirm('Xác nhận'),
-  browser('Trình duyệt'),
-  complete('Hoàn thành'),
-  cancel('Hủy');
+  all('Tất cả', ColorValue.darkGrey),
+  draft('Nháp', ColorValue.silverGray),
+  ready('Sẵn sàng', ColorValue.lightAmber),
+  confirm('Xác nhận', ColorValue.mediumGreen),
+  browser('Trình duyệt', ColorValue.lightBlue),
+  complete('Hoàn thành', ColorValue.forestGreen),
+  cancel('Hủy', ColorValue.coral);
 
   final String label;
-  const FilterStatus(this.label);
+  final Color activeColor;
+  const FilterStatus(this.label, this.activeColor);
 }
 
 class AssetHandoverProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
+  bool get isShowInput => _isShowInput;
+  bool get isShowCollapse => _isShowCollapse;
   List<AssetHandoverDto>? get dataPage => _dataPage;
+  AssetHandoverDto? get item => _item;
   get data => _data;
   get columns => _columns;
-  get listStatus => _listStatus;
+  bool get hasUnsavedChanges => _hasUnsavedChanges;
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -45,6 +44,21 @@ class AssetHandoverProvider with ChangeNotifier {
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
 
+  // Getter để lấy count cho mỗi status
+  int get allCount => _data?.length ?? 0;
+  int get draftCount =>
+      _data?.where((item) => (item.state ?? 0) == 0).length ?? 0;
+  int get readyCount =>
+      _data?.where((item) => (item.state ?? 0) == 1).length ?? 0;
+  int get confirmCount =>
+      _data?.where((item) => (item.state ?? 0) == 2).length ?? 0;
+  int get browserCount =>
+      _data?.where((item) => (item.state ?? 0) == 3).length ?? 0;
+  int get completeCount =>
+      _data?.where((item) => (item.state ?? 0) == 4).length ?? 0;
+  int get cancelCount =>
+      _data?.where((item) => (item.state ?? 0) == 5).length ?? 0;
+
   // Thuộc tính cho tìm kiếm
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -53,8 +67,62 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isShowInput = false;
+  bool _isShowCollapse = true;
+  bool _hasUnsavedChanges = false;
+
   String? get error => _error;
   String? get subScreen => _subScreen;
+  String _searchTerm = '';
+
+  int typeAssetTransfer = 1;
+
+  late int totalEntries;
+  late int totalPages;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = 10;
+  int currentPage = 1;
+  TextEditingController? controllerDropdownPage;
+
+  final List<DropdownMenuItem<int>> items = [
+    const DropdownMenuItem(value: 5, child: Text('5')),
+    const DropdownMenuItem(value: 10, child: Text('10')),
+    const DropdownMenuItem(value: 20, child: Text('20')),
+    const DropdownMenuItem(value: 50, child: Text('50')),
+  ];
+
+  // List status
+
+  String? _error;
+  String? _subScreen;
+
+  Widget? _body;
+
+  bool _isLoading = false;
+
+  List<AssetHandoverDto>? _data;
+  List<AssetHandoverDto>? _dataPage;
+  // Danh sách dữ liệu đã được lọc
+  List<AssetHandoverDto> _filteredData = [];
+  List<SgTableColumn<AssetHandoverDto>> _columns = [];
+  AssetHandoverDto? _item;
+
+  // Method để refresh data và filter
+  void refreshData(BuildContext context) {
+    _isLoading = true;
+    notifyListeners();
+
+    // Reset filter về trạng thái ban đầu
+    _filterStatus.clear();
+    _filterStatus[FilterStatus.all] = true;
+
+    // Clear search term
+    _searchTerm = '';
+
+    // Reload data
+    context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+  }
 
   Widget? get body => _body;
 
@@ -73,6 +141,21 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set isShowInput(bool value) {
+    _isShowInput = value;
+    notifyListeners();
+  }
+
+  set isShowCollapse(bool value) {
+    _isShowCollapse = value;
+    notifyListeners();
+  }
+
+  set hasUnsavedChanges(bool value) {
+    _hasUnsavedChanges = value;
+    notifyListeners();
+  }
+
   void setFilterStatus(FilterStatus status, bool? value) {
     log('message setFilterStatus: $status, $value');
 
@@ -88,8 +171,6 @@ class AssetHandoverProvider with ChangeNotifier {
       _filterStatus[FilterStatus.all] = false;
     }
 
-    onSetListStatus();
-
     _applyFilters();
 
     notifyListeners();
@@ -97,8 +178,6 @@ class AssetHandoverProvider with ChangeNotifier {
 
   void _applyFilters() {
     if (_data == null) return;
-
-    log('Aplicando filtros con ${_data!.length} elementos');
 
     bool hasActiveFilter = _filterStatus.entries
         .where((entry) => entry.key != FilterStatus.all)
@@ -108,7 +187,6 @@ class AssetHandoverProvider with ChangeNotifier {
     List<AssetHandoverDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(_data!);
-      log('Filtro por estado: todos los datos (${statusFiltered.length})');
     } else {
       statusFiltered =
           _data!.where((item) {
@@ -146,8 +224,6 @@ class AssetHandoverProvider with ChangeNotifier {
 
             return false;
           }).toList();
-
-      log('Filtro por estado: ${statusFiltered.length} elementos');
     }
 
     // Lọc tiếp theo nội dung tìm kiếm
@@ -181,7 +257,6 @@ class AssetHandoverProvider with ChangeNotifier {
                     false);
           }).toList();
 
-      log('Filtro por búsqueda: ${_filteredData.length} elementos');
     } else {
       _filteredData = statusFiltered;
     }
@@ -202,63 +277,22 @@ class AssetHandoverProvider with ChangeNotifier {
   };
 
   // Nội dung tìm kiếm
-  String _searchTerm = '';
-
-  int typeAssetTransfer = 1;
-
-  late int totalEntries;
-  late int totalPages;
-  late int startIndex;
-  late int endIndex;
-  int rowsPerPage = 10;
-  int currentPage = 1;
-  TextEditingController? controllerDropdownPage;
-
-  final List<DropdownMenuItem<int>> items = [
-    const DropdownMenuItem(value: 5, child: Text('5')),
-    const DropdownMenuItem(value: 10, child: Text('10')),
-    const DropdownMenuItem(value: 20, child: Text('20')),
-    const DropdownMenuItem(value: 50, child: Text('50')),
-  ];
-
-  // List status
-  late List<ListStatus> _listStatus;
-
-  String? _error;
-  String? _subScreen;
-  String mainScreen = '';
-
-  Widget? _body;
-
-  bool _isLoading = false;
-
-  List<AssetHandoverDto>? _data;
-  List<AssetHandoverDto>? _dataPage;
-  // Danh sách dữ liệu đã được lọc
-  List<AssetHandoverDto> _filteredData = [];
-  List<SgTableColumn<AssetHandoverDto>> _columns = [];
 
   void onInit(BuildContext context) {
-    _isLoading = true;
+    onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
 
-    // Khởi tạo danh sách trạng thái
-    onSetListStatus();
-
-    // Initialize body without triggering notification
     _body = Container();
-    // AssetHandoverList(provider: this, mainScreen: onSetMainScreen());
-    onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-    log('message onInit');
     getListAssetHandover(context);
-    log('message onInit 2');
   }
 
   void onDispose() {
     _isLoading = false;
+    _isShowInput = false;
     _data = null;
     _error = null;
-
+    _filterStatus.clear();
+    _filterStatus[FilterStatus.all] = true;
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
@@ -266,35 +300,19 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onTapBackHeader() {
-    onChangeScreen(item: null, isMainScreen: true, isEdit: false);
     notifyListeners();
   }
 
   void onTapNewHeader() {
-    onChangeScreen(item: null, isMainScreen: false, isEdit: true);
     notifyListeners();
   }
 
   // Cập nhật danh sách trạng thái
-  void onSetListStatus() {
-    _listStatus = [
-      for (var status in FilterStatus.values)
-        ListStatus(
-          text: status.label,
-          isEffective: _filterStatus[status] ?? false,
-          onChanged: (value) {
-            setFilterStatus(status, value);
-          },
-        ),
-    ];
-  }
 
   void getListAssetHandover(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<AssetHandoverBloc>().add(
-        GetListAssetHandoverEvent(context),
-      );
+      context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
     });
   }
 
@@ -318,33 +336,6 @@ class AssetHandoverProvider with ChangeNotifier {
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
-    log('message pageProducts: ${dataPage!.length}');
-  }
-
-  void onChangeScreen({
-    required AssetHandoverDto? item,
-    required bool isMainScreen,
-    required bool isEdit,
-  }) {
-    // Use Future.microtask to avoid build phase conflicts
-    log('message onChangeScreen');
-    Future.microtask(() {
-      
-      if (!isMainScreen) {
-        _subScreen = item == null ? 'Mới' : item.name ?? '';
-        _body = AssetHandoverDetail(
-          provider: this,
-          item: item, 
-          isEditing: isEdit,
-          isNew: item == null,
-        );
-      } else {
-        _subScreen = '';
-        mainScreen = 'Biên bản bàn giao tài sản';
-        _body = AssetHandoverList(provider: this, mainScreen: mainScreen);
-      }
-      notifyListeners();
-    });
   }
 
   void onPageChanged(int page) {
@@ -362,44 +353,32 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onChangeDetail(BuildContext context, AssetHandoverDto? item) {
+    _confirmBeforeLeaving(context, item);
+
+    notifyListeners();
+  }
+
   void updateItem(AssetHandoverDto updatedItem) {
     if (_data == null) return;
-
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-
     if (index != -1) {
       _data![index] = updatedItem;
 
       _updatePagination();
-
       notifyListeners();
-
-      log('Đã cập nhật item có ID: ${updatedItem.id}');
-    } else {
-      log('Không tìm thấy item có ID: ${updatedItem.id}');
-    }
+    } else {}
   }
 
   void deleteItem(String id) {
     if (_data == null) return;
-
-    // Tìm vị trí của item cần xóa
     int index = _data!.indexWhere((item) => item.id == id);
-
     if (index != -1) {
-      // Xóa item khỏi danh sách
       _data!.removeAt(index);
 
-      // Cập nhật lại trang hiện tại
       _updatePagination();
-
-      // Thông báo UI cập nhật
       notifyListeners();
-
-      log('Đã xóa item có ID: $id');
-    } else {
-      log('Không tìm thấy item có ID: $id');
-    }
+    } else {}
   }
 
   getListAssetHandoverSuccess(
@@ -414,129 +393,60 @@ class AssetHandoverProvider with ChangeNotifier {
       _data = state.data;
       _filteredData = List.from(_data!);
       _isLoading = false;
-      onSetColumns();
       _updatePagination();
     }
     notifyListeners();
   }
 
-  // String onSetMainScreen() {
-  //   return mainScreen =
-  //       typeAssetTransfer == 1
-  //           ? 'Cấp phát tài sản'
-  //           : typeAssetTransfer == 2
-  //           ? 'Thu hồi tài sản'
-  //           : 'Điều động tài sản';
-  // }
-
-  void onSetColumns() {
-    _columns = [
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Bàn giao tài sản',
-        getValue: (item) => item.name ?? '',
-        width: 170,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Quyết định điều động',
-        getValue: (item) => item.decisionNumber ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Lệnh điều động',
-        getValue: (item) => item.transferDate ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Ngày bàn giao',
-        getValue: (item) => item.transferDate ?? '',
-        width: 150,
-      ),
-      SgTableColumn<AssetHandoverDto>(
-        title: 'Chi tiết bàn giao',
-        cellBuilder:
-            (item) => showMovementDetails(item.assetHandoverMovements ?? []),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: 120,
-        searchable: true,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Đơn vị giao',
-        getValue: (item) => item.senderUnit ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Đơn vị nhận',
-        getValue: (item) => item.receiverUnit ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Người lập phiếu',
-        getValue: (item) => item.createdBy ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
-        title: 'Trạng thái',
-        getValue: (item) => getStatus(item.state ?? 0),
-        width: 120,
-      ),
-    ];
+  Future<bool> _showUnsavedChangesDialog(
+    BuildContext context,
+    AssetHandoverDto? item,
+  ) async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Thay đổi chưa lưu'),
+              content: const Text(
+                'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Hủy'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _item = item;
+                    log('message onChangeDetail: $_item');
+                    isShowInput = true;
+                    isShowCollapse = true;
+                    log('message _item: $_item');
+                    hasUnsavedChanges = false;
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Rời khỏi'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
   }
 
-  String getStatus(int status) {
-    switch (status) {
-      case 0:
-        return 'Nháp';
-      case 1:
-        return 'Sẵn sàng';
-      case 2:
-        return 'Xác nhận';
-      case 3:
-        return 'Trình Duyệt';
-      case 4:
-        return 'Hoàn thành';
-      case 5:
-        return 'Hủy';
-      default:
-        return '';
+  // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
+  Future<bool> _confirmBeforeLeaving(
+    BuildContext context,
+    AssetHandoverDto? item,
+  ) async {
+    if (hasUnsavedChanges) {
+      return await _showUnsavedChangesDialog(context, item);
+    } else {
+      _item = item;
+      isShowInput = true;
+      isShowCollapse = true;
     }
-  }
-
-  Widget showMovementDetails(List<AssetHandoverMovementDto> movementDetails) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children:
-                movementDetails
-                    .map(
-                      (detail) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          color: ColorValue.paleRose,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: SGText(
-                          text: detail.name ?? '',
-                          size: 12,
-                          fontWeight: FontWeight.w500,
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                    )
-                    .toList(),
-          ),
-        ),
-      ),
-    );
+    return true;
   }
 }

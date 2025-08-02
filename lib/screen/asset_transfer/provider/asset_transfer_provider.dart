@@ -8,22 +8,25 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
-  all('Tất cả'),
-  request('Yêu cầu'),
-  confirm('Chờ xác nhận'),
-  approve('Chờ duyệt'),
-  reject('Bị từ chối'),
-  complete('Đã hoàn thành');
+  all('Tất cả', ColorValue.darkGrey),
+  draft('Nháp', ColorValue.silverGray),
+  waitingForConfirmation('Chờ xác nhận', ColorValue.lightAmber),
+  confirmed('Xác nhận', ColorValue.mediumGreen),
+  browser('Trình duyệt', ColorValue.lightBlue),
+  approve('Duyệt', ColorValue.cyan),
+  reject('Từ chối', ColorValue.brightRed),
+  cancel('Hủy', ColorValue.coral),
+  complete('Hoàn thành', ColorValue.forestGreen);
 
   final String label;
-  const FilterStatus(this.label);
+  final Color activeColor;
+  const FilterStatus(this.label, this.activeColor);
 }
 
 class AssetTransferProvider with ChangeNotifier {
@@ -37,11 +40,34 @@ class AssetTransferProvider with ChangeNotifier {
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
-  bool get isShowRequest => _filterStatus[FilterStatus.request] ?? false;
-  bool get isShowConfirm => _filterStatus[FilterStatus.confirm] ?? false;
+  bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
+  bool get isShowWaitingForConfirmation =>
+      _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
+  bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
+  bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
   bool get isShowReject => _filterStatus[FilterStatus.reject] ?? false;
+  bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
+
+  // Getter để lấy count cho mỗi status
+  int get allCount => _data?.length ?? 0;
+  int get draftCount =>
+      _data?.where((item) => (item.status ?? 0) == 0).length ?? 0;
+  int get waitingForConfirmationCount =>
+      _data?.where((item) => (item.status ?? 0) == 1).length ?? 0;
+  int get confirmedCount =>
+      _data?.where((item) => (item.status ?? 0) == 2).length ?? 0;
+  int get browserCount =>
+      _data?.where((item) => (item.status ?? 0) == 3).length ?? 0;
+  int get approveCount =>
+      _data?.where((item) => (item.status ?? 0) == 4).length ?? 0;
+  int get rejectCount =>
+      _data?.where((item) => (item.status ?? 0) == 5).length ?? 0;
+  int get cancelCount =>
+      _data?.where((item) => (item.status ?? 0) == 6).length ?? 0;
+  int get completeCount =>
+      _data?.where((item) => (item.status ?? 0) == 7).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -52,6 +78,7 @@ class AssetTransferProvider with ChangeNotifier {
 
   String? get error => _error;
   String? get subScreen => _subScreen;
+
   // Nội dung tìm kiếm
   String _searchTerm = '';
 
@@ -79,7 +106,6 @@ class AssetTransferProvider with ChangeNotifier {
   String? _subScreen;
   String mainScreen = '';
 
-
   bool _isShowInput = false;
   bool _isLoading = false;
   bool _isShowCollapse = true;
@@ -98,6 +124,7 @@ class AssetTransferProvider with ChangeNotifier {
     _isShowInput = value;
     notifyListeners();
   }
+
   set isShowCollapse(bool value) {
     _isShowCollapse = value;
     notifyListeners();
@@ -120,7 +147,6 @@ class AssetTransferProvider with ChangeNotifier {
       _filterStatus[FilterStatus.all] = false;
     }
 
-    onSetListStatus();
     _applyFilters();
     notifyListeners();
   }
@@ -140,29 +166,43 @@ class AssetTransferProvider with ChangeNotifier {
       statusFiltered =
           _data!.where((item) {
             int itemStatus = item.status ?? 0;
-
-            if (_filterStatus[FilterStatus.request] == true &&
-                (itemStatus == 1 || itemStatus == 2)) {
+            log('itemStatus: $itemStatus');
+            if (_filterStatus[FilterStatus.draft] == true &&
+                (itemStatus == 0)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.confirm] == true &&
-                itemStatus == 3) {
+            if (_filterStatus[FilterStatus.waitingForConfirmation] == true &&
+                itemStatus == 1) {
               return true;
             }
 
+            if (_filterStatus[FilterStatus.confirmed] == true &&
+                (itemStatus == 2)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.browser] == true &&
+                (itemStatus == 3)) {
+              return true;
+            }
             if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 4 || itemStatus == 5)) {
+                (itemStatus == 4)) {
               return true;
             }
 
             if (_filterStatus[FilterStatus.reject] == true &&
-                (itemStatus == 6 || itemStatus == 7)) {
+                (itemStatus == 5)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.cancel] == true &&
+                (itemStatus == 6)) {
               return true;
             }
 
             if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 8)) {
+                (itemStatus == 7)) {
               return true;
             }
 
@@ -201,20 +241,23 @@ class AssetTransferProvider with ChangeNotifier {
 
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
-    FilterStatus.request: false,
-    FilterStatus.confirm: false,
+    FilterStatus.draft: false,
+    FilterStatus.waitingForConfirmation: false,
+    FilterStatus.confirmed: false,
+    FilterStatus.browser: false,
     FilterStatus.approve: false,
     FilterStatus.reject: false,
+    FilterStatus.cancel: false,
     FilterStatus.complete: false,
   };
 
   void onInit(BuildContext context, int typeAssetTransfer) {
     onDispose();
     this.typeAssetTransfer = typeAssetTransfer;
+    
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
 
-    onSetListStatus();
     getListToolsAndSupplies(context);
   }
 
@@ -225,26 +268,13 @@ class AssetTransferProvider with ChangeNotifier {
     _isShowInput = false;
     _item = null;
     _isShowCollapse = true;
+    _filterStatus.clear();
+    _filterStatus[FilterStatus.all] = true;
     log('onDispose AssetTransferProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
-  }
-
-  void onSetListStatus() {
-    // _listStatus = [
-      // for (var status in FilterStatus.values)
-      //   ListStatus(
-      //     text: status.label,
-      //     isEffective: _filterStatus[status] ?? false,
-      //     onChanged: (value) {
-      //       // Actualize el estado directamente y luego notifique
-      //       setFilterStatus(status, value);
-      //       // No es necesario llamar a notifyListeners aquí porque setFilterStatus ya lo hace
-      //     },
-      //   ),
-    // ];
   }
 
   void getListToolsAndSupplies(BuildContext context) {
@@ -276,10 +306,7 @@ class AssetTransferProvider with ChangeNotifier {
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
-    log('message pageProducts: ${dataPage!.length}');
   }
-
-  
 
   void onPageChanged(int page) {
     currentPage = page;
@@ -297,7 +324,6 @@ class AssetTransferProvider with ChangeNotifier {
   }
 
   void onRowsPerPageChanged(int? value) {
-    log('message onRowsPerPageChanged: $value');
     if (value == null) return;
     rowsPerPage = value;
     currentPage = 1;

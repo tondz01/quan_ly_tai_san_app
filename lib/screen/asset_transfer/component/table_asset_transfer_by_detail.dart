@@ -15,14 +15,19 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_ev
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class TableAssetTransferByDetail extends StatefulWidget {
   final AssetTransferProvider provider;
-  const TableAssetTransferByDetail({super.key, required this.provider});
+  final int typeAssetTransfer;
+  const TableAssetTransferByDetail({
+    super.key,
+    required this.provider,
+    required this.typeAssetTransfer,
+  });
 
   @override
   State<TableAssetTransferByDetail> createState() =>
@@ -34,16 +39,6 @@ class _TableAssetTransferByDetailState
   String url = '';
   bool isUploading = false;
 
-  Map<String, Color> listStatus = {
-    'Nháp': ColorValue.silverGray,
-    'Chờ xác nhận': ColorValue.lightAmber,
-    'Xác nhận': ColorValue.mediumGreen,
-    'Trình Duyệt': ColorValue.lightBlue,
-    'Duyệt': ColorValue.cyan,
-    'Từ chối': ColorValue.brightRed,
-    'Hủy': ColorValue.coral,
-    'Hoàn thành': ColorValue.forestGreen,
-  };
   final List<AssetHandoverDto> listAssetHandover = [];
   @override
   void initState() {
@@ -112,7 +107,6 @@ class _TableAssetTransferByDetailState
             if (state is GetListAssetHandoverSuccessState) {
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-              log('Asset handover data loaded successfully');
             } else if (state is GetListAssetHandoverFailedState) {
             } else if (state is AssetHandoverLoadingState) {
               // Show loading indicator
@@ -165,7 +159,7 @@ class _TableAssetTransferByDetailState
                       ),
                       SizedBox(width: 8),
                       Text(
-                        'Danh sách phiếu cấp phát tài sản (${widget.provider.data.length})',
+                        '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -174,7 +168,7 @@ class _TableAssetTransferByDetailState
                       ),
                     ],
                   ),
-                  buildTooltipStatus(),
+                  RowFindByStatus(provider: widget.provider),
                 ],
               ),
             ),
@@ -182,7 +176,7 @@ class _TableAssetTransferByDetailState
               child: TableBaseView<AssetTransferDto>(
                 searchTerm: '',
                 columns: columns,
-                data: widget.provider.data,
+                data: widget.provider.dataPage ?? [],
                 horizontalController: ScrollController(),
                 onRowTap: (item) {
                   widget.provider.onChangeDetailAssetTransfer(item);
@@ -238,55 +232,6 @@ class _TableAssetTransferByDetailState
             },
       ),
     ]);
-  }
-
-  Widget buildTooltipStatus() {
-    return Row(
-      children:
-          listStatus.entries
-              .map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(right: 5),
-                  child: Row(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.all(4),
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: entry.value,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      SGText(
-                        text: '${entry.key} (${getCountByState(entry.key)})',
-                        style: TextStyle(fontSize: 12, color: Colors.black),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-              .toList(),
-    );
-  }
-
-  int getCountByState(String key) {
-    const statusMap = {
-      'Nháp': 0,
-      'Chờ xác nhận': 1,
-      'Xác nhận': 2,
-      'Trình Duyệt': 3,
-      'Duyệt': 4,
-      'Từ chối': 5,
-      'Hủy': 6,
-      'Hoàn thành': 7,
-    };
-    final count =
-        widget.provider.data
-            .where((item) => item.status == statusMap[key])
-            .length;
-    return count;
   }
 
   String getName(int type) {

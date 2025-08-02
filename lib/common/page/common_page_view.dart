@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class CommonPageView extends StatefulWidget {
   const CommonPageView({
@@ -23,6 +23,7 @@ class CommonPageView extends StatefulWidget {
   @override
   State<CommonPageView> createState() => _CommonPageViewState();
 }
+
 class _CommonPageViewState extends State<CommonPageView> {
   bool _isExpanded = false;
 
@@ -35,12 +36,9 @@ class _CommonPageViewState extends State<CommonPageView> {
   @override
   void didUpdateWidget(CommonPageView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Cập nhật _isExpanded khi isShowCollapse thay đổi
-    log('didUpdateWidget: ${oldWidget.isShowCollapse}');
     if (oldWidget.isShowCollapse != widget.isShowCollapse) {
       setState(() {
         _isExpanded = widget.isShowCollapse;
-        log('didUpdateWidget2: ${widget.isShowCollapse}');
       });
     }
   }
@@ -59,61 +57,84 @@ class _CommonPageViewState extends State<CommonPageView> {
         spacing: 10,
         children: [
           if (widget.isShowInput) ...[
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-                // Gọi callback nếu có
-                widget.onExpandedChanged?.call(_isExpanded);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          _isExpanded ? Icons.expand_less : Icons.expand_more,
-                          color: Colors.grey[600],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _isExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[700],
+                      ),
+                      const Spacer(),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _isExpanded = !_isExpanded;
+                          });
+                          // Gọi callback nếu có
+                          widget.onExpandedChanged?.call(_isExpanded);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: ColorValue.lightBlue),
+                            borderRadius: BorderRadius.circular(5),
+                            color:
+                                _isExpanded
+                                    ? ColorValue.teal
+                                    : ColorValue.oceanBlue,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _isExpanded ? Icons.visibility_off : Icons.visibility,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              SGText(
+                                text: _isExpanded ? 'Thu gọn' : 'Mở rộng',
+                                size: 14,
+                                color: Colors.white,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         ),
-                        const Spacer(),
-                        Text(
-                          _isExpanded ? 'Thu gọn' : 'Mở rộng',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    AnimatedCrossFade(
-                      firstChild: SizedBox.shrink(),
-                      secondChild: widget.childInput,
-                      crossFadeState:
-                          _isExpanded
-                              ? CrossFadeState.showSecond
-                              : CrossFadeState.showFirst,
-                      duration: Duration(milliseconds: 200),
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                  AnimatedCrossFade(
+                    firstChild: SizedBox.shrink(),
+                    secondChild: widget.childInput,
+                    crossFadeState:
+                        _isExpanded
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
+                    duration: Duration(milliseconds: 200),
+                  ),
+                ],
               ),
             ),
           ],
