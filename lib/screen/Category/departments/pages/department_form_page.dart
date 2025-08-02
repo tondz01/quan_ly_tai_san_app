@@ -127,7 +127,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
       // constraints: BoxConstraints(
       //   maxWidth: MediaQuery.of(context).size.width * 0.8,
       // ),
-      padding: const EdgeInsets.all(24),
+      // padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
         borderRadius: BorderRadius.circular(16),
