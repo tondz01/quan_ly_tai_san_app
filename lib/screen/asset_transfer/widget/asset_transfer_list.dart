@@ -108,7 +108,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
     Function(AssetTransferDto)? onDeleteAction,
     Function(AssetTransferDto)? onRowTap,
     Function(List<AssetTransferDto>)? onSelectionChanged,
-    Function(AssetTransferDto)? onCustomFilter,
+    bool Function(AssetTransferDto)? onCustomFilter,
   }) {
     log('Construyendo tabla con ${data.length} elementos');
     return SgTable<AssetTransferDto>(

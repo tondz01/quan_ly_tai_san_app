@@ -49,11 +49,14 @@ class MaterialTable<T> extends StatelessWidget {
     return Container(
       decoration: TableStyles.tableContainerDecoration(),
       padding: padding ?? const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          if (showHeader) _buildHeader(),
-          _buildTableContent(),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Column(
+          children: [
+            if (showHeader) _buildHeader(),
+            _buildTableContent(),
+          ],
+        ),
       ),
     );
   }
