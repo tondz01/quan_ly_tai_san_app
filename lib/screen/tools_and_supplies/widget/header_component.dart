@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
-import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -12,10 +11,10 @@ class HeaderComponent extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onSearchChanged,
-    required this.onTap,
+    this.onTap,
     required this.onNew,
     required this.mainScreen,
-    required this.subScreen,
+    this.subScreen,
     this.child,
   });
   final TextEditingController controller;

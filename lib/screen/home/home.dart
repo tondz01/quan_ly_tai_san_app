@@ -3,9 +3,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/widget/header.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
@@ -199,9 +199,8 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
-
     return MainWrapper(
-      header: Header(),
+      header: Header(imageLogoLeft: AppImage.imageLogo),
       sidebar: Column(
         children: [
           Divider(

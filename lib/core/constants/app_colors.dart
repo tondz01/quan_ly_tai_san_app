@@ -29,7 +29,6 @@ abstract class ColorValue {
   static const Color error = Color(0xFFF44336); // Red 500
   static const Color info = Color(0xFF2196F3); // Blue 500
 
-  // Legacy colors (keeping for backward compatibility)
   static const Color oldLavender = Color(0xFF714B67);
   static const Color tealBlue = Color(0xFF017E84);
   static const Color limeYellow = Color(0xFFE7E93D);
@@ -52,6 +51,9 @@ abstract class ColorValue {
   static const Color divider = Color(0xFFBDBDBD);
   static const Color background = Color(0xFFFAFAFA);
   static const Color tealAccent = Color(0xFF009688);
+  static const Color darkGrey = Color(0xFF424242);
+  static const Color teal = Color(0xFF00796B);
+  
   static const Color lightTealAccent = Color(0xFF80CBC4);
   static const Color darkTealAccent = Color(0xFF00796B);
   static const Color veryDarkTealAccent = Color(0xFF004D40);

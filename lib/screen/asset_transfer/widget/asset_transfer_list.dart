@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -26,10 +28,9 @@ class AssetTransferList extends StatefulWidget {
 class _AssetTransferListState extends State<AssetTransferList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
-  
+
   @override
   Widget build(BuildContext context) {
-    // Usar Consumer para reaccionar a cambios en el provider
     return Consumer<AssetTransferProvider>(
       builder: (context, provider, child) {
         return Column(
@@ -60,22 +61,33 @@ class _AssetTransferListState extends State<AssetTransferList> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: _buildTable(
-                      searchTerm,
-                      provider.columns,
-                      provider.dataPage ?? [],
-                      onViewAction: (item) {},
-                      onEditAction: (item) {},
-                      onDeleteAction: (item) {},
-                      onRowTap: (item) {
-                        provider.onChangeScreen(
-                          item: item,
-                          isMainScreen: false,
-                          isEdit: false,
-                        );
-                      },
-                      onSelectionChanged: (items) {},
-                      onCustomFilter: (item) => false,
+                    child: Scrollbar(
+                      controller: horizontalController,
+                      thumbVisibility: true,
+                      thickness: 4,
+                      notificationPredicate:
+                          (notification) =>
+                              notification.metrics.axis == Axis.horizontal,
+                      child: SingleChildScrollView(
+                        controller: horizontalController,
+                        scrollDirection: Axis.horizontal,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: _buildTable(
+                            searchTerm,
+                            provider.columns,
+                            provider.dataPage ?? [],
+                            onViewAction: (item) {},
+                            onEditAction: (item) {},
+                            onDeleteAction: (item) {},
+                            onRowTap: (item) {
+                              provider.onChangeDetailAssetTransfer(item);
+                            },
+                            onSelectionChanged: (items) {},
+                            onCustomFilter: (item) => false,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -83,7 +95,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
             _buildPaginationControls(provider),
           ],
         );
-      }
+      },
     );
   }
 
@@ -99,56 +111,51 @@ class _AssetTransferListState extends State<AssetTransferList> {
     bool Function(AssetTransferDto)? onCustomFilter,
   }) {
     log('Construyendo tabla con ${data.length} elementos');
-    
-    final verticalScrollController = ScrollController();
-    final horizontalScrollController = ScrollController();
-    
-    return Scrollbar(
-      thumbVisibility: true,
-      controller: verticalScrollController,
-      child: SingleChildScrollView(
-        controller: verticalScrollController,
-        scrollDirection: Axis.vertical,
-        child: Scrollbar(
-          thumbVisibility: true,
-          controller: horizontalScrollController,
-          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-          child: SingleChildScrollView(
-            controller: horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            child: SgTable<AssetTransferDto>(
-              key: ValueKey(data.length),
-              headerBackgroundColor: ColorValue.primaryBlue,
-              textHeaderColor: Colors.white,
-              widthScreen: MediaQuery.of(context).size.width,
-              evenRowBackgroundColor: ColorValue.neutral50,
-              oddRowBackgroundColor: Colors.white,
-              selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-              checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-              gridLineColor: ColorValue.neutral200,
-              gridLineWidth: 1.0,
-              showVerticalLines: true,
-              showHorizontalLines: true,
-              allowRowSelection: true,
-              rowHeight: 56.0,
-              showActions: true,
-              actionColumnTitle: 'Thao tác',
-              actionColumnWidth: 160,
-              actionViewColor: ColorValue.success,
-              actionEditColor: ColorValue.primaryBlue,
-              actionDeleteColor: ColorValue.error,
-              onViewAction: onViewAction,
-              onEditAction: onEditAction,
-              onDeleteAction: onDeleteAction,
-              columns: columns,
-              data: data,
-              onRowTap: (item) {
-                onRowTap?.call(item);
-              },
-            ),
-          ),
-        ),
-      ),
+    return SgTable<AssetTransferDto>(
+      key: ValueKey(data.length),
+      headerBackgroundColor: ColorValue.primaryBlue,
+      textHeaderColor: Colors.white,
+      evenRowBackgroundColor: ColorValue.neutral50,
+      oddRowBackgroundColor: Colors.white,
+      selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+      gridLineColor: ColorValue.neutral200,
+      gridLineWidth: 1.0,
+      showVerticalLines: true,
+      showHorizontalLines: true,
+      allowRowSelection: true,
+      searchTerm: searchTerm,
+      rowHeight: 56.0,
+      showCheckboxes: true,
+      onSelectionChanged: (selectedItems) {
+        onSelectionChanged?.call(selectedItems);
+      },
+      customFilter: (item) {
+        if (onCustomFilter?.call(item) == true) {
+          return false;
+        }
+        return true;
+      },
+      showActions: true,
+      actionColumnTitle: 'Thao tác',
+      actionColumnWidth: 160,
+      actionViewColor: ColorValue.success,
+      actionEditColor: ColorValue.primaryBlue,
+      actionDeleteColor: ColorValue.error,
+      onViewAction: (item) {
+        onViewAction?.call(item);
+      },
+      onEditAction: (item) {
+        onEditAction?.call(item);
+      },
+      onDeleteAction: (item) {
+        onDeleteAction?.call(item);
+      },
+      columns: columns,
+      data: data,
+      onRowTap: (item) {
+        log('message onRowTap called');
+        onRowTap?.call(item);
+      },
     );
   }
 

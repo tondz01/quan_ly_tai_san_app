@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_table.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_table_wrapper.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class ImprovedTablesDemo extends StatefulWidget {
   const ImprovedTablesDemo({super.key});

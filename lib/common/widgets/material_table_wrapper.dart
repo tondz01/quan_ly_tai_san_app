@@ -75,7 +75,6 @@ class MaterialTableWrapper<T> extends StatelessWidget {
         evenRowBackgroundColor: ColorValue.neutral50,
         oddRowBackgroundColor: Colors.white,
         selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-        checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
         gridLineColor: ColorValue.neutral200,
         gridLineWidth: 1.0,
         showVerticalLines: true,

@@ -8,202 +8,76 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
-  all('Tất cả'),
-  request('Yêu cầu'),
-  confirm('Chờ xác nhận'),
-  approve('Chờ duyệt'),
-  reject('Bị từ chối'),
-  complete('Đã hoàn thành');
+  all('Tất cả', ColorValue.darkGrey),
+  draft('Nháp', ColorValue.silverGray),
+  waitingForConfirmation('Chờ xác nhận', ColorValue.lightAmber),
+  confirmed('Xác nhận', ColorValue.mediumGreen),
+  browser('Trình duyệt', ColorValue.lightBlue),
+  approve('Duyệt', ColorValue.cyan),
+  reject('Từ chối', ColorValue.brightRed),
+  cancel('Hủy', ColorValue.coral),
+  complete('Hoàn thành', ColorValue.forestGreen);
 
   final String label;
-  const FilterStatus(this.label);
+  final Color activeColor;
+  const FilterStatus(this.label, this.activeColor);
 }
 
 class AssetTransferProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
+  bool get isShowInput => _isShowInput;
+  bool get isShowCollapse => _isShowCollapse;
   List<AssetTransferDto>? get dataPage => _dataPage;
+  AssetTransferDto? get item => _item;
   get data => _data;
   get columns => _columns;
-  get listStatus => _listStatus;
+  // get listStatus => _listStatus;
 
-  // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
-  bool get isShowRequest => _filterStatus[FilterStatus.request] ?? false;
-  bool get isShowConfirm => _filterStatus[FilterStatus.confirm] ?? false;
+  bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
+  bool get isShowWaitingForConfirmation =>
+      _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
+  bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
+  bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
   bool get isShowReject => _filterStatus[FilterStatus.reject] ?? false;
+  bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
 
-  // Thuộc tính cho tìm kiếm
+  // Getter để lấy count cho mỗi status
+  int get allCount => _data?.length ?? 0;
+  int get draftCount =>
+      _data?.where((item) => (item.status ?? 0) == 0).length ?? 0;
+  int get waitingForConfirmationCount =>
+      _data?.where((item) => (item.status ?? 0) == 1).length ?? 0;
+  int get confirmedCount =>
+      _data?.where((item) => (item.status ?? 0) == 2).length ?? 0;
+  int get browserCount =>
+      _data?.where((item) => (item.status ?? 0) == 3).length ?? 0;
+  int get approveCount =>
+      _data?.where((item) => (item.status ?? 0) == 4).length ?? 0;
+  int get rejectCount =>
+      _data?.where((item) => (item.status ?? 0) == 5).length ?? 0;
+  int get cancelCount =>
+      _data?.where((item) => (item.status ?? 0) == 6).length ?? 0;
+  int get completeCount =>
+      _data?.where((item) => (item.status ?? 0) == 7).length ?? 0;
+
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
     _searchTerm = value;
-    _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
+    _applyFilters();
     notifyListeners();
   }
 
   String? get error => _error;
   String? get subScreen => _subScreen;
-
-  Widget? get body => _body;
-
-  set subScreen(String? value) {
-    _subScreen = value;
-    notifyListeners();
-  }
-
-  set body(Widget? value) {
-    _body = value;
-    notifyListeners();
-  }
-
-  set dataPage(List<AssetTransferDto>? value) {
-    _dataPage = value;
-    notifyListeners();
-  }
-
-  // Phương thức chung để cập nhật trạng thái filter
-  void setFilterStatus(FilterStatus status, bool? value) {
-    log('message setFilterStatus: $status, $value');
-
-    // Actualizar el estado del filtro
-    _filterStatus[status] = value ?? false;
-
-    // Si se seleccionó "Todos", actualizar los demás filtros
-    if (status == FilterStatus.all && value == true) {
-      // Desmarcar todos los demás filtros
-      for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
-      }
-    }
-    // Si se seleccionó otro filtro y está activado, desmarcar "Todos"
-    else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
-    }
-
-    // Recreate _listStatus to reflect new state
-    onSetListStatus();
-
-    // Aplicar filtros
-    _applyFilters();
-
-    // Notify listeners of the change
-    notifyListeners();
-  }
-
-  // Phương thức lọc dữ liệu theo status đã chọn và nội dung tìm kiếm
-  void _applyFilters() {
-    if (_data == null) return;
-
-    log('Aplicando filtros con ${_data!.length} elementos');
-
-    // Kiểm tra xem có filter nào được chọn không
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
-
-    // Lọc theo trạng thái
-    List<AssetTransferDto> statusFiltered;
-    if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
-      statusFiltered = List.from(_data!);
-      log('Filtro por estado: todos los datos (${statusFiltered.length})');
-    } else {
-      statusFiltered =
-          _data!.where((item) {
-            // Lấy status từ item
-            int itemStatus = item.status ?? 0;
-
-            // Kiểm tra từng trạng thái đã chọn
-            if (_filterStatus[FilterStatus.request] == true &&
-                (itemStatus == 1 || itemStatus == 2)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.confirm] == true &&
-                itemStatus == 3) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 4 || itemStatus == 5)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.reject] == true &&
-                (itemStatus == 6 || itemStatus == 7)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 8)) {
-              return true;
-            }
-
-            return false;
-          }).toList();
-
-      log('Filtro por estado: ${statusFiltered.length} elementos');
-    }
-
-    // Lọc tiếp theo nội dung tìm kiếm
-    if (_searchTerm.isNotEmpty) {
-      String searchLower = _searchTerm.toLowerCase();
-      _filteredData =
-          statusFiltered.where((item) {
-            return
-            // Tên phiếu
-            (item.documentName?.toLowerCase().contains(searchLower) ?? false) ||
-                // Số quyết định
-                (item.decisionNumber?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                // Người đề nghị
-                (item.requester?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                // Người lập phiếu
-                (item.creator?.toLowerCase().contains(searchLower) ?? false) ||
-                // Chi tiết điều động
-                (item.movementDetails?.any(
-                      (detail) =>
-                          detail.name?.toLowerCase().contains(searchLower) ??
-                          false,
-                    ) ??
-                    false) ||
-                // Đơn vị giao/nhận
-                (item.deliveringUnit?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.receivingUnit?.toLowerCase().contains(searchLower) ??
-                    false);
-          }).toList();
-
-      log('Filtro por búsqueda: ${_filteredData.length} elementos');
-    } else {
-      _filteredData = statusFiltered;
-    }
-
-    // Sau khi lọc, cập nhật lại phân trang
-    _updatePagination();
-  }
-
-  // Lưu trữ trạng thái filter trong Map
-  final Map<FilterStatus, bool> _filterStatus = {
-    FilterStatus.all: false,
-    FilterStatus.request: false,
-    FilterStatus.confirm: false,
-    FilterStatus.approve: false,
-    FilterStatus.reject: false,
-    FilterStatus.complete: false,
-  };
 
   // Nội dung tìm kiếm
   String _searchTerm = '';
@@ -226,34 +100,164 @@ class AssetTransferProvider with ChangeNotifier {
   ];
 
   // List status
-  late List<ListStatus> _listStatus;
+  // late List<ListStatus> _listStatus;
 
   String? _error;
   String? _subScreen;
   String mainScreen = '';
 
-  Widget? _body;
-
+  bool _isShowInput = false;
   bool _isLoading = false;
-
+  bool _isShowCollapse = true;
   List<AssetTransferDto>? _data;
   List<AssetTransferDto>? _dataPage;
-  // Danh sách dữ liệu đã được lọc
   List<AssetTransferDto> _filteredData = [];
+  AssetTransferDto? _item;
   List<SgTableColumn<AssetTransferDto>> _columns = [];
 
+  set subScreen(String? value) {
+    _subScreen = value;
+    notifyListeners();
+  }
+
+  set isShowInput(bool value) {
+    _isShowInput = value;
+    notifyListeners();
+  }
+
+  set isShowCollapse(bool value) {
+    _isShowCollapse = value;
+    notifyListeners();
+  }
+
+  set dataPage(List<AssetTransferDto>? value) {
+    _dataPage = value;
+    notifyListeners();
+  }
+
+  void setFilterStatus(FilterStatus status, bool? value) {
+    _filterStatus[status] = value ?? false;
+    if (status == FilterStatus.all && value == true) {
+      for (var key in _filterStatus.keys) {
+        if (key != FilterStatus.all) {
+          _filterStatus[key] = false;
+        }
+      }
+    } else if (status != FilterStatus.all && value == true) {
+      _filterStatus[FilterStatus.all] = false;
+    }
+
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void _applyFilters() {
+    if (_data == null) return;
+
+    bool hasActiveFilter = _filterStatus.entries
+        .where((entry) => entry.key != FilterStatus.all)
+        .any((entry) => entry.value == true);
+
+    List<AssetTransferDto> statusFiltered;
+    if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
+      statusFiltered = List.from(_data!);
+      log('Filtro por estado: todos los datos (${statusFiltered.length})');
+    } else {
+      statusFiltered =
+          _data!.where((item) {
+            int itemStatus = item.status ?? 0;
+            log('itemStatus: $itemStatus');
+            if (_filterStatus[FilterStatus.draft] == true &&
+                (itemStatus == 0)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.waitingForConfirmation] == true &&
+                itemStatus == 1) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.confirmed] == true &&
+                (itemStatus == 2)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.browser] == true &&
+                (itemStatus == 3)) {
+              return true;
+            }
+            if (_filterStatus[FilterStatus.approve] == true &&
+                (itemStatus == 4)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.reject] == true &&
+                (itemStatus == 5)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.cancel] == true &&
+                (itemStatus == 6)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.complete] == true &&
+                (itemStatus == 7)) {
+              return true;
+            }
+
+            return false;
+          }).toList();
+    }
+
+    if (_searchTerm.isNotEmpty) {
+      String searchLower = _searchTerm.toLowerCase();
+      _filteredData =
+          statusFiltered.where((item) {
+            return (item.documentName?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.decisionNumber?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.requester?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.creator?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.movementDetails?.any(
+                      (detail) =>
+                          detail.name?.toLowerCase().contains(searchLower) ??
+                          false,
+                    ) ??
+                    false) ||
+                (item.deliveringUnit?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.receivingUnit?.toLowerCase().contains(searchLower) ??
+                    false);
+          }).toList();
+    } else {
+      _filteredData = statusFiltered;
+    }
+
+    _updatePagination();
+  }
+
+  final Map<FilterStatus, bool> _filterStatus = {
+    FilterStatus.all: false,
+    FilterStatus.draft: false,
+    FilterStatus.waitingForConfirmation: false,
+    FilterStatus.confirmed: false,
+    FilterStatus.browser: false,
+    FilterStatus.approve: false,
+    FilterStatus.reject: false,
+    FilterStatus.cancel: false,
+    FilterStatus.complete: false,
+  };
+
   void onInit(BuildContext context, int typeAssetTransfer) {
+    onDispose();
     this.typeAssetTransfer = typeAssetTransfer;
+    
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
 
-    // Khởi tạo danh sách trạng thái
-    onSetListStatus();
-
-    // Initialize body without triggering notification
-    _body = AssetTransferList(provider: this, mainScreen: onSetMainScreen());
-    onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-    log('message onInit');
     getListToolsAndSupplies(context);
   }
 
@@ -261,37 +265,16 @@ class AssetTransferProvider with ChangeNotifier {
     _isLoading = false;
     _data = null;
     _error = null;
-
+    _isShowInput = false;
+    _item = null;
+    _isShowCollapse = true;
+    _filterStatus.clear();
+    _filterStatus[FilterStatus.all] = true;
+    log('onDispose AssetTransferProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
-  }
-
-  void onTapBackHeader() {
-    onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-    notifyListeners();
-  }
-
-  void onTapNewHeader() {
-    onChangeScreen(item: null, isMainScreen: false, isEdit: true);
-    notifyListeners();
-  }
-
-  // Cập nhật danh sách trạng thái
-  void onSetListStatus() {
-    _listStatus = [
-      for (var status in FilterStatus.values)
-        ListStatus(
-          text: status.label,
-          isEffective: _filterStatus[status] ?? false,
-          onChanged: (value) {
-            // Actualize el estado directamente y luego notifique
-            setFilterStatus(status, value);
-            // No es necesario llamar a notifyListeners aquí porque setFilterStatus ya lo hace
-          },
-        ),
-    ];
   }
 
   void getListToolsAndSupplies(BuildContext context) {
@@ -323,38 +306,6 @@ class AssetTransferProvider with ChangeNotifier {
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
-    log('message pageProducts: ${dataPage!.length}');
-  }
-
-  void onChangeScreen({
-    required AssetTransferDto? item,
-    required bool isMainScreen,
-    required bool isEdit,
-  }) {
-    // Use Future.microtask to avoid build phase conflicts
-    log('message onChangeScreen');
-    Future.microtask(() {
-      mainScreen =
-          typeAssetTransfer == 1
-              ? 'Cấp phát tài sản'
-              : typeAssetTransfer == 2
-              ? 'Thu hồi tài sản'
-              : 'Điều động tài sản';
-      if (!isMainScreen) {
-        _subScreen = item == null ? 'Mới' : item.documentName ?? '';
-        log('message item: ${item == null}');
-        _body = AssetTransferDetail(
-          item: item,
-          isEditing: isEdit,
-          provider: this,
-        );
-      } else {
-        _subScreen = '';
-        _subScreen = null;
-        _body = AssetTransferList(provider: this, mainScreen: mainScreen);
-      }
-      notifyListeners();
-    });
   }
 
   void onPageChanged(int page) {
@@ -363,8 +314,16 @@ class AssetTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onChangeDetailAssetTransfer(AssetTransferDto? item) {
+    // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
+    _item = item;
+    log('message onChangeDetailAssetTransfer: $_item');
+    isShowInput = true;
+    isShowCollapse = true;
+    notifyListeners();
+  }
+
   void onRowsPerPageChanged(int? value) {
-    log('message onRowsPerPageChanged: $value');
     if (value == null) return;
     rowsPerPage = value;
     currentPage = 1;
@@ -651,12 +610,6 @@ class AssetTransferProvider with ChangeNotifier {
 
   // Add method to create a new asset transfer
   Future<void> createAssetTransfer(AssetTransferDto item) async {
-    // In a real app, this would call an API or repository
-    // For now, we'll just add it to our local data
-
-    log('Creating new asset transfer: ${item.documentName}');
-
-    // Generate a mock ID for the new item
     final newItem = AssetTransferDto(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       documentName: item.documentName,
@@ -683,25 +636,16 @@ class AssetTransferProvider with ChangeNotifier {
       documentFileName: item.documentFileName,
     );
 
-    // Add to our data list
-    if (_data == null) {
-      _data = [];
-    }
+    _data ??= [];
     _data!.add(newItem);
 
-    // Update filtered data and pagination
     _filteredData = List.from(_data!);
     _updatePagination();
 
-    // Notify listeners of the change
     notifyListeners();
   }
 
-  // Add method to update an existing asset transfer
   Future<void> updateAssetTransfer(AssetTransferDto updatedItem) async {
-    // In a real app, this would call an API or repository
-    // For now, we'll just update our local data
-
     if (_data == null || updatedItem.id == null) return;
 
     log('Updating asset transfer: ${updatedItem.id}');
@@ -709,14 +653,11 @@ class AssetTransferProvider with ChangeNotifier {
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
 
     if (index != -1) {
-      // Update the item with all the new data
       _data![index] = updatedItem;
 
-      // Update filtered data and pagination
       _filteredData = List.from(_data!);
       _updatePagination();
 
-      // Notify listeners of the change
       notifyListeners();
     }
   }

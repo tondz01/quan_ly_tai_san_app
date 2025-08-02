@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -10,11 +12,17 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/pages/capital
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class CapitalSourceListPage extends StatelessWidget {
+class CapitalSourceListPage extends StatefulWidget {
   final VoidCallback? onAdd;
   final void Function(CapitalSource)? onEdit;
   const CapitalSourceListPage({super.key, this.onAdd, this.onEdit});
 
+  @override
+  State<CapitalSourceListPage> createState() => _CapitalSourceListPageState();
+}
+
+class _CapitalSourceListPageState extends State<CapitalSourceListPage> {
+  final ScrollController horizontalController = ScrollController();
   void _showDeleteDialog(BuildContext context, CapitalSource capitalSource) {
     showDialog(
       context: context,
@@ -75,8 +83,8 @@ class CapitalSourceListPage extends StatelessWidget {
                             vertical: 12,
                           ),
                           onPressed: () {
-                            if (onAdd != null) {
-                              onAdd!();
+                            if (widget.onAdd != null) {
+                              widget.onAdd!();
                             } else {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -151,71 +159,105 @@ class CapitalSourceListPage extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Scrollbar(
+                            controller: horizontalController,
                             thumbVisibility: true,
-                            controller: verticalScrollController,
+                            thickness: 4,
+                            notificationPredicate:
+                                (notification) =>
+                                    notification.metrics.axis ==
+                                    Axis.horizontal,
                             child: SingleChildScrollView(
-                              controller: verticalScrollController,
-                              scrollDirection: Axis.vertical,
-                              child: Scrollbar(
-                                thumbVisibility: true,
-                                controller: horizontalScrollController,
-                                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-                                child: SingleChildScrollView(
-                                  controller: horizontalScrollController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: SgTable<CapitalSource>(
-                                    headerBackgroundColor: ColorValue.primaryBlue,
-                                    textHeaderColor: Colors.white,
-                                    widthScreen: MediaQuery.of(context).size.width,
-                                    evenRowBackgroundColor: ColorValue.neutral50,
-                                    oddRowBackgroundColor: Colors.white,
-                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                                    gridLineColor: ColorValue.neutral200,
-                                    gridLineWidth: 1.0,
-                                    showVerticalLines: true,
-                                    showHorizontalLines: true,
-                                    allowRowSelection: true,
-                                    rowHeight: 56.0,
-                                    showActions: true,
-                                    actionColumnTitle: 'Thao tác',
-                                    actionColumnWidth: 160,
-                                    actionViewColor: ColorValue.success,
-                                    actionEditColor: ColorValue.primaryBlue,
-                                    actionDeleteColor: ColorValue.error,
-                                    onEditAction: (item) {
+                              controller: horizontalController,
+                              scrollDirection: Axis.horizontal,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                child: SgTable<CapitalSource>(
+                                  headerBackgroundColor: ColorValue.primaryBlue,
+                                  textHeaderColor: Colors.white,
+                                  widthScreen:
+                                      MediaQuery.of(context).size.width,
+                                  evenRowBackgroundColor: ColorValue.neutral50,
+                                  oddRowBackgroundColor: Colors.white,
+                                  selectedRowColor: ColorValue.primaryLightBlue
+                                      .withOpacity(0.2),
+                                  gridLineColor: ColorValue.neutral200,
+                                  gridLineWidth: 1.0,
+                                  showVerticalLines: true,
+                                  showHorizontalLines: true,
+                                  allowRowSelection: true,
+                                  rowHeight: 56.0,
+                                  onSelectionChanged: (selectedItems) {
+                                    print(MediaQuery.of(context).size.width);
+                                  },
+                                  showActions: true,
+                                  actionColumnTitle: 'Thao tác',
+                                  actionColumnWidth: 160,
+                                  actionViewColor: ColorValue.success,
+                                  actionEditColor: ColorValue.primaryBlue,
+                                  actionDeleteColor: ColorValue.error,
+                                  onEditAction: (item) {
+                                    if (widget.onEdit != null) {
+                                      widget.onEdit!(item);
+                                    } else {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => BlocProvider.value(
-                                            value: context.read<CapitalSourceBloc>(),
-                                            child: CapitalSourceFormPage(capitalSource: item),
-                                          ),
+                                          builder:
+                                              (_) => BlocProvider.value(
+                                                value:
+                                                    context
+                                                        .read<
+                                                          CapitalSourceBloc
+                                                        >(),
+                                                child: CapitalSourceFormPage(
+                                                  capitalSource: item,
+                                                ),
+                                              ),
                                         ),
                                       );
-                                    },
-                                    onDeleteAction: (item) {
-                                      _showDeleteDialog(context, item);
-                                    },
-                                    columns: [
-                                      TableColumnBuilder.createTextColumn<CapitalSource>(
-                                        title: 'Mã nguồn vốn',
-                                        getValue: (item) => item.code,
-                                        width: 150,
-                                      ),
-                                      TableColumnBuilder.createTextColumn<CapitalSource>(
-                                        title: 'Tên nguồn vốn',
-                                        getValue: (item) => item.name,
-                                        width: 200,
-                                      ),
-                                      TableColumnBuilder.createTextColumn<CapitalSource>(
-                                        title: 'Ghi chú',
-                                        getValue: (item) => item.note,
-                                        width: 300,
-                                      ),
-                                    ],
-                                    data: capitalSources,
-                                    onRowTap: (item) {},
-                                  ),
+                                    }
+                                  },
+                                  onDeleteAction: (item) {
+                                    _showDeleteDialog(context, item);
+                                  },
+                                  columns: [
+                                    TableColumnBuilder.createTextColumn<
+                                      CapitalSource
+                                    >(
+                                      title: 'Mã nguồn kinh phí',
+                                      getValue: (item) => item.code,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      CapitalSource
+                                    >(
+                                      title: 'Tên nguồn kinh phí',
+                                      getValue: (item) => item.name,
+                                      width:
+                                          MediaQuery.of(context).size.width / 4,
+                                      align: TextAlign.start,
+                                      isFullWidth: true,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      CapitalSource
+                                    >(
+                                      title: 'Ghi chú',
+                                      getValue: (item) => item.note,
+                                      width:
+                                          MediaQuery.of(context).size.width / 4,
+                                      align: TextAlign.start,
+                                      isFullWidth: true,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      CapitalSource
+                                    >(
+                                      title: 'Có hiệu lực',
+                                      getValue:
+                                          (item) =>
+                                              item.isActive ? 'Có' : 'Không',
+                                      isFullWidth: true,
+                                    ),
+                                  ],
+                                  data: capitalSources,
+                                  onRowTap: (item) {},
                                 ),
                               ),
                             ),

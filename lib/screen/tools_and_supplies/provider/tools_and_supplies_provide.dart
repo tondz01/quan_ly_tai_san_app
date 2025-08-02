@@ -2,19 +2,21 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/detail_and_edit.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   List<ToolsAndSuppliesDto>? get dataPage => _dataPage;
+  ToolsAndSuppliesDto? get item => _item;
+  List<ToolsAndSuppliesDto>? get filteredData => _filteredData;
+  bool get isShowInput => _isShowInput;
+  bool get isShowCollapse => _isShowCollapse;
+  bool get hasUnsavedChanges => _hasUnsavedChanges;
   get data => _data;
-  get columns => _columns;
   String? get error => _error;
   String? get subScreen => _subScreen;
 
@@ -32,6 +34,26 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   set dataPage(List<ToolsAndSuppliesDto>? value) {
     _dataPage = value;
+    notifyListeners();
+  }
+
+  set filteredData(List<ToolsAndSuppliesDto>? value) {
+    _filteredData = value;
+    notifyListeners();
+  }
+
+  set isShowInput(bool value) {
+    _isShowInput = value;
+    notifyListeners();
+  }
+
+  set isShowCollapse(bool value) {
+    _isShowCollapse = value;
+    notifyListeners();
+  }
+
+  set hasUnsavedChanges(bool value) {
+    _hasUnsavedChanges = value;
     notifyListeners();
   }
 
@@ -54,18 +76,21 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   String? _subScreen;
 
   Widget? _body;
+  bool _isShowInput = false;
+  bool _isShowCollapse = true;
+  bool _hasUnsavedChanges = false;
 
   bool _isLoading = false;
 
   List<ToolsAndSuppliesDto>? _data;
   List<ToolsAndSuppliesDto>? _dataPage;
-  List<SgTableColumn<ToolsAndSuppliesDto>> _columns = [];
-
+  ToolsAndSuppliesDto? _item;
+  List<ToolsAndSuppliesDto>? _filteredData;
   void onInit(BuildContext context) {
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
     // Initialize body without triggering notification
-    _body = ToolsAndSuppliesList(provider: this);
+    // _body = ToolsAndSuppliesList(provider: this);
     log('message onInit');
     getListToolsAndSupplies(context);
   }
@@ -81,18 +106,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
   }
 
-  void onTapBackHeader() {
-    log('message onTap');
-    onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-    notifyListeners();
-  }
-
-  void onTapNewHeader() {
-    log('message onTapNew');
-    onChangeScreen(item: null, isMainScreen: false, isEdit: true);
-    notifyListeners();
-  }
-
   void getListToolsAndSupplies(BuildContext context) {
     _isLoading = true;
     // Delay the event dispatch to avoid build phase conflicts
@@ -101,6 +114,37 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
         GetListToolsAndSuppliesEvent(context),
       );
     });
+  }
+
+  void onSearchToolsAndSupplies(String value) {
+    if (value.isEmpty) {
+      filteredData = data;
+      return;
+    }
+    log('message onSearchToolsAndSupplies: $value'); 
+
+    String searchLower = value.toLowerCase().trim();
+    filteredData =
+        data.where((item) {
+          bool name = AppUtility.fuzzySearch(
+            item.name.toLowerCase(),
+            searchLower,
+          );
+          bool importUnit = item.importUnit.toLowerCase().contains(
+            searchLower,
+          );
+          bool departmentGroup = item.importUnit.toLowerCase().contains(
+            searchLower,
+          );
+          bool unit = item.unit.toLowerCase().contains(
+            searchLower,
+          );
+          bool value = item.value.toString().contains(searchLower);
+
+          return name || importUnit || departmentGroup || unit || value;
+        }).toList();
+    log('message _filteredData: $_filteredData');
+    notifyListeners();
   }
 
   void _updatePagination() {
@@ -123,26 +167,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
             )
             : [];
     log('message pageProducts: ${dataPage!.length}');
-  }
-
-  void onChangeScreen({
-    required ToolsAndSuppliesDto? item,
-    required bool isMainScreen,
-    required bool isEdit,
-  }) {
-    // Use Future.microtask to avoid build phase conflicts
-    log('message onChangeScreen');
-    Future.microtask(() {
-      if (!isMainScreen) {
-        _subScreen = item == null ? 'Mới' : item.name;
-        _body = DetailAndEditView(item: item, isEditing: isEdit);
-      } else {
-        _subScreen = '';
-        _subScreen = null;
-        _body = ToolsAndSuppliesList(provider: this);
-      }
-      notifyListeners();
-    });
   }
 
   void onPageChanged(int page) {
@@ -200,6 +224,23 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
   }
 
+  void addNewItem(ToolsAndSuppliesDto newItem) {
+    if (_data == null) {
+      _data = [];
+    }
+
+    // Thêm item mới vào đầu danh sách
+    _data!.insert(0, newItem);
+
+    // Cập nhật lại trang hiện tại
+    _updatePagination();
+
+    // Thông báo UI cập nhật
+    notifyListeners();
+
+    log('Đã thêm item mới có ID: ${newItem.id}');
+  }
+
   getListToolsAndSuppliesSuccess(
     BuildContext context,
     GetListToolsAndSuppliesSuccessState state,
@@ -207,77 +248,71 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
+      _filteredData = [];
     } else {
       _data = state.data;
+      _filteredData = state.data;
       _isLoading = false;
-      onSetColumns();
       _updatePagination();
     }
     notifyListeners();
   }
 
-  void onSetColumns() {
-    _columns = [
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Công cụ dụng cụ',
-        getValue: (item) => item.name,
-        width: 170,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Đơn vị nhập',
-        getValue: (item) => item.importUnit,
-        width: 170,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Mã công cụ dụng cụ',
-        getValue: (item) => item.code,
-        width: 170,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Ngày nhập',
-        getValue: (item) => item.importDate,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Đơn vị tính',
-        getValue: (item) => item.unit,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Số lượng',
-        getValue: (item) => item.quantity.toString(),
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Giá trị',
-        getValue: (item) => item.value.toString(),
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Số ký hiệu',
-        getValue: (item) => item.referenceNumber,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Ký hiệu',
-        getValue: (item) => item.symbol,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Công suất',
-        getValue: (item) => item.capacity,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Nước sản xuất',
-        getValue: (item) => item.countryOfOrigin,
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<ToolsAndSuppliesDto>(
-        title: 'Năm sản xuất',
-        getValue: (item) => item.yearOfManufacture,
-        width: 120,
-      ),
-    ];
+  void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {
+    _confirmBeforeLeaving(context, item);
+
+    notifyListeners();
+  }
+
+  Future<bool> _showUnsavedChangesDialog(
+    BuildContext context,
+    ToolsAndSuppliesDto? item,
+  ) async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Thay đổi chưa lưu'),
+              content: const Text(
+                'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Hủy'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _item = item;
+                    log('message onChangeDetail: $_item');
+                    isShowInput = true;
+                    isShowCollapse = true;
+                    log('message _item: $_item');
+                    hasUnsavedChanges = false;
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Rời khỏi'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
+  Future<bool> _confirmBeforeLeaving(
+    BuildContext context,
+    ToolsAndSuppliesDto? item,
+  ) async {
+    if (hasUnsavedChanges) {
+      return await _showUnsavedChangesDialog(context, item);
+    } else {
+      _item = item;
+      isShowInput = true;
+      isShowCollapse = true;
+    }
+    return true;
   }
 }

@@ -53,7 +53,7 @@ class _HeaderState extends State<Header> {
       ),
       child: Row(
         children: [
-          widget.imageLogoLeft != null ? SvgPicture.asset(widget.imageLogoLeft!) : SvgPicture.asset(AppSvgs.iconLogo),
+          widget.imageLogoLeft != null ? Image.asset(widget.imageLogoLeft!) : SvgPicture.asset(AppSvgs.iconLogo),
           const SizedBox(width: 24),
           Expanded(
             child: Row(

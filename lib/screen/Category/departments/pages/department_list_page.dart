@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -10,11 +12,17 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class DepartmentListPage extends StatelessWidget {
+class DepartmentListPage extends StatefulWidget {
   final VoidCallback? onAdd;
   final void Function(Department)? onEdit;
   const DepartmentListPage({super.key, this.onAdd, this.onEdit});
 
+  @override
+  State<DepartmentListPage> createState() => _DepartmentListPageState();
+}
+
+class _DepartmentListPageState extends State<DepartmentListPage> {
+  final ScrollController horizontalController = ScrollController();
   void _showDeleteDialog(BuildContext context, Department department) {
     showDialog(
       context: context,
@@ -74,8 +82,8 @@ class DepartmentListPage extends StatelessWidget {
                             vertical: 12,
                           ),
                           onPressed: () {
-                            if (onAdd != null) {
-                              onAdd!();
+                            if (widget.onAdd != null) {
+                              widget.onAdd!();
                             } else {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -149,66 +157,123 @@ class DepartmentListPage extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Scrollbar(
+                            controller: horizontalController,
                             thumbVisibility: true,
-                            controller: verticalScrollController,
+                            thickness: 4,
+                            notificationPredicate:
+                                (notification) =>
+                                    notification.metrics.axis ==
+                                    Axis.horizontal,
                             child: SingleChildScrollView(
-                              controller: verticalScrollController,
-                              scrollDirection: Axis.vertical,
-                              child: Scrollbar(
-                                thumbVisibility: true,
-                                controller: horizontalScrollController,
-                                notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-                                child: SingleChildScrollView(
-                                  controller: horizontalScrollController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: SgTable<Department>(
-                                    headerBackgroundColor: ColorValue.primaryBlue,
-                                    textHeaderColor: Colors.white,
-                                    widthScreen: MediaQuery.of(context).size.width,
-                                    evenRowBackgroundColor: ColorValue.neutral50,
-                                    oddRowBackgroundColor: Colors.white,
-                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                                    gridLineColor: ColorValue.neutral200,
-                                    gridLineWidth: 1.0,
-                                    showVerticalLines: true,
-                                    showHorizontalLines: true,
-                                    allowRowSelection: true,
-                                    rowHeight: 56.0,
-                                    showActions: true,
-                                    actionColumnTitle: 'Thao tác',
-                                    actionColumnWidth: 160,
-                                    actionViewColor: ColorValue.success,
-                                    actionEditColor: ColorValue.primaryBlue,
-                                    actionDeleteColor: ColorValue.error,
-                                    onEditAction: (item) {
+                              controller: horizontalController,
+                              scrollDirection: Axis.horizontal,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                child: SgTable<Department>(
+                                  headerBackgroundColor: ColorValue.primaryBlue,
+                                  textHeaderColor: Colors.white,
+                                  widthScreen:
+                                      MediaQuery.of(context).size.width,
+                                  evenRowBackgroundColor: ColorValue.neutral50,
+                                  oddRowBackgroundColor: Colors.white,
+                                  selectedRowColor: ColorValue.primaryLightBlue
+                                      .withOpacity(0.2),
+                                  gridLineColor: ColorValue.neutral200,
+                                  gridLineWidth: 1.0,
+                                  showVerticalLines: true,
+                                  showHorizontalLines: true,
+                                  allowRowSelection: true,
+                                  rowHeight: 56.0,
+                                  onSelectionChanged: (selectedItems) {
+                                    print(MediaQuery.of(context).size.width);
+                                  },
+                                  showActions: true,
+                                  actionColumnTitle: 'Thao tác',
+                                  actionColumnWidth: 160,
+                                  actionViewColor: ColorValue.success,
+                                  actionEditColor: ColorValue.primaryBlue,
+                                  actionDeleteColor: ColorValue.error,
+                                  onEditAction: (item) {
+                                    if (widget.onEdit != null) {
+                                      widget.onEdit!(item);
+                                    } else {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (_) => BlocProvider.value(
-                                            value: context.read<DepartmentBloc>(),
-                                            child: DepartmentFormPage(department: item),
-                                          ),
+                                          builder:
+                                              (_) => BlocProvider.value(
+                                                value:
+                                                    context
+                                                        .read<DepartmentBloc>(),
+                                                child: DepartmentFormPage(
+                                                  department: item,
+                                                ),
+                                              ),
                                         ),
                                       );
-                                    },
-                                    onDeleteAction: (item) {
-                                      _showDeleteDialog(context, item);
-                                    },
-                                    columns: [
-                                      TableColumnBuilder.createTextColumn<Department>(
-                                        title: 'Mã phòng ban',
-                                        getValue: (item) => item.departmentId,
-                                        width: 150,
-                                      ),
-                                      TableColumnBuilder.createTextColumn<Department>(
-                                        title: 'Tên phòng ban',
-                                        getValue: (item) => item.departmentName,
-                                        width: 200,
-                                      ),
-                                    ],
-                                    data: departments,
-                                    onRowTap: (item) {},
-                                  ),
+                                    }
+                                  },
+                                  onDeleteAction: (item) {
+                                    _showDeleteDialog(context, item);
+                                  },
+                                  columns: [
+                                    TableColumnBuilder.createTextColumn<
+                                      Department
+                                    >(
+                                      title: 'Mã đơn vị',
+                                      getValue: (item) => item.departmentId,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      Department
+                                    >(
+                                      title: 'Nhóm đơn vị',
+                                      getValue: (item) => item.departmentGroup,
+                                      isFullWidth: true,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      Department
+                                    >(
+                                      title: 'Tên phòng/ban',
+                                      getValue: (item) => item.departmentName,
+                                      width: 250,
+                                      align: TextAlign.start,
+                                      isFullWidth: true,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      Department
+                                    >(
+                                      title: 'Quản lý',
+                                      align: TextAlign.start,
+                                      getValue:
+                                          (item) =>
+                                              context
+                                                  .read<DepartmentBloc>()
+                                                  .staffs
+                                                  .firstWhere(
+                                                    (staff) =>
+                                                        staff.staffId ==
+                                                        item.managerId,
+                                                  )
+                                                  .name,
+                                      isFullWidth: true,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      Department
+                                    >(
+                                      title: 'Nhân viên',
+                                      getValue: (item) => item.employeeCount,
+                                      isFullWidth: true,
+                                    ),
+                                    TableColumnBuilder.createTextColumn<
+                                      Department
+                                    >(
+                                      title: 'Phòng/ Ban cấp trên',
+                                      getValue: (item) => item.parentRoom,
+                                      align: TextAlign.start,
+                                      isFullWidth: true,
+                                    ),
+                                  ],
+                                  data: departments,
+                                  onRowTap: (item) {},
                                 ),
                               ),
                             ),

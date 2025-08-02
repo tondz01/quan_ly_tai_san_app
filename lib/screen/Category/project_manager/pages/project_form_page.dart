@@ -32,9 +32,31 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   @override
   void initState() {
     super.initState();
-    _codeController = TextEditingController(text: widget.project?.code ?? '');
-    _nameController = TextEditingController(text: widget.project?.name ?? '');
-    _noteController = TextEditingController(text: widget.project?.note ?? '');
+    _initControllers();
+    _initData();
+  }
+
+  void _initControllers() {
+    _codeController = TextEditingController();
+    _nameController = TextEditingController();
+    _noteController = TextEditingController();
+  }
+
+  @override
+  void didUpdateWidget(ProjectFormPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Kiểm tra nếu có thay đổi trong project
+    if (oldWidget.project != widget.project) {
+      if (mounted) {
+        _initData();
+      }
+    }
+  }
+
+  void _initData() {
+    _codeController.text = widget.project?.code ?? '';
+    _nameController.text = widget.project?.name ?? '';
+    _noteController.text = widget.project?.note ?? '';
     _isActive = widget.project?.isActive ?? true;
   }
 
@@ -70,159 +92,129 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.project != null;
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.8,
-          ),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF7F9FC),
-            borderRadius: BorderRadius.circular(16),
-          ),
-
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 32.0,
-                  horizontal: 32.0,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: Colors.grey.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            sectionTitle(
+              Icons.account_tree,
+              isEdit ? 'Cập nhật dự án' : 'Thêm mới dự án',
+              'Nhập thông tin dự án mới.',
+            ),
+            sectionCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  sectionTitle(Icons.info_outline, 'Thông tin dự án'),
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      sectionTitle(
-                        Icons.account_tree,
-                        isEdit ? 'Cập nhật dự án' : 'Thêm mới dự án',
-                        'Nhập thông tin dự án mới.',
-                      ),
-                      sectionCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            sectionTitle(Icons.info_outline, 'Thông tin dự án'),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _codeController,
-                                    decoration: inputDecoration(
-                                      'Mã dự án',
-                                      required: true,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập mã dự án'
-                                                : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _nameController,
-                                    decoration: inputDecoration(
-                                      'Tên dự án',
-                                      required: true,
-                                    ),
-                                    validator:
-                                        (v) =>
-                                            v == null || v.isEmpty
-                                                ? 'Nhập tên dự án'
-                                                : null,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _noteController,
-                              decoration: inputDecoration(
-                                'Ghi chú',
-                                required: true,
-                              ),
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Nhập ghi chú'
-                                          : null,
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _isActive,
-                                  onChanged:
-                                      (v) =>
-                                          setState(() => _isActive = v ?? true),
-                                ),
-                                const Text(
-                                  'Có hiệu lực',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
-                          ],
+                      Expanded(
+                        child: TextFormField(
+                          controller: _codeController,
+                          decoration: inputDecoration(
+                            'Mã dự án',
+                            required: true,
+                          ),
+                          validator:
+                              (v) =>
+                                  v == null || v.isEmpty
+                                      ? 'Nhập mã dự án'
+                                      : null,
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          OutlinedButton(
-                            onPressed: () {
-                              if (widget.onCancel != null) {
-                                widget.onCancel!();
-                              } else {
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF7B8EC8),
-                              side: const BorderSide(color: Color(0xFFE6EAF3)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text('Hủy'),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _nameController,
+                          decoration: inputDecoration(
+                            'Tên dự án',
+                            required: true,
                           ),
-                          const Spacer(),
-                          ElevatedButton(
-                            onPressed: _save,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2264E5),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 16,
-                              ),
-                            ),
-                            child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
-                          ),
-                        ],
+                          validator:
+                              (v) =>
+                                  v == null || v.isEmpty
+                                      ? 'Nhập tên dự án'
+                                      : null,
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _noteController,
+                    decoration: inputDecoration(
+                      'Ghi chú',
+                      required: true,
+                    ),
+                    validator:
+                        (v) =>
+                            v == null || v.isEmpty
+                                ? 'Nhập ghi chú'
+                                : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isActive,
+                        onChanged:
+                            (v) => setState(() => _isActive = v ?? true),
+                      ),
+                      const Text(
+                        'Có hiệu lực',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                OutlinedButton(
+                  onPressed: () {
+                    if (widget.onCancel != null) {
+                      widget.onCancel!();
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF7B8EC8),
+                    side: const BorderSide(color: Color(0xFFE6EAF3)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Hủy'),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2264E5),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                  ),
+                  child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

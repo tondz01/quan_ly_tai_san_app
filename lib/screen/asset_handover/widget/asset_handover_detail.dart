@@ -3,30 +3,25 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
-import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/component/bottom_table_asset_handover.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
-import 'package:quan_ly_tai_san_app/screen/note/widget/note_view.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
+import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:se_gay_components/common/sg_input_text.dart';
 
 class AssetHandoverDetail extends StatefulWidget {
   final AssetHandoverProvider provider;
-  final AssetHandoverDto? item;
   final bool isEditing;
   final bool isNew;
 
   const AssetHandoverDetail({
     super.key,
-    this.item,
     this.isEditing = false,
     this.isNew = false,
     required this.provider,
@@ -59,22 +54,48 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   bool isDelivererConfirm = false;
   bool isReceiverConfirm = false;
   bool isRepresentativeUnitConfirm = false;
+  bool isExpanded = false;
 
   String? proposingUnit;
 
-  final Map<String, TextEditingController> contractTermsControllers = {};
-
+  AssetHandoverDto? item;
   AssetHandoverDetailDto? itemDetail;
+
+  // Lưu trữ giá trị ban đầu để so sánh
+  Map<String, dynamic> _originalValues = {};
 
   @override
   void initState() {
+    _initData();
+
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(AssetHandoverDetail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Kiểm tra nếu có thay đổi trong item hoặc isEditing
+    if (oldWidget.provider.item != item ||
+        oldWidget.isEditing != widget.isEditing) {
+      // Cập nhật lại trạng thái editing
+      if (mounted) {
+        _initData();
+        setState(() {});
+      }
+    }
+  }
+
+  void _initData() {
+    if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+
+    item = widget.provider.item;
     isEditing = widget.isEditing;
-    if (widget.item != null) {
-      if (widget.item!.state == 1) {
+    if (item != null) {
+      if (item!.state == 0) {
         isEditing = true;
       }
-      itemDetail = widget.item!.assetHandoverDetails;
-    } else if (widget.isNew) {
+      itemDetail = item!.assetHandoverDetails;
+    } else {
       isEditing = true;
     }
     isUnitConfirm = itemDetail?.isUnitConfirm ?? false;
@@ -83,20 +104,170 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     isRepresentativeUnitConfirm =
         itemDetail?.isRepresentativeUnitConfirm ?? false;
 
-    for (final term in contractTerms) {
-      contractTermsControllers[term] = TextEditingController();
-    }
-
     itemsRequester =
-        users
-            .map(
-              (user) => DropdownMenuItem<String>(
-                value: user.id ?? '',
-                child: Text(user.name ?? ''),
-              ),
-            )
-            .toList();
-    super.initState();
+        users.isNotEmpty
+            ? users
+                .map(
+                  (user) => DropdownMenuItem<String>(
+                    value: user.id ?? '',
+                    child: Text(user.name ?? ''),
+                  ),
+                )
+                .toList()
+            : <DropdownMenuItem<String>>[];
+
+    // Cập nhật controllers với dữ liệu mới
+    _updateControllers();
+
+    // Lưu giá trị ban đầu để so sánh
+    _saveOriginalValues();
+  }
+
+  void _updateControllers() {
+    if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+
+    // Cập nhật các controller với dữ liệu mới
+    controllerHandoverNumber.text = item?.decisionNumber ?? '';
+    controllerDocumentName.text = item?.name ?? '';
+    controllerOrder.text = item?.order ?? '';
+    controllerSenderUnit.text = item?.senderUnit ?? '';
+    controllerReceiverUnit.text = item?.receiverUnit ?? '';
+    controllerTransferDate.text = item?.transferDate ?? '';
+    controllerLeader.text = itemDetail?.leader ?? '';
+    controllerIssuingUnitRepresentative.text =
+        itemDetail?.issuingUnitRepresentative ?? '';
+    controllerDelivererRepresentative.text =
+        itemDetail?.delivererRepresentative ?? '';
+    controllerReceiverRepresentative.text =
+        itemDetail?.receiverRepresentative ?? '';
+    controllerRepresentativeUnit.text = itemDetail?.representativeUnit ?? '';
+
+    // Thêm listener cho các controller để theo dõi thay đổi
+    _addControllerListeners();
+  }
+
+  void _addControllerListeners() {
+    // Xóa listener cũ nếu có
+    controllerHandoverNumber.removeListener(_checkForChanges);
+    controllerDocumentName.removeListener(_checkForChanges);
+    controllerOrder.removeListener(_checkForChanges);
+    controllerSenderUnit.removeListener(_checkForChanges);
+    controllerReceiverUnit.removeListener(_checkForChanges);
+    controllerTransferDate.removeListener(_checkForChanges);
+    controllerLeader.removeListener(_checkForChanges);
+    controllerIssuingUnitRepresentative.removeListener(_checkForChanges);
+    controllerDelivererRepresentative.removeListener(_checkForChanges);
+    controllerReceiverRepresentative.removeListener(_checkForChanges);
+    controllerRepresentativeUnit.removeListener(_checkForChanges);
+
+    // Thêm listener mới
+    controllerHandoverNumber.addListener(_checkForChanges);
+    controllerDocumentName.addListener(_checkForChanges);
+    controllerOrder.addListener(_checkForChanges);
+    controllerSenderUnit.addListener(_checkForChanges);
+    controllerReceiverUnit.addListener(_checkForChanges);
+    controllerTransferDate.addListener(_checkForChanges);
+    controllerLeader.addListener(_checkForChanges);
+    controllerIssuingUnitRepresentative.addListener(_checkForChanges);
+    controllerDelivererRepresentative.addListener(_checkForChanges);
+    controllerReceiverRepresentative.addListener(_checkForChanges);
+    controllerRepresentativeUnit.addListener(_checkForChanges);
+  }
+
+  void _saveOriginalValues() {
+    _originalValues = {
+      'decisionNumber': item?.decisionNumber ?? '',
+      'name': item?.name ?? '',
+      'order': item?.order ?? '',
+      'senderUnit': item?.senderUnit ?? '',
+      'receiverUnit': item?.receiverUnit ?? '',
+      'transferDate': item?.transferDate ?? '',
+      'leader': itemDetail?.leader ?? '',
+      'issuingUnitRepresentative': itemDetail?.issuingUnitRepresentative ?? '',
+      'delivererRepresentative': itemDetail?.delivererRepresentative ?? '',
+      'receiverRepresentative': itemDetail?.receiverRepresentative ?? '',
+      'representativeUnit': itemDetail?.representativeUnit ?? '',
+      'isUnitConfirm': itemDetail?.isUnitConfirm ?? false,
+      'isDelivererConfirm': itemDetail?.isDelivererConfirm ?? false,
+      'isReceiverConfirm': itemDetail?.isReceiverConfirm ?? false,
+      'isRepresentativeUnitConfirm':
+          itemDetail?.isRepresentativeUnitConfirm ?? false,
+    };
+    // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.provider.hasUnsavedChanges = false;
+      }
+    });
+  }
+
+  void _checkForChanges() {
+    if (!isEditing) return;
+
+    bool hasChanges = false;
+    // Kiểm tra thay đổi trong các controller
+    hasChanges =
+        hasChanges ||
+        controllerHandoverNumber.text != _originalValues['decisionNumber'] ||
+        controllerDocumentName.text != _originalValues['name'] ||
+        controllerOrder.text != _originalValues['order'] ||
+        controllerSenderUnit.text != _originalValues['senderUnit'] ||
+        controllerReceiverUnit.text != _originalValues['receiverUnit'] ||
+        controllerTransferDate.text != _originalValues['transferDate'] ||
+        controllerLeader.text != _originalValues['leader'] ||
+        controllerIssuingUnitRepresentative.text !=
+            _originalValues['issuingUnitRepresentative'] ||
+        controllerDelivererRepresentative.text !=
+            _originalValues['delivererRepresentative'] ||
+        controllerReceiverRepresentative.text !=
+            _originalValues['receiverRepresentative'] ||
+        controllerRepresentativeUnit.text !=
+            _originalValues['representativeUnit'];
+    log('message hasChanges1: $hasChanges');
+    // Kiểm tra thay đổi trong các checkbox
+    hasChanges =
+        hasChanges ||
+        isUnitConfirm != _originalValues['isUnitConfirm'] ||
+        isDelivererConfirm != _originalValues['isDelivererConfirm'] ||
+        isReceiverConfirm != _originalValues['isReceiverConfirm'] ||
+        isRepresentativeUnitConfirm !=
+            _originalValues['isRepresentativeUnitConfirm'];
+    log('message hasChanges2: $hasChanges');
+    if (hasChanges != widget.provider.hasUnsavedChanges) {
+      // Sử dụng addPostFrameCallback để tránh gọi setState trong quá trình build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.provider.hasUnsavedChanges = hasChanges;
+        }
+      });
+    }
+    log('message hasUnsavedChanges: ${widget.provider.hasUnsavedChanges}');
+  }
+
+  // Phương thức để lưu thay đổi
+  void _saveChanges() {
+    // Sau khi lưu thành công, reset trạng thái unsaved changes
+    _saveOriginalValues();
+    // Không cần gọi lại vì _saveOriginalValues đã xử lý
+  }
+
+  // Phương thức để hủy thay đổi
+  void _cancelChanges() {
+    // Reset về giá trị ban đầu
+    _updateControllers();
+    setState(() {
+      isUnitConfirm = _originalValues['isUnitConfirm'] ?? false;
+      isDelivererConfirm = _originalValues['isDelivererConfirm'] ?? false;
+      isReceiverConfirm = _originalValues['isReceiverConfirm'] ?? false;
+      isRepresentativeUnitConfirm =
+          _originalValues['isRepresentativeUnitConfirm'] ?? false;
+    });
+    // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.provider.hasUnsavedChanges = false;
+      }
+    });
   }
 
   final List<DropdownMenuItem<String>> itemsrReceivingUnit = [
@@ -129,16 +300,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     ),
   ];
 
-  late final List<DropdownMenuItem<String>> itemsRequester;
-
-  final List<String> contractTerms = [
-    'Về việc',
-    'Căn cứ',
-    'Điều 1',
-    'Điều 2',
-    'Điều 3',
-    'Nơi nhận',
-  ];
+  List<DropdownMenuItem<String>> itemsRequester = [];
 
   @override
   void dispose() {
@@ -149,94 +311,68 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
 
-    // Dispose de los controladores de términos del contrato
-    for (final controller in contractTermsControllers.values) {
-      controller.dispose();
-    }
-
     super.dispose();
-  }
-
-  void findPhongBan(String? value) {
-    log('message');
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    log('screenWidth: $screenWidth');
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
         padding: const EdgeInsets.only(top: 10.0),
-        child: _showResponsive(),
+        child: _buildTableDetail(),
       ),
     );
   }
 
-  Widget _showResponsive() {
-    final size = MediaQuery.of(context).size;
-    if (size.width < 1444) {
-      return Column(
-        children: [
-          _buildTableDetail(),
-          const SizedBox(height: 10),
-          _buildNoteSection(),
-        ],
-      );
-    } else {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(flex: 4, child: _buildTableDetail()),
-          const SizedBox(width: 10),
-          Expanded(flex: 2, child: _buildNoteSection()),
-        ],
-      );
-    }
-  }
-
-  Widget _buildNoteSection() {
-    return SizedBox(
-      height: 400,
-      // padding: const EdgeInsets.all(8),
-      // decoration: BoxDecoration(
-      //   // color: Colors.white,
-      //   borderRadius: BorderRadius.circular(8),
-      //   border: Border.all(color: Colors.grey.shade300),
-      // ),
-      child: IgnorePointer(
-        ignoring: false,
-        child: AbsorbPointer(
-          absorbing: false,
-          child: RepaintBoundary(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return const NoteView();
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // String _formatCurrency(double value) {
-  //   return value
-  //       .toStringAsFixed(2)
-  //       .replaceAll('.00', '')
-  //       .replaceAllMapped(
-  //         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-  //         (Match m) => '${m[1]}.',
-  //       );
-  // }
   Widget _buildTableDetail() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    bool isWideScreen = screenWidth > 800;
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            // Hiển thị indicator unsaved changes và nút Save/Cancel
+            if (isEditing)
+              Row(
+                children: [
+                  if (widget.provider.hasUnsavedChanges)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Có thay đổi chưa lưu',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _saveChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Lưu'),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _cancelChanges,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Hủy'),
+                  ),
+                ],
+              ),
             SgIndicator(
               steps: [
                 'Nháp',
@@ -246,7 +382,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 'Hoàn thành',
                 'Hủy',
               ],
-              currentStep: widget.item?.state ?? 0,
+              currentStep: item?.state ?? 0,
               fontSize: 10,
             ),
           ],
@@ -262,66 +398,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow(
-                label: 'ah.handover_number'.tr,
-                controller: controllerHandoverNumber,
-                isEditing: isEditing,
-                textContent: '',
-                isShowHint: false,
-              ),
-              _buildDetailRow(
-                label: 'ah.document_name'.tr,
-                controller: controllerDocumentName,
-                isEditing: isEditing,
-                textContent: widget.item?.name ?? '',
-              ),
-              _buildDetailRow(
-                label: 'ah.order'.tr,
-                controller: controllerOrder,
-                isEditing: isEditing,
-                textContent: widget.item?.order ?? '',
-              ),
-              _buildDetailRow(
-                label: 'ah.sender_unit'.tr,
-                controller: controllerSenderUnit,
-                isEditing: isEditing,
-                textContent: widget.item?.senderUnit ?? '',
-                isDropdown: true,
-                items: itemsrReceivingUnit,
-              ),
-              _buildDetailRow(
-                label: 'ah.receiver_unit'.tr,
-                controller: controllerReceiverUnit,
-                isEditing: isEditing,
-                textContent: widget.item?.receiverUnit ?? '',
-                isDropdown: true,
-                items: itemsrReceivingUnit,
-              ),
-              _buildDetailRow(
-                label: 'ah.transfer_date'.tr,
-                controller: controllerTransferDate,
-                isEditing: isEditing,
-                textContent: widget.item?.transferDate ?? '',
-              ),
-              _buildDetailRow(
-                label: 'ah.leader'.tr,
-                controller: controllerLeader,
-                isEditing: isEditing,
-                textContent: itemDetail?.leader ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
               // detail
-              _buildAsserHandoverDetail(),
+              // _buildInfoAssetHandoverMobile(isWideScreen),
+              _buildInfoAssetHandoverMobile(isWideScreen),
               const SizedBox(height: 20),
-              _buildAssetMovementTable(),
-              const SizedBox(height: 20),
-              if (widget.item != null)
-                BotttomTableAssetHandover(
-                  data: [widget.item!],
-                )
-              else
-                const SizedBox.shrink(),
+              if (!isEditing)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: TableAssetMovementDetail(item: item?.assetHandoverMovements),
+                ),
             ],
           ),
         ),
@@ -329,412 +414,199 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     );
   }
 
-  Widget _buildAssetMovementTable() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: const Text(
-            'Chi tiết tài sản điều chuyển',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        SgEditableTable<AssetHandoverMovementDto>(
-          initialData: widget.item?.assetHandoverMovements ?? [],
-          createEmptyItem: AssetHandoverMovementDto.empty,
-          rowHeight: 40.0,
-          headerBackgroundColor: Colors.grey.shade50,
-          oddRowBackgroundColor: Colors.white,
-          evenRowBackgroundColor: Colors.white,
-          showVerticalLines: false,
-          showHorizontalLines: true,
-          addRowText: 'Thêm một dòng',
-          isEditing: isEditing, // Pass the editing state
-          onDataChanged: (data) {
-            log('Asset movement data changed: ${data.length} items');
-          },
-          columns: [
-            SgEditableColumn<AssetHandoverMovementDto>(
-              field: 'asset',
-              title: 'Tài sản',
-              titleAlignment: TextAlign.center,
-              width: 350,
-              getValue: (item) => item.name,
-              setValue: (item, value) => item.name = value,
-              sortValueGetter: (item) => item.name,
-            ),
-            SgEditableColumn<AssetHandoverMovementDto>(
-              field: 'unit',
-              title: 'Đơn vị tính',
-              titleAlignment: TextAlign.center,
-              width: 130,
-              getValue: (item) => item.measurementUnit,
-              setValue: (item, value) => item.measurementUnit = value,
-              sortValueGetter: (item) => item.measurementUnit,
-            ),
-            SgEditableColumn<AssetHandoverMovementDto>(
-              field: 'quantity',
-              title: 'Số lượng',
-              titleAlignment: TextAlign.center,
-              width: 120,
-              getValue: (item) => item.quantity,
-              setValue: (item, value) => item.quantity = value,
-              sortValueGetter:
-                  (item) => int.tryParse(item.quantity ?? '0') ?? 0,
-            ),
-            SgEditableColumn<AssetHandoverMovementDto>(
-              field: 'condition',
-              title: 'Tình trạng kỹ thuật',
-              titleAlignment: TextAlign.center,
-              width: 190,
-              getValue: (item) => item.setCondition,
-              setValue: (item, value) => item.setCondition = value,
-              sortValueGetter: (item) => item.setCondition,
-            ),
-            SgEditableColumn<AssetHandoverMovementDto>(
-              field: 'countryOfOrigin',
-              title: 'Nước sản xuất',
-              titleAlignment: TextAlign.center,
-              width: 150,
-              getValue: (item) => item.countryOfOrigin,
-              setValue: (item, value) => item.countryOfOrigin = value,
-              sortValueGetter: (item) => item.countryOfOrigin,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAsserHandoverDetail() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Kiểm tra nếu màn hình đủ rộng để hiển thị 2 cột
-        bool isWideScreen = constraints.maxWidth > 800;
-
-        if (isWideScreen) {
-          // Layout 2 cột
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Cột trái
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildDetailRow(
-                      label: 'ah.issuing_unit_representative'.tr,
-                      controller: controllerIssuingUnitRepresentative,
-                      isEditing: isEditing,
-                      textContent: itemDetail?.issuingUnitRepresentative ?? '',
-                      isDropdown: true,
-                      items: itemsRequester,
-                    ),
-                    _buildDetailCheckBox(
-                      label: 'ah.unit_confirm'.tr,
-                      valueBoolean: isUnitConfirm,
-                      isEditing: isEditing,
-                      isEnable: true,
-                    ),
-                    _buildDetailRow(
-                      label: 'ah.deliverer_representative'.tr,
-                      controller: controllerDelivererRepresentative,
-                      isEditing: isEditing,
-                      textContent: itemDetail?.delivererRepresentative ?? '',
-                      isDropdown: true,
-                      items: itemsRequester,
-                    ),
-                    _buildDetailCheckBox(
-                      label: 'ah.deliverer_confirm'.tr,
-                      valueBoolean: isDelivererConfirm,
-                      isEditing: isEditing,
-                      isEnable: true,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 20),
-              // Cột phải
-              Expanded(
-                child: Column(
-                  children: [
-                    _buildDetailRow(
-                      label: 'ah.receiver_representative'.tr,
-                      controller: controllerReceiverRepresentative,
-                      isEditing: isEditing,
-                      textContent: itemDetail?.receiverRepresentative ?? '',
-                      isDropdown: true,
-                      items: itemsRequester,
-                    ),
-                    _buildDetailCheckBox(
-                      label: 'ah.receiver_confirm'.tr,
-                      valueBoolean: isReceiverConfirm,
-                      isEditing: isEditing,
-                      isEnable: true,
-                    ),
-                    _buildDetailRow(
-                      label: 'ah.representative_unit'.tr,
-                      controller: controllerRepresentativeUnit,
-                      isEditing: isEditing,
-                      textContent: itemDetail?.representativeUnit ?? '',
-                      isDropdown: true,
-                      items: itemsRequester,
-                    ),
-                    _buildDetailCheckBox(
-                      label: 'ah.representative_unit_confirm'.tr,
-                      valueBoolean: isRepresentativeUnitConfirm,
-                      isEditing: isEditing,
-                      isEnable: true,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        } else {
-          // Layout 1 cột cho màn hình nhỏ
-          return Column(
-            children: [
-              _buildDetailRow(
-                label: 'ah.issuing_unit_representative'.tr,
-                controller: controllerIssuingUnitRepresentative,
-                isEditing: isEditing,
-                textContent: itemDetail?.issuingUnitRepresentative ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.unit_confirm'.tr,
-                valueBoolean: isUnitConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-              _buildDetailRow(
-                label: 'ah.deliverer_representative'.tr,
-                controller: controllerDelivererRepresentative,
-                isEditing: isEditing,
-                textContent: itemDetail?.delivererRepresentative ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.deliverer_confirm'.tr,
-                valueBoolean: isDelivererConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-              _buildDetailRow(
-                label: 'ah.receiver_representative'.tr,
-                controller: controllerReceiverRepresentative,
-                isEditing: isEditing,
-                textContent: itemDetail?.receiverRepresentative ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.receiver_confirm'.tr,
-                valueBoolean: isReceiverConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-              _buildDetailRow(
-                label: 'ah.representative_unit'.tr,
-                controller: controllerRepresentativeUnit,
-                isEditing: isEditing,
-                textContent: itemDetail?.representativeUnit ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-              ),
-              _buildDetailCheckBox(
-                label: 'ah.representative_unit_confirm'.tr,
-                valueBoolean: isRepresentativeUnitConfirm,
-                isEditing: isEditing,
-                isEnable: true,
-              ),
-            ],
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildDetailRow({
-    required String label,
-    required String textContent,
-    required TextEditingController controller,
-    required bool isEditing,
-    bool isDropdown = false,
-    bool isValidate = false,
-    bool isEnable = true,
-    TextInputType? inputType,
-    List<DropdownMenuItem<String>>? items,
-    Function(String)? onChanged,
-    bool isShowHint = true,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildInfoAssetHandoverMobile(bool isWideScreen) {
+    if (isWideScreen) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 180,
-            child: Text(
-              '$label :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !isEditing ? Colors.black87.withOpacity(0.6) : Colors.black,
-              ),
-            ),
-          ),
+          Expanded(child: _buildInfoAssetHandover()),
           const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                isDropdown && isEditing
-                    ? SGDropdownInputButton<String>(
-                      height: 35,
-                      controller: controller,
-                      textOverflow: TextOverflow.ellipsis,
-                      // Use value directly rather than setting controller.text
-                      value: textContent,
-                      defaultValue: textContent,
-                      items: items ?? [],
-                      colorBorder: SGAppColors.neutral400,
-                      showUnderlineBorderOnly: true,
-                      enableSearch: false,
-                      isClearController: false,
-                      fontSize: 16,
-                      inputType: inputType,
-                      isShowSuffixIcon: true,
-                      hintText: isShowHint ? 'Chọn ${label.toLowerCase()}' : '',
-                      textAlign: TextAlign.left,
-                      textAlignItem: TextAlign.left,
-                      sizeBorderCircular: 10,
-                      contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
-                      onChanged: (value) {
-                        if (value != null) {
-                          log('value: $value');
-                          // controller.text = value;
-                          onChanged?.call(value);
-                        }
-                      },
-                    )
-                    : SGInputText(
-                      height: 35,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      controller: controller..text = textContent,
-                      borderRadius: 10,
-                      enabled: isEnable ? isEditing : false,
-                      textAlign: TextAlign.left,
-                      readOnly: !isEditing,
-                      inputFormatters:
-                          inputType == TextInputType.number
-                              ? [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9.,]'),
-                                ),
-                              ]
-                              : null,
-                      onlyLine: true,
-                      color: Colors.black,
-                      showBorder: isEditing,
-                      hintText:
-                          !isEditing
-                              ? ''
-                              : isShowHint
-                              ? '${'common.hint'.tr} $label'
-                              : '',
-                      padding: const EdgeInsets.only(top: 8, bottom: 8),
-                    ),
-                if (isValidate) const Divider(height: 1, color: Colors.red),
-              ],
-            ),
-          ),
+          Expanded(child: _buildAssetHandoverDetail()),
         ],
-      ),
+      );
+    } else {
+      return Column(
+        children: [_buildInfoAssetHandover(), _buildAssetHandoverDetail()],
+      );
+    }
+  }
+
+  Widget _buildInfoAssetHandover() {
+    return Column(
+      children: [
+        CommonFormInput(
+          label: 'ah.handover_number'.tr,
+          controller: controllerHandoverNumber,
+          isEditing: isEditing,
+          textContent: '',
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.document_name'.tr,
+          controller: controllerDocumentName,
+          isEditing: isEditing,
+          textContent: item?.name ?? '',
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.order'.tr,
+          controller: controllerOrder,
+          isEditing: isEditing,
+          textContent: item?.order ?? '',
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.sender_unit'.tr,
+          controller: controllerSenderUnit,
+          isEditing: isEditing,
+          textContent: item?.senderUnit ?? '',
+          isDropdown: true,
+          items: itemsrReceivingUnit,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.receiver_unit'.tr,
+          controller: controllerReceiverUnit,
+          isEditing: isEditing,
+          textContent: item?.receiverUnit ?? '',
+          isDropdown: true,
+          items: itemsrReceivingUnit,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.transfer_date'.tr,
+          controller: controllerTransferDate,
+          isEditing: isEditing,
+          textContent: item?.transferDate ?? '',
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.leader'.tr,
+          controller: controllerLeader,
+          isEditing: isEditing,
+          textContent: itemDetail?.leader ?? '',
+          isDropdown: true,
+          items: itemsRequester,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+      ],
     );
   }
 
-  Widget _buildDetailCheckBox({
-    required String label,
-    required bool valueBoolean,
-    required bool isEditing,
-    required bool isEnable,
-  }) {
-    // Primero, obtener el valor actual para este checkbox
-    bool currentValue = valueBoolean;
-    if (label == 'ah.preparer_initialed'.tr) {
-      currentValue = isUnitConfirm;
-    } else if (label == 'ah.require_manager_approval'.tr) {
-      currentValue = isDelivererConfirm;
-    } else if (label == 'ah.deputy_confirmed'.tr) {
-      currentValue = isReceiverConfirm;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 180,
-            child: Text(
-              '$label :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !isEnable ? Colors.black : Colors.black87.withOpacity(0.6),
-              ),
-            ),
-          ),
-          const SizedBox(width: 18),
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: Checkbox(
-              value: currentValue,
-              onChanged:
-                  !isEnable
-                      ? (newValue) {
-                        setState(() {
-                          // Actualizar el estado correcto según el label
-                          if (label == 'ah.preparer_initialed'.tr) {
-                            isUnitConfirm = newValue ?? false;
-                            log(
-                              'isPreparerInitialed cambiado a: $isUnitConfirm',
-                            );
-                          } else if (label ==
-                              'ah.require_manager_approval'.tr) {
-                            isDelivererConfirm = newValue ?? false;
-                            log(
-                              'isRequireManagerApproval cambiado a: $isDelivererConfirm',
-                            );
-                          } else if (label == 'ah.deputy_confirmed'.tr) {
-                            isReceiverConfirm = newValue ?? false;
-                            log(
-                              'isDeputyConfirmed cambiado a: $isReceiverConfirm',
-                            );
-                          } else if (label == 'ah.representative_unit'.tr) {
-                            isRepresentativeUnitConfirm = newValue ?? false;
-                            log(
-                              'isRepresentativeUnitConfirm cambiado a: $isRepresentativeUnitConfirm',
-                            );
-                          }
-                        });
-                      }
-                      : null,
-              activeColor: const Color(0xFF80C9CB),
-              checkColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(2),
-              ),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildAssetHandoverDetail() {
+    return Column(
+      children: [
+        CommonFormInput(
+          label: 'ah.issuing_unit_representative'.tr,
+          controller: controllerIssuingUnitRepresentative,
+          isEditing: isEditing,
+          textContent: itemDetail?.issuingUnitRepresentative ?? '',
+          isDropdown: true,
+          items: itemsRequester,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonCheckboxInput(
+          label: 'ah.unit_confirm'.tr,
+          value: isUnitConfirm,
+          isEditing: isEditing,
+          isEnable: true,
+          onChanged: (newValue) {
+            setState(() {
+              isUnitConfirm = newValue;
+            });
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.deliverer_representative'.tr,
+          controller: controllerDelivererRepresentative,
+          isEditing: isEditing,
+          textContent: itemDetail?.delivererRepresentative ?? '',
+          isDropdown: true,
+          items: itemsRequester,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonCheckboxInput(
+          label: 'ah.deliverer_confirm'.tr,
+          value: isDelivererConfirm,
+          isEditing: isEditing,
+          isEnable: true,
+          onChanged: (newValue) {
+            setState(() {
+              isDelivererConfirm = newValue;
+            });
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.receiver_representative'.tr,
+          controller: controllerReceiverRepresentative,
+          isEditing: isEditing,
+          textContent: itemDetail?.receiverRepresentative ?? '',
+          isDropdown: true,
+          items: itemsRequester,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonCheckboxInput(
+          label: 'ah.receiver_confirm'.tr,
+          value: isReceiverConfirm,
+          isEditing: isEditing,
+          isEnable: true,
+          onChanged: (newValue) {
+            setState(() {
+              isReceiverConfirm = newValue;
+            });
+            _checkForChanges();
+          },
+        ),
+        CommonFormInput(
+          label: 'ah.representative_unit'.tr,
+          controller: controllerRepresentativeUnit,
+          isEditing: isEditing,
+          textContent: itemDetail?.representativeUnit ?? '',
+          isDropdown: true,
+          items: itemsRequester,
+          onChanged: (value) {
+            _checkForChanges();
+          },
+        ),
+        CommonCheckboxInput(
+          label: 'ah.representative_unit_confirm'.tr,
+          value: isRepresentativeUnitConfirm,
+          isEditing: isEditing,
+          isEnable: true,
+          onChanged: (newValue) {
+            setState(() {
+              isRepresentativeUnitConfirm = newValue;
+            });
+            _checkForChanges();
+          },
+        ),
+      ],
     );
+  }
+
+  Widget _buildButton() {
+    return Row(children: [SGButton(text: 'Lưu', onPressed: () {})]);
   }
 }

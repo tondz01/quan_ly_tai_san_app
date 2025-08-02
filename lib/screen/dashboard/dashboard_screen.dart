@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/dashboard_card.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/statistics_card.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/recent_activities.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/quick_actions.dart';
@@ -202,48 +200,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildAssetStatusCard() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.3),
-            spreadRadius: 0,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.pie_chart,
-                color: ColorValue.primaryBlue,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Trạng thái tài sản',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: ColorValue.neutral900,
+    return SingleChildScrollView(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: ColorValue.neutral200.withOpacity(0.3),
+              spreadRadius: 0,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.pie_chart,
+                  color: ColorValue.primaryBlue,
+                  size: 24,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildStatusItem('Đang sử dụng', 80, ColorValue.success),
-          const SizedBox(height: 12),
-          _buildStatusItem('Bảo trì', 15, ColorValue.warning),
-          const SizedBox(height: 12),
-          _buildStatusItem('Ngừng sử dụng', 5, ColorValue.error),
-        ],
+                const SizedBox(width: 12),
+                Text(
+                  'Trạng thái tài sản',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: ColorValue.neutral900,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildStatusItem('Đang sử dụng', 80, ColorValue.success),
+            const SizedBox(height: 12),
+            _buildStatusItem('Bảo trì', 15, ColorValue.warning),
+            const SizedBox(height: 12),
+            _buildStatusItem('Ngừng sử dụng', 5, ColorValue.error),
+          ],
+        ),
       ),
     );
   }

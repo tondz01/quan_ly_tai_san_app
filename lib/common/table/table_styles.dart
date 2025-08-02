@@ -11,7 +11,6 @@ class TableStyles {
       'oddRowBackgroundColor': Colors.white,
       'evenRowBackgroundColor': ColorValue.neutral50,
       'selectedRowColor': ColorValue.primaryLightBlue.withOpacity(0.2),
-      'checkedRowColor': ColorValue.primaryLightBlue.withOpacity(0.1),
       'gridLineColor': ColorValue.neutral200,
       'rowHeight': 56.0,
       'gridLineWidth': 1.0,

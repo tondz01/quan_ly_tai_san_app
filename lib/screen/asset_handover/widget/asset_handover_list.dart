@@ -1,22 +1,22 @@
-import 'dart:developer';
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
+import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
-import 'package:se_gay_components/common/table/sg_table.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
-  final String mainScreen;
   const AssetHandoverList({
     super.key,
     required this.provider,
-    required this.mainScreen,
   });
 
   @override
@@ -26,131 +26,232 @@ class AssetHandoverList extends StatefulWidget {
 class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
-  
+
   @override
   Widget build(BuildContext context) {
-    // Usar Consumer para reaccionar a cambios en el provider
-    return Consumer<AssetHandoverProvider>(
-      builder: (context, provider, child) {
-        return Column(
-          children: [
-            FindByStateAssetHandover(provider: provider),
-            const SizedBox(height: 10),
-            if (provider.data != null)
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ColorValue.neutral300.withOpacity(0.4),
-                        spreadRadius: 0,
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: ColorValue.neutral200.withOpacity(0.2),
-                        spreadRadius: 0,
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: _buildTable(
-                        searchTerm,
-                        provider.columns,
-                        provider.dataPage ?? [],
-                        onViewAction: (item) {},
-                        onEditAction: (item) {},
-                        onDeleteAction: (item) {},
-                        onRowTap: (item) {
-                          provider.onChangeScreen(
-                            item: item,
-                            isMainScreen: false,
-                            isEdit: false,
-                          );
-                        },
-                        onSelectionChanged: (items) {},
-                        onCustomFilter: (item) => false,
+    final List<SgTableColumn<AssetHandoverDto>> columns = [
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Bàn giao tài sản',
+        getValue: (item) => item.name ?? '',
+        width: 170,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Quyết định điều động',
+        getValue: (item) => item.decisionNumber ?? '',
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Lệnh điều động',
+        getValue: (item) => item.transferDate ?? '',
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Ngày bàn giao',
+        getValue: (item) => item.transferDate ?? '',
+        width: 150,
+      ),
+      SgTableColumn<AssetHandoverDto>(
+        title: 'Chi tiết bàn giao',
+        cellBuilder:
+            (item) => showMovementDetails(item.assetHandoverMovements ?? []),
+        cellAlignment: TextAlign.center,
+        titleAlignment: TextAlign.center,
+        width: 120,
+        searchable: true,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Đơn vị giao',
+        getValue: (item) => item.senderUnit ?? '',
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Đơn vị nhận',
+        getValue: (item) => item.receiverUnit ?? '',
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Người lập phiếu',
+        getValue: (item) => item.createdBy ?? '',
+        width: 120,
+      ),
+      TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+        title: 'Trạng thái',
+        cellBuilder: (item) => showStatus(item.state ?? 0),
+        width: 150,
+        searchable: true,
+      ),
+    ];
+
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.table_chart,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Biên bản bàn giao tài sản (${widget.provider.data.length})',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade700,
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ),
-            _buildPaginationControls(provider),
-          ],
-        );
-      }
+                FindByStateAssetHandover(provider: widget.provider),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TableBaseView<AssetHandoverDto>(
+              searchTerm: '',
+              columns: columns,
+              data: widget.provider.dataPage ?? [],
+              horizontalController: ScrollController(),
+              onRowTap: (item) {
+                widget.provider.onChangeDetail(context, item);
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildTable(
-    String searchTerm,
-    List<SgTableColumn<AssetHandoverDto>> columns,
-    List<AssetHandoverDto> data, {
-    Function(AssetHandoverDto)? onViewAction,
-    Function(AssetHandoverDto)? onEditAction,
-    Function(AssetHandoverDto)? onDeleteAction,
-    Function(AssetHandoverDto)? onRowTap,
-    Function(List<AssetHandoverDto>)? onSelectionChanged,
-    bool Function(AssetHandoverDto)? onCustomFilter,
-  }) {
-    final verticalScrollController = ScrollController();
-    final horizontalScrollController = ScrollController();
-    
-    return Scrollbar(
-      thumbVisibility: true,
-      controller: verticalScrollController,
-      child: SingleChildScrollView(
-        controller: verticalScrollController,
-        scrollDirection: Axis.vertical,
-        child: Scrollbar(
-          thumbVisibility: true,
-          controller: horizontalScrollController,
-          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-          child: SingleChildScrollView(
-            controller: horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            child: SgTable<AssetHandoverDto>(
-              key: ValueKey(data.length),
-              headerBackgroundColor: ColorValue.primaryBlue,
-              textHeaderColor: Colors.white,
-              widthScreen: MediaQuery.of(context).size.width,
-              evenRowBackgroundColor: ColorValue.neutral50,
-              oddRowBackgroundColor: Colors.white,
-              selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-              checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-              gridLineColor: ColorValue.neutral200,
-              gridLineWidth: 1.0,
-              showVerticalLines: true,
-              showHorizontalLines: true,
-              allowRowSelection: true,
-              rowHeight: 56.0,
-              showActions: true,
-              actionColumnTitle: 'Thao tác',
-              actionColumnWidth: 160,
-              actionViewColor: ColorValue.success,
-              actionEditColor: ColorValue.primaryBlue,
-              actionDeleteColor: ColorValue.error,
-              onViewAction: onViewAction,
-              onEditAction: onEditAction,
-              onDeleteAction: onDeleteAction,
-              columns: columns,
-              data: data,
-              onRowTap: (item) {
-                onRowTap?.call(item);
-              },
-            ),
+  Widget showStatus(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color: getColorStatus(status),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text: getStatus(status),
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
           ),
         ),
       ),
     );
+  }
+
+  Widget showMovementDetails(List<AssetHandoverMovementDto> movementDetails) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children:
+                movementDetails
+                    .map(
+                      (detail) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        margin: const EdgeInsets.only(bottom: 2),
+                        decoration: BoxDecoration(
+                          color: ColorValue.paleRose,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: SGText(
+                          text: detail.name ?? '',
+                          size: 12,
+                          fontWeight: FontWeight.w500,
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    )
+                    .toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color getColorStatus(int status) {
+    switch (status) {
+      case 0:
+        return ColorValue.silverGray;
+      case 1:
+        return ColorValue.lightAmber;
+      case 2:
+        return ColorValue.mediumGreen;
+      case 3:
+        return ColorValue.lightBlue;
+      case 4:
+        return ColorValue.forestGreen;
+      case 5:
+        return ColorValue.coral;
+      default:
+        return ColorValue.darkGrey;
+    }
+  }
+
+  //  all('Tất cả', ColorValue.darkGrey),
+  //   draft('Nháp', ColorValue.silverGray),
+  //   ready('Sẵn sàng', ColorValue.lightAmber),
+  //   confirm('Xác nhận', ColorValue.mediumGreen),
+  //   browser('Trình duyệt', ColorValue.lightBlue),
+  //   complete('Hoàn thành', ColorValue.forestGreen),
+  //   cancel('Hủy', ColorValue.coral);
+  String getStatus(int status) {
+    switch (status) {
+      case 0:
+        return 'Nháp';
+      case 1:
+        return 'Sẵn sàng';
+      case 2:
+        return 'Xác nhận';
+      case 3:
+        return 'Trình Duyệt';
+      case 4:
+        return 'Hoàn thành';
+      case 5:
+        return 'Hủy';
+      default:
+        return '';
+    }
   }
 
   Widget _buildPaginationControls(AssetHandoverProvider provider) {

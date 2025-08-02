@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:quan_ly_tai_san_app/common/table/table_utils.dart';
 
 // Add sort direction enum
 enum SortDirection { none, ascending, descending }
@@ -253,38 +254,46 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final newWidths = adjustColumnWidths(
+      originalWidths: {
+        for (final col in widget.columns) col.title: col.width,
+      },
+      minTableWidth: screenWidth,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildTable(),
+        _buildTable(newWidths),
         const SizedBox(height: 8),
         _buildAddRowButton(),
       ],
     );
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(Map<String, double> newWidths) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header row
-          _buildHeaderRow(),
+          _buildHeaderRow(newWidths),
 
           // Table rows
           ..._tableData.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
             final isEven = index % 2 == 0;
-            return _buildDataRow(item, index, isEven);
+            return _buildDataRow(item, index, isEven, newWidths);
           }),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderRow() {
+  Widget _buildHeaderRow(Map<String, double> newWidths) {
     return Container(
       height: widget.rowHeight,
       decoration: BoxDecoration(
@@ -327,7 +336,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                   ),
                 ),
               ),
-              width: column.width,
+              width: newWidths[column.title] ?? column.width,
             );
           }),
           // Action column for delete button - only show in edit mode
@@ -343,7 +352,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     );
   }
 
-  Widget _buildDataRow(T item, int index, bool isEven) {
+  Widget _buildDataRow(T item, int index, bool isEven, Map<String, double> newWidths) {
     final backgroundColor =
         _selectedRowIndex == index
             ? widget.selectedRowColor
@@ -374,7 +383,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                   column.isEditable
                       ? _buildEditableCell(item, index, column)
                       : _buildDisplayCell(item, column),
-              width: column.width,
+              width: newWidths[column.title] ?? column.width,
             ),
           ),
           // Delete button cell - only show when editing
@@ -399,33 +408,32 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     final controller =
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
     
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: widget.isEditing 
-          ? TextField(
-              controller: controller,
-              style: const TextStyle(fontSize: 14),
-              decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                // border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              onChanged: (value) {
-                _updateCellValue(rowIndex, column.field, value);
-              },
-            )
-          : Align(
-              alignment: column.cellAlignment == TextAlign.center
-                  ? Alignment.center
-                  : column.cellAlignment == TextAlign.right
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-              child: Text(
-                controller.text,
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-    );
+    if (widget.isEditing) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: TextField(
+          controller: controller,
+          style: const TextStyle(fontSize: 14),
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            // border: OutlineInputBorder(),
+            isDense: true,
+          ),
+          onChanged: (value) {
+            _updateCellValue(rowIndex, column.field, value);
+          },
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(
+          controller.text,
+          textAlign: column.titleAlignment,
+          style: const TextStyle(fontSize: 14),
+        ),
+      );
+    }
   }
 
   Widget _buildDisplayCell(T item, SgEditableColumn<T> column) {
@@ -442,6 +450,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 : Alignment.centerLeft,
         child: Text(
           value?.toString() ?? '',
+          textAlign: column.titleAlignment,
           style: const TextStyle(fontSize: 14),
         ),
       ),

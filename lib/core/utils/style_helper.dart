@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_styles.dart';
 
 /// Helper class để áp dụng style cho toàn bộ ứng dụng
 class StyleHelper {

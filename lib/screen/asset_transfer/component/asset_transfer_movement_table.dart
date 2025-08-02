@@ -22,7 +22,7 @@ Widget assetTransferMovementTable(
               textAlign: TextAlign.start,
             ),
           ),
-          movementDetailTable(movementDetails, isEditing),
+          Expanded(child: movementDetailTable(movementDetails, isEditing)),
         ],
       )
       : Row(
