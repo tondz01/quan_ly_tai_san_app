@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/core/utils/bloc_providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
-import 'package:quan_ly_tai_san_app/core/theme/app_theme.dart';
 import 'package:quan_ly_tai_san_app/injection.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_conf.dart';
@@ -24,13 +23,12 @@ class App extends StatelessWidget {
         child: GestureDetector(
           onTap: () {
             primaryFocus?.unfocus();
-            FocusScope.of(context).unfocus();
             SGPopupManager().closeAllPopups();
           },
           child: GetMaterialApp.router(
             debugShowCheckedModeBanner: false,
             title: 'Quan Ly Tai San',
-            theme: AppTheme.lightTheme,
+            theme: ThemeData.light(),
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,

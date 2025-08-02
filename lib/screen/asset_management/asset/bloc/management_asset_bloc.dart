@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../repository/asset_repository.dart';
-import 'asset_event.dart';
-import 'asset_state.dart';
+import 'management_asset_event.dart';
+import 'management_asset_state.dart';
 
-class AssetBloc extends Bloc<AssetEvent, AssetState> {
+class ManagementAssetBloc extends Bloc<ManagementAssetEvent, ManagementAssetState> {
   final AssetRepository repository;
 
   List<DropdownMenuItem<int>> rowPerPageItems =
@@ -14,7 +14,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
 
   int defaultPageSize = 80;
 
-  AssetBloc({required this.repository}) : super(AssetInitial()) {
+  ManagementAssetBloc({required this.repository}) : super(AssetInitial()) {
     defaultPageSize = rowPerPageItems[0].value ?? 80;
     on<LoadAssets>(_onLoadAssets);
     on<LoadAssetsWithPagination>(_onLoadAssetsWithPagination);
@@ -23,7 +23,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     on<ChangePage>(_onChangePage);
   }
 
-  Future<void> _onLoadAssets(LoadAssets event, Emitter<AssetState> emit) async {
+  Future<void> _onLoadAssets(LoadAssets event, Emitter<ManagementAssetState> emit) async {
     try {
       emit(AssetLoading());
       final assets = await repository.getAssets();
@@ -33,7 +33,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     }
   }
 
-  Future<void> _onLoadAssetsWithPagination(LoadAssetsWithPagination event, Emitter<AssetState> emit) async {
+  Future<void> _onLoadAssetsWithPagination(LoadAssetsWithPagination event, Emitter<ManagementAssetState> emit) async {
     try {
       emit(AssetLoading());
       final result = await repository.getAssetsWithPagination(
@@ -50,7 +50,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     }
   }
 
-  Future<void> _onFilterAssets(FilterAssets event, Emitter<AssetState> emit) async {
+  Future<void> _onFilterAssets(FilterAssets event, Emitter<ManagementAssetState> emit) async {
     try {
       emit(AssetLoading());
 
@@ -75,7 +75,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     }
   }
 
-  Future<void> _onChangePage(ChangePage event, Emitter<AssetState> emit) async {
+  Future<void> _onChangePage(ChangePage event, Emitter<ManagementAssetState> emit) async {
     if (state is AssetPaginatedLoaded) {
       final currentState = state as AssetPaginatedLoaded;
 
@@ -96,7 +96,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     }
   }
 
-  Future<void> _onGetAssetById(GetAssetById event, Emitter<AssetState> emit) async {
+  Future<void> _onGetAssetById(GetAssetById event, Emitter<ManagementAssetState> emit) async {
     try {
       emit(AssetLoading());
       final asset = await repository.getAssetById(event.id);

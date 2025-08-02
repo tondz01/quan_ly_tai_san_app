@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -55,13 +56,13 @@ class MaterialTableWrapper<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ColorValue.neutral300.withOpacity(0.4),
+            color: ColorValue.neutral300.withValues(alpha: 0.4),
             spreadRadius: 0,
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.2),
+            color: ColorValue.neutral200.withValues(alpha: 0.2),
             spreadRadius: 0,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -70,35 +71,38 @@ class MaterialTableWrapper<T> extends StatelessWidget {
       ),
       padding: padding ?? const EdgeInsets.all(16),
       child: SgTable<T>(
-        headerBackgroundColor: ColorValue.primaryBlue,
-        textHeaderColor: Colors.white,
-        evenRowBackgroundColor: ColorValue.neutral50,
-        oddRowBackgroundColor: Colors.white,
-        selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-        checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-        gridLineColor: ColorValue.neutral200,
-        gridLineWidth: 1.0,
-        showVerticalLines: true,
-        showHorizontalLines: true,
-        allowRowSelection: allowRowSelection,
-        searchTerm: searchTerm,
-        rowHeight: rowHeight,
-        showCheckboxes: showCheckboxes,
-        onSelectionChanged: onSelectionChanged,
-        customFilter: onCustomFilter,
-        showActions: showActions,
-        actionColumnTitle: actionColumnTitle,
-        actionColumnWidth: actionColumnWidth,
-        actionViewColor: actionViewColor ?? ColorValue.success,
-        actionEditColor: actionEditColor ?? ColorValue.primaryBlue,
-        actionDeleteColor: actionDeleteColor ?? ColorValue.error,
-        onViewAction: onViewAction,
-        onEditAction: onEditAction,
-        onDeleteAction: onDeleteAction,
-        columns: columns,
-        data: data,
-        onRowTap: onRowTap,
+        props: SgTableProps<T>(
+          headerBackgroundColor: ColorValue.primaryBlue,
+          textHeaderColor: Colors.white,
+          evenRowBackgroundColor: ColorValue.neutral50,
+          oddRowBackgroundColor: Colors.white,
+          selectedRowColor: ColorValue.primaryLightBlue.withValues(alpha: 0.2),
+          checkedRowColor: ColorValue.primaryLightBlue.withValues(alpha: 0.1),
+          gridLineColor: ColorValue.neutral200,
+          gridLineWidth: 1.0,
+          showVerticalLines: true,
+          showHorizontalLines: true,
+          allowRowSelection: allowRowSelection,
+          searchTerm: searchTerm,
+          rowHeight: rowHeight,
+          showCheckboxes: showCheckboxes,
+          onSelectionChanged: onSelectionChanged,
+          customFilter: onCustomFilter,
+          showActions: showActions,
+          actionColumnTitle: actionColumnTitle,
+          actionColumnWidth: actionColumnWidth,
+          actionViewColor: actionViewColor ?? ColorValue.success,
+          actionEditColor: actionEditColor ?? ColorValue.primaryBlue,
+          actionDeleteColor: actionDeleteColor ?? ColorValue.error,
+          onViewAction: onViewAction,
+          onEditAction: onEditAction,
+          onDeleteAction: onDeleteAction,
+          columns: columns,
+          data: data,
+          onRowTap: onRowTap,
+          widthScreen: 1080,
+        ),
       ),
     );
   }
-} 
+}

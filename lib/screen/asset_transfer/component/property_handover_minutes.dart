@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -16,34 +17,24 @@ class PropertyHandoverMinutes {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final popupWidth =
-        screenWidth < 1100 ? screenWidth * 0.95 : screenWidth * 0.9;
-    final popupHeight =
-        screenHeight < 800 ? screenHeight * 0.9 : screenHeight * 0.8;
+    final popupWidth = screenWidth < 1100 ? screenWidth * 0.95 : screenWidth * 0.9;
+    final popupHeight = screenHeight < 800 ? screenHeight * 0.9 : screenHeight * 0.8;
 
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             width: popupWidth,
             height: popupHeight,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.white),
             child: Column(
               children: [
                 _buildHeader(context),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: _PropertyHandoverMinutesContent(data: data),
-                  ),
+                  child: Padding(padding: const EdgeInsets.all(20), child: _PropertyHandoverMinutesContent(data: data)),
                 ),
               ],
             ),
@@ -58,10 +49,7 @@ class PropertyHandoverMinutes {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
       ),
       child: Row(
         children: [
@@ -70,11 +58,7 @@ class PropertyHandoverMinutes {
           Expanded(
             child: SGText(
               text: 'Biên bản Bàn giao',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.blue.shade800,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.blue.shade800),
             ),
           ),
           IconButton(
@@ -92,12 +76,10 @@ class _PropertyHandoverMinutesContent extends StatefulWidget {
   const _PropertyHandoverMinutesContent({required this.data});
 
   @override
-  State<_PropertyHandoverMinutesContent> createState() =>
-      _PropertyHandoverMinutesContentState();
+  State<_PropertyHandoverMinutesContent> createState() => _PropertyHandoverMinutesContentState();
 }
 
-class _PropertyHandoverMinutesContentState
-    extends State<_PropertyHandoverMinutesContent> {
+class _PropertyHandoverMinutesContentState extends State<_PropertyHandoverMinutesContent> {
   final verticalScrollController = ScrollController();
   final horizontalScrollController = ScrollController();
 
@@ -127,11 +109,7 @@ class _PropertyHandoverMinutesContentState
     return Container(
       decoration: _buildContainerDecoration(),
       child: Column(
-        children: [
-          _buildTableHeader(),
-          if (_isSmallScreen) _buildScrollIndicator(),
-          Expanded(child: _buildTable()),
-        ],
+        children: [_buildTableHeader(), if (_isSmallScreen) _buildScrollIndicator(), Expanded(child: _buildTable())],
       ),
     );
   }
@@ -141,13 +119,7 @@ class _PropertyHandoverMinutesContentState
       color: Colors.white,
       borderRadius: BorderRadius.circular(8),
       border: Border.all(color: Colors.grey.shade300),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 4,
-          offset: const Offset(0, 2),
-        ),
-      ],
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
     );
   }
 
@@ -156,10 +128,7 @@ class _PropertyHandoverMinutesContentState
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
-        ),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -175,22 +144,14 @@ class _PropertyHandoverMinutesContentState
         const SizedBox(width: 8),
         Text(
           'Danh sách biên bản bàn giao (${widget.data.length})',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade700,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
         ),
       ],
     );
   }
 
   Widget _buildStatusSummary() {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 8,
-      children: _statusColors.entries.map(_buildStatusItem).toList(),
-    );
+    return Wrap(spacing: 16, runSpacing: 8, children: _statusColors.entries.map(_buildStatusItem).toList());
   }
 
   Widget _buildStatusItem(MapEntry<String, Color> entry) {
@@ -200,19 +161,12 @@ class _PropertyHandoverMinutesContentState
         Container(
           width: 16,
           height: 16,
-          decoration: BoxDecoration(
-            color: entry.value,
-            borderRadius: BorderRadius.circular(2),
-          ),
+          decoration: BoxDecoration(color: entry.value, borderRadius: BorderRadius.circular(2)),
         ),
         const SizedBox(width: 6),
         Text(
           '${entry.key} (${_getCountByState(entry.key)})',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade700,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -231,11 +185,7 @@ class _PropertyHandoverMinutesContentState
           const SizedBox(width: 8),
           Text(
             'Có thể scroll ngang để xem thêm cột',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.blue.shade700,
-              fontStyle: FontStyle.italic,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.blue.shade700, fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -266,42 +216,32 @@ class _PropertyHandoverMinutesContentState
   Widget _buildTableWidget() {
     final columns = _buildColumns();
     final table = SgTable<AssetHandoverDto>(
-      rowHeight: 45.0,
-      data: widget.data,
-      titleStyleHeader: const TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 13,
-        color: Colors.black87,
+      props: SgTableProps<AssetHandoverDto>(
+        rowHeight: 45.0,
+        data: widget.data,
+        titleStyleHeader: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black87),
+        headerBackgroundColor: Colors.grey.shade100,
+        oddRowBackgroundColor: Colors.white,
+        evenRowBackgroundColor: Colors.grey.shade50,
+        showVerticalLines: false,
+        showHorizontalLines: true,
+        columns: columns,
+        widthScreen: 1080,
       ),
-      headerBackgroundColor: Colors.grey.shade100,
-      oddRowBackgroundColor: Colors.white,
-      evenRowBackgroundColor: Colors.grey.shade50,
-      showVerticalLines: false,
-      showHorizontalLines: true,
-      columns: columns,
     );
 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child:
           _isSmallScreen
               ? SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: columns.fold<double>(
-                    0,
-                    (sum, column) => sum + (column.width ?? 0),
-                  ),
+                  width: columns.fold<double>(0, (sum, column) => sum + (column.width ?? 0)),
                   child: table,
                 ),
               )
@@ -355,10 +295,7 @@ class _PropertyHandoverMinutesContentState
     return widget.data.where((item) => item.state == status).length;
   }
 
-  List<SgTableColumn<AssetHandoverDto>> _createColumns(
-    BuildContext context,
-    Map<String, double> columnWidths,
-  ) {
+  List<SgTableColumn<AssetHandoverDto>> _createColumns(BuildContext context, Map<String, double> columnWidths) {
     return [
       TableColumnBuilder.createTextColumn<AssetHandoverDto>(
         title: 'Quyết định điều động',
@@ -383,8 +320,7 @@ class _PropertyHandoverMinutesContentState
       ),
       SgTableColumn<AssetHandoverDto>(
         title: 'Chi tiết bàn giao',
-        cellBuilder:
-            (item) => AssetHandoverColumns.buildMovementDetails(item.assetHandoverMovements ?? []),
+        cellBuilder: (item) => AssetHandoverColumns.buildMovementDetails(item.assetHandoverMovements ?? []),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,
         width: columnWidths['Chi tiết bàn giao']!,

@@ -5,9 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/widget/header.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
 import 'models/menu_data.dart';
 
@@ -27,13 +25,14 @@ class _HomeState extends State<Home> {
   final AppMenuData _menuData = AppMenuData();
   // Thêm biến để theo dõi trạng thái của popup
   bool _isPopupOpen = false;
+  bool _isNotGroup = false;
 
   @override
   void initState() {
     super.initState();
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
-    
+
     // Lắng nghe thay đổi route để cập nhật selectedIndex
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateSelectedIndexFromRoute();
@@ -49,20 +48,16 @@ class _HomeState extends State<Home> {
 
   void _updateSelectedIndexFromRoute() {
     final currentLocation = GoRouterState.of(context).uri.path;
-    final extra = GoRouterState.of(context).extra;
-    
-    log('Current route: $currentLocation, extra: $extra');
-    
     // Tìm menu item tương ứng với route hiện tại
     for (int i = 0; i < _menuData.menuItems.length; i++) {
       final menuItem = _menuData.menuItems[i];
-      
+
       // Kiểm tra route chính
       if (menuItem.route == currentLocation) {
         _updateSelectedIndex(i, 0);
         return;
       }
-      
+
       // Kiểm tra subItems
       for (int j = 0; j < menuItem.reportSubItems.length; j++) {
         final subItem = menuItem.reportSubItems[j];
@@ -71,7 +66,7 @@ class _HomeState extends State<Home> {
           return;
         }
       }
-      
+
       // Kiểm tra projectGroups
       for (int groupIndex = 0; groupIndex < menuItem.projectGroups.length; groupIndex++) {
         final group = menuItem.projectGroups[groupIndex];
@@ -132,6 +127,7 @@ class _HomeState extends State<Home> {
             () => setState(() {
               if (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) {
                 _selectedIndex = item.index;
+                _isNotGroup = true;
                 if (item.route.isNotEmpty) {
                   context.go(item.route);
                 }
@@ -153,11 +149,11 @@ class _HomeState extends State<Home> {
         isActive: _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
         onTap:
             () => setState(() {
+              _isNotGroup = false;
               _selectedIndex = parentIndex;
               _selectedSubIndex = subIndex;
               _popupManager.closeAllPopups();
               if (subItem.route.isNotEmpty) {
-                log('subItem.route: ${subItem.extra}');
                 context.go(subItem.route, extra: subItem.extra);
               }
             }),
@@ -181,11 +177,11 @@ class _HomeState extends State<Home> {
             isActive: _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
             onTap:
                 () => setState(() {
+                  _isNotGroup = false;
                   _selectedIndex = parentIndex;
                   _selectedSubIndex = subIndex;
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
-                    log('item.extra: ${item.extra}');
                     context.go(item.route, extra: item.extra);
                   }
                 }),
@@ -204,18 +200,14 @@ class _HomeState extends State<Home> {
       header: Header(),
       sidebar: Column(
         children: [
-          Divider(
-            color: ColorValue.neutral200,
-            height: 1,
-            thickness: 1,
-          ),
+          Divider(color: ColorValue.neutral200, height: 1, thickness: 1),
           Container(
             padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: ColorValue.neutral200.withOpacity(0.3),
+                  color: ColorValue.neutral200.withValues(alpha: 0.3),
                   offset: const Offset(0, 1),
                   blurRadius: 2,
                 ),
@@ -232,23 +224,21 @@ class _HomeState extends State<Home> {
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: ColorValue.neutral50,
-        ),
+        decoration: BoxDecoration(color: ColorValue.neutral50),
         child: Stack(
           children: [
             // Content
             widget.child,
 
             // Thêm barrier chỉ hiển thị khi popup đang mở
-            if (_isPopupOpen)
+            if (_isPopupOpen && !_isNotGroup)
               Positioned.fill(
                 child: GestureDetector(
                   onTap: () {
-                    SGLog.debug("Home", "Barrier tapped");
                     primaryFocus?.unfocus();
                     FocusScope.of(context).unfocus();
                     _popupManager.closeAllPopups();
+                    _isNotGroup = true;
                   },
                   behavior: HitTestBehavior.translucent,
                   child: Container(color: Colors.transparent),

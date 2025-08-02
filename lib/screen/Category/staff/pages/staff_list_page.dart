@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart'
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/pages/staff_form_page.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -23,10 +24,7 @@ class StaffListPage extends StatelessWidget {
             title: const Text('Xác nhận xóa'),
             content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Hủy'),
-              ),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Hủy')),
               ElevatedButton(
                 onPressed: () {
                   context.read<StaffBloc>().add(DeleteStaff(staff));
@@ -43,7 +41,7 @@ class StaffListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final verticalScrollController = ScrollController();
     final horizontalScrollController = ScrollController();
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
@@ -66,10 +64,7 @@ class StaffListPage extends StatelessWidget {
                           icon: Icons.add,
                           backgroundColor: ColorValue.primaryBlue,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           onPressed: () {
                             if (onAdd != null) {
                               onAdd!();
@@ -78,9 +73,9 @@ class StaffListPage extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder:
                                       (_) => BlocProvider.value(
-                                    value: context.read<StaffBloc>(),
-                                    child: const StaffFormPage(),
-                                  ),
+                                        value: context.read<StaffBloc>(),
+                                        child: const StaffFormPage(),
+                                      ),
                                 ),
                               );
                             }
@@ -91,23 +86,21 @@ class StaffListPage extends StatelessWidget {
                     Expanded(
                       child: SizedBox(
                         child: TextFormField(
-                            decoration: InputDecoration(
-                              labelText: 'Tìm kiếm nhân viên',
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              isDense: true,
-                            ),
-                            style: TextStyle(fontSize: 13),
-                            onChanged: (value) {
-                              context.read<StaffBloc>().add(SearchStaff(value));
-                            },
+                          decoration: InputDecoration(
+                            labelText: 'Tìm kiếm nhân viên',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            isDense: true,
                           ),
+                          style: TextStyle(fontSize: 13),
+                          onChanged: (value) {
+                            context.read<StaffBloc>().add(SearchStaff(value));
+                          },
+                        ),
                       ),
                     ),
-                    Expanded(
-                      child: SizedBox(),
-                    ),
+                    Expanded(child: SizedBox()),
                   ],
                 ),
                 SizedBox(height: 8),
@@ -118,7 +111,7 @@ class StaffListPage extends StatelessWidget {
                       if (staffs.isEmpty) {
                         return const Center(child: Text('Chưa có nhân viên nào.'));
                       }
-                                            return Container(
+                      return Container(
                         margin: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -154,57 +147,60 @@ class StaffListPage extends StatelessWidget {
                                   controller: horizontalScrollController,
                                   scrollDirection: Axis.horizontal,
                                   child: SgTable<StaffDTO>(
-                                    headerBackgroundColor: ColorValue.primaryBlue,
-                                    textHeaderColor: Colors.white,
-                                    widthScreen: MediaQuery.of(context).size.width,
-                                    evenRowBackgroundColor: ColorValue.neutral50,
-                                    oddRowBackgroundColor: Colors.white,
-                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                                    gridLineColor: ColorValue.neutral200,
-                                    gridLineWidth: 1.0,
-                                    showVerticalLines: true,
-                                    showHorizontalLines: true,
-                                    allowRowSelection: true,
-                                    rowHeight: 56.0,
-                                    showActions: true,
-                                    actionColumnTitle: 'Thao tác',
-                                    actionColumnWidth: 160,
-                                    actionViewColor: ColorValue.success,
-                                    actionEditColor: ColorValue.primaryBlue,
-                                    actionDeleteColor: ColorValue.error,
-                                    onEditAction: (item) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => BlocProvider.value(
-                                            value: context.read<StaffBloc>(),
-                                            child: StaffFormPage(staff: item),
+                                    props: SgTableProps<StaffDTO>(
+                                      headerBackgroundColor: ColorValue.primaryBlue,
+                                      textHeaderColor: Colors.white,
+                                      widthScreen: MediaQuery.of(context).size.width,
+                                      evenRowBackgroundColor: ColorValue.neutral50,
+                                      oddRowBackgroundColor: Colors.white,
+                                      selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                      checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                      gridLineColor: ColorValue.neutral200,
+                                      gridLineWidth: 1.0,
+                                      showVerticalLines: true,
+                                      showHorizontalLines: true,
+                                      allowRowSelection: true,
+                                      rowHeight: 56.0,
+                                      showActions: true,
+                                      actionColumnTitle: 'Thao tác',
+                                      actionColumnWidth: 160,
+                                      actionViewColor: ColorValue.success,
+                                      actionEditColor: ColorValue.primaryBlue,
+                                      actionDeleteColor: ColorValue.error,
+                                      onEditAction: (item) {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => BlocProvider.value(
+                                                  value: context.read<StaffBloc>(),
+                                                  child: StaffFormPage(staff: item),
+                                                ),
                                           ),
+                                        );
+                                      },
+                                      onDeleteAction: (item) {
+                                        _showDeleteDialog(context, item);
+                                      },
+                                      columns: [
+                                        TableColumnBuilder.createTextColumn<StaffDTO>(
+                                          title: 'Mã nhân viên',
+                                          getValue: (item) => item.staffId,
+                                          width: 150,
                                         ),
-                                      );
-                                    },
-                                    onDeleteAction: (item) {
-                                      _showDeleteDialog(context, item);
-                                    },
-                                    columns: [
-                                      TableColumnBuilder.createTextColumn<StaffDTO>(
-                                        title: 'Mã nhân viên',
-                                        getValue: (item) => item.staffId,
-                                        width: 150,
-                                      ),
-                                      TableColumnBuilder.createTextColumn<StaffDTO>(
-                                        title: 'Tên nhân viên',
-                                        getValue: (item) => item.name,
-                                        width: 200,
-                                      ),
-                                      TableColumnBuilder.createTextColumn<StaffDTO>(
-                                        title: 'Email',
-                                        getValue: (item) => item.email,
-                                        width: 250,
-                                      ),
-                                    ],
-                                    data: staffs,
-                                    onRowTap: (item) {},
+                                        TableColumnBuilder.createTextColumn<StaffDTO>(
+                                          title: 'Tên nhân viên',
+                                          getValue: (item) => item.name,
+                                          width: 200,
+                                        ),
+                                        TableColumnBuilder.createTextColumn<StaffDTO>(
+                                          title: 'Email',
+                                          getValue: (item) => item.email,
+                                          width: 250,
+                                        ),
+                                      ],
+                                      data: staffs,
+                                      onRowTap: (item) {},
+                                    ),
                                   ),
                                 ),
                               ),

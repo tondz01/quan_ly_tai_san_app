@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -15,8 +16,7 @@ class BotttomTableAssetHandover extends StatefulWidget {
   const BotttomTableAssetHandover({super.key, required this.data});
 
   @override
-  State<BotttomTableAssetHandover> createState() =>
-      _BotttomTableAssetHandoverState();
+  State<BotttomTableAssetHandover> createState() => _BotttomTableAssetHandoverState();
 }
 
 class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
@@ -66,13 +66,7 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
       color: Colors.white,
       borderRadius: BorderRadius.circular(8),
       border: Border.all(color: Colors.grey.shade300),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 4,
-          offset: const Offset(0, 2),
-        ),
-      ],
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
     );
   }
 
@@ -81,10 +75,7 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
-        ),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,22 +91,14 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
         const SizedBox(width: 8),
         Text(
           'Danh sách biên bản bàn giao (${widget.data.length})',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade700,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
         ),
       ],
     );
   }
 
   Widget _buildStatusSummary() {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 8,
-      children: _statusColors.entries.map(_buildStatusItem).toList(),
-    );
+    return Wrap(spacing: 16, runSpacing: 8, children: _statusColors.entries.map(_buildStatusItem).toList());
   }
 
   Widget _buildStatusItem(MapEntry<String, Color> entry) {
@@ -125,19 +108,12 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
         Container(
           width: 16,
           height: 16,
-          decoration: BoxDecoration(
-            color: entry.value,
-            borderRadius: BorderRadius.circular(2),
-          ),
+          decoration: BoxDecoration(color: entry.value, borderRadius: BorderRadius.circular(2)),
         ),
         const SizedBox(width: 6),
         Text(
           '${entry.key} (${_getCountByState(entry.key)})',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade700,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -156,11 +132,7 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
           const SizedBox(width: 8),
           Text(
             'Có thể scroll ngang để xem thêm cột',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.blue.shade700,
-              fontStyle: FontStyle.italic,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.blue.shade700, fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -191,42 +163,32 @@ class _BotttomTableAssetHandoverState extends State<BotttomTableAssetHandover> {
   Widget _buildTableWidget() {
     final columns = _buildColumns();
     final table = SgTable<AssetHandoverDto>(
-      rowHeight: 45.0,
-      data: widget.data,
-      titleStyleHeader: const TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 13,
-        color: Colors.black87,
+      props: SgTableProps<AssetHandoverDto>(
+        rowHeight: 45.0,
+        data: widget.data,
+        titleStyleHeader: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black87),
+        headerBackgroundColor: Colors.grey.shade100,
+        oddRowBackgroundColor: Colors.white,
+        evenRowBackgroundColor: Colors.grey.shade50,
+        showVerticalLines: false,
+        showHorizontalLines: true,
+        columns: columns,
+        widthScreen: 1080,
       ),
-      headerBackgroundColor: Colors.grey.shade100,
-      oddRowBackgroundColor: Colors.white,
-      evenRowBackgroundColor: Colors.grey.shade50,
-      showVerticalLines: false,
-      showHorizontalLines: true,
-      columns: columns,
     );
 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
       ),
       child:
           _isSmallScreen
               ? SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: columns.fold<double>(
-                    0,
-                    (sum, column) => sum + (column.width ?? 0),
-                  ),
+                  width: columns.fold<double>(0, (sum, column) => sum + (column.width ?? 0)),
                   child: table,
                 ),
               )

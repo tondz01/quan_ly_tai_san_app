@@ -7,17 +7,14 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class AssetTransferList extends StatefulWidget {
   final AssetTransferProvider provider;
   final String mainScreen;
-  const AssetTransferList({
-    super.key,
-    required this.provider,
-    required this.mainScreen,
-  });
+  const AssetTransferList({super.key, required this.provider, required this.mainScreen});
 
   @override
   State<AssetTransferList> createState() => _AssetTransferListState();
@@ -26,7 +23,7 @@ class AssetTransferList extends StatefulWidget {
 class _AssetTransferListState extends State<AssetTransferList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
-  
+
   @override
   Widget build(BuildContext context) {
     // Usar Consumer para reaccionar a cambios en el provider
@@ -68,11 +65,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                       onEditAction: (item) {},
                       onDeleteAction: (item) {},
                       onRowTap: (item) {
-                        provider.onChangeScreen(
-                          item: item,
-                          isMainScreen: false,
-                          isEdit: false,
-                        );
+                        provider.onChangeScreen(item: item, isMainScreen: false, isEdit: false);
                       },
                       onSelectionChanged: (items) {},
                       onCustomFilter: (item) => false,
@@ -83,7 +76,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
             _buildPaginationControls(provider),
           ],
         );
-      }
+      },
     );
   }
 
@@ -99,10 +92,10 @@ class _AssetTransferListState extends State<AssetTransferList> {
     bool Function(AssetTransferDto)? onCustomFilter,
   }) {
     log('Construyendo tabla con ${data.length} elementos');
-    
+
     final verticalScrollController = ScrollController();
     final horizontalScrollController = ScrollController();
-    
+
     return Scrollbar(
       thumbVisibility: true,
       controller: verticalScrollController,
@@ -118,33 +111,35 @@ class _AssetTransferListState extends State<AssetTransferList> {
             scrollDirection: Axis.horizontal,
             child: SgTable<AssetTransferDto>(
               key: ValueKey(data.length),
-              headerBackgroundColor: ColorValue.primaryBlue,
-              textHeaderColor: Colors.white,
-              widthScreen: MediaQuery.of(context).size.width,
-              evenRowBackgroundColor: ColorValue.neutral50,
-              oddRowBackgroundColor: Colors.white,
-              selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-              checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-              gridLineColor: ColorValue.neutral200,
-              gridLineWidth: 1.0,
-              showVerticalLines: true,
-              showHorizontalLines: true,
-              allowRowSelection: true,
-              rowHeight: 56.0,
-              showActions: true,
-              actionColumnTitle: 'Thao tác',
-              actionColumnWidth: 160,
-              actionViewColor: ColorValue.success,
-              actionEditColor: ColorValue.primaryBlue,
-              actionDeleteColor: ColorValue.error,
-              onViewAction: onViewAction,
-              onEditAction: onEditAction,
-              onDeleteAction: onDeleteAction,
-              columns: columns,
-              data: data,
-              onRowTap: (item) {
-                onRowTap?.call(item);
-              },
+              props: SgTableProps<AssetTransferDto>(
+                headerBackgroundColor: ColorValue.primaryBlue,
+                textHeaderColor: Colors.white,
+                widthScreen: MediaQuery.of(context).size.width,
+                evenRowBackgroundColor: ColorValue.neutral50,
+                oddRowBackgroundColor: Colors.white,
+                selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                gridLineColor: ColorValue.neutral200,
+                gridLineWidth: 1.0,
+                showVerticalLines: true,
+                showHorizontalLines: true,
+                allowRowSelection: true,
+                rowHeight: 56.0,
+                showActions: true,
+                actionColumnTitle: 'Thao tác',
+                actionColumnWidth: 160,
+                actionViewColor: ColorValue.success,
+                actionEditColor: ColorValue.primaryBlue,
+                actionDeleteColor: ColorValue.error,
+                onViewAction: onViewAction,
+                onEditAction: onEditAction,
+                onDeleteAction: onDeleteAction,
+                columns: columns,
+                data: data,
+                onRowTap: (item) {
+                  onRowTap?.call(item);
+                },
+              ),
             ),
           ),
         ),

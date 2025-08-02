@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -23,15 +24,10 @@ class DepartmentListPage extends StatelessWidget {
             title: const Text('Xác nhận xóa'),
             content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Hủy'),
-              ),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Hủy')),
               ElevatedButton(
                 onPressed: () {
-                  context.read<DepartmentBloc>().add(
-                    DeleteDepartment(department),
-                  );
+                  context.read<DepartmentBloc>().add(DeleteDepartment(department));
                   Navigator.of(ctx).pop();
                 },
                 child: const Text('Xóa'),
@@ -45,16 +41,14 @@ class DepartmentListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final verticalScrollController = ScrollController();
     final horizontalScrollController = ScrollController();
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
           const SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.05,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
             width: MediaQuery.of(context).size.width,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,10 +63,7 @@ class DepartmentListPage extends StatelessWidget {
                           icon: Icons.add,
                           backgroundColor: ColorValue.primaryBlue,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           onPressed: () {
                             if (onAdd != null) {
                               onAdd!();
@@ -98,16 +89,11 @@ class DepartmentListPage extends StatelessWidget {
                             labelText: 'Tìm kiếm phòng ban',
                             prefixIcon: Icon(Icons.search),
                             border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             isDense: true,
                           ),
                           onChanged: (value) {
-                            context.read<DepartmentBloc>().add(
-                              SearchDepartment(value),
-                            );
+                            context.read<DepartmentBloc>().add(SearchDepartment(value));
                           },
                         ),
                       ),
@@ -122,9 +108,7 @@ class DepartmentListPage extends StatelessWidget {
                     if (state is DepartmentLoaded) {
                       final departments = state.departments;
                       if (departments.isEmpty) {
-                        return const Center(
-                          child: Text('Chưa có phòng ban nào.'),
-                        );
+                        return const Center(child: Text('Chưa có phòng ban nào.'));
                       }
                       return Container(
                         margin: const EdgeInsets.all(16),
@@ -162,52 +146,55 @@ class DepartmentListPage extends StatelessWidget {
                                   controller: horizontalScrollController,
                                   scrollDirection: Axis.horizontal,
                                   child: SgTable<Department>(
-                                    headerBackgroundColor: ColorValue.primaryBlue,
-                                    textHeaderColor: Colors.white,
-                                    widthScreen: MediaQuery.of(context).size.width,
-                                    evenRowBackgroundColor: ColorValue.neutral50,
-                                    oddRowBackgroundColor: Colors.white,
-                                    selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
-                                    checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
-                                    gridLineColor: ColorValue.neutral200,
-                                    gridLineWidth: 1.0,
-                                    showVerticalLines: true,
-                                    showHorizontalLines: true,
-                                    allowRowSelection: true,
-                                    rowHeight: 56.0,
-                                    showActions: true,
-                                    actionColumnTitle: 'Thao tác',
-                                    actionColumnWidth: 160,
-                                    actionViewColor: ColorValue.success,
-                                    actionEditColor: ColorValue.primaryBlue,
-                                    actionDeleteColor: ColorValue.error,
-                                    onEditAction: (item) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => BlocProvider.value(
-                                            value: context.read<DepartmentBloc>(),
-                                            child: DepartmentFormPage(department: item),
+                                    props: SgTableProps<Department>(
+                                      headerBackgroundColor: ColorValue.primaryBlue,
+                                      textHeaderColor: Colors.white,
+                                      widthScreen: MediaQuery.of(context).size.width,
+                                      evenRowBackgroundColor: ColorValue.neutral50,
+                                      oddRowBackgroundColor: Colors.white,
+                                      selectedRowColor: ColorValue.primaryLightBlue.withOpacity(0.2),
+                                      checkedRowColor: ColorValue.primaryLightBlue.withOpacity(0.1),
+                                      gridLineColor: ColorValue.neutral200,
+                                      gridLineWidth: 1.0,
+                                      showVerticalLines: true,
+                                      showHorizontalLines: true,
+                                      allowRowSelection: true,
+                                      rowHeight: 56.0,
+                                      showActions: true,
+                                      actionColumnTitle: 'Thao tác',
+                                      actionColumnWidth: 160,
+                                      actionViewColor: ColorValue.success,
+                                      actionEditColor: ColorValue.primaryBlue,
+                                      actionDeleteColor: ColorValue.error,
+                                      onEditAction: (item) {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => BlocProvider.value(
+                                                  value: context.read<DepartmentBloc>(),
+                                                  child: DepartmentFormPage(department: item),
+                                                ),
                                           ),
+                                        );
+                                      },
+                                      onDeleteAction: (item) {
+                                        _showDeleteDialog(context, item);
+                                      },
+                                      columns: [
+                                        TableColumnBuilder.createTextColumn<Department>(
+                                          title: 'Mã phòng ban',
+                                          getValue: (item) => item.departmentId,
+                                          width: 150,
                                         ),
-                                      );
-                                    },
-                                    onDeleteAction: (item) {
-                                      _showDeleteDialog(context, item);
-                                    },
-                                    columns: [
-                                      TableColumnBuilder.createTextColumn<Department>(
-                                        title: 'Mã phòng ban',
-                                        getValue: (item) => item.departmentId,
-                                        width: 150,
-                                      ),
-                                      TableColumnBuilder.createTextColumn<Department>(
-                                        title: 'Tên phòng ban',
-                                        getValue: (item) => item.departmentName,
-                                        width: 200,
-                                      ),
-                                    ],
-                                    data: departments,
-                                    onRowTap: (item) {},
+                                        TableColumnBuilder.createTextColumn<Department>(
+                                          title: 'Tên phòng ban',
+                                          getValue: (item) => item.departmentName,
+                                          width: 200,
+                                        ),
+                                      ],
+                                      data: departments,
+                                      onRowTap: (item) {},
+                                    ),
                                   ),
                                 ),
                               ),

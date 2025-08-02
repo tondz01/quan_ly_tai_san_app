@@ -13,7 +13,8 @@ enum AppRoute {
   departmentManager(path: "/department_manager", name: "department_manager"),
   capitalSource(path: "/capital-source", name: "capital-source"),
   assetManager(path: "/asset-manager", name: "asset-manager"),
-  assetHandover(path: "/asset-handover", name: "asset-handover");
+  assetHandover(path: "/asset-handover", name: "asset-handover"),
+  asset(path: "/asset", name: "asset");
 
   final String path;
   final String? name;

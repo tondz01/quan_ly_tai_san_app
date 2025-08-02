@@ -2,11 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/asset_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/management_asset_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/management_asset_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/asset/bloc/management_asset_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset/models/asset_model.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/common/table/model/sg_table_props.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/themes/sg_app_font.dart';
@@ -25,7 +26,7 @@ class _AssetViewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetBloc, AssetState>(
+    return BlocConsumer<ManagementAssetBloc, ManagementAssetState>(
       listener: (context, state) {
         if (state is AssetError) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${state.message}')));
@@ -34,14 +35,14 @@ class _AssetViewBody extends StatelessWidget {
       builder: (context, state) {
         // Load dữ liệu khi widget được tạo
         if (state is AssetInitial) {
-          context.read<AssetBloc>().add(
-            LoadAssetsWithPagination(page: 1, pageSize: context.read<AssetBloc>().defaultPageSize),
+          context.read<ManagementAssetBloc>().add(
+            LoadAssetsWithPagination(page: 1, pageSize: context.read<ManagementAssetBloc>().defaultPageSize),
           );
-          return const Center(child: CupertinoActivityIndicator(radius: 12.0, color: ColorValue.colorFE9F43));
+          return const Center(child: CupertinoActivityIndicator(radius: 12.0, color: ColorValue.coral));
         }
 
         if (state is AssetLoading) {
-          return const Center(child: CupertinoActivityIndicator(radius: 12.0, color: ColorValue.colorFE9F43));
+          return const Center(child: CupertinoActivityIndicator(radius: 12.0, color: ColorValue.coral));
         }
 
         if (state is AssetPaginatedLoaded) {
@@ -64,7 +65,6 @@ class AssetPaginatedContent extends StatefulWidget {
 }
 
 class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
-  final ScrollController horizontalController = ScrollController();
   String searchQuery = '';
   final TextEditingController controllerDropdownPage = TextEditingController();
 
@@ -88,7 +88,6 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
   @override
   void dispose() {
     controllerDropdownPage.dispose();
-    horizontalController.dispose();
     super.dispose();
   }
 
@@ -99,35 +98,7 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
       children: [
         Text('Tài sản', style: SGAppFont.headline6(fontWeight: FontWeight.w400)),
         const SizedBox(height: 16),
-        Expanded(
-          child: ScrollbarTheme(
-            data: const ScrollbarThemeData(
-              thumbColor: WidgetStatePropertyAll(Color(0xFF78909C)),
-              thickness: WidgetStatePropertyAll(8.0),
-              radius: Radius.circular(4),
-            ),
-            child: Scrollbar(
-              controller: horizontalController,
-              thumbVisibility: true,
-              notificationPredicate: (notification) => notification.metrics.axis == Axis.horizontal,
-              child: SingleChildScrollView(
-                controller: horizontalController,
-                scrollDirection: Axis.horizontal,
-                physics: const ClampingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildTable(
-                    widget.state.assets,
-                    onViewAction: (item) {},
-                    onEditAction: (item) {},
-                    onDeleteAction: (item) {},
-                    onRowTap: (item) {},
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        Expanded(child: _buildTable(widget.state.assets)),
         _buildPagination(widget.state),
       ],
     );
@@ -144,9 +115,9 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
       currentPage: state.currentPage,
       rowsPerPage: state.pageSize,
       controllerDropdownPage: controllerDropdownPage,
-      items: context.read<AssetBloc>().rowPerPageItems,
+      items: context.read<ManagementAssetBloc>().rowPerPageItems,
       onPageChanged: (page) {
-        context.read<AssetBloc>().add(ChangePage(page));
+        context.read<ManagementAssetBloc>().add(ChangePage(page));
       },
       onRowsPerPageChanged: (pageSize) {
         if (pageSize != null) {
@@ -154,7 +125,7 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
           final int firstItemCurrentPage = (state.currentPage - 1) * state.pageSize + 1;
           final int newPage = ((firstItemCurrentPage - 1) ~/ pageSize) + 1;
 
-          context.read<AssetBloc>().add(
+          context.read<ManagementAssetBloc>().add(
             LoadAssetsWithPagination(
               page: newPage, // Giữ vị trí tương đối thay vì quay về trang 1
               pageSize: pageSize,
@@ -345,15 +316,9 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
     ];
   }
 
-  Widget _buildTable(
-    List<AssetModel> data, {
-    Function(AssetModel)? onViewAction,
-    Function(AssetModel)? onEditAction,
-    Function(AssetModel)? onDeleteAction,
-    Function(AssetModel)? onRowTap,
-  }) {
+  Widget _buildTable(List<AssetModel> data, {Function(AssetModel)? onRowTap}) {
     // Sử dụng const cho các giá trị không thay đổi
-    const Color headerBgColor = ColorValue.colorE6EAED;
+    const Color headerBgColor = ColorValue.coral;
     const Color evenRowBgColor = Color(0xFFF8F9FA);
     const Color oddRowBgColor = Colors.white;
     const Color selectedRowColor = Color(0xFFE3F2FD);
@@ -364,32 +329,35 @@ class _AssetPaginatedContentState extends State<AssetPaginatedContent> {
     const BorderSide borderSide = BorderSide(color: Color(0xFFBDBDBD), width: 0.5);
 
     return SgTable<AssetModel>(
-      headerBackgroundColor: headerBgColor,
-      evenRowBackgroundColor: evenRowBgColor,
-      oddRowBackgroundColor: oddRowBgColor,
-      selectedRowColor: selectedRowColor,
-      checkedRowColor: checkedRowColor,
-      gridLineColor: gridLineColor,
-      gridLineWidth: 1,
-      showVerticalLines: true,
-      showHorizontalLines: true,
-      showLastLineLeftRight: true,
-      showLastLineTopBottom: true,
-      allowRowSelection: true,
-      searchTerm: '',
-      showCheckboxes: true,
-      onSelectionChanged: (selectedItems) {},
-      customFilter: (item) => true,
-      checkboxColumnWidth: 42,
-      rowHeight: 42,
-      columns: _buildColumns(),
-      data: data,
-      onRowTap: onRowTap,
-      scaleCheckbox: 0.8,
-      activeColor: activeColor,
-      checkColor: checkColor,
-      side: borderSide,
-      shape: const BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(0))),
+      props: SgTableProps<AssetModel>(
+        headerBackgroundColor: headerBgColor,
+        evenRowBackgroundColor: evenRowBgColor,
+        oddRowBackgroundColor: oddRowBgColor,
+        selectedRowColor: selectedRowColor,
+        checkedRowColor: checkedRowColor,
+        gridLineColor: gridLineColor,
+        gridLineWidth: 1,
+        showVerticalLines: true,
+        showHorizontalLines: true,
+        // showLastLineLeftRight: true,
+        // showLastLineTopBottom: true,
+        allowRowSelection: true,
+        searchTerm: '',
+        showCheckboxes: true,
+        onSelectionChanged: (selectedItems) {},
+        customFilter: (item) => true,
+        checkboxColumnWidth: 42,
+        rowHeight: 42,
+        columns: _buildColumns(),
+        data: data,
+        onRowTap: onRowTap,
+        scaleCheckbox: 0.8,
+        activeColor: activeColor,
+        checkColor: checkColor,
+        side: borderSide,
+        shape: const BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(0))),
+        widthScreen: MediaQuery.of(context).size.width,
+      ),
     );
   }
 }

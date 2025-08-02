@@ -1,17 +1,17 @@
 import 'package:equatable/equatable.dart';
 
-abstract class AssetEvent extends Equatable {
-  const AssetEvent();
+abstract class ManagementAssetEvent extends Equatable {
+  const ManagementAssetEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class LoadAssets extends AssetEvent {
+class LoadAssets extends ManagementAssetEvent {
   const LoadAssets();
 }
 
-class LoadAssetsWithPagination extends AssetEvent {
+class LoadAssetsWithPagination extends ManagementAssetEvent {
   final int page;
   final int pageSize;
   final String? searchQuery;
@@ -30,7 +30,7 @@ class LoadAssetsWithPagination extends AssetEvent {
   List<Object?> get props => [page, pageSize, searchQuery, department, assetType];
 }
 
-class FilterAssets extends AssetEvent {
+class FilterAssets extends ManagementAssetEvent {
   final String? searchQuery;
   final String? department;
   final String? assetType;
@@ -45,7 +45,7 @@ class FilterAssets extends AssetEvent {
   List<Object?> get props => [searchQuery, department, assetType];
 }
 
-class GetAssetById extends AssetEvent {
+class GetAssetById extends ManagementAssetEvent {
   final String id;
 
   const GetAssetById(this.id);
@@ -54,7 +54,7 @@ class GetAssetById extends AssetEvent {
   List<Object?> get props => [id];
 }
 
-class ChangePage extends AssetEvent {
+class ChangePage extends ManagementAssetEvent {
   final int page;
 
   const ChangePage(this.page);

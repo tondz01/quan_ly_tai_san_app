@@ -1,4 +1,5 @@
 import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/asset/views/asset_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/views/asset_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital_source_manager.dart';
@@ -148,6 +149,11 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) =>
                     NoTransitionPage(key: state.pageKey, child: AssetManager()),
+          ),
+          GoRoute(
+            path: AppRoute.asset.path,
+            name: AppRoute.asset.name,
+            pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: AssetView()),
           ),
           // GoRoute(
           //   name: AppRoute.liveVideoVar.name,

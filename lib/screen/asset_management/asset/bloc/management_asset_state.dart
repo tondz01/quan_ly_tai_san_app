@@ -2,18 +2,18 @@ import 'package:equatable/equatable.dart';
 import '../models/asset_model.dart';
 import '../repository/asset_repository.dart';
 
-abstract class AssetState extends Equatable {
-  const AssetState();
+abstract class ManagementAssetState extends Equatable {
+  const ManagementAssetState();
   
   @override
   List<Object?> get props => [];
 }
 
-class AssetInitial extends AssetState {}
+class AssetInitial extends ManagementAssetState {}
 
-class AssetLoading extends AssetState {}
+class AssetLoading extends ManagementAssetState {}
 
-class AssetLoaded extends AssetState {
+class AssetLoaded extends ManagementAssetState {
   final List<AssetModel> assets;
   
   const AssetLoaded(this.assets);
@@ -22,7 +22,7 @@ class AssetLoaded extends AssetState {
   List<Object?> get props => [assets];
 }
 
-class AssetPaginatedLoaded extends AssetState {
+class AssetPaginatedLoaded extends ManagementAssetState {
   final List<AssetModel> assets;
   final int currentPage;
   final int pageSize;
@@ -94,7 +94,7 @@ class AssetPaginatedLoaded extends AssetState {
   }
 }
 
-class AssetError extends AssetState {
+class AssetError extends ManagementAssetState {
   final String message;
   
   const AssetError(this.message);
@@ -103,7 +103,7 @@ class AssetError extends AssetState {
   List<Object?> get props => [message];
 }
 
-class AssetDetailLoaded extends AssetState {
+class AssetDetailLoaded extends ManagementAssetState {
   final AssetModel asset;
   
   const AssetDetailLoaded(this.asset);
