@@ -106,7 +106,7 @@ class _StaffListPageState extends State<StaffListPage> {
                   ),
                 ),
                 Visibility(
-                  visible: (staffs.length ?? 0) >= 5,
+                  visible: (staffs.length) >= 5,
                   child: SGPaginationControls(
                     totalPages: 1,
                     currentPage: 1,

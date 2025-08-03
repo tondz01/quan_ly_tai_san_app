@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
@@ -12,12 +13,30 @@ class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
       emit(DepartmentLoaded(_allDepartments));
     });
     on<SearchDepartment>((event, emit) {
-      final keyword = event.keyword.toLowerCase();
-      final filtered = _allDepartments.where((d) =>
-        d.departmentName.toLowerCase().contains(keyword) ||
-        d.departmentId.toLowerCase().contains(keyword)
-      ).toList();
+      final searchLower = event.keyword.toLowerCase();
+      final filtered =
+        _allDepartments.where((item) {
+          bool nameMatch = AppUtility.fuzzySearch(
+            item.departmentName.toLowerCase(),
+            searchLower,
+          );
+
+          bool staffIdMatch = item.departmentId.toLowerCase().contains(
+            searchLower,
+          );
+          bool departmentGroup = item.departmentGroup.toLowerCase().contains(
+            searchLower,
+          );
+
+          bool parentRoom = AppUtility.fuzzySearch(
+            item.parentRoom.toLowerCase(),
+            searchLower,
+          );
+
+          return nameMatch || staffIdMatch || parentRoom || departmentGroup;
+        }).toList();
       emit(DepartmentLoaded(filtered));
+
     });
     on<AddDepartment>((event, emit) {
       if (state is DepartmentLoaded) {
