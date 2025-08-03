@@ -156,72 +156,76 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  if (widget.item != null)
-                    SGButtonIcon(
-                      text: isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
-                      borderRadius: 10,
-                      sizeText: 14,
-                      width:
-                          screenWidth * 0.12 <= 120 ? 120 : screenWidth * 0.12,
-                      height: 40,
-                      defaultBGColor:
-                          isEditing
-                              ? SGAppColors.colorInputDisable
-                              : ColorValue.oldLavender,
-                      colorHover: Colors.blueAccent,
-                      colorTextHover: Colors.white,
-                      isOutlined: true,
-                      borderWidth: 3,
-                      onPressed: () {
-                        setState(() {
-                          isEditing = !isEditing;
-                        });
-                      },
-                    ),
-                  if (isEditing) ...[
-                    SGButtonIcon(
-                      text: 'Save'.tr,
-                      borderRadius: 10,
-                      sizeText: 14,
-                      width:
-                          screenWidth * 0.12 <= 120 ? 120 : screenWidth * 0.12,
-                      height: 40,
-                      defaultBGColor: Colors.blue,
-                      colorHover: Colors.blueGrey,
-                      colorTextHover: Colors.white,
-                      isOutlined: false,
-                      onPressed: () {
-                        _saveItem();
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    SGButtonIcon(
-                      text: 'common.cancel'.tr,
-                      borderRadius: 10,
-                      sizeText: 14,
-                      width:
-                          screenWidth * 0.12 <= 120 ? 120 : screenWidth * 0.12,
-                      height: 40,
-                      defaultBGColor: Colors.red,
-                      colorHover: Colors.red.shade700,
-                      colorTextHover: Colors.white,
-                      isOutlined: false,
-                      onPressed: () {
-                        _cancelEdit();
-                      },
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    if (widget.item != null)
+                      SGButtonIcon(
+                        text:
+                            isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
+                        borderRadius: 10,
+                        sizeText: 14,
+                        width:
+                            screenWidth * 0.12 <= 120
+                                ? 120
+                                : screenWidth * 0.12,
+                        height: 40,
+                        defaultBGColor:
+                            isEditing
+                                ? SGAppColors.colorInputDisable
+                                : ColorValue.oldLavender,
+                        colorHover: Colors.blueAccent,
+                        colorTextHover: Colors.white,
+                        isOutlined: true,
+                        borderWidth: 3,
+                        onPressed: () {
+                          setState(() {
+                            isEditing = !isEditing;
+                          });
+                        },
+                      ),
+                    if (isEditing) ...[
+                      SGButtonIcon(
+                        text: 'Save'.tr,
+                        borderRadius: 10,
+                        sizeText: 14,
+                        width: 80,
+                        height: 35,
+                        defaultBGColor: Colors.blue,
+                        colorHover: Colors.blueGrey,
+                        colorTextHover: Colors.white,
+                        isOutlined: false,
+                        onPressed: () {
+                          _saveItem();
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      SGButtonIcon(
+                        text: 'common.cancel'.tr,
+                        borderRadius: 10,
+                        sizeText: 14,
+                        width: 80,
+                        height: 35,
+                        defaultBGColor: Colors.red,
+                        colorHover: Colors.red.shade700,
+                        colorTextHover: Colors.white,
+                        isOutlined: false,
+                        onPressed: () {
+                          _cancelEdit();
+                        },
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
               SgIndicator(
                 steps: ['Nháp', 'Khóa'],
                 currentStep: !isEditing && widget.item != null ? 1 : 0,
+                fontSize: 10,
               ),
             ],
           ),
-          const SizedBox(height: 10),
           _buildTableDetail(),
         ],
       ),
@@ -245,45 +249,35 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             isEditing: isEditing,
             textContent: widget.item?.importUnit ?? '',
             isDropdown: true,
-            validationErrors: {
-              'importUnit': !isImportUnitValid && isEditing,
-            },
+            validationErrors: {'importUnit': !isImportUnitValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.name'.tr,
             controller: controllerName,
             isEditing: isEditing,
             textContent: widget.item?.name ?? '',
-            validationErrors: {
-              'name': !isNameValid && isEditing,
-            },
+            validationErrors: {'name': !isNameValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.code'.tr,
             controller: controllerCode,
             isEditing: isEditing,
             textContent: widget.item?.code ?? '',
-            validationErrors: {
-              'code': !isCodeValid && isEditing,
-            },
+            validationErrors: {'code': !isCodeValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.import_date'.tr,
             controller: controllerImportDate,
             isEditing: isEditing,
             textContent: widget.item?.importDate ?? '',
-            validationErrors: {
-              'importDate': !isImportDateValid && isEditing,
-            },
+            validationErrors: {'importDate': !isImportDateValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.unit'.tr,
             controller: controllerUnit,
             isEditing: isEditing,
             textContent: widget.item?.unit ?? '',
-            validationErrors: {
-              'unit': !isUnitValid && isEditing,
-            },
+            validationErrors: {'unit': !isUnitValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.quantity'.tr,
@@ -291,9 +285,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             isEditing: isEditing,
             textContent: widget.item?.quantity.toString() ?? '0',
             inputType: TextInputType.number,
-            validationErrors: {
-              'quantity': !isQuantityValid && isEditing,
-            },
+            validationErrors: {'quantity': !isQuantityValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.value'.tr,
@@ -301,9 +293,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             isEditing: isEditing,
             textContent: widget.item?.value.toString() ?? '0.0',
             inputType: TextInputType.number,
-            validationErrors: {
-              'value': !isValueValid && isEditing,
-            },
+            validationErrors: {'value': !isValueValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.reference_number'.tr,
@@ -576,6 +566,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     setState(() {
       isEditing = false;
     });
-      // context.read<ToolsAndSuppliesProvider>().onTapBackHeader();
+    // context.read<ToolsAndSuppliesProvider>().onTapBackHeader();
   }
 }

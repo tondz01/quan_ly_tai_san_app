@@ -253,6 +253,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _data = state.data;
       _filteredData = state.data;
       _isLoading = false;
+      log('message _data: $_data');
       _updatePagination();
     }
     notifyListeners();
