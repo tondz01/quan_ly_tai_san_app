@@ -11,7 +11,8 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class ToolsAndSuppliesRepository extends ApiBase {
   // Path to the local JSON file for mock data
-  static const String _mockDataPath = 'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
+  static const String _mockDataPath =
+      'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
 
   Future<Map<String, dynamic>> getListToolsAndSupplies() async {
     List<ToolsAndSuppliesDto> list = [];
@@ -19,17 +20,17 @@ class ToolsAndSuppliesRepository extends ApiBase {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-    
+
     try {
-      final jsonString = await _loadLocalJsonData();
-      if (jsonString != null) {
-        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-        result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
-          jsonString,
-          ToolsAndSuppliesDto.fromJson
-        );
-        return result;
-      }
+      // final jsonString = await _loadLocalJsonData();
+      // if (jsonString != null) {
+      //   result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      //   result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+      //     jsonString,
+      //     ToolsAndSuppliesDto.fromJson,
+      //   );
+      //   return result;
+      // }
 
       // Check connect internet
       if (!await checkInternet()) {
@@ -39,26 +40,29 @@ class ToolsAndSuppliesRepository extends ApiBase {
 
       // Request API (this part will run if loading local data fails)
       // final response = await get(EndPointAPI.TOOLS_AND_SUPPLIES);
-      final response = await get(EndPointAPI.TOOLS_AND_SUPPLIES);
+      final response = await get(
+        EndPointAPI.TOOLS_AND_SUPPLIES,
+        queryParameters: {'idcongty': 'ct001'},
+      );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
-      
+
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      
+
       // Parse response data using the common ResponseParser utility
       result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
-        response.data, 
-        ToolsAndSuppliesDto.fromJson
+        response.data,
+        ToolsAndSuppliesDto.fromJson,
       );
     } catch (e) {
       log("Error at getListToolsAndSupplies - ToolsAndSuppliesRepository: $e");
     }
-    
+
     return result;
   }
-  
+
   /// Load data from local JSON file for development/testing purposes
   Future<String?> _loadLocalJsonData() async {
     try {
