@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/table_asset_transfer_by_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
@@ -120,7 +120,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
                           childInput: AssetTransferDetail(provider: provider),
-                          childTableView: TableAssetTransferByDetail(
+                          childTableView: AssetTransferList(
                             provider: provider,
                             typeAssetTransfer: currentType,
                           ),
