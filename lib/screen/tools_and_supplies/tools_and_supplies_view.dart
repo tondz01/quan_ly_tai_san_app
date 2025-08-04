@@ -51,6 +51,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           context
               .read<ToolsAndSuppliesProvider>()
               .getListToolsAndSuppliesSuccess(context, state);
+          log('message: ${state.data.length}');
         }
         if (state is GetListToolsAndSuppliesFailedState) {}
       },

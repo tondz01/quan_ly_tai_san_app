@@ -16,25 +16,23 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_ev
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class AssetTransferList extends StatefulWidget {
-  final AssetTransferProvider provider;
-  final int typeAssetTransfer;
-  const AssetTransferList({
+class ToolAndMaterialTransferList extends StatefulWidget {
+  final ToolAndMaterialTransferProvider provider;
+  const ToolAndMaterialTransferList({
     super.key,
     required this.provider,
-    required this.typeAssetTransfer,
   });
 
   @override
-  State<AssetTransferList> createState() => _AssetTransferListState();
+  State<ToolAndMaterialTransferList> createState() => _ToolAndMaterialTransferListState();
 }
 
-class _AssetTransferListState extends State<AssetTransferList> {
+class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferList> {
   String url =
     'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
 
@@ -106,24 +104,24 @@ class _AssetTransferListState extends State<AssetTransferList> {
     ];
   }
 
-  List<SgTableColumn<AssetTransferDto>> _buildColumns() {
-    final List<SgTableColumn<AssetTransferDto>> columns = [];
+  List<SgTableColumn<ToolAndMaterialTransferDto>> _buildColumns() {
+    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns = [];
     
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
         case 'type':
           columns.add(
-            TableBaseConfig.columnTable<AssetTransferDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(  
               title: 'Phiếu ký nội sinh',
               width: 150,
-              getValue: (item) => getName(item.type ?? 0),
+              getValue: (item) => item.documentName ?? '',
             ),
           );
           break;
         case 'decision_date':
           columns.add(
-            TableBaseConfig.columnTable<AssetTransferDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày ký',
               width: 100,
               getValue: (item) => item.decisionDate ?? '',
@@ -132,7 +130,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'effective_date':
           columns.add(
-            TableBaseConfig.columnTable<AssetTransferDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày có hiệu lực',
               width: 100,
               getValue: (item) => item.effectiveDate ?? '',
@@ -141,7 +139,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'approver':
           columns.add(
-            TableBaseConfig.columnTable<AssetTransferDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Trình duyệt ban giám đốc',
               width: 150,
               getValue: (item) => item.approver ?? '',
@@ -150,7 +148,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'document':
           columns.add(
-            SgTableColumn<AssetTransferDto>(
+            SgTableColumn<ToolAndMaterialTransferDto>(
               title: 'Tài liệu duyệt',
               cellBuilder: (item) => SgDownloadFile(url: url, name: item.documentName ?? ''),
               sortValueGetter: (item) => item.documentFileName ?? '',
@@ -164,7 +162,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'id':
           columns.add(
-            TableBaseConfig.columnTable<AssetTransferDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ký số',
               width: 120,
               getValue: (item) => item.id ?? '',
@@ -173,7 +171,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'status':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetTransferDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
               title: 'Trạng thái',
               cellBuilder: (item) => widget.provider.showStatus(item.status ?? 0),
               width: 150,
@@ -183,7 +181,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'actions':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetTransferDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
               title: '',
               cellBuilder: (item) => viewAction(item),
               width: 120,
@@ -228,7 +226,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetTransferDto>> columns = _buildColumns();
+    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns = _buildColumns();
     log('message widget.provider.data: ${MediaQuery.of(context).size.width}');
 
     return MultiBlocListener(
@@ -281,13 +279,13 @@ class _AssetTransferListState extends State<AssetTransferList> {
               child: headerList(),
             ),
             Expanded(
-              child: TableBaseView<AssetTransferDto>(
+              child: TableBaseView<ToolAndMaterialTransferDto>(
                 searchTerm: '',
                 columns: columns,
                 data: widget.provider.dataPage ?? [],
                 horizontalController: ScrollController(),
                 onRowTap: (item) {
-                  widget.provider.onChangeDetailAssetTransfer(item);
+                  widget.provider.onChangeDetailToolAndMaterialTransfer(item);
                 },
               ),
             ),
@@ -313,7 +311,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2.5),
                   child: Text(
-                    '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+                    'Điều động CCDC-Vật tư (${widget.provider.data.length})',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -340,7 +338,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                 Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
                 SizedBox(width: 8),
                 Text(
-                  '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+                  'Điều động CCDC-Vật tư (${widget.provider.data.length})',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -359,7 +357,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
         );
   }
 
-  Widget viewAction(AssetTransferDto item) {
+  Widget viewAction(ToolAndMaterialTransferDto item) {
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.book_outlined,
@@ -402,18 +400,6 @@ class _AssetTransferListState extends State<AssetTransferList> {
             },
       ),
     ]);
-  }
-
-  String getName(int type) {
-    switch (type) {
-      case 1:
-        return 'Phiếu duyệt cấp phát tài sản';
-      case 2:
-        return 'Phiếu duyệt thu hồi tài sản';
-      case 3:
-        return 'Phiếu duyệt chuyển tài sản';
-    }
-    return '';
   }
 
   void _callGetListAssetHandover() {

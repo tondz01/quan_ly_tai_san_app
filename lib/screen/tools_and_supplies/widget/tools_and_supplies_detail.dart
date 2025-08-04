@@ -72,18 +72,19 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   void initData() {
     if (widget.item != null) {
-      controllerImportUnit.text = widget.item?.importUnit ?? '';
-      controllerName.text = widget.item?.name ?? '';
-      controllerCode.text = widget.item?.code ?? '';
-      controllerImportDate.text = widget.item?.importDate ?? '';
-      controllerUnit.text = widget.item?.unit ?? '';
-      controllerQuantity.text = widget.item?.quantity.toString() ?? '0';
-      controllerValue.text = widget.item?.value.toString() ?? '0.0';
-      controllerReferenceNumber.text = widget.item?.referenceNumber ?? '';
-      controllerSymbol.text = widget.item?.symbol ?? '';
-      controllerCapacity.text = widget.item?.capacity ?? '';
-      controllerCountryOfOrigin.text = widget.item?.countryOfOrigin ?? '';
-      controllerYearOfManufacture.text = widget.item?.yearOfManufacture ?? '';
+      controllerImportUnit.text = widget.item?.idDonVi ?? '';
+      controllerName.text = widget.item?.ten ?? '';
+      controllerCode.text = widget.item?.soKyHieu ?? '';
+      controllerImportDate.text = widget.item?.ngayNhap.toString() ?? '';
+      controllerUnit.text = widget.item?.donViTinh ?? '';
+      controllerQuantity.text = widget.item?.soLuong.toString() ?? '0';
+      controllerValue.text = widget.item?.giaTri.toString() ?? '0.0';
+      controllerReferenceNumber.text = widget.item?.soKyHieu ?? '';
+      controllerSymbol.text = widget.item?.kyHieu ?? '';
+      controllerCapacity.text = widget.item?.congSuat ?? '';
+      controllerCountryOfOrigin.text = widget.item?.nuocSanXuat ?? '';
+      controllerYearOfManufacture.text =
+          widget.item?.namSanXuat.toString() ?? '';
     } else {
       isEditing = widget.item == null;
       controllerImportUnit.clear();
@@ -144,7 +145,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   @override
   Widget build(BuildContext context) {
-    log('widget.item?.importUnit : ${widget.item?.importUnit}');
+    log('widget.item?.importUnit : ${widget.item?.idDonVi}');
     final screenWidth = MediaQuery.of(context).size.width;
 
     return SingleChildScrollView(
@@ -247,7 +248,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             label: 'tas.unit'.tr,
             controller: controllerImportUnit,
             isEditing: isEditing,
-            textContent: widget.item?.importUnit ?? '',
+            textContent: widget.item?.idDonVi ?? '',
             isDropdown: true,
             validationErrors: {'importUnit': !isImportUnitValid && isEditing},
           ),
@@ -255,35 +256,35 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             label: 'tas.name'.tr,
             controller: controllerName,
             isEditing: isEditing,
-            textContent: widget.item?.name ?? '',
+            textContent: widget.item?.ten ?? '',
             validationErrors: {'name': !isNameValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.code'.tr,
             controller: controllerCode,
             isEditing: isEditing,
-            textContent: widget.item?.code ?? '',
+            textContent: widget.item?.soKyHieu ?? '',
             validationErrors: {'code': !isCodeValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.import_date'.tr,
             controller: controllerImportDate,
             isEditing: isEditing,
-            textContent: widget.item?.importDate ?? '',
+            textContent: widget.item?.ngayNhap.toString() ?? '',
             validationErrors: {'importDate': !isImportDateValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.unit'.tr,
             controller: controllerUnit,
             isEditing: isEditing,
-            textContent: widget.item?.unit ?? '',
+            textContent: widget.item?.donViTinh ?? '',
             validationErrors: {'unit': !isUnitValid && isEditing},
           ),
           CommonFormInput(
             label: 'tas.quantity'.tr,
             controller: controllerQuantity,
             isEditing: isEditing,
-            textContent: widget.item?.quantity.toString() ?? '0',
+            textContent: widget.item?.soLuong.toString() ?? '0',
             inputType: TextInputType.number,
             validationErrors: {'quantity': !isQuantityValid && isEditing},
           ),
@@ -291,7 +292,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             label: 'tas.value'.tr,
             controller: controllerValue,
             isEditing: isEditing,
-            textContent: widget.item?.value.toString() ?? '0.0',
+            textContent: widget.item?.giaTri.toString() ?? '0.0',
             inputType: TextInputType.number,
             validationErrors: {'value': !isValueValid && isEditing},
           ),
@@ -299,32 +300,32 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             label: 'tas.reference_number'.tr,
             controller: controllerReferenceNumber,
             isEditing: isEditing,
-            textContent: widget.item?.referenceNumber ?? '',
+            textContent: widget.item?.soKyHieu ?? '',
           ),
           CommonFormInput(
             label: 'tas.symbol'.tr,
             controller: controllerSymbol,
             isEditing: isEditing,
-            textContent: widget.item?.symbol ?? '',
+            textContent: widget.item?.kyHieu ?? '',
           ),
           CommonFormInput(
             label: 'tas.capacity'.tr,
             controller: controllerCapacity,
             isEditing: isEditing,
-            textContent: widget.item?.capacity ?? '',
+            textContent: widget.item?.congSuat ?? '',
           ),
           CommonFormInput(
             label: 'tas.country_of_origin'.tr,
             controller: controllerCountryOfOrigin,
             isEditing: isEditing,
-            textContent: widget.item?.countryOfOrigin ?? '',
+            textContent: widget.item?.nuocSanXuat ?? '',
           ),
           CommonFormInput(
             label: 'tas.year_of_manufacture'.tr,
             controller: controllerYearOfManufacture,
             isEditing: isEditing,
             textContent:
-                widget.item?.yearOfManufacture ??
+                widget.item?.namSanXuat.toString() ??
                 DateTime.now().year.toString(),
             inputType: TextInputType.number,
             validationErrors: {
@@ -335,7 +336,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             label: 'tas.note'.tr,
             controller: controllerNote,
             isEditing: isEditing,
-            textContent: widget.item?.note ?? '',
+            textContent: widget.item?.ghiChu ?? '',
           ),
         ],
       ),
@@ -351,19 +352,24 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     // Tạo object mới từ dữ liệu form
     final newItem = ToolsAndSuppliesDto(
       id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      name: controllerName.text.trim(),
-      importUnit: controllerImportUnit.text.trim(),
-      code: controllerCode.text.trim(),
-      importDate: controllerImportDate.text.trim(),
-      unit: controllerUnit.text.trim(),
-      quantity: int.tryParse(controllerQuantity.text) ?? 0,
-      value: double.tryParse(controllerValue.text) ?? 0.0,
-      referenceNumber: controllerReferenceNumber.text.trim(),
-      symbol: controllerSymbol.text.trim(),
-      capacity: controllerCapacity.text.trim(),
-      countryOfOrigin: controllerCountryOfOrigin.text.trim(),
-      yearOfManufacture: controllerYearOfManufacture.text.trim(),
-      note: controllerNote.text.trim(),
+      ten: controllerName.text.trim(),
+      idDonVi: controllerImportUnit.text.trim(),
+      soKyHieu: controllerCode.text.trim(),
+      ngayNhap: DateTime.parse(controllerImportDate.text.trim()),
+      donViTinh: controllerUnit.text.trim(),
+      soLuong: int.tryParse(controllerQuantity.text) ?? 0,
+      giaTri: double.tryParse(controllerValue.text) ?? 0.0,
+      kyHieu: controllerSymbol.text.trim(),
+      congSuat: controllerCapacity.text.trim(),
+      nuocSanXuat: controllerCountryOfOrigin.text.trim(),
+      namSanXuat: int.tryParse(controllerYearOfManufacture.text) ?? 0,
+      ghiChu: controllerNote.text.trim(),
+      idCongTy: '',
+      ngayTao: DateTime.now(),
+      ngayCapNhat: DateTime.now(),
+      nguoiTao: '',
+      nguoiCapNhat: '',
+      isActive: true,
     );
 
     // Nếu là item mới (widget.item == null), thêm vào danh sách
@@ -532,19 +538,19 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   void _cancelEdit() {
     // Reset form về giá trị ban đầu
     if (widget.item != null) {
-      controllerImportUnit.text = widget.item!.importUnit;
-      controllerName.text = widget.item!.name;
-      controllerCode.text = widget.item!.code;
-      controllerImportDate.text = widget.item!.importDate;
-      controllerUnit.text = widget.item!.unit;
-      controllerQuantity.text = widget.item!.quantity.toString();
-      controllerValue.text = widget.item!.value.toString();
-      controllerReferenceNumber.text = widget.item!.referenceNumber;
-      controllerSymbol.text = widget.item!.symbol;
-      controllerCapacity.text = widget.item!.capacity;
-      controllerCountryOfOrigin.text = widget.item!.countryOfOrigin;
-      controllerYearOfManufacture.text = widget.item!.yearOfManufacture;
-      controllerNote.text = widget.item!.note;
+      controllerImportUnit.text = widget.item!.idDonVi;
+      controllerName.text = widget.item!.ten;
+      controllerCode.text = widget.item!.soKyHieu;
+      controllerImportDate.text = widget.item!.ngayNhap.toString();
+      controllerUnit.text = widget.item!.donViTinh;
+      controllerQuantity.text = widget.item!.soLuong.toString();
+      controllerValue.text = widget.item!.giaTri.toString();
+      controllerReferenceNumber.text = widget.item!.soKyHieu;
+      controllerSymbol.text = widget.item!.kyHieu;
+      controllerCapacity.text = widget.item!.congSuat;
+      controllerCountryOfOrigin.text = widget.item!.nuocSanXuat;
+      controllerYearOfManufacture.text = widget.item!.namSanXuat.toString();
+      controllerNote.text = widget.item!.ghiChu;
     } else {
       // Nếu là item mới, clear form
       controllerImportUnit.clear();

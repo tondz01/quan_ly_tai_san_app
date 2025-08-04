@@ -158,6 +158,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
+                          title: "Chi tiết biên bản bàn giao tài sản",
                           childInput: AssetHandoverDetail(provider: provider),
                           childTableView: AssetHandoverList(provider: provider),
                           isShowInput: provider.isShowInput,

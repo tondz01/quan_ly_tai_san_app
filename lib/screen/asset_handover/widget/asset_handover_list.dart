@@ -3,21 +3,18 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
-  const AssetHandoverList({
-    super.key,
-    required this.provider,
-  });
+  const AssetHandoverList({super.key, required this.provider});
 
   @override
   State<AssetHandoverList> createState() => _AssetHandoverListState();
@@ -27,60 +24,207 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
 
+  // Column display options
+  late List<ColumnDisplayOption> columnOptions;
+  List<String> visibleColumnIds = [
+    'name',
+    'decision_number',
+    'transfer_order',
+    'transfer_date',
+    'movement_details',
+    'sender_unit',
+    'receiver_unit',
+    'created_by',
+    'status',
+  ];
+
   @override
-  Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetHandoverDto>> columns = [
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Bàn giao tài sản',
-        getValue: (item) => item.name ?? '',
-        width: 170,
+  void initState() {
+    super.initState();
+    _initializeColumnOptions();
+  }
+
+  void _initializeColumnOptions() {
+    columnOptions = [
+      ColumnDisplayOption(
+        id: 'name',
+        label: 'Bàn giao tài sản',
+        isChecked: visibleColumnIds.contains('name'),
       ),
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Quyết định điều động',
-        getValue: (item) => item.decisionNumber ?? '',
-        width: 120,
+      ColumnDisplayOption(
+        id: 'decision_number',
+        label: 'Quyết định điều động',
+        isChecked: visibleColumnIds.contains('decision_number'),
       ),
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Lệnh điều động',
-        getValue: (item) => item.transferDate ?? '',
-        width: 120,
+      ColumnDisplayOption(
+        id: 'transfer_order',
+        label: 'Lệnh điều động',
+        isChecked: visibleColumnIds.contains('transfer_order'),
       ),
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Ngày bàn giao',
-        getValue: (item) => item.transferDate ?? '',
-        width: 150,
+      ColumnDisplayOption(
+        id: 'transfer_date',
+        label: 'Ngày bàn giao',
+        isChecked: visibleColumnIds.contains('transfer_date'),
       ),
-      SgTableColumn<AssetHandoverDto>(
-        title: 'Chi tiết bàn giao',
-        cellBuilder:
-            (item) => showMovementDetails(item.assetHandoverMovements ?? []),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: 120,
-        searchable: true,
+      ColumnDisplayOption(
+        id: 'movement_details',
+        label: 'Chi tiết bàn giao',
+        isChecked: visibleColumnIds.contains('movement_details'),
       ),
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Đơn vị giao',
-        getValue: (item) => item.senderUnit ?? '',
-        width: 120,
+      ColumnDisplayOption(
+        id: 'sender_unit',
+        label: 'Đơn vị giao',
+        isChecked: visibleColumnIds.contains('sender_unit'),
       ),
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Đơn vị nhận',
-        getValue: (item) => item.receiverUnit ?? '',
-        width: 120,
+      ColumnDisplayOption(
+        id: 'receiver_unit',
+        label: 'Đơn vị nhận',
+        isChecked: visibleColumnIds.contains('receiver_unit'),
       ),
-      TableBaseConfig.columnTable<AssetHandoverDto>(
-        title: 'Người lập phiếu',
-        getValue: (item) => item.createdBy ?? '',
-        width: 120,
+      ColumnDisplayOption(
+        id: 'created_by',
+        label: 'Người lập phiếu',
+        isChecked: visibleColumnIds.contains('created_by'),
       ),
-      TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-        title: 'Trạng thái',
-        cellBuilder: (item) => showStatus(item.state ?? 0),
-        width: 150,
-        searchable: true,
+      ColumnDisplayOption(
+        id: 'status',
+        label: 'Trạng thái',
+        isChecked: visibleColumnIds.contains('status'),
       ),
     ];
+  }
+
+  List<SgTableColumn<AssetHandoverDto>> _buildColumns() {
+    final List<SgTableColumn<AssetHandoverDto>> columns = [];
+
+    // Thêm cột dựa trên visibleColumnIds
+    for (String columnId in visibleColumnIds) {
+      switch (columnId) {
+        case 'name':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Bàn giao tài sản',
+              getValue: (item) => item.name ?? '',
+              width: 170,
+            ),
+          );
+          break;
+        case 'decision_number':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Quyết định điều động',
+              getValue: (item) => item.decisionNumber ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'transfer_order':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Lệnh điều động',
+              getValue: (item) => item.transferDate ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'transfer_date':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Ngày bàn giao',
+              getValue: (item) => item.transferDate ?? '',
+              width: 150,
+            ),
+          );
+          break;
+        case 'movement_details':
+          columns.add(
+            SgTableColumn<AssetHandoverDto>(
+              title: 'Chi tiết bàn giao',
+              cellBuilder:
+                  (item) =>
+                      showMovementDetails(item.assetHandoverMovements ?? []),
+              cellAlignment: TextAlign.center,
+              titleAlignment: TextAlign.center,
+              width: 120,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'sender_unit':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Đơn vị giao',
+              getValue: (item) => item.senderUnit ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'receiver_unit':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Đơn vị nhận',
+              getValue: (item) => item.receiverUnit ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'created_by':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Người lập phiếu',
+              getValue: (item) => item.createdBy ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Trạng thái',
+              cellBuilder: (item) => showStatus(item.state ?? 0),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
+      }
+    }
+
+    return columns;
+  }
+
+  void _showColumnDisplayPopup() async {
+    await showColumnDisplayPopup(
+      context: context,
+      columns: columnOptions,
+      onSave: (selectedColumns) {
+        setState(() {
+          visibleColumnIds = selectedColumns;
+          _updateColumnOptions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã cập nhật hiển thị cột'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      },
+      onCancel: () {
+        // Reset về trạng thái ban đầu
+        _updateColumnOptions();
+      },
+    );
+  }
+
+  void _updateColumnOptions() {
+    for (var option in columnOptions) {
+      option.isChecked = visibleColumnIds.contains(option.id);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -111,23 +255,35 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
+                  spacing: 8,
                   children: [
                     Icon(
                       Icons.table_chart,
                       color: Colors.grey.shade600,
                       size: 18,
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Biên bản bàn giao tài sản (${widget.provider.data.length})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2.5),
+                      child: Text(
+                        'Biên bản bàn giao tài sản (${widget.provider.data.length})',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _showColumnDisplayPopup,
+                      child: Icon(
+                        Icons.settings,
+                        color: ColorValue.link,
+                        size: 18,
                       ),
                     ),
                   ],
                 ),
+
                 FindByStateAssetHandover(provider: widget.provider),
               ],
             ),
@@ -252,24 +408,5 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       default:
         return '';
     }
-  }
-
-  Widget _buildPaginationControls(AssetHandoverProvider provider) {
-    // Check if pagination is disabled or controller is null
-    if (provider.controllerDropdownPage == null) {
-      return const SizedBox(); // Return empty widget
-    }
-    return Visibility(
-      visible: (provider.data?.length ?? 0) >= 5,
-      child: SGPaginationControls(
-        totalPages: provider.totalPages,
-        currentPage: provider.currentPage,
-        rowsPerPage: provider.rowsPerPage,
-        controllerDropdownPage: provider.controllerDropdownPage!,
-        items: provider.items,
-        onPageChanged: provider.onPageChanged,
-        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-      ),
-    );
   }
 }

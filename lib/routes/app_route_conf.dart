@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_4.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
 import 'routes.dart';
@@ -148,6 +149,13 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) =>
                     NoTransitionPage(key: state.pageKey, child: AssetManager()),
+          ),
+          GoRoute(
+            path: AppRoute.toolAndMaterialTransfer.path,
+            name: AppRoute.toolAndMaterialTransfer.name,
+            pageBuilder:
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: ToolAndMaterialTransferView()),
           ),
           // GoRoute(
           //   name: AppRoute.liveVideoVar.name,

@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
+
+class RowFindByStatus extends StatelessWidget {
+  const RowFindByStatus({super.key, required this.provider});
+  final ToolAndMaterialTransferProvider provider;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider.value(
+      value: provider,
+      child: _FilterCheckboxes(),
+    );
+  }
+}
+
+class _FilterCheckboxes extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final provider = Provider.of<ToolAndMaterialTransferProvider>(context);
+    
+    // Tạo map filter states từ provider
+    final filterStates = {
+      'all': provider.isShowAll,
+      'draft': provider.isShowDraft,
+      'waitingForConfirmation': provider.isShowWaitingForConfirmation,
+      'confirmed': provider.isShowConfirmed,
+      'browser': provider.isShowBrowser,
+      'approve': provider.isShowApprove,
+      'reject': provider.isShowReject,
+      'cancel': provider.isShowCancel,
+      'complete': provider.isShowComplete,
+    };
+
+    // Tạo map filter counts từ provider
+    final filterCounts = {
+      'all': provider.allCount,
+      'draft': provider.draftCount,
+      'waitingForConfirmation': provider.waitingForConfirmationCount,
+      'confirmed': provider.confirmedCount,
+      'browser': provider.browserCount,
+      'approve': provider.approveCount,
+      'reject': provider.rejectCount,
+      'cancel': provider.cancelCount,
+      'complete': provider.completeCount,
+    };
+
+    // Tạo map filter colors từ FilterStatus enum
+    final filterColors = {
+      'all': FilterStatus.all.activeColor,
+      'draft': FilterStatus.draft.activeColor,
+      'waitingForConfirmation': FilterStatus.waitingForConfirmation.activeColor,
+      'confirmed': FilterStatus.confirmed.activeColor,
+      'browser': FilterStatus.browser.activeColor,
+      'approve': FilterStatus.approve.activeColor,
+      'reject': FilterStatus.reject.activeColor,
+      'cancel': FilterStatus.cancel.activeColor,
+      'complete': FilterStatus.complete.activeColor,
+    };
+
+    // Tạo options sử dụng FilterOptionBuilder
+    final options = FilterOptionBuilder.createAssetTransferOptionsWithCount(
+      filterStates: filterStates,
+      filterCounts: filterCounts,
+      filterColors: filterColors,
+      onFilterChanged: (id, value) {
+        // Map id về FilterStatus enum
+        FilterStatus? status;
+        switch (id) {
+          case 'all':
+            status = FilterStatus.all;
+            break;
+          case 'draft':
+            status = FilterStatus.draft;
+            break;
+          case 'waitingForConfirmation':
+            status = FilterStatus.waitingForConfirmation;
+            break;
+          case 'confirmed':
+            status = FilterStatus.confirmed;
+            break;
+          case 'browser':
+            status = FilterStatus.browser;
+            break;
+          case 'approve':
+            status = FilterStatus.approve;
+            break;
+          case 'reject':
+            status = FilterStatus.reject;
+            break;
+          case 'cancel':
+            status = FilterStatus.cancel;
+            break;
+          case 'complete':
+            status = FilterStatus.complete;
+            break;
+        }
+        
+        if (status != null) {
+          provider.setFilterStatus(status, value);
+        }
+      },
+    );
+
+    return CommonFilterCheckbox(
+      options: options,
+      checkColor: Colors.white,
+      textColor: Colors.black87,
+      mainAxisAlignment: MainAxisAlignment.end,
+      showCount: true,
+    );
+  }
+}

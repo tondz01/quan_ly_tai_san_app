@@ -59,11 +59,16 @@ class AppMenuData {
       label: 'Tổng quan',
       route: AppRoute.dashboard.path,
     ),
-    
-    MenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path),
-    MenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path),
-    MenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path),
-    MenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path),
+    MenuItem(
+      label: 'Danh mục',
+      route: AppRoute.category.path,
+      projectGroups: [
+        SubMenuGroup(title: 'Quản lý nhân viên', items: [SubMenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path)]),
+        SubMenuGroup(title: 'Quản lý phòng ban', items: [SubMenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path)]),
+        SubMenuGroup(title: 'Quản lý dự án', items: [SubMenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path)]),
+        SubMenuGroup(title: 'Quản lý nguồn vốn', items: [SubMenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path)]),
+      ],
+    ),
     MenuItem(
       label: 'Quản lý tài sản',
       projectGroups: [
@@ -100,14 +105,12 @@ class AppMenuData {
       ],
     ),
     MenuItem(
+      label: 'Điều động CCDC - Vật tư',
+      route: AppRoute.toolAndMaterialTransfer.path
+    ),
+    MenuItem(
       label: 'Bàn giao tài sản',
-      reportSubItems: [
-        SubMenuItem(
-          label: 'Biên bản bàn giao tài sản',
-          route: AppRoute.assetHandover.path,
-        ),
-        SubMenuItem(label: 'Chi tiết Bàn giao tài sản'),
-      ],
+      route: AppRoute.assetHandover.path,
     ),
   ];
 

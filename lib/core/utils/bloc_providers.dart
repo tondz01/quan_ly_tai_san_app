@@ -17,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/proje
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 
 List<SingleChildWidget> get blocProvider {
@@ -34,5 +35,6 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()..add(LoadDepartments(sampleDepartments()))),
     BlocProvider<CapitalSourceBloc>(create: (_) => CapitalSourceBloc()..add(LoadCapitalSources(sampleCapitalSources()))),
     BlocProvider<AssetBloc>(create: (_) => AssetBloc()..add(LoadAssets(sampleAssetDTOs()))),
+    BlocProvider<ToolAndMaterialTransferBloc>(create: (_) => ToolAndMaterialTransferBloc()),
   ];
 }

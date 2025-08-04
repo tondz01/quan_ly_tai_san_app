@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, library_private_types_in_public_api
 
 import 'dart:developer';
 
@@ -15,22 +15,22 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/asset_transfer_movement_table.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class AssetTransferDetail extends StatefulWidget {
+class ToolAndMaterialTransferDetail extends StatefulWidget {
   final bool isEditing;
   final bool? isNew;
-  final AssetTransferProvider provider;
+  final ToolAndMaterialTransferProvider provider;
 
-  const AssetTransferDetail({
+  const ToolAndMaterialTransferDetail({
     super.key,
     this.isEditing = false,
     this.isNew = false,
@@ -38,14 +38,14 @@ class AssetTransferDetail extends StatefulWidget {
   });
 
   @override
-  State<AssetTransferDetail> createState() => _AssetTransferDetailState();
+  State<ToolAndMaterialTransferDetail> createState() => _ToolAndMaterialTransferDetailState();
 }
 
 // GlobalKey để truy cập widget từ bên ngoài
-final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
-    GlobalKey<_AssetTransferDetailState>();
+final GlobalKey<_ToolAndMaterialTransferDetailState> assetTransferDetailKey =
+    GlobalKey<_ToolAndMaterialTransferDetailState>();
 
-class _AssetTransferDetailState extends State<AssetTransferDetail> {
+class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferDetail> {
   String url =
     'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
 
@@ -87,7 +87,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   String? _selectedFileName;
   String? _selectedFilePath;
 
-  late AssetTransferDto? item;
+  late ToolAndMaterialTransferDto? item;
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
@@ -224,7 +224,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   @override
-  void didUpdateWidget(AssetTransferDetail oldWidget) {
+  void didUpdateWidget(ToolAndMaterialTransferDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // Kiểm tra nếu provider item thay đổi
@@ -652,7 +652,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               ),
 
               // const SizedBox(height: 20),
-              assetTransferMovementTable(
+              toolAndMaterialTransferMovementTable(
                 context,
                 item?.movementDetails ?? [],
                 isEditing,
@@ -732,7 +732,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       final currentDeliveryLocation = controllerDeliveryLocation.text;
 
       // Create an AssetTransferDto with the form data
-      final AssetTransferDto savedItem = AssetTransferDto(
+      final ToolAndMaterialTransferDto savedItem = ToolAndMaterialTransferDto(
         id: item?.id, // Keep original ID if editing an existing item
         documentName: currentDocumentName,
         subject: currentSubject,
@@ -756,13 +756,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         proposingUnit: proposingUnit,
       );
 
-      final provider = Provider.of<AssetTransferProvider>(
+      final provider = Provider.of<ToolAndMaterialTransferProvider>(
         context,
         listen: false,
       );
 
       if (item == null) {
-        await provider.createAssetTransfer(savedItem);
+        await provider.createToolAndMaterialTransfer(savedItem);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Tạo phiếu điều chuyển thành công'),
@@ -770,7 +770,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
           ),
         );
       } else {
-        await provider.updateAssetTransfer(savedItem);
+        await provider.updateToolAndMaterialTransfer(savedItem);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Cập nhật phiếu điều chuyển thành công'),
@@ -829,7 +829,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     }
   }
 
-  Widget previewDocumentAssetTransfer(AssetTransferDto? item) {
+  Widget previewDocumentAssetTransfer(ToolAndMaterialTransferDto? item) {
     return InkWell(
       onTap: () {
         showWebViewPopup(

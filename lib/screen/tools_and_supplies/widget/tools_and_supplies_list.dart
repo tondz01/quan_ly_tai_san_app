@@ -22,62 +22,62 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
     final columns = [
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Công cụ dụng cụ',
-        getValue: (item) => item.name,
+        getValue: (item) => item.ten,
         width: 170,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Đơn vị nhập',
-        getValue: (item) => item.importUnit,
+        getValue: (item) => item.idDonVi,
         width: 170,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Mã công cụ dụng cụ',
-        getValue: (item) => item.code,
+        getValue: (item) => item.soKyHieu,
         width: 170,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Ngày nhập',
-        getValue: (item) => item.importDate,
+        getValue: (item) => item.ngayNhap.toString(),
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Đơn vị tính',
-        getValue: (item) => item.unit,
+        getValue: (item) => item.donViTinh,
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Số lượng',
-        getValue: (item) => item.quantity.toString(),
+        getValue: (item) => item.soLuong.toString(),
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Giá trị',
-        getValue: (item) => item.value.toString(),
+        getValue: (item) => item.giaTri.toString(),
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Số ký hiệu',
-        getValue: (item) => item.referenceNumber,
+        getValue: (item) => item.soKyHieu,
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Ký hiệu',
-        getValue: (item) => item.symbol,
+        getValue: (item) => item.kyHieu,
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Công suất',
-        getValue: (item) => item.capacity,
+        getValue: (item) => item.congSuat,
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Nước sản xuất',
-        getValue: (item) => item.countryOfOrigin,
+        getValue: (item) => item.nuocSanXuat,
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Năm sản xuất',
-        getValue: (item) => item.yearOfManufacture,
+        getValue: (item) => item.namSanXuat.toString(),
         width: 120,
       ),
       TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
@@ -172,7 +172,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
           content: Text(
-            'Bạn có chắc chắn muốn xóa công cụ dụng cụ "${item.name}" không?',
+            'Bạn có chắc chắn muốn xóa công cụ dụng cụ "${item.ten}" không?',
           ),
           actions: [
             TextButton(
