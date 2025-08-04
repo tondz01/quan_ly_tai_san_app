@@ -70,7 +70,7 @@ class MaterialTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: onPressed,
-      icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
+      icon: icon != null ? Icon(icon, size: 16, color: Colors.white) : null,
       label: Text(
         text,
         style: textStyle ?? const TextStyle(

@@ -138,7 +138,7 @@ Widget _buildHeaderNameScreen(
     children: [
       MaterialTextButton(
         text: 'Mới',
-        icon: Icons.add,
+        // icon: Icons.add,
         backgroundColor: isSubScreen ? Colors.white : ColorValue.primaryBlue,
         foregroundColor: isSubScreen ? ColorValue.primaryBlue : Colors.white,
         onPressed: onNew,
