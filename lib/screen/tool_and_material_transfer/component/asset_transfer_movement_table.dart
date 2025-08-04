@@ -3,7 +3,7 @@ import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-Widget assetTransferMovementTable(
+Widget toolAndMaterialTransferMovementTable(
   BuildContext context,
   List<MovementDetailDto> movementDetails,
   bool isEditing,
@@ -14,17 +14,17 @@ Widget assetTransferMovementTable(
       Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: const SGText(
-          text: 'Chi tiết tài sản điều chuyển: ',
+          text: 'Chi tiết điều chuyển CCDC-Vật tư: ',
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           textAlign: TextAlign.start,
         ),
       ),
-      movementDetailTable(movementDetails, isEditing),
+      toolAndMaterialTransferMovementDetailTable(movementDetails, isEditing),
     ],
   );
 }
 
-Widget movementDetailTable(
+Widget toolAndMaterialTransferMovementDetailTable(
   List<MovementDetailDto> movementDetails,
   bool isEditing,
 ) {

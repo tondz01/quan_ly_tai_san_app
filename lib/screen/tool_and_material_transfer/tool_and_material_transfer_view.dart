@@ -4,50 +4,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
-class AssetTransferView extends StatefulWidget {
-  final int typeAssetTransfer;
+class ToolAndMaterialTransferView extends StatefulWidget {
 
-  const AssetTransferView({super.key, required this.typeAssetTransfer});
+  const ToolAndMaterialTransferView({super.key});
 
   @override
-  State<AssetTransferView> createState() => _AssetTransferViewState();
+  State<ToolAndMaterialTransferView> createState() => _ToolAndMaterialTransferViewState();
 }
 
-class _AssetTransferViewState extends State<AssetTransferView> {
+class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
-  late int currentType;
 
   @override
   void initState() {
     super.initState();
-    currentType = widget.typeAssetTransfer;
     _initData();
   }
 
   @override
-  void didUpdateWidget(AssetTransferView oldWidget) {
+  void didUpdateWidget(ToolAndMaterialTransferView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
-      currentType = widget.typeAssetTransfer;
-      _initData();
-    }
   }
 
   void _initData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetTransferProvider>(
+      Provider.of<ToolAndMaterialTransferProvider>(
         context,
         listen: false,
-      ).onInit(context, currentType);
+      ).onInit(context);
     });
   }
 
@@ -55,38 +48,26 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  String _getScreenTitle() {
-    switch (currentType) {
-      case 1:
-        return 'Cấp phát tài sản';
-      case 2:
-        return 'Thu hồi tài sản';
-      case 3:
-        return 'Điều chuyển tài sản';
-      default:
-        return 'Quản lý tài sản';
-    }
+  
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetTransferBloc, AssetTransferState>(
+    return BlocConsumer<ToolAndMaterialTransferBloc, ToolAndMaterialTransferState>(
       listener: (context, state) {
-        if (state is AssetTransferLoadingState) {
-        } else if (state is GetListAssetTransferSuccessState) {
+        if (state is ToolAndMaterialTransferLoadingState) {
+        } else if (state is GetListToolAndMaterialTransferSuccessState) {
           log('GetListAssetTransferSuccessState');
-          context.read<AssetTransferProvider>().getListAssetTransferSuccess(
+          context.read<ToolAndMaterialTransferProvider>().getListToolAndMaterialTransferSuccess(
             context,
             state,
           );
-        } else if (state is GetListAssetTransferFailedState) {}
+        } else if (state is GetListToolAndMaterialTransferFailedState) {}
       },
       builder: (context, state) {
         return ChangeNotifierProvider.value(
-          value: context.read<AssetTransferProvider>(),
-          child: Consumer<AssetTransferProvider>(
+          value: context.read<ToolAndMaterialTransferProvider>(),
+          child: Consumer<ToolAndMaterialTransferProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -106,9 +87,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       // provider.onChangeDetailAssetTransfer(null);
                     },
                     onNew: () {
-                      provider.onChangeDetailAssetTransfer(null);
+                      provider.onChangeDetailToolAndMaterialTransfer(null);
                     },
-                    mainScreen: _getScreenTitle(),
+                    mainScreen: 'Điều động CCDC-Vật tư',
                     subScreen: provider.subScreen,
                   ),
                 ),
@@ -117,13 +98,13 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     Flexible(
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
+                        
                         child: CommonPageView(
-                          childInput: AssetTransferDetail(provider: provider),
-                          childTableView: AssetTransferList(
+                          childInput: ToolAndMaterialTransferDetail(provider: provider),
+                          childTableView: ToolAndMaterialTransferList(
                             provider: provider,
-                            typeAssetTransfer: currentType,
                           ),
-                          title: "Chi tiết điều chuyển tài sản",
+                          title: "Chi tiết điều chuyển CCDC-Vật tư",
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,
                           onExpandedChanged: (isExpanded) {

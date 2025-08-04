@@ -84,6 +84,7 @@ flutter:
     - lib/screen/asset_transfer/model/asset_allocation_data.json
     - lib/screen/asset_transfer/model/asset_recovery_data.json
     - lib/screen/asset_handover/model/asset_handover.json
+    - lib/screen/tool_and_material_transfer/model/tool_and_material_transfer_data.json
     - assets/
     - assets/images/
     - assets/svgs/

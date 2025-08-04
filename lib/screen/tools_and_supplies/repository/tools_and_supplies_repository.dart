@@ -1,11 +1,17 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/services.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/network/check_internet.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
@@ -19,6 +25,16 @@ class ToolsAndSuppliesRepository extends ApiBase {
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    final dio = Dio();
+
+    // Cấu hình để bỏ qua xác thực chứng chỉ
+    (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (
+      HttpClient client,
+    ) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+      return client;
     };
 
     try {
@@ -40,14 +56,16 @@ class ToolsAndSuppliesRepository extends ApiBase {
 
       // Request API (this part will run if loading local data fails)
       // final response = await get(EndPointAPI.TOOLS_AND_SUPPLIES);
-      final response = await get(
-        EndPointAPI.TOOLS_AND_SUPPLIES,
+      String url = Config.baseUrl + EndPointAPI.TOOLS_AND_SUPPLIES;
+      final response = await dio.get(
+        url,
         queryParameters: {'idcongty': 'ct001'},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
+      log("code: ${response.statusCode}");
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 

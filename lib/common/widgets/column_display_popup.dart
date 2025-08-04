@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import '../../core/constants/app_colors.dart';
 
 class ColumnDisplayOption {
@@ -54,8 +55,9 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
 
   void _updateSelectAllState() {
     final visibleColumns = _columns.where((col) => col.isVisible).toList();
-    _selectAll = visibleColumns.isNotEmpty && 
-                 visibleColumns.every((col) => col.isChecked);
+    _selectAll =
+        visibleColumns.isNotEmpty &&
+        visibleColumns.every((col) => col.isChecked);
   }
 
   void _toggleSelectAll(bool? value) {
@@ -78,10 +80,8 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
   }
 
   void _handleSave() {
-    final selectedColumns = _columns
-        .where((col) => col.isChecked)
-        .map((col) => col.id)
-        .toList();
+    final selectedColumns =
+        _columns.where((col) => col.isChecked).map((col) => col.id).toList();
     widget.onSave?.call(selectedColumns);
     Navigator.of(context).pop();
   }
@@ -94,9 +94,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
         padding: const EdgeInsets.all(24),
@@ -107,11 +105,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
             // Header với icon và title
             Row(
               children: [
-                Icon(
-                  Icons.settings,
-                  color: ColorValue.primaryBlue,
-                  size: 20,
-                ),
+                Icon(Icons.settings, color: ColorValue.primaryBlue, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -126,16 +120,12 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Danh sách các cột
-            Flexible(
-              child: SingleChildScrollView(
-                child: _buildColumnLayout(),
-              ),
-            ),
-            
+            Flexible(child: SingleChildScrollView(child: _buildColumnLayout())),
+
             const SizedBox(height: 24),
-            
+
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -159,7 +149,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                
+
                 // Button Lưu
                 ElevatedButton(
                   onPressed: _handleSave,
@@ -196,7 +186,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
 
   Widget _buildColumnLayout() {
     const int maxItemsPerColumn = 6;
-    
+
     // Tạo danh sách tất cả items (bao gồm "Chọn tất cả")
     final List<Widget> allItems = [
       _buildColumnOption(
@@ -217,13 +207,13 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
             onChanged: (value) => _toggleColumn(column.id, value),
           ),
         );
-      }).toList(),
+      }),
     ];
-    
+
     // Tính số cột cần thiết
     final int totalItems = allItems.length;
     final int numberOfColumns = (totalItems / maxItemsPerColumn).ceil();
-    
+
     // Nếu chỉ có 1 cột, hiển thị dạng Column
     if (numberOfColumns <= 1) {
       return Column(
@@ -231,9 +221,10 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
         children: allItems,
       );
     }
-    
+
     // Nếu có nhiều cột, hiển thị dạng Row với các Column con
     return Row(
+      spacing: 12,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(numberOfColumns, (columnIndex) {
         final int startIndex = columnIndex * maxItemsPerColumn;
@@ -242,12 +233,11 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
           startIndex,
           endIndex > totalItems ? totalItems : endIndex,
         );
-        
-        return Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: columnItems,
-          ),
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: columnItems,
         );
       }),
     );
@@ -260,42 +250,20 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
     required Function(bool?)? onChanged,
     bool isSelectAll = false,
   }) {
-    return Row(
-      children: [
-        // Checkbox
-        SizedBox(
-          width: 20,
-          height: 20,
-          child: Checkbox(
-            value: isChecked,
-            onChanged: onChanged,
-            activeColor: ColorValue.primaryBlue,
-            checkColor: Colors.white,
-            side: BorderSide(
-              color: isSelectAll ? ColorValue.primaryBlue : ColorValue.neutral400,
-              width: 2,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(3),
-            ),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: VisualDensity.compact,
-          ),
-        ),
-        const SizedBox(width: 12),
-        
-        // Label
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: isSelectAll ? FontWeight.w600 : FontWeight.w400,
-              color: isSelectAll ? ColorValue.primaryText : ColorValue.secondaryText,
-            ),
-          ),
-        ),
-      ],
+    return SgCheckbox(
+      value: isChecked,
+      onChanged: onChanged,
+      checkedColor: ColorValue.primaryBlue,
+      uncheckedColor: Colors.white,
+      // borderCheckedColor: isSelectAll ? ColorValue.primaryBlue : ColorValue.neutral400,
+      borderRadius: 2,
+      size: 16,
+      text: label,
+      textStyle: TextStyle(
+        fontSize: 14,
+        fontWeight: isSelectAll ? FontWeight.w600 : FontWeight.w400,
+        color: isSelectAll ? ColorValue.primaryText : ColorValue.secondaryText,
+      ),
     );
   }
 }
@@ -312,23 +280,24 @@ Future<List<String>?> showColumnDisplayPopup({
   String cancelText = 'Hủy',
 }) async {
   List<String>? result;
-  
+
   await showDialog(
     context: context,
     barrierDismissible: false,
-    builder: (context) => ColumnDisplayPopup(
-      columns: columns,
-      onSave: (selectedColumns) {
-        result = selectedColumns;
-        onSave?.call(selectedColumns);
-      },
-      onCancel: onCancel,
-      title: title,
-      selectAllText: selectAllText,
-      saveText: saveText,
-      cancelText: cancelText,
-    ),
+    builder:
+        (context) => ColumnDisplayPopup(
+          columns: columns,
+          onSave: (selectedColumns) {
+            result = selectedColumns;
+            onSave?.call(selectedColumns);
+          },
+          onCancel: onCancel,
+          title: title,
+          selectAllText: selectAllText,
+          saveText: saveText,
+          cancelText: cancelText,
+        ),
   );
-  
+
   return result;
-} 
+}
