@@ -1,12 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class CapitalSourceList extends StatefulWidget {

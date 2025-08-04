@@ -3,12 +3,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/project_manager_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_state.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_list_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
@@ -35,15 +33,8 @@ class _ProjectManagerState extends State<ProjectManager> {
 
   void _showForm([Project? project]) {
     setState(() {
-      showForm = true;
+      isShowInput = true;
       editingProject = project;
-    });
-  }
-
-  void _showList() {
-    setState(() {
-      showForm = false;
-      editingProject = null;
     });
   }
 
@@ -72,28 +63,7 @@ class _ProjectManagerState extends State<ProjectManager> {
   }
 
   void _searchProjectManger(String value) {
-    if (value.isEmpty) {
-      filteredData = data;
-      return;
-    }
-
-    String searchLower = value.toLowerCase().trim();
-    filteredData =
-        data.where((item) {
-          bool nameMatch = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
-            searchLower,
-          );
-
-          bool staffIdMatch = item.code.toLowerCase().contains(searchLower);
-
-          bool staffOwnerMatch = AppUtility.fuzzySearch(
-            item.note.toLowerCase(),
-            searchLower,
-          );
-
-          return nameMatch || staffIdMatch || staffOwnerMatch;
-        }).toList();
+    context.read<ProjectBloc>().add(SearchProject(value));
   }
 
   @override
@@ -102,15 +72,8 @@ class _ProjectManagerState extends State<ProjectManager> {
       builder: (context, state) {
         if (state is ProjectLoaded) {
           List<Project> projects = state.projects;
-          if (projects.isEmpty) {
-            return const Center(child: Text('Chưa có dự án nào.'));
-          }
-          if (!isFirstLoad) {
-            log('projects: ${projects.length}');
-            data = projects;
-            filteredData = data;
-            isFirstLoad = true;
-          }
+          data = projects;
+          filteredData = data;
 
           return Scaffold(
             backgroundColor: Colors.transparent,
@@ -140,32 +103,27 @@ class _ProjectManagerState extends State<ProjectManager> {
                     child: CommonPageView(
                       childInput: ProjectFormPage(
                         project: editingProject,
-                        // onCancel: _showList,
-                        // onSaved: _showList,
+                        onCancel: () {
+                          setState(() {
+                            isShowInput = false;
+                          });
+                        },
+                        onSaved: () {
+                          setState(() {
+                            isShowInput = false;
+                          });
+                        },
                       ),
                       childTableView: ProjectManagerList(
                         data: filteredData,
                         onChangeDetail: (item) {
                           _showForm(item);
-                          isShowInput = true;
                         },
                         onDelete: (item) {
                           _showDeleteDialog(context, item);
                         },
                         onEdit: (item) {
-                          // if (widget.onEdit != null) {
-                          //   widget.onEdit!(item);
-                          // } else {
-                          //   Navigator.of(context).push(
-                          //     MaterialPageRoute(
-                          //       builder:
-                          //           (_) => BlocProvider.value(
-                          //             value: context.read<StaffBloc>(),
-                          //             child: StaffFormPage(staff: item),
-                          //           ),
-                          //     ),
-                          //   );
-                          // }
+                          _showForm(item);
                         },
                       ),
 

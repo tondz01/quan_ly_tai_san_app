@@ -113,8 +113,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
       }
       if (widget.onSaved != null) {
         widget.onSaved!();
-      } else {
-        Navigator.of(context).pop();
       }
     }
   }
@@ -269,8 +267,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                   onPressed: () {
                     if (widget.onCancel != null) {
                       widget.onCancel!();
-                    } else {
-                      Navigator.of(context).pop();
                     }
                   },
                   style: OutlinedButton.styleFrom(

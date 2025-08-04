@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/core/constants/index.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
-import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class ProjectManagerList extends StatefulWidget {

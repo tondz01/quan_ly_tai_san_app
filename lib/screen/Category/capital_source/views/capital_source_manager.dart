@@ -1,16 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/capital_source/captital_source_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/pages/capital_source_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/category/capital_source/pages/capital_source_list_page.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
@@ -35,15 +31,8 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
 
   void _showForm([CapitalSource? capitalSource]) {
     setState(() {
-      showForm = true;
+      isShowInput = true;
       editingCapitalSource = capitalSource;
-    });
-  }
-
-  void _showList() {
-    setState(() {
-      showForm = false;
-      editingCapitalSource = null;
     });
   }
 
@@ -74,24 +63,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
   }
 
   void _searchCapitalSource(String value) {
-    if (value.isEmpty) {
-      filteredData = data;
-      return;
-    }
-
-    String searchLower = value.toLowerCase().trim();
-    filteredData =
-        data.where((item) {
-          bool nameMatch = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
-            searchLower,
-          );
-
-          bool staffIdMatch = item.code.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.note.toLowerCase().contains(searchLower);
-
-          return nameMatch || staffIdMatch || departmentGroup;
-        }).toList();
+    context.read<CapitalSourceBloc>().add(SearchCapitalSource(value));
   }
 
   @override
@@ -100,15 +72,8 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
       builder: (context, state) {
         if (state is CapitalSourceLoaded) {
           List<CapitalSource> capitalSources = state.capitalSources;
-          if (capitalSources.isEmpty) {
-            return const Center(child: Text('Chưa có nguồn kinh phí nào.'));
-          }
-          if (!isFirstLoad) {
-            log('capitalSources: ${capitalSources.length}');
-            data = capitalSources;
-            filteredData = data;
-            isFirstLoad = true;
-          }
+          data = capitalSources;
+          filteredData = data;
 
           return Scaffold(
             backgroundColor: Colors.transparent,
@@ -123,7 +88,6 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                 onNew: () {
                   setState(() {
                     _showForm(null);
-                    isShowInput = true;
                   });
                 },
                 mainScreen: 'Quản lý nguồn vốn',
@@ -137,19 +101,28 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                     child: CommonPageView(
                       childInput: CapitalSourceFormPage(
                         capitalSource: editingCapitalSource,
-                        // onCancel: _showList,
-                        // onSaved: _showList,
+                        onCancel: () {
+                          setState(() {
+                            isShowInput = false;
+                          });
+                        },
+                        onSaved: () {
+                          setState(() {
+                            isShowInput = false;
+                          });
+                        },
                       ),
                       childTableView: CapitalSourceList(
                         data: filteredData,
                         onChangeDetail: (item) {
                           _showForm(item);
-                          isShowInput = true;
                         },
                         onDelete: (item) {
                           _showDeleteDialog(context, item);
                         },
-                        onEdit: (item) {},
+                        onEdit: (item) {
+                          _showForm(item);
+                        },
                       ),
 
                       // Container(height: 200,color: Colors.limeAccent,),

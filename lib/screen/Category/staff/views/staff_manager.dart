@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/pages/staff_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
@@ -26,22 +25,15 @@ class _StaffManagerState extends State<StaffManager> {
 
   void _showForm([StaffDTO? staff]) {
     setState(() {
-      showForm = true;
+      isShowInput = true;
       editingStaff = staff;
     });
   }
 
-  void _showList() {
-    setState(() {
-      showForm = false;
-      editingStaff = null;
-    });
-  }
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  List<StaffDTO> _data = [];
   List<StaffDTO> _filteredData = [];
   bool isFirstLoad = false;
 
@@ -71,30 +63,7 @@ class _StaffManagerState extends State<StaffManager> {
   }
 
   void _searchStaff(String value) {
-    if (value.isEmpty) {
-      _filteredData = _data;
-      return;
-    }
-    
-    String searchLower = value.toLowerCase().trim();
-    _filteredData = _data.where((item) {
-      bool nameMatch = AppUtility.fuzzySearch(item.name.toLowerCase(), searchLower);
-      
-      bool staffIdMatch = item.staffId.toLowerCase().contains(searchLower);
-      
-      bool staffOwnerMatch = AppUtility.fuzzySearch(item.staffOwner.toLowerCase(), searchLower);
-      
-      bool departmentMatch = AppUtility.fuzzySearch(item.department.toLowerCase(), searchLower);
-      
-      bool activityMatch = AppUtility.fuzzySearch(item.activity.toLowerCase(), searchLower);
-      
-      bool positionMatch = AppUtility.fuzzySearch(item.position.toLowerCase(), searchLower);
-      
-      bool timeMatch = item.timeForActivity.toLowerCase().contains(searchLower);
-      
-      return nameMatch || staffIdMatch || staffOwnerMatch || 
-             departmentMatch || activityMatch || positionMatch || timeMatch;
-    }).toList();
+    context.read<StaffBloc>().add(SearchStaff(value));
   }
   @override
   Widget build(BuildContext context) {
@@ -102,15 +71,7 @@ class _StaffManagerState extends State<StaffManager> {
       builder: (context, state) {
         if (state is StaffLoaded) {
           List<StaffDTO> staffs = state.staffs;
-          if (staffs.isEmpty) {
-            return const Center(child: Text('Chưa có nhân viên nào.'));
-          }
-          if (!isFirstLoad) {
-            log('staffs: ${staffs.length}');
-            _data = staffs;
-            _filteredData = staffs;
-            isFirstLoad = true;
-          }
+          _filteredData = staffs;
 
           return Scaffold(
             backgroundColor: Colors.transparent,
@@ -140,8 +101,14 @@ class _StaffManagerState extends State<StaffManager> {
                     child: CommonPageView(
                       childInput: StaffFormPage(
                         staff: editingStaff,
-                        // onCancel: _showList,
-                        // onSaved: _showList,
+                         onCancel: (){
+                          setState(() {
+                            isShowInput = false;
+                          });
+                         },
+                         onSaved: () => setState(() {
+                           isShowInput = false;
+                         }),
                       ),
                       childTableView: StaffList(
                         data: _filteredData,
@@ -153,19 +120,7 @@ class _StaffManagerState extends State<StaffManager> {
                           _showDeleteDialog(context, item);
                         },
                         onEdit: (item) {
-                          // if (widget.onEdit != null) {
-                          //   widget.onEdit!(item);
-                          // } else {
-                          //   Navigator.of(context).push(
-                          //     MaterialPageRoute(
-                          //       builder:
-                          //           (_) => BlocProvider.value(
-                          //             value: context.read<StaffBloc>(),
-                          //             child: StaffFormPage(staff: item),
-                          //           ),
-                          //     ),
-                          //   );
-                          // }
+                          _showForm(item);
                         },
                       ),
 
@@ -178,7 +133,7 @@ class _StaffManagerState extends State<StaffManager> {
                   ),
                 ),
                 Visibility(
-                  visible: (staffs.length ?? 0) >= 5,
+                  visible: (staffs.length) >= 5,
                   child: SGPaginationControls(
                     totalPages: 1,
                     currentPage: 1,
@@ -202,19 +157,5 @@ class _StaffManagerState extends State<StaffManager> {
         return const Center(child: CircularProgressIndicator());
       },
     );
-    // if (showForm) {
-    //   return StaffFormPage(
-    //     staff: editingStaff,
-    //     // Khi bấm Hủy hoặc Lưu sẽ quay lại danh sách
-    //     key: ValueKey(editingStaff?.staffId ?? 'new'),
-    //     onCancel: _showList,
-    //     onSaved: _showList,
-    //   );
-    // } else {
-    //   return StaffListPage(
-    //     onAdd: () => _showForm(),
-    //     onEdit: (staff) => _showForm(staff),
-    //   );
-    // }
   }
 }

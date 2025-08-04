@@ -51,9 +51,6 @@ class _CapitalSourceListPageState extends State<CapitalSourceListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final verticalScrollController = ScrollController();
-    final horizontalScrollController = ScrollController();
-    
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(

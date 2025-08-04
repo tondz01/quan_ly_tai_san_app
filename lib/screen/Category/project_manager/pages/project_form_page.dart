@@ -83,8 +83,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
       }
       if (widget.onSaved != null) {
         widget.onSaved!();
-      } else {
-        Navigator.of(context).pop();
       }
     }
   }
@@ -183,8 +181,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                   onPressed: () {
                     if (widget.onCancel != null) {
                       widget.onCancel!();
-                    } else {
-                      Navigator.of(context).pop();
                     }
                   },
                   style: OutlinedButton.styleFrom(

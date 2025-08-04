@@ -1,9 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
@@ -34,17 +31,11 @@ class _DepartmentManagerState extends State<DepartmentManager> {
 
   void _showForm([Department? department]) {
     setState(() {
-      showForm = true;
+      isShowInput = true;
       editingDepartment = department;
     });
   }
 
-  void _showList() {
-    setState(() {
-      showForm = false;
-      editingDepartment = null;
-    });
-  }
 
   void _showDeleteDialog(BuildContext context, Department department) {
     showDialog(
@@ -73,33 +64,7 @@ class _DepartmentManagerState extends State<DepartmentManager> {
   }
 
   void _searchDepartment(String value) {
-    if (value.isEmpty) {
-      filteredData = data;
-      return;
-    }
-
-    String searchLower = value.toLowerCase().trim();
-    filteredData =
-        data.where((item) {
-          bool nameMatch = AppUtility.fuzzySearch(
-            item.departmentName.toLowerCase(),
-            searchLower,
-          );
-
-          bool staffIdMatch = item.departmentId.toLowerCase().contains(
-            searchLower,
-          );
-          bool departmentGroup = item.departmentGroup.toLowerCase().contains(
-            searchLower,
-          );
-
-          bool parentRoom = AppUtility.fuzzySearch(
-            item.parentRoom.toLowerCase(),
-            searchLower,
-          );
-
-          return nameMatch || staffIdMatch || parentRoom || departmentGroup;
-        }).toList();
+    context.read<DepartmentBloc>().add(SearchDepartment(value));
   }
 
   @override
@@ -108,15 +73,8 @@ class _DepartmentManagerState extends State<DepartmentManager> {
       builder: (context, state) {
         if (state is DepartmentLoaded) {
           List<Department> departments = state.departments;
-          if (departments.isEmpty) {
-            return const Center(child: Text('Chưa có đơn vị nào.'));
-          }
-          if (!isFirstLoad) {
-            log('departments: ${departments.length}');
-            data = departments;
-            filteredData = data;
-            isFirstLoad = true;
-          }
+          data = departments;
+          filteredData = data;
 
           return Scaffold(
             backgroundColor: Colors.transparent,
@@ -145,32 +103,27 @@ class _DepartmentManagerState extends State<DepartmentManager> {
                     child: CommonPageView(
                       childInput: DepartmentFormPage(
                         department: editingDepartment,
-                        // onCancel: _showList,
-                        // onSaved: _showList,
+                        onCancel: () {
+                          setState(() {
+                            isShowInput = false;
+                          });
+                        },
+                        onSaved: (){
+                          setState(() {
+                            isShowInput = false;
+                          });
+                        },
                       ),
                       childTableView: DepartmentList(
                         data: filteredData,
                         onChangeDetail: (item) {
                           _showForm(item);
-                          isShowInput = true;
                         },
                         onDelete: (item) {
                           _showDeleteDialog(context, item);
                         },
                         onEdit: (item) {
-                          // if (widget.onEdit != null) {
-                          //   widget.onEdit!(item);
-                          // } else {
-                          //   Navigator.of(context).push(
-                          //     MaterialPageRoute(
-                          //       builder:
-                          //           (_) => BlocProvider.value(
-                          //             value: context.read<StaffBloc>(),
-                          //             child: StaffFormPage(staff: item),
-                          //           ),
-                          //     ),
-                          //   );
-                          // }
+                          _showForm(item);
                         },
                       ),
 

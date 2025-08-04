@@ -81,8 +81,6 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
       }
       if (widget.onSaved != null) {
         widget.onSaved!();
-      } else {
-        Navigator.of(context).pop();
       }
     }
   }
@@ -192,8 +190,6 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
                         onPressed: () {
                           if (widget.onCancel != null) {
                             widget.onCancel!();
-                          } else {
-                            Navigator.of(context).pop();
                           }
                         },
                         style: OutlinedButton.styleFrom(
