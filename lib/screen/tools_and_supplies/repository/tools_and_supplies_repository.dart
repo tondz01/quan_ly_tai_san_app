@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
@@ -25,39 +26,18 @@ class ToolsAndSuppliesRepository extends ApiBase {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-    final dio = Dio();
-
-    // Cấu hình để bỏ qua xác thực chứng chỉ
-    (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (
-      HttpClient client,
-    ) {
-      client.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-      return client;
-    };
 
     try {
-      // final jsonString = await _loadLocalJsonData();
-      // if (jsonString != null) {
-      //   result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      //   result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
-      //     jsonString,
-      //     ToolsAndSuppliesDto.fromJson,
-      //   );
-      //   return result;
-      // }
-
+     
       // Check connect internet
       if (!await checkInternet()) {
         log('Error: No network connection');
         return result;
       }
 
-      // Request API (this part will run if loading local data fails)
-      // final response = await get(EndPointAPI.TOOLS_AND_SUPPLIES);
-      String url = Config.baseUrl + EndPointAPI.TOOLS_AND_SUPPLIES;
-      final response = await dio.get(
-        url,
+     
+      final response = await get(
+        EndPointAPI.TOOLS_AND_SUPPLIES,
         queryParameters: {'idcongty': 'ct001'},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
