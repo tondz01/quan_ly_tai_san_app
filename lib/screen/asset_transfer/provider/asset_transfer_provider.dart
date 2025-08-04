@@ -383,7 +383,6 @@ class AssetTransferProvider with ChangeNotifier {
       _data = state.data;
       _filteredData = List.from(_data!);
       _isLoading = false;
-      onSetColumns();
       _updatePagination();
     }
     notifyListeners();
@@ -396,90 +395,6 @@ class AssetTransferProvider with ChangeNotifier {
             : typeAssetTransfer == 2
             ? 'Thu hồi tài sản'
             : 'Điều động tài sản';
-  }
-
-  void onSetColumns() {
-    _columns = [
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Tên phiếu',
-        getValue: (item) => item.documentName ?? '',
-        width: 170,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Số quyết định',
-        getValue: (item) => item.decisionNumber ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Ngày quyết định',
-        getValue: (item) => item.decisionDate ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Người đề nghị',
-        getValue: (item) => item.requester ?? '',
-        width: 150,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Người lập phiếu',
-        getValue: (item) => item.creator ?? '',
-        width: 150,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Chi tiết điều động',
-        getValue:
-            (item) =>
-                item.movementDetails
-                    ?.map((detail) => detail.name ?? '')
-                    .join('\n') ??
-                '',
-        width: 170,
-      ),
-      SgTableColumn<AssetTransferDto>(
-        title: 'Có hiệu lực',
-        cellBuilder: (item) => showMovementDetails(item.movementDetails ?? []),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: 120,
-        searchable: true,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Đơn vị giao',
-        getValue: (item) => item.deliveringUnit ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Đơn vị nhận',
-        getValue: (item) => item.receivingUnit ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'TGGN từ Ngày',
-        getValue: (item) => item.effectiveDate ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Trình duyệt Ban giám đốc',
-        getValue: (item) => item.approver ?? '',
-        width: 120,
-      ),
-      TableColumnBuilder.createTextColumn<AssetTransferDto>(
-        title: 'Trạng thái',
-        getValue: (item) => getStatus(item.status ?? 0),
-        width: 120,
-      ),
-      SgTableColumn<AssetTransferDto>(
-        title: 'Có hiệu lực',
-        cellBuilder: (item) => showEffective(item.isEffective ?? false),
-        sortValueGetter: (item) => item.isEffective,
-        searchValueGetter:
-            (item) => (item.isEffective ?? false) ? 'Có' : 'Không',
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: 120,
-        searchable: true,
-      ),
-    ];
   }
 
   String getStatus(int status) {

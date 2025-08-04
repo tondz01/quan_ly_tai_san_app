@@ -62,11 +62,13 @@ class AppMenuData {
     MenuItem(
       label: 'Danh mục',
       route: AppRoute.category.path,
-      projectGroups: [
-        SubMenuGroup(title: 'Quản lý nhân viên', items: [SubMenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path)]),
-        SubMenuGroup(title: 'Quản lý phòng ban', items: [SubMenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path)]),
-        SubMenuGroup(title: 'Quản lý dự án', items: [SubMenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path)]),
-        SubMenuGroup(title: 'Quản lý nguồn vốn', items: [SubMenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path)]),
+      reportSubItems: [
+        SubMenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path),
+        SubMenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path),
+        SubMenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path),
+        SubMenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path),
+        SubMenuItem(label: 'Mô hình tài sản', route: AppRoute.assetCategory.path),
+        SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path)
       ],
     ),
     MenuItem(
@@ -75,6 +77,8 @@ class AppMenuData {
         SubMenuGroup(title: 'Phương tiện', items: [SubMenuItem(label: 'Phương tiện', route: AppRoute.assetManager.path)]),
         SubMenuGroup(title: 'Máy móc, trang thiết bị', items: [SubMenuItem(label: 'Máy móc, trang thiết bị', route: AppRoute.assetManager.path)]),
         SubMenuGroup(title: 'Nhà cửa và kiến trúc', items: [SubMenuItem(label: 'Nhà cửa và kiến trúc', route: AppRoute.assetManager.path)]),
+        SubMenuGroup(title: 'Tài sản vô hình', items: [SubMenuItem(label: 'Tài sản vô hình', route: AppRoute.intangibleAsset.path)]),
+        SubMenuGroup(title: 'Khấu hao tài sản', items: [SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path)]),
       ],
     ),
     MenuItem(
