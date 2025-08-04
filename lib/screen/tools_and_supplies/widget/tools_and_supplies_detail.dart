@@ -188,10 +188,10 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                       ),
                     if (isEditing) ...[
                       SGButtonIcon(
-                        text: 'Save'.tr,
+                        text: 'Sẵn sàng',
                         borderRadius: 10,
                         sizeText: 14,
-                        width: 80,
+                        width: 70,
                         height: 35,
                         defaultBGColor: Colors.blue,
                         colorHover: Colors.blueGrey,
@@ -203,10 +203,10 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                       ),
                       const SizedBox(width: 10),
                       SGButtonIcon(
-                        text: 'common.cancel'.tr,
+                        text: 'Hủy',
                         borderRadius: 10,
                         sizeText: 14,
-                        width: 80,
+                        width: 70,
                         height: 35,
                         defaultBGColor: Colors.red,
                         colorHover: Colors.red.shade700,
