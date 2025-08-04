@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
@@ -22,6 +23,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class AssetTransferDetail extends StatefulWidget {
   final bool isEditing;
@@ -44,6 +46,9 @@ final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
     GlobalKey<_AssetTransferDetailState>();
 
 class _AssetTransferDetailState extends State<AssetTransferDetail> {
+  String url =
+    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
   late TextEditingController controllerDeliveringUnit = TextEditingController();
@@ -653,7 +658,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 isEditing,
               ),
 
-              //
+              SizedBox(height: 10),
+              previewDocumentAssetTransfer(item),
             ],
           ),
         ),
@@ -821,5 +827,37 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         ),
       );
     }
+  }
+
+  Widget previewDocumentAssetTransfer(AssetTransferDto? item) {
+    return InkWell(
+      onTap: () {
+        showWebViewPopup(
+          context,
+          url: url,
+          title: 'Preview Document',
+        );
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2.5),
+            child: SGText(
+              text: "Xem trước tài liệu",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: ColorValue.link,
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          Icon(Icons.visibility, color: ColorValue.link, size: 18),
+        ],
+      ),
+    );
   }
 }

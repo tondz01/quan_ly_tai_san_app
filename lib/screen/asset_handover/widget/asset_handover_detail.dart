@@ -7,6 +7,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/component/columns_asset_handover_component.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -14,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handove
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class AssetHandoverDetail extends StatefulWidget {
   final AssetHandoverProvider provider;
@@ -405,8 +409,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               if (!isEditing)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 20),
-                  child: TableAssetMovementDetail(item: item?.assetHandoverMovements),
+                  child: TableAssetMovementDetail(
+                    item: item?.assetHandoverMovements,
+                  ),
                 ),
+              previewDocumentAssetTransfer(item),
             ],
           ),
         ),
@@ -606,7 +613,31 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     );
   }
 
-  Widget _buildButton() {
-    return Row(children: [SGButton(text: 'Lưu', onPressed: () {})]);
+  Widget previewDocumentAssetTransfer(AssetHandoverDto? item) {
+    return InkWell(
+      onTap: () {
+        showWebViewPopup(context, url: url, title: 'Preview Document');
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2.5),
+            child: SGText(
+              text: "Xem trước tài liệu",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: ColorValue.link,
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          Icon(Icons.visibility, color: ColorValue.link, size: 18),
+        ],
+      ),
+    );
   }
 }

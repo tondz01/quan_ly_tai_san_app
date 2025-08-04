@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
@@ -18,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_han
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class AssetTransferList extends StatefulWidget {
@@ -34,69 +36,200 @@ class AssetTransferList extends StatefulWidget {
 }
 
 class _AssetTransferListState extends State<AssetTransferList> {
-  String url = '';
+  String url =
+    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+
   bool isUploading = false;
 
   final List<AssetHandoverDto> listAssetHandover = [];
+  
+  // Column display options
+  late List<ColumnDisplayOption> columnOptions;
+  List<String> visibleColumnIds = [
+    'type',
+    'decision_date',
+    'effective_date', 
+    'approver',
+    'document',
+    'id',
+    'status',
+    'actions'
+  ];
   @override
   void initState() {
     super.initState();
+    _initializeColumnOptions();
     _callGetListAssetHandover();
+  }
+
+  void _initializeColumnOptions() {
+    columnOptions = [
+      ColumnDisplayOption(
+        id: 'type',
+        label: 'Phiếu ký nội sinh',
+        isChecked: visibleColumnIds.contains('type'),
+      ),
+      ColumnDisplayOption(
+        id: 'decision_date',
+        label: 'Ngày ký',
+        isChecked: visibleColumnIds.contains('decision_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'effective_date',
+        label: 'Ngày có hiệu lực',
+        isChecked: visibleColumnIds.contains('effective_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'approver',
+        label: 'Trình duyệt ban giám đốc',
+        isChecked: visibleColumnIds.contains('approver'),
+      ),
+      ColumnDisplayOption(
+        id: 'document',
+        label: 'Tài liệu duyệt',
+        isChecked: visibleColumnIds.contains('document'),
+      ),
+      ColumnDisplayOption(
+        id: 'id',
+        label: 'Ký số',
+        isChecked: visibleColumnIds.contains('id'),
+      ),
+      ColumnDisplayOption(
+        id: 'status',
+        label: 'Trạng thái',
+        isChecked: visibleColumnIds.contains('status'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('actions'),
+      ),
+    ];
+  }
+
+  List<SgTableColumn<AssetTransferDto>> _buildColumns() {
+    final List<SgTableColumn<AssetTransferDto>> columns = [];
+    
+    // Thêm cột dựa trên visibleColumnIds
+    for (String columnId in visibleColumnIds) {
+      switch (columnId) {
+        case 'type':
+          columns.add(
+            TableBaseConfig.columnTable<AssetTransferDto>(
+              title: 'Phiếu ký nội sinh',
+              width: 150,
+              getValue: (item) => getName(item.type ?? 0),
+            ),
+          );
+          break;
+        case 'decision_date':
+          columns.add(
+            TableBaseConfig.columnTable<AssetTransferDto>(
+              title: 'Ngày ký',
+              width: 100,
+              getValue: (item) => item.decisionDate ?? '',
+            ),
+          );
+          break;
+        case 'effective_date':
+          columns.add(
+            TableBaseConfig.columnTable<AssetTransferDto>(
+              title: 'Ngày có hiệu lực',
+              width: 100,
+              getValue: (item) => item.effectiveDate ?? '',
+            ),
+          );
+          break;
+        case 'approver':
+          columns.add(
+            TableBaseConfig.columnTable<AssetTransferDto>(
+              title: 'Trình duyệt ban giám đốc',
+              width: 150,
+              getValue: (item) => item.approver ?? '',
+            ),
+          );
+          break;
+        case 'document':
+          columns.add(
+            SgTableColumn<AssetTransferDto>(
+              title: 'Tài liệu duyệt',
+              cellBuilder: (item) => SgDownloadFile(url: url, name: item.documentName ?? ''),
+              sortValueGetter: (item) => item.documentFileName ?? '',
+              searchValueGetter: (item) => item.documentFileName ?? '',
+              cellAlignment: TextAlign.center,
+              titleAlignment: TextAlign.center,
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'id':
+          columns.add(
+            TableBaseConfig.columnTable<AssetTransferDto>(
+              title: 'Ký số',
+              width: 120,
+              getValue: (item) => item.id ?? '',
+            ),
+          );
+          break;
+        case 'status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetTransferDto>(
+              title: 'Trạng thái',
+              cellBuilder: (item) => widget.provider.showStatus(item.status ?? 0),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetTransferDto>(
+              title: '',
+              cellBuilder: (item) => viewAction(item),
+              width: 120,
+              searchable: true,
+            ),
+          );
+          break;
+      }
+    }
+    
+    return columns;
+  }
+
+  void _showColumnDisplayPopup() async {
+    await showColumnDisplayPopup(
+      context: context,
+      columns: columnOptions,
+      onSave: (selectedColumns) {
+        setState(() {
+          visibleColumnIds = selectedColumns;
+          _updateColumnOptions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã cập nhật hiển thị cột'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      },
+      onCancel: () {
+        // Reset về trạng thái ban đầu
+        _updateColumnOptions();
+      },
+    );
+  }
+
+  void _updateColumnOptions() {
+    for (var option in columnOptions) {
+      option.isChecked = visibleColumnIds.contains(option.id);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetTransferDto>> columns = [
-      TableBaseConfig.columnTable<AssetTransferDto>(
-        title: 'Phiếu ký nội sinh',
-        width: 150,
-        getValue: (item) => getName(item.type ?? 0),
-      ),
-      TableBaseConfig.columnTable<AssetTransferDto>(
-        title: 'Ngày ký',
-        width: 100,
-        getValue: (item) => item.decisionDate ?? '',
-      ),
-      TableBaseConfig.columnTable<AssetTransferDto>(
-        title: 'Ngày có hiệu lực',
-        width: 100,
-        getValue: (item) => item.effectiveDate ?? '',
-      ),
-      TableBaseConfig.columnTable<AssetTransferDto>(
-        title: 'Trình duyệt ban giám đốc',
-        width: 150,
-        getValue: (item) => item.approver ?? '',
-      ),
-      SgTableColumn<AssetTransferDto>(
-        title: 'Tài liệu duyệt',
-        cellBuilder:
-            (item) => SgDownloadFile(url: url, name: item.documentName ?? ''),
-        sortValueGetter: (item) => item.documentFileName ?? '',
-        searchValueGetter: (item) => item.documentFileName ?? '',
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: 150,
-        searchable: true,
-      ),
-      TableBaseConfig.columnTable<AssetTransferDto>(
-        title: 'Ký số',
-        width: 120,
-        getValue: (item) => item.id ?? '',
-      ),
-
-      TableBaseConfig.columnWidgetBase<AssetTransferDto>(
-        title: 'Trạng thái',
-        cellBuilder: (item) => widget.provider.showStatus(item.status ?? 0),
-        width: 150,
-        searchable: true,
-      ),
-      TableBaseConfig.columnWidgetBase<AssetTransferDto>(
-        title: '',
-        cellBuilder: (item) => viewAction(item),
-        width: 120,
-        searchable: true,
-      ),
-    ];
+    final List<SgTableColumn<AssetTransferDto>> columns = _buildColumns();
     log('message widget.provider.data: ${MediaQuery.of(context).size.width}');
 
     return MultiBlocListener(
@@ -173,17 +306,26 @@ class _AssetTransferListState extends State<AssetTransferList> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Row(
+              spacing: 8,
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2.5),
+                  child: Text(
+                    '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade700,
+                    ),
                   ),
+                ),
+
+                GestureDetector(
+                  onTap: _showColumnDisplayPopup,
+                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
               ],
             ),
@@ -205,6 +347,11 @@ class _AssetTransferListState extends State<AssetTransferList> {
                     fontWeight: FontWeight.w500,
                     color: Colors.grey.shade700,
                   ),
+                ),
+                Spacer(),
+                GestureDetector(
+                  onTap: _showColumnDisplayPopup,
+                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
               ],
             ),
