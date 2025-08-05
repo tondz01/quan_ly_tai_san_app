@@ -5,4 +5,5 @@ class EndPointAPI {
   static String ASSET_TRANSFER = "/api/asset-transfer";
   static String ASSET_CATEGORY = "/api/asset-transfer";
   static String ASSET_GROUP = "/api/nhomtaisan";
+  static String ASSET_MANAGEMENT = "/api/taisan";
 }

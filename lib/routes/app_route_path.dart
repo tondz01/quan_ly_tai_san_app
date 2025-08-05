@@ -19,6 +19,7 @@ enum AppRoute {
   assetDepreciation(path: "/asset-depreciation", name: "asset-depreciation"),
   assetCategory(path: "/asset-category", name: "asset-category"),
   assetGroup(path: "/asset-group", name: "asset-group"), 
+  assetManagement(path: "/asset-management", name: "asset-management"), 
   intangibleAsset(path: "/intangible-asset", name: "intangible-asset"); 
 
 

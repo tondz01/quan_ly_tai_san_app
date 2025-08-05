@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/asset-management/asset_management_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
@@ -168,6 +169,15 @@ class AppRouteConf {
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
                   child: AssetGroupView(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.assetManagement.path,
+            name: AppRoute.assetManagement.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: AssetManagementView(),
                 ),
           ),
           // GoRoute(

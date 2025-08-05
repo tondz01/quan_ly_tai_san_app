@@ -73,13 +73,14 @@ class AppMenuData {
     ),
     MenuItem(
       label: 'Quản lý tài sản',
-      projectGroups: [
-        SubMenuGroup(title: 'Phương tiện', items: [SubMenuItem(label: 'Phương tiện', route: AppRoute.assetManager.path)]),
-        SubMenuGroup(title: 'Máy móc, trang thiết bị', items: [SubMenuItem(label: 'Máy móc, trang thiết bị', route: AppRoute.assetManager.path)]),
-        SubMenuGroup(title: 'Nhà cửa và kiến trúc', items: [SubMenuItem(label: 'Nhà cửa và kiến trúc', route: AppRoute.assetManager.path)]),
-        SubMenuGroup(title: 'Tài sản vô hình', items: [SubMenuItem(label: 'Tài sản vô hình', route: AppRoute.intangibleAsset.path)]),
-        SubMenuGroup(title: 'Khấu hao tài sản', items: [SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path)]),
-      ],
+      route: AppRoute.assetManagement.path,
+      // projectGroups: [
+      //   SubMenuGroup(title: 'Phương tiện', items: [SubMenuItem(label: 'Phương tiện', route: AppRoute.assetManager.path)]),
+      //   SubMenuGroup(title: 'Máy móc, trang thiết bị', items: [SubMenuItem(label: 'Máy móc, trang thiết bị', route: AppRoute.assetManager.path)]),
+      //   SubMenuGroup(title: 'Nhà cửa và kiến trúc', items: [SubMenuItem(label: 'Nhà cửa và kiến trúc', route: AppRoute.assetManager.path)]),
+      //   SubMenuGroup(title: 'Tài sản vô hình', items: [SubMenuItem(label: 'Tài sản vô hình', route: AppRoute.intangibleAsset.path)]),
+      //   SubMenuGroup(title: 'Khấu hao tài sản', items: [SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path)]),
+      // ],
     ),
     MenuItem(
       label: 'Quản lý CCDC - Vật tư',
