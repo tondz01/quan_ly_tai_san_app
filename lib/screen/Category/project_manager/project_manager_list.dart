@@ -3,14 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class ProjectManagerList extends StatefulWidget {
-  final List<Project> data;
-  final void Function(Project)? onChangeDetail;
-  final void Function(Project)? onEdit;
-  final void Function(Project)? onDelete;
+  final List<DuAn> data;
+  final void Function(DuAn)? onChangeDetail;
+  final void Function(DuAn)? onEdit;
+  final void Function(DuAn)? onDelete;
   const ProjectManagerList({
     super.key,
     required this.data,
@@ -24,38 +24,38 @@ class ProjectManagerList extends StatefulWidget {
 }
 
 class _ProjectManagerListState extends State<ProjectManagerList> {
-  List<Project> selectedItems = [];
+  List<DuAn> selectedItems = [];
 
   @override
   Widget build(BuildContext context) {
     final columns = [
-      TableBaseConfig.columnTable<Project>(
+      TableBaseConfig.columnTable<DuAn>(
         title: 'Mã',
-        getValue: (item) => item.code,
+        getValue: (item) => item.id ?? '',
         width: 70,
       ),
-      TableBaseConfig.columnTable<Project>(
+      TableBaseConfig.columnTable<DuAn>(
         title: 'Tên',
-        getValue: (item) => item.name,
+        getValue: (item) => item.tenDuAn ?? '',
         width: 150,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<Project>(
+      TableBaseConfig.columnTable<DuAn>(
         title: 'Ghi chú',
-        getValue: (item) => item.note,
+        getValue: (item) => item.ghiChu ?? '',
         width: 150,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<Project>(
+      TableBaseConfig.columnTable<DuAn>(
         title: 'Có hiệu lực',
-        getValue: (item) => item.isActive ? 'Có' : 'Không',
+        getValue: (item) => item.hieuLuc ?? false ? 'Có' : 'Không',
         width: 150,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnWidgetBase<Project>(
+      TableBaseConfig.columnWidgetBase<DuAn>(
         title: '',
         cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<Project>(
+            (item) => TableBaseConfig.viewActionBase<DuAn>(
               item: item,
               onEdit: (item) {
                 widget.onEdit?.call(item);
@@ -135,7 +135,7 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<Project>(
+            child: TableBaseView<DuAn>(
               searchTerm: '',
               columns: columns,
               data: widget.data,

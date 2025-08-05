@@ -3,77 +3,66 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
-  List<Department> _allDepartments = [];
+  List<PhongBan> _allDepartments = [];
+  List<NhomDonVi> _allDepartmentGroups = [];
+  final provider = DepartmentsProvider();
   DepartmentBloc() : super(DepartmentInitial()) {
-    on<LoadDepartments>((event, emit) {
-      _allDepartments = List.from(event.departments);
-      emit(DepartmentLoaded(_allDepartments));
+    on<LoadDepartments>((event, emit) async {
+      _allDepartments = await provider.fetchDepartments();
+      _allDepartmentGroups = await provider.fetchDepartmentGroups();
+      emit(DepartmentLoaded(_allDepartments, _allDepartmentGroups));
     });
     on<SearchDepartment>((event, emit) {
       final searchLower = event.keyword.toLowerCase();
       final filtered =
-        _allDepartments.where((item) {
-          bool nameMatch = AppUtility.fuzzySearch(
-            item.departmentName.toLowerCase(),
-            searchLower,
-          );
+          _allDepartments.where((item) {
+            bool nameMatch = AppUtility.fuzzySearch(
+              item.tenPhongBan?.toLowerCase() ?? '',
+              searchLower,
+            );
 
-          bool staffIdMatch = item.departmentId.toLowerCase().contains(
-            searchLower,
-          );
-          bool departmentGroup = item.departmentGroup.toLowerCase().contains(
-            searchLower,
-          );
+            bool staffIdMatch =
+                item.id?.toLowerCase().contains(searchLower) ?? false;
+            bool departmentGroup =
+                item.tenNhom?.toLowerCase().contains(searchLower) ?? false;
 
-          bool parentRoom = AppUtility.fuzzySearch(
-            item.parentRoom.toLowerCase(),
-            searchLower,
-          );
+            bool parentRoom = AppUtility.fuzzySearch(
+              item.phongCapTren?.toLowerCase() ?? '',
+              searchLower,
+            );
 
-          return nameMatch || staffIdMatch || parentRoom || departmentGroup;
-        }).toList();
-      emit(DepartmentLoaded(filtered));
-
-    });
-    on<AddDepartment>((event, emit) {
+            return nameMatch || staffIdMatch || parentRoom || departmentGroup;
+          }).toList();
       if (state is DepartmentLoaded) {
-        final departments = List<Department>.from(
-          (state as DepartmentLoaded).departments,
-        );
-        departments.add(event.department);
-        emit(DepartmentLoaded(departments));
-      } else {
-        emit(DepartmentLoaded([event.department]));
+        final currentState = state as DepartmentLoaded;
+        emit(currentState.copyWith(departments: filtered));
       }
     });
-    on<UpdateDepartment>((event, emit) {
+    on<AddDepartment>((event, emit) async {
       if (state is DepartmentLoaded) {
-        final departments = List<Department>.from(
-          (state as DepartmentLoaded).departments,
-        );
-        final index = departments.indexWhere(
-          (element) => element.departmentId == event.department.departmentId,
-        );
-        if (index != -1) {
-          departments[index] = event.department;
-        }
-        emit(DepartmentLoaded(departments));
+        await provider.addDepartment(event.department);
+        add(LoadDepartments());
+      } else {}
+    });
+    on<UpdateDepartment>((event, emit) async {
+      if (state is DepartmentLoaded) {
+        await provider.updateDepartment(event.department);
+        add(LoadDepartments());
       }
     });
-    on<DeleteDepartment>((event, emit) {
+    on<DeleteDepartment>((event, emit) async {
       if (state is DepartmentLoaded) {
-        final departments = List<Department>.from(
-          (state as DepartmentLoaded).departments,
-        );
-        departments.removeWhere(
-          (element) => element.departmentId == event.department.departmentId,
-        );
-        emit(DepartmentLoaded(departments));
+        await provider.deleteDepartment(event.department.id ?? '');
+        add(LoadDepartments());
       }
     });
   }
   List<StaffDTO> staffs = sampleStaffDTOs();
+  List<NhomDonVi> get departmentGroups => _allDepartmentGroups;
+  List<PhongBan> get departments => _allDepartments;
 }

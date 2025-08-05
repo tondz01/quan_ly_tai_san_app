@@ -3,12 +3,14 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/providers/capital_source_provider.dart';
 
 class CapitalSourceBloc extends Bloc<CapitalSourceEvent, CapitalSourceState> {
-  List<CapitalSource> _allCapitalSources = [];
+  List<NguonKinhPhi> _allCapitalSources = [];
+  final provider = CapitalSourceProvider();
   CapitalSourceBloc() : super(CapitalSourceInitial()) {
-    on<LoadCapitalSources>((event, emit) {
-      _allCapitalSources = List.from(event.capitalSources);
+    on<LoadCapitalSources>((event, emit) async {
+      _allCapitalSources = await provider.fetchCapitalSources();
       emit(CapitalSourceLoaded(_allCapitalSources));
     });
     on<SearchCapitalSource>((event, emit) {
@@ -16,53 +18,37 @@ class CapitalSourceBloc extends Bloc<CapitalSourceEvent, CapitalSourceState> {
       final filtered =
           _allCapitalSources.where((item) {
             bool nameMatch = AppUtility.fuzzySearch(
-              item.name.toLowerCase(),
+              item.tenNguonKinhPhi?.toLowerCase() ?? '',
               searchLower,
             );
 
-            bool staffIdMatch = item.code.toLowerCase().contains(searchLower);
-            bool departmentGroup = item.note.toLowerCase().contains(
+            bool staffIdMatch = item.id?.toLowerCase().contains(searchLower) ?? false;
+            bool departmentGroup = item.ghiChu?.toLowerCase().contains(
               searchLower,
-            );
+            ) ?? false;
 
             return nameMatch || staffIdMatch || departmentGroup;
           }).toList();
       emit(CapitalSourceLoaded(filtered));
     });
-    on<AddCapitalSource>((event, emit) {
+    on<AddCapitalSource>((event, emit) async {
       if (state is CapitalSourceLoaded) {
-        final capitalSources = List<CapitalSource>.from(
-          (state as CapitalSourceLoaded).capitalSources,
-        );
-        capitalSources.add(event.capitalSource);
-        emit(CapitalSourceLoaded(capitalSources));
+        await provider.addCapitalSource(event.capitalSource);
+        add(LoadCapitalSources());
       } else {
         emit(CapitalSourceLoaded([event.capitalSource]));
       }
     });
-    on<UpdateCapitalSource>((event, emit) {
+    on<UpdateCapitalSource>((event, emit) async {
       if (state is CapitalSourceLoaded) {
-        final capitalSources = List<CapitalSource>.from(
-          (state as CapitalSourceLoaded).capitalSources,
-        );
-        final index = capitalSources.indexWhere(
-          (element) => element.code == event.capitalSource.code,
-        );
-        if (index != -1) {
-          capitalSources[index] = event.capitalSource;
-        }
-        emit(CapitalSourceLoaded(capitalSources));
+        await provider.updateCapitalSource(event.capitalSource);
+        add(LoadCapitalSources());
       }
     });
-    on<DeleteCapitalSource>((event, emit) {
+    on<DeleteCapitalSource>((event, emit) async {
       if (state is CapitalSourceLoaded) {
-        final capitalSources = List<CapitalSource>.from(
-          (state as CapitalSourceLoaded).capitalSources,
-        );
-        capitalSources.removeWhere(
-          (element) => element.code == event.capitalSource.code,
-        );
-        emit(CapitalSourceLoaded(capitalSources));
+        await provider.deleteCapitalSource(event.capitalSource.id ?? '');
+        add(LoadCapitalSources());
       }
     });
   }

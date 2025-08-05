@@ -3,10 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 class DepartmentFormPage extends StatefulWidget {
-  final Department? department;
+  final PhongBan? department;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
@@ -28,10 +29,9 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   late TextEditingController _departmentNameController;
   late TextEditingController _employeeCountController;
   StaffDTO? _staffDTO;
-  String? _group;
+  NhomDonVi? _group;
   String? _parentDepartment;
 
-  final List<String> groups = ['Nhóm 1', 'Nhóm 2', 'Nhóm 3'];
   final List<String> parentDepartments = [
     'Chưa xác định',
     'Phân xưởng KT7',
@@ -57,35 +57,29 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   void _initData() {
     _departmentIdController = TextEditingController(
-      text: widget.department?.departmentId ?? '',
+      text: widget.department?.id ?? '',
     );
     _departmentNameController = TextEditingController(
-      text: widget.department?.departmentName ?? '',
+      text: widget.department?.tenPhongBan ?? '',
     );
     _employeeCountController = TextEditingController(
-      text: widget.department?.employeeCount ?? '',
+      text: widget.department?.soLuongNhanVien?.toString() ?? '',
     );
     try {
       _staffDTO = context.read<DepartmentBloc>().staffs.firstWhere(
-        (staff) => staff.staffId == widget.department?.managerId,
+        (staff) => staff.staffId == widget.department?.idQuanLy,
       );
     } catch (e) {
       _staffDTO = null;
     }
     try {
-      _group = groups.firstWhere(
-        (group) => group == widget.department?.departmentGroup,
+      _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
+        (group) => group.id == widget.department?.idNhomDonVi,
       );
     } catch (e) {
       _group = null;
     }
-    try {
-      _parentDepartment = parentDepartments.firstWhere(
-        (parent) => parent == widget.department?.parentRoom,
-      );
-    } catch (e) {
-      _parentDepartment = null;
-    }
+    _parentDepartment = null;
   }
 
   @override
@@ -98,13 +92,12 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      final department = Department(
-        departmentId: _departmentIdController.text.trim(),
-        departmentGroup: _group ?? '',
-        departmentName: _departmentNameController.text.trim(),
-        managerId: _staffDTO?.staffId ?? '',
-        employeeCount: _employeeCountController.text.trim(),
-        parentRoom: _parentDepartment ?? '',
+      final department = PhongBan(
+        id: _departmentIdController.text.trim(),
+        idNhomDonVi: _group?.id ?? '',
+        tenPhongBan: _departmentNameController.text.trim(),
+        idQuanLy: _staffDTO?.staffId ?? '',
+        phongCapTren: _parentDepartment ?? '',
       );
       if (widget.department == null) {
         context.read<DepartmentBloc>().add(AddDepartment(department));
@@ -167,16 +160,16 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value:
-                              _group?.trim().isEmpty ?? true ? null : _group,
+                        child: DropdownButtonFormField<NhomDonVi>(
+                          value: _group,
                           decoration: inputDecoration('Nhóm đơn vị'),
-                          items:
-                              groups
+                          items: context
+                              .read<DepartmentBloc>()
+                              .departmentGroups
                                   .map(
                                     (g) => DropdownMenuItem(
                                       value: g,
-                                      child: Text(g),
+                                      child: Text(g.tenNhom ?? ''),
                                     ),
                                   )
                                   .toList(),

@@ -13,7 +13,6 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
@@ -31,9 +30,9 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<AssetTransferBloc>(create: (_) => AssetTransferBloc()),
     BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
     BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs(sampleStaffDTOs()))),
-    BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects(sampleProjects()))),
-    BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()..add(LoadDepartments(sampleDepartments()))),
-    BlocProvider<CapitalSourceBloc>(create: (_) => CapitalSourceBloc()..add(LoadCapitalSources(sampleCapitalSources()))),
+    BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects())),
+    BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()..add(LoadDepartments())),
+    BlocProvider<CapitalSourceBloc>(create: (_) => CapitalSourceBloc()..add(LoadCapitalSources())),
     BlocProvider<AssetBloc>(create: (_) => AssetBloc()..add(LoadAssets(sampleAssetDTOs()))),
     BlocProvider<ToolAndMaterialTransferBloc>(create: (_) => ToolAndMaterialTransferBloc()),
   ];

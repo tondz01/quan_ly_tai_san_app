@@ -10,7 +10,7 @@ abstract class CapitalSourceState extends Equatable {
 class CapitalSourceInitial extends CapitalSourceState {}
 
 class CapitalSourceLoaded extends CapitalSourceState {
-  final List<CapitalSource> capitalSources;
+  final List<NguonKinhPhi> capitalSources;
   const CapitalSourceLoaded(this.capitalSources);
   @override
   List<Object?> get props => [capitalSources];

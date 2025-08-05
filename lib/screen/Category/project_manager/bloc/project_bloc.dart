@@ -1,14 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/providers/project_provider.dart';
 import 'project_event.dart';
 import 'project_state.dart';
 
 class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
-  List<Project> _allProjects = [];
+  List<DuAn> _allProjects = [];
+  final provider = ProjectProvider();
   ProjectBloc() : super(ProjectInitial()) {
-    on<LoadProjects>((event, emit) {
-      _allProjects = List.from(event.projects);
+    on<LoadProjects>((event, emit) async {
+      _allProjects = await provider.fetchProjects();
       emit(ProjectLoaded(_allProjects));
     });
     on<SearchProject>((event, emit) {
@@ -16,14 +18,14 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
       final filtered =
           _allProjects.where((item) {
             bool nameMatch = AppUtility.fuzzySearch(
-              item.name.toLowerCase(),
+              item.tenDuAn?.toLowerCase() ?? '',
               searchLower,
             );
 
-            bool staffIdMatch = item.code.toLowerCase().contains(searchLower);
+            bool staffIdMatch = item.id?.toLowerCase().contains(searchLower) ?? false;
 
             bool staffOwnerMatch = AppUtility.fuzzySearch(
-              item.note.toLowerCase(),
+              item.ghiChu?.toLowerCase() ?? '',
               searchLower,
             );
 
@@ -31,32 +33,28 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
           }).toList();
       emit(ProjectLoaded(filtered));
     });
-    on<AddProject>((event, emit) {
+    on<AddProject>((event, emit) async {
       if (state is ProjectLoaded) {
-        final projects = List<Project>.from((state as ProjectLoaded).projects);
-        projects.add(event.project);
-        emit(ProjectLoaded(projects));
+        await provider.addProject(event.project);
+        add(LoadProjects());
       } else {
         emit(ProjectLoaded([event.project]));
       }
     });
-    on<UpdateProject>((event, emit) {
+    on<UpdateProject>((event, emit) async {
       if (state is ProjectLoaded) {
-        final projects = List<Project>.from((state as ProjectLoaded).projects);
-        final index = projects.indexWhere(
-          (element) => element.code == event.project.code,
-        );
-        if (index != -1) {
-          projects[index] = event.project;
-        }
-        emit(ProjectLoaded(projects));
+        await provider.updateProject(event.project);
+        add(LoadProjects());
+      } else {
+        emit(ProjectLoaded([event.project]));
       }
     });
-    on<DeleteProject>((event, emit) {
+    on<DeleteProject>((event, emit) async {
       if (state is ProjectLoaded) {
-        final projects = List<Project>.from((state as ProjectLoaded).projects);
-        projects.removeWhere((element) => element.code == event.project.code);
-        emit(ProjectLoaded(projects));
+        await provider.deleteProject(event.project.id ?? '');
+        add(LoadProjects());
+      } else {
+        emit(ProjectLoaded([event.project]));
       }
     });
   }

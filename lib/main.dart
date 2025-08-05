@@ -14,9 +14,9 @@ class Config {
   static String get baseUrl {
     switch (environment) {
       case 'dev':
-        return 'https://103.112.211.148:8443';
+        return 'http://103.112.211.148:8443';
       default:
-        return 'https://103.112.211.148:8443';
+        return 'http://103.112.211.148:8443';
     }
   }
 }

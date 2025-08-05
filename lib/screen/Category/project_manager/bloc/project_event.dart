@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 
 abstract class ProjectEvent extends Equatable {
   const ProjectEvent();
@@ -8,28 +8,24 @@ abstract class ProjectEvent extends Equatable {
 }
 
 class LoadProjects extends ProjectEvent {
-  final List<Project> projects;
-  const LoadProjects(this.projects);
-  @override
-  List<Object?> get props => [projects];
 }
 
 class AddProject extends ProjectEvent {
-  final Project project;
+  final DuAn project;
   const AddProject(this.project);
   @override
   List<Object?> get props => [project];
 }
 
 class UpdateProject extends ProjectEvent {
-  final Project project;
+  final DuAn project;
   const UpdateProject(this.project);
   @override
   List<Object?> get props => [project];
 }
 
 class DeleteProject extends ProjectEvent {
-  final Project project;
+  final DuAn project;
   const DeleteProject(this.project);
   @override
   List<Object?> get props => [project];

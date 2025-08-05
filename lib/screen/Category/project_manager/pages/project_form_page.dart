@@ -3,16 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 
 class ProjectFormPage extends StatefulWidget {
-  final Project? project;
+  final DuAn? duAn;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
   const ProjectFormPage({
     super.key,
-    this.project,
+    this.duAn,
     this.index,
     this.onCancel,
     this.onSaved,
@@ -46,7 +46,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   void didUpdateWidget(ProjectFormPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Kiểm tra nếu có thay đổi trong project
-    if (oldWidget.project != widget.project) {
+    if (oldWidget.duAn != widget.duAn) {
       if (mounted) {
         _initData();
       }
@@ -54,10 +54,10 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   }
 
   void _initData() {
-    _codeController.text = widget.project?.code ?? '';
-    _nameController.text = widget.project?.name ?? '';
-    _noteController.text = widget.project?.note ?? '';
-    _isActive = widget.project?.isActive ?? true;
+    _codeController.text = widget.duAn?.id ?? '';
+    _nameController.text = widget.duAn?.tenDuAn ?? '';
+    _noteController.text = widget.duAn?.ghiChu ?? '';
+    _isActive = widget.duAn?.hieuLuc ?? true;
   }
 
   @override
@@ -70,13 +70,13 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      final project = Project(
-        code: _codeController.text.trim(),
-        name: _nameController.text.trim(),
-        note: _noteController.text.trim(),
-        isActive: _isActive,
+      final project = DuAn(
+        id: _codeController.text.trim(),
+        tenDuAn: _nameController.text.trim(),
+        ghiChu: _noteController.text.trim(),
+        hieuLuc: _isActive,
       );
-      if (widget.project == null) {
+      if (widget.duAn == null) {
         context.read<ProjectBloc>().add(AddProject(project));
       } else {
         context.read<ProjectBloc>().add(UpdateProject(project));
@@ -89,7 +89,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.project != null;
+    final isEdit = widget.duAn != null;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),

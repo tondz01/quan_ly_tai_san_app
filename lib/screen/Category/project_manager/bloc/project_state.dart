@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 
 abstract class ProjectState extends Equatable {
   const ProjectState();
@@ -10,7 +10,7 @@ abstract class ProjectState extends Equatable {
 class ProjectInitial extends ProjectState {}
 
 class ProjectLoaded extends ProjectState {
-  final List<Project> projects;
+  final List<DuAn> projects;
   const ProjectLoaded(this.projects);
   @override
   List<Object?> get props => [projects];
