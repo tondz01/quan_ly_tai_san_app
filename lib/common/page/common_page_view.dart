@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -108,7 +110,9 @@ class _CommonPageViewState extends State<CommonPageView> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
-                                _isExpanded ? Icons.visibility_off : Icons.visibility,
+                                _isExpanded
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: Colors.white,
                                 size: 16,
                               ),

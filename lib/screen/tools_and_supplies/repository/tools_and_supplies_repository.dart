@@ -1,24 +1,18 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/network/check_internet.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class ToolsAndSuppliesRepository extends ApiBase {
   // Path to the local JSON file for mock data
-  static const String _mockDataPath =
-      'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
+  // static const String _mockDataPath =
+  //     'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
 
   Future<Map<String, dynamic>> getListToolsAndSupplies() async {
     List<ToolsAndSuppliesDto> list = [];
@@ -61,18 +55,18 @@ class ToolsAndSuppliesRepository extends ApiBase {
   }
 
   /// Load data from local JSON file for development/testing purposes
-  Future<String?> _loadLocalJsonData() async {
-    try {
-      return await rootBundle.loadString(_mockDataPath);
-    } catch (e) {
-      // Try to load from file system directly if rootBundle fails
-      try {
-        final file = await File(_mockDataPath).readAsString();
-        return file;
-      } catch (e) {
-        log('Failed to load mock data: $e');
-        return null;
-      }
-    }
-  }
+  // Future<String?> _loadLocalJsonData() async {
+  //   try {
+  //     return await rootBundle.loadString(_mockDataPath);
+  //   } catch (e) {
+  //     // Try to load from file system directly if rootBundle fails
+  //     try {
+  //       final file = await File(_mockDataPath).readAsString();
+  //       return file;
+  //     } catch (e) {
+  //       log('Failed to load mock data: $e');
+  //       return null;
+  //     }
+  //   }
+  // }
 }

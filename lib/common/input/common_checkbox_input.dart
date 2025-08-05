@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 
 class CommonCheckboxInput extends StatelessWidget {
   final String label;
@@ -38,31 +39,40 @@ class CommonCheckboxInput extends StatelessWidget {
               '$label :',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color: !isEnable ? Colors.black : Colors.black87.withOpacity(0.6),
+                color:
+                    !isEnable ? Colors.black : Colors.black87.withOpacity(0.6),
               ),
             ),
           ),
           const SizedBox(width: 18),
-          SizedBox(
-            width: checkboxSize,
-            height: checkboxSize,
-            child: Checkbox(
-              value: value,
-              onChanged: !isEnable && isEditing
-                  ? (newValue) {
-                      if (onChanged != null) {
-                        onChanged!(newValue ?? false);
-                      }
-                    }
-                  : null,
-              activeColor: activeColor ?? const Color(0xFF80C9CB),
-              checkColor: checkColor ?? Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(2),
-              ),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
+          // SizedBox(
+          //   width: checkboxSize,
+          //   height: checkboxSize,
+          //   child: Checkbox(
+          //     value: value,
+          //     onChanged: !isEnable && isEditing
+          //         ? (newValue) {
+          //             if (onChanged != null) {
+          //               onChanged!(newValue ?? false);
+          //             }
+          //           }
+          //         : null,
+          //     activeColor: activeColor ?? const Color(0xFF80C9CB),
+          //     checkColor: checkColor ?? Colors.white,
+          //     shape: RoundedRectangleBorder(
+          //       borderRadius: BorderRadius.circular(2),
+          //     ),
+          //     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          //     visualDensity: VisualDensity.compact,
+          //   ),
+          // ),
+          SgCheckbox(
+            value: value,
+            onChanged: onChanged,
+            checkedColor: activeColor,
+            uncheckedColor: checkColor,
+            size: checkboxSize,
+            animationDuration: const Duration(milliseconds: 100),
           ),
         ],
       ),

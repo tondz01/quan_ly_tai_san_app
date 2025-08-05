@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/views/asset_manager.dart';
@@ -32,10 +33,11 @@ class AppRouteConf {
           GoRoute(
             path: AppRoute.dashboard.path,
             name: AppRoute.dashboard.name,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const DashboardScreen(),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const DashboardScreen(),
+                ),
           ),
           GoRoute(
             path: AppRoute.exemple.path,
@@ -154,8 +156,19 @@ class AppRouteConf {
             path: AppRoute.toolAndMaterialTransfer.path,
             name: AppRoute.toolAndMaterialTransfer.name,
             pageBuilder:
-                (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: ToolAndMaterialTransferView()),
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: ToolAndMaterialTransferView(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.assetGroup.path,
+            name: AppRoute.assetGroup.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: AssetGroupView(),
+                ),
           ),
           // GoRoute(
           //   name: AppRoute.liveVideoVar.name,
