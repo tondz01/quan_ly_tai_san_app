@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/repository/asset_management_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'asset-management_event.dart';
 import 'asset_management_state.dart';
 

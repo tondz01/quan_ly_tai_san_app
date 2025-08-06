@@ -5,11 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/provider/asset_management_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/widget/asset_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/widget/asset_management_list.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 
 class AssetManagementView extends StatefulWidget {
@@ -82,7 +82,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     },
                     onNew: () {
                       // provider.onChangeDetailAssetManagement(null);
-                      provider.onCreatedAsset();
+                      provider.onChangeDetail(null);
                     },
                     mainScreen: "Quản lý tài sản",
                     subScreen: provider.subScreen,

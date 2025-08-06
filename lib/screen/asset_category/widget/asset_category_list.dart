@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -9,8 +7,6 @@ import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 

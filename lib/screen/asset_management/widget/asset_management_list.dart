@@ -7,11 +7,10 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/component/item_asset_group.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/model/asset_management_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -451,7 +450,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
               onRowTap: (item) {
-                // widget.provider.onChangeDetail(item);
+                widget.provider.onChangeDetail(item);
               },
             ),
           ),

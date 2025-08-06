@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -100,6 +98,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Nhóm tài sản',
               getValue: (item) => "${item.id} - ${item.tenNhom}",
               width: 170,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;
@@ -109,6 +108,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Mã nhóm tài sản',
               getValue: (item) => item.id ?? '',
               width: 120,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;
@@ -118,6 +118,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Tên nhóm tài sản',
               getValue: (item) => item.tenNhom ?? '',
               width: 120,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;
@@ -127,6 +128,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Có hiệu lực',
               width: 100,
               cellBuilder: (item) => SgCheckbox(value: item.isActive ?? false),
+              titleAlignment: TextAlign.center,
             ),
           );
           break;
@@ -136,6 +138,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Ngày tạo',
               getValue: (item) => item.ngayTao.toString(),
               width: 120,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;
@@ -145,6 +148,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Ngày cập nhật',
               getValue: (item) => item.ngayCapNhat.toString(),
               width: 120,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;
@@ -154,6 +158,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Người tạo',
               getValue: (item) => item.nguoiTao.toString(),
               width: 120,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;
@@ -163,6 +168,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
               title: 'Người cập nhật',
               getValue: (item) => item.nguoiCapNhat.toString(),
               width: 120,
+              titleAlignment: TextAlign.left,
             ),
           );
           break;

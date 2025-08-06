@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 
 abstract class AssetManagementState extends Equatable {
   const AssetManagementState();

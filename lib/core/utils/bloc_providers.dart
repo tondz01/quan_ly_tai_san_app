@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nested/nested.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';

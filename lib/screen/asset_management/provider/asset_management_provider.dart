@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset-management_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset-management_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
@@ -58,10 +58,17 @@ class AssetManagementProvider with ChangeNotifier {
     );
   }
 
-  onCreatedAsset() {
+  void onChangeDetail(AssetManagementDto? item) {
+    // log('message onChangeDetail: ${item?.toJson()}');
+    if (item != null) {
+      _dataDetail = item;
+    } else {
+      _dataDetail = null;
+    }
+    _isShowCollapse = true;
     isShowInput = true;
-    isShowCollapse = true;
-    notifyListeners();
+    log('message onChangeDetail: $_isShowCollapse');
+    log('message onChangeDetail: $_isShowInput');
   }
 
   getListAssetManagementSuccess(
