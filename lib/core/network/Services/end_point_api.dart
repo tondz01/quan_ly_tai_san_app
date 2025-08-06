@@ -7,4 +7,5 @@ class EndPointAPI {
   static String NGUON_KINH_PHI = "/api/nguonvon";
   static String PHONG_BAN = "/api/phongban";
   static String NHOM_DON_VI = "/api/nhomdonvi";
+  static String NHAN_VIEN = "/api/nhanvien";
 }

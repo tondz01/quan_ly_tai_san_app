@@ -42,12 +42,11 @@ class _DepartmentListState extends State<DepartmentList> {
         getValue: (item) {
           try {
             return context
-                .read<DepartmentBloc>()
-                .departmentGroups
-                .firstWhere(
-                  (group) => group.id == item.idNhomDonVi,
-                )
-                .tenNhom ?? '';
+                    .read<DepartmentBloc>()
+                    .departmentGroups
+                    .firstWhere((group) => group.id == item.idNhomDonVi)
+                    .tenNhom ??
+                '';
           } catch (e) {
             return '';
           }
@@ -64,12 +63,11 @@ class _DepartmentListState extends State<DepartmentList> {
         getValue: (item) {
           try {
             return context
-                .read<DepartmentBloc>()
-                .staffs
-                .firstWhere(
-                  (staff) => staff.staffId == item.idQuanLy,
-                )
-                .name;
+                    .read<DepartmentBloc>()
+                    .staffs
+                    .firstWhere((staff) => staff?.id == item.idQuanLy)
+                    ?.hoTen ??
+                '';
           } catch (e) {
             return '';
           }

@@ -5,16 +5,21 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 
 class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
   List<PhongBan> _allDepartments = [];
   List<NhomDonVi> _allDepartmentGroups = [];
+  List<NhanVien> _allStaff = [];
   final provider = DepartmentsProvider();
+  final staffProvider = NhanVienProvider();
   DepartmentBloc() : super(DepartmentInitial()) {
     on<LoadDepartments>((event, emit) async {
       _allDepartments = await provider.fetchDepartments();
       _allDepartmentGroups = await provider.fetchDepartmentGroups();
+      _allStaff = await staffProvider.fetchNhanViens();
       emit(DepartmentLoaded(_allDepartments, _allDepartmentGroups));
     });
     on<SearchDepartment>((event, emit) {
@@ -62,7 +67,7 @@ class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
       }
     });
   }
-  List<StaffDTO> staffs = sampleStaffDTOs();
   List<NhomDonVi> get departmentGroups => _allDepartmentGroups;
   List<PhongBan> get departments => _allDepartments;
+  List<NhanVien?> get staffs => _allStaff;
 }
