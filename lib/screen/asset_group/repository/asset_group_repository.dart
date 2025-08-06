@@ -67,7 +67,7 @@ class AssetGroupRepository extends ApiBase {
 
       // Request API (this part will run if loading local data fails)
       // final response = await get(EndPointAPI.TOOLS_AND_SUPPLIES);
-      final response = await post(EndPointAPI.ASSET_CATEGORY, data: params);
+      final response = await post(EndPointAPI.ASSET_CATEGORY, data: params.toJson());
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

@@ -24,7 +24,7 @@ class GetListAssetGroupSuccessState extends AssetGroupState {
 }
 
 class CreateAssetGroupSuccessState extends AssetGroupState {
-  final dynamic data;
+  final int data;
 
   const CreateAssetGroupSuccessState({required this.data});
 

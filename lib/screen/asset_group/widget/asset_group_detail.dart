@@ -72,13 +72,15 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
       data = widget.provider.dataDetail;
       controllerIdAssetGroup.text = data!.id ?? '';
       controllerNameAssetGroup.text = data!.tenNhom ?? '';
+      isActive = data!.hieuLuc ?? false;
     } else {
       log('message _initData: ${widget.provider.isCreate}');
-      // data = null;
+      data = null;
       isEditing = widget.provider.isCreate;
       controllerIdAssetGroup.text = '';
       controllerNameAssetGroup.text = '';
     }
+    getNameAssetGroup();
   }
 
   @override
@@ -135,6 +137,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
                 onChanged: (value) {
                   setState(() {
                     isActive = value;
+                    log('message isActive: $isActive');
                   });
                 },
               ),
@@ -150,22 +153,22 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
     return isEditing
         ? Row(
           children: [
-            ElevatedButton(
-              onPressed: _saveChanges,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Lưu'),
+            MaterialTextButton(
+              text: 'Lưu',
+              icon: Icons.save,
+              backgroundColor: ColorValue.success,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                _saveChanges();
+              },
             ),
             const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: _cancelChanges,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Hủy'),
+            MaterialTextButton(
+              text: 'Hủy',
+              icon: Icons.cancel,
+              backgroundColor: ColorValue.error,
+              foregroundColor: Colors.white,
+              onPressed: () {},
             ),
           ],
         )
@@ -187,11 +190,11 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
       tenNhom: controllerNameAssetGroup.text,
       isActive: isActive,
       hieuLuc: isActive,
-      idCongTy: 'ct001',
+      idCongTy: 'CT001',
       ngayTao: DateTime.parse(getDateNow()),
       ngayCapNhat: DateTime.parse(getDateNow()),
-      nguoiTao: 'TK001',
-      nguoiCapNhat: 'TK001',
+      nguoiTao: 'use001',
+      nguoiCapNhat: 'use001',
     );
 
     widget.provider.createAssetGroup(context, request);
@@ -204,8 +207,6 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   void getNameAssetGroup() {
     controllerIdAndNameAssetGroup.text =
         '${controllerIdAssetGroup.text} - ${controllerNameAssetGroup.text}';
-
-    log('message ${controllerIdAndNameAssetGroup.text}');
     // return;
   }
 }

@@ -9,8 +9,7 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import '../../../core/utils/response_parser.dart';
 
 class AssetCategoryRepository extends ApiBase {
-  Future<Map<String, dynamic>> getListAssetCategory(
-  ) async {
+  Future<Map<String, dynamic>> getListAssetCategory(String idCongTy) async {
     List<AssetCategoryDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -18,7 +17,6 @@ class AssetCategoryRepository extends ApiBase {
     };
 
     try {
-
       // Check connect internet
       if (!await checkInternet()) {
         log('Error: No network connection');
@@ -27,7 +25,10 @@ class AssetCategoryRepository extends ApiBase {
 
       // Request API (this part will run if loading local data fails)
       // final response = await get(EndPointAPI.TOOLS_AND_SUPPLIES);
-      final response = await get(EndPointAPI.ASSET_CATEGORY);
+      final response = await get(
+        EndPointAPI.ASSET_CATEGORY,
+        queryParameters: {'idcongty': idCongTy},
+      );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -41,7 +42,7 @@ class AssetCategoryRepository extends ApiBase {
         AssetCategoryDto.fromJson,
       );
     } catch (e) {
-      log("Error at getListAssetTransfer - AssetTransferRepository: $e");
+      log("Error at getListAssetTransfer - AssetTransferRepository: $e \n");
     }
 
     return result;

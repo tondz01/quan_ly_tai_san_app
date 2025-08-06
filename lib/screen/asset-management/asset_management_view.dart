@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset-management_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset-management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset-management/widget/asset_detail.dart';

@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -46,6 +48,9 @@ class _CommonFormInputState extends State<CommonFormInput> {
           widget.fieldName != null &&
           widget.validationErrors![widget.fieldName] == true;
     }
+    if (!widget.isDropdown && widget.textContent.isNotEmpty) {
+      widget.controller.text = widget.textContent;
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -79,9 +84,10 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       defaultValue: widget.textContent,
                       items: widget.items ?? [],
                       colorBorder:
-                          (widget.validationErrors != null && 
-                           widget.fieldName != null &&
-                           widget.validationErrors![widget.fieldName] == true)
+                          (widget.validationErrors != null &&
+                                  widget.fieldName != null &&
+                                  widget.validationErrors![widget.fieldName] ==
+                                      true)
                               ? Colors.red
                               : SGAppColors.neutral400,
                       showUnderlineBorderOnly: true,
@@ -114,7 +120,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       maxLines: 2,
                       controller:
                           widget
-                              .controller..text = widget.textContent, // Remove the ..text = textContent assignment
+                              .controller, // Remove the ..text = textContent assignment
                       borderRadius: 10,
                       enabled: widget.isEnable ? widget.isEditing : false,
                       textAlign: TextAlign.left,

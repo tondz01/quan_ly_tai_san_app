@@ -7,30 +7,36 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class AssetGroupList extends StatefulWidget {
-  final AssetGroupProvider provider;
-  const AssetGroupList({super.key, required this.provider});
+class AssetCategoryList extends StatefulWidget {
+  final AssetCategoryProvider provider;
+  const AssetCategoryList({super.key, required this.provider});
 
   @override
-  State<AssetGroupList> createState() => _AssetGroupListState();
+  State<AssetCategoryList> createState() => _AssetCategoryListState();
 }
 
-class _AssetGroupListState extends State<AssetGroupList> {
+class _AssetCategoryListState extends State<AssetCategoryList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'asset_group',
-    'code_asset_group',
-    'name_asset_group',
-    'is_active',
+    // 'id',
+    'tenMoHinh',
+    'phuongPhapKhauHao',
+    'kyKhauHao',
+    'loaiKyKhauHao'
+        'taiKhoanTaiSan'
+        'taiKhoanKhauHao'
+        'taiKhoanChiPhi',
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -46,122 +52,123 @@ class _AssetGroupListState extends State<AssetGroupList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'asset_group',
-        label: 'Nhóm tài sản',
-        isChecked: visibleColumnIds.contains('asset_group'),
+        id: 'id',
+        label: 'Mã mô hình tài sản',
+        isChecked: visibleColumnIds.contains('id'),
       ),
       ColumnDisplayOption(
-        id: 'code_asset_group',
-        label: 'Mã nhóm tài sản',
-        isChecked: visibleColumnIds.contains('code_asset_group'),
+        id: 'tenMoHinh',
+        label: 'Tên mô hình tài sản',
+        isChecked: visibleColumnIds.contains('id'),
       ),
       ColumnDisplayOption(
-        id: 'name_asset_group',
-        label: 'Tên nhóm tài sản',
-        isChecked: visibleColumnIds.contains('name_asset_group'),
+        id: 'phuongPhapKhauHao',
+        label: 'Phương pháp khấu hao',
+        isChecked: visibleColumnIds.contains('phuongPhapKhauHao'),
       ),
       ColumnDisplayOption(
-        id: 'is_active',
-        label: 'Ngày bàn giao',
-        isChecked: visibleColumnIds.contains('is_active'),
+        id: 'kyKhauHao',
+        label: 'Kỳ khấu hao',
+        isChecked: visibleColumnIds.contains('kyKhauHao'),
       ),
       ColumnDisplayOption(
-        id: 'created_at',
-        label: 'Ngày tạo',
-        isChecked: visibleColumnIds.contains('created_at'),
+        id: 'loaiKyKhauHao',
+        label: 'Loại kỳ khấu hao',
+        isChecked: visibleColumnIds.contains('loaiKyKhauHao'),
       ),
       ColumnDisplayOption(
-        id: 'updated_at',
-        label: 'Ngày cập nhật',
-        isChecked: visibleColumnIds.contains('updated_at'),
+        id: 'taiKhoanTaiSan',
+        label: 'Tài khoản tài sản',
+        isChecked: visibleColumnIds.contains('taiKhoanTaiSan'),
       ),
       ColumnDisplayOption(
-        id: 'created_by',
-        label: 'Người tạo',
-        isChecked: visibleColumnIds.contains('created_by'),
+        id: 'taiKhoanKhauHao',
+        label: 'Tài khoản khấu hao',
+        isChecked: visibleColumnIds.contains('taiKhoanKhauHao'),
       ),
       ColumnDisplayOption(
-        id: 'updated_by',
-        label: 'Người cập nhật',
-        isChecked: visibleColumnIds.contains('updated_by'),
+        id: 'taiKhoanChiPhi',
+        label: 'Tài khoản chi phí',
+        isChecked: visibleColumnIds.contains('taiKhoanChiPhi'),
       ),
     ];
   }
 
-  List<SgTableColumn<AssetGroupDto>> _buildColumns() {
-    final List<SgTableColumn<AssetGroupDto>> columns = [];
+  List<SgTableColumn<AssetCategoryDto>> _buildColumns() {
+    final List<SgTableColumn<AssetCategoryDto>> columns = [];
 
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
-        case 'asset_group':
+        case 'id':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Nhóm tài sản',
-              getValue: (item) => "${item.id} - ${item.tenNhom}",
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Mã mô hình tài sản',
+              getValue: (item) => item.id ?? "",
               width: 170,
             ),
           );
           break;
-        case 'code_asset_group':
+        case 'tenMoHinh':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Mã nhóm tài sản',
-              getValue: (item) => item.id ?? '',
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Tên mô hình tài sản',
+              getValue: (item) => item.tenMoHinh ?? '',
               width: 120,
             ),
           );
           break;
-        case 'name_asset_group':
+        case 'phuongPhapKhauHao':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Tên nhóm tài sản',
-              getValue: (item) => item.tenNhom ?? '',
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Phương pháp khấu hao',
+              getValue:
+                  (item) => getDepreciationMethod(item.phuongPhapKhauHao!),
               width: 120,
             ),
           );
           break;
-        case 'is_active':
+        case 'kyKhauHao':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
-              title: 'Có hiệu lực',
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Kỳ khấu hao',
+              getValue: (item) => item.kyKhauHao.toString(),
               width: 100,
-              cellBuilder: (item) => SgCheckbox(value: item.isActive ?? false),
             ),
           );
           break;
-        case 'created_at':
+        case 'loaiKyKhauHao':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Ngày tạo',
-              getValue: (item) => item.ngayTao.toString(),
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Loại kỳ khấu hao',
+              getValue: (item) => item.loaiKyKhauHao.toString(),
               width: 120,
             ),
           );
           break;
-        case 'updated_at':
+        case 'taiKhoanTaiSan':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Ngày cập nhật',
-              getValue: (item) => item.ngayCapNhat.toString(),
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Tài khoản tài sản',
+              getValue: (item) => item.taiKhoanTaiSan.toString(),
               width: 120,
             ),
           );
           break;
-        case 'created_by':
+        case 'taiKhoanKhauHao':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Người tạo',
-              getValue: (item) => item.nguoiTao.toString(),
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Tài khoản khấu hao',
+              getValue: (item) => item.taiKhoanKhauHao.toString(),
               width: 120,
             ),
           );
           break;
-        case 'updated_by':
+        case 'taiKhoanChiPhi':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Người cập nhật',
-              getValue: (item) => item.nguoiCapNhat.toString(),
+            TableBaseConfig.columnTable<AssetCategoryDto>(
+              title: 'Tài khoản chi phí',
+              getValue: (item) => item.taiKhoanChiPhi.toString(),
               width: 120,
             ),
           );
@@ -203,7 +210,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetGroupDto>> columns = _buildColumns();
+    final List<SgTableColumn<AssetCategoryDto>> columns = _buildColumns();
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -266,7 +273,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<AssetGroupDto>(
+            child: TableBaseView<AssetCategoryDto>(
               searchTerm: '',
               columns: columns,
               data: widget.provider.dataPage ?? [],
@@ -285,7 +292,12 @@ class _AssetGroupListState extends State<AssetGroupList> {
     return SgCheckbox(value: isActive);
   }
 
-  String getNameColumnAssetGroup(AssetGroupDto item) {
-    return "${item.id} - ${item.tenNhom}";
+  String getDepreciationMethod(int type) {
+    String nameDepreciationMethod = 'Đường thẳng';
+    switch (type) {
+      case 1:
+        nameDepreciationMethod = 'Đường thẳng';
+    }
+    return nameDepreciationMethod;
   }
 }

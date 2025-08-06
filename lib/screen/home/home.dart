@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -27,6 +28,8 @@ class _HomeState extends State<Home> {
   final AppMenuData _menuData = AppMenuData();
   // Thêm biến để theo dõi trạng thái của popup
   bool _isPopupOpen = false;
+
+  bool isItemOne = false;
 
   @override
   void initState() {
@@ -139,6 +142,7 @@ class _HomeState extends State<Home> {
               if (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) {
                 _selectedIndex = item.index;
                 if (item.route.isNotEmpty) {
+                  isItemOne = true;
                   context.go(item.route);
                 }
               }
@@ -171,6 +175,7 @@ class _HomeState extends State<Home> {
                 _selectedSubIndex = subIndex;
                 _popupManager.closeAllPopups();
                 if (subItem.route.isNotEmpty) {
+                  isItemOne = false;
                   log('subItem.route: ${subItem.extra}');
                   context.go(subItem.route, extra: subItem.extra);
                 }
@@ -205,6 +210,7 @@ class _HomeState extends State<Home> {
                   _selectedSubIndex = subIndex;
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
+                    isItemOne = false;
                     log('item.extra: ${item.extra}');
                     context.go(item.route, extra: item.extra);
                   }
@@ -219,6 +225,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
+    log('sidebarItems: ${sidebarItems.toString()}');
     return MainWrapper(
       header: null,
       sidebar: Container(
@@ -264,7 +271,7 @@ class _HomeState extends State<Home> {
             widget.child,
 
             // Thêm barrier chỉ hiển thị khi popup đang mở
-            if (_isPopupOpen)
+            if (_isPopupOpen && !isItemOne)
               Positioned.fill(
                 child: GestureDetector(
                   onTap: () {
@@ -306,10 +313,7 @@ class _HomeState extends State<Home> {
           ),
           itemBuilder:
               (context) => [
-                PopupMenuItem(
-                  value: 'today',
-                  child: _buildTimeOption('Today'),
-                ),
+                PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
                 PopupMenuItem(
                   value: 'yesterday',
                   child: _buildTimeOption('Yesterday'),
@@ -342,10 +346,7 @@ class _HomeState extends State<Home> {
           ),
           itemBuilder:
               (context) => [
-                PopupMenuItem(
-                  value: 'today',
-                  child: _buildTimeOption('Today'),
-                ),
+                PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
                 PopupMenuItem(
                   value: 'yesterday',
                   child: _buildTimeOption('Yesterday'),

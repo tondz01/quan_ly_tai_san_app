@@ -17,7 +17,7 @@ class AssetCategoryBloc extends Bloc<AssetCategoryEvent, AssetCategoryState> {
     emit(AssetCategoryInitialState());
     emit(AssetCategoryLoadingState());
     Map<String, dynamic> result =
-        await AssetCategoryRepository().getListAssetCategory();
+        await AssetCategoryRepository().getListAssetCategory(event.idCongty);
     emit(AssetCategoryLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListAssetCategorySuccessState(data: result['data']));

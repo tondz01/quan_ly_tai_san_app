@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/repository/request/asset_
 class AssetGroupProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String get searchTerm => _searchTerm;
 
   get data => _data;
   get filteredData => _filteredData;
@@ -66,8 +67,6 @@ class AssetGroupProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
-  String get searchTerm => _searchTerm;
-
   onInit(BuildContext context) {
     refresh(context);
   }
@@ -101,7 +100,7 @@ class AssetGroupProvider with ChangeNotifier {
 
   void refresh(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
-    _isLoading = true;
+    _isLoading = false;
     _data = [];
     _filteredData = [];
     _dataPage = [];
@@ -192,7 +191,9 @@ class AssetGroupProvider with ChangeNotifier {
   }
 
   void createAssetGroup(BuildContext context, AssetGroupRequest data) {
+    _isLoading = true;
     context.read<AssetGroupBloc>().add(CreateAssetGroupEvent(data));
+    notifyListeners();
   }
 
   void createAssetGroupSuccess(

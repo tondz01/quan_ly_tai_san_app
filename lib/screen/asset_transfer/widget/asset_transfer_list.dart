@@ -347,7 +347,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                     color: Colors.grey.shade700,
                   ),
                 ),
-                Spacer(),
+                // Spacer(),
                 GestureDetector(
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
