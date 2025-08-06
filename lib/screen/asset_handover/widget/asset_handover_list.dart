@@ -226,83 +226,98 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   Widget build(BuildContext context) {
     final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
 
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return Row(
+      children: [
+        // displayPreview(),
+        Expanded(
+          child: Container(
+            height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  spacing: 8,
-                  children: [
-                    Icon(
-                      Icons.table_chart,
-                      color: Colors.grey.shade600,
-                      size: 18,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 2.5),
-                      child: Text(
-                        'Biên bản bàn giao tài sản (${widget.provider.data.length})',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _showColumnDisplayPopup,
-                      child: Icon(
-                        Icons.settings,
-                        color: ColorValue.link,
-                        size: 18,
-                      ),
-                    ),
-                  ],
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
                 ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        spacing: 8,
+                        children: [
+                          Icon(
+                            Icons.table_chart,
+                            color: Colors.grey.shade600,
+                            size: 18,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2.5),
+                            child: Text(
+                              'Biên bản bàn giao tài sản (${widget.provider.data.length})',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _showColumnDisplayPopup,
+                            child: Icon(
+                              Icons.settings,
+                              color: ColorValue.link,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
 
-                FindByStateAssetHandover(provider: widget.provider),
+                      FindByStateAssetHandover(provider: widget.provider),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: TableBaseView<AssetHandoverDto>(
+                    searchTerm: '',
+                    columns: columns,
+                    data: widget.provider.dataPage ?? [],
+                    horizontalController: ScrollController(),
+                    onRowTap: (item) {
+                      widget.provider.onChangeDetail(context, item);
+                    },
+                  ),
+                ),
               ],
             ),
           ),
-          Expanded(
-            child: TableBaseView<AssetHandoverDto>(
-              searchTerm: '',
-              columns: columns,
-              data: widget.provider.dataPage ?? [],
-              horizontalController: ScrollController(),
-              onRowTap: (item) {
-                widget.provider.onChangeDetail(context, item);
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+
+  // Widget displayPreview() {
+  //   return Container(
+  //     width: MediaQuery.of(context).size.width * 0.3,
+  //     height: 300,
+  //     color: Colors.amber,
+  //   );
+  // }
 
   Widget showStatus(int status) {
     return Container(

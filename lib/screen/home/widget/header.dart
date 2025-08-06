@@ -54,12 +54,12 @@ class _HeaderState extends State<Header> {
             child: Row(
               children: [
                 // Search input with Material Design
-                MaterialSearchField(
-                  controller: TextEditingController(),
-                  hintText: 'Tìm kiếm ...',
-                  onChanged: (value) {},
-                ),
-                const SizedBox(width: 16),
+                // MaterialSearchField(
+                //   controller: TextEditingController(),
+                //   hintText: 'Tìm kiếm ...',
+                //   onChanged: (value) {},
+                // ),
+                // const SizedBox(width: 16),
                 Expanded(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
