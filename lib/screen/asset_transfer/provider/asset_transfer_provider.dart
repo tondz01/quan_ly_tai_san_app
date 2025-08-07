@@ -1,7 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -158,9 +154,7 @@ class AssetTransferProvider with ChangeNotifier {
   void _applyFilters() {
     if (_data == null) return;
 
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
+    bool hasActiveFilter = _filterStatus.entries.where((entry) => entry.key != FilterStatus.all).any((entry) => entry.value == true);
 
     List<AssetTransferDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
@@ -282,13 +276,7 @@ class AssetTransferProvider with ChangeNotifier {
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
 
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
+    dataPage = _filteredData.isNotEmpty ? _filteredData.sublist(startIndex < totalEntries ? startIndex : 0, endIndex < totalEntries ? endIndex : totalEntries) : [];
   }
 
   void onPageChanged(int page) {
@@ -473,11 +461,7 @@ class AssetTransferProvider with ChangeNotifier {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(color: getColorStatus(status), borderRadius: BorderRadius.circular(4)),
-        child: SGText(
-          text: getStatus(status),
-          size: 12,
-          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12),
-        ),
+        child: SGText(text: getStatus(status), size: 12, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12)),
       ),
     );
   }
@@ -508,29 +492,40 @@ class AssetTransferProvider with ChangeNotifier {
   // Add method to create a new asset transfer
   // Future<void> createAssetTransfer(AssetTransferDto item) async {
   //   final newItem = AssetTransferDto(
-  //     id: DateTime.now().millisecondsSinceEpoch.toString(),
-  //     documentName: item.documentName,
-  //     decisionNumber: item.decisionNumber,
-  //     decisionDate: item.decisionDate,
-  //     subject: item.subject,
-  //     requester: item.requester,
-  //     creator: 'Current User', // Would come from authentication service
-  //     movementDetails: item.movementDetails,
-  //     deliveringUnit: item.deliveringUnit,
-  //     receivingUnit: item.receivingUnit,
-  //     proposingUnit: item.proposingUnit,
-  //     deliveryLocation: item.deliveryLocation,
-  //     effectiveDate: item.effectiveDate,
-  //     effectiveDateTo: item.effectiveDateTo,
-  //     preparerInitialed: item.preparerInitialed,
-  //     requireManagerApproval: item.requireManagerApproval,
-  //     deputyConfirmed: item.deputyConfirmed,
-  //     departmentApproval: item.departmentApproval,
-  //     approver: item.approver,
-  //     status: 0, // Draft status
-  //     isEffective: false,
-  //     documentFilePath: item.documentFilePath,
-  //     documentFileName: item.documentFileName,
+  //     id: '',
+  //     soQuyetDinh: '',
+  //     tenPhieu: '',
+  //     idDonViGiao: '',
+  //     idDonViNhan: '',
+  //     idDonViDeNghi: '',
+  //     idPhongBanXemPhieu: '',
+  //     idNguoiDeNghi: '',
+  //     idTrinhDuyetCapPhong: '',
+  //     idTrinhDuyetGiamDoc: '',
+  //     idNhanSuXemPhieu: '',
+  //     nguoiLapPhieuKyNhay: null,
+  //     quanTrongCanXacNhan: null,
+  //     phoPhongXacNhan: null,
+  //     tggnTuNgay: '',
+  //     tggnDenNgay: '',
+  //     diaDiemGiaoNhan: '',
+  //     veViec: '',
+  //     canCu: '',
+  //     dieu1: '',
+  //     dieu2: '',
+  //     dieu3: '',
+  //     noiNhan: '',
+  //     themDongTrong: '',
+  //     trangThai: null,
+  //     idCongTy: '',
+  //     ngayTao: '',
+  //     ngayCapNhat: '',
+  //     nguoiTao: '',
+  //     nguoiCapNhat: '',
+  //     coHieuLuc: null,
+  //     loai: null,
+  //     isActive: null,
+  //     active: true,
   //   );
 
   //   _data ??= [];
@@ -557,5 +552,11 @@ class AssetTransferProvider with ChangeNotifier {
 
       notifyListeners();
     }
+  }
+
+  // Add method to clear movement details
+  void clearMovementDetails() {
+    _listMovementDetail = [];
+    notifyListeners();
   }
 }

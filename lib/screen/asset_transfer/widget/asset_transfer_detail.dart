@@ -163,7 +163,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                     backgroundColor: ColorValue.success,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      // _saveAssetTransfer(context);
+                      // controller.saveAssetTransfer(context);
                     },
                   ),
                   const SizedBox(width: 8),

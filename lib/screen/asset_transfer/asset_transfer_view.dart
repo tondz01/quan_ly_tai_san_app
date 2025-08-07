@@ -104,6 +104,8 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     onNew: () {
                       controller.isNew = true;
                       controller.initializeEmptyControllers();
+                      // Clear movement details list
+                      provider.clearMovementDetails();
                       provider.onChangeDetailAssetTransfer(null);
                     },
                     mainScreen: _getScreenTitle(),

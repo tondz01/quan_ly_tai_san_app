@@ -80,7 +80,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                               ? Colors.red
                               : SGAppColors.neutral400,
                       showUnderlineBorderOnly: true,
-                      enableSearch: false,
+                      enableSearch: true,
                       isClearController: false, // Ensure this is false to prevent clearing controller
                       fontSize: 16,
                       inputType: widget.inputType,

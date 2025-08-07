@@ -127,7 +127,6 @@ class AssetTransferController {
     controllerApprover.text = '';
     controllerDeliveryLocation.text = '';
     controllerProposingUnit.text = '';
-
     controllersInitialized = false;
     selectedFileName = null;
     selectedFilePath = null;
@@ -138,27 +137,13 @@ class AssetTransferController {
 
   // Initialize dropdown items
   void _initializeDropdownItems() {
-    itemsDepartmentManager =
-        listPhongBan
-            .map(
-              (phongBan) => DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
-            )
-            .toList();
+    itemsDepartmentManager = listPhongBan.map((phongBan) => DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? ''))).toList();
 
-    itemsRequester =
-        listNhanVien
-            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-            .toList();
+    itemsRequester = listNhanVien.map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? ''))).toList();
 
-    itemsDepartmentApproval =
-        listNhanVien
-            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-            .toList();
+    itemsDepartmentApproval = listNhanVien.map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? ''))).toList();
 
-    itemsApprover =
-        listNhanVien
-            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-            .toList();
+    itemsApprover = listNhanVien.map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? ''))).toList();
   }
 
   // Form validation
@@ -272,6 +257,88 @@ class AssetTransferController {
 
     // Re-initialize dropdown items
     _initializeDropdownItems();
+  }
+
+  Future<void> saveAssetTransfer(BuildContext context) async {
+    if (!isEditing) return;
+
+    // Validate form first
+    if (!validateForm()) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
+      return;
+    }
+
+    try {
+      final currentDocumentName = controllerDocumentName.text;
+      final currentSubject = controllerSubject.text;
+      final currentDeliveringUnit = controllerDeliveringUnit.text;
+      final currentReceivingUnit = controllerReceivingUnit.text;
+      final currentRequester = controllerRequester.text;
+      final currentDepartmentApproval = controllerDepartmentApproval.text;
+      final currentEffectiveDate = controllerEffectiveDate.text;
+      final currentEffectiveDateTo = controllerEffectiveDateTo.text;
+      final currentApprover = controllerApprover.text;
+      final currentDeliveryLocation = controllerDeliveryLocation.text;
+
+      // Create an AssetTransferDto with the form data
+      final AssetTransferDto savedItem = AssetTransferDto(
+        id: '',
+        tenPhieu: controllerDocumentName.text,
+        soQuyetDinh: '',
+        idDonViGiao: '',
+        idDonViNhan: '',
+        idDonViDeNghi: '',
+        idPhongBanXemPhieu: '',
+        idNguoiDeNghi: '',
+        idTrinhDuyetCapPhong: '',
+        idTrinhDuyetGiamDoc: '',
+        idNhanSuXemPhieu: '',
+        nguoiLapPhieuKyNhay: null,
+        quanTrongCanXacNhan: null,
+        phoPhongXacNhan: null,
+        tggnTuNgay: '',
+        tggnDenNgay: '',
+        diaDiemGiaoNhan: '',
+        veViec: '',
+        canCu: '',
+        dieu1: '',
+        dieu2: '',
+        dieu3: '',
+        noiNhan: '',
+        themDongTrong: '',
+        trangThai: null,
+        idCongTy: '',
+        ngayTao: '',
+        ngayCapNhat: '',
+        nguoiTao: '',
+        nguoiCapNhat: '',
+        coHieuLuc: null,
+        loai: null,
+        isActive: null,
+        active: true,
+      );
+
+      final provider = Provider.of<AssetTransferProvider>(context, listen: false);
+
+      if (item == null) {
+        await provider.createAssetTransfer(savedItem);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+      } else {
+        await provider.updateAssetTransfer(savedItem);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+      }
+
+      // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
+    } catch (e) {
+      log('Error saving asset transfer: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   // Clean up resources
