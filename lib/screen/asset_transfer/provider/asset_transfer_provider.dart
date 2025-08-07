@@ -10,8 +10,10 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_ev
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
@@ -37,12 +39,13 @@ class AssetTransferProvider with ChangeNotifier {
   AssetTransferDto? get item => _item;
   get data => _data;
   get columns => _columns;
+  List<NhanVien> get listNhanVien => _listNhanVien;
+  List<PhongBan> get listPhongBan => _listPhongBan;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
-  bool get isShowWaitingForConfirmation =>
-      _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
+  bool get isShowWaitingForConfirmation => _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
   bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
@@ -52,22 +55,14 @@ class AssetTransferProvider with ChangeNotifier {
 
   // Getter để lấy count cho mỗi status
   int get allCount => _data?.length ?? 0;
-  int get draftCount =>
-      _data?.where((item) => (item.trangThai) == 0).length ?? 0;
-  int get waitingForConfirmationCount =>
-      _data?.where((item) => (item.trangThai) == 1).length ?? 0;
-  int get confirmedCount =>
-      _data?.where((item) => (item.trangThai) == 2).length ?? 0;
-  int get browserCount =>
-      _data?.where((item) => (item.trangThai) == 3).length ?? 0;
-  int get approveCount =>
-      _data?.where((item) => (item.trangThai) == 4).length ?? 0;
-  int get rejectCount =>
-      _data?.where((item) => (item.trangThai) == 5).length ?? 0;
-  int get cancelCount =>
-      _data?.where((item) => (item.trangThai) == 6).length ?? 0;
-  int get completeCount =>
-      _data?.where((item) => (item.trangThai) == 7).length ?? 0;
+  int get draftCount => _data?.where((item) => (item.trangThai) == 0).length ?? 0;
+  int get waitingForConfirmationCount => _data?.where((item) => (item.trangThai) == 1).length ?? 0;
+  int get confirmedCount => _data?.where((item) => (item.trangThai) == 2).length ?? 0;
+  int get browserCount => _data?.where((item) => (item.trangThai) == 3).length ?? 0;
+  int get approveCount => _data?.where((item) => (item.trangThai) == 4).length ?? 0;
+  int get rejectCount => _data?.where((item) => (item.trangThai) == 5).length ?? 0;
+  int get cancelCount => _data?.where((item) => (item.trangThai) == 6).length ?? 0;
+  int get completeCount => _data?.where((item) => (item.trangThai) == 7).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -113,6 +108,8 @@ class AssetTransferProvider with ChangeNotifier {
   List<AssetTransferDto>? _dataPage;
   List<AssetTransferDto> _filteredData = [];
   AssetTransferDto? _item;
+  List<NhanVien> _listNhanVien = [];
+  List<PhongBan> _listPhongBan = [];
   final List<SgTableColumn<AssetTransferDto>> _columns = [];
 
   set subScreen(String? value) {
@@ -167,42 +164,34 @@ class AssetTransferProvider with ChangeNotifier {
           _data!.where((item) {
             int itemStatus = item.trangThai;
             log('itemStatus: $itemStatus');
-            if (_filterStatus[FilterStatus.draft] == true &&
-                (itemStatus == 0)) {
+            if (_filterStatus[FilterStatus.draft] == true && (itemStatus == 0)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.waitingForConfirmation] == true &&
-                itemStatus == 1) {
+            if (_filterStatus[FilterStatus.waitingForConfirmation] == true && itemStatus == 1) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.confirmed] == true &&
-                (itemStatus == 2)) {
+            if (_filterStatus[FilterStatus.confirmed] == true && (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true &&
-                (itemStatus == 3)) {
+            if (_filterStatus[FilterStatus.browser] == true && (itemStatus == 3)) {
               return true;
             }
-            if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 4)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.reject] == true &&
-                (itemStatus == 5)) {
+            if (_filterStatus[FilterStatus.approve] == true && (itemStatus == 4)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 6)) {
+            if (_filterStatus[FilterStatus.reject] == true && (itemStatus == 5)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 7)) {
+            if (_filterStatus[FilterStatus.cancel] == true && (itemStatus == 6)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterStatus.complete] == true && (itemStatus == 7)) {
               return true;
             }
 
@@ -216,13 +205,10 @@ class AssetTransferProvider with ChangeNotifier {
           statusFiltered.where((item) {
             return (item.tenPhieu.toLowerCase().contains(searchLower)) ||
                 (item.soQuyetDinh.toLowerCase().contains(searchLower)) ||
-                (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
-                    false) ||
+                (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.nguoiTao.toLowerCase().contains(searchLower)) ||
-                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
-                    false);
+                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ?? false);
           }).toList();
     } else {
       _filteredData = statusFiltered;
@@ -246,7 +232,7 @@ class AssetTransferProvider with ChangeNotifier {
   void onInit(BuildContext context, int typeAssetTransfer) {
     onDispose();
     this.typeAssetTransfer = typeAssetTransfer;
-    
+
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
 
@@ -272,9 +258,7 @@ class AssetTransferProvider with ChangeNotifier {
   void getAssetTransfer(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<AssetTransferBloc>().add(
-        GetListAssetTransferEvent(context, typeAssetTransfer),
-      );
+      context.read<AssetTransferBloc>().add(GetListAssetTransferEvent(context, typeAssetTransfer));
     });
   }
 
@@ -363,10 +347,7 @@ class AssetTransferProvider with ChangeNotifier {
     }
   }
 
-  getListAssetTransferSuccess(
-    BuildContext context,
-    GetListAssetTransferSuccessState state,
-  ) {
+  getListAssetTransferSuccess(BuildContext context, GetListAssetTransferSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
@@ -377,6 +358,8 @@ class AssetTransferProvider with ChangeNotifier {
       _isLoading = false;
       _updatePagination();
     }
+    _listNhanVien = state.listNhanVien;
+    _listPhongBan = state.listPhongBan;
     notifyListeners();
   }
 
@@ -424,8 +407,7 @@ class AssetTransferProvider with ChangeNotifier {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(2), // vuông góc
         ),
-        materialTapTargetSize:
-            MaterialTapTargetSize.shrinkWrap, // thu nhỏ vùng tap
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, // thu nhỏ vùng tap
         visualDensity: VisualDensity.compact, // giảm padding
       ),
     );
@@ -445,15 +427,9 @@ class AssetTransferProvider with ChangeNotifier {
                 movementDetails
                     .map(
                       (detail) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                         margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          color: ColorValue.paleRose,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                        decoration: BoxDecoration(color: ColorValue.paleRose, borderRadius: BorderRadius.circular(4)),
                         child: SGText(
                           text: detail.name ?? '',
                           size: 12,
@@ -475,18 +451,11 @@ class AssetTransferProvider with ChangeNotifier {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color: getColorStatus(status),
-          borderRadius: BorderRadius.circular(4),
-        ),
+        decoration: BoxDecoration(color: getColorStatus(status), borderRadius: BorderRadius.circular(4)),
         child: SGText(
           text: getStatus(status),
           size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12),
         ),
       ),
     );

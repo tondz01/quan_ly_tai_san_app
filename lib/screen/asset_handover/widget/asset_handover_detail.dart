@@ -13,7 +13,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -106,17 +105,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     isRepresentativeUnitConfirm =
         itemDetail?.isRepresentativeUnitConfirm ?? false;
 
-    itemsRequester =
-        users.isNotEmpty
-            ? users
-                .map(
-                  (user) => DropdownMenuItem<String>(
-                    value: user.id ?? '',
-                    child: Text(user.name ?? ''),
-                  ),
-                )
-                .toList()
-            : <DropdownMenuItem<String>>[];
+    // itemsRequester =
+    //     users.isNotEmpty
+    //         ? users
+    //             .map(
+    //               (user) => DropdownMenuItem<String>(
+    //                 value: user.id ?? '',
+    //                 child: Text(user.name ?? ''),
+    //               ),
+    //             )
+    //             .toList()
+    //         : <DropdownMenuItem<String>>[];
 
     // Cập nhật controllers với dữ liệu mới
     _updateControllers();

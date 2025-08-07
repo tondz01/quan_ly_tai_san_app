@@ -15,7 +15,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
@@ -212,15 +211,15 @@ class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferD
       controllerProposingUnit.text = proposingUnit!;
     }
 
-    itemsRequester =
-        users
-            .map(
-              (user) => DropdownMenuItem<String>(
-                value: user.id ?? '',
-                child: Text(user.name ?? ''),
-              ),
-            )
-            .toList();
+    // itemsRequester =
+    //     users
+    //         .map(
+    //           (user) => DropdownMenuItem<String>(
+    //             value: user.id ?? '',
+    //             child: Text(user.name ?? ''),
+    //           ),
+    //         )
+    //         .toList();
   }
 
   @override
@@ -519,11 +518,11 @@ class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferD
                 onChanged: (value) {
                   log('Requester selected: $value');
 
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
-                  proposingUnit = selectedUser.department;
-                  controllerRequester.text = selectedUser.name ?? '';
+                  // var selectedUser = users.firstWhere(
+                  //   (user) => user.id == value,
+                  // );
+                  // proposingUnit = selectedUser.department;
+                  // controllerRequester.text = selectedUser.name ?? '';
                   // Update the proposingUnit controller without triggering a rebuild
                   // controllerProposingUnit.text = proposingUnit ?? '';
                   log('proposingUnit set to: $proposingUnit');
@@ -583,10 +582,10 @@ class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferD
                 items: itemsRequester,
                 onChanged: (value) {
                   log('Department approval selected: $value');
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
-                  controllerDepartmentApproval.text = selectedUser.name ?? '';
+                  // var selectedUser = users.firstWhere(
+                  //   (user) => user.id == value,
+                  // );
+                  // controllerDepartmentApproval.text = selectedUser.name ?? '';
                 },
                 validationErrors: _validationErrors,
               ),
@@ -620,10 +619,10 @@ class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferD
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
-                  controllerApprover.text = selectedUser.name ?? '';
+                  // var selectedUser = users.firstWhere(
+                  //   (user) => user.id == value,
+                  // );
+                  // controllerApprover.text = selectedUser.name ?? '';
                 },
                 fieldName: 'approver',
                 validationErrors: _validationErrors,

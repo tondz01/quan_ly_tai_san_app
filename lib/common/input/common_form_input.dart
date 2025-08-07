@@ -42,9 +42,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
   Widget build(BuildContext context) {
     bool hasError = false;
     if (widget.validationErrors != null) {
-      hasError =
-          widget.fieldName != null &&
-          widget.validationErrors![widget.fieldName] == true;
+      hasError = widget.fieldName != null && widget.validationErrors![widget.fieldName] == true;
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -57,10 +55,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
               '${widget.label} :',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color:
-                    !widget.isEditing
-                        ? Colors.black87.withOpacity(0.6)
-                        : Colors.black,
+                color: !widget.isEditing ? Colors.black87.withOpacity(0.6) : Colors.black,
               ),
             ),
           ),
@@ -79,15 +74,14 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       defaultValue: widget.textContent,
                       items: widget.items ?? [],
                       colorBorder:
-                          (widget.validationErrors != null && 
-                           widget.fieldName != null &&
-                           widget.validationErrors![widget.fieldName] == true)
+                          (widget.validationErrors != null &&
+                                  widget.fieldName != null &&
+                                  widget.validationErrors![widget.fieldName] == true)
                               ? Colors.red
                               : SGAppColors.neutral400,
                       showUnderlineBorderOnly: true,
                       enableSearch: false,
-                      isClearController:
-                          false, // Ensure this is false to prevent clearing controller
+                      isClearController: false, // Ensure this is false to prevent clearing controller
                       fontSize: 16,
                       inputType: widget.inputType,
                       isShowSuffixIcon: true,
@@ -110,31 +104,23 @@ class _CommonFormInputState extends State<CommonFormInput> {
                     : SGInputText(
                       height: 40,
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      width: MediaQuery.of(context).size.width,
                       // expandable: true,
                       maxLines: 2,
-                      controller:
-                          widget
-                              .controller..text = widget.textContent, // Remove the ..text = textContent assignment
+                      controller: widget.controller,
                       borderRadius: 10,
                       enabled: widget.isEnable ? widget.isEditing : false,
                       textAlign: TextAlign.left,
                       readOnly: !widget.isEditing,
                       inputFormatters:
                           widget.inputType == TextInputType.number
-                              ? [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9.,]'),
-                                ),
-                              ]
+                              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))]
                               : null,
                       onlyLine: true,
                       color: Colors.black,
                       showBorder: widget.isEditing,
                       borderColor: hasError ? Colors.red : null,
-                      hintText:
-                          !widget.isEditing
-                              ? ''
-                              : '${'common.hint'.tr} ${widget.label}',
+                      hintText: !widget.isEditing ? '' : '${'common.hint'.tr} ${widget.label}',
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
                       fontSize: 14,
                       onChanged: (value) {

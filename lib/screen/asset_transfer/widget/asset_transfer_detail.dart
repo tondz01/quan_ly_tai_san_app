@@ -1,7 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
@@ -15,13 +11,15 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_st
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/staff_model.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferDetail extends StatefulWidget {
   final bool isEditing;
@@ -80,6 +78,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   final Map<String, TextEditingController> contractTermsControllers = {};
 
   final List<AssetHandoverDto> listAssetHandover = [];
+  List<NhanVien> listNhanVien = [];
+  List<PhongBan> listPhongBan = [];
 
   Map<String, bool> _validationErrors = {};
 
@@ -198,9 +198,28 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       controllerProposingUnit.text = proposingUnit!;
     }
 
-    itemsRequester =
-        users.map((user) => DropdownMenuItem<String>(value: user.id ?? '', child: Text(user.name ?? ''))).toList();
+    listNhanVien = widget.provider.listNhanVien;
+    listPhongBan = widget.provider.listPhongBan;
 
+    itemsDepartmentManager =
+        listPhongBan
+            .map(
+              (phongBan) => DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
+            )
+            .toList();
+
+    itemsRequester =
+        listNhanVien
+            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
+            .toList();
+    itemsDepartmentApproval =
+        listNhanVien
+            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
+            .toList();
+    itemsApprover =
+        listNhanVien
+            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
+            .toList();
   }
 
   @override
@@ -221,14 +240,50 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     if (widget.isEditing != oldWidget.isEditing) {
       _refreshWidget();
     }
+
+    // Kiểm tra nếu listNhanVien thay đổi
+    if (widget.provider.listNhanVien != oldWidget.provider.listNhanVien) {
+      setState(() {
+        listNhanVien = widget.provider.listNhanVien;
+        listPhongBan = widget.provider.listPhongBan;
+
+        itemsDepartmentManager =
+            listPhongBan
+                .map(
+                  (phongBan) =>
+                      DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
+                )
+                .toList();
+
+        itemsRequester =
+            listNhanVien
+                .map(
+                  (nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')),
+                )
+                .toList();
+        itemsDepartmentApproval =
+            listNhanVien
+                .map(
+                  (nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')),
+                )
+                .toList();
+        itemsApprover =
+            listNhanVien
+                .map(
+                  (nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')),
+                )
+                .toList();
+      });
+    }
   }
 
   // Method để làm mới widget
   void _refreshWidget() {
+    SGLog.info("AssetTransferDetail", ' _refreshWidget');
     setState(() {
       // Reset item từ provider
       item = widget.provider.item;
-      log('message item: $item');
+      SGLog.debug("AssetTransferDetail", ' message item: $item');
       isNew = item == null;
 
       // Reset editing state
@@ -253,31 +308,38 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
       _isUploading = false;
       isRefreshing = false;
+
+      // Refresh staff data
+      listNhanVien = widget.provider.listNhanVien;
+      listPhongBan = widget.provider.listPhongBan;
+
+      itemsDepartmentManager =
+          listPhongBan
+              .map(
+                (phongBan) =>
+                    DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
+              )
+              .toList();
+
+      itemsRequester =
+          listNhanVien
+              .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
+              .toList();
+      itemsDepartmentApproval =
+          listNhanVien
+              .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
+              .toList();
+      itemsApprover =
+          listNhanVien
+              .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
+              .toList();
     });
   }
 
-  final List<DropdownMenuItem<String>> itemsrReceivingUnit = [
-    const DropdownMenuItem(value: 'Ban giám đốc', child: Text('Ban giám đốc')),
-    const DropdownMenuItem(
-      value: 'Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin',
-      child: Text('Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin'),
-    ),
-    const DropdownMenuItem(value: 'Chưa xác định', child: Text('Chưa xác định')),
-    const DropdownMenuItem(
-      value: 'Công ty CP Cơ điện Uông bí - Vinacomin',
-      child: Text('Công ty CP Cơ điện Uông bí - Vinacomin'),
-    ),
-    const DropdownMenuItem(value: 'Công ty TNHH Nam Hưng', child: Text('Công ty TNHH Nam Hưng')),
-    const DropdownMenuItem(value: 'Công đoàn', child: Text('Công đoàn')),
-    const DropdownMenuItem(value: 'Kho Công ty', child: Text('Kho Công ty')),
-    const DropdownMenuItem(value: 'Phân xưởng KT1', child: Text('Phân xưởng KT1')),
-    const DropdownMenuItem(
-      value: 'P.xưởng Thông gió - thoát nước mỏ 1',
-      child: Text('P.xưởng Thông gió - thoát nước mỏ 1'),
-    ),
-  ];
-
-  late final List<DropdownMenuItem<String>> itemsRequester;
+  late List<DropdownMenuItem<String>> itemsRequester;
+  late List<DropdownMenuItem<String>> itemsDepartmentApproval;
+  late List<DropdownMenuItem<String>> itemsApprover;
+  late List<DropdownMenuItem<String>> itemsDepartmentManager;
 
   @override
   void dispose() {
@@ -308,18 +370,18 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   void findPhongBan(String? value) {
-    log('message');
+    SGLog.debug("AssetTransferDetail", ' message');
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    log('screenWidth: $screenWidth');
+    SGLog.debug("AssetTransferDetail", ' screenWidth: $screenWidth');
 
     _checkAndRefreshWidget();
 
     if (item == null && !isRefreshing) {
-      log('item == null');
+      SGLog.debug("AssetTransferDetail", ' item == null');
       onReload();
       isEditing = true;
       isRefreshing = true;
@@ -334,7 +396,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               // Handle successful data loading
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-              log('Asset handover data loaded successfully');
+              SGLog.debug("AssetTransferDetail", ' Asset handover data loaded successfully');
             } else if (state is GetListAssetHandoverFailedState) {
             } else if (state is AssetHandoverLoadingState) {
               // Show loading indicator
@@ -458,7 +520,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 isEditing: isEditing,
                 textContent: item?.tenDonViNhan ?? '',
                 isDropdown: true,
-                items: itemsrReceivingUnit,
+                items: itemsDepartmentManager,
                 fieldName: 'receivingUnit',
                 validationErrors: _validationErrors,
               ),
@@ -470,14 +532,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
-                  log('Requester selected: $value');
-
-                  var selectedUser = users.firstWhere((user) => user.id == value);
-                  proposingUnit = selectedUser.department;
-                  controllerRequester.text = selectedUser.name ?? '';
-                  // Update the proposingUnit controller without triggering a rebuild
-                  // controllerProposingUnit.text = proposingUnit ?? '';
-                  log('proposingUnit set to: $proposingUnit');
+                  SGLog.debug("AssetTransferDetail", 'Requester selected: $value');
+                  var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
+                  setState(() {
+                    proposingUnit = selectedUser.boPhan;
+                    controllerRequester.text = selectedUser.hoTen ?? '';
+                    SGLog.debug("AssetTransferDetail", ' proposingUnit set to: $proposingUnit');
+                  });
                 },
                 fieldName: 'requester',
                 validationErrors: _validationErrors,
@@ -531,11 +592,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 textContent: item?.tenTrinhDuyetCapPhong ?? '',
                 fieldName: 'departmentApproval',
                 isDropdown: true,
-                items: itemsRequester,
+                items: itemsDepartmentApproval,
                 onChanged: (value) {
-                  log('Department approval selected: $value');
-                  var selectedUser = users.firstWhere((user) => user.id == value);
-                  controllerDepartmentApproval.text = selectedUser.name ?? '';
+                  SGLog.debug("AssetTransferDetail", ' Department approval selected: $value');
+                  var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
+                  controllerDepartmentApproval.text = selectedUser.hoTen ?? '';
                 },
                 validationErrors: _validationErrors,
               ),
@@ -565,10 +626,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 isEditing: isEditing,
                 textContent: item?.tenTrinhDuyetGiamDoc ?? '',
                 isDropdown: true,
-                items: itemsRequester,
+                items: itemsApprover,
                 onChanged: (value) {
-                  var selectedUser = users.firstWhere((user) => user.id == value);
-                  controllerApprover.text = selectedUser.name ?? '';
+                  var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
+                  controllerApprover.text = selectedUser.hoTen ?? '';
                 },
                 fieldName: 'approver',
                 validationErrors: _validationErrors,
@@ -632,7 +693,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         );
       }
     } catch (e) {
-      log('Error uploading file: $e');
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
@@ -725,7 +786,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
   //     // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
   //   } catch (e) {
-  //     log('Error saving asset transfer: $e');
+  //       SGLog.debug("AssetTransferDetail",' Error saving asset transfer: $e');
   //     ScaffoldMessenger.of(context).showSnackBar(
   //       SnackBar(
   //         content: Text('Lỗi: ${e.toString()}'),

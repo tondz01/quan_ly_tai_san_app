@@ -5,7 +5,6 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 class DepartmentFormPage extends StatefulWidget {
   final PhongBan? department;
