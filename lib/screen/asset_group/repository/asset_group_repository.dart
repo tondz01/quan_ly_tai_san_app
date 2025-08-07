@@ -60,8 +60,6 @@ class AssetGroupRepository extends ApiBase {
           'action': 'create_asset_group',
           'timestamp': DateTime.now().toIso8601String(),
           'params': params.toJson(),
-        }).catchError((error) {
-          log('Fire-and-forget API failed: $error'); // Log lỗi nhưng không ảnh hưởng flow chính
         })
       );
       

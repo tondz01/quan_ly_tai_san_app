@@ -200,9 +200,9 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
     widget.provider.createAssetGroup(context, request);
   }
 
-  void _cancelChanges() {
-    log('message: _cancelChanges');
-  }
+  // void _cancelChanges() {
+  //   log('message: _cancelChanges');
+  // }
 
   void getNameAssetGroup() {
     controllerIdAndNameAssetGroup.text =

@@ -3,13 +3,14 @@ import 'dart:developer';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AssetManagementRepository extends ApiBase {
+  // Get danh sách tài sản
   Future<Map<String, dynamic>> getListAssetManagement(String idCongTy) async {
     List<AssetManagementDto> list = [];
     Map<String, dynamic> result = {
@@ -41,6 +42,7 @@ class AssetManagementRepository extends ApiBase {
     return result;
   }
 
+  // Get danh sách nhóm tài sản
   Future<Map<String, dynamic>> getListAssetGroup([String? idCongTy]) async {
     List<AssetGroupDto> list = [];
     Map<String, dynamic> result = {
@@ -72,8 +74,10 @@ class AssetManagementRepository extends ApiBase {
 
     return result;
   }
-  Future<Map<String, dynamic>> getListProject([String? idCongTy]) async {
-    List<Project> list = [];
+
+  // Get danh sách dự án
+  Future<Map<String, dynamic>> getListDuAn([String? idCongTy]) async {
+    List<DuAn> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -81,57 +85,49 @@ class AssetManagementRepository extends ApiBase {
 
     try {
       final response = await get(
-        '/api/duan',
+        EndPointAPI.DU_AN,
         queryParameters: {'idcongty': idCongTy ?? 'ct001'},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
-      log('message: ${response.data}');
-
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<Project>(
+      result['data'] = ResponseParser.parseToList<DuAn>(
         response.data,
-        Project.fromJson,
+        DuAn.fromJson,
       );
     } catch (e) {
       log("Error at getListAssetGroup - AssetManagementRepository: $e");
     }
-
     return result;
   }
+
+  // Get danh sách nguồn kinh phí
   Future<Map<String, dynamic>> getListCapitalSource([String? idCongTy]) async {
-    List<CapitalSource> list = [];
+    List<NguonKinhPhi> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-
     try {
       final response = await get(
-        '/api/duan',
+        EndPointAPI.NGUON_KINH_PHI,
         queryParameters: {'idcongty': idCongTy ?? 'ct001'},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
-      log('message: ${response.data}');
-
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<Project>(
+      result['data'] = ResponseParser.parseToList<NguonKinhPhi>(
         response.data,
-        Project.fromJson,
+        NguonKinhPhi.fromJson,
       );
     } catch (e) {
-      log("Error at getListAssetGroup - AssetManagementRepository: $e");
+      log("Error at getListCapitalSource - AssetManagementRepository: $e");
     }
-
     return result;
   }
 }

@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 
 abstract class AssetManagementState extends Equatable {
   const AssetManagementState();
@@ -77,7 +78,7 @@ class GetListAssetGroupFailedState extends AssetManagementState {
 
 // DỰ ÁN
 class GetListProjectSuccessState extends AssetManagementState {
-  final List<Project> data;
+  final List<DuAn> data;
 
   const GetListProjectSuccessState({required this.data});
 
@@ -91,6 +92,31 @@ class GetListProjectFailedState extends AssetManagementState {
   final String message;
 
   const GetListProjectFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+//NGUỒN KINH PHÍ
+class GetListCapitalSourceSuccessState extends AssetManagementState {
+  final List<NguonKinhPhi> data;
+
+  const GetListCapitalSourceSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class GetListCapitalSourceFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListCapitalSourceFailedState({
     required this.title,
     this.code,
     required this.message,

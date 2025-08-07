@@ -7,19 +7,17 @@ import 'asset_management_state.dart';
 class AssetManagementBloc
     extends Bloc<AssetManagementEvent, AssetManagementState> {
   AssetManagementBloc() : super(AssetManagementInitialState()) {
-    // Register event handlers
     on<GetListAssetManagementEvent>((event, emit) async {
       await _getListAssetManagement(event, emit);
     });
-
     on<GetListAssetGroupEvent>((event, emit) async {
       await _getListAssetGroup(event, emit);
     });
-
-    print('AssetManagementBloc initialized'); //
     on<GetListProjectEvent>((event, emit) async {
-      print('Handling GetListProjectEvent');
       await _getListProject(event, emit);
+    });
+    on<GetListCapitalSourceEvent>((event, emit) async {
+      await _getListCapitalSource(event, emit);
     });
   }
 
@@ -72,8 +70,9 @@ class AssetManagementBloc
   Future<void> _getListProject(GetListProjectEvent event, Emitter emit) async {
     emit(AssetManagementInitialState());
     emit(AssetManagementLoadingState());
-    Map<String, dynamic> result = await AssetManagementRepository()
-        .getListProject(event.idCongTy);
+    Map<String, dynamic> result = await AssetManagementRepository().getListDuAn(
+      event.idCongTy,
+    );
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListProjectSuccessState(data: result['data']));
@@ -81,6 +80,30 @@ class AssetManagementBloc
       String msg = "Lỗi khi lấy dữ liệu project";
       emit(
         GetListProjectFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getListCapitalSource(
+    GetListCapitalSourceEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository().getListCapitalSource(
+      event.idCongTy,
+    );
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(GetListCapitalSourceSuccessState(data: result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu nguồn kinh phí";
+      emit(
+        GetListCapitalSourceFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,

@@ -10,10 +10,8 @@ import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_event.dart'
 import 'package:quan_ly_tai_san_app/screen/category/asset/models/sample_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/bloc/capital_source_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';

@@ -150,6 +150,19 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         if (state is GetListProjectFailedState) {
           log('GetListProjectFailedState');
         }
+        if (state is GetListCapitalSourceSuccessState) {
+          log('GetListCapitalSourceSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListCapitalSourceSuccess(
+            context,
+            state,
+          );
+          log(
+            'message: ${context.read<AssetManagementProvider>().dataCapitalSource}',
+          );
+        }
+        if (state is GetListCapitalSourceFailedState) {
+          log('GetListCapitalSourceFailedState');
+        }
       },
     );
   }

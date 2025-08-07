@@ -2,16 +2,17 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
-  bool get isLoading => _data == null || _dataGroup == null || _dataProject == null;
+  bool get isLoading => _data == null || _dataGroup == null || _dataProject == null || _dataCapitalSource == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   get subScreen => _subScreen;
@@ -21,7 +22,7 @@ class AssetManagementProvider with ChangeNotifier {
   get filteredData => _filteredData ?? _data;
   get dataGroup => _dataGroup;
   get dataProject => _dataProject;
-
+  get dataCapitalSource => _dataCapitalSource;
   // bool _isLoading = true;
   bool _isShowInput = false;
   bool _isShowCollapse = false;
@@ -40,7 +41,8 @@ class AssetManagementProvider with ChangeNotifier {
 
   List<AssetManagementDto>? _data;
   List<AssetGroupDto>? _dataGroup;
-  List<Project>? _dataProject;
+  List<DuAn>? _dataProject;
+  List<NguonKinhPhi>? _dataCapitalSource;
   List<AssetManagementDto>? _filteredData;
   AssetManagementDto? _dataDetail;
 
@@ -65,6 +67,7 @@ class AssetManagementProvider with ChangeNotifier {
       bloc.add(GetListAssetManagementEvent(context, 'CT001'));
       bloc.add(GetListAssetGroupEvent(context, 'CT001'));
       bloc.add(GetListProjectEvent(context, 'CT001'));
+      bloc.add(GetListCapitalSourceEvent(context, 'CT001'));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -81,6 +84,7 @@ class AssetManagementProvider with ChangeNotifier {
     isShowInput = true;
   }
 
+  // CALL API SUCCESS ---------------------------------------------------------------
   getListAssetManagementSuccess(
     BuildContext context,
     GetListAssetManagementSuccessState state,
@@ -107,7 +111,6 @@ class AssetManagementProvider with ChangeNotifier {
       _dataGroup = state.data;
       _initializeCheckBoxList();
     }
-    log('message getListAssetGroupSuccess: ${_dataGroup?.length}');
     notifyListeners();
   }
 
@@ -122,9 +125,19 @@ class AssetManagementProvider with ChangeNotifier {
       _dataProject = state.data;
       _initializeCheckBoxList();
     }
-    log('message getListProjectSuccess: ${_dataProject?.length}');
     notifyListeners();
   }
+
+  getListCapitalSourceSuccess(
+    BuildContext context,
+    GetListCapitalSourceSuccessState state,
+  ) {
+    _error = null;
+    _dataCapitalSource = state.data;
+    notifyListeners();
+  }
+
+  //---------------------------------------------------------------
 
   // Khởi tạo checkbox list dựa trên _data
   void _initializeCheckBoxList() {
@@ -138,11 +151,9 @@ class AssetManagementProvider with ChangeNotifier {
 
   // Cập nhật trạng thái checkbox
   void updateCheckBoxStatus(String id, bool value) {
-    log('message updateCheckBoxStatus: $id -- $value');
     for (int i = 0; i < checkBoxAssetGroup.length; i++) {
       if (checkBoxAssetGroup[i]?.containsKey(id) == true) {
         checkBoxAssetGroup[i]![id] = value;
-        log('message checkBoxAssetGroup: ${checkBoxAssetGroup[i]}');
         break;
       }
     }
