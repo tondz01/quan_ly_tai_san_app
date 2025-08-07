@@ -43,8 +43,8 @@ class _CommonPageViewState extends State<CommonPageView> {
 
   @override
   void dispose() {
+    _isExpanded = false; // Move this line before super.dispose()
     super.dispose();
-    _isExpanded = false;
   }
 
   @override
@@ -127,7 +127,7 @@ class _CommonPageViewState extends State<CommonPageView> {
                   ),
                   AnimatedCrossFade(
                     firstChild: SizedBox.shrink(),
-                    secondChild: widget.childInput,
+                    secondChild: _isExpanded ? widget.childInput : SizedBox.shrink(),
                     crossFadeState:
                         _isExpanded
                             ? CrossFadeState.showSecond

@@ -102,10 +102,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       // provider.onChangeDetailAssetTransfer(null);
                     },
                     onNew: () {
-                      controller.isNew = true;
-                      controller.initializeEmptyControllers();
-                      // Clear movement details list
-                      provider.clearMovementDetails();
                       provider.onChangeDetailAssetTransfer(null);
                     },
                     mainScreen: _getScreenTitle(),
@@ -119,7 +115,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
                           childInput: AssetTransferDetail(provider: provider, controller: controller),
-                          childTableView: AssetTransferList(provider: provider, typeAssetTransfer: currentType),
+                          childTableView: AssetTransferList(provider: provider, typeAssetTransfer: currentType, controller: controller),
                           title: "Chi tiết điều chuyển tài sản",
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,

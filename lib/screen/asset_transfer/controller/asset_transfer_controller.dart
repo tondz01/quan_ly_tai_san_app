@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferController {
   // Core data
@@ -22,16 +24,22 @@ class AssetTransferController {
   String? selectedFileName;
   String? selectedFilePath;
 
+  PhongBan? deliveringUnit;
+  PhongBan? receivingUnit;
+  NhanVien? requester;
+  NhanVien? departmentApproval;
+  NhanVien? approver;
+
   // Data collections
   final List<AssetHandoverDto> listAssetHandover = [];
   List<NhanVien> listNhanVien = [];
   List<PhongBan> listPhongBan = [];
 
   // Dropdown items
-  late List<DropdownMenuItem<String>> itemsRequester;
-  late List<DropdownMenuItem<String>> itemsDepartmentApproval;
-  late List<DropdownMenuItem<String>> itemsApprover;
-  late List<DropdownMenuItem<String>> itemsDepartmentManager;
+  late List<DropdownMenuItem<NhanVien>> itemsRequester;
+  late List<DropdownMenuItem<NhanVien>> itemsDepartmentApproval;
+  late List<DropdownMenuItem<NhanVien>> itemsApprover;
+  late List<DropdownMenuItem<PhongBan>> itemsDepartmentManager;
 
   // Form controllers
   final TextEditingController controllerSubject = TextEditingController();
@@ -63,6 +71,7 @@ class AssetTransferController {
 
   // Initialize controller with provider data
   void initialize(AssetTransferProvider provider, {bool isEditingParam = false, bool? isNewParam}) {
+    SGLog.debug("AssetTransferController", ' initialize: $isEditingParam, $isNewParam');
     item = provider.item;
     isEditing = isEditingParam;
     isNew = isNewParam ?? false;
@@ -137,13 +146,13 @@ class AssetTransferController {
 
   // Initialize dropdown items
   void _initializeDropdownItems() {
-    itemsDepartmentManager = listPhongBan.map((phongBan) => DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? ''))).toList();
+    itemsDepartmentManager = listPhongBan.map((phongBan) => DropdownMenuItem<PhongBan>(value: phongBan, child: Text(phongBan.tenPhongBan ?? ''))).toList();
 
-    itemsRequester = listNhanVien.map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? ''))).toList();
+    itemsRequester = listNhanVien.map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? ''))).toList();
 
-    itemsDepartmentApproval = listNhanVien.map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? ''))).toList();
+    itemsDepartmentApproval = listNhanVien.map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? ''))).toList();
 
-    itemsApprover = listNhanVien.map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? ''))).toList();
+    itemsApprover = listNhanVien.map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? ''))).toList();
   }
 
   // Form validation
@@ -200,23 +209,34 @@ class AssetTransferController {
   }
 
   // User selection handlers
-  void onRequesterChanged(String value) {
-    var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
-    proposingUnit = selectedUser.boPhan;
-    controllerRequester.text = selectedUser.hoTen ?? '';
+  void onRequesterChanged(NhanVien value) {
+    proposingUnit = value.boPhan;
+    
+    controllerRequester.text = value.hoTen ?? '';
     if (proposingUnit != null && proposingUnit!.isNotEmpty) {
       controllerProposingUnit.text = proposingUnit!;
     }
+    requester = value;
   }
 
-  void onDepartmentApprovalChanged(String value) {
-    var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
-    controllerDepartmentApproval.text = selectedUser.hoTen ?? '';
+  void onDepartmentApprovalChanged(NhanVien value) {
+    controllerDepartmentApproval.text = value.hoTen ?? '';
+    departmentApproval = value;
   }
 
-  void onApproverChanged(String value) {
-    var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
-    controllerApprover.text = selectedUser.hoTen ?? '';
+  void onApproverChanged(NhanVien value) {
+    controllerApprover.text = value.hoTen ?? '';
+    approver = value;
+  }
+
+  void onDeliveringUnitChanged(PhongBan value) {
+    controllerDeliveringUnit.text = value.tenPhongBan ?? '';
+    deliveringUnit = value;
+  }
+
+  void onReceivingUnitChanged(PhongBan value) {
+    controllerReceivingUnit.text = value.tenPhongBan ?? '';
+    receivingUnit = value;
   }
 
   // File operations
@@ -293,9 +313,9 @@ class AssetTransferController {
         idTrinhDuyetCapPhong: '',
         idTrinhDuyetGiamDoc: '',
         idNhanSuXemPhieu: '',
-        nguoiLapPhieuKyNhay: null,
-        quanTrongCanXacNhan: null,
-        phoPhongXacNhan: null,
+        nguoiLapPhieuKyNhay: false,
+        quanTrongCanXacNhan: false,
+        phoPhongXacNhan: false,
         tggnTuNgay: '',
         tggnDenNgay: '',
         diaDiemGiaoNhan: '',
@@ -306,37 +326,39 @@ class AssetTransferController {
         dieu3: '',
         noiNhan: '',
         themDongTrong: '',
-        trangThai: null,
+        trangThai: 0,
         idCongTy: '',
         ngayTao: '',
         ngayCapNhat: '',
         nguoiTao: '',
         nguoiCapNhat: '',
-        coHieuLuc: null,
-        loai: null,
-        isActive: null,
+        coHieuLuc: false,
+        loai: 0,
+        isActive: false,
         active: true,
       );
 
       final provider = Provider.of<AssetTransferProvider>(context, listen: false);
 
       if (item == null) {
-        await provider.createAssetTransfer(savedItem);
+        // await provider.createAssetTransfer(savedItem);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
       } else {
         await provider.updateAssetTransfer(savedItem);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+        }
       }
 
       // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
     } catch (e) {
-      log('Error saving asset transfer: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
+      SGLog.error('AssetTransferController', 'Error saving asset transfer: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
+      }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isUploading = false;
-        });
+      if (context.mounted) {
+        isUploading = false;
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
@@ -13,6 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/controller/asset_trans
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
@@ -20,18 +23,10 @@ import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferDetail extends StatefulWidget {
-  final bool isEditing;
-  final bool? isNew;
   final AssetTransferProvider provider;
   final AssetTransferController? controller;
 
-  const AssetTransferDetail({
-    super.key,
-    this.isEditing = false,
-    this.isNew = false,
-    required this.provider,
-    this.controller,
-  });
+  const AssetTransferDetail({super.key, required this.provider, this.controller});
 
   @override
   State<AssetTransferDetail> createState() => _AssetTransferDetailState();
@@ -50,10 +45,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   void initState() {
     super.initState();
     controller = widget.controller ?? AssetTransferController();
-    controller.initialize(widget.provider, isEditingParam: widget.isEditing, isNewParam: widget.isNew);
     _callGetListAssetHandover();
 
-    if (widget.isNew == true) {
+    if (controller.isNew == true) {
       onReload();
     }
   }
@@ -68,12 +62,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     }
 
     // Kiểm tra nếu isNew thay đổi
-    if (widget.isNew != oldWidget.isNew) {
+    if (controller.isNew != oldWidget.controller!.isNew) {
       _refreshWidget();
     }
 
     // Kiểm tra nếu isEditing thay đổi
-    if (widget.isEditing != oldWidget.isEditing) {
+    if (controller.isEditing != oldWidget.controller!.isEditing) {
       _refreshWidget();
     }
 
@@ -87,30 +81,30 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
   // Method để làm mới widget
   void _refreshWidget() {
-    SGLog.info("AssetTransferDetail", ' _refreshWidget');
     setState(() {
-      controller.refreshFromProvider(widget.provider, isEditingParam: widget.isEditing, isNewParam: widget.isNew);
+      controller.refreshFromProvider(widget.provider);
     });
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    // Only dispose the controller if we created it internally
+    if (widget.controller == null) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    SGLog.debug("AssetTransferDetail", ' screenWidth: $screenWidth');
-
     _checkAndRefreshWidget();
 
     if (controller.item == null && !controller.isRefreshing) {
-      SGLog.debug("AssetTransferDetail", ' item == null');
       onReload();
-      controller.isEditing = true;
       controller.isRefreshing = true;
+      widget.provider.clearMovementDetails();
+      controller.initializeEmptyControllers();
+      controller.initialize(widget.provider, isEditingParam: true, isNewParam: true);
     }
 
     return MultiBlocListener(
@@ -124,7 +118,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller.listAssetHandover.clear();
                 controller.listAssetHandover.addAll(state.data);
               });
-              SGLog.debug("AssetTransferDetail", ' Asset handover data loaded successfully');
             } else if (state is GetListAssetHandoverFailedState) {
             } else if (state is AssetHandoverLoadingState) {
               // Show loading indicator
@@ -140,14 +133,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
           },
         ),
       ],
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail()),
-      ),
+      child: SingleChildScrollView(scrollDirection: Axis.vertical, child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail())),
     );
   }
 
   Widget _buildTableDetail() {
+    SGLog.debug("AssetTransferDetail", ' _buildTableDetail: ${controller.isEditing}');
     return Column(
       children: [
         Row(
@@ -163,7 +154,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                     backgroundColor: ColorValue.success,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      // controller.saveAssetTransfer(context);
+                      controller.saveAssetTransfer(context);
                     },
                   ),
                   const SizedBox(width: 8),
@@ -210,11 +201,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -234,37 +221,49 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 fieldName: 'subject',
                 validationErrors: controller.validationErrors,
               ),
-              CommonFormInput(
+              CmFormDropdownObject<PhongBan>(
                 label: 'at.delivering_unit'.tr,
                 controller: controller.controllerDeliveringUnit,
                 isEditing: controller.isEditing,
-                textContent: controller.item?.tenDonViGiao ?? '',
+                items: controller.itemsDepartmentManager,
+                defaultValue: controller.listPhongBan.where((phongBan) => phongBan.tenPhongBan == controller.item?.tenDonViGiao).firstOrNull,
+                onChanged: (value) {
+                  setState(() {
+                    controller.onDeliveringUnitChanged(value);
+                  });
+                },
+                value: controller.deliveringUnit,
                 fieldName: 'deliveringUnit',
                 validationErrors: controller.validationErrors,
               ),
-              CommonFormInput(
+              CmFormDropdownObject<PhongBan>(
                 label: 'at.receiving_unit'.tr,
                 controller: controller.controllerReceivingUnit,
                 isEditing: controller.isEditing,
-                textContent: controller.item?.tenDonViNhan ?? '',
-                isDropdown: true,
                 items: controller.itemsDepartmentManager,
+                defaultValue: controller.listPhongBan.where((phongBan) => phongBan.tenPhongBan == controller.item?.tenDonViNhan).firstOrNull,
+                onChanged: (value) {
+                  setState(() {
+                    controller.onReceivingUnitChanged(value);
+                  });
+                },
+                value: controller.receivingUnit,
                 fieldName: 'receivingUnit',
                 validationErrors: controller.validationErrors,
               ),
-              CommonFormInput(
+              CmFormDropdownObject<NhanVien>(
                 label: 'at.requester'.tr,
                 controller: controller.controllerRequester,
                 isEditing: controller.isEditing,
-                textContent: controller.item?.tenNguoiDeNghi ?? '',
-                isDropdown: true,
                 items: controller.itemsRequester,
+                defaultValue: controller.listNhanVien.where((nhanVien) => nhanVien.hoTen == controller.item?.tenNguoiDeNghi).firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onRequesterChanged(value);
                   });
                 },
-                fieldName: 'requester',
+                value: controller.requester,
+                fieldName: 'requesterUnit',
                 validationErrors: controller.validationErrors,
               ),
               CommonCheckboxInput(
@@ -309,19 +308,19 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 inputType: TextInputType.number,
                 validationErrors: controller.validationErrors,
               ),
-              CommonFormInput(
+              CmFormDropdownObject<NhanVien>(
                 label: 'at.department_approval'.tr,
                 controller: controller.controllerDepartmentApproval,
                 isEditing: controller.isEditing,
-                textContent: controller.item?.tenTrinhDuyetCapPhong ?? '',
-                fieldName: 'departmentApproval',
-                isDropdown: true,
                 items: controller.itemsDepartmentApproval,
+                defaultValue: controller.listNhanVien.where((nhanVien) => nhanVien.hoTen == controller.item?.tenTrinhDuyetCapPhong).firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onDepartmentApprovalChanged(value);
                   });
                 },
+                value: controller.departmentApproval,
+                fieldName: 'departmentApproval',
                 validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
@@ -331,8 +330,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 textContent:
                     controller.isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : controller.item?.tggnTuNgay.toString() ??
-                            (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
+                        : controller.item?.tggnTuNgay.toString() ?? (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
                 fieldName: 'effectiveDate',
                 validationErrors: controller.validationErrors,
               ),
@@ -340,22 +338,25 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.effective_date_to'.tr,
                 controller: controller.controllerEffectiveDateTo,
                 isEditing: controller.isEditing,
-                textContent: controller.item?.tggnDenNgay.toString() ?? '',
+                textContent:
+                    controller.isEditing
+                        ? AppUtility.formatDateDdMmYyyy(DateTime.now())
+                        : controller.item?.tggnDenNgay.toString() ?? (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
                 fieldName: 'effectiveDateTo',
                 validationErrors: controller.validationErrors,
               ),
-              CommonFormInput(
+              CmFormDropdownObject<NhanVien>(
                 label: 'at.approver'.tr,
                 controller: controller.controllerApprover,
                 isEditing: controller.isEditing,
-                textContent: controller.item?.tenTrinhDuyetGiamDoc ?? '',
-                isDropdown: true,
                 items: controller.itemsApprover,
+                defaultValue: controller.listNhanVien.where((nhanVien) => nhanVien.hoTen == controller.item?.tenTrinhDuyetGiamDoc).firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onApproverChanged(value);
                   });
                 },
+                value: controller.approver,
                 fieldName: 'approver',
                 validationErrors: controller.validationErrors,
               ),
@@ -378,13 +379,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               ),
 
               const SizedBox(height: 20),
-              assetTransferMovementTable(
-                context,
-                widget.provider.listMovementDetail,
-                controller.isEditing,
-                controller.isNew,
-                isLoading: widget.provider.isLoadingMovementDetail,
-              ),
+              assetTransferMovementTable(context, widget.provider.listMovementDetail, controller.isEditing, controller.isNew, isLoading: widget.provider.isLoadingMovementDetail),
               SizedBox(height: 10),
               previewDocumentAssetTransfer(controller.item),
             ],
@@ -407,19 +402,14 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         controller.validationErrors.remove('document');
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Tệp "${controller.selectedFileName}" đã được tải lên thành công'),
-            backgroundColor: Colors.green.shade600,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Tệp "${controller.selectedFileName}" đã được tải lên thành công'), backgroundColor: Colors.green.shade600));
       }
     } catch (e) {
       SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600));
       }
     } finally {
       setState(() {
@@ -443,7 +433,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       _refreshWidget();
     }
 
-    if (widget.isNew == true && controller.item != null) {
+    if (controller.isNew == true && controller.item != null) {
       _refreshWidget();
     }
   }
@@ -453,9 +443,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
       assetHandoverBloc.add(GetListAssetHandoverEvent(context));
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi khi lấy danh sách: ${e.toString()}'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi lấy danh sách: ${e.toString()}'), backgroundColor: Colors.red));
     }
   }
 
@@ -470,11 +458,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 2.5),
-            child: SGText(
-              text: "Xem trước tài liệu",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link),
-            ),
+            child: SGText(text: "Xem trước tài liệu", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link)),
           ),
           SizedBox(width: 8),
           Icon(Icons.visibility, color: ColorValue.link, size: 18),
