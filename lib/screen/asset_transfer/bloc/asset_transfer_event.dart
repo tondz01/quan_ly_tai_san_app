@@ -7,7 +7,7 @@ abstract class AssetTransferEvent extends Equatable {
 
 class GetListAssetTransferEvent extends AssetTransferEvent {
   final BuildContext context;
-  final int typeAssetTransfer;  
+  final int typeAssetTransfer;
 
   const GetListAssetTransferEvent(this.context, this.typeAssetTransfer);
 

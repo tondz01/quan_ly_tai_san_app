@@ -1,133 +1,203 @@
 import 'dart:convert';
 
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class AssetTransferDto {
-  final String? id;
-  final String? idAssetHandover; // Lệnh điều động
-  final String? documentName; // Tên phiếu
-  final String? decisionNumber; // Số quyết định
-  final String? decisionDate; // Ngày quyết định
-  final int? type;
-  final String? subject; // Trích yêu
-  final String? requester; // Người đề nghị
-  final String? requestingUnit; // Người lập phiếu
-  final String? creator; // Người lập phiếu
-  final List<MovementDetailDto>? movementDetails; // Chi tiết điều động
-  final String? deliveringUnit; // Đơn vị giao
-  final String? receivingUnit; // Đơn vị nhận
-  final String? proposingUnit; // Đơn vị đề nghị
-  final String? deliveryLocation; // Địa điểm Giao Nhận
-  final String? effectiveDate; // TGCN từ Ngày
-  final String? effectiveDateTo; // TGCN đến Ngày
-  final bool? preparerInitialed; // Người lập phiếu ký nháy
-  final bool? requireManagerApproval; // Quan trọng, cần TP xác nhận
-  final bool? deputyConfirmed; // Phó phòng xác nhận
-  final String? rejectionReason; // Lý do từ chối
-  final String? departmentApproval; // Trình duyệt cấp phòng
-  final String? approver; // Trình duyệt Ban giám đốc
-  final int? status; // Trạng thái
-  final bool? isEffective; // Có hiệu lực
-  final String? documentFilePath; // Đường dẫn file
-  final String? documentFileName; // Tên file
+  final String id;
+  final String soQuyetDinh;
+  final String tenPhieu;
+  final String idDonViGiao;
+  final String? tenDonViGiao;
+  final String idDonViNhan;
+  final String? tenDonViNhan;
+  final String idDonViDeNghi;
+  final String? tenDonViDeNghi;
+  final String idPhongBanXemPhieu;
+  final String? tenPhongBanXemPhieu;
+  final String idNguoiDeNghi;
+  final String? tenNguoiDeNghi;
+  final String idTrinhDuyetCapPhong;
+  final String? tenTrinhDuyetCapPhong;
+  final String idTrinhDuyetGiamDoc;
+  final String? tenTrinhDuyetGiamDoc;
+  final String idNhanSuXemPhieu;
+  final String? tenNhanSuXemPhieu;
+  final bool nguoiLapPhieuKyNhay;
+  final bool quanTrongCanXacNhan;
+  final bool phoPhongXacNhan;
+  final String tggnTuNgay;
+  final String tggnDenNgay;
+  final String diaDiemGiaoNhan;
+  final String veViec;
+  final String canCu;
+  final String dieu1;
+  final String dieu2;
+  final String dieu3;
+  final String noiNhan;
+  final String themDongTrong;
+  final int trangThai;
+  final String idCongTy;
+  final String ngayTao;
+  final String ngayCapNhat;
+  final String nguoiTao;
+  final String nguoiCapNhat;
+  final bool coHieuLuc;
+  final int loai;
+  final bool isActive;
+  final String? trichYeu;
+  final String? duongDanFile;
+  final String? tenFile;
+  final String? ngayKy;
+  final bool active;
 
   AssetTransferDto({
-    this.id,
-    this.idAssetHandover,
-    this.documentName,
-    this.decisionNumber,
-    this.decisionDate,
-    this.type,
-    this.subject,
-    this.requester,
-    this.requestingUnit,
-    this.creator,
-    this.movementDetails,
-    this.deliveringUnit,
-    this.receivingUnit,
-    this.proposingUnit,
-    this.deliveryLocation,
-    this.effectiveDate,
-    this.effectiveDateTo,
-    this.preparerInitialed,
-    this.requireManagerApproval,
-    this.deputyConfirmed,
-    this.rejectionReason,
-    this.departmentApproval,
-    this.approver,
-    this.status,
-    this.isEffective,
-    this.documentFilePath,
-    this.documentFileName,
+    required this.id,
+    required this.soQuyetDinh,
+    required this.tenPhieu,
+    required this.idDonViGiao,
+    this.tenDonViGiao,
+    required this.idDonViNhan,
+    this.tenDonViNhan,
+    required this.idDonViDeNghi,
+    this.tenDonViDeNghi,
+    required this.idPhongBanXemPhieu,
+    this.tenPhongBanXemPhieu,
+    required this.idNguoiDeNghi,
+    this.tenNguoiDeNghi,
+    required this.idTrinhDuyetCapPhong,
+    this.tenTrinhDuyetCapPhong,
+    required this.idTrinhDuyetGiamDoc,
+    this.tenTrinhDuyetGiamDoc,
+    required this.idNhanSuXemPhieu,
+    this.tenNhanSuXemPhieu,
+    required this.nguoiLapPhieuKyNhay,
+    required this.quanTrongCanXacNhan,
+    required this.phoPhongXacNhan,
+    required this.tggnTuNgay,
+    required this.tggnDenNgay,
+    required this.diaDiemGiaoNhan,
+    required this.veViec,
+    required this.canCu,
+    required this.dieu1,
+    required this.dieu2,
+    required this.dieu3,
+    required this.noiNhan,
+    required this.themDongTrong,
+    required this.trangThai,
+    required this.idCongTy,
+    required this.ngayTao,
+    required this.ngayCapNhat,
+    required this.nguoiTao,
+    required this.nguoiCapNhat,
+    required this.coHieuLuc,
+    required this.loai,
+    required this.isActive,
+    this.trichYeu,
+    this.duongDanFile,
+    this.tenFile,
+    this.ngayKy,
+    required this.active,
   });
 
   factory AssetTransferDto.fromJson(Map<String, dynamic> json) {
     return AssetTransferDto(
       id: json['id'],
-      idAssetHandover: json['idAssetHandover'],
-      documentName: json['documentName'],
-      decisionNumber: json['decisionNumber'],
-      decisionDate: json['decisionDate'],
-      type: json['type'],
-      subject: json['subject'],
-      requester: json['requester'],
-      requestingUnit: json['requestingUnit'],
-      creator: json['creator'],
-      movementDetails: json['movementDetails'] != null
-          ? List<MovementDetailDto>.from(
-              json['movementDetails'].map((detail) => 
-                detail is Map<String, dynamic> 
-                  ? MovementDetailDto.fromJson(detail)
-                  : MovementDetailDto(name: detail)))
-          : null,
-      deliveringUnit: json['sendingUnit'],
-      receivingUnit: json['receivingUnit'],
-      proposingUnit: json['proposingUnit'],
-      deliveryLocation: json['deliveryLocation'],
-      effectiveDate: json['effectiveDate'],
-      effectiveDateTo: json['effectiveDateTo'],
-      preparerInitialed: json['preparerInitialed'],
-      requireManagerApproval: json['requireManagerApproval'],
-      deputyConfirmed: json['deputyConfirmed'],
-      rejectionReason: json['rejectionReason'],
-      departmentApproval: json['departmentApproval'],
-      approver: json['approver'],
-      status: json['status'],
-      isEffective: json['isEffective'],
-      documentFilePath: json['documentFilePath'],
-      documentFileName: json['documentFileName'],
+      soQuyetDinh: json['soQuyetDinh'],
+      tenPhieu: json['tenPhieu'],
+      idDonViGiao: json['idDonViGiao'],
+      tenDonViGiao: json['tenDonViGiao'],
+      idDonViNhan: json['idDonViNhan'],
+      tenDonViNhan: json['tenDonViNhan'],
+      idDonViDeNghi: json['idDonViDeNghi'],
+      tenDonViDeNghi: json['tenDonViDeNghi'],
+      idPhongBanXemPhieu: json['idPhongBanXemPhieu'],
+      tenPhongBanXemPhieu: json['tenPhongBanXemPhieu'],
+      idNguoiDeNghi: json['idNguoiDeNghi'],
+      tenNguoiDeNghi: json['tenNguoiDeNghi'],
+      idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'],
+      tenTrinhDuyetCapPhong: json['tenTrinhDuyetCapPhong'],
+      idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'],
+      tenTrinhDuyetGiamDoc: json['tenTrinhDuyetGiamDoc'],
+      idNhanSuXemPhieu: json['idNhanSuXemPhieu'],
+      tenNhanSuXemPhieu: json['tenNhanSuXemPhieu'],
+      nguoiLapPhieuKyNhay: json['nguoiLapPhieuKyNhay'],
+      quanTrongCanXacNhan: json['quanTrongCanXacNhan'],
+      phoPhongXacNhan: json['phoPhongXacNhan'],
+      tggnTuNgay: AppUtility.formatDateTimeVN(json['tggnTuNgay']),
+      tggnDenNgay: AppUtility.formatDateTimeVN(json['tggnDenNgay']),
+      diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
+      veViec: json['veViec'],
+      canCu: json['canCu'],
+      dieu1: json['dieu1'],
+      dieu2: json['dieu2'],
+      dieu3: json['dieu3'],
+      noiNhan: json['noiNhan'],
+      themDongTrong: json['themDongTrong'],
+      trangThai: json['trangThai'],
+      idCongTy: json['idCongTy'],
+      ngayTao: AppUtility.formatDateTimeVN(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatDateTimeVN(json['ngayCapNhat']),
+      nguoiTao: json['nguoiTao'],
+      nguoiCapNhat: json['nguoiCapNhat'],
+      coHieuLuc: json['coHieuLuc'],
+      loai: json['loai'],
+      isActive: json['isActive'],
+      trichYeu: json['trichYeu'],
+      duongDanFile: json['duongDanFile'],
+      tenFile: json['tenFile'],
+      ngayKy: json['ngayKy'],
+      active: json['active'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'idAssetHandover': idAssetHandover,
-      'documentName': documentName,
-      'decisionNumber': decisionNumber,
-      'decisionDate': decisionDate,
-      'type': type,
-      'subject': subject,
-      'requester': requester,
-      'requestingUnit': requestingUnit,
-      'creator': creator,
-      'movementDetails': movementDetails,
-      'sendingUnit': deliveringUnit,
-      'receivingUnit': receivingUnit,
-      'proposingUnit': proposingUnit,
-      'deliveryLocation': deliveryLocation,
-      'effectiveDate': effectiveDate,
-      'effectiveDateTo': effectiveDateTo,
-      'preparerInitialed': preparerInitialed,
-      'requireManagerApproval': requireManagerApproval,
-      'deputyConfirmed': deputyConfirmed,
-      'rejectionReason': rejectionReason,
-      'departmentApproval': departmentApproval,
-      'approver': approver,
-      'status': status,
-      'isEffective': isEffective,
-      'documentFilePath': documentFilePath,
-      'documentFileName': documentFileName,
+      'soQuyetDinh': soQuyetDinh,
+      'tenPhieu': tenPhieu,
+      'idDonViGiao': idDonViGiao,
+      'tenDonViGiao': tenDonViGiao,
+      'idDonViNhan': idDonViNhan,
+      'tenDonViNhan': tenDonViNhan,
+      'idDonViDeNghi': idDonViDeNghi,
+      'tenDonViDeNghi': tenDonViDeNghi,
+      'idPhongBanXemPhieu': idPhongBanXemPhieu,
+      'tenPhongBanXemPhieu': tenPhongBanXemPhieu,
+      'idNguoiDeNghi': idNguoiDeNghi,
+      'tenNguoiDeNghi': tenNguoiDeNghi,
+      'idTrinhDuyetCapPhong': idTrinhDuyetCapPhong,
+      'tenTrinhDuyetCapPhong': tenTrinhDuyetCapPhong,
+      'idTrinhDuyetGiamDoc': idTrinhDuyetGiamDoc,
+      'tenTrinhDuyetGiamDoc': tenTrinhDuyetGiamDoc,
+      'idNhanSuXemPhieu': idNhanSuXemPhieu,
+      'tenNhanSuXemPhieu': tenNhanSuXemPhieu,
+      'nguoiLapPhieuKyNhay': nguoiLapPhieuKyNhay,
+      'quanTrongCanXacNhan': quanTrongCanXacNhan,
+      'phoPhongXacNhan': phoPhongXacNhan,
+      'tggnTuNgay': tggnTuNgay,
+      'tggnDenNgay': tggnDenNgay,
+      'diaDiemGiaoNhan': diaDiemGiaoNhan,
+      'veViec': veViec,
+      'canCu': canCu,
+      'dieu1': dieu1,
+      'dieu2': dieu2,
+      'dieu3': dieu3,
+      'noiNhan': noiNhan,
+      'themDongTrong': themDongTrong,
+      'trangThai': trangThai,
+      'idCongTy': idCongTy,
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
+      'nguoiTao': nguoiTao,
+      'nguoiCapNhat': nguoiCapNhat,
+      'coHieuLuc': coHieuLuc,
+      'loai': loai,
+      'isActive': isActive,
+      'trichYeu': trichYeu,
+      'duongDanFile': duongDanFile,
+      'tenFile': tenFile,
+      'ngayKy': ngayKy,
+      'active': active,
     };
   }
 
@@ -142,4 +212,4 @@ class AssetTransferDto {
       (json.decode(transfers) as List<dynamic>)
           .map<AssetTransferDto>((item) => AssetTransferDto.fromJson(item))
           .toList();
-} 
+}

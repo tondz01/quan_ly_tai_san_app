@@ -53,21 +53,21 @@ class AssetTransferProvider with ChangeNotifier {
   // Getter để lấy count cho mỗi status
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
-      _data?.where((item) => (item.status ?? 0) == 0).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 0).length ?? 0;
   int get waitingForConfirmationCount =>
-      _data?.where((item) => (item.status ?? 0) == 1).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 1).length ?? 0;
   int get confirmedCount =>
-      _data?.where((item) => (item.status ?? 0) == 2).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 2).length ?? 0;
   int get browserCount =>
-      _data?.where((item) => (item.status ?? 0) == 3).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 3).length ?? 0;
   int get approveCount =>
-      _data?.where((item) => (item.status ?? 0) == 4).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 4).length ?? 0;
   int get rejectCount =>
-      _data?.where((item) => (item.status ?? 0) == 5).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 5).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.status ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 6).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.status ?? 0) == 7).length ?? 0;
+      _data?.where((item) => (item.trangThai) == 7).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -113,7 +113,7 @@ class AssetTransferProvider with ChangeNotifier {
   List<AssetTransferDto>? _dataPage;
   List<AssetTransferDto> _filteredData = [];
   AssetTransferDto? _item;
-  List<SgTableColumn<AssetTransferDto>> _columns = [];
+  final List<SgTableColumn<AssetTransferDto>> _columns = [];
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -165,7 +165,7 @@ class AssetTransferProvider with ChangeNotifier {
     } else {
       statusFiltered =
           _data!.where((item) {
-            int itemStatus = item.status ?? 0;
+            int itemStatus = item.trangThai;
             log('itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true &&
                 (itemStatus == 0)) {
@@ -214,22 +214,14 @@ class AssetTransferProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           statusFiltered.where((item) {
-            return (item.documentName?.toLowerCase().contains(searchLower) ??
+            return (item.tenPhieu.toLowerCase().contains(searchLower)) ||
+                (item.soQuyetDinh.toLowerCase().contains(searchLower)) ||
+                (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
                     false) ||
-                (item.decisionNumber?.toLowerCase().contains(searchLower) ??
+                (item.nguoiTao.toLowerCase().contains(searchLower)) ||
+                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
                     false) ||
-                (item.requester?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.creator?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.movementDetails?.any(
-                      (detail) =>
-                          detail.name?.toLowerCase().contains(searchLower) ??
-                          false,
-                    ) ??
-                    false) ||
-                (item.deliveringUnit?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.receivingUnit?.toLowerCase().contains(searchLower) ??
+                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
                     false);
           }).toList();
     } else {
@@ -258,7 +250,7 @@ class AssetTransferProvider with ChangeNotifier {
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
 
-    getListToolsAndSupplies(context);
+    getAssetTransfer(context);
   }
 
   void onDispose() {
@@ -277,7 +269,7 @@ class AssetTransferProvider with ChangeNotifier {
     }
   }
 
-  void getListToolsAndSupplies(BuildContext context) {
+  void getAssetTransfer(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
       context.read<AssetTransferBloc>().add(
@@ -524,44 +516,44 @@ class AssetTransferProvider with ChangeNotifier {
   }
 
   // Add method to create a new asset transfer
-  Future<void> createAssetTransfer(AssetTransferDto item) async {
-    final newItem = AssetTransferDto(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      documentName: item.documentName,
-      decisionNumber: item.decisionNumber,
-      decisionDate: item.decisionDate,
-      subject: item.subject,
-      requester: item.requester,
-      creator: 'Current User', // Would come from authentication service
-      movementDetails: item.movementDetails,
-      deliveringUnit: item.deliveringUnit,
-      receivingUnit: item.receivingUnit,
-      proposingUnit: item.proposingUnit,
-      deliveryLocation: item.deliveryLocation,
-      effectiveDate: item.effectiveDate,
-      effectiveDateTo: item.effectiveDateTo,
-      preparerInitialed: item.preparerInitialed,
-      requireManagerApproval: item.requireManagerApproval,
-      deputyConfirmed: item.deputyConfirmed,
-      departmentApproval: item.departmentApproval,
-      approver: item.approver,
-      status: 0, // Draft status
-      isEffective: false,
-      documentFilePath: item.documentFilePath,
-      documentFileName: item.documentFileName,
-    );
+  // Future<void> createAssetTransfer(AssetTransferDto item) async {
+  //   final newItem = AssetTransferDto(
+  //     id: DateTime.now().millisecondsSinceEpoch.toString(),
+  //     documentName: item.documentName,
+  //     decisionNumber: item.decisionNumber,
+  //     decisionDate: item.decisionDate,
+  //     subject: item.subject,
+  //     requester: item.requester,
+  //     creator: 'Current User', // Would come from authentication service
+  //     movementDetails: item.movementDetails,
+  //     deliveringUnit: item.deliveringUnit,
+  //     receivingUnit: item.receivingUnit,
+  //     proposingUnit: item.proposingUnit,
+  //     deliveryLocation: item.deliveryLocation,
+  //     effectiveDate: item.effectiveDate,
+  //     effectiveDateTo: item.effectiveDateTo,
+  //     preparerInitialed: item.preparerInitialed,
+  //     requireManagerApproval: item.requireManagerApproval,
+  //     deputyConfirmed: item.deputyConfirmed,
+  //     departmentApproval: item.departmentApproval,
+  //     approver: item.approver,
+  //     status: 0, // Draft status
+  //     isEffective: false,
+  //     documentFilePath: item.documentFilePath,
+  //     documentFileName: item.documentFileName,
+  //   );
 
-    _data ??= [];
-    _data!.add(newItem);
+  //   _data ??= [];
+  //   _data!.add(newItem);
 
-    _filteredData = List.from(_data!);
-    _updatePagination();
+  //   _filteredData = List.from(_data!);
+  //   _updatePagination();
 
-    notifyListeners();
-  }
+  //   notifyListeners();
+  // }
 
   Future<void> updateAssetTransfer(AssetTransferDto updatedItem) async {
-    if (_data == null || updatedItem.id == null) return;
+    if (_data == null) return;
 
     log('Updating asset transfer: ${updatedItem.id}');
 

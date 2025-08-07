@@ -2,7 +2,7 @@
 
 class EndPointAPI {
   static String TOOLS_AND_SUPPLIES = "/api/ccdcvattu";
-  static String ASSET_TRANSFER = "/api/asset-transfer";
+  static String ASSET_TRANSFER = "/api/dieudongtaisan";
   static String DU_AN = "/api/duan";
   static String NGUON_KINH_PHI = "/api/nguonvon";
   static String PHONG_BAN = "/api/phongban";
@@ -10,4 +10,5 @@ class EndPointAPI {
   static String ASSET_CATEGORY = "/api/asset-transfer";
   static String ASSET_GROUP = "/api/nhomtaisan";
   static String ASSET_MANAGEMENT = "/api/taisan";
+  static String NHAN_VIEN = "/api/nhanvien";
 }

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
@@ -15,9 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/staff_model.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
@@ -30,24 +28,18 @@ class AssetTransferDetail extends StatefulWidget {
   final bool? isNew;
   final AssetTransferProvider provider;
 
-  const AssetTransferDetail({
-    super.key,
-    this.isEditing = false,
-    this.isNew = false,
-    required this.provider,
-  });
+  const AssetTransferDetail({super.key, this.isEditing = false, this.isNew = false, required this.provider});
 
   @override
   State<AssetTransferDetail> createState() => _AssetTransferDetailState();
 }
 
 // GlobalKey để truy cập widget từ bên ngoài
-final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
-    GlobalKey<_AssetTransferDetailState>();
+final assetTransferDetailKey = GlobalKey<_AssetTransferDetailState>();
 
 class _AssetTransferDetailState extends State<AssetTransferDetail> {
   String url =
-    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
 
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
@@ -56,16 +48,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   late TextEditingController controllerRequester = TextEditingController();
   late TextEditingController controllerProposingUnit = TextEditingController();
   late TextEditingController controllerQuantity = TextEditingController();
-  late TextEditingController controllerDepartmentApproval =
-      TextEditingController();
+  late TextEditingController controllerDepartmentApproval = TextEditingController();
   late TextEditingController controllerEffectiveDate = TextEditingController();
-  late TextEditingController controllerEffectiveDateTo =
-      TextEditingController();
+  late TextEditingController controllerEffectiveDateTo = TextEditingController();
   late TextEditingController controllerApprover = TextEditingController();
-  late TextEditingController controllerDeliveryLocation =
-      TextEditingController();
-  late TextEditingController controllerViewerDepartments =
-      TextEditingController();
+  late TextEditingController controllerDeliveryLocation = TextEditingController();
+  late TextEditingController controllerViewerDepartments = TextEditingController();
   late TextEditingController controllerViewerUsers = TextEditingController();
   late TextEditingController controllerReason = TextEditingController();
   late TextEditingController controllerBase = TextEditingController();
@@ -155,7 +143,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     _callGetListAssetHandover();
     isEditing = widget.isEditing;
 
-    if (item != null && item!.status == 0) {
+    if (item != null && item!.trangThai == 0) {
       isEditing = true;
     }
     if (widget.isNew == true) {
@@ -164,24 +152,24 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
     // Initialize controllers with existing values if available (only once)
     if (item != null && !_controllersInitialized) {
-      controllerSubject.text = item?.subject ?? '';
-      controllerDocumentName.text = item?.documentName ?? '';
-      controllerDeliveringUnit.text = item?.deliveringUnit ?? '';
-      controllerReceivingUnit.text = item?.receivingUnit ?? '';
-      controllerRequester.text = item?.requester ?? '';
-      controllerDepartmentApproval.text = item?.departmentApproval ?? '';
-      controllerEffectiveDate.text = item?.effectiveDate ?? '';
-      controllerEffectiveDateTo.text = item?.effectiveDateTo ?? '';
-      controllerApprover.text = item?.approver ?? '';
-      controllerDeliveryLocation.text = item?.deliveryLocation ?? '';
+      controllerSubject.text = item?.ngayKy ?? '';
+      controllerDocumentName.text = item?.tenPhieu ?? '';
+      controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
+      controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
+      controllerRequester.text = item?.tenNguoiDeNghi ?? '';
+      controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
+      controllerEffectiveDate.text = item?.tggnTuNgay.toString() ?? '';
+      controllerEffectiveDateTo.text = item?.tggnDenNgay.toString() ?? '';
+      controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
+      controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
 
       // Initialize selected file if available
-      _selectedFileName = item?.documentFileName;
-      _selectedFilePath = item?.documentFilePath;
-      isPreparerInitialed = item?.preparerInitialed ?? false;
-      isRequireManagerApproval = item?.requireManagerApproval ?? false;
-      isDeputyConfirmed = item?.deputyConfirmed ?? false;
-      proposingUnit = item?.proposingUnit;
+      _selectedFileName = item?.tenFile;
+      _selectedFilePath = item?.duongDanFile;
+      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
+      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
+      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+      proposingUnit = item?.tenDonViDeNghi;
 
       _controllersInitialized = true;
     } else if (item == null && !_controllersInitialized) {
@@ -206,21 +194,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       isDeputyConfirmed = false;
     }
 
-    if (proposingUnit != null &&
-        proposingUnit!.isNotEmpty &&
-        !_controllersInitialized) {
+    if (proposingUnit != null && proposingUnit!.isNotEmpty && !_controllersInitialized) {
       controllerProposingUnit.text = proposingUnit!;
     }
 
     itemsRequester =
-        users
-            .map(
-              (user) => DropdownMenuItem<String>(
-                value: user.id ?? '',
-                child: Text(user.name ?? ''),
-              ),
-            )
-            .toList();
+        users.map((user) => DropdownMenuItem<String>(value: user.id ?? '', child: Text(user.name ?? ''))).toList();
+
   }
 
   @override
@@ -253,19 +233,19 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
       // Reset editing state
       isEditing = widget.isEditing;
-      if (item != null && item!.status == 0) {
+      if (item != null && item!.trangThai == 0) {
         isEditing = true;
       }
 
       // Reset các biến trạng thái
-      isPreparerInitialed = item?.preparerInitialed ?? false;
-      isRequireManagerApproval = item?.requireManagerApproval ?? false;
-      isDeputyConfirmed = item?.deputyConfirmed ?? false;
-      proposingUnit = item?.proposingUnit;
+      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
+      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
+      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+      proposingUnit = item?.tenDonViDeNghi;
 
       // Reset file upload
-      _selectedFileName = item?.documentFileName;
-      _selectedFilePath = item?.documentFilePath;
+      _selectedFileName = item?.tenFile;
+      _selectedFilePath = item?.duongDanFile;
 
       _validationErrors.clear();
 
@@ -282,24 +262,15 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       value: 'Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin',
       child: Text('Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin'),
     ),
-    const DropdownMenuItem(
-      value: 'Chưa xác định',
-      child: Text('Chưa xác định'),
-    ),
+    const DropdownMenuItem(value: 'Chưa xác định', child: Text('Chưa xác định')),
     const DropdownMenuItem(
       value: 'Công ty CP Cơ điện Uông bí - Vinacomin',
       child: Text('Công ty CP Cơ điện Uông bí - Vinacomin'),
     ),
-    const DropdownMenuItem(
-      value: 'Công ty TNHH Nam Hưng',
-      child: Text('Công ty TNHH Nam Hưng'),
-    ),
+    const DropdownMenuItem(value: 'Công ty TNHH Nam Hưng', child: Text('Công ty TNHH Nam Hưng')),
     const DropdownMenuItem(value: 'Công đoàn', child: Text('Công đoàn')),
     const DropdownMenuItem(value: 'Kho Công ty', child: Text('Kho Công ty')),
-    const DropdownMenuItem(
-      value: 'Phân xưởng KT1',
-      child: Text('Phân xưởng KT1'),
-    ),
+    const DropdownMenuItem(value: 'Phân xưởng KT1', child: Text('Phân xưởng KT1')),
     const DropdownMenuItem(
       value: 'P.xưởng Thông gió - thoát nước mỏ 1',
       child: Text('P.xưởng Thông gió - thoát nước mỏ 1'),
@@ -381,10 +352,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       ],
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
-          child: _buildTableDetail(),
-        ),
+        child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail()),
       ),
     );
   }
@@ -405,7 +373,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                     backgroundColor: ColorValue.success,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      _saveAssetTransfer(context);
+                      // _saveAssetTransfer(context);
                     },
                   ),
                   const SizedBox(width: 8),
@@ -415,25 +383,21 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                     backgroundColor: ColorValue.error,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      // Confirm before canceling if there are changes
                       showDialog(
                         context: context,
                         builder:
                             (context) => AlertDialog(
                               title: Text('Xác nhận hủy'),
-                              content: Text(
-                                'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
-                              ),
+                              content: Text('Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.'),
                               actions: [
                                 TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(
-                                        context,
-                                      ), // Close dialog
+                                  onPressed: () => Navigator.pop(context), // Close dialog
                                   child: Text('Không'),
                                 ),
                                 TextButton(
                                   onPressed: () {
+                                    context.read<AssetTransferProvider>().isShowCollapse = false;
+                                    context.read<AssetTransferProvider>().isShowInput = false;
                                     Navigator.pop(context); // Close dialog
                                   },
                                   child: Text('Có'),
@@ -447,18 +411,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               ),
             const SizedBox(width: 5),
             SgIndicator(
-              steps: [
-                'Nháp',
-                'Chờ xác nhận',
-                'Xác nhận',
-                'Trình duyệt',
-                'Duyệt',
-                'Từ chối',
-                'Hủy',
-                'Hoàn thành',
-              ],
+              steps: ['Nháp', 'Chờ xác nhận', 'Xác nhận', 'Trình duyệt', 'Duyệt', 'Từ chối', 'Hủy', 'Hoàn thành'],
               fontSize: 10,
-              currentStep: item?.status ?? 0,
+              currentStep: item?.trangThai ?? 0,
             ),
           ],
         ),
@@ -477,7 +432,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.document_name'.tr,
                 controller: controllerDocumentName,
                 isEditing: isEditing,
-                textContent: item?.documentName ?? '',
+                textContent: item?.tenPhieu ?? '',
                 fieldName: 'documentName',
                 validationErrors: _validationErrors,
               ),
@@ -485,7 +440,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'Trích yêu',
                 controller: controllerSubject,
                 isEditing: isEditing,
-                textContent: item?.subject ?? '',
+                textContent: item?.trichYeu ?? '',
                 fieldName: 'subject',
                 validationErrors: _validationErrors,
               ),
@@ -493,9 +448,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.delivering_unit'.tr,
                 controller: controllerDeliveringUnit,
                 isEditing: isEditing,
-                textContent: item?.deliveringUnit ?? '',
-                isDropdown: false,
-                items: itemsrReceivingUnit,
+                textContent: item?.tenDonViGiao ?? '',
                 fieldName: 'deliveringUnit',
                 validationErrors: _validationErrors,
               ),
@@ -503,7 +456,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.receiving_unit'.tr,
                 controller: controllerReceivingUnit,
                 isEditing: isEditing,
-                textContent: item?.receivingUnit ?? '',
+                textContent: item?.tenDonViNhan ?? '',
                 isDropdown: true,
                 items: itemsrReceivingUnit,
                 fieldName: 'receivingUnit',
@@ -513,15 +466,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.requester'.tr,
                 controller: controllerRequester,
                 isEditing: isEditing,
-                textContent: item?.requester ?? '',
+                textContent: item?.tenNguoiDeNghi ?? '',
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
                   log('Requester selected: $value');
 
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
+                  var selectedUser = users.firstWhere((user) => user.id == value);
                   proposingUnit = selectedUser.department;
                   controllerRequester.text = selectedUser.name ?? '';
                   // Update the proposingUnit controller without triggering a rebuild
@@ -577,15 +528,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.department_approval'.tr,
                 controller: controllerDepartmentApproval,
                 isEditing: isEditing,
-                textContent: item?.departmentApproval ?? '',
+                textContent: item?.tenTrinhDuyetCapPhong ?? '',
                 fieldName: 'departmentApproval',
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
                   log('Department approval selected: $value');
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
+                  var selectedUser = users.firstWhere((user) => user.id == value);
                   controllerDepartmentApproval.text = selectedUser.name ?? '';
                 },
                 validationErrors: _validationErrors,
@@ -597,10 +546,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 textContent:
                     isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : item?.effectiveDate ??
-                            (isEditing
-                                ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                                : ''),
+                        : item?.tggnTuNgay.toString() ??
+                            (isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
                 fieldName: 'effectiveDate',
                 validationErrors: _validationErrors,
               ),
@@ -608,7 +555,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.effective_date_to'.tr,
                 controller: controllerEffectiveDateTo,
                 isEditing: isEditing,
-                textContent: item?.effectiveDateTo ?? '',
+                textContent: item?.tggnDenNgay.toString() ?? '',
                 fieldName: 'effectiveDateTo',
                 validationErrors: _validationErrors,
               ),
@@ -616,13 +563,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 label: 'at.approver'.tr,
                 controller: controllerApprover,
                 isEditing: isEditing,
-                textContent: item?.approver ?? '',
+                textContent: item?.tenTrinhDuyetGiamDoc ?? '',
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
+                  var selectedUser = users.firstWhere((user) => user.id == value);
                   controllerApprover.text = selectedUser.name ?? '';
                 },
                 fieldName: 'approver',
@@ -652,12 +597,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               ),
 
               // const SizedBox(height: 20),
-              assetTransferMovementTable(
-                context,
-                item?.movementDetails ?? [],
-                isEditing,
-              ),
-
+              // assetTransferMovementTable(
+              //   context,
+              //   item?.movementDetails ?? [],
+              //   isEditing,
+              // ),
               SizedBox(height: 10),
               previewDocumentAssetTransfer(item),
             ],
@@ -679,21 +623,21 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       setState(() {
         _validationErrors.remove('document');
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Tệp "$_selectedFileName" đã được tải lên thành công'),
-          backgroundColor: Colors.green.shade600,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tệp "$_selectedFileName" đã được tải lên thành công'),
+            backgroundColor: Colors.green.shade600,
+          ),
+        );
+      }
     } catch (e) {
       log('Error uploading file: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
+        );
+      }
     } finally {
       setState(() {
         _isUploading = false;
@@ -701,101 +645,101 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     }
   }
 
-  Future<void> _saveAssetTransfer(BuildContext context) async {
-    if (!isEditing) return;
+  // Future<void> _saveAssetTransfer(BuildContext context) async {
+  //   if (!isEditing) return;
 
-    // Validate form first
-    if (!_validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+  //   // Validate form first
+  //   if (!_validateForm()) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //     return;
+  //   }
 
-    setState(() {
-      _isUploading = true;
-    });
+  //   setState(() {
+  //     _isUploading = true;
+  //   });
 
-    try {
-      final currentDocumentName = controllerDocumentName.text;
-      final currentSubject = controllerSubject.text;
-      final currentDeliveringUnit = controllerDeliveringUnit.text;
-      final currentReceivingUnit = controllerReceivingUnit.text;
-      final currentRequester = controllerRequester.text;
-      final currentDepartmentApproval = controllerDepartmentApproval.text;
-      final currentEffectiveDate = controllerEffectiveDate.text;
-      final currentEffectiveDateTo = controllerEffectiveDateTo.text;
-      final currentApprover = controllerApprover.text;
-      final currentDeliveryLocation = controllerDeliveryLocation.text;
+  //   try {
+  //     final currentDocumentName = controllerDocumentName.text;
+  //     final currentSubject = controllerSubject.text;
+  //     final currentDeliveringUnit = controllerDeliveringUnit.text;
+  //     final currentReceivingUnit = controllerReceivingUnit.text;
+  //     final currentRequester = controllerRequester.text;
+  //     final currentDepartmentApproval = controllerDepartmentApproval.text;
+  //     final currentEffectiveDate = controllerEffectiveDate.text;
+  //     final currentEffectiveDateTo = controllerEffectiveDateTo.text;
+  //     final currentApprover = controllerApprover.text;
+  //     final currentDeliveryLocation = controllerDeliveryLocation.text;
 
-      // Create an AssetTransferDto with the form data
-      final AssetTransferDto savedItem = AssetTransferDto(
-        id: item?.id, // Keep original ID if editing an existing item
-        documentName: currentDocumentName,
-        subject: currentSubject,
-        deliveringUnit: currentDeliveringUnit,
-        receivingUnit: currentReceivingUnit,
-        requester: currentRequester,
-        preparerInitialed: isPreparerInitialed,
-        requireManagerApproval: isRequireManagerApproval,
-        deputyConfirmed: isDeputyConfirmed,
-        departmentApproval: currentDepartmentApproval,
-        effectiveDate: currentEffectiveDate,
-        effectiveDateTo: currentEffectiveDateTo,
-        approver: currentApprover,
-        status: item?.status ?? 1, // Keep status or set to draft (0)
-        // Keep the existing movement details or use an empty list
-        movementDetails: item?.movementDetails ?? [],
-        deliveryLocation: currentDeliveryLocation,
-        // Include document file information
-        documentFilePath: _selectedFilePath,
-        documentFileName: _selectedFileName,
-        proposingUnit: proposingUnit,
-      );
+  //     // Create an AssetTransferDto with the form data
+  //     final AssetTransferDto savedItem = AssetTransferDto(
+  //       id: item?.id, // Keep original ID if editing an existing item
+  //       documentName: currentDocumentName,
+  //       subject: currentSubject,
+  //       deliveringUnit: currentDeliveringUnit,
+  //       receivingUnit: currentReceivingUnit,
+  //       requester: currentRequester,
+  //       preparerInitialed: isPreparerInitialed,
+  //       requireManagerApproval: isRequireManagerApproval,
+  //       deputyConfirmed: isDeputyConfirmed,
+  //       departmentApproval: currentDepartmentApproval,
+  //       effectiveDate: currentEffectiveDate,
+  //       effectiveDateTo: currentEffectiveDateTo,
+  //       approver: currentApprover,
+  //       status: item?.status ?? 1, // Keep status or set to draft (0)
+  //       // Keep the existing movement details or use an empty list
+  //       movementDetails: item?.movementDetails ?? [],
+  //       deliveryLocation: currentDeliveryLocation,
+  //       // Include document file information
+  //       documentFilePath: _selectedFilePath,
+  //       documentFileName: _selectedFileName,
+  //       proposingUnit: proposingUnit,
+  //     );
 
-      final provider = Provider.of<AssetTransferProvider>(
-        context,
-        listen: false,
-      );
+  //     final provider = Provider.of<AssetTransferProvider>(
+  //       context,
+  //       listen: false,
+  //     );
 
-      if (item == null) {
-        await provider.createAssetTransfer(savedItem);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Tạo phiếu điều chuyển thành công'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        await provider.updateAssetTransfer(savedItem);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cập nhật phiếu điều chuyển thành công'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+  //     if (item == null) {
+  //       await provider.createAssetTransfer(savedItem);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Tạo phiếu điều chuyển thành công'),
+  //           backgroundColor: Colors.green,
+  //         ),
+  //       );
+  //     } else {
+  //       await provider.updateAssetTransfer(savedItem);
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Cập nhật phiếu điều chuyển thành công'),
+  //           backgroundColor: Colors.green,
+  //         ),
+  //       );
+  //     }
 
-      // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-    } catch (e) {
-      log('Error saving asset transfer: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isUploading = false;
-        });
-      }
-    }
-  }
+  //     // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
+  //   } catch (e) {
+  //     log('Error saving asset transfer: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Lỗi: ${e.toString()}'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() {
+  //         _isUploading = false;
+  //       });
+  //     }
+  //   }
+  // }
 
   void onReload() {
     _refreshWidget();
@@ -820,23 +764,16 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
       assetHandoverBloc.add(GetListAssetHandoverEvent(context));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi khi lấy danh sách: ${e.toString()}'), backgroundColor: Colors.red));
     }
   }
 
   Widget previewDocumentAssetTransfer(AssetTransferDto? item) {
     return InkWell(
       onTap: () {
-        showWebViewPopup(
-          context,
-          url: url,
-          title: 'Preview Document',
-        );
+        showWebViewPopup(context, url: url, title: 'Preview Document');
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -847,11 +784,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             child: SGText(
               text: "Xem trước tài liệu",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ColorValue.link,
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link),
             ),
           ),
           SizedBox(width: 8),
