@@ -41,7 +41,7 @@ Widget buildOtherInformation(
   required List<AssetCategoryDto> listAssetCategory,
   required List<Project> listAssetGroup,
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
-  required List<DropdownMenuItem<Project>> itemsAssetGroup,
+  required List<DropdownMenuItem<Project>> itemsProject,
 }) {
   if (listAssetCategory.isEmpty) {
     try {
@@ -102,7 +102,7 @@ Widget buildOtherInformation(
           label: 'Nhóm tài sản',
           controller: ctrlIdNhomTaiSan,
           isEditing: isEditing,
-          items: itemsAssetGroup,
+          items: itemsProject,
           defaultValue:
               ctrlIdNhomTaiSan.text.isNotEmpty
                   ? getAssetGroup(
