@@ -37,26 +37,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AssetManagementBloc, AssetManagementState>(
-      listener: (context, state) {
-        if (state is AssetManagementLoadingState) {
-          // Mostrar loading
-        }
-        if (state is GetListAssetManagementSuccessState) {
-          log('GetListAssetManagementSuccessState ${state.data.length}');
-          context.read<AssetManagementProvider>().getListAssetManagementSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListAssetManagementFailedState) {
-          // Manejar error
-          log('GetListAssetManagementFailedState');
-          // context.read<AssetManagementProvider>().getListAssetManagementFailed(
-          //   context,
-          //   state,
-          // );
-        }
-      },
       builder: (context, state) {
         return ChangeNotifierProvider.value(
           value: context.read<AssetManagementProvider>(),
@@ -126,6 +106,50 @@ class _AssetManagementViewState extends State<AssetManagementView> {
             },
           ),
         );
+      },
+      listener: (context, state) {
+        if (state is AssetManagementLoadingState) {
+          // Mostrar loading
+        }
+        if (state is GetListAssetManagementSuccessState) {
+          log('GetListAssetManagementSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListAssetManagementSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListAssetManagementFailedState) {
+          // Manejar error
+          log('GetListAssetManagementFailedState');
+          // context.read<AssetManagementProvider>().getListAssetManagementFailed(
+          //   context,
+          //   state,
+          // );
+        }
+        if (state is GetListAssetGroupSuccessState) {
+          log('GetListAssetGroupSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListAssetGroupSuccess(
+            context,
+            state,
+          );
+          log('message: ${context.read<AssetManagementProvider>().dataGroup}');
+        }
+        if (state is GetListAssetGroupFailedState) {
+          log('GetListAssetGroupFailedState');
+        }
+        if (state is GetListProjectSuccessState) {
+          log('GetListProjectSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListProjectSuccess(
+            context,
+            state,
+          );
+          log(
+            'message: ${context.read<AssetManagementProvider>().dataProject}',
+          );
+        }
+        if (state is GetListProjectFailedState) {
+          log('GetListProjectFailedState');
+        }
       },
     );
   }

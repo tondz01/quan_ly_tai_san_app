@@ -13,11 +13,12 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_ev
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-Widget buildOriginalAssetInfomation(
+Widget buildOtherInformation(
   BuildContext context, {
-  required TextEditingController ctrlMaTaiSan,
+  required TextEditingController ctrlDuAn,
   required TextEditingController ctrlIdNhomTaiSan,
   required TextEditingController ctrlNguyenGia,
   required TextEditingController ctrlGiaTriKhauHaoBanDau,
@@ -36,11 +37,11 @@ Widget buildOriginalAssetInfomation(
   bool isEditing = false,
   Function(String)? onDepreciationMethodChanged,
   Function(AssetCategoryDto)? onAssetCategoryChanged,
-  Function(AssetGroupDto)? onAssetGroupChanged,
+  Function(Project)? onChangedProject,
   required List<AssetCategoryDto> listAssetCategory,
-  required List<AssetGroupDto> listAssetGroup,
+  required List<Project> listAssetGroup,
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
-  required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
+  required List<DropdownMenuItem<Project>> itemsAssetGroup,
 }) {
   if (listAssetCategory.isEmpty) {
     try {
@@ -93,16 +94,24 @@ Widget buildOriginalAssetInfomation(
     ],
     child: Column(
       children: [
-        SGText(text: 'Thông tin tài sản gôc', size: 14),
+        SGText(text: 'Thông tin khác', size: 14),
         Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
         SizedBox(height: 8),
 
-        CommonFormInput(
-          label: 'Mã tài sản',
-          controller: ctrlMaTaiSan,
+        CmFormDropdownObject<Project>(
+          label: 'Nhóm tài sản',
+          controller: ctrlIdNhomTaiSan,
           isEditing: isEditing,
-          textContent: '',
-          fieldName: 'id',
+          items: itemsAssetGroup,
+          defaultValue:
+              ctrlIdNhomTaiSan.text.isNotEmpty
+                  ? getAssetGroup(
+                    listAssetGroup: listAssetGroup,
+                    idAssetGroup: ctrlIdNhomTaiSan.text,
+                  )
+                  : null,
+          onChanged: onChangedProject,
+          fieldName: 'idNhomTaiSan',
           validationErrors: validationErrors,
         ),
         CommonFormInput(
@@ -232,22 +241,22 @@ Widget buildOriginalAssetInfomation(
           fieldName: 'taiKhoanChiPhi',
           validationErrors: validationErrors,
         ),
-        CmFormDropdownObject<AssetGroupDto>(
-          label: 'Nhóm tài sản',
-          controller: ctrlIdNhomTaiSan,
-          isEditing: isEditing,
-          items: itemsAssetGroup,
-          defaultValue:
-              ctrlIdNhomTaiSan.text.isNotEmpty
-                  ? getAssetGroup(
-                    listAssetGroup: listAssetGroup,
-                    idAssetGroup: ctrlIdNhomTaiSan.text,
-                  )
-                  : null,
-          onChanged: onAssetGroupChanged,
-          fieldName: 'idNhomTaiSan',
-          validationErrors: validationErrors,
-        ),
+        // CmFormDropdownObject<AssetGroupDto>(
+        //   label: 'Nhóm tài sản',
+        //   controller: ctrlIdNhomTaiSan,
+        //   isEditing: isEditing,
+        //   items: itemsAssetGroup,
+        //   defaultValue:
+        //       ctrlIdNhomTaiSan.text.isNotEmpty
+        //           ? getAssetGroup(
+        //             listAssetGroup: listAssetGroup,
+        //             idAssetGroup: ctrlIdNhomTaiSan.text,
+        //           )
+        //           : null,
+        //   onChanged: onAssetGroupChanged,
+        //   fieldName: 'idNhomTaiSan',
+        //   validationErrors: validationErrors,
+        // ),
         CommonFormInput(
           label: 'Ngày vào sổ',
           controller: ctrlNgayVaoSo,
@@ -282,14 +291,14 @@ AssetCategoryDto getAssetCategory({
   return found.first;
 }
 
-AssetGroupDto getAssetGroup({
-  required List<AssetGroupDto> listAssetGroup,
+Project getAssetGroup({
+  required List<Project> listAssetGroup,
   required String idAssetGroup,
 }) {
-  final found = listAssetGroup.where((item) => item.id == idAssetGroup);
+  final found = listAssetGroup.where((item) => item.code == idAssetGroup);
   if (found.isEmpty) {
     // Trả về một AssetGroupDto mặc định nếu không tìm thấy
-    return AssetGroupDto();
+    return Project(code: '', name: '', note: '', isActive: false);
   }
   return found.first;
 }

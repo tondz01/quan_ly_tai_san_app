@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -22,7 +24,6 @@ class _AssetDetailState extends State<AssetDetail> {
   bool isEditing = false;
 
   List<AssetCategoryDto> listAssetCategory = [];
-  List<AssetGroupDto> listAssetGroup = [];
   List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory = [];
   List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup = [];
 
@@ -48,13 +49,33 @@ class _AssetDetailState extends State<AssetDetail> {
     _initData();
   }
 
+  @override
+  void didUpdateWidget(covariant AssetDetail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.provider.dataDetail != data) {
+      log('message didUpdateWidget: ${widget.provider.dataDetail?.toJson()}');
+      _initData();
+    }
+  }
+
   _initData() {
     if (widget.provider.dataDetail != null) {
       data = widget.provider.dataDetail;
       isEditing = false;
     } else {
+      data = null;
       isEditing = true;
     }
+    if (widget.provider.dataGroup != null) {
+      itemsAssetGroup = [
+        for (var element in widget.provider.dataGroup)
+          DropdownMenuItem<AssetGroupDto>(
+            value: element,
+            child: Text(element.tenNhom ?? ''),
+          ),
+      ];
+    }
+    log('message _initData: $isEditing');
     _initController();
   }
 
@@ -77,6 +98,7 @@ class _AssetDetailState extends State<AssetDetail> {
             children: [
               buildOriginalAssetInfomation(
                 context,
+                isEditing: isEditing,
                 ctrlMaTaiSan: ctrlMaTaiSan,
                 ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
                 ctrlNguyenGia: ctrlNguyenGia,
@@ -93,7 +115,7 @@ class _AssetDetailState extends State<AssetDetail> {
                 ctrlNgayVaoSo: ctrlNgayVaoSo,
                 ctrlNgaySuDung: ctrlNgaySuDung,
                 listAssetCategory: listAssetCategory,
-                listAssetGroup: listAssetGroup,
+                listAssetGroup: widget.provider.dataGroup!,
                 itemsAssetCategory: itemsAssetCategory,
                 itemsAssetGroup: itemsAssetGroup,
               ),
@@ -142,20 +164,42 @@ class _AssetDetailState extends State<AssetDetail> {
   }
 
   void _initController() {
-    ctrlMaTaiSan.text = data?.id ?? '';
-    ctrlIdNhomTaiSan.text = data?.tenNhom ?? '';
-    ctrlNguyenGia.text = data?.nguyenGia.toString() ?? '';
-    ctrlGiaTriKhauHaoBanDau.text = data?.giaTriKhauHaoBanDau.toString() ?? '';
-    ctrlKyKhauHaoBanDau.text = data?.kyKhauHaoBanDau.toString() ?? '';
-    ctrlGiaTriThanhLy.text = data?.giaTriThanhLy.toString() ?? '';
-    ctrlTenMoHinh.text = data?.idMoHinhTaiSan ?? '';
-    ctrlPhuongPhapKhauHao.text = data?.giaTriKhauHaoBanDau.toString() ?? '';
-    ctrlSoKyKhauHao.text = data?.soKyKhauHao.toString() ?? '';
-    ctrlTaiKhoanTaiSan.text = data?.taiKhoanTaiSan.toString() ?? '';
-    ctrlTaiKhoanKhauHao.text = data?.taiKhoanKhauHao.toString() ?? '';
-    ctrlTaiKhoanChiPhi.text = data?.taiKhoanChiPhi.toString() ?? '';
-    ctrlTenNhom.text = data?.idNhomTaiSan ?? '';
-    ctrlNgayVaoSo.text = data?.ngayVaoSo.toString() ?? '';
-    ctrlNgaySuDung.text = data?.ngaySuDung.toString() ?? '';
+    // If data is null, set all controllers to empty string
+    if (data == null) {
+      ctrlMaTaiSan.text = '';
+      ctrlIdNhomTaiSan.text = '';
+      ctrlNguyenGia.text = '';
+      ctrlGiaTriKhauHaoBanDau.text = '';
+      ctrlKyKhauHaoBanDau.text = '';
+      ctrlGiaTriThanhLy.text = '';
+      ctrlTenMoHinh.text = '';
+      ctrlPhuongPhapKhauHao.text = '';
+      ctrlSoKyKhauHao.text = '';
+      ctrlTaiKhoanTaiSan.text = '';
+      ctrlTaiKhoanKhauHao.text = '';
+      ctrlTaiKhoanChiPhi.text = '';
+      ctrlTenNhom.text = '';
+      ctrlNgayVaoSo.text = '';
+      ctrlNgaySuDung.text = '';
+    } else {
+      // If data is not null, set controllers with data values
+      ctrlMaTaiSan.text = data!.id ?? '';
+      ctrlIdNhomTaiSan.text = data!.tenNhom ?? '';
+      ctrlNguyenGia.text = data!.nguyenGia?.toString() ?? '';
+      ctrlGiaTriKhauHaoBanDau.text =
+          data!.giaTriKhauHaoBanDau?.toString() ?? '';
+      ctrlKyKhauHaoBanDau.text = data!.kyKhauHaoBanDau?.toString() ?? '';
+      ctrlGiaTriThanhLy.text = data!.giaTriThanhLy?.toString() ?? '';
+      ctrlTenMoHinh.text = data!.idMoHinhTaiSan ?? '';
+      ctrlPhuongPhapKhauHao.text = data!.giaTriKhauHaoBanDau?.toString() ?? '';
+      ctrlSoKyKhauHao.text = data!.soKyKhauHao?.toString() ?? '';
+      ctrlTaiKhoanTaiSan.text = data!.taiKhoanTaiSan?.toString() ?? '';
+      ctrlTaiKhoanKhauHao.text = data!.taiKhoanKhauHao?.toString() ?? '';
+      ctrlTaiKhoanChiPhi.text = data!.taiKhoanChiPhi?.toString() ?? '';
+      ctrlTenNhom.text = data!.idNhomTaiSan ?? '';
+      ctrlNgayVaoSo.text = data!.ngayVaoSo?.toString() ?? '';
+      ctrlNgaySuDung.text = data!.ngaySuDung?.toString() ?? '';
+    }
+    log('message _initController: ${ctrlMaTaiSan.text}');
   }
 }

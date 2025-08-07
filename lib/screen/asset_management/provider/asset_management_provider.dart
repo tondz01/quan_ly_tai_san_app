@@ -2,14 +2,16 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset-management_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
-  bool get isLoading => _isLoading;
+  bool get isLoading => _data == null || _dataGroup == null || _dataProject == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   get subScreen => _subScreen;
@@ -17,8 +19,10 @@ class AssetManagementProvider with ChangeNotifier {
   get data => _data;
   get dataDetail => _dataDetail;
   get filteredData => _filteredData ?? _data;
+  get dataGroup => _dataGroup;
+  get dataProject => _dataProject;
 
-  bool _isLoading = false;
+  // bool _isLoading = true;
   bool _isShowInput = false;
   bool _isShowCollapse = false;
   String? _error;
@@ -35,31 +39,39 @@ class AssetManagementProvider with ChangeNotifier {
   String? _subScreen;
 
   List<AssetManagementDto>? _data;
+  List<AssetGroupDto>? _dataGroup;
+  List<Project>? _dataProject;
   List<AssetManagementDto>? _filteredData;
   AssetManagementDto? _dataDetail;
 
   List<Map<String, bool>?> checkBoxAssetGroup = [];
   onInit(BuildContext context) {
-    // _subScreen = 'Loại tài sản';
+    reset();
     isShowInput = false;
     isShowCollapse = false;
-    getAssetManagements(context);
+    getDataAll(context);
     notifyListeners();
   }
 
   reset() {
-    _isLoading = true;
+    // _isLoading = true;
     clearFilter();
   }
 
-  getAssetManagements(BuildContext context) {
-    context.read<AssetManagementBloc>().add(
-      GetListAssetManagementEvent(context, 'CT001'),
-    );
+  Future<void> getDataAll(BuildContext context) async {
+    try {
+      final bloc = context.read<AssetManagementBloc>();
+      // Gọi song song, không cần delay
+      bloc.add(GetListAssetManagementEvent(context, 'CT001'));
+      bloc.add(GetListAssetGroupEvent(context, 'CT001'));
+      bloc.add(GetListProjectEvent(context, 'CT001'));
+    } catch (e) {
+      log('Error adding AssetManagement events: $e');
+    }
   }
 
+
   void onChangeDetail(AssetManagementDto? item) {
-    // log('message onChangeDetail: ${item?.toJson()}');
     if (item != null) {
       _dataDetail = item;
     } else {
@@ -67,8 +79,6 @@ class AssetManagementProvider with ChangeNotifier {
     }
     _isShowCollapse = true;
     isShowInput = true;
-    log('message onChangeDetail: $_isShowCollapse');
-    log('message onChangeDetail: $_isShowInput');
   }
 
   getListAssetManagementSuccess(
@@ -82,33 +92,60 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = List.from(_data!); // Khởi tạo filteredData
-      _isLoading = false;
-      // _updatePagination();
+    }
+    notifyListeners();
+  }
 
+  getListAssetGroupSuccess(
+    BuildContext context,
+    GetListAssetGroupSuccessState state,
+  ) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataGroup = [];
+    } else {
+      _dataGroup = state.data;
       _initializeCheckBoxList();
     }
+    log('message getListAssetGroupSuccess: ${_dataGroup?.length}');
+    notifyListeners();
+  }
+
+  getListProjectSuccess(
+    BuildContext context,
+    GetListProjectSuccessState state,
+  ) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataProject = [];
+    } else {
+      _dataProject = state.data;
+      _initializeCheckBoxList();
+    }
+    log('message getListProjectSuccess: ${_dataProject?.length}');
     notifyListeners();
   }
 
   // Khởi tạo checkbox list dựa trên _data
   void _initializeCheckBoxList() {
     checkBoxAssetGroup.clear();
-    if (_data != null) {
-      for (var item in _data!) {
-        checkBoxAssetGroup.add({item.idNhomTaiSan ?? '': false});
+    if (_dataGroup != null) {
+      for (var item in _dataGroup!) {
+        checkBoxAssetGroup.add({item.id ?? '': false});
       }
     }
   }
 
   // Cập nhật trạng thái checkbox
   void updateCheckBoxStatus(String id, bool value) {
+    log('message updateCheckBoxStatus: $id -- $value');
     for (int i = 0; i < checkBoxAssetGroup.length; i++) {
       if (checkBoxAssetGroup[i]?.containsKey(id) == true) {
         checkBoxAssetGroup[i]![id] = value;
+        log('message checkBoxAssetGroup: ${checkBoxAssetGroup[i]}');
         break;
       }
     }
-    log('checkBoxAssetGroup: ${checkBoxAssetGroup.toList()}');
     findDataByIdAssetGroup();
     notifyListeners();
   }
@@ -138,17 +175,12 @@ class AssetManagementProvider with ChangeNotifier {
 
   void findDataByIdAssetGroup() {
     List<String> selectedIds = getSelectedIds();
-
     if (selectedIds.isEmpty) {
-      log('Không có ID nào được chọn - Hiển thị tất cả dữ liệu');
       _filteredData = List.from(_data ?? []);
       notifyListeners();
       return;
     }
 
-    log('Đang lọc theo danh sách ID đã chọn: $selectedIds');
-
-    // Lọc dữ liệu theo danh sách ID đã chọn
     if (_data != null) {
       _filteredData =
           _data!.where((item) {
@@ -157,25 +189,16 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _filteredData = [];
     }
-
-    // Cập nhật UI
     notifyListeners();
   }
 
-  // Hàm để reset filter và hiển thị tất cả dữ liệu
   void clearFilter() {
     _filteredData = List.from(_data ?? []);
-
-    // Reset tất cả checkbox về false
     for (int i = 0; i < checkBoxAssetGroup.length; i++) {
       checkBoxAssetGroup[i]?.forEach((key, value) {
         checkBoxAssetGroup[i]![key] = false;
       });
     }
-
-    log(
-      'Đã xóa filter - Hiển thị tất cả ${_filteredData?.length ?? 0} item(s)',
-    );
     notifyListeners();
   }
 }

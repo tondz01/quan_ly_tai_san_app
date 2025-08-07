@@ -239,9 +239,9 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
   //   widget.provider.createAssetCategory(context, request);
   // }
 
-  void _cancelChanges() {
-    log('message: _cancelChanges');
-  }
+  // void _cancelChanges() {
+  //   log('message: _cancelChanges');
+  // }
 
   String getDepreciationMethod(int type) {
     String nameDepreciationMethod = 'Đường thẳng';

@@ -1,11 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/format/vn_number_formatter.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class CommonFormInput extends StatefulWidget {
   const CommonFormInput({
@@ -39,6 +43,39 @@ class CommonFormInput extends StatefulWidget {
 
 class _CommonFormInputState extends State<CommonFormInput> {
   @override
+  void initState() {
+    super.initState();
+    _updateControllerText();
+  }
+
+  @override
+  void didUpdateWidget(CommonFormInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.textContent != widget.textContent) {
+      _updateControllerText();
+    }
+  }
+
+  void _updateControllerText() {
+    if (!widget.isDropdown && widget.textContent.isNotEmpty) {
+      // Use Future.microtask to defer the controller text update
+      Future.microtask(() {
+        if (mounted) {
+          widget.controller.text = widget.textContent;
+        }
+      });
+    } else if (!widget.isDropdown && widget.textContent.isEmpty) {
+      // If textContent is empty, clear the controller
+      Future.microtask(() {
+        if (mounted) {
+          widget.controller.clear();
+        }
+      });
+    }
+    log('message _updateControllerText: ${widget.controller.text}');
+  }
+
+  @override
   Widget build(BuildContext context) {
     bool hasError = false;
     if (widget.validationErrors != null) {
@@ -46,9 +83,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
           widget.fieldName != null &&
           widget.validationErrors![widget.fieldName] == true;
     }
-    if (!widget.isDropdown && widget.textContent.isNotEmpty) {
-      widget.controller.text = widget.textContent;
-    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -95,7 +130,8 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       fontSize: 16,
                       inputType: widget.inputType,
                       isShowSuffixIcon: true,
-                      hintText: 'Chọn ${widget.label.toLowerCase()}',
+                      hintText:
+                          'Chọn ${widget.label.toLowerCase()}',
                       textAlign: TextAlign.left,
                       textAlignItem: TextAlign.left,
                       sizeBorderCircular: 10,
@@ -126,8 +162,11 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       inputFormatters:
                           widget.inputType == TextInputType.number
                               ? [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9.,]'),
+                                MoneyInputFormatter(
+                                  leadingSymbol: '',
+                                  thousandSeparator: ThousandSeparator.Period,
+                                  trailingSymbol: '',
+                                  mantissaLength: 2,
                                 ),
                               ]
                               : null,
@@ -138,7 +177,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       hintText:
                           !widget.isEditing
                               ? ''
-                              : '${'common.hint'.tr} ${widget.label}',
+                              : '${'common.hint'.tr} ${widget.label}  ${widget.inputType == TextInputType.number ? ' (nhập số)' : ''}',
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
                       fontSize: 14,
                       onChanged: (value) {

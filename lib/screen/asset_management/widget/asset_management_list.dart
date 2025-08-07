@@ -305,28 +305,28 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 child: Row(
                   spacing: 16,
                   children: [
-                    ...widget.provider.data!.map(
+                    ...widget.provider.dataGroup!.map(
                       (item) => ItemAssetGroup(
                         titleName: item.tenNhom,
                         numberAsset: getCountAssetByAssetManagement(
-                          widget.provider.data,
-                          '${item.idNhomTaiSan}',
+                          widget.provider.data!,
+                          '${item.id}',
                         ),
                         image: "assets/images/assets.png",
                         onTap: () {
                           context.go(AppRoute.staffManager.path);
                         },
                         valueCheckBox: widget.provider.getCheckBoxStatus(
-                          item.idNhomTaiSan,
+                          item.id,
                         ),
                         onChange: (value) {
                           log('message ItemAssetGroup: $value');
                           widget.provider.updateCheckBoxStatus(
-                            item.idNhomTaiSan,
+                            item.id,
                             value,
                           );
                           log(
-                            'widget.provider.getCheckBoxStatus: ${widget.provider.getCheckBoxStatus(item.idNhomTaiSan)}',
+                            'widget.provider.getCheckBoxStatus: ${widget.provider.getCheckBoxStatus(item.id)}',
                           );
                         },
                       ),
