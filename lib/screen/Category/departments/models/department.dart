@@ -1,77 +1,81 @@
 import 'package:equatable/equatable.dart';
 
-class Department extends Equatable {
-  final String departmentId;
-  final String departmentGroup;
-  final String departmentName;
-  final String managerId;
-  final String employeeCount;
-  final String parentRoom;
+class PhongBan extends Equatable {
+  final String? id;
+  final String? idNhomDonVi;
+  final String? tenPhongBan;
+  final String? idQuanLy;
+  final String? idCongTy;
+  final String? phongCapTren;
+  final String? mauSac;
+  final String? tenNhom;
+  final String? hoTenQuanLy;
+  final String? nguoiTao;
+  final String? nguoiCapNhat;
+  final int? soLuongNhanVien;
 
-  const Department({
-    required this.departmentId,
-    required this.departmentGroup,
-    required this.departmentName,
-    required this.managerId,
-    required this.employeeCount,
-    required this.parentRoom,
+  const PhongBan({
+    this.id,
+    this.idNhomDonVi,
+    this.tenPhongBan,
+    this.idQuanLy,
+    this.idCongTy,
+    this.phongCapTren,
+    this.mauSac,
+    this.tenNhom,
+    this.hoTenQuanLy,
+    this.nguoiTao,
+    this.nguoiCapNhat,
+    this.soLuongNhanVien,
   });
 
-  Department copyWith({
-    String? departmentId,
-    String? departmentGroup,
-    String? departmentName,
-    String? managerId,
-    String? employeeCount,
-    String? parentRoom,
-  }) {
-    return Department(
-      departmentId: departmentId ?? this.departmentId,
-      departmentGroup: departmentGroup ?? this.departmentGroup,
-      departmentName: departmentName ?? this.departmentName,
-      managerId: managerId ?? this.managerId,
-      employeeCount: employeeCount ?? this.employeeCount,
-      parentRoom: parentRoom ?? this.parentRoom,
+  factory PhongBan.fromJson(Map<String, dynamic> json) {
+    return PhongBan(
+      id: json['id'],
+      idNhomDonVi: json['idNhomDonVi'],
+      tenPhongBan: json['tenPhongBan'],
+      idQuanLy: json['idQuanLy'],
+      idCongTy: json['idCongTy'],
+      phongCapTren: json['phongCapTren'],
+      mauSac: json['mauSac'],
+      tenNhom: json['tenNhom'],
+      hoTenQuanLy: json['hoTenQuanLy'],
+      nguoiTao: json['nguoiTao'],
+      nguoiCapNhat: json['nguoiCapNhat'],
+      soLuongNhanVien: json['soLuongNhanVien'],
     );
   }
 
-  factory Department.fromJson(Map<String, dynamic> json) => Department(
-    departmentId: json['departmentId'] ?? '',
-    departmentGroup: json['departmentGroup'] ?? '',
-    departmentName: json['departmentName'] ?? '',
-    managerId: json['managerId'] ?? '',
-    employeeCount: json['employeeCount'] ?? '',
-    parentRoom: json['parentRoom'] ?? '',
-  );
-
-  Map<String, dynamic> toJson() => {
-    'departmentId': departmentId,
-    'departmentGroup': departmentGroup,
-    'departmentName': departmentName,
-    'managerId': managerId,
-    'employeeCount': employeeCount,
-    'parentRoom': parentRoom,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'idNhomDonVi': idNhomDonVi,
+      'tenPhongBan': tenPhongBan,
+      'idQuanLy': idQuanLy,
+      'idCongTy': "id001", // Assuming a default company ID
+      'phongCapTren': phongCapTren,
+      'mauSac': mauSac,
+      'tenNhom': tenNhom,
+      'hoTenQuanLy': hoTenQuanLy,
+      'nguoiTao': nguoiTao,
+      'nguoiCapNhat': nguoiCapNhat,
+      'soLuongNhanVien': soLuongNhanVien,
+    };
+  }
 
   @override
   List<Object?> get props => [
-    departmentId,
-    departmentGroup,
-    departmentName,
-    managerId,
-    employeeCount,
-    parentRoom,
-  ];
+        id,
+        idNhomDonVi,
+        tenPhongBan,
+        idQuanLy,
+        idCongTy,
+        phongCapTren,
+        mauSac,
+        tenNhom,
+        hoTenQuanLy,
+        nguoiTao,
+        nguoiCapNhat,
+        soLuongNhanVien,
+      ];
 }
-
-List<Department> sampleDepartments() => [
-  Department(
-    departmentId: 'ĐU',
-    departmentGroup: 'Quản lý',
-    departmentName: 'VP Đảng ủy',
-    managerId: "01",
-    employeeCount: '1',
-    parentRoom: '',
-  ),
-];
-

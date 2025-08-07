@@ -19,24 +19,24 @@ class CapitalSourceManager extends StatefulWidget {
 
 class _CapitalSourceManagerState extends State<CapitalSourceManager> {
   bool showForm = false;
-  CapitalSource? editingCapitalSource;
+  NguonKinhPhi? editingCapitalSource;
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  List<CapitalSource> data = [];
-  List<CapitalSource> filteredData = [];
+  List<NguonKinhPhi> data = [];
+  List<NguonKinhPhi> filteredData = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
 
-  void _showForm([CapitalSource? capitalSource]) {
+  void _showForm([NguonKinhPhi? capitalSource]) {
     setState(() {
       isShowInput = true;
       editingCapitalSource = capitalSource;
     });
   }
 
-  void _showDeleteDialog(BuildContext context, CapitalSource capitalSource) {
+  void _showDeleteDialog(BuildContext context, NguonKinhPhi capitalSource) {
     showDialog(
       context: context,
       builder:
@@ -71,7 +71,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
     return BlocBuilder<CapitalSourceBloc, CapitalSourceState>(
       builder: (context, state) {
         if (state is CapitalSourceLoaded) {
-          List<CapitalSource> capitalSources = state.capitalSources;
+          List<NguonKinhPhi> capitalSources = state.capitalSources;
           data = capitalSources;
           filteredData = data;
 

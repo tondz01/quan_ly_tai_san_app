@@ -7,8 +7,8 @@ import 'package:quan_ly_tai_san_app/screen/Category/project_manager/project_mana
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/pages/project_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/project.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
@@ -21,24 +21,24 @@ class ProjectManager extends StatefulWidget {
 
 class _ProjectManagerState extends State<ProjectManager> {
   bool showForm = false;
-  Project? editingProject;
+  DuAn? editingProject;
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  List<Project> data = [];
-  List<Project> filteredData = [];
+  List<DuAn> data = [];
+  List<DuAn> filteredData = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
 
-  void _showForm([Project? project]) {
+  void _showForm([DuAn? duAn]) {
     setState(() {
       isShowInput = true;
-      editingProject = project;
+      editingProject = duAn;
     });
   }
 
-  void _showDeleteDialog(BuildContext context, Project project) {
+  void _showDeleteDialog(BuildContext context, DuAn? duAn) {
     showDialog(
       context: context,
       builder:
@@ -52,7 +52,7 @@ class _ProjectManagerState extends State<ProjectManager> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  context.read<ProjectBloc>().add(DeleteProject(project));
+                  context.read<ProjectBloc>().add(DeleteProject(duAn!));
                   Navigator.of(ctx).pop();
                 },
                 child: const Text('Xóa'),
@@ -71,7 +71,7 @@ class _ProjectManagerState extends State<ProjectManager> {
     return BlocBuilder<ProjectBloc, ProjectState>(
       builder: (context, state) {
         if (state is ProjectLoaded) {
-          List<Project> projects = state.projects;
+          List<DuAn> projects = state.projects;
           data = projects;
           filteredData = data;
 
@@ -92,7 +92,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                     isShowInput = true;
                   });
                 },
-                mainScreen: 'Quản lý nhân viên',
+                mainScreen: 'Quản lý dự án',
               ),
             ),
             body: Column(
@@ -102,7 +102,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                     scrollDirection: Axis.vertical,
                     child: CommonPageView(
                       childInput: ProjectFormPage(
-                        project: editingProject,
+                        duAn: editingProject,
                         onCancel: () {
                           setState(() {
                             isShowInput = false;
@@ -117,13 +117,13 @@ class _ProjectManagerState extends State<ProjectManager> {
                       childTableView: ProjectManagerList(
                         data: filteredData,
                         onChangeDetail: (item) {
-                          _showForm(item);
+                          _showForm(item as DuAn?);
                         },
                         onDelete: (item) {
-                          _showDeleteDialog(context, item);
+                          _showDeleteDialog(context, item as DuAn?);
                         },
                         onEdit: (item) {
-                          _showForm(item);
+                          _showForm(item as DuAn?);
                         },
                       ),
 

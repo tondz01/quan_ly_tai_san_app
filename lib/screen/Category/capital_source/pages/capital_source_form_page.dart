@@ -6,7 +6,7 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capita
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 
 class CapitalSourceFormPage extends StatefulWidget {
-  final CapitalSource? capitalSource;
+  final NguonKinhPhi? capitalSource;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
@@ -45,13 +45,13 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
 
   void _initData() {
     _codeController = TextEditingController(
-      text: widget.capitalSource?.code ?? '',
+      text: widget.capitalSource?.id ?? '',
     );
     _nameController = TextEditingController(
-      text: widget.capitalSource?.name ?? '',
+      text: widget.capitalSource?.tenNguonKinhPhi ?? '',
     );
     _noteController = TextEditingController(
-      text: widget.capitalSource?.note ?? '',
+      text: widget.capitalSource?.ghiChu ?? '',
     );
     _isActive = widget.capitalSource?.isActive ?? true;
   }
@@ -66,10 +66,10 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      final capitalSource = CapitalSource(
-        code: _codeController.text.trim(),
-        name: _nameController.text.trim(),
-        note: _noteController.text.trim(),
+      final capitalSource = NguonKinhPhi(
+        id: _codeController.text.trim(),
+        tenNguonKinhPhi: _nameController.text.trim(),
+        ghiChu: _noteController.text.trim(),
         isActive: _isActive,
       );
       if (widget.capitalSource == null) {

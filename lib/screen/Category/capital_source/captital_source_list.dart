@@ -7,10 +7,10 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capita
 import 'package:se_gay_components/common/sg_text.dart';
 
 class CapitalSourceList extends StatefulWidget {
-  final List<CapitalSource> data;
-  final void Function(CapitalSource)? onChangeDetail;
-  final void Function(CapitalSource)? onEdit;
-  final void Function(CapitalSource)? onDelete;
+  final List<NguonKinhPhi> data;
+  final void Function(NguonKinhPhi)? onChangeDetail;
+  final void Function(NguonKinhPhi)? onEdit;
+  final void Function(NguonKinhPhi)? onDelete;
   const CapitalSourceList({
     super.key,
     required this.data,
@@ -24,37 +24,37 @@ class CapitalSourceList extends StatefulWidget {
 }
 
 class _CapitalSourceListState extends State<CapitalSourceList> {
-  List<CapitalSource> selectedItems = [];
+  List<NguonKinhPhi> selectedItems = [];
 
   @override
   Widget build(BuildContext context) {
     final columns = [
       
-      TableBaseConfig.columnTable<CapitalSource>(
+      TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Mã nguồn kinh phí',
-        getValue: (item) => item.code, width: 100,
+        getValue: (item) => item.id ?? "", width: 100,
       ),
-      TableBaseConfig.columnTable<CapitalSource>(
+      TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Tên nguồn kinh phí',
-        getValue: (item) => item.name,
+        getValue: (item) => item.tenNguonKinhPhi ?? "",
         width: 150,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<CapitalSource>(
+      TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Ghi chú',
-        getValue: (item) => item.note,
+        getValue: (item) => item.ghiChu ?? "",
         width: MediaQuery.of(context).size.width / 4,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<CapitalSource>(
+      TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Có hiệu lực',
-        getValue: (item) => item.isActive ? 'Có' : 'Không',
+        getValue: (item) => item.isActive ?? false ? 'Có' : 'Không',
         width: 150,
       ),
-      TableBaseConfig.columnWidgetBase<CapitalSource>(
+      TableBaseConfig.columnWidgetBase<NguonKinhPhi>(
         title: '',
         cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<CapitalSource>(
+            (item) => TableBaseConfig.viewActionBase<NguonKinhPhi>(
               item: item,
               onEdit: (item) {
                 widget.onEdit?.call(item);
@@ -105,7 +105,7 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                     ),
                     SizedBox(width: 8),
                     SGText(
-                      text: 'Danh sách nhân viên',
+                      text: 'Danh sách nguồn vốn',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -118,7 +118,7 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                   children: [
                     SGText(
                       text:
-                          'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                          'Danh sách nguồn vốn đã chọn: ${selectedItems.length}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -138,7 +138,7 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<CapitalSource>(
+            child: TableBaseView<NguonKinhPhi>(
               searchTerm: '',
               columns: columns,
               data: widget.data,

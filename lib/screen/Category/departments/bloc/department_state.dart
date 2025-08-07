@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
 
 abstract class DepartmentState extends Equatable {
   const DepartmentState();
@@ -10,10 +11,20 @@ abstract class DepartmentState extends Equatable {
 class DepartmentInitial extends DepartmentState {}
 
 class DepartmentLoaded extends DepartmentState {
-  final List<Department> departments;
-  const DepartmentLoaded(this.departments);
+  final List<PhongBan> departments;
+  final List<NhomDonVi> departmentGroups;
+  copyWith({
+    List<PhongBan>? departments,
+    List<NhomDonVi>? departmentGroups,
+  }) {
+    return DepartmentLoaded(
+      departments ?? this.departments,
+      departmentGroups ?? this.departmentGroups,
+    );
+  }
+  const DepartmentLoaded(this.departments, this.departmentGroups);
   @override
-  List<Object?> get props => [departments];
+  List<Object?> get props => [departments, departmentGroups];
 }
 
 class DepartmentError extends DepartmentState {

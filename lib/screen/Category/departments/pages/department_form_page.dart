@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 
 class DepartmentFormPage extends StatefulWidget {
-  final Department? department;
+  final PhongBan? department;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
@@ -27,19 +29,9 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   late TextEditingController _departmentIdController;
   late TextEditingController _departmentNameController;
   late TextEditingController _employeeCountController;
-  StaffDTO? _staffDTO;
-  String? _group;
-  String? _parentDepartment;
-
-  final List<String> groups = ['Nhóm 1', 'Nhóm 2', 'Nhóm 3'];
-  final List<String> parentDepartments = [
-    'Chưa xác định',
-    'Phân xưởng KT7',
-    'Phân xưởng KT6',
-    'Phân xưởng Cơ khí 1',
-    'Phân xưởng Cơ khí 2',
-    'Phân xưởng sàng tuyển',
-  ];
+  NhanVien? _staffDTO;
+  NhomDonVi? _group;
+  PhongBan? _parentDepartment;
 
   @override
   void initState() {
@@ -57,31 +49,33 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   void _initData() {
     _departmentIdController = TextEditingController(
-      text: widget.department?.departmentId ?? '',
+      text: widget.department?.id ?? '',
     );
     _departmentNameController = TextEditingController(
-      text: widget.department?.departmentName ?? '',
+      text: widget.department?.tenPhongBan ?? '',
     );
     _employeeCountController = TextEditingController(
-      text: widget.department?.employeeCount ?? '',
+      text: widget.department?.soLuongNhanVien?.toString() ?? '',
     );
     try {
       _staffDTO = context.read<DepartmentBloc>().staffs.firstWhere(
-        (staff) => staff.staffId == widget.department?.managerId,
-      );
+        (staff) => staff?.id == widget.department?.idQuanLy,
+      ) ?? null;
     } catch (e) {
       _staffDTO = null;
     }
     try {
-      _group = groups.firstWhere(
-        (group) => group == widget.department?.departmentGroup,
+      _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
+        (group) => group.id == widget.department?.idNhomDonVi,
       );
     } catch (e) {
       _group = null;
     }
+    _parentDepartment = null;
+
     try {
-      _parentDepartment = parentDepartments.firstWhere(
-        (parent) => parent == widget.department?.parentRoom,
+      _parentDepartment = context.read<DepartmentBloc>().departments.firstWhere(
+        (parentDepartment) => parentDepartment.id == widget.department?.phongCapTren,
       );
     } catch (e) {
       _parentDepartment = null;
@@ -98,13 +92,12 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      final department = Department(
-        departmentId: _departmentIdController.text.trim(),
-        departmentGroup: _group ?? '',
-        departmentName: _departmentNameController.text.trim(),
-        managerId: _staffDTO?.staffId ?? '',
-        employeeCount: _employeeCountController.text.trim(),
-        parentRoom: _parentDepartment ?? '',
+      final department = PhongBan(
+        id: _departmentIdController.text.trim(),
+        idNhomDonVi: _group?.id ?? '',
+        tenPhongBan: _departmentNameController.text.trim(),
+        idQuanLy: _staffDTO?.id ?? '',
+        phongCapTren: _parentDepartment?.id ?? '',
       );
       if (widget.department == null) {
         context.read<DepartmentBloc>().add(AddDepartment(department));
@@ -120,7 +113,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.department != null;
-    final List<StaffDTO> staffs = context.read<DepartmentBloc>().staffs;
+    final List<NhanVien?> staffs = context.read<DepartmentBloc>().staffs;
     return Container(
       // constraints: BoxConstraints(
       //   maxWidth: MediaQuery.of(context).size.width * 0.8,
@@ -167,16 +160,16 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
-                          value:
-                              _group?.trim().isEmpty ?? true ? null : _group,
+                        child: DropdownButtonFormField<NhomDonVi>(
+                          value: _group,
                           decoration: inputDecoration('Nhóm đơn vị'),
-                          items:
-                              groups
+                          items: context
+                              .read<DepartmentBloc>()
+                              .departmentGroups
                                   .map(
                                     (g) => DropdownMenuItem(
                                       value: g,
-                                      child: Text(g),
+                                      child: Text(g.tenNhom ?? ''),
                                     ),
                                   )
                                   .toList(),
@@ -207,7 +200,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                 children: [
                   sectionTitle(Icons.group, 'Thông tin bổ sung'),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<StaffDTO>(
+                  DropdownButtonFormField<NhanVien>(
                     value: _staffDTO,
                     decoration: inputDecoration('Quản lý'),
                     items:
@@ -217,9 +210,8 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                                 value: staff,
                                 child: Row(
                                   children: [
-                                    avatar(staff.name),
                                     const SizedBox(width: 8),
-                                    Text(staff.name),
+                                    Text(staff?.hoTen ?? ''),
                                   ],
                                 ),
                               ),
@@ -239,15 +231,16 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
+                        child: DropdownButtonFormField<PhongBan>(
                           value: _parentDepartment,
                           decoration: inputDecoration('Phòng/Ban cấp trên'),
-                          items:
-                              parentDepartments
-                                  .map(
-                                    (p) => DropdownMenuItem(
+                          items: context
+                              .read<DepartmentBloc>()
+                              .departments
+                              .map(
+                                (p) => DropdownMenuItem(
                                       value: p,
-                                      child: Text(p),
+                                      child: Text(p.tenPhongBan ?? ''),
                                     ),
                                   )
                                   .toList(),

@@ -8,28 +8,27 @@ abstract class CapitalSourceEvent extends Equatable {
 }
 
 class LoadCapitalSources extends CapitalSourceEvent {
-  final List<CapitalSource> capitalSources;
-  const LoadCapitalSources(this.capitalSources);
+  const LoadCapitalSources();
   @override
-  List<Object?> get props => [capitalSources];
+  List<Object?> get props => [];
 }
 
 class AddCapitalSource extends CapitalSourceEvent {
-  final CapitalSource capitalSource;
+  final NguonKinhPhi capitalSource;
   const AddCapitalSource(this.capitalSource);
   @override
   List<Object?> get props => [capitalSource];
 }
 
 class UpdateCapitalSource extends CapitalSourceEvent {
-  final CapitalSource capitalSource;
+  final NguonKinhPhi capitalSource;
   const UpdateCapitalSource(this.capitalSource);
   @override
   List<Object?> get props => [capitalSource];
 }
 
 class DeleteCapitalSource extends CapitalSourceEvent {
-  final CapitalSource capitalSource;
+  final NguonKinhPhi capitalSource;
   const DeleteCapitalSource(this.capitalSource);
   @override
   List<Object?> get props => [capitalSource];

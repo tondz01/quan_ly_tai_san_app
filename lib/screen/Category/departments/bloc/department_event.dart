@@ -8,28 +8,27 @@ abstract class DepartmentEvent extends Equatable {
 }
 
 class LoadDepartments extends DepartmentEvent {
-  final List<Department> departments;
-  const LoadDepartments(this.departments);
+  const LoadDepartments();
   @override
-  List<Object?> get props => [departments];
+  List<Object?> get props => [];
 }
 
 class AddDepartment extends DepartmentEvent {
-  final Department department;
+  final PhongBan department;
   const AddDepartment(this.department);
   @override
   List<Object?> get props => [department];
 }
 
 class UpdateDepartment extends DepartmentEvent {
-  final Department department;
+  final PhongBan department;
   const UpdateDepartment(this.department);
   @override
   List<Object?> get props => [department];
 }
 
 class DeleteDepartment extends DepartmentEvent {
-  final Department department;
+  final PhongBan department;
   const DeleteDepartment(this.department);
   @override
   List<Object?> get props => [department];

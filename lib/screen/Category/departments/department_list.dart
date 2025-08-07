@@ -6,13 +6,14 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class DepartmentList extends StatefulWidget {
-  final List<Department> data;
-  final void Function(Department)? onChangeDetail;
-  final void Function(Department)? onEdit;
-  final void Function(Department)? onDelete;
+  final List<PhongBan> data;
+  final void Function(PhongBan)? onChangeDetail;
+  final void Function(PhongBan)? onEdit;
+  final void Function(PhongBan)? onDelete;
   const DepartmentList({
     super.key,
     required this.data,
@@ -26,51 +27,67 @@ class DepartmentList extends StatefulWidget {
 }
 
 class _DepartmentListState extends State<DepartmentList> {
-  List<Department> selectedItems = [];
+  List<PhongBan> selectedItems = [];
 
   @override
   Widget build(BuildContext context) {
     final columns = [
-      TableBaseConfig.columnTable<Department>(
+      TableBaseConfig.columnTable<PhongBan>(
         title: 'Mã đơn vị',
-        getValue: (item) => item.departmentId,
+        getValue: (item) => item.id ?? "",
         width: 80,
       ),
-      TableBaseConfig.columnTable<Department>(
+      TableBaseConfig.columnTable<PhongBan>(
         title: 'Nhóm đơn vị',
-        getValue: (item) => item.departmentGroup,
+        getValue: (item) {
+          try {
+            return context
+                    .read<DepartmentBloc>()
+                    .departmentGroups
+                    .firstWhere((group) => group.id == item.idNhomDonVi)
+                    .tenNhom ??
+                '';
+          } catch (e) {
+            return '';
+          }
+        },
         width: 150,
       ),
-      TableBaseConfig.columnTable<Department>(
+      TableBaseConfig.columnTable<PhongBan>(
         title: 'Tên phòng/ban',
-        getValue: (item) => item.departmentName,
+        getValue: (item) => item.tenPhongBan ?? "",
         width: 150,
       ),
-      TableBaseConfig.columnTable<Department>(
+      TableBaseConfig.columnTable<PhongBan>(
         title: 'Quản lý',
-        getValue:
-            (item) =>
-                context
+        getValue: (item) {
+          try {
+            return context
                     .read<DepartmentBloc>()
                     .staffs
-                    .firstWhere((staff) => staff.staffId == item.managerId)
-                    .name,
+                    .firstWhere((staff) => staff?.id == item.idQuanLy)
+                    ?.hoTen ??
+                '';
+          } catch (e) {
+            return '';
+          }
+        },
         width: 150,
       ),
-      TableBaseConfig.columnTable<Department>(
+      TableBaseConfig.columnTable<PhongBan>(
         title: 'Nhân viên',
-        getValue: (item) => item.employeeCount,
+        getValue: (item) => item.soLuongNhanVien.toString(),
         width: 150,
       ),
-      TableBaseConfig.columnTable<Department>(
+      TableBaseConfig.columnTable<PhongBan>(
         title: 'Phòng/ Ban cấp trên',
-        getValue: (item) => item.parentRoom,
+        getValue: (item) => item.phongCapTren ?? "",
         width: 150,
       ),
-      TableBaseConfig.columnWidgetBase<Department>(
+      TableBaseConfig.columnWidgetBase<PhongBan>(
         title: '',
         cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<Department>(
+            (item) => TableBaseConfig.viewActionBase<PhongBan>(
               item: item,
               onEdit: (item) {
                 widget.onEdit?.call(item);
@@ -154,7 +171,7 @@ class _DepartmentListState extends State<DepartmentList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<Department>(
+            child: TableBaseView<PhongBan>(
               searchTerm: '',
               columns: columns,
               data: widget.data,

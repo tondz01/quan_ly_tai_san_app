@@ -19,17 +19,17 @@ class DepartmentManager extends StatefulWidget {
 
 class _DepartmentManagerState extends State<DepartmentManager> {
   bool showForm = false;
-  Department? editingDepartment;
+  PhongBan? editingDepartment;
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  List<Department> data = [];
-  List<Department> filteredData = [];
+  List<PhongBan> data = [];
+  List<PhongBan> filteredData = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
 
-  void _showForm([Department? department]) {
+  void _showForm([PhongBan? department]) {
     setState(() {
       isShowInput = true;
       editingDepartment = department;
@@ -37,7 +37,7 @@ class _DepartmentManagerState extends State<DepartmentManager> {
   }
 
 
-  void _showDeleteDialog(BuildContext context, Department department) {
+  void _showDeleteDialog(BuildContext context, PhongBan department) {
     showDialog(
       context: context,
       builder:
@@ -72,7 +72,7 @@ class _DepartmentManagerState extends State<DepartmentManager> {
     return BlocBuilder<DepartmentBloc, DepartmentState>(
       builder: (context, state) {
         if (state is DepartmentLoaded) {
-          List<Department> departments = state.departments;
+          List<PhongBan> departments = state.departments;
           data = departments;
           filteredData = data;
 
