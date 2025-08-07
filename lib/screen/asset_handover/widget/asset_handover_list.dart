@@ -1,10 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/component/columns_asset_handover_component.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
@@ -23,7 +28,13 @@ class AssetHandoverList extends StatefulWidget {
 class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
+  String urlPreview = '';
+  List<String> listUrlTest = [
+    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b',
+    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FQuy%E1%BA%BFt%20%C4%91%E1%BB%8Bnh%20C%E1%BA%A5p%20ph%C3%A1t%20t%C3%A0i%20s%E1%BA%A3n%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=cddb7a63-4c00-4954-99a8-afc27deb1996',
+  ];
 
+  bool isShowPreview = false;
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
@@ -36,6 +47,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'receiver_unit',
     'created_by',
     'status',
+    'actions',
   ];
 
   @override
@@ -89,6 +101,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ColumnDisplayOption(
         id: 'status',
         label: 'Trạng thái',
+        isChecked: visibleColumnIds.contains('status'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
         isChecked: visibleColumnIds.contains('status'),
       ),
     ];
@@ -187,6 +204,16 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             ),
           );
           break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: '',
+              cellBuilder: (item) => viewAction(item),
+              width: 120,
+              searchable: true,
+            ),
+          );
+          break;
       }
     }
 
@@ -228,7 +255,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
     return Row(
       children: [
-        // displayPreview(),
+        if (url.isNotEmpty && isShowPreview) displayPreview(),
         Expanded(
           child: Container(
             height: MediaQuery.of(context).size.height,
@@ -299,6 +326,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     data: widget.provider.dataPage ?? [],
                     horizontalController: ScrollController(),
                     onRowTap: (item) {
+                      isShowPreview = true;
                       widget.provider.onChangeDetail(context, item);
                     },
                   ),
@@ -311,13 +339,52 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-  // Widget displayPreview() {
-  //   return Container(
-  //     width: MediaQuery.of(context).size.width * 0.3,
-  //     height: 300,
-  //     color: Colors.amber,
-  //   );
-  // }
+  Widget displayPreview() {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.35,
+      height: MediaQuery.of(context).size.height,
+      color: Colors.amber,
+      padding: EdgeInsets.only(left: 10, right: 10),
+      child: WebViewContainer(
+        url: url,
+        title: "Preview Document",
+        onPressed: () {
+          setState(() {
+            isShowPreview = !isShowPreview;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget viewAction(AssetHandoverDto item) {
+    return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.visibility,
+        tooltip: 'Xem',
+        iconColor: ColorValue.cyan,
+        backgroundColor: Colors.green.shade50,
+        borderColor: Colors.green.shade200,
+        onPressed: () {
+          setState(() {
+            isShowPreview = true;
+            url = listUrlTest[Random().nextInt(listUrlTest.length)];
+          });
+        },
+      ),
+      ActionButtonConfig(
+        icon: Icons.delete,
+        tooltip: item.state != 0 ? null : 'Xóa',
+        iconColor: item.state != 0 ? Colors.grey : Colors.red.shade700,
+        backgroundColor: Colors.red.shade50,
+        borderColor: Colors.red.shade200,
+        onPressed:
+            () => {
+              if (item.state != 0) {widget.provider.deleteItem(item.id ?? '')},
+            },
+      ),
+    ]);
+  }
 
   Widget showStatus(int status) {
     return Container(

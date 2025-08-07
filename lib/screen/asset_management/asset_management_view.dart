@@ -5,11 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset-management_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/bloc/asset_management_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/provider/asset_management_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/widget/asset_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/widget/asset_management_list.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 
 class AssetManagementView extends StatefulWidget {
@@ -37,26 +37,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AssetManagementBloc, AssetManagementState>(
-      listener: (context, state) {
-        if (state is AssetManagementLoadingState) {
-          // Mostrar loading
-        }
-        if (state is GetListAssetManagementSuccessState) {
-          log('GetListAssetManagementSuccessState ${state.data.length}');
-          context.read<AssetManagementProvider>().getListAssetManagementSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListAssetManagementFailedState) {
-          // Manejar error
-          log('GetListAssetManagementFailedState');
-          // context.read<AssetManagementProvider>().getListAssetManagementFailed(
-          //   context,
-          //   state,
-          // );
-        }
-      },
       builder: (context, state) {
         return ChangeNotifierProvider.value(
           value: context.read<AssetManagementProvider>(),
@@ -82,7 +62,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     },
                     onNew: () {
                       // provider.onChangeDetailAssetManagement(null);
-                      provider.onCreatedAsset();
+                      provider.onChangeDetail(null);
                     },
                     mainScreen: "Quản lý tài sản",
                     subScreen: provider.subScreen,
@@ -126,6 +106,63 @@ class _AssetManagementViewState extends State<AssetManagementView> {
             },
           ),
         );
+      },
+      listener: (context, state) {
+        if (state is AssetManagementLoadingState) {
+          // Mostrar loading
+        }
+        if (state is GetListAssetManagementSuccessState) {
+          log('GetListAssetManagementSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListAssetManagementSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListAssetManagementFailedState) {
+          // Manejar error
+          log('GetListAssetManagementFailedState');
+          // context.read<AssetManagementProvider>().getListAssetManagementFailed(
+          //   context,
+          //   state,
+          // );
+        }
+        if (state is GetListAssetGroupSuccessState) {
+          log('GetListAssetGroupSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListAssetGroupSuccess(
+            context,
+            state,
+          );
+          log('message: ${context.read<AssetManagementProvider>().dataGroup}');
+        }
+        if (state is GetListAssetGroupFailedState) {
+          log('GetListAssetGroupFailedState');
+        }
+        if (state is GetListProjectSuccessState) {
+          log('GetListProjectSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListProjectSuccess(
+            context,
+            state,
+          );
+          log(
+            'message: ${context.read<AssetManagementProvider>().dataProject}',
+          );
+        }
+        if (state is GetListProjectFailedState) {
+          log('GetListProjectFailedState');
+        }
+        if (state is GetListCapitalSourceSuccessState) {
+          log('GetListCapitalSourceSuccessState ${state.data.length}');
+          context.read<AssetManagementProvider>().getListCapitalSourceSuccess(
+            context,
+            state,
+          );
+          log(
+            'message: ${context.read<AssetManagementProvider>().dataCapitalSource}',
+          );
+        }
+        if (state is GetListCapitalSourceFailedState) {
+          log('GetListCapitalSourceFailedState');
+        }
       },
     );
   }

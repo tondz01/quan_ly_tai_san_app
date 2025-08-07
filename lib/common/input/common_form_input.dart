@@ -1,11 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/format/vn_number_formatter.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class CommonFormInput extends StatefulWidget {
   const CommonFormInput({
@@ -39,11 +43,45 @@ class CommonFormInput extends StatefulWidget {
 
 class _CommonFormInputState extends State<CommonFormInput> {
   @override
+  void initState() {
+    super.initState();
+    _updateControllerText();
+  }
+
+  @override
+  void didUpdateWidget(CommonFormInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.textContent != widget.textContent) {
+      _updateControllerText();
+    }
+  }
+
+  void _updateControllerText() {
+    if (!widget.isDropdown && widget.textContent.isNotEmpty) {
+      // Use Future.microtask to defer the controller text update
+      Future.microtask(() {
+        if (mounted) {
+          widget.controller.text = widget.textContent;
+        }
+      });
+    } else if (!widget.isDropdown && widget.textContent.isEmpty) {
+      // If textContent is empty, clear the controller
+      Future.microtask(() {
+        if (mounted) {
+          widget.controller.clear();
+        }
+      });
+    }
+    log('message _updateControllerText: ${widget.controller.text}');
+  }
+
+  @override
   Widget build(BuildContext context) {
     bool hasError = false;
     if (widget.validationErrors != null) {
       hasError = widget.fieldName != null && widget.validationErrors![widget.fieldName] == true;
     }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -76,7 +114,8 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       colorBorder:
                           (widget.validationErrors != null &&
                                   widget.fieldName != null &&
-                                  widget.validationErrors![widget.fieldName] == true)
+                                  widget.validationErrors![widget.fieldName] ==
+                                      true)
                               ? Colors.red
                               : SGAppColors.neutral400,
                       showUnderlineBorderOnly: true,
@@ -85,7 +124,8 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       fontSize: 16,
                       inputType: widget.inputType,
                       isShowSuffixIcon: true,
-                      hintText: 'Chọn ${widget.label.toLowerCase()}',
+                      hintText:
+                          'Chọn ${widget.label.toLowerCase()}',
                       textAlign: TextAlign.left,
                       textAlignItem: TextAlign.left,
                       sizeBorderCircular: 10,
@@ -107,20 +147,32 @@ class _CommonFormInputState extends State<CommonFormInput> {
                       width: MediaQuery.of(context).size.width,
                       // expandable: true,
                       maxLines: 2,
-                      controller: widget.controller,
+                      controller:
+                          widget
+                              .controller, // Remove the ..text = textContent assignment
                       borderRadius: 10,
                       enabled: widget.isEnable ? widget.isEditing : false,
                       textAlign: TextAlign.left,
                       readOnly: !widget.isEditing,
                       inputFormatters:
                           widget.inputType == TextInputType.number
-                              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))]
+                              ? [
+                                MoneyInputFormatter(
+                                  leadingSymbol: '',
+                                  thousandSeparator: ThousandSeparator.Period,
+                                  trailingSymbol: '',
+                                  mantissaLength: 2,
+                                ),
+                              ]
                               : null,
                       onlyLine: true,
                       color: Colors.black,
                       showBorder: widget.isEditing,
                       borderColor: hasError ? Colors.red : null,
-                      hintText: !widget.isEditing ? '' : '${'common.hint'.tr} ${widget.label}',
+                      hintText:
+                          !widget.isEditing
+                              ? ''
+                              : '${'common.hint'.tr} ${widget.label}  ${widget.inputType == TextInputType.number ? ' (nhập số)' : ''}',
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
                       fontSize: 14,
                       onChanged: (value) {

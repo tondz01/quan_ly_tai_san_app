@@ -37,18 +37,24 @@ class AssetCategoryDto {
     return AssetCategoryDto(
       id: json['id'],
       tenMoHinh: json['tenMoHinh'],
-      phuongPhapKhauHao: json['phuongPhapKhauHao'],
-      kyKhauHao: json['kyKhauHao'],
+      phuongPhapKhauHao:
+          json['phuongPhapKhauHao'] is int
+              ? json['phuongPhapKhauHao']
+              : int.tryParse(json['phuongPhapKhauHao']?.toString() ?? ''),
+      kyKhauHao:
+          json['kyKhauHao'] is int
+              ? json['kyKhauHao']
+              : int.tryParse(json['kyKhauHao']?.toString() ?? ''),
       loaiKyKhauHao: json['loaiKyKhauHao'],
       taiKhoanTaiSan: json['taiKhoanTaiSan'],
       taiKhoanKhauHao: json['taiKhoanKhauHao'],
       taiKhoanChiPhi: json['taiKhoanChiPhi'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(json['ngayTao'])
+      ngayTao: json['ngayTao'] != null
+          ? DateTime.tryParse(json['ngayTao'].toString())
           : null,
-      ngayCapNhat: json['ngayCapNhat'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(json['ngayCapNhat'])
+      ngayCapNhat: json['ngayCapNhat'] != null
+          ? DateTime.tryParse(json['ngayCapNhat'].toString())
           : null,
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],

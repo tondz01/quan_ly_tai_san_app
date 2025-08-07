@@ -7,9 +7,10 @@ abstract class AssetCategoryEvent extends Equatable {
 
 class GetListAssetCategoryEvent extends AssetCategoryEvent {
   final BuildContext context;
+  final String idCongty;
 
-  const GetListAssetCategoryEvent(this.context);
+  const GetListAssetCategoryEvent(this.context, this.idCongty);
 
   @override
-  List<Object?> get props => [context];
+  List<Object?> get props => [context, idCongty];
 }

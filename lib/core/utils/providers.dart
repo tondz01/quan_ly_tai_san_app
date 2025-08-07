@@ -1,6 +1,7 @@
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
@@ -15,5 +16,6 @@ List<SingleChildWidget> get providers {
     ChangeNotifierProvider(create: (context) => ToolAndMaterialTransferProvider()),
     ChangeNotifierProvider(create: (context) => AssetGroupProvider()),
     ChangeNotifierProvider(create: (context) => AssetManagementProvider()),
+    ChangeNotifierProvider(create: (context) => AssetCategoryProvider()),
   ];
 }

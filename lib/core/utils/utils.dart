@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:intl/intl.dart';
 
 abstract class AppUtility {
@@ -20,7 +22,8 @@ abstract class AppUtility {
   static bool fuzzySearch(String text, String searchTerm) {
     if (searchTerm.isEmpty) return true;
 
-    List<String> searchWords = searchTerm.split(' ').where((word) => word.isNotEmpty).toList();
+    List<String> searchWords =
+        searchTerm.split(' ').where((word) => word.isNotEmpty).toList();
 
     for (String word in searchWords) {
       if (!text.contains(word)) {
@@ -28,5 +31,22 @@ abstract class AppUtility {
       }
     }
     return true;
+  }
+
+  static List<DropdownMenuItem<String>> phuongPhapKhauHaos = [
+    const DropdownMenuItem(
+      value: 'Đường thẳng',
+      child: SGText(text: 'Đường thẳng', size: 14),
+    ),
+  ];
+
+  static String formatCurrencyNumber(String input) {
+    try {
+      final number = int.parse(input.replaceAll('.', ''));
+      final formatter = NumberFormat('#,###', 'vi_VN');
+      return formatter.format(number).replaceAll(',', '.');
+    } catch (_) {
+      return input;
+    }
   }
 }

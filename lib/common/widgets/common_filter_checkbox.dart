@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -20,8 +22,7 @@ class FilterOption {
   });
 }
 
-/// Component common cho filter checkbox với count
-class CommonFilterCheckbox extends StatelessWidget {
+class CommonFilterCheckbox extends StatefulWidget {
   final List<FilterOption> options;
   final Color? checkColor;
   final Color? textColor;
@@ -30,7 +31,7 @@ class CommonFilterCheckbox extends StatelessWidget {
   final double? countTextSize;
   final EdgeInsets? padding;
   final MainAxisAlignment mainAxisAlignment;
-  final bool showCount;
+  final bool? showCount; // có thể truyền true/false hoặc để tự động
 
   const CommonFilterCheckbox({
     super.key,
@@ -41,41 +42,84 @@ class CommonFilterCheckbox extends StatelessWidget {
     this.textSize,
     this.countTextSize,
     this.padding,
-    this.mainAxisAlignment = MainAxisAlignment.end,
-    this.showCount = true,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.showCount,
   });
 
   @override
+  State<CommonFilterCheckbox> createState() => _CommonFilterCheckboxState();
+}
+
+class _CommonFilterCheckboxState extends State<CommonFilterCheckbox>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    // Gọi lại build() khi kích thước cửa sổ thay đổi
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: mainAxisAlignment,
-      children: [
-        for (final option in options) _buildFilterCheckbox(context, option),
-      ],
+    return Padding(
+      padding: widget.padding ?? EdgeInsets.zero,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double availableWidth = constraints.maxWidth;
+
+          // Nếu không truyền showCount thì tự quyết định dựa theo width
+          final shouldShowCount = widget.showCount ?? (availableWidth >= 400);
+
+          log('shouldShowCount: $shouldShowCount');
+
+          return Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
+            children: [
+              for (final option in widget.options)
+                _buildFilterCheckbox(context, option, shouldShowCount),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildFilterCheckbox(BuildContext context, FilterOption option) {
+  Widget _buildFilterCheckbox(
+    BuildContext context,
+    FilterOption option,
+    bool showCount,
+  ) {
     final isChecked = option.isChecked;
     final textColorToUse =
-        isChecked ? option.activeColor : (textColor ?? Colors.black87);
+        isChecked ? option.activeColor : (widget.textColor ?? Colors.black87);
 
-    return Padding(
-      padding: padding ?? const EdgeInsets.only(right: 10),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 160),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: checkboxSize ?? 24,
-            height: checkboxSize ?? 24,
+            width: widget.checkboxSize ?? 24,
+            height: widget.checkboxSize ?? 24,
             child: Checkbox(
               value: isChecked,
               onChanged: option.onChanged,
               activeColor: option.activeColor,
-              checkColor: checkColor ?? Colors.white,
-              side: BorderSide(
-                color: option.activeColor,
-                width: 3,
-              ),
+              checkColor: widget.checkColor ?? Colors.white,
+              side: BorderSide(color: option.activeColor, width: 3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(2),
               ),
@@ -91,7 +135,7 @@ class CommonFilterCheckbox extends StatelessWidget {
                 text: option.label,
                 color: textColorToUse,
                 textAlign: TextAlign.center,
-                size: textSize ?? 14,
+                size: widget.textSize ?? 14,
               ),
               if (showCount) ...[
                 const SizedBox(width: 4),
@@ -108,7 +152,7 @@ class CommonFilterCheckbox extends StatelessWidget {
                   child: SGText(
                     text: option.count.toString(),
                     color: isChecked ? Colors.white : Colors.black87,
-                    size: countTextSize ?? 11,
+                    size: widget.countTextSize ?? 11,
                   ),
                 ),
               ],

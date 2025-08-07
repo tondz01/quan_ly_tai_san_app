@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -5,11 +7,11 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/component/item_asset_group.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/model/asset_management_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset-management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class AssetManagementList extends StatefulWidget {
@@ -275,39 +277,70 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      // height: MediaQuery.of(context).size.height * 0.3,
-      decoration: BoxDecoration(
-        // color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      // height: MediaQuery.of(context).size.height * 0.5,
-      child: Column(
-        children: [
-          Row(
-            spacing: 16,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: ColorValue.accentCyan.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+            // border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 8,
             children: [
-              ...widget.provider.data!.map(
-                (e) => ItemAssetGroup(
-                  titleName: e.tenNhom,
-                  numberAsset: getCountAssetByAssetManagement(
-                    widget.provider.data,
-                    '${e.idNhomTaiSan}',
-                  ),
-                  image: "assets/images/assets.png",
-                  onTap: () {
-                    context.go(AppRoute.staffManager.path);
-                  },
+              SGText(
+                text: 'Danh sách loại tài sản',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                  fontSize: 16,
+                ),
+              ),
+              Divider(),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  spacing: 16,
+                  children: [
+                    ...widget.provider.dataGroup!.map(
+                      (item) => ItemAssetGroup(
+                        titleName: item.tenNhom,
+                        numberAsset: getCountAssetByAssetManagement(
+                          widget.provider.data!,
+                          '${item.id}',
+                        ),
+                        image: "assets/images/assets.png",
+                        onTap: () {
+                          context.go(AppRoute.staffManager.path);
+                        },
+                        valueCheckBox: widget.provider.getCheckBoxStatus(
+                          item.id,
+                        ),
+                        onChange: (value) {
+                          log('message ItemAssetGroup: $value');
+                          widget.provider.updateCheckBoxStatus(
+                            item.id,
+                            value,
+                          );
+                          log(
+                            'widget.provider.getCheckBoxStatus: ${widget.provider.getCheckBoxStatus(item.id)}',
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16),
-      
-          _buildAssetManagementTable(),
-        ],
-      ),
+        ),
+        SizedBox(height: 16),
+
+        _buildAssetManagementTable(),
+      ],
     );
   }
 
@@ -414,11 +447,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
             child: TableBaseView<AssetManagementDto>(
               searchTerm: '',
               columns: columns,
-              data: widget.provider.data ?? [],
+              data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
               onRowTap: (item) {
-                log('message onRowTap: ${item.toJson()}');
-                // widget.provider.onChangeDetail(item);
+                widget.provider.onChangeDetail(item);
               },
             ),
           ),
