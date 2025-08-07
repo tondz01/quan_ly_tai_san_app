@@ -24,7 +24,7 @@ class GetListAssetTransferSuccessState extends AssetTransferState {
   const GetListAssetTransferSuccessState({required this.data, required this.listNhanVien, required this.listPhongBan});
 
   @override
-  List<Object> get props => [data];
+  List<Object> get props => [data, listNhanVien, listPhongBan];
 }
 
 class GetListAssetTransferFailedState extends AssetTransferState {

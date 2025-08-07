@@ -7,7 +7,9 @@ Widget assetTransferMovementTable(
   BuildContext context,
   List<MovementDetailDto> movementDetails,
   bool isEditing,
-) {
+  bool isNew, {
+  bool isLoading = false,
+}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -19,15 +21,43 @@ Widget assetTransferMovementTable(
           textAlign: TextAlign.start,
         ),
       ),
-      movementDetailTable(movementDetails, isEditing),
+      if (isLoading && !isNew)
+        _buildLoadingIndicator()
+      else if (movementDetails.isEmpty && !isNew)
+        _buildEmptyDataMessage()
+      else
+        movementDetailTable(movementDetails, isEditing),
     ],
   );
 }
 
-Widget movementDetailTable(
-  List<MovementDetailDto> movementDetails,
-  bool isEditing,
-) {
+Widget _buildLoadingIndicator() {
+  return Container(
+    height: 100,
+    alignment: Alignment.center,
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const CircularProgressIndicator(strokeWidth: 2),
+        const SizedBox(height: 10),
+        SGText(text: 'Đang tải dữ liệu...', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+      ],
+    ),
+  );
+}
+
+Widget _buildEmptyDataMessage() {
+  return Container(
+    height: 100,
+    alignment: Alignment.center,
+    child: SGText(
+      text: 'Không có thông tin tài sản điều chuyển',
+      style: TextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
+    ),
+  );
+}
+
+Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditing) {
   return Container(
     decoration: BoxDecoration(
       // border: hasError ? Border.all(color: Colors.red) : null,
@@ -52,45 +82,45 @@ Widget movementDetailTable(
           title: 'Tài sản',
           titleAlignment: TextAlign.center,
           width: 350,
-          getValue: (item) => item.name,
-          setValue: (item, value) => item.name = value,
-          sortValueGetter: (item) => item.name,
+          getValue: (item) => item.tenTaiSan,
+          setValue: (item, value) => MovementDetailDto.copy(item, tenTaiSan: value),
+          sortValueGetter: (item) => item.tenTaiSan,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'unit',
           title: 'Đơn vị tính',
           titleAlignment: TextAlign.center,
           width: 130,
-          getValue: (item) => item.measurementUnit,
-          setValue: (item, value) => item.measurementUnit = value,
-          sortValueGetter: (item) => item.measurementUnit,
+          getValue: (item) => item.donViTinh,
+          setValue: (item, value) => MovementDetailDto.copy(item, donViTinh: value),
+          sortValueGetter: (item) => item.donViTinh,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'quantity',
           title: 'Số lượng',
           titleAlignment: TextAlign.center,
           width: 120,
-          getValue: (item) => item.quantity,
-          setValue: (item, value) => item.quantity = value,
-          sortValueGetter: (item) => int.tryParse(item.quantity ?? '0') ?? 0,
+          getValue: (item) => item.soLuong,
+          setValue: (item, value) => MovementDetailDto.copy(item, soLuong: int.tryParse(value?.toString() ?? '0')),
+          sortValueGetter: (item) => item.soLuong ?? 0,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'condition',
           title: 'Tình trạng kỹ thuật',
           titleAlignment: TextAlign.center,
           width: 190,
-          getValue: (item) => item.setCondition,
-          setValue: (item, value) => item.setCondition = value,
-          sortValueGetter: (item) => item.setCondition,
+          getValue: (item) => item.hienTrang,
+          setValue: (item, value) => MovementDetailDto.copy(item, hienTrang: value),
+          sortValueGetter: (item) => item.hienTrang,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'note',
           title: 'Ghi chú',
           titleAlignment: TextAlign.center,
           width: 150,
-          getValue: (item) => item.note,
-          setValue: (item, value) => item.note = value,
-          sortValueGetter: (item) => item.note,
+          getValue: (item) => item.ghiChu,
+          setValue: (item, value) => MovementDetailDto.copy(item, ghiChu: value),
+          sortValueGetter: (item) => item.ghiChu,
         ),
       ],
     ),

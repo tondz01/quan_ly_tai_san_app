@@ -11,4 +11,5 @@ class EndPointAPI {
   static String ASSET_GROUP = "/api/nhomtaisan";
   static String ASSET_MANAGEMENT = "/api/taisan";
   static String NHAN_VIEN = "/api/nhanvien";
+  static String CHI_TIET_DIEU_DONG_TAI_SAN = "/api/chitietdieudongtaisan";
 }

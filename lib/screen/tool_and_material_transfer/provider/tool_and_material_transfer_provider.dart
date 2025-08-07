@@ -218,9 +218,14 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                 (item.requester?.toLowerCase().contains(searchLower) ??
                     false) ||
                 (item.creator?.toLowerCase().contains(searchLower) ?? false) ||
+                // (item.movementDetails?.any(
+                //       (detail) =>
+                //           detail.name?.toLowerCase().contains(searchLower) ??
+                //           false,
+                //     ) ??
                 (item.movementDetails?.any(
                       (detail) =>
-                          detail.name?.toLowerCase().contains(searchLower) ??
+                          detail.id?.toLowerCase().contains(searchLower) ??
                           false,
                     ) ??
                     false) ||
@@ -453,7 +458,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: SGText(
-                          text: detail.name ?? '',
+                          // text: detail.name ?? '',
+                          text: detail.id ?? '',
                           size: 12,
                           fontWeight: FontWeight.w500,
                           textAlign: TextAlign.left,

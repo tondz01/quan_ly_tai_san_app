@@ -5,15 +5,18 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
@@ -33,6 +36,7 @@ enum FilterStatus {
 
 class AssetTransferProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
+  bool get isLoadingMovementDetail => _isLoadingMovementDetail;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   List<AssetTransferDto>? get dataPage => _dataPage;
@@ -41,6 +45,7 @@ class AssetTransferProvider with ChangeNotifier {
   get columns => _columns;
   List<NhanVien> get listNhanVien => _listNhanVien;
   List<PhongBan> get listPhongBan => _listPhongBan;
+  List<MovementDetailDto> get listMovementDetail => _listMovementDetail;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -103,6 +108,7 @@ class AssetTransferProvider with ChangeNotifier {
 
   bool _isShowInput = false;
   bool _isLoading = false;
+  bool _isLoadingMovementDetail = false;
   bool _isShowCollapse = true;
   List<AssetTransferDto>? _data;
   List<AssetTransferDto>? _dataPage;
@@ -110,6 +116,7 @@ class AssetTransferProvider with ChangeNotifier {
   AssetTransferDto? _item;
   List<NhanVien> _listNhanVien = [];
   List<PhongBan> _listPhongBan = [];
+  List<MovementDetailDto> _listMovementDetail = [];
   final List<SgTableColumn<AssetTransferDto>> _columns = [];
 
   set subScreen(String? value) {
@@ -158,12 +165,12 @@ class AssetTransferProvider with ChangeNotifier {
     List<AssetTransferDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(_data!);
-      log('Filtro por estado: todos los datos (${statusFiltered.length})');
+      SGLog.debug("AssetTransferProvider", 'Filtro por estado: todos los datos (${statusFiltered.length})');
     } else {
       statusFiltered =
           _data!.where((item) {
             int itemStatus = item.trangThai;
-            log('itemStatus: $itemStatus');
+            SGLog.debug("AssetTransferProvider", 'itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true && (itemStatus == 0)) {
               return true;
             }
@@ -248,7 +255,7 @@ class AssetTransferProvider with ChangeNotifier {
     _isShowCollapse = true;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
-    log('onDispose AssetTransferProvider');
+    SGLog.debug("AssetTransferProvider", 'onDispose AssetTransferProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
@@ -290,13 +297,26 @@ class AssetTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetailAssetTransfer(AssetTransferDto? item) {
+  void onChangeDetailAssetTransfer(AssetTransferDto? item) async {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
     _item = item;
-    log('message onChangeDetailAssetTransfer: $_item');
     isShowInput = true;
     isShowCollapse = true;
     notifyListeners();
+
+    if (item != null) {
+      _isLoadingMovementDetail = true;
+
+      Map<String, dynamic> result = await AssetTransferRepository().getListMovementDetail(item.id);
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        _listMovementDetail = result['data'];
+        _isLoadingMovementDetail = false;
+        notifyListeners();
+      } else {
+        _isLoadingMovementDetail = false;
+        notifyListeners();
+      }
+    }
   }
 
   void onRowsPerPageChanged(int? value) {
@@ -319,9 +339,9 @@ class AssetTransferProvider with ChangeNotifier {
 
       notifyListeners();
 
-      log('Đã cập nhật item có ID: ${updatedItem.id}');
+      SGLog.debug("AssetTransferProvider", 'Đã cập nhật item có ID: ${updatedItem.id}');
     } else {
-      log('Không tìm thấy item có ID: ${updatedItem.id}');
+      SGLog.debug("AssetTransferProvider", 'Không tìm thấy item có ID: ${updatedItem.id}');
     }
   }
 
@@ -341,9 +361,9 @@ class AssetTransferProvider with ChangeNotifier {
       // Thông báo UI cập nhật
       notifyListeners();
 
-      log('Đã xóa item có ID: $id');
+      SGLog.debug("AssetTransferProvider", 'Đã xóa item có ID: $id');
     } else {
-      log('Không tìm thấy item có ID: $id');
+      SGLog.debug("AssetTransferProvider", 'Không tìm thấy item có ID: $id');
     }
   }
 
@@ -431,7 +451,8 @@ class AssetTransferProvider with ChangeNotifier {
                         margin: const EdgeInsets.only(bottom: 2),
                         decoration: BoxDecoration(color: ColorValue.paleRose, borderRadius: BorderRadius.circular(4)),
                         child: SGText(
-                          text: detail.name ?? '',
+                          // text: detail.name ?? '',
+                          text: detail.id ?? '',
                           size: 12,
                           fontWeight: FontWeight.w500,
                           textAlign: TextAlign.left,
@@ -524,7 +545,7 @@ class AssetTransferProvider with ChangeNotifier {
   Future<void> updateAssetTransfer(AssetTransferDto updatedItem) async {
     if (_data == null) return;
 
-    log('Updating asset transfer: ${updatedItem.id}');
+    SGLog.debug("AssetTransferProvider", 'Updating asset transfer: ${updatedItem.id}');
 
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
@@ -9,217 +8,54 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/controller/asset_transfer_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferDetail extends StatefulWidget {
   final bool isEditing;
   final bool? isNew;
   final AssetTransferProvider provider;
+  final AssetTransferController? controller;
 
-  const AssetTransferDetail({super.key, this.isEditing = false, this.isNew = false, required this.provider});
+  const AssetTransferDetail({
+    super.key,
+    this.isEditing = false,
+    this.isNew = false,
+    required this.provider,
+    this.controller,
+  });
 
   @override
   State<AssetTransferDetail> createState() => _AssetTransferDetailState();
 }
 
-// GlobalKey để truy cập widget từ bên ngoài
 final assetTransferDetailKey = GlobalKey<_AssetTransferDetailState>();
 
 class _AssetTransferDetailState extends State<AssetTransferDetail> {
   String url =
       'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
 
-  late TextEditingController controllerSubject = TextEditingController();
-  late TextEditingController controllerDocumentName = TextEditingController();
-  late TextEditingController controllerDeliveringUnit = TextEditingController();
-  late TextEditingController controllerReceivingUnit = TextEditingController();
-  late TextEditingController controllerRequester = TextEditingController();
-  late TextEditingController controllerProposingUnit = TextEditingController();
-  late TextEditingController controllerQuantity = TextEditingController();
-  late TextEditingController controllerDepartmentApproval = TextEditingController();
-  late TextEditingController controllerEffectiveDate = TextEditingController();
-  late TextEditingController controllerEffectiveDateTo = TextEditingController();
-  late TextEditingController controllerApprover = TextEditingController();
-  late TextEditingController controllerDeliveryLocation = TextEditingController();
-  late TextEditingController controllerViewerDepartments = TextEditingController();
-  late TextEditingController controllerViewerUsers = TextEditingController();
-  late TextEditingController controllerReason = TextEditingController();
-  late TextEditingController controllerBase = TextEditingController();
-  late TextEditingController controllerArticle1 = TextEditingController();
-  late TextEditingController controllerArticle2 = TextEditingController();
-  late TextEditingController controllerArticle3 = TextEditingController();
-  late TextEditingController controllerDestination = TextEditingController();
-
-  bool isEditing = false;
-  bool isPreparerInitialed = false;
-  bool isRequireManagerApproval = false;
-  bool isDeputyConfirmed = false;
-  bool _isUploading = false;
-  bool isRefreshing = false;
-  bool isNew = false;
-
-  String? proposingUnit;
-  bool _controllersInitialized = false;
-  String? _selectedFileName;
-  String? _selectedFilePath;
-
-  late AssetTransferDto? item;
-
-  final Map<String, TextEditingController> contractTermsControllers = {};
-
-  final List<AssetHandoverDto> listAssetHandover = [];
-  List<NhanVien> listNhanVien = [];
-  List<PhongBan> listPhongBan = [];
-
-  Map<String, bool> _validationErrors = {};
-
-  bool _validateForm() {
-    Map<String, bool> newValidationErrors = {};
-
-    if (controllerDocumentName.text.isEmpty) {
-      newValidationErrors['documentName'] = true;
-    }
-
-    if (controllerSubject.text.isEmpty) {
-      newValidationErrors['subject'] = true;
-    }
-
-    if (controllerDeliveringUnit.text.isEmpty) {
-      newValidationErrors['deliveringUnit'] = true;
-    }
-
-    if (controllerReceivingUnit.text.isEmpty) {
-      newValidationErrors['receivingUnit'] = true;
-    }
-
-    if (controllerEffectiveDate.text.isEmpty) {
-      newValidationErrors['effectiveDate'] = true;
-    }
-
-    if (controllerEffectiveDateTo.text.isEmpty) {
-      newValidationErrors['effectiveDateTo'] = true;
-    }
-
-    if (controllerRequester.text.isEmpty) {
-      newValidationErrors['requester'] = true;
-    }
-
-    // If it's a new item, document is required
-    if (item == null && _selectedFileName == null) {
-      newValidationErrors['document'] = true;
-    }
-
-    // Check movement details
-    // if (item?.movementDetails == null ||
-    //     (item?.movementDetails?.isEmpty ?? true)) {
-    //   newValidationErrors['movementDetails'] = true;
-    // }
-
-    // Only update state if validation errors have changed
-    bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
-    if (hasChanges) {
-      setState(() {
-        _validationErrors = newValidationErrors;
-      });
-    }
-
-    return newValidationErrors.isEmpty;
-  }
+  // Controller instance to manage business logic
+  late AssetTransferController controller;
 
   @override
   void initState() {
     super.initState();
-    item = widget.provider.item;
+    controller = widget.controller ?? AssetTransferController();
+    controller.initialize(widget.provider, isEditingParam: widget.isEditing, isNewParam: widget.isNew);
     _callGetListAssetHandover();
-    isEditing = widget.isEditing;
 
-    if (item != null && item!.trangThai == 0) {
-      isEditing = true;
-    }
     if (widget.isNew == true) {
       onReload();
     }
-
-    // Initialize controllers with existing values if available (only once)
-    if (item != null && !_controllersInitialized) {
-      controllerSubject.text = item?.ngayKy ?? '';
-      controllerDocumentName.text = item?.tenPhieu ?? '';
-      controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
-      controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
-      controllerRequester.text = item?.tenNguoiDeNghi ?? '';
-      controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
-      controllerEffectiveDate.text = item?.tggnTuNgay.toString() ?? '';
-      controllerEffectiveDateTo.text = item?.tggnDenNgay.toString() ?? '';
-      controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
-      controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
-
-      // Initialize selected file if available
-      _selectedFileName = item?.tenFile;
-      _selectedFilePath = item?.duongDanFile;
-      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
-      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
-      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
-      proposingUnit = item?.tenDonViDeNghi;
-
-      _controllersInitialized = true;
-    } else if (item == null && !_controllersInitialized) {
-      // Initialize controllers for new items (empty strings)
-      controllerSubject.text = '';
-      controllerDocumentName.text = '';
-      controllerDeliveringUnit.text = '';
-      controllerReceivingUnit.text = '';
-      controllerRequester.text = '';
-      controllerDepartmentApproval.text = '';
-      controllerEffectiveDate.text = '';
-      controllerEffectiveDateTo.text = '';
-      controllerApprover.text = '';
-      controllerDeliveryLocation.text = '';
-      controllerProposingUnit.text = '';
-
-      _controllersInitialized = false;
-      _selectedFileName = null;
-      _selectedFilePath = null;
-      isPreparerInitialed = false;
-      isRequireManagerApproval = false;
-      isDeputyConfirmed = false;
-    }
-
-    if (proposingUnit != null && proposingUnit!.isNotEmpty && !_controllersInitialized) {
-      controllerProposingUnit.text = proposingUnit!;
-    }
-
-    listNhanVien = widget.provider.listNhanVien;
-    listPhongBan = widget.provider.listPhongBan;
-
-    itemsDepartmentManager =
-        listPhongBan
-            .map(
-              (phongBan) => DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
-            )
-            .toList();
-
-    itemsRequester =
-        listNhanVien
-            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-            .toList();
-    itemsDepartmentApproval =
-        listNhanVien
-            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-            .toList();
-    itemsApprover =
-        listNhanVien
-            .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-            .toList();
   }
 
   @override
@@ -244,35 +80,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     // Kiểm tra nếu listNhanVien thay đổi
     if (widget.provider.listNhanVien != oldWidget.provider.listNhanVien) {
       setState(() {
-        listNhanVien = widget.provider.listNhanVien;
-        listPhongBan = widget.provider.listPhongBan;
-
-        itemsDepartmentManager =
-            listPhongBan
-                .map(
-                  (phongBan) =>
-                      DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
-                )
-                .toList();
-
-        itemsRequester =
-            listNhanVien
-                .map(
-                  (nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')),
-                )
-                .toList();
-        itemsDepartmentApproval =
-            listNhanVien
-                .map(
-                  (nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')),
-                )
-                .toList();
-        itemsApprover =
-            listNhanVien
-                .map(
-                  (nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')),
-                )
-                .toList();
+        controller.updateStaffData(widget.provider.listNhanVien, widget.provider.listPhongBan);
       });
     }
   }
@@ -281,96 +89,14 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   void _refreshWidget() {
     SGLog.info("AssetTransferDetail", ' _refreshWidget');
     setState(() {
-      // Reset item từ provider
-      item = widget.provider.item;
-      SGLog.debug("AssetTransferDetail", ' message item: $item');
-      isNew = item == null;
-
-      // Reset editing state
-      isEditing = widget.isEditing;
-      if (item != null && item!.trangThai == 0) {
-        isEditing = true;
-      }
-
-      // Reset các biến trạng thái
-      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
-      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
-      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
-      proposingUnit = item?.tenDonViDeNghi;
-
-      // Reset file upload
-      _selectedFileName = item?.tenFile;
-      _selectedFilePath = item?.duongDanFile;
-
-      _validationErrors.clear();
-
-      _controllersInitialized = false;
-
-      _isUploading = false;
-      isRefreshing = false;
-
-      // Refresh staff data
-      listNhanVien = widget.provider.listNhanVien;
-      listPhongBan = widget.provider.listPhongBan;
-
-      itemsDepartmentManager =
-          listPhongBan
-              .map(
-                (phongBan) =>
-                    DropdownMenuItem<String>(value: phongBan.id ?? '', child: Text(phongBan.tenPhongBan ?? '')),
-              )
-              .toList();
-
-      itemsRequester =
-          listNhanVien
-              .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-              .toList();
-      itemsDepartmentApproval =
-          listNhanVien
-              .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-              .toList();
-      itemsApprover =
-          listNhanVien
-              .map((nhanVien) => DropdownMenuItem<String>(value: nhanVien.id ?? '', child: Text(nhanVien.hoTen ?? '')))
-              .toList();
+      controller.refreshFromProvider(widget.provider, isEditingParam: widget.isEditing, isNewParam: widget.isNew);
     });
   }
 
-  late List<DropdownMenuItem<String>> itemsRequester;
-  late List<DropdownMenuItem<String>> itemsDepartmentApproval;
-  late List<DropdownMenuItem<String>> itemsApprover;
-  late List<DropdownMenuItem<String>> itemsDepartmentManager;
-
   @override
   void dispose() {
-    // Giải phóng các controller
-    controllerSubject.dispose();
-    controllerDocumentName.dispose();
-    controllerDeliveringUnit.dispose();
-    controllerReceivingUnit.dispose();
-    controllerRequester.dispose();
-    controllerProposingUnit.dispose();
-    controllerQuantity.dispose();
-    controllerDepartmentApproval.dispose();
-    controllerEffectiveDate.dispose();
-    controllerEffectiveDateTo.dispose();
-    controllerApprover.dispose();
-    controllerDeliveryLocation.dispose();
-    controllerViewerDepartments.dispose();
-    controllerViewerUsers.dispose();
-
-    for (final controller in contractTermsControllers.values) {
-      controller.dispose();
-    }
-
-    // Reset initialization flag
-    _controllersInitialized = false;
-
+    controller.dispose();
     super.dispose();
-  }
-
-  void findPhongBan(String? value) {
-    SGLog.debug("AssetTransferDetail", ' message');
   }
 
   @override
@@ -380,11 +106,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
     _checkAndRefreshWidget();
 
-    if (item == null && !isRefreshing) {
+    if (controller.item == null && !controller.isRefreshing) {
       SGLog.debug("AssetTransferDetail", ' item == null');
       onReload();
-      isEditing = true;
-      isRefreshing = true;
+      controller.isEditing = true;
+      controller.isRefreshing = true;
     }
 
     return MultiBlocListener(
@@ -394,19 +120,21 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
           listener: (context, state) {
             if (state is GetListAssetHandoverSuccessState) {
               // Handle successful data loading
-              listAssetHandover.clear();
-              listAssetHandover.addAll(state.data);
+              setState(() {
+                controller.listAssetHandover.clear();
+                controller.listAssetHandover.addAll(state.data);
+              });
               SGLog.debug("AssetTransferDetail", ' Asset handover data loaded successfully');
             } else if (state is GetListAssetHandoverFailedState) {
             } else if (state is AssetHandoverLoadingState) {
               // Show loading indicator
               setState(() {
-                _isUploading = true;
+                controller.isUploading = true;
               });
             } else if (state is AssetHandoverLoadingDismissState) {
               // Hide loading indicator
               setState(() {
-                _isUploading = false;
+                controller.isUploading = false;
               });
             }
           },
@@ -426,7 +154,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (isEditing)
+            if (controller.isEditing)
               Row(
                 children: [
                   MaterialTextButton(
@@ -475,7 +203,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             SgIndicator(
               steps: ['Nháp', 'Chờ xác nhận', 'Xác nhận', 'Trình duyệt', 'Duyệt', 'Từ chối', 'Hủy', 'Hoàn thành'],
               fontSize: 10,
-              currentStep: item?.trangThai ?? 0,
+              currentStep: controller.item?.trangThai ?? 0,
             ),
           ],
         ),
@@ -492,179 +220,173 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
             children: [
               CommonFormInput(
                 label: 'at.document_name'.tr,
-                controller: controllerDocumentName,
-                isEditing: isEditing,
-                textContent: item?.tenPhieu ?? '',
+                controller: controller.controllerDocumentName,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tenPhieu ?? '',
                 fieldName: 'documentName',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'Trích yêu',
-                controller: controllerSubject,
-                isEditing: isEditing,
-                textContent: item?.trichYeu ?? '',
+                controller: controller.controllerSubject,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.trichYeu ?? '',
                 fieldName: 'subject',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.delivering_unit'.tr,
-                controller: controllerDeliveringUnit,
-                isEditing: isEditing,
-                textContent: item?.tenDonViGiao ?? '',
+                controller: controller.controllerDeliveringUnit,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tenDonViGiao ?? '',
                 fieldName: 'deliveringUnit',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.receiving_unit'.tr,
-                controller: controllerReceivingUnit,
-                isEditing: isEditing,
-                textContent: item?.tenDonViNhan ?? '',
+                controller: controller.controllerReceivingUnit,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tenDonViNhan ?? '',
                 isDropdown: true,
-                items: itemsDepartmentManager,
+                items: controller.itemsDepartmentManager,
                 fieldName: 'receivingUnit',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.requester'.tr,
-                controller: controllerRequester,
-                isEditing: isEditing,
-                textContent: item?.tenNguoiDeNghi ?? '',
+                controller: controller.controllerRequester,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tenNguoiDeNghi ?? '',
                 isDropdown: true,
-                items: itemsRequester,
+                items: controller.itemsRequester,
                 onChanged: (value) {
-                  SGLog.debug("AssetTransferDetail", 'Requester selected: $value');
-                  var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
                   setState(() {
-                    proposingUnit = selectedUser.boPhan;
-                    controllerRequester.text = selectedUser.hoTen ?? '';
-                    SGLog.debug("AssetTransferDetail", ' proposingUnit set to: $proposingUnit');
+                    controller.onRequesterChanged(value);
                   });
                 },
                 fieldName: 'requester',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonCheckboxInput(
                 label: 'at.preparer_initialed'.tr,
-                value: isPreparerInitialed,
-                isEditing: isEditing,
+                value: controller.isPreparerInitialed,
+                isEditing: controller.isEditing,
                 isEnable: false,
                 onChanged: (newValue) {
                   setState(() {
-                    isPreparerInitialed = newValue;
+                    controller.isPreparerInitialed = newValue;
                   });
                 },
               ),
               CommonCheckboxInput(
                 label: 'at.require_manager_approval'.tr,
-                value: isRequireManagerApproval,
-                isEditing: isEditing,
+                value: controller.isRequireManagerApproval,
+                isEditing: controller.isEditing,
                 isEnable: false,
                 onChanged: (newValue) {
                   setState(() {
-                    isRequireManagerApproval = newValue;
+                    controller.isRequireManagerApproval = newValue;
                   });
                 },
               ),
-              if (isRequireManagerApproval)
+              if (controller.isRequireManagerApproval)
                 CommonCheckboxInput(
                   label: 'at.deputy_confirmed'.tr,
-                  value: isDeputyConfirmed,
-                  isEditing: isEditing,
+                  value: controller.isDeputyConfirmed,
+                  isEditing: controller.isEditing,
                   isEnable: false,
                   onChanged: (newValue) {
                     setState(() {
-                      isDeputyConfirmed = newValue;
+                      controller.isDeputyConfirmed = newValue;
                     });
                   },
                 ),
               CommonFormInput(
                 label: 'at.proposing_unit'.tr,
-                controller: controllerProposingUnit,
+                controller: controller.controllerProposingUnit,
                 isEditing: false,
-                textContent: proposingUnit ?? '',
+                textContent: controller.proposingUnit ?? '',
                 inputType: TextInputType.number,
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.department_approval'.tr,
-                controller: controllerDepartmentApproval,
-                isEditing: isEditing,
-                textContent: item?.tenTrinhDuyetCapPhong ?? '',
+                controller: controller.controllerDepartmentApproval,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tenTrinhDuyetCapPhong ?? '',
                 fieldName: 'departmentApproval',
                 isDropdown: true,
-                items: itemsDepartmentApproval,
+                items: controller.itemsDepartmentApproval,
                 onChanged: (value) {
-                  SGLog.debug("AssetTransferDetail", ' Department approval selected: $value');
-                  var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
-                  controllerDepartmentApproval.text = selectedUser.hoTen ?? '';
+                  setState(() {
+                    controller.onDepartmentApprovalChanged(value);
+                  });
                 },
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.effective_date'.tr,
-                controller: controllerEffectiveDate,
-                isEditing: isEditing,
+                controller: controller.controllerEffectiveDate,
+                isEditing: controller.isEditing,
                 textContent:
-                    isEditing
+                    controller.isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : item?.tggnTuNgay.toString() ??
-                            (isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
+                        : controller.item?.tggnTuNgay.toString() ??
+                            (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
                 fieldName: 'effectiveDate',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.effective_date_to'.tr,
-                controller: controllerEffectiveDateTo,
-                isEditing: isEditing,
-                textContent: item?.tggnDenNgay.toString() ?? '',
+                controller: controller.controllerEffectiveDateTo,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tggnDenNgay.toString() ?? '',
                 fieldName: 'effectiveDateTo',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               CommonFormInput(
                 label: 'at.approver'.tr,
-                controller: controllerApprover,
-                isEditing: isEditing,
-                textContent: item?.tenTrinhDuyetGiamDoc ?? '',
+                controller: controller.controllerApprover,
+                isEditing: controller.isEditing,
+                textContent: controller.item?.tenTrinhDuyetGiamDoc ?? '',
                 isDropdown: true,
-                items: itemsApprover,
+                items: controller.itemsApprover,
                 onChanged: (value) {
-                  var selectedUser = listNhanVien.firstWhere((user) => user.id == value);
-                  controllerApprover.text = selectedUser.hoTen ?? '';
+                  setState(() {
+                    controller.onApproverChanged(value);
+                  });
                 },
                 fieldName: 'approver',
-                validationErrors: _validationErrors,
+                validationErrors: controller.validationErrors,
               ),
               DocumentUploadWidget(
-                isEditing: isEditing,
-                selectedFileName: _selectedFileName,
-                selectedFilePath: _selectedFilePath,
-                validationErrors: _validationErrors,
+                isEditing: controller.isEditing,
+                selectedFileName: controller.selectedFileName,
+                selectedFilePath: controller.selectedFilePath,
+                validationErrors: controller.validationErrors,
                 onFileSelected: (fileName, filePath) {
                   setState(() {
-                    _selectedFileName = fileName;
-                    _selectedFilePath = filePath;
-
-                    if (_validationErrors.containsKey('document')) {
-                      _validationErrors.remove('document');
-                    }
+                    controller.setSelectedFile(fileName, filePath);
                   });
                 },
                 onUpload: _uploadWordDocument,
-                isUploading: _isUploading,
+                isUploading: controller.isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
                 hintText: 'Định dạng hỗ trợ: .doc, .docx (Microsoft Word)',
                 allowedExtensions: ['doc', 'docx'],
               ),
 
-              // const SizedBox(height: 20),
-              // assetTransferMovementTable(
-              //   context,
-              //   item?.movementDetails ?? [],
-              //   isEditing,
-              // ),
+              const SizedBox(height: 20),
+              assetTransferMovementTable(
+                context,
+                widget.provider.listMovementDetail,
+                controller.isEditing,
+                controller.isNew,
+                isLoading: widget.provider.isLoadingMovementDetail,
+              ),
               SizedBox(height: 10),
-              previewDocumentAssetTransfer(item),
+              previewDocumentAssetTransfer(controller.item),
             ],
           ),
         ),
@@ -673,21 +395,21 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   Future<void> _uploadWordDocument() async {
-    if (_selectedFilePath == null) return;
+    if (controller.selectedFilePath == null) return;
 
     setState(() {
-      _isUploading = true;
+      controller.isUploading = true;
     });
 
     try {
       await Future.delayed(const Duration(seconds: 2));
       setState(() {
-        _validationErrors.remove('document');
+        controller.validationErrors.remove('document');
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Tệp "$_selectedFileName" đã được tải lên thành công'),
+            content: Text('Tệp "${controller.selectedFileName}" đã được tải lên thành công'),
             backgroundColor: Colors.green.shade600,
           ),
         );
@@ -701,106 +423,12 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       }
     } finally {
       setState(() {
-        _isUploading = false;
+        controller.isUploading = false;
       });
     }
   }
 
-  // Future<void> _saveAssetTransfer(BuildContext context) async {
-  //   if (!isEditing) return;
-
-  //   // Validate form first
-  //   if (!_validateForm()) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //     return;
-  //   }
-
-  //   setState(() {
-  //     _isUploading = true;
-  //   });
-
-  //   try {
-  //     final currentDocumentName = controllerDocumentName.text;
-  //     final currentSubject = controllerSubject.text;
-  //     final currentDeliveringUnit = controllerDeliveringUnit.text;
-  //     final currentReceivingUnit = controllerReceivingUnit.text;
-  //     final currentRequester = controllerRequester.text;
-  //     final currentDepartmentApproval = controllerDepartmentApproval.text;
-  //     final currentEffectiveDate = controllerEffectiveDate.text;
-  //     final currentEffectiveDateTo = controllerEffectiveDateTo.text;
-  //     final currentApprover = controllerApprover.text;
-  //     final currentDeliveryLocation = controllerDeliveryLocation.text;
-
-  //     // Create an AssetTransferDto with the form data
-  //     final AssetTransferDto savedItem = AssetTransferDto(
-  //       id: item?.id, // Keep original ID if editing an existing item
-  //       documentName: currentDocumentName,
-  //       subject: currentSubject,
-  //       deliveringUnit: currentDeliveringUnit,
-  //       receivingUnit: currentReceivingUnit,
-  //       requester: currentRequester,
-  //       preparerInitialed: isPreparerInitialed,
-  //       requireManagerApproval: isRequireManagerApproval,
-  //       deputyConfirmed: isDeputyConfirmed,
-  //       departmentApproval: currentDepartmentApproval,
-  //       effectiveDate: currentEffectiveDate,
-  //       effectiveDateTo: currentEffectiveDateTo,
-  //       approver: currentApprover,
-  //       status: item?.status ?? 1, // Keep status or set to draft (0)
-  //       // Keep the existing movement details or use an empty list
-  //       movementDetails: item?.movementDetails ?? [],
-  //       deliveryLocation: currentDeliveryLocation,
-  //       // Include document file information
-  //       documentFilePath: _selectedFilePath,
-  //       documentFileName: _selectedFileName,
-  //       proposingUnit: proposingUnit,
-  //     );
-
-  //     final provider = Provider.of<AssetTransferProvider>(
-  //       context,
-  //       listen: false,
-  //     );
-
-  //     if (item == null) {
-  //       await provider.createAssetTransfer(savedItem);
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Tạo phiếu điều chuyển thành công'),
-  //           backgroundColor: Colors.green,
-  //         ),
-  //       );
-  //     } else {
-  //       await provider.updateAssetTransfer(savedItem);
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text('Cập nhật phiếu điều chuyển thành công'),
-  //           backgroundColor: Colors.green,
-  //         ),
-  //       );
-  //     }
-
-  //     // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-  //   } catch (e) {
-  //       SGLog.debug("AssetTransferDetail",' Error saving asset transfer: $e');
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Lỗi: ${e.toString()}'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isUploading = false;
-  //       });
-  //     }
-  //   }
-  // }
+  // Method to save asset transfer can be reimplemented using the controller
 
   void onReload() {
     _refreshWidget();
@@ -811,11 +439,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   }
 
   void _checkAndRefreshWidget() {
-    if (widget.provider.item != item) {
+    if (widget.provider.item != controller.item) {
       _refreshWidget();
     }
 
-    if (widget.isNew == true && item != null) {
+    if (widget.isNew == true && controller.item != null) {
       _refreshWidget();
     }
   }

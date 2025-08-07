@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/controller/asset_transfer_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
@@ -23,6 +24,7 @@ class AssetTransferView extends StatefulWidget {
 
 class _AssetTransferViewState extends State<AssetTransferView> {
   final TextEditingController _searchController = TextEditingController();
+  AssetTransferController controller = AssetTransferController();
   String searchTerm = "";
   late int currentType;
 
@@ -44,10 +46,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
   void _initData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetTransferProvider>(
-        context,
-        listen: false,
-      ).onInit(context, currentType);
+      Provider.of<AssetTransferProvider>(context, listen: false).onInit(context, currentType);
     });
   }
 
@@ -77,10 +76,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
         if (state is AssetTransferLoadingState) {
         } else if (state is GetListAssetTransferSuccessState) {
           log('GetListAssetTransferSuccessState');
-          context.read<AssetTransferProvider>().getListAssetTransferSuccess(
-            context,
-            state,
-          );
+          context.read<AssetTransferProvider>().getListAssetTransferSuccess(context, state);
         } else if (state is GetListAssetTransferFailedState) {}
       },
       builder: (context, state) {
@@ -106,6 +102,8 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       // provider.onChangeDetailAssetTransfer(null);
                     },
                     onNew: () {
+                      controller.isNew = true;
+                      controller.initializeEmptyControllers();
                       provider.onChangeDetailAssetTransfer(null);
                     },
                     mainScreen: _getScreenTitle(),
@@ -118,11 +116,8 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
-                          childInput: AssetTransferDetail(provider: provider),
-                          childTableView: AssetTransferList(
-                            provider: provider,
-                            typeAssetTransfer: currentType,
-                          ),
+                          childInput: AssetTransferDetail(provider: provider, controller: controller),
+                          childTableView: AssetTransferList(provider: provider, typeAssetTransfer: currentType),
                           title: "Chi tiết điều chuyển tài sản",
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,
@@ -138,8 +133,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                         totalPages: provider.totalPages,
                         currentPage: provider.currentPage,
                         rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
+                        controllerDropdownPage: provider.controllerDropdownPage!,
                         items: provider.items,
                         onPageChanged: provider.onPageChanged,
                         onRowsPerPageChanged: provider.onRowsPerPageChanged,

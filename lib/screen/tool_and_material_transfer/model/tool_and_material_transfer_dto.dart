@@ -78,7 +78,8 @@ class ToolAndMaterialTransferDto {
               json['movementDetails'].map((detail) => 
                 detail is Map<String, dynamic> 
                   ? MovementDetailDto.fromJson(detail)
-                  : MovementDetailDto(name: detail)))
+                  // : MovementDetailDto(name: detail)))
+                  : MovementDetailDto(id: detail)))
           : null,
       deliveringUnit: json['sendingUnit'],
       receivingUnit: json['receivingUnit'],
