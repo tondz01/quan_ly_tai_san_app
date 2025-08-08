@@ -665,7 +665,7 @@ class SgEditableColumn<T> {
   final bool Function(T item, int rowIndex)? isCellEditableDecider;
   // NEW: editor type and dropdown config
   final EditableCellEditor editor;
-  final List<DropdownMenuItem<dynamic>>? dropdownItems;
+  final List<DropdownMenuItem<T>>? dropdownItems;
   // NEW: cascade update callback when value changes
   final void Function(
     T item,
