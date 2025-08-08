@@ -147,6 +147,27 @@ class _AssetGroupViewState extends State<AssetGroupView> {
             state,
           );
         }
+        if (state is UpdateAssetGroupSuccessState) {
+          log('UpdateAssetGroupSuccessState');
+          context.read<AssetGroupProvider>().updateAssetGroupSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is DeleteAssetGroupSuccessState) {
+          log('DeleteAssetGroupSuccessState');
+          context.read<AssetGroupProvider>().deleteAssetGroupSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is PutPostDeleteFailedState) {
+          log('PutPostDeleteFailedState');
+          context.read<AssetGroupProvider>().putPostDeleteFailed(
+            context,
+            state,
+          );
+        }
       },
     );
   }

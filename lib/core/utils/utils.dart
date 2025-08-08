@@ -74,44 +74,13 @@ abstract class AppUtility {
     }
   }
 
-  //Item dropdown lý do tăng
-  static List<DropdownMenuItem<LyDoTang>>  itemsLyDoTang = [
-    for (var element in listLyDoTang)
-      DropdownMenuItem<LyDoTang>(
-        value: element,
-        child: SGText(text: element.name, size: 14),
+  static void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
       ),
-  ];
-  static LyDoTang getLyDoTang(int id) {
-    return listLyDoTang.firstWhere((element) => element.id == id);
-  }
-
-  //Item dropdown hien trang
-  static List<DropdownMenuItem<HienTrang>> get itemsHienTrang => [
-    for (var element in listHienTrang)
-      DropdownMenuItem<HienTrang>(
-        value: element,
-        child: SGText(text: element.name, size: 14),
-      ),
-  ];
-
-  static HienTrang getHienTrang(int id) {
-    return listHienTrang.firstWhere((element) => element.id == id);
-  }
-
-  //Item dropdown country
-  static List<DropdownMenuItem<Country>> get itemsCountry => [
-    for (var element in listCountry)
-      DropdownMenuItem<Country>(
-        value: element,
-        child: SGText(text: element.name, size: 14),
-      ),
-  ];
-
-  static Country? findCountryByName(String name) {
-    
-    return listCountry.firstWhereOrNull(
-      (country) => country.name.toLowerCase() == name.toLowerCase(),
     );
   }
 }

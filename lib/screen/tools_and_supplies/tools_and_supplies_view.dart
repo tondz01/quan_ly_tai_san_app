@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +25,15 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   @override
   void initState() {
     super.initState();
+    Provider.of<ToolsAndSuppliesProvider>(
+      context,
+      listen: false,
+    ).onInit(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     Provider.of<ToolsAndSuppliesProvider>(
       context,
       listen: false,
@@ -135,17 +142,9 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
         }
         if (state is CreateToolsAndSuppliesSuccessState) {
           // Refresh list
-          context.read<ToolsAndSuppliesProvider>().getListToolsAndSupplies(
-            context,
-          );
-          // Close input panel if open
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Tạo CCDC - Vật tư thành công!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .createToolsAndSuppliesSuccess(context, state);
         }
         if (state is CreateToolsAndSuppliesFailedState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -157,18 +156,16 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           );
         }
         if (state is UpdateToolsAndSuppliesSuccessState) {
-          context.read<ToolsAndSuppliesProvider>().getListToolsAndSupplies(
-            context,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Cập nhật CCDC - Vật tư thành công!'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .updateToolsAndSuppliesSuccess(context, state);
         }
-        if (state is UpdateToolsAndSuppliesFailedState) {
+        if (state is DeleteToolsAndSuppliesSuccessState) {
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .deleteToolsAndSuppliesSuccess(context, state);
+        }
+        if (state is PutPostDeleteFailedState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),

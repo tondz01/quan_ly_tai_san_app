@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/header_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form_right.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
@@ -99,31 +100,15 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: ToolsAndSuppliesHeaderActions(
-                  isEditing: isEditing,
-                  showToggle: data != null,
-                  toggleText:
-                      isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
-                  onToggleEdit: () {
-                    setState(() {
-                      isEditing = !isEditing;
-                    });
-                  },
-                  onSave: _saveItem,
-                  onCancel: _cancelEdit,
-                ),
-              ),
-              SgIndicator(
-                steps: ['Nháp', 'Khóa'],
-                currentStep: !isEditing && data != null ? 1 : 0,
-                fontSize: 10,
-              ),
-            ],
+          buildHeaderDetail(
+            isEditing: isEditing,
+            onSave: _saveItem,
+            onCancel: _cancelEdit,
+            onEdit: () {
+              setState(() {
+                isEditing = true;
+              });
+            },
           ),
           Container(
             padding: const EdgeInsets.all(10),
@@ -145,6 +130,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                       log('message: $value');
                       setState(() {
                         selectedPhongBan = value;
+                        // controllerImportUnit.text = value?.id ?? '';
                       });
                     },
                     onImportDateChanged: (value) {
@@ -228,11 +214,15 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     );
     final int year = int.tryParse(sanitizedYear) ?? 0;
 
+    // Lấy id đơn vị (ưu tiên từ selectedPhongBan)
+    final String idDonVi =
+        (selectedPhongBan?.id ?? controllerImportUnit.text).trim();
+
     if (data == null) {
       // Gọi API tạo mới qua Bloc
       final req = ToolsAndSuppliesRequest(
-        id: '',
-        idDonVi: controllerImportUnit.text.trim(),
+        id: controllerCode.text,
+        idDonVi: idDonVi,
         ten: controllerName.text.trim(),
         ngayNhap: importDate,
         donViTinh: controllerUnit.text.trim(),
@@ -259,7 +249,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       // Gọi API cập nhật qua Bloc
       final req = ToolsAndSuppliesRequest(
         id: data!.id,
-        idDonVi: controllerImportUnit.text.trim(),
+        idDonVi: idDonVi,
         ten: controllerName.text.trim(),
         ngayNhap: importDate,
         donViTinh: controllerUnit.text.trim(),
@@ -297,7 +287,9 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     }
 
     // Validate đơn vị nhập
-    isImportUnitValid = controllerImportUnit.text.trim().isNotEmpty;
+    final String idDonVi =
+        (selectedPhongBan?.id ?? controllerImportUnit.text).trim();
+    isImportUnitValid = idDonVi.isNotEmpty;
     if (!isImportUnitValid) {
       errors.add('Đơn vị nhập không được để trống');
       isValid = false;
@@ -311,14 +303,28 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     }
 
     // Validate ngày nhập
+    log('message controllerImportDate: ${controllerImportDate.text}');
     if (controllerImportDate.text.trim().isEmpty) {
       isImportDateValid = false;
       errors.add('Ngày nhập không được để trống');
       isValid = false;
     } else {
       // Kiểm tra định dạng ngày (dd/mm/yyyy)
-      final dateRegex = RegExp(r'^\d{2}/\d{2}/\d{4}$');
-      isImportDateValid = dateRegex.hasMatch(controllerImportDate.text.trim());
+      final formats = [
+        DateFormat('dd/MM/yyyy'),
+        DateFormat('dd/MM/yyyy HH:mm:ss'),
+      ];
+
+      bool valid = false;
+      for (var format in formats) {
+        try {
+          format.parseStrict(controllerImportDate.text);
+          valid = true;
+          break;
+        } catch (_) {}
+      }
+
+      isImportDateValid = valid;
       if (!isImportDateValid) {
         errors.add('Ngày nhập phải có định dạng dd/mm/yyyy');
         isValid = false;
@@ -407,6 +413,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   }
 
   void _cancelEdit() {
+    widget.provider.onCloseDetail(context);
     // Reset form về giá trị ban đầu
     if (data != null) {
       controllerImportUnit.text = data!.idDonVi;
@@ -422,6 +429,14 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerCountryOfOrigin.text = data!.nuocSanXuat;
       controllerYearOfManufacture.text = data!.namSanXuat.toString();
       controllerNote.text = data!.ghiChu;
+      // Đồng bộ selectedPhongBan theo idDonVi
+      try {
+        selectedPhongBan = widget.provider.dataPhongBan.firstWhere(
+          (e) => e.id == data!.idDonVi,
+        );
+      } catch (_) {
+        selectedPhongBan = null;
+      }
     } else {
       // Nếu là item mới, clear form
       controllerImportUnit.clear();
@@ -437,6 +452,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerCountryOfOrigin.clear();
       controllerYearOfManufacture.clear();
       controllerNote.clear();
+      selectedPhongBan = null;
     }
 
     // Thoát khỏi chế độ edit
@@ -448,6 +464,9 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   void initData() {
     if (widget.provider.dataDetail != null) {
+      setState(() {
+        isEditing = false;
+      });
       data = widget.provider.dataDetail;
       controllerImportUnit.text = data?.idDonVi ?? '';
       controllerName.text = data?.ten ?? '';
@@ -464,9 +483,19 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerCapacity.text = data?.congSuat ?? '';
       controllerCountryOfOrigin.text = data?.nuocSanXuat ?? '';
       controllerYearOfManufacture.text = data?.namSanXuat.toString() ?? '';
+      // Đồng bộ selectedPhongBan nếu có danh sách phòng ban
+      try {
+        selectedPhongBan = widget.provider.dataPhongBan.firstWhere(
+          (e) => e.id == controllerImportUnit.text,
+        );
+      } catch (_) {
+        selectedPhongBan = null;
+      }
     } else {
       data = null;
-      isEditing = data == null;
+      setState(() {
+        isEditing = true;
+      });
       controllerImportUnit.clear();
       controllerName.clear();
       controllerCode.clear();
@@ -479,6 +508,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerCapacity.clear();
       controllerCountryOfOrigin.clear();
       controllerYearOfManufacture.clear();
+      selectedPhongBan = null;
     }
     if (widget.provider.dataPhongBan != null) {
       itemsPhongBan = [

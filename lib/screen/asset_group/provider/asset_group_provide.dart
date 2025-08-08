@@ -4,11 +4,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/repository/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
 
 class AssetGroupProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -165,6 +166,12 @@ class AssetGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onCloseDetail(BuildContext context) {
+    _isShowCollapse = true;
+    _isShowInput = false;
+    notifyListeners();
+  }
+
   void onRowsPerPageChanged(int? value) {
     log('message onRowsPerPageChanged: $value');
     if (value == null) return;
@@ -190,24 +197,34 @@ class AssetGroupProvider with ChangeNotifier {
     log('message onChangeDetail: $_isShowInput');
   }
 
-  void createAssetGroup(BuildContext context, AssetGroupRequest data) {
-    _isLoading = true;
-    context.read<AssetGroupBloc>().add(CreateAssetGroupEvent(data));
-    notifyListeners();
-  }
-
   void createAssetGroupSuccess(
     BuildContext context,
     CreateAssetGroupSuccessState state,
   ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     refresh(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Thêm mới thành công!'),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    notifyListeners();
+  }
+
+  void updateAssetGroupSuccess(
+    BuildContext context,
+    UpdateAssetGroupSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhật thành công!');
+    refresh(context);
+    notifyListeners();
+  }
+
+  void deleteAssetGroupSuccess(
+    BuildContext context,
+    DeleteAssetGroupSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Xóa thành công!');
+    refresh(context);
+    notifyListeners();
   }
 
   void getListAssetGroupFailed(
@@ -225,6 +242,14 @@ class AssetGroupProvider with ChangeNotifier {
   ) {
     _error = state.message;
     _isLoading = false;
+    notifyListeners();
+  }
+
+  void putPostDeleteFailed(
+    BuildContext context,
+    PutPostDeleteFailedState state,
+  ) {
+    AppUtility.showSnackBar(context, state.message);
     notifyListeners();
   }
 }

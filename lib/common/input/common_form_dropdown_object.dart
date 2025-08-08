@@ -68,7 +68,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
                   height: 35,
                   controller: widget.controller,
                   textOverflow: TextOverflow.ellipsis,
-                  enable: !widget.isEditing,
+                  enable: true,
                   value: widget.value,
                   defaultValue: widget.defaultValue,
                   items: widget.items ?? [],

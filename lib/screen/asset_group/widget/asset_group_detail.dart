@@ -1,13 +1,18 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/repository/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 
 class AssetGroupDetail extends StatefulWidget {
   final AssetGroupProvider provider;
@@ -69,25 +74,35 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   _initData() {
     log('message _initData: ${widget.provider.dataDetail}');
     if (widget.provider.dataDetail != null) {
+      setState(() {
+        isEditing = false;
+      });
       data = widget.provider.dataDetail;
       controllerIdAssetGroup.text = data!.id ?? '';
       controllerNameAssetGroup.text = data!.tenNhom ?? '';
       isActive = data!.hieuLuc ?? false;
+      getNameAssetGroup();
     } else {
       log('message _initData: ${widget.provider.isCreate}');
       data = null;
-      isEditing = widget.provider.isCreate;
-      controllerIdAssetGroup.text = '';
-      controllerNameAssetGroup.text = '';
+      setState(() {
+        isEditing = widget.provider.isCreate;
+      });
+      controllerIdAssetGroup.clear();
+      controllerNameAssetGroup.clear();
     }
-    getNameAssetGroup();
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeaderDetail(),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+          child: _buildHeaderDetail(),
+        ),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.all(10),
@@ -104,7 +119,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
                 label: 'Nhóm tài sản',
                 controller: controllerIdAndNameAssetGroup,
                 isEditing: false,
-                textContent: '',
+                textContent: controllerIdAndNameAssetGroup.text,
                 onChanged: (value) {
                   // _checkForChanges();
                 },
@@ -112,8 +127,8 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
               CommonFormInput(
                 label: 'Mã nhóm tài sản',
                 controller: controllerIdAssetGroup,
-                isEditing: isEditing,
-                textContent: '',
+                isEditing: false,
+                textContent: controllerIdAssetGroup.text,
                 onChanged: (value) {
                   // _checkForChanges();
                   getNameAssetGroup();
@@ -123,7 +138,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
                 label: 'Tên nhóm tài sản',
                 controller: controllerNameAssetGroup,
                 isEditing: isEditing,
-                textContent: '',
+                textContent: controllerNameAssetGroup.text,
                 onChanged: (value) {
                   // _checkForChanges();
                   getNameAssetGroup();
@@ -152,6 +167,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   Widget _buildHeaderDetail() {
     return isEditing
         ? Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             MaterialTextButton(
               text: 'Lưu',
@@ -168,7 +184,11 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
               icon: Icons.cancel,
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  isEditing = false;
+                });
+              },
             ),
           ],
         )
@@ -178,28 +198,48 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,
           onPressed: () {
-            isEditing = true;
+            setState(() {
+              isEditing = true;
+            });
           },
         );
   }
 
   void _saveChanges() {
     log('message: _saveChanges');
-    AssetGroupRequest request = AssetGroupRequest(
-      id: controllerIdAssetGroup.text,
-      tenNhom: controllerNameAssetGroup.text,
-      isActive: isActive,
-      hieuLuc: isActive,
-      idCongTy: 'CT001',
-      ngayTao: DateTime.parse(getDateNow()),
-      ngayCapNhat: DateTime.parse(getDateNow()),
-      nguoiTao: 'use001',
-      nguoiCapNhat: 'use001',
-    );
+    if (data == null) {
+      AssetGroupRequest request = AssetGroupRequest(
+        id: controllerIdAssetGroup.text,
+        tenNhom: controllerNameAssetGroup.text,
+        isActive: isActive,
+        hieuLuc: isActive,
+        idCongTy: 'CT001',
+        ngayTao: DateTime.parse(getDateNow()),
+        ngayCapNhat: DateTime.parse(getDateNow()),
+        nguoiTao: 'use001',
+        nguoiCapNhat: 'use001',
+      );
 
-    widget.provider.createAssetGroup(context, request);
+      context.read<AssetGroupBloc>().add(
+        CreateAssetGroupEvent(context, request),
+      );
+    } else {
+      AssetGroupRequest request = AssetGroupRequest(
+        id: controllerIdAssetGroup.text,
+        tenNhom: controllerNameAssetGroup.text,
+        isActive: isActive,
+        hieuLuc: isActive,
+        idCongTy: 'CT001',
+        ngayTao: DateTime.parse(getDateNow()),
+        ngayCapNhat: DateTime.parse(getDateNow()),
+        nguoiTao: 'use001',
+        nguoiCapNhat: 'use001',
+      );
+      context.read<AssetGroupBloc>().add(
+        UpdateAssetGroupEvent(context, request),
+      );
+    }
   }
-
   // void _cancelChanges() {
   //   log('message: _cancelChanges');
   // }

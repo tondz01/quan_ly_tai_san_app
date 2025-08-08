@@ -44,3 +44,11 @@ class UpdateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   @override
   List<Object?> get props => [params];
 }
+class DeleteToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
+  final String id;
+
+  const DeleteToolsAndSuppliesEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}

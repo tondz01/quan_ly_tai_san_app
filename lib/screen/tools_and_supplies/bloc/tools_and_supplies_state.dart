@@ -99,12 +99,22 @@ class UpdateToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
   List<Object> get props => [data];
 }
 
-class UpdateToolsAndSuppliesFailedState extends ToolsAndSuppliesState {
+//DELETE
+class DeleteToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
+  final String data;
+
+  const DeleteToolsAndSuppliesSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class PutPostDeleteFailedState extends ToolsAndSuppliesState {
   final String title;
   final int? code;
   final String message;
 
-  const UpdateToolsAndSuppliesFailedState({
+  const PutPostDeleteFailedState({
     required this.title,
     this.code,
     required this.message,

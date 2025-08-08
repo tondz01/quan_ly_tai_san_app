@@ -1,10 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
@@ -29,6 +34,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
     'code_asset_group',
     'name_asset_group',
     'is_active',
+    'actions'
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -82,6 +88,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
         id: 'updated_by',
         label: 'Người cập nhật',
         isChecked: visibleColumnIds.contains('updated_by'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('actions'),
       ),
     ];
   }
@@ -169,6 +180,16 @@ class _AssetGroupListState extends State<AssetGroupList> {
               getValue: (item) => item.nguoiCapNhat.toString(),
               width: 120,
               titleAlignment: TextAlign.left,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
+              title: '',
+              cellBuilder: (item) => viewAction(item),
+              width: 120,
+              searchable: true,
             ),
           );
           break;
@@ -293,5 +314,34 @@ class _AssetGroupListState extends State<AssetGroupList> {
 
   String getNameColumnAssetGroup(AssetGroupDto item) {
     return "${item.id} - ${item.tenNhom}";
+  }
+
+  Widget viewAction(AssetGroupDto item) {
+    return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.delete,
+        tooltip: 'Xóa',
+        iconColor: Colors.red.shade700,
+        backgroundColor: Colors.red.shade50,
+        borderColor: Colors.red.shade200,
+        onPressed:
+            () => {
+              showConfirmDialog(
+                context,
+                type: ConfirmType.delete,
+                title: 'Xóa nhóm tài sản',
+                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
+                highlight: item.tenNhom!,
+                cancelText: 'Không',
+                confirmText: 'Xóa',
+                onConfirm: () {
+                  context.read<AssetGroupBloc>().add(
+                    DeleteAssetGroupEvent(context, item.id!),
+                  );
+                },
+              ),
+            },
+      ),
+    ]);
   }
 }

@@ -88,7 +88,6 @@ class ToolsAndSuppliesRepository extends ApiBase {
     };
 
     try {
-      // API 1: Tạo asset group (cần response)
       final response = await post(
         EndPointAPI.TOOLS_AND_SUPPLIES,
         data: params.toJson(),
@@ -100,7 +99,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] =response.data;
+      result['data'] = response.data;
     } catch (e) {
       log("Error at createAssetGroup - AssetGroupRepository: $e");
     }
@@ -121,6 +120,34 @@ class ToolsAndSuppliesRepository extends ApiBase {
       final response = await put(
         '${EndPointAPI.TOOLS_AND_SUPPLIES}/${params.id}',
         data: params.toJson(),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      log("Error at updateToolsAndSupplies - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteToolsAndSupplies(
+    String id,
+  ) async {
+    Map<String, dynamic>? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/$id',
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {

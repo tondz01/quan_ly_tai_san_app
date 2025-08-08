@@ -146,6 +146,12 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     log('message pageProducts: ${dataPage!.length}');
   }
 
+  void onCloseDetail(BuildContext context) {
+    _isShowInput = false;
+    _isShowCollapse = true;
+    notifyListeners();
+  }
+
   void onPageChanged(int page) {
     currentPage = page;
     _updatePagination();
@@ -164,16 +170,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     currentPage = 1;
     _updatePagination();
     notifyListeners();
-  }
-
-  void deleteItem(String id) {
-    if (_data == null) return;
-    int index = _data!.indexWhere((item) => item.id == id);
-    if (index != -1) {
-      _data!.removeAt(index);
-      _updatePagination();
-      notifyListeners();
-    } else {}
   }
 
   getListToolsAndSuppliesSuccess(
@@ -205,6 +201,45 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       log('message _dataPhongBan: $_dataPhongBan');
     }
     notifyListeners();
+  }
+
+  void createToolsAndSuppliesSuccess(
+    BuildContext context,
+    CreateToolsAndSuppliesSuccessState state,
+  ) {
+    if (state.data == '1') {
+      onCloseDetail(context);
+      getListToolsAndSupplies(context);
+
+      // Close input panel if open
+      AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
+    }
+  }
+
+  void updateToolsAndSuppliesSuccess(
+    BuildContext context,
+    UpdateToolsAndSuppliesSuccessState state,
+  ) {
+    if (state.data == '1') {
+      onCloseDetail(context);
+      getListToolsAndSupplies(context);
+
+      // Close input panel if open
+      AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
+    }
+  }
+
+  void deleteToolsAndSuppliesSuccess(
+    BuildContext context,
+    DeleteToolsAndSuppliesSuccessState state,
+  ) {
+    if (state.data == '1') {
+      onCloseDetail(context);
+      getListToolsAndSupplies(context);
+
+      // Close input panel if open
+      AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
+    }
   }
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {

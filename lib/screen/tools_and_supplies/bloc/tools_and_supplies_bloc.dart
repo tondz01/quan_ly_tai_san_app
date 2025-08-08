@@ -12,6 +12,7 @@ class ToolsAndSuppliesBloc
     on<GetListPhongBanEvent>(_getListPhongBan);
     on<CreateToolsAndSuppliesEvent>(_createToolsAndSupplies);
     on<UpdateToolsAndSuppliesEvent>(_updateToolsAndSupplies);
+    on<DeleteToolsAndSuppliesEvent>(_deleteToolsAndSupplies);
   }
 
   Future<void> _getListToolsAndSupplies(
@@ -98,12 +99,33 @@ class ToolsAndSuppliesBloc
     );
     emit(ToolsAndSuppliesLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(UpdateToolsAndSuppliesSuccessState(data: result['data']));
+      emit(UpdateToolsAndSuppliesSuccessState(data: result['data'].toString()));
     } else {
-      emit(UpdateToolsAndSuppliesFailedState(
+      emit(PutPostDeleteFailedState(
         title: 'notice',
         code: result['status_code'],
         message: 'Lỗi khi cập nhật CCDC - Vật tư',
+      ));
+    }
+  }
+  //CALL API UPDATE
+  Future<void> _deleteToolsAndSupplies(
+    DeleteToolsAndSuppliesEvent event,
+    Emitter emit,
+  ) async {
+    emit(ToolsAndSuppliesInitialState());
+    emit(ToolsAndSuppliesLoadingState());
+    final result = await ToolsAndSuppliesRepository().deleteToolsAndSupplies(
+      event.id,
+    );
+    emit(ToolsAndSuppliesLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(DeleteToolsAndSuppliesSuccessState(data: result['data'].toString()));
+    } else {
+      emit(PutPostDeleteFailedState(
+        title: 'notice',
+        code: result['status_code'],
+        message: 'Lỗi khi xóa CCDC - Vật tư',
       ));
     }
   }

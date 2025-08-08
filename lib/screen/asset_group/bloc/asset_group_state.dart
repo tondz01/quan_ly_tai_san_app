@@ -24,7 +24,7 @@ class GetListAssetGroupSuccessState extends AssetGroupState {
 }
 
 class CreateAssetGroupSuccessState extends AssetGroupState {
-  final int data;
+  final String data;
 
   const CreateAssetGroupSuccessState({required this.data});
 
@@ -46,12 +46,48 @@ class GetListAssetGroupFailedState extends AssetGroupState {
   @override
   List<Object> get props => [title, code!, message];
 }
+
 class CreateAssetGroupFailedState extends AssetGroupState {
   final String title;
   final int? code;
   final String message;
 
   const CreateAssetGroupFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+//UPDATE
+class UpdateAssetGroupSuccessState extends AssetGroupState {
+  final String data;
+
+  const UpdateAssetGroupSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+//DELETE
+class DeleteAssetGroupSuccessState extends AssetGroupState {
+  final String data;
+
+  const DeleteAssetGroupSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class PutPostDeleteFailedState extends AssetGroupState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const PutPostDeleteFailedState({
     required this.title,
     this.code,
     required this.message,
