@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
@@ -83,10 +84,12 @@ class AssetCategoryProvider with ChangeNotifier {
             // Tên phiếu
             (item.id?.toLowerCase().contains(searchLower) ?? false) ||
                 // Số quyết định
-                (item.tenMoHinh?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenMoHinh?.toLowerCase().contains(searchLower) ??
+                    false) ||
                 // công ty
                 (item.idCongTy?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.loaiKyKhauHao?.toLowerCase().contains(searchLower) ?? false);
+                (item.loaiKyKhauHao?.toLowerCase().contains(searchLower) ??
+                    false);
           }).toList();
     } else {
       _filteredData = _data!;
@@ -96,10 +99,18 @@ class AssetCategoryProvider with ChangeNotifier {
     _updatePagination();
   }
 
+  onCloseDetail(BuildContext context) {
+    _isShowCollapse = true;
+    isShowInput = false;
+    notifyListeners();
+  }
+
   void getListAssetCategory(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<AssetCategoryBloc>().add(GetListAssetCategoryEvent(context,'ct001'));
+      context.read<AssetCategoryBloc>().add(
+        GetListAssetCategoryEvent(context, 'ct001'),
+      );
     });
   }
 
@@ -117,6 +128,36 @@ class AssetCategoryProvider with ChangeNotifier {
       _isLoading = false;
       _updatePagination();
     }
+    notifyListeners();
+  }
+
+  void createAssetCategorySuccess(
+    BuildContext context,
+    CreateAssetCategorySuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
+    getListAssetCategory(context);
+    notifyListeners();
+  }
+
+  void updateAssetCategorySuccess(
+    BuildContext context,
+    UpdateAssetCategorySuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhật thành công!');
+    getListAssetCategory(context);
+    notifyListeners();
+  }
+
+  void deleteAssetCategorySuccess(
+    BuildContext context,
+    DeleteAssetCategorySuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Xóa thành công!');
+    getListAssetCategory(context);
     notifyListeners();
   }
 
@@ -178,6 +219,24 @@ class AssetCategoryProvider with ChangeNotifier {
   ) {
     _error = state.message;
     _isLoading = false;
+    AppUtility.showSnackBar(context, state.message);
+    notifyListeners();
+  }
+
+  void createAssetCategoryFailed(
+    BuildContext context,
+    CreateAssetCategoryFailedState state,
+  ) {
+    _error = state.message;
+    AppUtility.showSnackBar(context, state.message);
+    notifyListeners();
+  }
+
+  void putPostDeleteFailed(
+    BuildContext context,
+    PutPostDeleteFailedState state,
+  ) {
+    AppUtility.showSnackBar(context, state.message);
     notifyListeners();
   }
 }

@@ -1,10 +1,15 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
@@ -29,10 +34,11 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
     'tenMoHinh',
     'phuongPhapKhauHao',
     'kyKhauHao',
-    'loaiKyKhauHao'
-        'taiKhoanTaiSan'
-        'taiKhoanKhauHao'
-        'taiKhoanChiPhi',
+    'loaiKyKhauHao',
+    'taiKhoanTaiSan',
+    'taiKhoanKhauHao',
+    'taiKhoanChiPhi',
+    'actions',
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -86,6 +92,11 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
         id: 'taiKhoanChiPhi',
         label: 'Tài khoản chi phí',
         isChecked: visibleColumnIds.contains('taiKhoanChiPhi'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('actions'),
       ),
     ];
   }
@@ -166,6 +177,16 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
               title: 'Tài khoản chi phí',
               getValue: (item) => item.taiKhoanChiPhi.toString(),
               width: 120,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetCategoryDto>(
+              title: '',
+              cellBuilder: (item) => viewAction(context, item),
+              width: 120,
+              searchable: true,
             ),
           );
           break;
@@ -295,5 +316,34 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
         nameDepreciationMethod = 'Đường thẳng';
     }
     return nameDepreciationMethod;
+  }
+
+  Widget viewAction(BuildContext context, AssetCategoryDto item) {
+    return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.delete,
+        tooltip: 'Xóa',
+        iconColor: Colors.red.shade700,
+        backgroundColor: Colors.red.shade50,
+        borderColor: Colors.red.shade200,
+        onPressed:
+            () => {
+              showConfirmDialog(
+                context,
+                type: ConfirmType.delete,
+                title: 'Xóa nhóm tài sản',
+                message: 'Bạn có chắc muốn xóa ${item.tenMoHinh}',
+                highlight: item.tenMoHinh!,
+                cancelText: 'Không',
+                confirmText: 'Xóa',
+                onConfirm: () {
+                  context.read<AssetCategoryBloc>().add(
+                    DeleteAssetCategoryEvent(context, item.id!),
+                  );
+                },
+              ),
+            },
+      ),
+    ]);
   }
 }

@@ -83,6 +83,7 @@ class AssetGroupRepository extends ApiBase {
 
   Future<Map<String, dynamic>> updateAssetGroup(
     AssetGroupRequest params,
+    String id,
   ) async {
     Map<String, dynamic>? data;
     Map<String, dynamic> result = {
@@ -92,8 +93,18 @@ class AssetGroupRepository extends ApiBase {
 
     try {
       final response = await put(
-        '${EndPointAPI.ASSET_GROUP}/${params.id}',
+        '${EndPointAPI.ASSET_GROUP}/$id',
         data: params.toJson(),
+      );
+      unawaited(
+        put(
+          '${EndPointAPI.ASSET_GROUP_V2}/$id',
+          data: {
+            'action': 'update_asset_group',
+            'timestamp': DateTime.now().toIso8601String(),
+            'params': params.toJson(),
+          },
+        ),
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -119,7 +130,7 @@ class AssetGroupRepository extends ApiBase {
 
     try {
       final response = await delete('${EndPointAPI.ASSET_GROUP}/$id');
-
+      unawaited(delete('${EndPointAPI.ASSET_GROUP_V2}/$id'));
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

@@ -9,7 +9,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dar
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
 
 class AssetGroupProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -241,7 +240,7 @@ class AssetGroupProvider with ChangeNotifier {
     CreateAssetGroupFailedState state,
   ) {
     _error = state.message;
-    _isLoading = false;
+    AppUtility.showSnackBar(context, state.message);
     notifyListeners();
   }
 

@@ -1,0 +1,113 @@
+import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+
+Widget buildAssetCategoryForm({
+  required BuildContext context,
+  required bool isEditing,
+  required AssetCategoryDto? data,
+  required TextEditingController ctrlIdMohinh,
+  required TextEditingController ctrlTenMoHinh,
+  required TextEditingController ctrlPhuongPhapKhauHao,
+  required TextEditingController ctrlKyKhauHao,
+  required TextEditingController ctrlLoaiKyKhauHao,
+  required TextEditingController ctrlTaiKhoanTaiSan,
+  required TextEditingController ctrlTaiKhoanKhauHao,
+  required TextEditingController ctrlTaiKhoanChiPhi,
+  required List<DropdownMenuItem<String>>? itemsPhuongPhapKhauHaos,
+  required List<DropdownMenuItem<String>>? itemsLoaiKyKhauHaos,
+  required Function(String)? onChangedPhuongPhapKhauHaos,
+  required Function(String)? onChangedLoaiKyKhauHaos,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.grey.shade300),
+    ),
+    child: Row(
+      spacing: 30,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CommonFormInput(
+                label: 'Tên mô hình tài sản',
+                controller: ctrlIdMohinh,
+                isEditing: isEditing,
+                textContent: isEditing ? '' : data!.id ?? '',
+                onChanged: (value) {
+                  // _checkForChanges();
+                },
+              ),
+              CommonFormInput(
+                label: 'Tên mô hình tài sản',
+                controller: ctrlTenMoHinh,
+                isEditing: isEditing,
+                textContent: isEditing ? '' : data!.tenMoHinh ?? '',
+                onChanged: (value) {
+                  // _checkForChanges();
+                },
+              ),
+              CommonFormInput(
+                label: 'Phương pháp khấu hao',
+                controller: ctrlPhuongPhapKhauHao,
+                isEditing: isEditing,
+                textContent:
+                    ctrlPhuongPhapKhauHao.text == '1' ? 'Đường thảng' : '',
+                isDropdown: true,
+                items: itemsPhuongPhapKhauHaos,
+                onChanged: onChangedPhuongPhapKhauHaos,
+              ),
+              CommonFormInput(
+                label: 'Kỳ khấu hao',
+                controller: ctrlKyKhauHao,
+                isEditing: isEditing,
+                textContent: ctrlKyKhauHao.text,
+                inputType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CommonFormInput(
+                label: 'Loại kỳ khấu hao',
+                controller: ctrlLoaiKyKhauHao,
+                isEditing: isEditing,
+                textContent: '',
+                isDropdown: true,
+                items: itemsLoaiKyKhauHaos,
+                onChanged: onChangedLoaiKyKhauHaos,
+              ),
+              CommonFormInput(
+                label: 'Tài khoản tài sản',
+                controller: ctrlTaiKhoanTaiSan,
+                isEditing: isEditing,
+                textContent: '',
+                // inputType: TextInputType.number,
+              ),
+              CommonFormInput(
+                label: 'Tài khoản khấu hao',
+                controller: ctrlTaiKhoanKhauHao,
+                isEditing: isEditing,
+                textContent: '',
+              ),
+              CommonFormInput(
+                label: 'Tài khoản chi phí',
+                controller: ctrlTaiKhoanChiPhi,
+                isEditing: isEditing,
+                textContent: '',
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}

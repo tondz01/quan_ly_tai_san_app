@@ -27,7 +27,10 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetCategoryProvider>(context, listen: false).onInit(context);
+      Provider.of<AssetCategoryProvider>(
+        context,
+        listen: false,
+      ).onInit(context);
     });
   }
 
@@ -125,11 +128,54 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
             state,
           );
         }
-        
+
         if (state is GetListAssetCategoryFailedState) {
           // Manejar error
           log('GetListAssetCategoryFailedState');
           context.read<AssetCategoryProvider>().getListAssetCategoryFailed(
+            context,
+            state,
+          );
+        }
+        if (state is CreateAssetCategorySuccessState) {
+          log('CreateAssetCategorySuccessState');
+          context.read<AssetCategoryProvider>().createAssetCategorySuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CreateAssetCategoryFailedState) {
+          log('CreateAssetCategoryFailedState');
+          context.read<AssetCategoryProvider>().createAssetCategoryFailed(
+            context,
+            state,
+          );
+        }
+        if (state is GetListAssetCategoryFailedState) {
+          // Manejar error
+          log('GetListAssetCategoryFailedState');
+          context.read<AssetCategoryProvider>().getListAssetCategoryFailed(
+            context,
+            state,
+          );
+        }
+        if (state is UpdateAssetCategorySuccessState) {
+          log('UpdateAssetCategorySuccessState');
+          context.read<AssetCategoryProvider>().updateAssetCategorySuccess(
+            context,
+            state,
+          );
+        }
+        if (state is DeleteAssetCategorySuccessState) {
+          log('DeleteAssetCategorySuccessState');
+          context.read<AssetCategoryProvider>().deleteAssetCategorySuccess(
+            context,
+            state,
+          );
+        }
+        if (state is PutPostDeleteFailedState) {
+          log('PutPostDeleteFailedState');
+          context.read<AssetCategoryProvider>().putPostDeleteFailed(
             context,
             state,
           );

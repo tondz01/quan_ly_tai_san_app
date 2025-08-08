@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
@@ -165,15 +166,18 @@ class _AssetDetailState extends State<AssetDetail> {
                     onAssetCategoryChanged: (value) {
                       setState(() {
                         idAssetCategory = value.id;
-                        ctrlSoKyKhauHao.text =
-                            value.kyKhauHao?.toString() ?? '';
+                        ctrlPhuongPhapKhauHao.text =
+                            value.phuongPhapKhauHao == 1 ? 'Đường thẳng' : '';
                         ctrlTaiKhoanTaiSan.text =
-                            value.taiKhoanTaiSan?.toString() ?? '';
+                            value.taiKhoanTaiSan.toString();
+                        ctrlSoKyKhauHao.text = value.kyKhauHao.toString();
                         ctrlTaiKhoanKhauHao.text =
-                            value.taiKhoanKhauHao?.toString() ?? '';
+                            value.taiKhoanKhauHao.toString();
                         ctrlTaiKhoanChiPhi.text =
-                            value.taiKhoanChiPhi?.toString() ?? '';
-                        log('Asset category changed: ${value.tenMoHinh}');
+                            value.taiKhoanChiPhi.toString();
+                        log(
+                          'Asset category changed: ${ctrlTaiKhoanChiPhi.text}',
+                        );
                       });
                     },
                     onAssetGroupChanged: (value) {
@@ -186,6 +190,8 @@ class _AssetDetailState extends State<AssetDetail> {
                         ctrlPhuongPhapKhauHao.text = value;
                       });
                     },
+                    onChangedNgayVaoSo: (value) {},
+                    onChangedNgaySuDung: (value) {},
                   ),
                 ),
                 SizedBox(width: 30),
@@ -248,6 +254,16 @@ class _AssetDetailState extends State<AssetDetail> {
                     onKhoiTaoDonViChanged: (value) {
                       setState(() {
                         valueKhoiTaoDonVi = value;
+                      });
+                    },
+                    onChangeInitialUsage: (value) {
+                      setState(() {
+                        ctrlDonViBanDau.text = value.id ?? '';
+                      });
+                    },
+                    onChangeCurrentUnit: (value) {
+                      setState(() {
+                        ctrlDonViHienThoi.text = value.id ?? '';
                       });
                     },
                   ),
@@ -372,15 +388,27 @@ class _AssetDetailState extends State<AssetDetail> {
       giaTriKhauHaoBanDau: double.tryParse(ctrlGiaTriKhauHaoBanDau.text) ?? 0.0,
       kyKhauHaoBanDau: int.tryParse(ctrlKyKhauHaoBanDau.text) ?? 0,
       giaTriThanhLy: double.tryParse(ctrlGiaTriThanhLy.text) ?? 0.0,
-      idMoHinhTaiSan: ctrlTenMoHinh.text,
+      idMoHinhTaiSan: idAssetCategory ?? ctrlTenMoHinh.text,
       phuongPhapKhauHao: ctrlPhuongPhapKhauHao.text,
       soKyKhauHao: int.tryParse(ctrlSoKyKhauHao.text) ?? 0,
       taiKhoanTaiSan: int.tryParse(ctrlTaiKhoanTaiSan.text) ?? 0,
       taiKhoanKhauHao: int.tryParse(ctrlTaiKhoanKhauHao.text) ?? 0,
       taiKhoanChiPhi: int.tryParse(ctrlTaiKhoanChiPhi.text) ?? 0,
       idNhomTaiSan: idAssetGroup ?? '',
-      ngayVaoSo: DateTime.now(), // Cần implement date picker
-      ngaySuDung: DateTime.now(), // Cần implement date picker
+      ngayVaoSo: (() {
+        try {
+          return DateFormat('dd/MM/yyyy HH:mm:ss').parse(ctrlNgayVaoSo.text);
+        } catch (_) {
+          return DateTime.now();
+        }
+      })(),
+      ngaySuDung: (() {
+        try {
+          return DateFormat('dd/MM/yyyy HH:mm:ss').parse(ctrlNgaySuDung.text);
+        } catch (_) {
+          return DateTime.now();
+        }
+      })(),
       idDuDan: idDuAn ?? '',
       idNguonVon: idNguonKinhPhi ?? '',
       kyHieu: ctrlKyHieu.text,
@@ -396,7 +424,7 @@ class _AssetDetailState extends State<AssetDetail> {
       idDonViBanDau: ctrlDonViBanDau.text,
       idDonViHienThoi: ctrlDonViHienThoi.text,
       moTa: ctrlGhiChu.text,
-      idCongTy: 'CT001', // Cần lấy từ context hoặc config
+      idCongTy: 'ct001', // Cần lấy từ context hoặc config
       ngayTao: DateTime.now(),
       ngayCapNhat: DateTime.now(),
       nguoiTao: 'current_user', // Cần lấy từ auth

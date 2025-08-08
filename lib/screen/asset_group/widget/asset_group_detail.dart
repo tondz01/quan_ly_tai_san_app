@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -12,7 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 
 class AssetGroupDetail extends StatefulWidget {
   final AssetGroupProvider provider;
@@ -235,8 +233,9 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
         nguoiTao: 'use001',
         nguoiCapNhat: 'use001',
       );
+      
       context.read<AssetGroupBloc>().add(
-        UpdateAssetGroupEvent(context, request),
+        UpdateAssetGroupEvent(context, request, data!.id!),
       );
     }
   }

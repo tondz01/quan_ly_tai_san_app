@@ -66,7 +66,10 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
   ) async {
     emit(AssetGroupInitialState());
     emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().updateAssetGroup(event.params);
+    final result = await AssetGroupRepository().updateAssetGroup(
+      event.params,
+      event.id,
+    );
     emit(AssetGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(UpdateAssetGroupSuccessState(data: result['data'].toString()));

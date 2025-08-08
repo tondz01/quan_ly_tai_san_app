@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -41,6 +42,8 @@ Widget buildOriginalAssetInfomation(
   required List<AssetGroupDto> listAssetGroup,
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
   required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
+  required Function(DateTime?)? onChangedNgayVaoSo,
+  required Function(DateTime?)? onChangedNgaySuDung,
 }) {
   if (listAssetCategory.isEmpty) {
     try {
@@ -57,6 +60,9 @@ Widget buildOriginalAssetInfomation(
   }
 
   log('message buildOriginalAssetInfomation: $isEditing');
+  DateTime? ngayVaoSo;
+  DateTime? ngaySuDung;
+
   return MultiBlocListener(
     listeners: [
       // Lắng nghe từ AssetCategoryBloc
@@ -160,7 +166,7 @@ Widget buildOriginalAssetInfomation(
         CommonFormInput(
           label: 'Phương pháp khấu hao',
           controller: ctrlPhuongPhapKhauHao,
-          isEditing: isEditing,
+          isEditing: false,
           textContent: '',
           fieldName: 'tenMoHinh',
           isDropdown: true,
@@ -175,36 +181,30 @@ Widget buildOriginalAssetInfomation(
           isEditing: false,
           textContent: ctrlSoKyKhauHao.text,
 
-          fieldName: 'phuongPhapKhauHaos',
+          fieldName: 'soKyKhauHao',
           validationErrors: validationErrors,
         ),
         CommonFormInput(
           label: 'Tài khoản tài sản',
           controller: ctrlTaiKhoanTaiSan,
           isEditing: false,
-          textContent: ctrlTenMoHinh.text,
+          textContent: ctrlTaiKhoanTaiSan.text,
           fieldName: 'taiKhoanTaiSan',
           validationErrors: validationErrors,
         ),
         CommonFormInput(
           label: 'Tài khoản khấu hao',
-          controller: ctrlTaiKhoanTaiSan,
+          controller: ctrlTaiKhoanKhauHao,
           isEditing: false,
-          textContent: ctrlTenMoHinh.text,
+          textContent: ctrlTaiKhoanKhauHao.text,
           fieldName: 'taiKhoanKhauHao',
           validationErrors: validationErrors,
         ),
         CommonFormInput(
           label: 'Tài khoản chi phí',
-          controller: ctrlTaiKhoanTaiSan,
+          controller: ctrlTaiKhoanChiPhi,
           isEditing: false,
-          textContent:
-              ctrlTenMoHinh.text.isNotEmpty
-                  ? getAssetCategory(
-                    listAssetCatergory: listAssetCategory,
-                    idAssetCategory: ctrlTenMoHinh.text,
-                  ).taiKhoanChiPhi.toString()
-                  : '',
+          textContent: ctrlTaiKhoanChiPhi.text,
           fieldName: 'taiKhoanChiPhi',
           validationErrors: validationErrors,
         ),
@@ -224,22 +224,19 @@ Widget buildOriginalAssetInfomation(
           fieldName: 'idNhomTaiSan',
           validationErrors: validationErrors,
         ),
-        CommonFormInput(
+        CmFormDate(
           label: 'Ngày vào sổ',
           controller: ctrlNgayVaoSo,
           isEditing: isEditing,
-          textContent: ctrlNgayVaoSo.text.isNotEmpty ? ctrlNgayVaoSo.text : '',
-          fieldName: 'ngayVaoSo',
-          validationErrors: validationErrors,
+          onChanged: onChangedNgayVaoSo,
+          value: ngayVaoSo,
         ),
-        CommonFormInput(
+        CmFormDate(
           label: 'Ngày sử dụng',
           controller: ctrlNgaySuDung,
           isEditing: isEditing,
-          textContent:
-              ctrlNgaySuDung.text.isNotEmpty ? ctrlNgaySuDung.text : '',
-          fieldName: 'ngaySuDung',
-          validationErrors: validationErrors,
+          onChanged: onChangedNgaySuDung,
+          value: ngaySuDung,
         ),
       ],
     ),

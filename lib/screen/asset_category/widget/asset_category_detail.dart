@@ -1,11 +1,14 @@
 import 'dart:developer';
+import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/component/asset_category_form.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/request/asset_category_request.dart';
 
 class AssetCategoryDetail extends StatefulWidget {
   final AssetCategoryProvider provider;
@@ -37,6 +40,7 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
     const DropdownMenuItem(value: 'Năm', child: Text('Năm')),
   ];
 
+  final TextEditingController ctrlIdMoHinh = TextEditingController();
   final TextEditingController ctrlTenMoHinh = TextEditingController();
   final TextEditingController ctrlPhuongPhapKhauHao = TextEditingController();
   final TextEditingController ctrlKyKhauHao = TextEditingController();
@@ -87,17 +91,39 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
     return '$year-$month-${day}T$hour:$minute:$second.$millisecond+00:00';
   }
 
+  String generateId4Digits() {
+    final random = Random();
+    final number = random.nextInt(10000); // từ 0 đến 9999
+    return number.toString().padLeft(4, '0'); // thêm số 0 ở đầu cho đủ 4 chữ số
+  }
+
   _initData() {
     if (widget.provider.dataDetail != null) {
+      setState(() {
+        isEditing = false;
+      });
       data = widget.provider.dataDetail;
-      isEditing = false;
-      // controllerIdAssetCategory.text = data!.id ?? '';
-      // controllerNameAssetCategory.text = data!.tenNhom ?? '';
+      ctrlIdMoHinh.text = data?.id ?? '';
+      ctrlPhuongPhapKhauHao.text = data?.phuongPhapKhauHao.toString() ?? '';
+      ctrlKyKhauHao.text = data?.kyKhauHao.toString() ?? '';
+      ctrlLoaiKyKhauHao.text = data?.loaiKyKhauHao.toString() ?? '';
+      ctrlTaiKhoanTaiSan.text = data?.taiKhoanChiPhi ?? '';
+      ctrlTaiKhoanKhauHao.text = data?.taiKhoanKhauHao ?? '';
+      ctrlTaiKhoanChiPhi.text = data?.taiKhoanChiPhi ?? '';
       // isActive = data!.hieuLuc ?? false;
     } else {
       // log('message _initData: ${widget.provider.isCreate}');
       data = null;
-      isEditing = widget.provider.isCreate;
+      setState(() {
+        isEditing = widget.provider.isCreate;
+      });
+      ctrlIdMoHinh.text = generateId4Digits();
+      ctrlPhuongPhapKhauHao.text = '';
+      ctrlKyKhauHao.text = '';
+      ctrlLoaiKyKhauHao.text = '';
+      ctrlTaiKhoanTaiSan.text = '';
+      ctrlTaiKhoanKhauHao.text = '';
+      ctrlTaiKhoanChiPhi.text = '';
       // controllerIdAssetCategory.text = '';
       // controllerNameAssetCategory.text = '';
     }
@@ -111,76 +137,26 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
       children: [
         _buildHeaderDetail(),
         const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CommonFormInput(
-                label: 'Tên mô hình tài sản',
-                controller: ctrlTenMoHinh,
-                isEditing: isEditing,
-                textContent: isEditing ? '' : data!.tenMoHinh ?? '',
-                onChanged: (value) {
-                  // _checkForChanges();
-                },
-              ),
-              CommonFormInput(
-                label: 'Phương pháp khấu hao',
-                controller: ctrlPhuongPhapKhauHao,
-                isEditing: isEditing,
-                textContent: '',
-                isDropdown: true,
-                items: phuongPhapKhauHaos,
-                onChanged: (value) {
-                  log('message phuongPhapKhauHao: $value');
-                },
-              ),
-              CommonFormInput(
-                label: 'Kỳ khấu hao',
-                controller: ctrlKyKhauHao,
-                isEditing: isEditing,
-                textContent: ctrlKyKhauHao.text,
-                inputType: TextInputType.number,
-              ),
-              CommonFormInput(
-                label: 'Loại kỳ khấu hao',
-                controller: ctrlLoaiKyKhauHao,
-                isEditing: isEditing,
-                textContent: '',
-                isDropdown: true,
-                items: loaiKyKhauHao,
-                onChanged: (value) {
-                  log('message loaiKyKhauHao: $value');
-                },
-              ),
-              CommonFormInput(
-                label: 'Tài khoản tài sản',
-                controller: ctrlTaiKhoanTaiSan,
-                isEditing: isEditing,
-                textContent: '',
-                // inputType: TextInputType.number,
-              ),
-              CommonFormInput(
-                label: 'Tài khoản khấu hao',
-                controller: ctrlTaiKhoanKhauHao,
-                isEditing: isEditing,
-                textContent: '',
-              ),
-              CommonFormInput(
-                label: 'Tài khoản chi phí',
-                controller: ctrlTaiKhoanChiPhi,
-                isEditing: isEditing,
-                textContent: '',
-              ),
-              // _buildInfoAssetHandoverMobile(isWideScreen),
-            ],
-          ),
+        buildAssetCategoryForm(
+          context: context,
+          isEditing: isEditing,
+          data: data,
+          ctrlIdMohinh: ctrlIdMoHinh,
+          ctrlTenMoHinh: ctrlTenMoHinh,
+          ctrlPhuongPhapKhauHao: ctrlPhuongPhapKhauHao,
+          ctrlKyKhauHao: ctrlKyKhauHao,
+          ctrlLoaiKyKhauHao: ctrlLoaiKyKhauHao,
+          ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
+          ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
+          ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
+          itemsPhuongPhapKhauHaos: phuongPhapKhauHaos,
+          itemsLoaiKyKhauHaos: loaiKyKhauHao,
+          onChangedPhuongPhapKhauHaos: (value) {
+            log('message phuongPhapKhauHao: $value');
+          },
+          onChangedLoaiKyKhauHaos: (value) {
+            log('message loaiKyKhauHao: $value');
+          },
         ),
       ],
     );
@@ -225,23 +201,23 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
   // void _saveChanges() {
   //   log('message: _saveChanges');
   //   AssetCategoryRequest request = AssetCategoryRequest(
-  //     id: controllerIdAssetCategory.text,
-  //     tenNhom: controllerNameAssetCategory.text,
-  //     isActive: isActive,
-  //     hieuLuc: isActive,
+  //     id: ctrlIdMoHinh.text,
+  //     tenMoHinh: ctrlTenMoHinh.text,
   //     idCongTy: 'ct001',
+  //     ghiChu: ''
   //     ngayTao: DateTime.parse(getDateNow()),
   //     ngayCapNhat: DateTime.parse(getDateNow()),
   //     nguoiTao: 'TK001',
   //     nguoiCapNhat: 'TK001',
+  //     isActive: isActive,
   //   );
 
   //   widget.provider.createAssetCategory(context, request);
   // }
 
-  // void _cancelChanges() {
-  //   log('message: _cancelChanges');
-  // }
+  void _cancelChanges() {
+    log('message: _cancelChanges');
+  }
 
   String getDepreciationMethod(int type) {
     String nameDepreciationMethod = 'Đường thẳng';

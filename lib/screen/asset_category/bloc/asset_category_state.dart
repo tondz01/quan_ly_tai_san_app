@@ -37,3 +37,62 @@ class GetListAssetCategoryFailedState extends AssetCategoryState {
   @override
   List<Object> get props => [title, code!, message];
 }
+
+class CreateAssetCategorySuccessState extends AssetCategoryState {
+  final String data;
+
+  const CreateAssetCategorySuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class CreateAssetCategoryFailedState extends AssetCategoryState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const CreateAssetCategoryFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+//UPDATE
+class UpdateAssetCategorySuccessState extends AssetCategoryState {
+  final String data;
+
+  const UpdateAssetCategorySuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+//DELETE
+class DeleteAssetCategorySuccessState extends AssetCategoryState {
+  final String data;
+
+  const DeleteAssetCategorySuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class PutPostDeleteFailedState extends AssetCategoryState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const PutPostDeleteFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}

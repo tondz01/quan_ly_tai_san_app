@@ -28,11 +28,12 @@ class CreateAssetGroupEvent extends AssetGroupEvent {
 class UpdateAssetGroupEvent extends AssetGroupEvent {
   final BuildContext context;
   final AssetGroupRequest params;
+  final String id;
 
-  const UpdateAssetGroupEvent(this.context, this.params);
+  const UpdateAssetGroupEvent(this.context, this.params, this.id);
 
   @override
-  List<Object?> get props => [context, params];
+  List<Object?> get props => [context, params, id];
 }
 
 class DeleteAssetGroupEvent extends AssetGroupEvent {
