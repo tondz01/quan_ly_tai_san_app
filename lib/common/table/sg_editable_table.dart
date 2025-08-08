@@ -150,9 +150,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   void _updateCellValue(int rowIndex, String field, dynamic value) {
-    widget.columns
-        .firstWhere((column) => column.field == field)
-        .setValue(_tableData[rowIndex], value);
+    widget.columns.firstWhere((column) => column.field == field).setValue(_tableData[rowIndex], value);
     _notifyDataChanged();
   }
 
@@ -166,8 +164,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     }
 
     setState(() {
-      final sortValueGetter =
-          widget.columns[_sortColumnIndex!].sortValueGetter!;
+      final sortValueGetter = widget.columns[_sortColumnIndex!].sortValueGetter!;
 
       _tableData.sort((a, b) {
         final aValue = sortValueGetter(a);
@@ -194,9 +191,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           comparison = aValue.toString().compareTo(bValue.toString());
         }
 
-        return _sortDirection == SortDirection.ascending
-            ? comparison
-            : -comparison;
+        return _sortDirection == SortDirection.ascending ? comparison : -comparison;
       });
 
       // Rebuild controllers after sorting
@@ -228,15 +223,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   Widget _buildSortIcon(int columnIndex) {
-    if (_sortColumnIndex != columnIndex ||
-        _sortDirection == SortDirection.none) {
+    if (_sortColumnIndex != columnIndex || _sortDirection == SortDirection.none) {
       return const SizedBox.shrink();
     }
 
     return Icon(
-      _sortDirection == SortDirection.ascending
-          ? Icons.arrow_upward
-          : Icons.arrow_downward,
+      _sortDirection == SortDirection.ascending ? Icons.arrow_upward : Icons.arrow_downward,
       size: 16,
       color: Colors.grey[700],
     );
@@ -256,19 +248,13 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final newWidths = adjustColumnWidths(
-      originalWidths: {
-        for (final col in widget.columns) col.title: col.width,
-      },
+      originalWidths: {for (final col in widget.columns) col.title: col.width},
       minTableWidth: screenWidth,
     );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildTable(newWidths),
-        const SizedBox(height: 8),
-        _buildAddRowButton(),
-      ],
+      children: [_buildTable(newWidths), const SizedBox(height: 8), _buildAddRowButton()],
     );
   }
 
@@ -298,12 +284,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       height: widget.rowHeight,
       decoration: BoxDecoration(
         color: widget.headerBackgroundColor,
-        border: Border(
-          bottom: BorderSide(
-            color: widget.gridLineColor,
-            width: widget.gridLineWidth,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: widget.gridLineColor, width: widget.gridLineWidth)),
       ),
       child: Row(
         children: [
@@ -312,7 +293,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             final index = entry.key;
             final column = entry.value;
             final hasSort = column.sortValueGetter != null;
-            
+
             return _buildCell(
               child: InkWell(
                 onTap: hasSort ? () => _onSortColumn(index) : null,
@@ -328,9 +309,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                           color: widget.textHeaderColor ?? Colors.black,
                         ),
                       ),
-                      if (hasSort &&
-                          _sortColumnIndex == index &&
-                          _sortDirection != SortDirection.none)
+                      if (hasSort && _sortColumnIndex == index && _sortDirection != SortDirection.none)
                         _buildSortIcon(index),
                     ],
                   ),
@@ -341,12 +320,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           }),
           // Action column for delete button - only show in edit mode
           if (widget.isEditing)
-            _buildCell(
-              child: const Center(
-                child: SGText(text: '', fontWeight: FontWeight.bold),
-              ),
-              width: 50,
-            ),
+            _buildCell(child: const Center(child: SGText(text: '', fontWeight: FontWeight.bold)), width: 50),
         ],
       ),
     );
@@ -359,19 +333,14 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             : isEven
             ? widget.evenRowBackgroundColor
             : widget.oddRowBackgroundColor;
-            
+
     return Container(
       height: widget.rowHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
         border:
             widget.showHorizontalLines
-                ? Border(
-                  bottom: BorderSide(
-                    color: widget.gridLineColor,
-                    width: widget.gridLineWidth,
-                  ),
-                )
+                ? Border(bottom: BorderSide(color: widget.gridLineColor, width: widget.gridLineWidth))
                 : null,
       ),
       child: Row(
@@ -379,10 +348,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           // Data cells
           ...widget.columns.map(
             (column) => _buildCell(
-              child:
-                  column.isEditable
-                      ? _buildEditableCell(item, index, column)
-                      : _buildDisplayCell(item, column),
+              child: column.isEditable ? _buildEditableCell(item, index, column) : _buildDisplayCell(item, column),
               width: newWidths[column.title] ?? column.width,
             ),
           ),
@@ -405,9 +371,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   Widget _buildEditableCell(T item, int rowIndex, SgEditableColumn<T> column) {
-    final controller =
-        _controllers[rowIndex]?[column.field] ?? TextEditingController();
-    
+    final controller = _controllers[rowIndex]?[column.field] ?? TextEditingController();
+
     if (widget.isEditing) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -427,11 +392,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     } else {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(
-          controller.text,
-          textAlign: column.titleAlignment,
-          style: const TextStyle(fontSize: 14),
-        ),
+        child: Text(controller.text, textAlign: column.titleAlignment, style: const TextStyle(fontSize: 14)),
       );
     }
   }
@@ -448,32 +409,19 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 : column.cellAlignment == TextAlign.right
                 ? Alignment.centerRight
                 : Alignment.centerLeft,
-        child: Text(
-          value?.toString() ?? '',
-          textAlign: column.titleAlignment,
-          style: const TextStyle(fontSize: 14),
-        ),
+        child: Text(value?.toString() ?? '', textAlign: column.titleAlignment, style: const TextStyle(fontSize: 14)),
       ),
     );
   }
 
-  Widget _buildCell({
-    required Widget child,
-    required double width,
-    bool isLast = false,
-  }) {
+  Widget _buildCell({required Widget child, required double width, bool isLast = false}) {
     return Container(
       width: width,
       height: widget.rowHeight,
       decoration:
           widget.showVerticalLines && !isLast
               ? BoxDecoration(
-                border: Border(
-                  right: BorderSide(
-                    color: widget.gridLineColor,
-                    width: widget.gridLineWidth,
-                  ),
-                ),
+                border: Border(right: BorderSide(color: widget.gridLineColor, width: widget.gridLineWidth)),
               )
               : null,
       child: child,
@@ -482,17 +430,14 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   Widget _buildAddRowButton() {
     if (!widget.isEditing) return const SizedBox.shrink(); // Hide when not in edit mode
-    
+
     return SizedBox(
       height: 36,
       child: TextButton.icon(
         onPressed: _addRow,
         icon: const Icon(Icons.add, size: 18),
         label: Text(widget.addRowText),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.blue,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-        ),
+        style: TextButton.styleFrom(foregroundColor: Colors.blue, padding: const EdgeInsets.symmetric(horizontal: 16)),
       ),
     );
   }

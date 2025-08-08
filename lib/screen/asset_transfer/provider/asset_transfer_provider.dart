@@ -154,7 +154,9 @@ class AssetTransferProvider with ChangeNotifier {
   void _applyFilters() {
     if (_data == null) return;
 
-    bool hasActiveFilter = _filterStatus.entries.where((entry) => entry.key != FilterStatus.all).any((entry) => entry.value == true);
+    bool hasActiveFilter = _filterStatus.entries
+        .where((entry) => entry.key != FilterStatus.all)
+        .any((entry) => entry.value == true);
 
     List<AssetTransferDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
@@ -163,7 +165,7 @@ class AssetTransferProvider with ChangeNotifier {
     } else {
       statusFiltered =
           _data!.where((item) {
-            int itemStatus = item.trangThai;
+            int itemStatus = item.trangThai ?? 0;
             SGLog.debug("AssetTransferProvider", 'itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true && (itemStatus == 0)) {
               return true;
@@ -204,10 +206,10 @@ class AssetTransferProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           statusFiltered.where((item) {
-            return (item.tenPhieu.toLowerCase().contains(searchLower)) ||
-                (item.soQuyetDinh.toLowerCase().contains(searchLower)) ||
+            return (item.tenPhieu?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.soQuyetDinh?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.nguoiTao.toLowerCase().contains(searchLower)) ||
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.tenDonViGiao?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.tenDonViNhan?.toLowerCase().contains(searchLower) ?? false);
           }).toList();
@@ -276,7 +278,13 @@ class AssetTransferProvider with ChangeNotifier {
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
 
-    dataPage = _filteredData.isNotEmpty ? _filteredData.sublist(startIndex < totalEntries ? startIndex : 0, endIndex < totalEntries ? endIndex : totalEntries) : [];
+    dataPage =
+        _filteredData.isNotEmpty
+            ? _filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
   }
 
   void onPageChanged(int page) {
@@ -295,7 +303,7 @@ class AssetTransferProvider with ChangeNotifier {
     if (item != null) {
       _isLoadingMovementDetail = true;
 
-      Map<String, dynamic> result = await AssetTransferRepository().getListMovementDetail(item.id);
+      Map<String, dynamic> result = await AssetTransferRepository().getListMovementDetail(item.id ?? '');
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _listMovementDetail = result['data'];
         _isLoadingMovementDetail = false;
@@ -363,11 +371,11 @@ class AssetTransferProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = List.from(_data!);
-      _isLoading = false;
       _updatePagination();
     }
     _listNhanVien = state.listNhanVien;
     _listPhongBan = state.listPhongBan;
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -461,7 +469,11 @@ class AssetTransferProvider with ChangeNotifier {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(color: getColorStatus(status), borderRadius: BorderRadius.circular(4)),
-        child: SGText(text: getStatus(status), size: 12, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12)),
+        child: SGText(
+          text: getStatus(status),
+          size: 12,
+          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12),
+        ),
       ),
     );
   }

@@ -133,7 +133,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
           },
         ),
       ],
-      child: SingleChildScrollView(scrollDirection: Axis.vertical, child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail())),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail()),
+      ),
     );
   }
 
@@ -201,10 +204,22 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              CommonFormInput(
+                label: 'Số chứng từ',
+                controller: controller.controllerDecisionNumber,
+                isEditing: false,
+                textContent: controller.item?.soQuyetDinh ?? 'SCT-${DateTime.now().millisecondsSinceEpoch.toString()}',
+                fieldName: 'decisionNumber',
+                validationErrors: controller.validationErrors,
+              ),
               CommonFormInput(
                 label: 'at.document_name'.tr,
                 controller: controller.controllerDocumentName,
@@ -226,7 +241,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller: controller.controllerDeliveringUnit,
                 isEditing: controller.isEditing,
                 items: controller.itemsDepartmentManager,
-                defaultValue: controller.listPhongBan.where((phongBan) => phongBan.tenPhongBan == controller.item?.tenDonViGiao).firstOrNull,
+                defaultValue:
+                    controller.listPhongBan
+                        .where((phongBan) => phongBan.tenPhongBan == controller.item?.tenDonViGiao)
+                        .firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onDeliveringUnitChanged(value);
@@ -241,7 +259,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller: controller.controllerReceivingUnit,
                 isEditing: controller.isEditing,
                 items: controller.itemsDepartmentManager,
-                defaultValue: controller.listPhongBan.where((phongBan) => phongBan.tenPhongBan == controller.item?.tenDonViNhan).firstOrNull,
+                defaultValue:
+                    controller.listPhongBan
+                        .where((phongBan) => phongBan.tenPhongBan == controller.item?.tenDonViNhan)
+                        .firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onReceivingUnitChanged(value);
@@ -256,7 +277,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller: controller.controllerRequester,
                 isEditing: controller.isEditing,
                 items: controller.itemsRequester,
-                defaultValue: controller.listNhanVien.where((nhanVien) => nhanVien.hoTen == controller.item?.tenNguoiDeNghi).firstOrNull,
+                defaultValue:
+                    controller.listNhanVien
+                        .where((nhanVien) => nhanVien.hoTen == controller.item?.tenNguoiDeNghi)
+                        .firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onRequesterChanged(value);
@@ -313,7 +337,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller: controller.controllerDepartmentApproval,
                 isEditing: controller.isEditing,
                 items: controller.itemsDepartmentApproval,
-                defaultValue: controller.listNhanVien.where((nhanVien) => nhanVien.hoTen == controller.item?.tenTrinhDuyetCapPhong).firstOrNull,
+                defaultValue:
+                    controller.listNhanVien
+                        .where((nhanVien) => nhanVien.hoTen == controller.item?.tenTrinhDuyetCapPhong)
+                        .firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onDepartmentApprovalChanged(value);
@@ -330,7 +357,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 textContent:
                     controller.isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : controller.item?.tggnTuNgay.toString() ?? (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
+                        : controller.item?.tggnTuNgay.toString() ??
+                            (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
                 fieldName: 'effectiveDate',
                 validationErrors: controller.validationErrors,
               ),
@@ -341,7 +369,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 textContent:
                     controller.isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : controller.item?.tggnDenNgay.toString() ?? (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
+                        : controller.item?.tggnDenNgay.toString() ??
+                            (controller.isEditing ? AppUtility.formatDateDdMmYyyy(DateTime.now()) : ''),
                 fieldName: 'effectiveDateTo',
                 validationErrors: controller.validationErrors,
               ),
@@ -350,7 +379,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 controller: controller.controllerApprover,
                 isEditing: controller.isEditing,
                 items: controller.itemsApprover,
-                defaultValue: controller.listNhanVien.where((nhanVien) => nhanVien.hoTen == controller.item?.tenTrinhDuyetGiamDoc).firstOrNull,
+                defaultValue:
+                    controller.listNhanVien
+                        .where((nhanVien) => nhanVien.hoTen == controller.item?.tenTrinhDuyetGiamDoc)
+                        .firstOrNull,
                 onChanged: (value) {
                   setState(() {
                     controller.onApproverChanged(value);
@@ -379,7 +411,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               ),
 
               const SizedBox(height: 20),
-              assetTransferMovementTable(context, widget.provider.listMovementDetail, controller.isEditing, controller.isNew, isLoading: widget.provider.isLoadingMovementDetail),
+              assetTransferMovementTable(
+                context,
+                widget.provider.listMovementDetail,
+                controller.isEditing,
+                controller.isNew,
+                isLoading: widget.provider.isLoadingMovementDetail,
+              ),
               SizedBox(height: 10),
               previewDocumentAssetTransfer(controller.item),
             ],
@@ -402,14 +440,19 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         controller.validationErrors.remove('document');
       });
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Tệp "${controller.selectedFileName}" đã được tải lên thành công'), backgroundColor: Colors.green.shade600));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tệp "${controller.selectedFileName}" đã được tải lên thành công'),
+            backgroundColor: Colors.green.shade600,
+          ),
+        );
       }
     } catch (e) {
       SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
+        );
       }
     } finally {
       setState(() {
@@ -443,7 +486,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
       assetHandoverBloc.add(GetListAssetHandoverEvent(context));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi lấy danh sách: ${e.toString()}'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi khi lấy danh sách: ${e.toString()}'), backgroundColor: Colors.red));
     }
   }
 
@@ -458,7 +503,11 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 2.5),
-            child: SGText(text: "Xem trước tài liệu", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link)),
+            child: SGText(
+              text: "Xem trước tài liệu",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link),
+            ),
           ),
           SizedBox(width: 8),
           Icon(Icons.visibility, color: ColorValue.link, size: 18),

@@ -3,100 +3,100 @@ import 'dart:convert';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class AssetTransferDto {
-  final String id;
-  final String soQuyetDinh;
-  final String tenPhieu;
-  final String idDonViGiao;
+  final String? id;
+  final String? soQuyetDinh;
+  final String? tenPhieu;
+  final String? idDonViGiao;
   final String? tenDonViGiao;
-  final String idDonViNhan;
+  final String? idDonViNhan;
   final String? tenDonViNhan;
-  final String idDonViDeNghi;
+  final String? idDonViDeNghi;
   final String? tenDonViDeNghi;
-  final String idPhongBanXemPhieu;
+  final String? idPhongBanXemPhieu;
   final String? tenPhongBanXemPhieu;
-  final String idNguoiDeNghi;
+  final String? idNguoiDeNghi;
   final String? tenNguoiDeNghi;
-  final String idTrinhDuyetCapPhong;
+  final String? idTrinhDuyetCapPhong;
   final String? tenTrinhDuyetCapPhong;
-  final String idTrinhDuyetGiamDoc;
+  final String? idTrinhDuyetGiamDoc;
   final String? tenTrinhDuyetGiamDoc;
-  final String idNhanSuXemPhieu;
+  final String? idNhanSuXemPhieu;
   final String? tenNhanSuXemPhieu;
-  final bool nguoiLapPhieuKyNhay;
-  final bool quanTrongCanXacNhan;
-  final bool phoPhongXacNhan;
-  final String tggnTuNgay;
-  final String tggnDenNgay;
-  final String diaDiemGiaoNhan;
-  final String veViec;
-  final String canCu;
-  final String dieu1;
-  final String dieu2;
-  final String dieu3;
-  final String noiNhan;
-  final String themDongTrong;
-  final int trangThai;
-  final String idCongTy;
-  final String ngayTao;
-  final String ngayCapNhat;
-  final String nguoiTao;
-  final String nguoiCapNhat;
-  final bool coHieuLuc;
-  final int loai;
-  final bool isActive;
+  final bool? nguoiLapPhieuKyNhay;
+  final bool? quanTrongCanXacNhan;
+  final bool? phoPhongXacNhan;
+  final String? tggnTuNgay;
+  final String? tggnDenNgay;
+  final String? diaDiemGiaoNhan;
+  final String? veViec;
+  final String? canCu;
+  final String? dieu1;
+  final String? dieu2;
+  final String? dieu3;
+  final String? noiNhan;
+  final String? themDongTrong;
+  final int? trangThai;
+  final String? idCongTy;
+  final String? ngayTao;
+  final String? ngayCapNhat;
+  final String? nguoiTao;
+  final String? nguoiCapNhat;
+  final bool? coHieuLuc;
+  final int? loai;
+  final bool? isActive;
   final String? trichYeu;
   final String? duongDanFile;
   final String? tenFile;
   final String? ngayKy;
-  final bool active;
+  final bool? active;
 
   AssetTransferDto({
-    required this.id,
-    required this.soQuyetDinh,
-    required this.tenPhieu,
-    required this.idDonViGiao,
+    this.id,
+    this.soQuyetDinh,
+    this.tenPhieu,
+    this.idDonViGiao,
     this.tenDonViGiao,
-    required this.idDonViNhan,
+    this.idDonViNhan,
     this.tenDonViNhan,
-    required this.idDonViDeNghi,
+    this.idDonViDeNghi,
     this.tenDonViDeNghi,
-    required this.idPhongBanXemPhieu,
+    this.idPhongBanXemPhieu,
     this.tenPhongBanXemPhieu,
-    required this.idNguoiDeNghi,
+    this.idNguoiDeNghi,
     this.tenNguoiDeNghi,
-    required this.idTrinhDuyetCapPhong,
+    this.idTrinhDuyetCapPhong,
     this.tenTrinhDuyetCapPhong,
-    required this.idTrinhDuyetGiamDoc,
+    this.idTrinhDuyetGiamDoc,
     this.tenTrinhDuyetGiamDoc,
-    required this.idNhanSuXemPhieu,
+    this.idNhanSuXemPhieu,
     this.tenNhanSuXemPhieu,
-    required this.nguoiLapPhieuKyNhay,
-    required this.quanTrongCanXacNhan,
-    required this.phoPhongXacNhan,
-    required this.tggnTuNgay,
-    required this.tggnDenNgay,
-    required this.diaDiemGiaoNhan,
-    required this.veViec,
-    required this.canCu,
-    required this.dieu1,
-    required this.dieu2,
-    required this.dieu3,
-    required this.noiNhan,
-    required this.themDongTrong,
-    required this.trangThai,
-    required this.idCongTy,
-    required this.ngayTao,
-    required this.ngayCapNhat,
-    required this.nguoiTao,
-    required this.nguoiCapNhat,
-    required this.coHieuLuc,
-    required this.loai,
-    required this.isActive,
+    this.nguoiLapPhieuKyNhay,
+    this.quanTrongCanXacNhan,
+    this.phoPhongXacNhan,
+    this.tggnTuNgay,
+    this.tggnDenNgay,
+    this.diaDiemGiaoNhan,
+    this.veViec,
+    this.canCu,
+    this.dieu1,
+    this.dieu2,
+    this.dieu3,
+    this.noiNhan,
+    this.themDongTrong,
+    this.trangThai,
+    this.idCongTy,
+    this.ngayTao,
+    this.ngayCapNhat,
+    this.nguoiTao,
+    this.nguoiCapNhat,
+    this.coHieuLuc,
+    this.loai,
+    this.isActive,
     this.trichYeu,
     this.duongDanFile,
     this.tenFile,
     this.ngayKy,
-    required this.active,
+    this.active,
   });
 
   factory AssetTransferDto.fromJson(Map<String, dynamic> json) {

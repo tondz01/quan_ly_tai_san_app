@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 Widget assetTransferMovementTable(
   BuildContext context,
@@ -59,10 +60,7 @@ Widget _buildEmptyDataMessage() {
 
 Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditing) {
   return Container(
-    decoration: BoxDecoration(
-      // border: hasError ? Border.all(color: Colors.red) : null,
-      borderRadius: BorderRadius.circular(4),
-    ),
+    decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
     padding: const EdgeInsets.only(left: 10, top: 15),
     child: SgEditableTable<MovementDetailDto>(
       initialData: movementDetails,
@@ -74,15 +72,18 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
       showVerticalLines: false,
       showHorizontalLines: true,
       addRowText: 'Thêm một dòng',
-      isEditing: isEditing, // Pass the editing state
+      isEditing: isEditing,
       onDataChanged: (data) {},
       columns: [
         SgEditableColumn<MovementDetailDto>(
           field: 'asset',
           title: 'Tài sản',
           titleAlignment: TextAlign.center,
-          width: 350,
-          getValue: (item) => item.tenTaiSan,
+          width: 160,
+          getValue: (item) {
+            SGLog.info("Tài sản", "Tài sản: ${item.tenTaiSan}");
+            item.tenTaiSan;
+          },
           setValue: (item, value) => MovementDetailDto.copy(item, tenTaiSan: value),
           sortValueGetter: (item) => item.tenTaiSan,
         ),
@@ -90,25 +91,27 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
           field: 'unit',
           title: 'Đơn vị tính',
           titleAlignment: TextAlign.center,
-          width: 130,
+          width: 90,
           getValue: (item) => item.donViTinh,
           setValue: (item, value) => MovementDetailDto.copy(item, donViTinh: value),
           sortValueGetter: (item) => item.donViTinh,
+          isEditable: false,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'quantity',
           title: 'Số lượng',
           titleAlignment: TextAlign.center,
-          width: 120,
+          width: 90,
           getValue: (item) => item.soLuong,
           setValue: (item, value) => MovementDetailDto.copy(item, soLuong: int.tryParse(value?.toString() ?? '0')),
           sortValueGetter: (item) => item.soLuong ?? 0,
+          isEditable: false,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'condition',
           title: 'Tình trạng kỹ thuật',
           titleAlignment: TextAlign.center,
-          width: 190,
+          width: 120,
           getValue: (item) => item.hienTrang,
           setValue: (item, value) => MovementDetailDto.copy(item, hienTrang: value),
           sortValueGetter: (item) => item.hienTrang,
@@ -117,7 +120,7 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
           field: 'note',
           title: 'Ghi chú',
           titleAlignment: TextAlign.center,
-          width: 150,
+          width: 160,
           getValue: (item) => item.ghiChu,
           setValue: (item, value) => MovementDetailDto.copy(item, ghiChu: value),
           sortValueGetter: (item) => item.ghiChu,

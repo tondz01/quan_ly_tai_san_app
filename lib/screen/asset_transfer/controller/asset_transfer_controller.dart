@@ -44,6 +44,7 @@ class AssetTransferController {
   // Form controllers
   final TextEditingController controllerSubject = TextEditingController();
   final TextEditingController controllerDocumentName = TextEditingController();
+  final TextEditingController controllerDecisionNumber = TextEditingController();
   final TextEditingController controllerDeliveringUnit = TextEditingController();
   final TextEditingController controllerReceivingUnit = TextEditingController();
   final TextEditingController controllerRequester = TextEditingController();
@@ -58,10 +59,6 @@ class AssetTransferController {
   final TextEditingController controllerViewerUsers = TextEditingController();
   final TextEditingController controllerReason = TextEditingController();
   final TextEditingController controllerBase = TextEditingController();
-  final TextEditingController controllerArticle1 = TextEditingController();
-  final TextEditingController controllerArticle2 = TextEditingController();
-  final TextEditingController controllerArticle3 = TextEditingController();
-  final TextEditingController controllerDestination = TextEditingController();
 
   // Additional state
   final Map<String, TextEditingController> contractTermsControllers = {};
@@ -100,6 +97,7 @@ class AssetTransferController {
   void initializeControllersWithItem() {
     controllerSubject.text = item?.ngayKy ?? '';
     controllerDocumentName.text = item?.tenPhieu ?? '';
+    controllerDecisionNumber.text = item?.soQuyetDinh ?? '';
     controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
     controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
     controllerRequester.text = item?.tenNguoiDeNghi ?? '';
@@ -127,6 +125,7 @@ class AssetTransferController {
   void initializeEmptyControllers() {
     controllerSubject.text = '';
     controllerDocumentName.text = '';
+    controllerDecisionNumber.text = '';
     controllerDeliveringUnit.text = '';
     controllerReceivingUnit.text = '';
     controllerRequester.text = '';
@@ -146,13 +145,25 @@ class AssetTransferController {
 
   // Initialize dropdown items
   void _initializeDropdownItems() {
-    itemsDepartmentManager = listPhongBan.map((phongBan) => DropdownMenuItem<PhongBan>(value: phongBan, child: Text(phongBan.tenPhongBan ?? ''))).toList();
+    itemsDepartmentManager =
+        listPhongBan
+            .map((phongBan) => DropdownMenuItem<PhongBan>(value: phongBan, child: Text(phongBan.tenPhongBan ?? '')))
+            .toList();
 
-    itemsRequester = listNhanVien.map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? ''))).toList();
+    itemsRequester =
+        listNhanVien
+            .map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? '')))
+            .toList();
 
-    itemsDepartmentApproval = listNhanVien.map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? ''))).toList();
+    itemsDepartmentApproval =
+        listNhanVien
+            .map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? '')))
+            .toList();
 
-    itemsApprover = listNhanVien.map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? ''))).toList();
+    itemsApprover =
+        listNhanVien
+            .map((nhanVien) => DropdownMenuItem<NhanVien>(value: nhanVien, child: Text(nhanVien.hoTen ?? '')))
+            .toList();
   }
 
   // Form validation
@@ -161,6 +172,10 @@ class AssetTransferController {
 
     if (controllerDocumentName.text.isEmpty) {
       newValidationErrors['documentName'] = true;
+    }
+
+    if (controllerDecisionNumber.text.isEmpty) {
+      newValidationErrors['decisionNumber'] = true;
     }
 
     if (controllerSubject.text.isEmpty) {
@@ -211,7 +226,7 @@ class AssetTransferController {
   // User selection handlers
   void onRequesterChanged(NhanVien value) {
     proposingUnit = value.boPhan;
-    
+
     controllerRequester.text = value.hoTen ?? '';
     if (proposingUnit != null && proposingUnit!.isNotEmpty) {
       controllerProposingUnit.text = proposingUnit!;
@@ -282,42 +297,44 @@ class AssetTransferController {
   Future<void> saveAssetTransfer(BuildContext context) async {
     if (!isEditing) return;
 
-    // Validate form first
     if (!validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
       return;
     }
 
     try {
       final currentDocumentName = controllerDocumentName.text;
       final currentSubject = controllerSubject.text;
-      final currentDeliveringUnit = controllerDeliveringUnit.text;
-      final currentReceivingUnit = controllerReceivingUnit.text;
-      final currentRequester = controllerRequester.text;
-      final currentDepartmentApproval = controllerDepartmentApproval.text;
+      final currentDecisionNumber = controllerDecisionNumber.text;
       final currentEffectiveDate = controllerEffectiveDate.text;
       final currentEffectiveDateTo = controllerEffectiveDateTo.text;
-      final currentApprover = controllerApprover.text;
-      final currentDeliveryLocation = controllerDeliveryLocation.text;
 
       // Create an AssetTransferDto with the form data
       final AssetTransferDto savedItem = AssetTransferDto(
-        id: '',
-        tenPhieu: controllerDocumentName.text,
-        soQuyetDinh: '',
-        idDonViGiao: '',
-        idDonViNhan: '',
-        idDonViDeNghi: '',
-        idPhongBanXemPhieu: '',
-        idNguoiDeNghi: '',
-        idTrinhDuyetCapPhong: '',
-        idTrinhDuyetGiamDoc: '',
+        soQuyetDinh: currentDecisionNumber,
+        trichYeu: currentSubject,
+        tenPhieu: currentDocumentName,
+        idDonViGiao: deliveringUnit?.id ?? '',
+        idDonViNhan: receivingUnit?.id ?? '',
+        idNguoiDeNghi: requester?.id ?? '',
+        nguoiLapPhieuKyNhay: isPreparerInitialed,
+        quanTrongCanXacNhan: isRequireManagerApproval,
+        phoPhongXacNhan: isDeputyConfirmed,
+        idDonViDeNghi: proposingUnit ?? '',
+        idTrinhDuyetCapPhong: departmentApproval?.id ?? '',
+        tggnTuNgay: currentEffectiveDate,
+        tggnDenNgay: currentEffectiveDateTo,
+        idTrinhDuyetGiamDoc: approver?.id ?? '',
+
+        idCongTy: 'CT001',
+        ngayTao: DateTime.now().toString(),
+        nguoiTao: requester?.hoTen ?? '',
+        nguoiCapNhat: requester?.hoTen ?? '',
+        
+        idPhongBanXemPhieu:  '',
         idNhanSuXemPhieu: '',
-        nguoiLapPhieuKyNhay: false,
-        quanTrongCanXacNhan: false,
-        phoPhongXacNhan: false,
-        tggnTuNgay: '',
-        tggnDenNgay: '',
         diaDiemGiaoNhan: '',
         veViec: '',
         canCu: '',
@@ -327,11 +344,7 @@ class AssetTransferController {
         noiNhan: '',
         themDongTrong: '',
         trangThai: 0,
-        idCongTy: '',
-        ngayTao: '',
         ngayCapNhat: '',
-        nguoiTao: '',
-        nguoiCapNhat: '',
         coHieuLuc: false,
         loai: 0,
         isActive: false,
@@ -342,11 +355,15 @@ class AssetTransferController {
 
       if (item == null) {
         // await provider.createAssetTransfer(savedItem);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
       } else {
         await provider.updateAssetTransfer(savedItem);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green),
+          );
         }
       }
 
@@ -354,7 +371,9 @@ class AssetTransferController {
     } catch (e) {
       SGLog.error('AssetTransferController', 'Error saving asset transfer: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
       }
     } finally {
       if (context.mounted) {
@@ -381,10 +400,6 @@ class AssetTransferController {
     controllerViewerUsers.dispose();
     controllerReason.dispose();
     controllerBase.dispose();
-    controllerArticle1.dispose();
-    controllerArticle2.dispose();
-    controllerArticle3.dispose();
-    controllerDestination.dispose();
 
     for (final controller in contractTermsControllers.values) {
       controller.dispose();
