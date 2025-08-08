@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 
 abstract class ToolsAndSuppliesState extends Equatable {
@@ -38,6 +39,31 @@ class GetListToolsAndSuppliesFailedState extends ToolsAndSuppliesState {
   List<Object> get props => [title, code!, message];
 }
 
+//GET LIST PHONG BAN
+class GetListPhongBanSuccessState extends ToolsAndSuppliesState {
+  final List<PhongBan> data;
+
+  const GetListPhongBanSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class GetListPhongBanFailedState extends ToolsAndSuppliesState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListPhongBanFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
 //CREATE
 class CreateToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
   final String data;
@@ -47,6 +73,7 @@ class CreateToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
   @override
   List<Object> get props => [data];
 }
+
 class CreateToolsAndSuppliesFailedState extends ToolsAndSuppliesState {
   final String title;
   final int? code;
@@ -71,6 +98,7 @@ class UpdateToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
   @override
   List<Object> get props => [data];
 }
+
 class UpdateToolsAndSuppliesFailedState extends ToolsAndSuppliesState {
   final String title;
   final int? code;

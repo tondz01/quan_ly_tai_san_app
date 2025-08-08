@@ -8,11 +8,23 @@ abstract class ToolsAndSuppliesEvent extends Equatable {
 
 class GetListToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final BuildContext context;
+  final String idCongTy;
 
-  const GetListToolsAndSuppliesEvent(this.context);
+  const GetListToolsAndSuppliesEvent(this.context, this.idCongTy);
 
   @override
-  List<Object?> get props => [context];
+  List<Object?> get props => [context, idCongTy];
+}
+
+//GET LIST PHONG BAN
+class GetListPhongBanEvent extends ToolsAndSuppliesEvent {
+  final BuildContext context;
+  final String idCongTy;
+
+  const GetListPhongBanEvent(this.context, this.idCongTy);
+
+  @override
+  List<Object?> get props => [context, idCongTy];
 }
 
 class CreateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {

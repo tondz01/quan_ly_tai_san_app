@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -15,7 +16,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
   // static const String _mockDataPath =
   //     'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
 
-  Future<Map<String, dynamic>> getListToolsAndSupplies() async {
+  Future<Map<String, dynamic>> getListToolsAndSupplies(String idCongTy) async {
     List<ToolsAndSuppliesDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -25,13 +26,12 @@ class ToolsAndSuppliesRepository extends ApiBase {
     try {
       final response = await get(
         EndPointAPI.TOOLS_AND_SUPPLIES,
-        queryParameters: {'idcongty': 'ct001'},
+        queryParameters: {'idcongty': idCongTy},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
-      log("code: ${response.statusCode}");
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
@@ -42,6 +42,37 @@ class ToolsAndSuppliesRepository extends ApiBase {
       );
     } catch (e) {
       log("Error at getListToolsAndSupplies - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getListPhongBan(String idCongTy) async {
+    List<PhongBan> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.PHONG_BAN,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<PhongBan>(
+        response.data,
+        PhongBan.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListPhongBan - ToolsAndSuppliesRepository: $e");
     }
 
     return result;

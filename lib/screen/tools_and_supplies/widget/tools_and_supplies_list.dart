@@ -148,7 +148,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
             child: TableBaseView<ToolsAndSuppliesDto>(
               searchTerm: '',
               columns: columns,
-              data: widget.provider.filteredData ?? [],
+              data: widget.provider.filteredData,
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(context, item);
@@ -159,7 +159,6 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       ),
     );
   }
-
 
   void _showDeleteConfirmationDialog(
     BuildContext context,
