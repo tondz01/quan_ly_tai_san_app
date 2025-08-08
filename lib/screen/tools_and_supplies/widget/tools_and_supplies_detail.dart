@@ -3,21 +3,29 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:get/get.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form_right.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
-import 'package:provider/provider.dart';
-import 'package:se_gay_components/common/sg_button_icon.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_header_actions.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form_left.dart';
 
 class ToolsAndSuppliesDetail extends StatefulWidget {
-  final ToolsAndSuppliesDto? item;
+  final ToolsAndSuppliesProvider provider;
   final bool? isEditing;
 
-  const ToolsAndSuppliesDetail({super.key, this.item, this.isEditing = false});
+  const ToolsAndSuppliesDetail({
+    super.key,
+    this.isEditing = false,
+    required this.provider,
+  });
 
   @override
   State<ToolsAndSuppliesDetail> createState() => _ToolsAndSuppliesDetailState();
@@ -55,6 +63,10 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   bool isValueValid = true;
   bool isYearOfManufactureValid = true;
 
+  ToolsAndSuppliesDto? data;
+  PhongBan? selectedPhongBan;
+  List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
+
   @override
   void initState() {
     isEditing = widget.isEditing ?? false;
@@ -65,77 +77,13 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   @override
   void didUpdateWidget(ToolsAndSuppliesDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.item != widget.item) {
+    if (oldWidget.provider.data != data) {
       initData();
     }
   }
 
-  void initData() {
-    if (widget.item != null) {
-      controllerImportUnit.text = widget.item?.idDonVi ?? '';
-      controllerName.text = widget.item?.ten ?? '';
-      controllerCode.text = widget.item?.soKyHieu ?? '';
-      controllerImportDate.text = widget.item?.ngayNhap.toString() ?? '';
-      controllerUnit.text = widget.item?.donViTinh ?? '';
-      controllerQuantity.text = widget.item?.soLuong.toString() ?? '0';
-      controllerValue.text = widget.item?.giaTri.toString() ?? '0.0';
-      controllerReferenceNumber.text = widget.item?.soKyHieu ?? '';
-      controllerSymbol.text = widget.item?.kyHieu ?? '';
-      controllerCapacity.text = widget.item?.congSuat ?? '';
-      controllerCountryOfOrigin.text = widget.item?.nuocSanXuat ?? '';
-      controllerYearOfManufacture.text =
-          widget.item?.namSanXuat.toString() ?? '';
-    } else {
-      isEditing = widget.item == null;
-      controllerImportUnit.clear();
-      controllerName.clear();
-      controllerCode.clear();
-      controllerImportDate.clear();
-      controllerUnit.clear();
-      controllerQuantity.clear();
-      controllerValue.clear();
-      controllerReferenceNumber.clear();
-      controllerSymbol.clear();
-      controllerCapacity.clear();
-      controllerCountryOfOrigin.clear();
-      controllerYearOfManufacture.clear();
-    }
-  }
-
-  final List<DropdownMenuItem<String>> itemsPhongBan = [
-    const DropdownMenuItem(value: 'Ban giám đốc', child: Text('Ban giám đốc')),
-    const DropdownMenuItem(value: 'Phòng CV', child: Text('Phòng CV')),
-    const DropdownMenuItem(value: 'Kho Công ty', child: Text('Kho Công ty')),
-    const DropdownMenuItem(value: 'Phòng IT', child: Text('Phòng IT')),
-    const DropdownMenuItem(
-      value: 'Phòng hành chính',
-      child: Text('Phòng hành chính'),
-    ),
-    const DropdownMenuItem(
-      value: 'Phòng Kỹ thuật',
-      child: Text('Phòng Kỹ thuật'),
-    ),
-    const DropdownMenuItem(
-      value: 'Phòng Kế toán',
-      child: Text('Phòng Kế toán'),
-    ),
-  ];
-
   @override
   void dispose() {
-    // controllerImportUnit.dispose();
-    // controllerName.dispose();
-    // controllerCode.dispose();
-    // controllerImportDate.dispose();
-    // controllerUnit.dispose();
-    // controllerQuantity.dispose();
-    // controllerValue.dispose();
-    // controllerReferenceNumber.dispose();
-    // controllerSymbol.dispose();
-    // controllerCapacity.dispose();
-    // controllerCountryOfOrigin.dispose();
-    // controllerYearOfManufacture.dispose();
-    // controllerNote.dispose();
     super.dispose();
   }
 
@@ -145,9 +93,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   @override
   Widget build(BuildContext context) {
-    log('widget.item?.importUnit : ${widget.item?.idDonVi}');
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Column(
@@ -159,184 +104,90 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: [
-                    if (widget.item != null)
-                      SGButtonIcon(
-                        text:
-                            isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
-                        borderRadius: 10,
-                        sizeText: 14,
-                        width:
-                            screenWidth * 0.12 <= 120
-                                ? 120
-                                : screenWidth * 0.12,
-                        height: 40,
-                        defaultBGColor:
-                            isEditing
-                                ? SGAppColors.colorInputDisable
-                                : ColorValue.oldLavender,
-                        colorHover: Colors.blueAccent,
-                        colorTextHover: Colors.white,
-                        isOutlined: true,
-                        borderWidth: 3,
-                        onPressed: () {
-                          setState(() {
-                            isEditing = !isEditing;
-                          });
-                        },
-                      ),
-                    if (isEditing) ...[
-                      SGButtonIcon(
-                        text: 'Sẵn sàng',
-                        borderRadius: 10,
-                        sizeText: 14,
-                        width: 70,
-                        height: 35,
-                        defaultBGColor: Colors.blue,
-                        colorHover: Colors.blueGrey,
-                        colorTextHover: Colors.white,
-                        isOutlined: false,
-                        onPressed: () {
-                          _saveItem();
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      SGButtonIcon(
-                        text: 'Hủy',
-                        borderRadius: 10,
-                        sizeText: 14,
-                        width: 70,
-                        height: 35,
-                        defaultBGColor: Colors.red,
-                        colorHover: Colors.red.shade700,
-                        colorTextHover: Colors.white,
-                        isOutlined: false,
-                        onPressed: () {
-                          _cancelEdit();
-                        },
-                      ),
-                    ],
-                  ],
+                child: ToolsAndSuppliesHeaderActions(
+                  isEditing: isEditing,
+                  showToggle: data != null,
+                  toggleText:
+                      isEditing ? 'tas.create_ccdc'.tr : 'common.edit'.tr,
+                  onToggleEdit: () {
+                    setState(() {
+                      isEditing = !isEditing;
+                    });
+                  },
+                  onSave: _saveItem,
+                  onCancel: _cancelEdit,
                 ),
               ),
               SgIndicator(
                 steps: ['Nháp', 'Khóa'],
-                currentStep: !isEditing && widget.item != null ? 1 : 0,
+                currentStep: !isEditing && data != null ? 1 : 0,
                 fontSize: 10,
               ),
             ],
           ),
-          _buildTableDetail(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTableDetail() {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CommonFormInput(
-            label: 'tas.unit'.tr,
-            controller: controllerImportUnit,
-            isEditing: isEditing,
-            textContent: widget.item?.idDonVi ?? '',
-            isDropdown: true,
-            validationErrors: {'importUnit': !isImportUnitValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.name'.tr,
-            controller: controllerName,
-            isEditing: isEditing,
-            textContent: widget.item?.ten ?? '',
-            validationErrors: {'name': !isNameValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.code'.tr,
-            controller: controllerCode,
-            isEditing: isEditing,
-            textContent: widget.item?.soKyHieu ?? '',
-            validationErrors: {'code': !isCodeValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.import_date'.tr,
-            controller: controllerImportDate,
-            isEditing: isEditing,
-            textContent: widget.item?.ngayNhap.toString() ?? '',
-            validationErrors: {'importDate': !isImportDateValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.unit'.tr,
-            controller: controllerUnit,
-            isEditing: isEditing,
-            textContent: widget.item?.donViTinh ?? '',
-            validationErrors: {'unit': !isUnitValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.quantity'.tr,
-            controller: controllerQuantity,
-            isEditing: isEditing,
-            textContent: widget.item?.soLuong.toString() ?? '0',
-            inputType: TextInputType.number,
-            validationErrors: {'quantity': !isQuantityValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.value'.tr,
-            controller: controllerValue,
-            isEditing: isEditing,
-            textContent: widget.item?.giaTri.toString() ?? '0.0',
-            inputType: TextInputType.number,
-            validationErrors: {'value': !isValueValid && isEditing},
-          ),
-          CommonFormInput(
-            label: 'tas.reference_number'.tr,
-            controller: controllerReferenceNumber,
-            isEditing: isEditing,
-            textContent: widget.item?.soKyHieu ?? '',
-          ),
-          CommonFormInput(
-            label: 'tas.symbol'.tr,
-            controller: controllerSymbol,
-            isEditing: isEditing,
-            textContent: widget.item?.kyHieu ?? '',
-          ),
-          CommonFormInput(
-            label: 'tas.capacity'.tr,
-            controller: controllerCapacity,
-            isEditing: isEditing,
-            textContent: widget.item?.congSuat ?? '',
-          ),
-          CommonFormInput(
-            label: 'tas.country_of_origin'.tr,
-            controller: controllerCountryOfOrigin,
-            isEditing: isEditing,
-            textContent: widget.item?.nuocSanXuat ?? '',
-          ),
-          CommonFormInput(
-            label: 'tas.year_of_manufacture'.tr,
-            controller: controllerYearOfManufacture,
-            isEditing: isEditing,
-            textContent:
-                widget.item?.namSanXuat.toString() ??
-                DateTime.now().year.toString(),
-            inputType: TextInputType.number,
-            validationErrors: {
-              'yearOfManufacture': !isYearOfManufactureValid && isEditing,
-            },
-          ),
-          CommonFormInput(
-            label: 'tas.note'.tr,
-            controller: controllerNote,
-            isEditing: isEditing,
-            textContent: widget.item?.ghiChu ?? '',
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: ToolsAndSuppliesFormLeft(
+                    isEditing: isEditing,
+                    item: data,
+                    provider: widget.provider,
+                    onPhongBanChanged: (value) {
+                      log('message: $value');
+                      setState(() {
+                        selectedPhongBan = value;
+                      });
+                    },
+                    onImportDateChanged: (value) {
+                      log('message: $value');
+                      setState(() {
+                        // controllerImportDate.text = value?.toString() ?? '';
+                        log('message: ${controllerImportDate.toString()}');
+                      });
+                    },
+                    listPhongBan: widget.provider.dataPhongBan,
+                    itemsPhongBan: itemsPhongBan,
+                    controllerImportUnit: controllerImportUnit,
+                    controllerName: controllerName,
+                    controllerCode: controllerCode,
+                    controllerImportDate: controllerImportDate,
+                    controllerUnit: controllerUnit,
+                    controllerQuantity: controllerQuantity,
+                    controllerValue: controllerValue,
+                    isNameValid: isNameValid,
+                    isImportUnitValid: isImportUnitValid,
+                    isCodeValid: isCodeValid,
+                    isImportDateValid: isImportDateValid,
+                    isUnitValid: isUnitValid,
+                    isQuantityValid: isQuantityValid,
+                    isValueValid: isValueValid,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: ToolsAndSuppliesFormRight(
+                    isEditing: isEditing,
+                    item: data,
+                    controllerReferenceNumber: controllerReferenceNumber,
+                    controllerSymbol: controllerSymbol,
+                    controllerCapacity: controllerCapacity,
+                    controllerCountryOfOrigin: controllerCountryOfOrigin,
+                    controllerYearOfManufacture: controllerYearOfManufacture,
+                    controllerNote: controllerNote,
+                    isYearOfManufactureValid: isYearOfManufactureValid,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -349,71 +200,89 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       return;
     }
 
-    // Tạo object mới từ dữ liệu form
-    final newItem = ToolsAndSuppliesDto(
-      id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      ten: controllerName.text.trim(),
-      idDonVi: controllerImportUnit.text.trim(),
-      soKyHieu: controllerCode.text.trim(),
-      ngayNhap: DateTime.parse(controllerImportDate.text.trim()),
-      donViTinh: controllerUnit.text.trim(),
-      soLuong: int.tryParse(controllerQuantity.text) ?? 0,
-      giaTri: double.tryParse(controllerValue.text) ?? 0.0,
-      kyHieu: controllerSymbol.text.trim(),
-      congSuat: controllerCapacity.text.trim(),
-      nuocSanXuat: controllerCountryOfOrigin.text.trim(),
-      namSanXuat: int.tryParse(controllerYearOfManufacture.text) ?? 0,
-      ghiChu: controllerNote.text.trim(),
-      idCongTy: '',
-      ngayTao: DateTime.now(),
-      ngayCapNhat: DateTime.now(),
-      nguoiTao: '',
-      nguoiCapNhat: '',
-      isActive: true,
-    );
-
-    // Nếu là item mới (widget.item == null), thêm vào danh sách
-    if (widget.item == null) {
-      // Thêm item mới vào provider
-      final provider = Provider.of<ToolsAndSuppliesProvider>(
-        context,
-        listen: false,
-      );
-      provider.addNewItem(newItem);
-    } else {
-      // Cập nhật item hiện tại
-      final provider = Provider.of<ToolsAndSuppliesProvider>(
-        context,
-        listen: false,
-      );
-      provider.updateItem(newItem);
+    // Chuẩn hóa dữ liệu
+    DateTime importDate;
+    try {
+      importDate = DateFormat(
+        'dd/MM/yyyy',
+      ).parseStrict(controllerImportDate.text.trim());
+    } catch (_) {
+      importDate = DateTime.now();
     }
 
-    // Reset validation states
-    isNameValid = true;
-    isImportUnitValid = true;
-    isCodeValid = true;
-    isImportDateValid = true;
-    isUnitValid = true;
-    isQuantityValid = true;
-    isValueValid = true;
-    isYearOfManufactureValid = true;
-
-    // Thoát khỏi chế độ edit
-    setState(() {
-      isEditing = false;
-    });
-
-    // Hiển thị thông báo thành công
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          widget.item == null ? 'Thêm mới thành công!' : 'Cập nhật thành công!',
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
+    final String sanitizedQuantity = controllerQuantity.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
     );
+    final int quantity = int.tryParse(sanitizedQuantity) ?? 0;
+
+    final String rawValue = controllerValue.text.trim();
+    final String sanitizedValue = rawValue
+        .replaceAll('.', '')
+        .replaceAll(',', '.');
+    final double value = double.tryParse(sanitizedValue) ?? 0.0;
+
+    final String sanitizedYear = controllerYearOfManufacture.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+    final int year = int.tryParse(sanitizedYear) ?? 0;
+
+    if (data == null) {
+      // Gọi API tạo mới qua Bloc
+      final req = ToolsAndSuppliesRequest(
+        id: '',
+        idDonVi: controllerImportUnit.text.trim(),
+        ten: controllerName.text.trim(),
+        ngayNhap: importDate,
+        donViTinh: controllerUnit.text.trim(),
+        soLuong: quantity,
+        giaTri: value,
+        soKyHieu: controllerCode.text.trim(),
+        kyHieu: controllerSymbol.text.trim(),
+        congSuat: controllerCapacity.text.trim(),
+        nuocSanXuat: controllerCountryOfOrigin.text.trim(),
+        namSanXuat: year,
+        ghiChu: controllerNote.text.trim(),
+        idCongTy: 'ct001',
+        ngayTao: DateTime.now(),
+        ngayCapNhat: DateTime.now(),
+        nguoiTao: '',
+        nguoiCapNhat: '',
+        isActive: true,
+      );
+
+      context.read<ToolsAndSuppliesBloc>().add(
+        CreateToolsAndSuppliesEvent(req),
+      );
+    } else {
+      // Gọi API cập nhật qua Bloc
+      final req = ToolsAndSuppliesRequest(
+        id: data!.id,
+        idDonVi: controllerImportUnit.text.trim(),
+        ten: controllerName.text.trim(),
+        ngayNhap: importDate,
+        donViTinh: controllerUnit.text.trim(),
+        soLuong: quantity,
+        giaTri: value,
+        soKyHieu: controllerCode.text.trim(),
+        kyHieu: controllerSymbol.text.trim(),
+        congSuat: controllerCapacity.text.trim(),
+        nuocSanXuat: controllerCountryOfOrigin.text.trim(),
+        namSanXuat: year,
+        ghiChu: controllerNote.text.trim(),
+        idCongTy: data?.idCongTy ?? 'ct001',
+        ngayTao: data?.ngayTao ?? DateTime.now(),
+        ngayCapNhat: DateTime.now(),
+        nguoiTao: data?.nguoiTao ?? '',
+        nguoiCapNhat: '',
+        isActive: data?.isActive ?? true,
+      );
+
+      context.read<ToolsAndSuppliesBloc>().add(
+        UpdateToolsAndSuppliesEvent(req),
+      );
+    }
   }
 
   bool _validateForm() {
@@ -478,12 +347,14 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     }
 
     // Validate giá trị
-    if (controllerValue.text.trim().isEmpty) {
+    log('message: ${controllerValue.text}');
+    if (controllerValue.text.trim().replaceAll('.', '').isEmpty) {
       isValueValid = false;
       errors.add('Giá trị không được để trống');
       isValid = false;
     } else {
-      final value = double.tryParse(controllerValue.text.trim());
+      final rawText = controllerValue.text.trim().replaceAll('.', '');
+      final value = double.tryParse(rawText);
       isValueValid = value != null && value >= 0;
       if (!isValueValid) {
         errors.add('Giá trị phải là số không âm');
@@ -537,20 +408,20 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   void _cancelEdit() {
     // Reset form về giá trị ban đầu
-    if (widget.item != null) {
-      controllerImportUnit.text = widget.item!.idDonVi;
-      controllerName.text = widget.item!.ten;
-      controllerCode.text = widget.item!.soKyHieu;
-      controllerImportDate.text = widget.item!.ngayNhap.toString();
-      controllerUnit.text = widget.item!.donViTinh;
-      controllerQuantity.text = widget.item!.soLuong.toString();
-      controllerValue.text = widget.item!.giaTri.toString();
-      controllerReferenceNumber.text = widget.item!.soKyHieu;
-      controllerSymbol.text = widget.item!.kyHieu;
-      controllerCapacity.text = widget.item!.congSuat;
-      controllerCountryOfOrigin.text = widget.item!.nuocSanXuat;
-      controllerYearOfManufacture.text = widget.item!.namSanXuat.toString();
-      controllerNote.text = widget.item!.ghiChu;
+    if (data != null) {
+      controllerImportUnit.text = data!.idDonVi;
+      controllerName.text = data!.ten;
+      controllerCode.text = data!.soKyHieu;
+      controllerImportDate.text = data!.ngayNhap.toString();
+      controllerUnit.text = data!.donViTinh;
+      controllerQuantity.text = data!.soLuong.toString();
+      controllerValue.text = data!.giaTri.toString();
+      controllerReferenceNumber.text = data!.soKyHieu;
+      controllerSymbol.text = data!.kyHieu;
+      controllerCapacity.text = data!.congSuat;
+      controllerCountryOfOrigin.text = data!.nuocSanXuat;
+      controllerYearOfManufacture.text = data!.namSanXuat.toString();
+      controllerNote.text = data!.ghiChu;
     } else {
       // Nếu là item mới, clear form
       controllerImportUnit.clear();
@@ -573,5 +444,50 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       isEditing = false;
     });
     // context.read<ToolsAndSuppliesProvider>().onTapBackHeader();
+  }
+
+  void initData() {
+    if (widget.provider.dataDetail != null) {
+      data = widget.provider.dataDetail;
+      controllerImportUnit.text = data?.idDonVi ?? '';
+      controllerName.text = data?.ten ?? '';
+      controllerCode.text = data?.soKyHieu ?? '';
+      controllerImportDate.text =
+          data?.ngayNhap != null
+              ? DateFormat('dd/MM/yyyy').format(data!.ngayNhap)
+              : '';
+      controllerUnit.text = data?.donViTinh ?? '';
+      controllerQuantity.text = data?.soLuong.toString() ?? '0';
+      controllerValue.text = data?.giaTri.toString() ?? '0.0';
+      controllerReferenceNumber.text = data?.soKyHieu ?? '';
+      controllerSymbol.text = data?.kyHieu ?? '';
+      controllerCapacity.text = data?.congSuat ?? '';
+      controllerCountryOfOrigin.text = data?.nuocSanXuat ?? '';
+      controllerYearOfManufacture.text = data?.namSanXuat.toString() ?? '';
+    } else {
+      data = null;
+      isEditing = data == null;
+      controllerImportUnit.clear();
+      controllerName.clear();
+      controllerCode.clear();
+      controllerImportDate.clear();
+      controllerUnit.clear();
+      controllerQuantity.clear();
+      controllerValue.clear();
+      controllerReferenceNumber.clear();
+      controllerSymbol.clear();
+      controllerCapacity.clear();
+      controllerCountryOfOrigin.clear();
+      controllerYearOfManufacture.clear();
+    }
+    if (widget.provider.dataPhongBan != null) {
+      itemsPhongBan = [
+        for (var element in widget.provider.dataPhongBan)
+          DropdownMenuItem<PhongBan>(
+            value: element,
+            child: Text(element.tenPhongBan ?? ''),
+          ),
+      ];
+    }
   }
 }

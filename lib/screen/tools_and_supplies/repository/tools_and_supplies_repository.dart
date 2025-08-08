@@ -1,11 +1,14 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:developer';
+import 'dart:async';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class ToolsAndSuppliesRepository extends ApiBase {
@@ -13,7 +16,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
   // static const String _mockDataPath =
   //     'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
 
-  Future<Map<String, dynamic>> getListToolsAndSupplies() async {
+  Future<Map<String, dynamic>> getListToolsAndSupplies(String idCongTy) async {
     List<ToolsAndSuppliesDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -21,23 +24,14 @@ class ToolsAndSuppliesRepository extends ApiBase {
     };
 
     try {
-     
-      // Check connect internet
-      // if (!await checkInternet()) {
-      //   log('Error: No network connection');
-      //   return result;
-      // }
-
-     
       final response = await get(
         EndPointAPI.TOOLS_AND_SUPPLIES,
-        queryParameters: {'idcongty': 'ct001'},
+        queryParameters: {'idcongty': idCongTy},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
-      log("code: ${response.statusCode}");
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
@@ -53,19 +47,93 @@ class ToolsAndSuppliesRepository extends ApiBase {
     return result;
   }
 
-  /// Load data from local JSON file for development/testing purposes
-  // Future<String?> _loadLocalJsonData() async {
-  //   try {
-  //     return await rootBundle.loadString(_mockDataPath);
-  //   } catch (e) {
-  //     // Try to load from file system directly if rootBundle fails
-  //     try {
-  //       final file = await File(_mockDataPath).readAsString();
-  //       return file;
-  //     } catch (e) {
-  //       log('Failed to load mock data: $e');
-  //       return null;
-  //     }
-  //   }
-  // }
+  Future<Map<String, dynamic>> getListPhongBan(String idCongTy) async {
+    List<PhongBan> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.PHONG_BAN,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<PhongBan>(
+        response.data,
+        PhongBan.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListPhongBan - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> createToolsAndSupplies(
+    ToolsAndSuppliesRequest params,
+  ) async {
+    ToolsAndSuppliesDto? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      // API 1: Tạo asset group (cần response)
+      final response = await post(
+        EndPointAPI.TOOLS_AND_SUPPLIES,
+        data: params.toJson(),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] =response.data;
+    } catch (e) {
+      log("Error at createAssetGroup - AssetGroupRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateToolsAndSupplies(
+    ToolsAndSuppliesRequest params,
+  ) async {
+    Map<String, dynamic>? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await put(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/${params.id}',
+        data: params.toJson(),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      log("Error at updateToolsAndSupplies - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
 }

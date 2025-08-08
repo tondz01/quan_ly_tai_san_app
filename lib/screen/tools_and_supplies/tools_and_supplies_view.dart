@@ -42,19 +42,6 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ToolsAndSuppliesBloc, ToolsAndSuppliesState>(
-      listener: (context, state) {
-        if (state is ToolsAndSuppliesInitialState) {}
-        if (state is ToolsAndSuppliesLoadingState) {}
-        if (state is ToolsAndSuppliesLoadingDismissState) {}
-        if (state is GetListToolsAndSuppliesSuccessState) {
-          log('message GetListToolsAndSuppliesSuccessState');
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .getListToolsAndSuppliesSuccess(context, state);
-          log('message: ${state.data.length}');
-        }
-        if (state is GetListToolsAndSuppliesFailedState) {}
-      },
       builder: (context, state) {
         return Consumer<ToolsAndSuppliesProvider>(
           builder: (context, provider, child) {
@@ -91,16 +78,14 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: CommonPageView(
-                        childInput: ToolsAndSuppliesDetail(
-                          item: provider.item,
-                        ),
+                        childInput: ToolsAndSuppliesDetail(provider: provider),
                         childTableView: ToolsAndSuppliesList(
                           provider: provider,
                         ),
                         isShowInput: provider.isShowInput,
                         isShowCollapse: provider.isShowCollapse,
                         onExpandedChanged: (isExpanded) {
-                          provider.isShowCollapse = isExpanded;
+                          provider.onSetsShowCollapse(isExpanded);
                         },
                       ),
                     ),
@@ -122,6 +107,76 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
             );
           },
         );
+      },
+      listener: (context, state) {
+        if (state is ToolsAndSuppliesInitialState) {}
+        if (state is ToolsAndSuppliesLoadingState) {}
+        if (state is ToolsAndSuppliesLoadingDismissState) {}
+        if (state is GetListToolsAndSuppliesSuccessState) {
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .getListToolsAndSuppliesSuccess(context, state);
+        }
+        if (state is GetListPhongBanSuccessState) {
+          context.read<ToolsAndSuppliesProvider>().getListPhongBanSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListToolsAndSuppliesFailedState) {}
+        if (state is GetListPhongBanFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        if (state is CreateToolsAndSuppliesSuccessState) {
+          // Refresh list
+          context.read<ToolsAndSuppliesProvider>().getListToolsAndSupplies(
+            context,
+          );
+          // Close input panel if open
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tạo CCDC - Vật tư thành công!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        if (state is CreateToolsAndSuppliesFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        if (state is UpdateToolsAndSuppliesSuccessState) {
+          context.read<ToolsAndSuppliesProvider>().getListToolsAndSupplies(
+            context,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cập nhật CCDC - Vật tư thành công!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        if (state is UpdateToolsAndSuppliesFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       },
     );
   }
