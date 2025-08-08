@@ -55,6 +55,7 @@ Widget movementDetailTable(
           getValue: (item) => item.name,
           setValue: (item, value) => item.name = value,
           sortValueGetter: (item) => item.name,
+          isCellEditableDecider: (item, rowIndex) => false,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'unit',

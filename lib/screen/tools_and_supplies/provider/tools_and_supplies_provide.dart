@@ -225,9 +225,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void addNewItem(ToolsAndSuppliesDto newItem) {
-    if (_data == null) {
-      _data = [];
-    }
+    _data ??= [];
 
     // Thêm item mới vào đầu danh sách
     _data!.insert(0, newItem);

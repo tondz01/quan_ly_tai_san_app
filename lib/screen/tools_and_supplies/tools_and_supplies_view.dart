@@ -54,6 +54,49 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           log('message: ${state.data.length}');
         }
         if (state is GetListToolsAndSuppliesFailedState) {}
+        if (state is CreateToolsAndSuppliesSuccessState) {
+          // Refresh list
+          context.read<ToolsAndSuppliesProvider>().getListToolsAndSupplies(context);
+          // Close input panel if open
+          context.read<ToolsAndSuppliesProvider>().isShowInput = false;
+          // Show success
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tạo CCDC - Vật tư thành công!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        if (state is CreateToolsAndSuppliesFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        if (state is UpdateToolsAndSuppliesSuccessState) {
+          context.read<ToolsAndSuppliesProvider>().getListToolsAndSupplies(context);
+          context.read<ToolsAndSuppliesProvider>().isShowInput = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cập nhật CCDC - Vật tư thành công!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        if (state is UpdateToolsAndSuppliesFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       },
       builder: (context, state) {
         return Consumer<ToolsAndSuppliesProvider>(

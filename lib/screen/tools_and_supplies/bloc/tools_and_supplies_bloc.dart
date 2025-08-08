@@ -9,6 +9,8 @@ class ToolsAndSuppliesBloc
     extends Bloc<ToolsAndSuppliesEvent, ToolsAndSuppliesState> {
   ToolsAndSuppliesBloc() : super(ToolsAndSuppliesInitialState()) {
     on<GetListToolsAndSuppliesEvent>(_getListToolsAndSupplies);
+    on<CreateToolsAndSuppliesEvent>(_createToolsAndSupplies);
+    on<UpdateToolsAndSuppliesEvent>(_updateToolsAndSupplies);
   }
 
   Future<void> _getListToolsAndSupplies(
@@ -17,8 +19,8 @@ class ToolsAndSuppliesBloc
   ) async {
     emit(ToolsAndSuppliesInitialState());
     emit(ToolsAndSuppliesLoadingState());
-    Map<String, dynamic> result = await ToolsAndSuppliesRepository()
-        .getListToolsAndSupplies();  
+    Map<String, dynamic> result =
+        await ToolsAndSuppliesRepository().getListToolsAndSupplies();
     emit(ToolsAndSuppliesLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListToolsAndSuppliesSuccessState(data: result['data']));
@@ -31,6 +33,53 @@ class ToolsAndSuppliesBloc
           message: msg,
         ),
       );
+    }
+  }
+
+  //CALL API CREATE
+  Future<void> _createToolsAndSupplies(
+    CreateToolsAndSuppliesEvent event,
+    Emitter emit,
+  ) async {
+    emit(ToolsAndSuppliesInitialState());
+    emit(ToolsAndSuppliesLoadingState());
+    Map<String, dynamic> result = await ToolsAndSuppliesRepository().createToolsAndSupplies(
+      event.params,
+    );
+    emit(ToolsAndSuppliesLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CreateToolsAndSuppliesSuccessState(data: result['data']));
+    } else {
+      String msg = "Lỗi khi tạo CCDC - Vật tư";
+      emit(
+        CreateToolsAndSuppliesFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  //CALL API UPDATE
+  Future<void> _updateToolsAndSupplies(
+    UpdateToolsAndSuppliesEvent event,
+    Emitter emit,
+  ) async {
+    emit(ToolsAndSuppliesInitialState());
+    emit(ToolsAndSuppliesLoadingState());
+    final result = await ToolsAndSuppliesRepository().updateToolsAndSupplies(
+      event.params,
+    );
+    emit(ToolsAndSuppliesLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateToolsAndSuppliesSuccessState(data: result['data']));
+    } else {
+      emit(UpdateToolsAndSuppliesFailedState(
+        title: 'notice',
+        code: result['status_code'],
+        message: 'Lỗi khi cập nhật CCDC - Vật tư',
+      ));
     }
   }
 }
