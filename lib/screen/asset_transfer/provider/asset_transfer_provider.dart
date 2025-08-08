@@ -518,7 +518,7 @@ class AssetTransferProvider with ChangeNotifier {
       notifyListeners();
       return;
     }
-    Map<String, String>? result = await uploadWordDocument(context);
+    Map<String, dynamic>? result = await uploadWordDocument(context);
     if (result == null) {
       notifyListeners();
       return;
@@ -614,7 +614,7 @@ class AssetTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Map<String, String>?> uploadWordDocument(BuildContext context) async {
+  Future<Map<String, dynamic>?> uploadWordDocument(BuildContext context) async {
     if (_controller!.selectedFilePath == null) return null;
     try {
       final result = await AssetTransferRepository().uploadFile(_controller!.selectedFilePath!);
@@ -629,7 +629,6 @@ class AssetTransferProvider with ChangeNotifier {
             ),
           );
         }
-        SGLog.info("AssetTransferDetail", "result: ${result['data']}");
         return result['data'];
       } else {
         if (context.mounted) {
