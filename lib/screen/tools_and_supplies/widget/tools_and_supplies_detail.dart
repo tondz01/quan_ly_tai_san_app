@@ -7,16 +7,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
-import 'package:se_gay_components/common/sg_button_icon.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_header_actions.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form.dart';
 
 class ToolsAndSuppliesDetail extends StatefulWidget {
   final ToolsAndSuppliesDto? item;
@@ -187,7 +184,31 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
               ),
             ],
           ),
-          _buildTableDetail(),
+          ToolsAndSuppliesForm(
+            isEditing: isEditing,
+            item: widget.item,
+            controllerImportUnit: controllerImportUnit,
+            controllerName: controllerName,
+            controllerCode: controllerCode,
+            controllerImportDate: controllerImportDate,
+            controllerUnit: controllerUnit,
+            controllerQuantity: controllerQuantity,
+            controllerValue: controllerValue,
+            controllerReferenceNumber: controllerReferenceNumber,
+            controllerSymbol: controllerSymbol,
+            controllerCapacity: controllerCapacity,
+            controllerCountryOfOrigin: controllerCountryOfOrigin,
+            controllerYearOfManufacture: controllerYearOfManufacture,
+            controllerNote: controllerNote,
+            isNameValid: isNameValid,
+            isImportUnitValid: isImportUnitValid,
+            isCodeValid: isCodeValid,
+            isImportDateValid: isImportDateValid,
+            isUnitValid: isUnitValid,
+            isQuantityValid: isQuantityValid,
+            isValueValid: isValueValid,
+            isYearOfManufactureValid: isYearOfManufactureValid,
+          ),
         ],
       ),
     );
