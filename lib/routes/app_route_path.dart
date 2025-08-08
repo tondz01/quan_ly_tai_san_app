@@ -15,7 +15,12 @@ enum AppRoute {
   departmentManager(path: "/department_manager", name: "department_manager"),
   capitalSource(path: "/capital-source", name: "capital-source"),
   assetManager(path: "/asset-manager", name: "asset-manager"),
-  assetHandover(path: "/asset-handover", name: "asset-handover");
+  assetHandover(path: "/asset-handover", name: "asset-handover"),
+  assetDepreciation(path: "/asset-depreciation", name: "asset-depreciation"),
+  assetCategory(path: "/asset-category", name: "asset-category"),
+  assetGroup(path: "/asset-group", name: "asset-group"), 
+  assetManagement(path: "/asset-management", name: "asset-management"), 
+  intangibleAsset(path: "/intangible-asset", name: "intangible-asset"); 
 
 
   final String path;

@@ -1,11 +1,12 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
-import 'package:quan_ly_tai_san_app/screen/home/widget/header.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
@@ -28,12 +29,14 @@ class _HomeState extends State<Home> {
   // Thêm biến để theo dõi trạng thái của popup
   bool _isPopupOpen = false;
 
+  bool isItemOne = false;
+
   @override
   void initState() {
     super.initState();
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
-    
+
     // Lắng nghe thay đổi route để cập nhật selectedIndex
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateSelectedIndexFromRoute();
@@ -50,19 +53,19 @@ class _HomeState extends State<Home> {
   void _updateSelectedIndexFromRoute() {
     final currentLocation = GoRouterState.of(context).uri.path;
     final extra = GoRouterState.of(context).extra;
-    
+
     log('Current route: $currentLocation, extra: $extra');
-    
+
     // Tìm menu item tương ứng với route hiện tại
     for (int i = 0; i < _menuData.menuItems.length; i++) {
       final menuItem = _menuData.menuItems[i];
-      
+
       // Kiểm tra route chính
       if (menuItem.route == currentLocation) {
         _updateSelectedIndex(i, 0);
         return;
       }
-      
+
       // Kiểm tra subItems
       for (int j = 0; j < menuItem.reportSubItems.length; j++) {
         final subItem = menuItem.reportSubItems[j];
@@ -71,9 +74,13 @@ class _HomeState extends State<Home> {
           return;
         }
       }
-      
+
       // Kiểm tra projectGroups
-      for (int groupIndex = 0; groupIndex < menuItem.projectGroups.length; groupIndex++) {
+      for (
+        int groupIndex = 0;
+        groupIndex < menuItem.projectGroups.length;
+        groupIndex++
+      ) {
         final group = menuItem.projectGroups[groupIndex];
         for (int itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
           final item = group.items[itemIndex];
@@ -93,7 +100,9 @@ class _HomeState extends State<Home> {
         _selectedIndex = index;
         _selectedSubIndex = subIndex;
       });
-      log('Updated selectedIndex: $_selectedIndex, selectedSubIndex: $_selectedSubIndex');
+      log(
+        'Updated selectedIndex: $_selectedIndex, selectedSubIndex: $_selectedSubIndex',
+      );
     }
   }
 
@@ -133,40 +142,54 @@ class _HomeState extends State<Home> {
               if (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) {
                 _selectedIndex = item.index;
                 if (item.route.isNotEmpty) {
+                  isItemOne = true;
                   context.go(item.route);
                 }
               }
             }),
-        subItems: item.reportSubItems.isNotEmpty ? _buildSubItems(item.index) : null,
-        subItemGroups: item.projectGroups.isNotEmpty ? _buildSubItemGroups(item.index, item.projectGroups) : null,
+        subItems:
+            item.reportSubItems.isNotEmpty ? _buildSubItems(item.index) : null,
+        subItemGroups:
+            item.projectGroups.isNotEmpty
+                ? _buildSubItemGroups(item.index, item.projectGroups)
+                : null,
       );
     });
   }
 
   // Tạo subItems thông thường từ model
   List<SGSidebarSubItem> _buildSubItems(int parentIndex) {
-    return List.generate(_menuData.menuItems[parentIndex].reportSubItems.length, (subIndex) {
-      final subItem = _menuData.menuItems[parentIndex].reportSubItems[subIndex];
-      return SGSidebarSubItem(
-        label: subItem.label,
-        icon: subItem.icon,
-        isActive: _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
-        onTap:
-            () => setState(() {
-              _selectedIndex = parentIndex;
-              _selectedSubIndex = subIndex;
-              _popupManager.closeAllPopups();
-              if (subItem.route.isNotEmpty) {
-                log('subItem.route: ${subItem.extra}');
-                context.go(subItem.route, extra: subItem.extra);
-              }
-            }),
-      );
-    });
+    return List.generate(
+      _menuData.menuItems[parentIndex].reportSubItems.length,
+      (subIndex) {
+        final subItem =
+            _menuData.menuItems[parentIndex].reportSubItems[subIndex];
+        return SGSidebarSubItem(
+          label: subItem.label,
+          icon: subItem.icon,
+          isActive:
+              _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
+          onTap:
+              () => setState(() {
+                _selectedIndex = parentIndex;
+                _selectedSubIndex = subIndex;
+                _popupManager.closeAllPopups();
+                if (subItem.route.isNotEmpty) {
+                  isItemOne = false;
+                  log('subItem.route: ${subItem.extra}');
+                  context.go(subItem.route, extra: subItem.extra);
+                }
+              }),
+        );
+      },
+    );
   }
 
   // Tạo subItemGroups có nhóm từ model
-  List<SGSubItemGroup> _buildSubItemGroups(int parentIndex, List<SubMenuGroup> groupData) {
+  List<SGSubItemGroup> _buildSubItemGroups(
+    int parentIndex,
+    List<SubMenuGroup> groupData,
+  ) {
     return List.generate(groupData.length, (groupIndex) {
       final group = groupData[groupIndex];
 
@@ -174,17 +197,20 @@ class _HomeState extends State<Home> {
         title: group.title,
         items: List.generate(group.items.length, (itemIndex) {
           final item = group.items[itemIndex];
-          final subIndex = groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
+          final subIndex =
+              groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
           return SGSidebarSubItem(
             label: item.label,
             icon: item.icon,
-            isActive: _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
+            isActive:
+                _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
             onTap:
                 () => setState(() {
                   _selectedIndex = parentIndex;
                   _selectedSubIndex = subIndex;
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
+                    isItemOne = false;
                     log('item.extra: ${item.extra}');
                     context.go(item.route, extra: item.extra);
                   }
@@ -199,48 +225,53 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
+    log('sidebarItems: ${sidebarItems.toString()}');
     return MainWrapper(
-      header: Header(imageLogoLeft: AppImage.imageLogo),
-      sidebar: Column(
-        children: [
-          Divider(
-            color: ColorValue.neutral200,
-            height: 1,
-            thickness: 1,
-          ),
-          Container(
-            padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: ColorValue.neutral200.withOpacity(0.3),
-                  offset: const Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
+      header: null,
+      sidebar: Container(
+        padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: ColorValue.neutral200.withOpacity(0.3),
+              offset: const Offset(0, 1),
+              blurRadius: 2,
             ),
-            child: SGSidebarHorizontal(
-              items: sidebarItems,
-              onShowSubItems: (subItems) {
-                // Cập nhật lại UI nếu cần thiết
-                setState(() {});
-              },
+          ],
+        ),
+        child: Row(
+          children: [
+            if (AppImage.imageLogo.isNotEmpty)
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: Image.asset(AppImage.imageLogo),
+              ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: SGSidebarHorizontal(
+                items: sidebarItems,
+                onShowSubItems: (subItems) {
+                  // Cập nhật lại UI nếu cần thiết
+                  setState(() {});
+                },
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            _buildHeaderActionRight(),
+          ],
+        ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: ColorValue.neutral50,
-        ),
+        decoration: BoxDecoration(color: ColorValue.neutral50),
         child: Stack(
           children: [
             // Content
             widget.child,
 
             // Thêm barrier chỉ hiển thị khi popup đang mở
-            if (_isPopupOpen)
+            if (_isPopupOpen && !isItemOne)
               Positioned.fill(
                 child: GestureDetector(
                   onTap: () {
@@ -255,6 +286,113 @@ class _HomeState extends State<Home> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderActionRight() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // Settings button
+        MaterialIconButton(
+          icon: Icons.settings,
+          onPressed: () {},
+          tooltip: 'Cài đặt',
+        ),
+        const SizedBox(width: 8),
+        // Chat button with popup
+        PopupMenuButton<String>(
+          offset: const Offset(-83, 10),
+          child: MaterialIconButton(
+            icon: Icons.chat_bubble_outline,
+            onPressed: null,
+            tooltip: 'Chat',
+          ),
+          itemBuilder:
+              (context) => [
+                PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
+                PopupMenuItem(
+                  value: 'yesterday',
+                  child: _buildTimeOption('Yesterday'),
+                ),
+                PopupMenuItem(
+                  value: 'last7days',
+                  child: _buildTimeOption('Last 7 days'),
+                ),
+                PopupMenuItem(
+                  value: 'thismonth',
+                  child: _buildTimeOption('This month'),
+                ),
+                PopupMenuItem(
+                  value: 'custom',
+                  child: _buildTimeOption('Custom range'),
+                ),
+              ],
+          onSelected: (value) {
+            SGLog.debug('Header', '$value selected');
+          },
+        ),
+        const SizedBox(width: 8),
+        // Time button with popup
+        PopupMenuButton<String>(
+          offset: const Offset(-83, 10),
+          child: MaterialIconButton(
+            icon: Icons.access_time,
+            onPressed: null,
+            tooltip: 'Thời gian',
+          ),
+          itemBuilder:
+              (context) => [
+                PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
+                PopupMenuItem(
+                  value: 'yesterday',
+                  child: _buildTimeOption('Yesterday'),
+                ),
+                PopupMenuItem(
+                  value: 'last7days',
+                  child: _buildTimeOption('Last 7 days'),
+                ),
+                PopupMenuItem(
+                  value: 'thismonth',
+                  child: _buildTimeOption('This month'),
+                ),
+                PopupMenuItem(
+                  value: 'custom',
+                  child: _buildTimeOption('Custom range'),
+                ),
+              ],
+          onSelected: (value) {
+            SGLog.debug('Header', '$value selected');
+          },
+        ),
+        const SizedBox(width: 16),
+        // User avatar
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: ColorValue.primaryLightBlue,
+          child: CircleAvatar(
+            radius: 18,
+            backgroundImage: const NetworkImage(
+              'https://i.pravatar.cc/150?img=3',
+            ),
+            backgroundColor: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeOption(String title) {
+    return InkWell(
+      onTap: () {
+        SGLog.debug('Header', '$title selected');
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(title),
       ),
     );
   }

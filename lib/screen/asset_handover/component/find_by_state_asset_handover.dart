@@ -101,12 +101,14 @@ class _FilterCheckboxes extends StatelessWidget {
       },
     );
 
-    return CommonFilterCheckbox(
-      options: options,
-      checkColor: Colors.white,
-      textColor: Colors.black87,
-      mainAxisAlignment: MainAxisAlignment.end,
-      showCount: true,
+    return Expanded(
+      child: CommonFilterCheckbox(
+        options: options,
+        checkColor: Colors.white,
+        textColor: Colors.black87,
+        mainAxisAlignment: MainAxisAlignment.end,
+        showCount: true,
+      ),
     );
   }
 }

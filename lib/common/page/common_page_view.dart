@@ -108,7 +108,9 @@ class _CommonPageViewState extends State<CommonPageView> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
-                                _isExpanded ? Icons.visibility_off : Icons.visibility,
+                                _isExpanded
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: Colors.white,
                                 size: 16,
                               ),

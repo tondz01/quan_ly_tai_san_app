@@ -8,4 +8,8 @@ class EndPointAPI {
   static String PHONG_BAN = "/api/phongban";
   static String NHOM_DON_VI = "/api/nhomdonvi";
   static String NHAN_VIEN = "/api/nhanvien";
+  static String ASSET_CATEGORY = "/api/mohinhtaisan";
+  static String ASSET_GROUP = "/api/nhomtaisan";
+  static String ASSET_GROUP_V2 = "/api/loaitaisan";
+  static String ASSET_MANAGEMENT = "/api/taisan";
 }

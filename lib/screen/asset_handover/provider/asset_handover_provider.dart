@@ -111,7 +111,6 @@ class AssetHandoverProvider with ChangeNotifier {
   // Method để refresh data và filter
   void refreshData(BuildContext context) {
     _isLoading = true;
-    notifyListeners();
 
     // Reset filter về trạng thái ban đầu
     _filterStatus.clear();
@@ -122,6 +121,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
     // Reload data
     context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+    notifyListeners();
   }
 
   Widget? get body => _body;

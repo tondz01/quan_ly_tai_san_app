@@ -1,8 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 
@@ -87,7 +91,20 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
               item: item,
               onDelete: (item) {
                 // widget.onDelete?.call(item);
-                _showDeleteConfirmationDialog(context, item, widget.provider);
+                showConfirmDialog(
+                  context,
+                  type: ConfirmType.delete,
+                  title: 'Xóa CCDC - Vật Tư?',
+                  message: 'Bạn có chắc muốn xóa ${item.ten}',
+                  highlight: item.ten,
+                  cancelText: 'Không',
+                  confirmText: 'Xóa',
+                  onConfirm: () {
+                    context.read<ToolsAndSuppliesBloc>().add(
+                      DeleteToolsAndSuppliesEvent(item.id),
+                    );
+                  },
+                );
               },
             ),
         width: 120,
@@ -148,7 +165,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
             child: TableBaseView<ToolsAndSuppliesDto>(
               searchTerm: '',
               columns: columns,
-              data: widget.provider.filteredData ?? [],
+              data: widget.provider.filteredData,
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(context, item);
@@ -157,41 +174,6 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
           ),
         ],
       ),
-    );
-  }
-
-
-  void _showDeleteConfirmationDialog(
-    BuildContext context,
-    ToolsAndSuppliesDto item,
-    ToolsAndSuppliesProvider provider,
-  ) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Xác nhận xóa'),
-          content: Text(
-            'Bạn có chắc chắn muốn xóa công cụ dụng cụ "${item.ten}" không?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () {
-                // Xóa item
-                provider.deleteItem(item.id);
-                Navigator.of(context).pop();
-              },
-              child: const Text('Xóa', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
-      },
     );
   }
 }

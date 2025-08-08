@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -310,6 +312,121 @@ class WebViewPopup extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            // Divider
+            const Divider(height: 1),
+            // Content
+            Expanded(
+              child: WebViewCommon(
+                url: url,
+                title: title,
+                showAppBar: false,
+                enableZoom: true,
+                enableJavaScript: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WebViewContainer extends StatelessWidget {
+  final String url;
+  final String? title;
+  final Function()? onPressed;
+
+  const WebViewContainer({
+    super.key,
+    required this.url,
+    this.title,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        // width: width,
+        // height: height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title ?? 'Tài liệu',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  // Button mở trong tab mới
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.blue.shade200, width: 1),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.open_in_new, size: 16),
+                      tooltip: 'Mở trong tab mới',
+                      color: Colors.blue.shade700,
+                      onPressed: () {
+                        WebViewHelper.openInNewTab(url);
+                      },
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      padding: const EdgeInsets.all(4),
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.blue.shade200, width: 1),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.visibility, size: 16),
+                      tooltip: 'Ẩn preview',
+                      color: Colors.blue.shade700,
+                      onPressed: onPressed,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      padding: const EdgeInsets.all(4),
+                    ),
                   ),
                 ],
               ),

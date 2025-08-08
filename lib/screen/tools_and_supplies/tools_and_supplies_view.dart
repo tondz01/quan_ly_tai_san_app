@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +32,15 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Provider.of<ToolsAndSuppliesProvider>(
+      context,
+      listen: false,
+    ).onInit(context);
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -42,19 +49,6 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ToolsAndSuppliesBloc, ToolsAndSuppliesState>(
-      listener: (context, state) {
-        if (state is ToolsAndSuppliesInitialState) {}
-        if (state is ToolsAndSuppliesLoadingState) {}
-        if (state is ToolsAndSuppliesLoadingDismissState) {}
-        if (state is GetListToolsAndSuppliesSuccessState) {
-          log('message GetListToolsAndSuppliesSuccessState');
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .getListToolsAndSuppliesSuccess(context, state);
-          log('message: ${state.data.length}');
-        }
-        if (state is GetListToolsAndSuppliesFailedState) {}
-      },
       builder: (context, state) {
         return Consumer<ToolsAndSuppliesProvider>(
           builder: (context, provider, child) {
@@ -91,16 +85,14 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: CommonPageView(
-                        childInput: ToolsAndSuppliesDetail(
-                          item: provider.item,
-                        ),
+                        childInput: ToolsAndSuppliesDetail(provider: provider),
                         childTableView: ToolsAndSuppliesList(
                           provider: provider,
                         ),
                         isShowInput: provider.isShowInput,
                         isShowCollapse: provider.isShowCollapse,
                         onExpandedChanged: (isExpanded) {
-                          provider.isShowCollapse = isExpanded;
+                          provider.onSetsShowCollapse(isExpanded);
                         },
                       ),
                     ),
@@ -122,6 +114,66 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
             );
           },
         );
+      },
+      listener: (context, state) {
+        if (state is ToolsAndSuppliesInitialState) {}
+        if (state is ToolsAndSuppliesLoadingState) {}
+        if (state is ToolsAndSuppliesLoadingDismissState) {}
+        if (state is GetListToolsAndSuppliesSuccessState) {
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .getListToolsAndSuppliesSuccess(context, state);
+        }
+        if (state is GetListPhongBanSuccessState) {
+          context.read<ToolsAndSuppliesProvider>().getListPhongBanSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListToolsAndSuppliesFailedState) {}
+        if (state is GetListPhongBanFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        if (state is CreateToolsAndSuppliesSuccessState) {
+          // Refresh list
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .createToolsAndSuppliesSuccess(context, state);
+        }
+        if (state is CreateToolsAndSuppliesFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        if (state is UpdateToolsAndSuppliesSuccessState) {
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .updateToolsAndSuppliesSuccess(context, state);
+        }
+        if (state is DeleteToolsAndSuppliesSuccessState) {
+          context
+              .read<ToolsAndSuppliesProvider>()
+              .deleteToolsAndSuppliesSuccess(context, state);
+        }
+        if (state is PutPostDeleteFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
       },
     );
   }

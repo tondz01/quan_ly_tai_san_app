@@ -36,7 +36,7 @@ class AppIcons {
   );
   
   static Icon delete({Color? color, double? size}) => Icon(
-    Icons.delete_outline_rounded,
+    Icons.delete_forever_rounded,
     color: color ?? ColorValue.brightRed,
     size: size ?? 24,
   );

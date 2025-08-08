@@ -76,6 +76,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                     showHorizontalLines: true,
                     addRowText: 'Thêm một dòng',
                     isEditing: false, // Pass the editing state
+                    rowEditableDecider: (item, index) => item.quantity != null,
                     onDataChanged: (data) {
                       log('Asset movement data changed: ${data.length} items');
                     },
