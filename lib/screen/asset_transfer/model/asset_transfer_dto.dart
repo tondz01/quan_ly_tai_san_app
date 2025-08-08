@@ -100,6 +100,13 @@ class AssetTransferDto {
   });
 
   factory AssetTransferDto.fromJson(Map<String, dynamic> json) {
+    String? fmt(dynamic v) {
+      if (v is String && v.isNotEmpty) {
+        return AppUtility.formatDateTimeVN(v);
+      }
+      return '';
+    }
+
     return AssetTransferDto(
       id: json['id'],
       soQuyetDinh: json['soQuyetDinh'],
@@ -123,8 +130,8 @@ class AssetTransferDto {
       nguoiLapPhieuKyNhay: json['nguoiLapPhieuKyNhay'],
       quanTrongCanXacNhan: json['quanTrongCanXacNhan'],
       phoPhongXacNhan: json['phoPhongXacNhan'],
-      tggnTuNgay: AppUtility.formatDateTimeVN(json['tggnTuNgay']),
-      tggnDenNgay: AppUtility.formatDateTimeVN(json['tggnDenNgay']),
+      tggnTuNgay: fmt(json['tggnTuNgay']),
+      tggnDenNgay: fmt(json['tggnDenNgay']),
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       veViec: json['veViec'],
       canCu: json['canCu'],
@@ -135,8 +142,8 @@ class AssetTransferDto {
       themDongTrong: json['themDongTrong'],
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
-      ngayTao: AppUtility.formatDateTimeVN(json['ngayTao']),
-      ngayCapNhat: AppUtility.formatDateTimeVN(json['ngayCapNhat']),
+      ngayTao: fmt(json['ngayTao']),
+      ngayCapNhat: fmt(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],

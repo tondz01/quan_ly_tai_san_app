@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -24,6 +22,7 @@ class AssetTransferController {
   bool controllersInitialized = false;
   String? selectedFileName;
   String? selectedFilePath;
+  Uint8List? selectedFileBytes;
   int? currentType;
 
   PhongBan? deliveringUnit;
@@ -111,6 +110,7 @@ class AssetTransferController {
 
     selectedFileName = item?.tenFile;
     selectedFilePath = item?.duongDanFile;
+    selectedFileBytes = null;
     isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
     isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
     isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
@@ -140,6 +140,7 @@ class AssetTransferController {
     controllersInitialized = false;
     selectedFileName = null;
     selectedFilePath = null;
+    selectedFileBytes = null;
     isPreparerInitialed = false;
     isRequireManagerApproval = false;
     isDeputyConfirmed = false;
@@ -257,9 +258,10 @@ class AssetTransferController {
   }
 
   // File operations
-  void setSelectedFile(String? fileName, String? filePath) {
+  void setSelectedFile(String? fileName, String? filePath, [Uint8List? fileBytes]) {
     selectedFileName = fileName;
     selectedFilePath = filePath;
+    selectedFileBytes = fileBytes;
 
     SGLog.info("setSelectedFile", "$fileName, $filePath");
 
@@ -279,12 +281,13 @@ class AssetTransferController {
     }
 
     // Reset state
+    selectedFileName = item?.tenFile;
+    selectedFilePath = item?.duongDanFile;
+    selectedFileBytes = null;
     isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
     isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
     isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
     proposingUnit = item?.tenDonViDeNghi;
-    selectedFileName = item?.tenFile;
-    selectedFilePath = item?.duongDanFile;
     validationErrors.clear();
     controllersInitialized = false;
     isUploading = false;

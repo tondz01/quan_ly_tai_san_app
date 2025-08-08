@@ -42,7 +42,7 @@ class _DocumentUploadExampleState extends State<DocumentUploadExample> {
               selectedFileName: selectedFileName,
               selectedFilePath: selectedFilePath,
               validationErrors: validationErrors,
-              onFileSelected: (fileName, filePath) {
+              onFileSelected: (fileName, filePath, fileBytes) {
                 setState(() {
                   selectedFileName = fileName;
                   selectedFilePath = filePath;
@@ -72,7 +72,7 @@ class _DocumentUploadExampleState extends State<DocumentUploadExample> {
               selectedFileName: null,
               selectedFilePath: null,
               validationErrors: const {},
-              onFileSelected: (fileName, filePath) {
+              onFileSelected: (fileName, filePath, fileBytes) {
                 print('PDF selected: $fileName, $filePath');
               },
               onUpload: null, // Không có nút upload
@@ -95,7 +95,7 @@ class _DocumentUploadExampleState extends State<DocumentUploadExample> {
               selectedFileName: null,
               selectedFilePath: null,
               validationErrors: const {},
-              onFileSelected: (fileName, filePath) {
+              onFileSelected: (fileName, filePath, fileBytes) {
                 print('Image selected: $fileName, $filePath');
               },
               onUpload: null,
@@ -118,7 +118,7 @@ class _DocumentUploadExampleState extends State<DocumentUploadExample> {
               selectedFileName: 'document_example.docx',
               selectedFilePath: '/path/to/document_example.docx',
               validationErrors: const {},
-              onFileSelected: (fileName, filePath) {
+              onFileSelected: (fileName, filePath, fileBytes) {
                 // Không làm gì trong chế độ chỉ xem
               },
               onUpload: null,

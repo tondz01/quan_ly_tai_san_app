@@ -103,9 +103,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     if (controller.item == null && !controller.isRefreshing) {
       onReload();
       controller.isRefreshing = true;
-      widget.provider.clearMovementDetails();
       controller.initializeEmptyControllers();
       controller.initialize(widget.provider, isEditingParam: true, isNewParam: true);
+      // widget.provider.clearMovementDetails();
     }
 
     return MultiBlocListener(
@@ -398,9 +398,9 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                 selectedFileName: controller.selectedFileName,
                 selectedFilePath: controller.selectedFilePath,
                 validationErrors: controller.validationErrors,
-                onFileSelected: (fileName, filePath) {
+                onFileSelected: (fileName, filePath, fileBytes) {
                   setState(() {
-                    controller.setSelectedFile(fileName, filePath);
+                    controller.setSelectedFile(fileName, filePath, fileBytes);
                   });
                 },
                 label: 'Tài liệu Quyết định',

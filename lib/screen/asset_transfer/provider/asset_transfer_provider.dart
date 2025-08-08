@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -82,7 +83,7 @@ class AssetTransferProvider with ChangeNotifier {
   int typeAssetTransfer = 1;
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 1;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
@@ -157,9 +158,7 @@ class AssetTransferProvider with ChangeNotifier {
   void _applyFilters() {
     if (_data == null) return;
 
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
+    bool hasActiveFilter = _filterStatus.entries.where((entry) => entry.key != FilterStatus.all).any((entry) => entry.value == true);
 
     List<AssetTransferDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
@@ -272,25 +271,23 @@ class AssetTransferProvider with ChangeNotifier {
   }
 
   void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = _filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+    try {
+      // Sử dụng _filteredData thay vì _data
+      totalEntries = _filteredData.length;
+      totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+      startIndex = (currentPage - 1) * rowsPerPage;
+      endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
+      if (startIndex >= totalEntries && totalEntries > 0) {
+        currentPage = 1;
+        startIndex = 0;
+        endIndex = rowsPerPage.clamp(0, totalEntries);
+      }
+
+      dataPage = _filteredData.isNotEmpty ? _filteredData.sublist(startIndex < totalEntries ? startIndex : 0, endIndex < totalEntries ? endIndex : totalEntries) : [];
+    } catch (e) {
+      SGLog.error("AssetTransferProvider", "Error at _updatePagination: $e");
     }
-
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
   }
 
   void onPageChanged(int page) {
@@ -475,11 +472,7 @@ class AssetTransferProvider with ChangeNotifier {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(color: getColorStatus(status), borderRadius: BorderRadius.circular(4)),
-        child: SGText(
-          text: getStatus(status),
-          size: 12,
-          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12),
-        ),
+        child: SGText(text: getStatus(status), size: 12, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12)),
       ),
     );
   }
@@ -512,9 +505,7 @@ class AssetTransferProvider with ChangeNotifier {
     if (!_controller!.isEditing) return;
 
     if (!_controller!.validateForm()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
       notifyListeners();
       return;
     }
@@ -551,13 +542,15 @@ class AssetTransferProvider with ChangeNotifier {
         tggnDenNgay: currentEffectiveDateTo,
         idTrinhDuyetGiamDoc: _controller!.approver?.id ?? '',
 
-        idCongTy: 'CT001',
+        idCongTy: 'ct001',
         ngayTao: DateTime.now().toString(),
         nguoiTao: _controller!.requester?.hoTen ?? '',
         nguoiCapNhat: _controller!.requester?.hoTen ?? '',
         tenFile: result['fileName'] ?? '',
         duongDanFile: result['filePath'] ?? '',
-
+        isActive: true,
+        coHieuLuc: true,
+        loai: _controller!.currentType ?? 0,
         idPhongBanXemPhieu: '',
         idNhanSuXemPhieu: '',
         diaDiemGiaoNhan: '',
@@ -570,9 +563,6 @@ class AssetTransferProvider with ChangeNotifier {
         themDongTrong: '',
         trangThai: 1,
         ngayCapNhat: '',
-        coHieuLuc: false,
-        loai: _controller!.currentType ?? 0,
-        isActive: true,
         active: true,
       );
 
@@ -585,65 +575,57 @@ class AssetTransferProvider with ChangeNotifier {
           _updatePagination();
 
           if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
           }
         } else {
           if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thất bại'), backgroundColor: Colors.red));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thất bại'), backgroundColor: Colors.red));
           }
         }
       } else {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green));
         }
       }
     } catch (e) {
       SGLog.error('AssetTransferController', 'Error saving asset transfer: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
       }
     }
     notifyListeners();
   }
 
   Future<Map<String, dynamic>?> uploadWordDocument(BuildContext context) async {
-    if (_controller!.selectedFilePath == null) return null;
+    if (kIsWeb) {
+      if (_controller!.selectedFileName == null || _controller!.selectedFileBytes == null) return null;
+    } else {
+      if (_controller!.selectedFilePath == null) return null;
+    }
     try {
-      final result = await AssetTransferRepository().uploadFile(_controller!.selectedFilePath!);
+      final result =
+          kIsWeb
+              ? await AssetTransferRepository().uploadFileBytes(_controller!.selectedFileName!, _controller!.selectedFileBytes!)
+              : await AssetTransferRepository().uploadFile(_controller!.selectedFilePath!);
       final statusCode = result['status_code'] as int? ?? 0;
       if (statusCode >= 200 && statusCode < 300) {
         _controller!.validationErrors.remove('document');
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tệp "${_controller!.selectedFileName}" đã được tải lên thành công'),
-              backgroundColor: Colors.green.shade600,
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Tệp "${_controller!.selectedFileName}" đã được tải lên thành công'), backgroundColor: Colors.green.shade600));
         }
         return result['data'];
       } else {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Tải lên thất bại (mã $statusCode)'), backgroundColor: Colors.red.shade600),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tải lên thất bại (mã $statusCode)'), backgroundColor: Colors.red.shade600));
         }
         return null;
       }
     } catch (e) {
       SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600));
         return null;
       }
     }

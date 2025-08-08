@@ -632,7 +632,7 @@ class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferD
                 selectedFileName: _selectedFileName,
                 selectedFilePath: _selectedFilePath,
                 validationErrors: _validationErrors,
-                onFileSelected: (fileName, filePath) {
+                onFileSelected: (fileName, filePath, fileBytes) {
                   setState(() {
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
