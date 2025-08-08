@@ -19,6 +19,12 @@ class AssetManagementBloc
     on<GetListCapitalSourceEvent>((event, emit) async {
       await _getListCapitalSource(event, emit);
     });
+    on<GetListDepartmentEvent>((event, emit) async {
+      await _getListDepartment(event, emit);
+    });
+    on<CreateAssetEvent>((event, emit) async {
+      await _createAsset(event, emit);
+    });
   }
 
   Future<void> _getListAssetManagement(
@@ -94,9 +100,8 @@ class AssetManagementBloc
   ) async {
     emit(AssetManagementInitialState());
     emit(AssetManagementLoadingState());
-    Map<String, dynamic> result = await AssetManagementRepository().getListCapitalSource(
-      event.idCongTy,
-    );
+    Map<String, dynamic> result = await AssetManagementRepository()
+        .getListCapitalSource(event.idCongTy);
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListCapitalSourceSuccessState(data: result['data']));
@@ -104,6 +109,54 @@ class AssetManagementBloc
       String msg = "Lỗi khi lấy dữ liệu nguồn kinh phí";
       emit(
         GetListCapitalSourceFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getListDepartment(
+    GetListDepartmentEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository()
+        .getListDepartment(event.idCongTy);
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(GetListDepartmentSuccessState(data: result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu phòng ban";
+      emit(
+        GetListDepartmentFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  ///CREATE
+  Future<void> _createAsset(
+    CreateAssetEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository().createAsset(
+      event.request,
+    );
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CreateAssetSuccessState());
+    } else {
+      String msg = "Lỗi khi tạo nhóm tài sản";
+      emit(
+        CreateAssetFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,

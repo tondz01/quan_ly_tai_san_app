@@ -1,6 +1,5 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 
@@ -67,14 +66,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
               children: [
                 SGDropdownInputButton<T>(
                   height: 35,
-                  controller:
-                      widget.inputType == TextInputType.number
-                          ? TextEditingController(
-                            text: AppUtility.formatCurrencyNumber(
-                              widget.controller.text,
-                            ),
-                          )
-                          : widget.controller,
+                  controller: widget.controller,
                   textOverflow: TextOverflow.ellipsis,
                   enable: !widget.isEditing,
                   value: widget.value,
@@ -88,9 +80,8 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
                           ? Colors.red
                           : SGAppColors.neutral400,
                   showUnderlineBorderOnly: true,
-                  enableSearch: !widget.isEditing,
-                  isClearController:
-                      false, // Ensure this is false to prevent clearing controller
+                  enableSearch: false,
+                  isClearController: true,
                   fontSize: 16,
                   inputType: widget.inputType,
                   isShowSuffixIcon: true,

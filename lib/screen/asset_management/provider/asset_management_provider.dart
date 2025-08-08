@@ -2,7 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
@@ -12,7 +16,12 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
-  bool get isLoading => _data == null || _dataGroup == null || _dataProject == null || _dataCapitalSource == null;
+  bool get isLoading =>
+      _data == null ||
+      _dataGroup == null ||
+      _dataProject == null ||
+      _dataCapitalSource == null ||
+      _dataDepartment == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   get subScreen => _subScreen;
@@ -20,13 +29,20 @@ class AssetManagementProvider with ChangeNotifier {
   get data => _data;
   get dataDetail => _dataDetail;
   get filteredData => _filteredData ?? _data;
+
   get dataGroup => _dataGroup;
   get dataProject => _dataProject;
   get dataCapitalSource => _dataCapitalSource;
-  // bool _isLoading = true;
-  bool _isShowInput = false;
-  bool _isShowCollapse = false;
-  String? _error;
+  get dataDepartment => _dataDepartment;
+  get itemsLyDoTang => _itemsLyDoTang;
+  get itemsHienTrang => _itemsHienTrang;
+
+  get itemsAssetGroup => _itemsAssetGroup;
+  get itemsDuAn => _itemsDuAn;
+  get itemsNguonKinhPhi => _itemsNguonKinhPhi;
+  get itemsPhongBan => _itemsPhongBan;
+  get itemsCountry => _itemsCountry;
+
   set isShowInput(bool value) {
     _isShowInput = value;
     notifyListeners();
@@ -37,18 +53,63 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // bool _isLoading = true;
+  bool _isShowInput = false;
+  bool _isShowCollapse = false;
+  String? _error;
+
   String? _subScreen;
 
   List<AssetManagementDto>? _data;
   List<AssetGroupDto>? _dataGroup;
   List<DuAn>? _dataProject;
   List<NguonKinhPhi>? _dataCapitalSource;
+  List<PhongBan>? _dataDepartment;
   List<AssetManagementDto>? _filteredData;
   AssetManagementDto? _dataDetail;
+
+  //List dropdown
+  List<DropdownMenuItem<AssetGroupDto>>? _itemsAssetGroup;
+  List<DropdownMenuItem<DuAn>>? _itemsDuAn;
+  List<DropdownMenuItem<NguonKinhPhi>>? _itemsNguonKinhPhi;
+  List<DropdownMenuItem<PhongBan>>? _itemsPhongBan;
+
+  List<Country> listCountry = countries;
+  List<DropdownMenuItem<Country>> _itemsCountry = [];
+
+  //Item dropdown lý do tăng
+  List<LyDoTang> listLyDoTang = AppUtility.listLyDoTang;
+  List<DropdownMenuItem<LyDoTang>> _itemsLyDoTang = [];
+
+  //Item dropdown hien trang
+  List<HienTrang> listHienTrang = AppUtility.listHienTrang;
+  List<DropdownMenuItem<HienTrang>> _itemsHienTrang = [];
+
+  HienTrang getHienTrang(int id) {
+    return listHienTrang.firstWhere((element) => element.id == id);
+  }
+
+  LyDoTang getLyDoTang(int id) {
+    return listLyDoTang.firstWhere((element) => element.id == id);
+  }
+
+  Country? findCountryByName(String name) {
+    return countries.firstWhereOrNull(
+      (country) => country.name.toLowerCase() == name.toLowerCase(),
+    );
+  }
+
+  // Thêm method để lấy Country từ ID
+  Country? findCountryById(int id) {
+    return countries.firstWhereOrNull(
+      (country) => country.id == id,
+    );
+  }
 
   List<Map<String, bool>?> checkBoxAssetGroup = [];
   onInit(BuildContext context) {
     reset();
+    onLoadItemDropdown();
     isShowInput = false;
     isShowCollapse = false;
     getDataAll(context);
@@ -68,11 +129,11 @@ class AssetManagementProvider with ChangeNotifier {
       bloc.add(GetListAssetGroupEvent(context, 'CT001'));
       bloc.add(GetListProjectEvent(context, 'CT001'));
       bloc.add(GetListCapitalSourceEvent(context, 'CT001'));
+      bloc.add(GetListDepartmentEvent(context, 'CT001'));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
   }
-
 
   void onChangeDetail(AssetManagementDto? item) {
     if (item != null) {
@@ -100,6 +161,28 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  createAssetSuccess(
+    BuildContext context,
+    CreateAssetSuccessState state,
+  ) {
+    _error = null;
+    // Thêm tài sản mới vào danh sách
+    // if (state.data != null) {
+    //   _data?.add(state.data!);
+    //   _filteredData = List.from(_data!);
+    // }
+    getDataAll(context);
+    notifyListeners();
+  }
+
+  createAssetError(
+    BuildContext context,
+    CreateAssetFailedState state,
+  ) {
+    _error = state.message;
+    notifyListeners();
+  }
+
   getListAssetGroupSuccess(
     BuildContext context,
     GetListAssetGroupSuccessState state,
@@ -110,6 +193,18 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataGroup = state.data;
       _initializeCheckBoxList();
+      _itemsAssetGroup = [
+        for (var element in _dataGroup!)
+          DropdownMenuItem<AssetGroupDto>(
+            value: element,
+            child: Text(element.tenNhom ?? ''),
+          ),
+      ];
+      log('------------------------------------------------');
+      log(
+        '----------_itemsAssetGroup: ${_itemsAssetGroup?.length}---------------',
+      );
+      log('------------------------------------------------');
     }
     notifyListeners();
   }
@@ -124,6 +219,16 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataProject = state.data;
       _initializeCheckBoxList();
+      _itemsDuAn = [
+        for (var element in _dataProject!)
+          DropdownMenuItem<DuAn>(
+            value: element,
+            child: Text(element.tenDuAn ?? ''),
+          ),
+      ];
+      log('------------------------------------------------');
+      log('----------itemsDuAn: ${_itemsDuAn?.length}---------------');
+      log('------------------------------------------------');
     }
     notifyListeners();
   }
@@ -134,6 +239,38 @@ class AssetManagementProvider with ChangeNotifier {
   ) {
     _error = null;
     _dataCapitalSource = state.data;
+    _itemsNguonKinhPhi = [
+      for (var element in _dataCapitalSource!)
+        DropdownMenuItem<NguonKinhPhi>(
+          value: element,
+          child: Text(element.tenNguonKinhPhi ?? ''),
+        ),
+    ];
+    log('------------------------------------------------');
+    log(
+      '----------_dataCapitalSource: ${_dataCapitalSource?.length}---------------',
+    );
+    log('------------------------------------------------');
+    notifyListeners();
+  }
+
+  getListDepartmentSuccess(
+    BuildContext context,
+    GetListDepartmentSuccessState state,
+  ) {
+    _error = null;
+    _dataDepartment = state.data;
+    _itemsPhongBan = [
+      for (var element in dataDepartment!)
+        DropdownMenuItem<PhongBan>(
+          value: element,
+          child: Text(element.tenPhongBan ?? ''),
+        ),
+    ];
+
+    log('------------------------------------------------');
+    log('----------_dataDepartment: ${_dataDepartment?.length}---------------');
+    log('------------------------------------------------');
     notifyListeners();
   }
 
@@ -211,5 +348,37 @@ class AssetManagementProvider with ChangeNotifier {
       });
     }
     notifyListeners();
+  }
+
+  void onLoadItemDropdown() {
+    _itemsCountry = [
+      for (var element in listCountry)
+        DropdownMenuItem<Country>(
+          value: element,
+          child: Text(element.name),
+        ),
+    ];
+
+    //Item dropdown lý do tăng
+    _itemsLyDoTang = [
+      for (var element in listLyDoTang)
+        DropdownMenuItem<LyDoTang>(
+          value: element,
+          child: Text(element.name),
+        ),
+    ];
+
+    log('onLoadItemDropdown itemsLyDoTang: ${_itemsLyDoTang.length}');
+
+    //Item dropdown hien trang
+    _itemsHienTrang = [
+      for (var element in listHienTrang)
+        DropdownMenuItem<HienTrang>(
+          value: element,
+          child: Text(element.name),
+        ),
+    ];
+
+    log('onLoadItemDropdown itemsHienTrang: ${_itemsHienTrang.length}');
   }
 }

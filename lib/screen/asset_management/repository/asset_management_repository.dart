@@ -4,9 +4,11 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AssetManagementRepository extends ApiBase {
@@ -128,6 +130,60 @@ class AssetManagementRepository extends ApiBase {
     } catch (e) {
       log("Error at getListCapitalSource - AssetManagementRepository: $e");
     }
+    return result;
+  }
+
+  // Get danh sách phòng ban
+  Future<Map<String, dynamic>> getListDepartment([String? idCongTy]) async {
+    List<PhongBan> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        EndPointAPI.PHONG_BAN,
+        queryParameters: {'idcongty': idCongTy ?? 'ct001'},
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = ResponseParser.parseToList<PhongBan>(
+        response.data,
+        PhongBan.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDepartment - AssetManagementRepository: $e");
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> createAsset(AssetRequest request) async {
+    AssetManagementDto? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        EndPointAPI.ASSET_MANAGEMENT,
+        data: request.toJson(),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = AssetManagementDto.fromJson(response.data);
+    } catch (e) {
+      log("Error at createAsset - AssetManagementRepository: $e");
+    }
+
     return result;
   }
 }

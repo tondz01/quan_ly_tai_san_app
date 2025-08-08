@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
@@ -117,6 +118,53 @@ class GetListCapitalSourceFailedState extends AssetManagementState {
   final String message;
 
   const GetListCapitalSourceFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+class GetListDepartmentSuccessState extends AssetManagementState {
+  final List<PhongBan> data;
+
+  const GetListDepartmentSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class GetListDepartmentFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListDepartmentFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+//CREATED
+class CreateAssetSuccessState extends AssetManagementState {
+  const CreateAssetSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class CreateAssetFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const CreateAssetFailedState({
     required this.title,
     this.code,
     required this.message,

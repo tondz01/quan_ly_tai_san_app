@@ -154,14 +154,7 @@ Widget buildOriginalAssetInfomation(
                     idAssetCategory: ctrlTenMoHinh.text,
                   )
                   : null,
-          onChanged: (value) {
-            onAssetCategoryChanged?.call(value);
-            ctrlSoKyKhauHao.text = value.kyKhauHao?.toString() ?? '';
-            ctrlTaiKhoanTaiSan.text = value.taiKhoanTaiSan?.toString() ?? '';
-            ctrlTaiKhoanKhauHao.text = value.taiKhoanKhauHao?.toString() ?? '';
-            ctrlTaiKhoanChiPhi.text = value.taiKhoanChiPhi?.toString() ?? '';
-            log('Asset category changed: ${value.tenMoHinh}');
-          },
+          onChanged: onAssetCategoryChanged,
         ),
 
         CommonFormInput(
@@ -180,13 +173,8 @@ Widget buildOriginalAssetInfomation(
           label: 'Số Kỳ khấu hao',
           controller: ctrlSoKyKhauHao,
           isEditing: false,
-          textContent:
-              ctrlTenMoHinh.text.isNotEmpty
-                  ? getAssetCategory(
-                    listAssetCatergory: listAssetCategory,
-                    idAssetCategory: ctrlTenMoHinh.text,
-                  ).kyKhauHao.toString()
-                  : '',
+          textContent: ctrlSoKyKhauHao.text,
+
           fieldName: 'phuongPhapKhauHaos',
           validationErrors: validationErrors,
         ),
@@ -194,13 +182,7 @@ Widget buildOriginalAssetInfomation(
           label: 'Tài khoản tài sản',
           controller: ctrlTaiKhoanTaiSan,
           isEditing: false,
-          textContent:
-              ctrlTenMoHinh.text.isNotEmpty
-                  ? getAssetCategory(
-                    listAssetCatergory: listAssetCategory,
-                    idAssetCategory: ctrlTenMoHinh.text,
-                  ).taiKhoanTaiSan.toString()
-                  : '',
+          textContent: ctrlTenMoHinh.text,
           fieldName: 'taiKhoanTaiSan',
           validationErrors: validationErrors,
         ),
@@ -208,13 +190,7 @@ Widget buildOriginalAssetInfomation(
           label: 'Tài khoản khấu hao',
           controller: ctrlTaiKhoanTaiSan,
           isEditing: false,
-          textContent:
-              ctrlTenMoHinh.text.isNotEmpty
-                  ? getAssetCategory(
-                    listAssetCatergory: listAssetCategory,
-                    idAssetCategory: ctrlTenMoHinh.text,
-                  ).taiKhoanKhauHao.toString()
-                  : '',
+          textContent: ctrlTenMoHinh.text,
           fieldName: 'taiKhoanKhauHao',
           validationErrors: validationErrors,
         ),

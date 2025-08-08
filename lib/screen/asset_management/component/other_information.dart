@@ -3,13 +3,17 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 Widget buildOtherInformation(
@@ -17,30 +21,39 @@ Widget buildOtherInformation(
   required TextEditingController ctrlDuAn,
   required TextEditingController ctrlNguonKinhPhi,
   required TextEditingController ctrlKyHieu,
-  required TextEditingController ctrlGiaTriKhauHaoBanDau,
-  required TextEditingController ctrlKyKhauHaoBanDau,
-  required TextEditingController ctrlGiaTriThanhLy,
-  required TextEditingController ctrlTenMoHinh,
-  required TextEditingController ctrlPhuongPhapKhauHao,
-  required TextEditingController ctrlSoKyKhauHao,
-  required TextEditingController ctrlTaiKhoanTaiSan,
-  required TextEditingController ctrlTaiKhoanKhauHao,
-  required TextEditingController ctrlTaiKhoanChiPhi,
-  required TextEditingController ctrlTenNhom,
-  required TextEditingController ctrlNgayVaoSo,
-  required TextEditingController ctrlNgaySuDung,
+  required TextEditingController ctrlSoKyHieu,
+  required TextEditingController ctrlCongSuat,
+  required TextEditingController ctrlNuocSanXuat,
+  required TextEditingController ctrlNamSanXuat,
+  required TextEditingController ctrlLyDoTang,
+  required TextEditingController ctrlHienTrang,
+  required TextEditingController ctrlSoLuong,
+  required TextEditingController ctrlDonViTinh,
+  required TextEditingController ctrlGhiChu,
+  required TextEditingController ctrlDonViBanDau,
+  required TextEditingController ctrlDonViHienThoi,
+  required bool valueKhoiTaoDonVi,
   Map<String, bool>? validationErrors,
   bool isEditing = false,
   Function(String)? onDepreciationMethodChanged,
-  Function(AssetCategoryDto)? onAssetCategoryChanged,
+  Function(PhongBan)? onChangeInitialUsage,
+  Function(PhongBan)? onChangeCurrentUnit,
   Function(DuAn)? onDuAnChanged,
+  Function(LyDoTang)? onLyDoTangChanged,
+  Function(HienTrang)? onHienTrangChanged,
   Function(NguonKinhPhi)? onNguonKinhPhiChanged,
-  required List<AssetCategoryDto> listAssetCategory,
-  required List<DuAn> listAssetGroup,
+  Function(bool)? onKhoiTaoDonViChanged,
+  required List<PhongBan> listPhongBan,
+  required List<DuAn> listDuAn,
   required List<NguonKinhPhi> listNguonKinhPhi,
-  required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
+  required List<DropdownMenuItem<PhongBan>> itemsPhongBan,
   required List<DropdownMenuItem<DuAn>> itemsDuAn,
   required List<DropdownMenuItem<NguonKinhPhi>> itemsNguonKinhPhi,
+  required Function(Country)? onNuocSanXuatChanged,
+  required AssetManagementProvider provider,
+  HienTrang? hienTrang,
+  LyDoTang? lyDoTang,
+  Country? country,
 }) {
   return Column(
     children: [
@@ -50,13 +63,13 @@ Widget buildOtherInformation(
 
       CmFormDropdownObject<DuAn>(
         label: 'Dự án',
-        controller: ctrlNguonKinhPhi,
+        controller: ctrlDuAn,
         isEditing: isEditing,
         items: itemsDuAn,
         defaultValue:
             ctrlNguonKinhPhi.text.isNotEmpty
                 ? getDuAn(
-                  listAssetGroup: listAssetGroup,
+                  listAssetGroup: listDuAn,
                   idAssetGroup: ctrlNguonKinhPhi.text,
                 )
                 : null,
@@ -64,6 +77,7 @@ Widget buildOtherInformation(
         fieldName: 'duAn',
         validationErrors: validationErrors,
       ),
+
       CmFormDropdownObject<NguonKinhPhi>(
         label: 'Nguồn kinh phí',
         controller: ctrlNguonKinhPhi,
@@ -80,6 +94,7 @@ Widget buildOtherInformation(
         fieldName: 'nguonKinhPhi',
         validationErrors: validationErrors,
       ),
+
       CommonFormInput(
         label: 'Ký hiệu',
         controller: ctrlKyHieu,
@@ -88,154 +103,155 @@ Widget buildOtherInformation(
         fieldName: 'kyHieu',
         validationErrors: validationErrors,
       ),
+
       CommonFormInput(
-        label: 'Giá trị Khấu hao ban đầu',
-        controller: ctrlGiaTriKhauHaoBanDau,
+        label: 'Số ký hiệu',
+        controller: ctrlSoKyHieu,
         isEditing: isEditing,
         textContent: '',
-        fieldName: 'giaTriKhauHaoBanDau',
-        inputType: TextInputType.number,
-        validationErrors: validationErrors,
-      ),
-      CommonFormInput(
-        label: 'Kỳ khấu hao ban đầu',
-        controller: ctrlKyKhauHaoBanDau,
-        isEditing: isEditing,
-        textContent: '',
-        fieldName: 'kyKhauHaoBanDau',
-        inputType: TextInputType.number,
-        validationErrors: validationErrors,
-      ),
-      CommonFormInput(
-        label: 'Giá trị thanh lý',
-        controller: ctrlGiaTriThanhLy,
-        isEditing: isEditing,
-        textContent: '',
-        fieldName: 'kyKhauHaoBanDau',
+        fieldName: 'soKyHieu',
         inputType: TextInputType.number,
         validationErrors: validationErrors,
       ),
 
-      CmFormDropdownObject<AssetCategoryDto>(
-        label: 'Mô hình tài sản',
-        controller: ctrlTenMoHinh,
+      CommonFormInput(
+        label: 'Công suất',
+        controller: ctrlCongSuat,
         isEditing: isEditing,
-        items: itemsAssetCategory,
+        textContent: '',
+        fieldName: 'congSuat',
+        validationErrors: validationErrors,
+      ),
+
+      CmFormDropdownObject<Country>(
+        label: 'Nước sản xuất',
+        value: country,
+        controller: ctrlNuocSanXuat,
+        isEditing: isEditing,
+        items: provider.itemsCountry,
+        fieldName: 'nuocSanXuat',
         defaultValue:
-            ctrlTenMoHinh.text.isNotEmpty
-                ? getAssetCategory(
-                  listAssetCatergory: listAssetCategory,
-                  idAssetCategory: ctrlTenMoHinh.text,
-                )
+            ctrlNuocSanXuat.text.isNotEmpty
+                ? provider.findCountryByName(ctrlNuocSanXuat.text)
                 : null,
         onChanged: (value) {
-          onAssetCategoryChanged?.call(value);
-          ctrlSoKyKhauHao.text = value.kyKhauHao?.toString() ?? '';
-          ctrlTaiKhoanTaiSan.text = value.taiKhoanTaiSan?.toString() ?? '';
-          ctrlTaiKhoanKhauHao.text = value.taiKhoanKhauHao?.toString() ?? '';
-          ctrlTaiKhoanChiPhi.text = value.taiKhoanChiPhi?.toString() ?? '';
-          log('Asset category changed: ${value.tenMoHinh}');
+          // ctrlNuocSanXuat.text = value.name;
+          onNuocSanXuatChanged?.call(value);
         },
       ),
 
       CommonFormInput(
-        label: 'Phương pháp khấu hao',
-        controller: ctrlPhuongPhapKhauHao,
+        label: 'Năm sản xuất',
+        controller: ctrlNamSanXuat,
         isEditing: isEditing,
         textContent: '',
-        fieldName: 'tenMoHinh',
-        isDropdown: true,
-        items: AppUtility.phuongPhapKhauHaos,
-        onChanged: onDepreciationMethodChanged,
+        fieldName: 'namSanXuat',
+        inputType: TextInputType.number,
+        validationErrors: validationErrors,
+      ),
+
+      CmFormDropdownObject<LyDoTang>(
+        label: 'Lý do tăng',
+        controller: ctrlLyDoTang,
+        isEditing: isEditing,
+        items: provider.itemsLyDoTang,
+        fieldName: 'lyDoTang',
+        defaultValue:
+            ctrlLyDoTang.text.isNotEmpty &&
+                    int.tryParse(ctrlLyDoTang.text) != null
+                ? provider.getLyDoTang(int.parse(ctrlLyDoTang.text))
+                : null,
+        onChanged: (value) {
+          // ctrlLyDoTang.text = value.name;
+          onLyDoTangChanged?.call(value);
+        },
+      ),
+
+      CmFormDropdownObject<HienTrang>(
+        label: 'Hiện trạng',
+        controller: ctrlHienTrang,
+        isEditing: isEditing,
+        items: provider.itemsHienTrang,
+        fieldName: 'hienTrang',
+        defaultValue:
+            ctrlHienTrang.text.isNotEmpty &&
+                    int.tryParse(ctrlHienTrang.text) != null
+                ? provider.getHienTrang(int.parse(ctrlHienTrang.text))
+                : null,
+        onChanged: (value) {
+          // ctrlHienTrang.text = value.name;
+          onHienTrangChanged?.call(value);
+        },
+      ),
+
+      CommonFormInput(
+        label: 'Số lượng',
+        controller: ctrlSoLuong,
+        isEditing: isEditing,
+        textContent: '',
+        fieldName: 'soLuong',
+        inputType: TextInputType.number,
         validationErrors: validationErrors,
       ),
 
       CommonFormInput(
-        label: 'Số Kỳ khấu hao',
-        controller: ctrlSoKyKhauHao,
-        isEditing: false,
-        textContent:
-            ctrlTenMoHinh.text.isNotEmpty
-                ? getAssetCategory(
-                  listAssetCatergory: listAssetCategory,
-                  idAssetCategory: ctrlTenMoHinh.text,
-                ).kyKhauHao.toString()
-                : '',
-        fieldName: 'phuongPhapKhauHaos',
-        validationErrors: validationErrors,
-      ),
-      CommonFormInput(
-        label: 'Tài khoản tài sản',
-        controller: ctrlTaiKhoanTaiSan,
-        isEditing: false,
-        textContent:
-            ctrlTenMoHinh.text.isNotEmpty
-                ? getAssetCategory(
-                  listAssetCatergory: listAssetCategory,
-                  idAssetCategory: ctrlTenMoHinh.text,
-                ).taiKhoanTaiSan.toString()
-                : '',
-        fieldName: 'taiKhoanTaiSan',
-        validationErrors: validationErrors,
-      ),
-      CommonFormInput(
-        label: 'Tài khoản khấu hao',
-        controller: ctrlTaiKhoanTaiSan,
-        isEditing: false,
-        textContent:
-            ctrlTenMoHinh.text.isNotEmpty
-                ? getAssetCategory(
-                  listAssetCatergory: listAssetCategory,
-                  idAssetCategory: ctrlTenMoHinh.text,
-                ).taiKhoanKhauHao.toString()
-                : '',
-        fieldName: 'taiKhoanKhauHao',
-        validationErrors: validationErrors,
-      ),
-      CommonFormInput(
-        label: 'Tài khoản chi phí',
-        controller: ctrlTaiKhoanTaiSan,
-        isEditing: false,
-        textContent:
-            ctrlTenMoHinh.text.isNotEmpty
-                ? getAssetCategory(
-                  listAssetCatergory: listAssetCategory,
-                  idAssetCategory: ctrlTenMoHinh.text,
-                ).taiKhoanChiPhi.toString()
-                : '',
-        fieldName: 'taiKhoanChiPhi',
-        validationErrors: validationErrors,
-      ),
-      // CmFormDropdownObject<AssetGroupDto>(
-      //   label: 'Nhóm tài sản',
-      //   controller: ctrlIdNhomTaiSan,
-      //   isEditing: isEditing,
-      //   items: itemsAssetGroup,
-      //   defaultValue:
-      //       ctrlIdNhomTaiSan.text.isNotEmpty
-      //           ? getAssetGroup(
-      //             listAssetGroup: listAssetGroup,
-      //             idAssetGroup: ctrlIdNhomTaiSan.text,
-      //           )
-      //           : null,
-      //   onChanged: onAssetGroupChanged,
-      //   fieldName: 'idNhomTaiSan',
-      //   validationErrors: validationErrors,
-      // ),
-      CommonFormInput(
-        label: 'Ngày vào sổ',
-        controller: ctrlNgayVaoSo,
+        label: 'Đơn vị tính',
+        controller: ctrlDonViTinh,
         isEditing: isEditing,
-        textContent: ctrlNgayVaoSo.text.isNotEmpty ? ctrlNgayVaoSo.text : '',
-        fieldName: 'ngayVaoSo',
+        textContent: '',
+        fieldName: 'donViTinh',
         validationErrors: validationErrors,
       ),
+
       CommonFormInput(
-        label: 'Ngày sử dụng',
-        controller: ctrlNgaySuDung,
+        label: 'Ghi chú',
+        controller: ctrlGhiChu,
         isEditing: isEditing,
-        textContent: ctrlNgaySuDung.text.isNotEmpty ? ctrlNgaySuDung.text : '',
-        fieldName: 'ngaySuDung',
+        textContent: '',
+        fieldName: 'ghiChu',
+        validationErrors: validationErrors,
+      ),
+
+      CommonCheckboxInput(
+        label: 'Khoi tạo đơn vị',
+        value: valueKhoiTaoDonVi,
+        onChanged: onKhoiTaoDonViChanged,
+        isEditing: isEditing,
+        isEnable: false,
+      ),
+
+      if (valueKhoiTaoDonVi)
+        CmFormDropdownObject<PhongBan>(
+          label: 'Đơn vị sử dụng ban đầu',
+          controller: ctrlDonViBanDau,
+          isEditing: isEditing,
+          items: itemsPhongBan,
+          defaultValue:
+              ctrlDonViBanDau.text.isNotEmpty
+                  ? getPhongBan(
+                    listPhongBan: listPhongBan,
+                    idAssetGroup: ctrlDonViBanDau.text,
+                  )
+                  : null,
+          onChanged: onChangeInitialUsage,
+          fieldName: 'idDonViBanDau',
+          validationErrors: validationErrors,
+        ),
+
+      CmFormDropdownObject<PhongBan>(
+        label: 'Đơn vị hiện thời',
+        controller: ctrlDonViHienThoi,
+        isEditing: isEditing,
+        items: itemsPhongBan,
+        defaultValue:
+            ctrlDonViHienThoi.text.isNotEmpty
+                ? getPhongBan(
+                  listPhongBan: listPhongBan,
+                  idAssetGroup: ctrlDonViHienThoi.text,
+                )
+                : null,
+        onChanged: onChangeCurrentUnit,
+        fieldName: 'idDonViHienThoi',
         validationErrors: validationErrors,
       ),
     ],
@@ -290,6 +306,18 @@ NguonKinhPhi getNguonKinhPhi({
       nguoiTao: '',
       isActive: false,
     );
+  }
+  return found.first;
+}
+
+PhongBan getPhongBan({
+  required List<PhongBan> listPhongBan,
+  required String idAssetGroup,
+}) {
+  final found = listPhongBan.where((item) => item.id == idAssetGroup);
+  if (found.isEmpty) {
+    // Trả về một AssetGroupDto mặc định nếu không tìm thấy
+    return PhongBan(id: '', tenPhongBan: '', idCongTy: '', nguoiTao: '');
   }
   return found.first;
 }
