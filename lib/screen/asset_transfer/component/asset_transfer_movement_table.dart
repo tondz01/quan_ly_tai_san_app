@@ -73,17 +73,16 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
       showHorizontalLines: true,
       addRowText: 'Thêm một dòng',
       isEditing: isEditing,
-      onDataChanged: (data) {},
+      onDataChanged: (data) {
+        SGLog.info("assetTransferMovementTable", "${data.length}");
+      },
       columns: [
         SgEditableColumn<MovementDetailDto>(
           field: 'asset',
           title: 'Tài sản',
           titleAlignment: TextAlign.center,
           width: 160,
-          getValue: (item) {
-            SGLog.info("Tài sản", "Tài sản: ${item.tenTaiSan}");
-            item.tenTaiSan;
-          },
+          getValue: (item) => item.tenTaiSan,
           setValue: (item, value) => MovementDetailDto.copy(item, tenTaiSan: value),
           sortValueGetter: (item) => item.tenTaiSan,
         ),
@@ -95,7 +94,7 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
           getValue: (item) => item.donViTinh,
           setValue: (item, value) => MovementDetailDto.copy(item, donViTinh: value),
           sortValueGetter: (item) => item.donViTinh,
-          isEditable: false,
+          isCellEditableDecider: (item, index) => false,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'quantity',
@@ -105,7 +104,7 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
           getValue: (item) => item.soLuong,
           setValue: (item, value) => MovementDetailDto.copy(item, soLuong: int.tryParse(value?.toString() ?? '0')),
           sortValueGetter: (item) => item.soLuong ?? 0,
-          isEditable: false,
+          isCellEditableDecider: (item, index) => false,
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'condition',

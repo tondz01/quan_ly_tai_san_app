@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -23,6 +24,7 @@ class AssetTransferController {
   bool controllersInitialized = false;
   String? selectedFileName;
   String? selectedFilePath;
+  int? currentType;
 
   PhongBan? deliveringUnit;
   PhongBan? receivingUnit;
@@ -259,6 +261,8 @@ class AssetTransferController {
     selectedFileName = fileName;
     selectedFilePath = filePath;
 
+    SGLog.info("setSelectedFile", "$fileName, $filePath");
+
     if (validationErrors.containsKey('document')) {
       validationErrors.remove('document');
     }
@@ -292,94 +296,6 @@ class AssetTransferController {
 
     // Re-initialize dropdown items
     _initializeDropdownItems();
-  }
-
-  Future<void> saveAssetTransfer(BuildContext context) async {
-    if (!isEditing) return;
-
-    if (!validateForm()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
-      return;
-    }
-
-    try {
-      final currentDocumentName = controllerDocumentName.text;
-      final currentSubject = controllerSubject.text;
-      final currentDecisionNumber = controllerDecisionNumber.text;
-      final currentEffectiveDate = controllerEffectiveDate.text;
-      final currentEffectiveDateTo = controllerEffectiveDateTo.text;
-
-      // Create an AssetTransferDto with the form data
-      final AssetTransferDto savedItem = AssetTransferDto(
-        soQuyetDinh: currentDecisionNumber,
-        trichYeu: currentSubject,
-        tenPhieu: currentDocumentName,
-        idDonViGiao: deliveringUnit?.id ?? '',
-        idDonViNhan: receivingUnit?.id ?? '',
-        idNguoiDeNghi: requester?.id ?? '',
-        nguoiLapPhieuKyNhay: isPreparerInitialed,
-        quanTrongCanXacNhan: isRequireManagerApproval,
-        phoPhongXacNhan: isDeputyConfirmed,
-        idDonViDeNghi: proposingUnit ?? '',
-        idTrinhDuyetCapPhong: departmentApproval?.id ?? '',
-        tggnTuNgay: currentEffectiveDate,
-        tggnDenNgay: currentEffectiveDateTo,
-        idTrinhDuyetGiamDoc: approver?.id ?? '',
-
-        idCongTy: 'CT001',
-        ngayTao: DateTime.now().toString(),
-        nguoiTao: requester?.hoTen ?? '',
-        nguoiCapNhat: requester?.hoTen ?? '',
-        
-        idPhongBanXemPhieu:  '',
-        idNhanSuXemPhieu: '',
-        diaDiemGiaoNhan: '',
-        veViec: '',
-        canCu: '',
-        dieu1: '',
-        dieu2: '',
-        dieu3: '',
-        noiNhan: '',
-        themDongTrong: '',
-        trangThai: 0,
-        ngayCapNhat: '',
-        coHieuLuc: false,
-        loai: 0,
-        isActive: false,
-        active: true,
-      );
-
-      final provider = Provider.of<AssetTransferProvider>(context, listen: false);
-
-      if (item == null) {
-        // await provider.createAssetTransfer(savedItem);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
-      } else {
-        await provider.updateAssetTransfer(savedItem);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green),
-          );
-        }
-      }
-
-      // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
-    } catch (e) {
-      SGLog.error('AssetTransferController', 'Error saving asset transfer: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
-      }
-    } finally {
-      if (context.mounted) {
-        isUploading = false;
-      }
-    }
   }
 
   // Clean up resources

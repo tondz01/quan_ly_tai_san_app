@@ -21,6 +21,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_repository.dart';
 
 class AssetTransferDetail extends StatefulWidget {
   final AssetTransferProvider provider;
@@ -157,7 +158,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                     backgroundColor: ColorValue.success,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      controller.saveAssetTransfer(context);
+                      widget.provider.saveAssetTransfer(context);
                     },
                   ),
                   const SizedBox(width: 8),
@@ -402,8 +403,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                     controller.setSelectedFile(fileName, filePath);
                   });
                 },
-                onUpload: _uploadWordDocument,
-                isUploading: controller.isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
                 hintText: 'Định dạng hỗ trợ: .doc, .docx (Microsoft Word)',
@@ -426,42 +425,6 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
       ],
     );
   }
-
-  Future<void> _uploadWordDocument() async {
-    if (controller.selectedFilePath == null) return;
-
-    setState(() {
-      controller.isUploading = true;
-    });
-
-    try {
-      await Future.delayed(const Duration(seconds: 2));
-      setState(() {
-        controller.validationErrors.remove('document');
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Tệp "${controller.selectedFileName}" đã được tải lên thành công'),
-            backgroundColor: Colors.green.shade600,
-          ),
-        );
-      }
-    } catch (e) {
-      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
-        );
-      }
-    } finally {
-      setState(() {
-        controller.isUploading = false;
-      });
-    }
-  }
-
-  // Method to save asset transfer can be reimplemented using the controller
 
   void onReload() {
     _refreshWidget();

@@ -9,10 +9,6 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/views/department
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/views/project_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/views/staff_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_screen.dart';
-import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
-import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
-import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
-import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_4.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
@@ -44,42 +40,6 @@ class AppRouteConf {
           GoRoute(
             path: AppRoute.exemple.path,
             redirect: (_, __) => AppRoute.exemple1.path,
-          ),
-          GoRoute(
-            path: AppRoute.exemple1.path,
-            name: AppRoute.exemple1.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: const ExempleScreen1(),
-                ),
-          ),
-          GoRoute(
-            path: AppRoute.exemple2.path,
-            name: AppRoute.exemple2.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: const ExempleScreen2(),
-                ),
-          ),
-          GoRoute(
-            path: AppRoute.exemple3.path,
-            name: AppRoute.exemple3.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: const ExempleScreen3(),
-                ),
-          ),
-          GoRoute(
-            path: AppRoute.exemple4.path,
-            name: AppRoute.exemple4.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: const ExempleScreen4(),
-                ),
           ),
           GoRoute(
             path: AppRoute.toolsAndSupplies.path,

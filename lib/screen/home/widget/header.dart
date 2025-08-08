@@ -40,7 +40,7 @@ class _HeaderState extends State<Header> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.5),
+            color: ColorValue.neutral200.withValues(alpha: .5),
             offset: const Offset(0, 2),
             blurRadius: 4,
           ),

@@ -32,7 +32,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   void initState() {
     super.initState();
     currentType = widget.typeAssetTransfer;
-    _initData();
+    _initData(controller);
   }
 
   @override
@@ -40,13 +40,14 @@ class _AssetTransferViewState extends State<AssetTransferView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
       currentType = widget.typeAssetTransfer;
-      _initData();
+      _initData(controller);
     }
   }
 
-  void _initData() {
+  void _initData(AssetTransferController controller) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetTransferProvider>(context, listen: false).onInit(context, currentType);
+      controller.currentType = currentType;
+      Provider.of<AssetTransferProvider>(context, listen: false).onInit(context, currentType, controller);
     });
   }
 
@@ -115,7 +116,11 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
                           childInput: AssetTransferDetail(provider: provider, controller: controller),
-                          childTableView: AssetTransferList(provider: provider, typeAssetTransfer: currentType, controller: controller),
+                          childTableView: AssetTransferList(
+                            provider: provider,
+                            typeAssetTransfer: currentType,
+                            controller: controller,
+                          ),
                           title: "Chi tiết điều chuyển tài sản",
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,

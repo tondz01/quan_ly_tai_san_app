@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/controller/asset_transfer_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_repository.dart';
@@ -114,6 +115,8 @@ class AssetTransferProvider with ChangeNotifier {
   List<PhongBan> _listPhongBan = [];
   List<MovementDetailDto> _listMovementDetail = [];
   final List<SgTableColumn<AssetTransferDto>> _columns = [];
+
+  AssetTransferController? _controller;
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -232,10 +235,10 @@ class AssetTransferProvider with ChangeNotifier {
     FilterStatus.complete: false,
   };
 
-  void onInit(BuildContext context, int typeAssetTransfer) {
+  void onInit(BuildContext context, int typeAssetTransfer, AssetTransferController controller) {
     onDispose();
     this.typeAssetTransfer = typeAssetTransfer;
-
+    _controller = controller;
     _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
 
@@ -256,12 +259,15 @@ class AssetTransferProvider with ChangeNotifier {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
+    _controller = null;
   }
 
   void getAssetTransfer(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<AssetTransferBloc>().add(GetListAssetTransferEvent(context, typeAssetTransfer));
+      if (context.mounted) {
+        context.read<AssetTransferBloc>().add(GetListAssetTransferEvent(context, typeAssetTransfer));
+      }
     });
   }
 
@@ -501,53 +507,149 @@ class AssetTransferProvider with ChangeNotifier {
     }
   }
 
-  // Add method to create a new asset transfer
-  // Future<void> createAssetTransfer(AssetTransferDto item) async {
-  //   final newItem = AssetTransferDto(
-  //     id: '',
-  //     soQuyetDinh: '',
-  //     tenPhieu: '',
-  //     idDonViGiao: '',
-  //     idDonViNhan: '',
-  //     idDonViDeNghi: '',
-  //     idPhongBanXemPhieu: '',
-  //     idNguoiDeNghi: '',
-  //     idTrinhDuyetCapPhong: '',
-  //     idTrinhDuyetGiamDoc: '',
-  //     idNhanSuXemPhieu: '',
-  //     nguoiLapPhieuKyNhay: null,
-  //     quanTrongCanXacNhan: null,
-  //     phoPhongXacNhan: null,
-  //     tggnTuNgay: '',
-  //     tggnDenNgay: '',
-  //     diaDiemGiaoNhan: '',
-  //     veViec: '',
-  //     canCu: '',
-  //     dieu1: '',
-  //     dieu2: '',
-  //     dieu3: '',
-  //     noiNhan: '',
-  //     themDongTrong: '',
-  //     trangThai: null,
-  //     idCongTy: '',
-  //     ngayTao: '',
-  //     ngayCapNhat: '',
-  //     nguoiTao: '',
-  //     nguoiCapNhat: '',
-  //     coHieuLuc: null,
-  //     loai: null,
-  //     isActive: null,
-  //     active: true,
-  //   );
+  Future<void> saveAssetTransfer(BuildContext context) async {
+    if (_controller == null) return;
+    if (!_controller!.isEditing) return;
 
-  //   _data ??= [];
-  //   _data!.add(newItem);
+    if (!_controller!.validateForm()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
+      notifyListeners();
+      return;
+    }
+    Map<String, String>? result = await uploadWordDocument(context);
+    if (result == null) {
+      notifyListeners();
+      return;
+    }
 
-  //   _filteredData = List.from(_data!);
-  //   _updatePagination();
+    SGLog.debug("AssetTransferProvider", "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}");
 
-  //   notifyListeners();
-  // }
+    try {
+      final currentDocumentName = _controller!.controllerDocumentName.text;
+      final currentSubject = _controller!.controllerSubject.text;
+      final currentDecisionNumber = _controller!.controllerDecisionNumber.text;
+      final currentEffectiveDate = _controller!.controllerEffectiveDate.text;
+      final currentEffectiveDateTo = _controller!.controllerEffectiveDateTo.text;
+
+      // Create an AssetTransferDto with the form data
+      final AssetTransferDto savedItem = AssetTransferDto(
+        id: "DDTS-${DateTime.now().millisecondsSinceEpoch}",
+        soQuyetDinh: currentDecisionNumber,
+        trichYeu: currentSubject,
+        tenPhieu: currentDocumentName,
+        idDonViGiao: _controller!.deliveringUnit?.id ?? '',
+        idDonViNhan: _controller!.receivingUnit?.id ?? '',
+        idNguoiDeNghi: _controller!.requester?.id ?? '',
+        nguoiLapPhieuKyNhay: _controller!.isPreparerInitialed,
+        quanTrongCanXacNhan: _controller!.isRequireManagerApproval,
+        phoPhongXacNhan: _controller!.isDeputyConfirmed,
+        idDonViDeNghi: _controller!.proposingUnit ?? '',
+        idTrinhDuyetCapPhong: _controller!.departmentApproval?.id ?? '',
+        tggnTuNgay: currentEffectiveDate,
+        tggnDenNgay: currentEffectiveDateTo,
+        idTrinhDuyetGiamDoc: _controller!.approver?.id ?? '',
+
+        idCongTy: 'CT001',
+        ngayTao: DateTime.now().toString(),
+        nguoiTao: _controller!.requester?.hoTen ?? '',
+        nguoiCapNhat: _controller!.requester?.hoTen ?? '',
+        tenFile: result['fileName'] ?? '',
+        duongDanFile: result['filePath'] ?? '',
+
+        idPhongBanXemPhieu: '',
+        idNhanSuXemPhieu: '',
+        diaDiemGiaoNhan: '',
+        veViec: '',
+        canCu: '',
+        dieu1: '',
+        dieu2: '',
+        dieu3: '',
+        noiNhan: '',
+        themDongTrong: '',
+        trangThai: 1,
+        ngayCapNhat: '',
+        coHieuLuc: false,
+        loai: _controller!.currentType ?? 0,
+        isActive: true,
+        active: true,
+      );
+
+      if (item == null) {
+        var result = await AssetTransferRepository().postFromAssetTransfer(savedItem);
+
+        if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+          _dataPage?.add(savedItem);
+          _filteredData = List.from(_dataPage!);
+          _updatePagination();
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thành công'), backgroundColor: Colors.green));
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Tạo phiếu điều chuyển thất bại'), backgroundColor: Colors.red));
+          }
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cập nhật phiếu điều chuyển thành công'), backgroundColor: Colors.green),
+          );
+        }
+      }
+    } catch (e) {
+      SGLog.error('AssetTransferController', 'Error saving asset transfer: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi: ${e.toString()}'), backgroundColor: Colors.red));
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<Map<String, String>?> uploadWordDocument(BuildContext context) async {
+    if (_controller!.selectedFilePath == null) return null;
+    try {
+      final result = await AssetTransferRepository().uploadFile(_controller!.selectedFilePath!);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        _controller!.validationErrors.remove('document');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tệp "${_controller!.selectedFileName}" đã được tải lên thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+        }
+        SGLog.info("AssetTransferDetail", "result: ${result['data']}");
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Tải lên thất bại (mã $statusCode)'), backgroundColor: Colors.red.shade600),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tải lên tệp: ${e.toString()}'), backgroundColor: Colors.red.shade600),
+        );
+        return null;
+      }
+    }
+    return null;
+  }
 
   Future<void> updateAssetTransfer(AssetTransferDto updatedItem) async {
     if (_data == null) return;
