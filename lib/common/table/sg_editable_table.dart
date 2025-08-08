@@ -25,6 +25,9 @@ class SgEditableTable<T> extends StatefulWidget {
   final Function(List<T>)? onDataChanged;
   final T Function() createEmptyItem;
   final bool isEditing; // Add isEditing property
+  // NEW: Per-row editable settings
+  final bool defaultRowEditable;
+  final bool Function(T item, int rowIndex)? rowEditableDecider;
 
   const SgEditableTable({
     super.key,
@@ -44,6 +47,8 @@ class SgEditableTable<T> extends StatefulWidget {
     this.addRowText = 'Thêm một dòng',
     this.onDataChanged,
     this.isEditing = true, // Default to true for backward compatibility
+    this.defaultRowEditable = true,
+    this.rowEditableDecider,
   });
 
   @override
@@ -54,6 +59,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   late List<T> _tableData;
   int? _selectedRowIndex;
   Map<int, Map<String, TextEditingController>> _controllers = {};
+  // NEW: track per-row editable flags
+  Map<int, bool> _rowEditableFlags = {};
 
   // Add sorting state variables
   int? _sortColumnIndex;
@@ -68,8 +75,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   void _initControllers() {
     _controllers.clear();
+    _rowEditableFlags.clear();
     for (int i = 0; i < _tableData.length; i++) {
       _initRowControllers(i);
+      _initRowEditableFlag(i);
     }
   }
 
@@ -84,6 +93,14 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]![column.field] = controller;
       }
     }
+  }
+
+  void _initRowEditableFlag(int rowIndex) {
+    final item = _tableData[rowIndex];
+    final editable =
+        widget.rowEditableDecider?.call(item, rowIndex) ??
+        widget.defaultRowEditable;
+    _rowEditableFlags[rowIndex] = editable;
   }
 
   @override
@@ -112,7 +129,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     setState(() {
       final newItem = widget.createEmptyItem();
       _tableData.add(newItem);
-      _initRowControllers(_tableData.length - 1);
+      final newIndex = _tableData.length - 1;
+      _initRowControllers(newIndex);
+      // Set editable flag for new row
+      _rowEditableFlags[newIndex] =
+          widget.rowEditableDecider?.call(newItem, newIndex) ??
+          widget.defaultRowEditable;
     });
     _notifyDataChanged();
   }
@@ -131,9 +153,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
       // Rebuild controllers with updated indices
       final newControllers = <int, Map<String, TextEditingController>>{};
+      final newEditableFlags = <int, bool>{};
       for (int i = 0; i < _tableData.length; i++) {
         if (i < index) {
           newControllers[i] = _controllers[i] ?? {};
+          newEditableFlags[i] =
+              _rowEditableFlags[i] ?? widget.defaultRowEditable;
         } else {
           final oldIndex = i + 1;
           if (_controllers.containsKey(oldIndex)) {
@@ -142,9 +167,18 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             _initRowControllers(i);
             newControllers[i] = _controllers[i] ?? {};
           }
+          if (_rowEditableFlags.containsKey(oldIndex)) {
+            newEditableFlags[i] =
+                _rowEditableFlags[oldIndex] ?? widget.defaultRowEditable;
+          } else {
+            newEditableFlags[i] =
+                widget.rowEditableDecider?.call(_tableData[i], i) ??
+                widget.defaultRowEditable;
+          }
         }
       }
       _controllers = newControllers;
+      _rowEditableFlags = newEditableFlags;
     });
     _notifyDataChanged();
   }
@@ -240,6 +274,14 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     }
   }
 
+  // Public API: set row editable flag
+  void setRowEditable(int rowIndex, bool editable) {
+    if (rowIndex < 0 || rowIndex >= _tableData.length) return;
+    setState(() {
+      _rowEditableFlags[rowIndex] = editable;
+    });
+  }
+
   String exportToJson() {
     return jsonEncode(_tableData);
   }
@@ -326,7 +368,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     );
   }
 
-  Widget _buildDataRow(T item, int index, bool isEven, Map<String, double> newWidths) {
+  Widget _buildDataRow(
+    T item,
+    int index,
+    bool isEven,
+    Map<String, double> newWidths,
+  ) {
     final backgroundColor =
         _selectedRowIndex == index
             ? widget.selectedRowColor
@@ -348,16 +395,23 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           // Data cells
           ...widget.columns.map(
             (column) => _buildCell(
-              child: column.isEditable ? _buildEditableCell(item, index, column) : _buildDisplayCell(item, column),
+              child:
+                  _isCellEditable(item, index, column)
+                      ? _buildEditableCell(item, index, column)
+                      : _buildDisplayCell(item, column),
               width: newWidths[column.title] ?? column.width,
             ),
           ),
-          // Delete button cell - only show when editing
-          if (widget.isEditing)
+          // Delete button cell - only show when editing and row editable
+          if (widget.isEditing && (_rowEditableFlags[index] ?? true))
             _buildCell(
               child: Center(
                 child: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red.shade800, size: 20),
+                  icon: Icon(
+                    Icons.delete,
+                    color: Colors.red.shade800,
+                    size: 20,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   onPressed: () => _removeRow(index),
@@ -370,46 +424,88 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     );
   }
 
-  Widget _buildEditableCell(T item, int rowIndex, SgEditableColumn<T> column) {
-    final controller = _controllers[rowIndex]?[column.field] ?? TextEditingController();
+  bool _isCellEditable(T item, int rowIndex, SgEditableColumn<T> column) {
+    if (!widget.isEditing) return false;
+    if (!column.isEditable) return false;
+    final byRow = _rowEditableFlags[rowIndex] ?? true;
+    final byColumn = column.isCellEditableDecider?.call(item, rowIndex);
+    if (byColumn == null) return byRow;
+    return byRow && byColumn;
+  }
 
-    if (widget.isEditing) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: TextField(
-          controller: controller,
-          style: const TextStyle(fontSize: 14),
-          decoration: const InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            // border: OutlineInputBorder(),
-            isDense: true,
-          ),
-          onChanged: (value) {
-            _updateCellValue(rowIndex, column.field, value);
-          },
+  Widget _buildEditableCell(T item, int rowIndex, SgEditableColumn<T> column) {
+    final controller =
+        _controllers[rowIndex]?[column.field] ?? TextEditingController();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(fontSize: 14),
+        decoration: const InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          // border: OutlineInputBorder(),
+          isDense: true,
         ),
-      );
-    } else {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(controller.text, textAlign: column.titleAlignment, style: const TextStyle(fontSize: 14)),
-      );
-    }
+        onChanged: (value) {
+          _updateCellValue(rowIndex, column.field, value);
+        },
+      ),
+    );
   }
 
   Widget _buildDisplayCell(T item, SgEditableColumn<T> column) {
     final value = column.getValue(item);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Align(
-        alignment:
-            column.cellAlignment == TextAlign.center
-                ? Alignment.center
-                : column.cellAlignment == TextAlign.right
-                ? Alignment.centerRight
-                : Alignment.centerLeft,
-        child: Text(value?.toString() ?? '', textAlign: column.titleAlignment, style: const TextStyle(fontSize: 14)),
+    return Tooltip(
+      message: column.tooltip ?? 'Không thể nhập',
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Align(
+          alignment:
+              column.cellAlignment == TextAlign.center
+                  ? Alignment.center
+                  : column.cellAlignment == TextAlign.right
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
+          child: TextField(
+            enabled: false,
+            controller: TextEditingController(text: value?.toString() ?? ''),
+            style: TextStyle(fontSize: 14),
+            readOnly: true,
+      
+            decoration: InputDecoration(
+              isDense: false,
+              filled: true,
+              fillColor: Colors.transparent,
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: SGAppColors.colorBorderGray,
+                  width: 1,
+                ),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: SGAppColors.colorBorderGray,
+                  width: 1,
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: SGAppColors.colorBorderGray,
+                  width: 1,
+                ),
+              ),
+              suffixIcon: null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+            ),
+          ),
+          // Text(
+          //   value?.toString() ?? '',
+          //   textAlign: column.titleAlignment,
+          //   style: const TextStyle(fontSize: 14),
+          // ),
+        ),
       ),
     );
   }
@@ -429,7 +525,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   Widget _buildAddRowButton() {
-    if (!widget.isEditing) return const SizedBox.shrink(); // Hide when not in edit mode
+    if (!widget.isEditing)
+      return const SizedBox.shrink(); // Hide when not in edit mode
 
     return SizedBox(
       height: 36,
@@ -446,6 +543,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 class SgEditableColumn<T> {
   final String field;
   final String title;
+  final String? tooltip;
   final double width;
   final TextAlign titleAlignment;
   final TextAlign cellAlignment;
@@ -454,10 +552,13 @@ class SgEditableColumn<T> {
   final void Function(T, dynamic) setValue;
   // Add sort value getter similar to SgTable
   final dynamic Function(T)? sortValueGetter;
+  // NEW: per-cell editable decider (by column)
+  final bool Function(T item, int rowIndex)? isCellEditableDecider;
 
   SgEditableColumn({
     required this.field,
     required this.title,
+    this.tooltip,
     required this.width,
     this.titleAlignment = TextAlign.left,
     this.cellAlignment = TextAlign.left,
@@ -465,5 +566,6 @@ class SgEditableColumn<T> {
     required this.getValue,
     required this.setValue,
     this.sortValueGetter,
+    this.isCellEditableDecider,
   });
 }
