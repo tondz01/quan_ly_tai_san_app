@@ -4,30 +4,15 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-Widget assetTransferMovementTable(
-  BuildContext context,
-  List<MovementDetailDto> movementDetails,
-  bool isEditing,
-  bool isNew, {
-  bool isLoading = false,
-}) {
+Widget assetTransferMovementTable(BuildContext context, List<MovementDetailDto> movementDetails, bool isEditing, bool isNew, {bool isLoading = false}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        child: const SGText(
-          text: 'Chi tiết tài sản điều chuyển: ',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.start,
-        ),
+        child: const SGText(text: 'Chi tiết tài sản điều chuyển: ', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.start),
       ),
-      if (isLoading && !isNew)
-        _buildLoadingIndicator()
-      else if (movementDetails.isEmpty && !isNew)
-        _buildEmptyDataMessage()
-      else
-        movementDetailTable(movementDetails, isEditing),
+      if (isLoading && !isNew) _buildLoadingIndicator() else if (movementDetails.isEmpty && !isNew) _buildEmptyDataMessage() else movementDetailTable(movementDetails, isEditing),
     ],
   );
 }
@@ -51,10 +36,7 @@ Widget _buildEmptyDataMessage() {
   return Container(
     height: 100,
     alignment: Alignment.center,
-    child: SGText(
-      text: 'Không có thông tin tài sản điều chuyển',
-      style: TextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
-    ),
+    child: SGText(text: 'Không có thông tin tài sản điều chuyển', style: TextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic)),
   );
 }
 
@@ -85,6 +67,14 @@ Widget movementDetailTable(List<MovementDetailDto> movementDetails, bool isEditi
           getValue: (item) => item.tenTaiSan,
           setValue: (item, value) => MovementDetailDto.copy(item, tenTaiSan: value),
           sortValueGetter: (item) => item.tenTaiSan,
+          editor: EditableCellEditor.dropdown,
+          dropdownItems: [],
+          onValueChanged: (rowItem, rowIndex, newValue, updateRow) {
+            final selected = newValue?.toString() ?? '';
+            updateRow('asset', selected);
+            updateRow('quantity', 1);
+            updateRow('unit', 1);
+          },
         ),
         SgEditableColumn<MovementDetailDto>(
           field: 'unit',
