@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_utils.dart';
+import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 
 // Add sort direction enum
 enum SortDirection { none, ascending, descending }
+
+// Add editor type enum for editable cells
+enum EditableCellEditor { text, dropdown }
 
 class SgEditableTable<T> extends StatefulWidget {
   final List<SgEditableColumn<T>> columns;
@@ -184,7 +188,19 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   void _updateCellValue(int rowIndex, String field, dynamic value) {
-    widget.columns.firstWhere((column) => column.field == field).setValue(_tableData[rowIndex], value);
+    _setCellValue(rowIndex, field, value);
+  }
+
+  // Safely set a cell value in data and sync controller text
+  void _setCellValue(int rowIndex, String field, dynamic value) {
+    final column = widget.columns.firstWhere((c) => c.field == field);
+    column.setValue(_tableData[rowIndex], value);
+    // Sync controller if exists
+    final controller = _controllers[rowIndex]?[field];
+    if (controller != null && controller.text != (value?.toString() ?? '')) {
+      controller.text = value?.toString() ?? '';
+    }
+    setState(() {});
     _notifyDataChanged();
   }
 
@@ -437,6 +453,51 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     final controller =
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
+    if (column.editor == EditableCellEditor.dropdown) {
+      final dynamic currentValue = column.getValue(item);
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: SGDropdownInputButton<dynamic>(
+          height: 32,
+          controller: controller,
+          value: currentValue,
+          defaultValue: currentValue,
+          items: column.dropdownItems ?? const [],
+          showUnderlineBorderOnly: true,
+          isClearController: false,
+          fontSize: 14,
+          inputType: TextInputType.text,
+          isShowSuffixIcon: true,
+          hintText: '',
+          textAlign: TextAlign.left,
+          textAlignItem: TextAlign.left,
+          sizeBorderCircular: 6,
+          contentPadding: const EdgeInsets.only(
+            top: 4,
+            bottom: 4,
+            left: 6,
+            right: 6,
+          ),
+          onChanged: (value) {
+            if (value != null) {
+              _updateCellValue(rowIndex, column.field, value);
+              // cascade updates
+              final updater = column.onValueChanged;
+              if (updater != null) {
+                updater(item, rowIndex, value, (
+                  String targetField,
+                  dynamic targetValue,
+                ) {
+                  if (targetField == column.field) return; // avoid recursion
+                  _setCellValue(rowIndex, targetField, targetValue);
+                });
+              }
+            }
+          },
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: TextField(
@@ -449,6 +510,17 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         ),
         onChanged: (value) {
           _updateCellValue(rowIndex, column.field, value);
+          // cascade updates for text editor too
+          final updater = column.onValueChanged;
+          if (updater != null) {
+            updater(item, rowIndex, value, (
+              String targetField,
+              dynamic targetValue,
+            ) {
+              if (targetField == column.field) return; // avoid recursion
+              _setCellValue(rowIndex, targetField, targetValue);
+            });
+          }
         },
       ),
     );
@@ -473,7 +545,6 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             controller: TextEditingController(text: value?.toString() ?? ''),
             style: TextStyle(fontSize: 14),
             readOnly: true,
-      
             decoration: InputDecoration(
               isDense: false,
               filled: true,
@@ -525,8 +596,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   Widget _buildAddRowButton() {
-    if (!widget.isEditing)
+    if (!widget.isEditing) {
       return const SizedBox.shrink(); // Hide when not in edit mode
+    }
 
     return SizedBox(
       height: 36,
@@ -550,10 +622,19 @@ class SgEditableColumn<T> {
   final bool isEditable;
   final dynamic Function(T) getValue;
   final void Function(T, dynamic) setValue;
-  // Add sort value getter similar to SgTable
   final dynamic Function(T)? sortValueGetter;
-  // NEW: per-cell editable decider (by column)
   final bool Function(T item, int rowIndex)? isCellEditableDecider;
+  // NEW: editor type and dropdown config
+  final EditableCellEditor editor;
+  final List<DropdownMenuItem<T>>? dropdownItems;
+  // NEW: cascade update callback when value changes
+  final void Function(
+    T item,
+    int rowIndex,
+    dynamic newValue,
+    void Function(String targetField, dynamic targetValue) updateRow,
+  )?
+  onValueChanged;
 
   SgEditableColumn({
     required this.field,
@@ -567,5 +648,8 @@ class SgEditableColumn<T> {
     required this.setValue,
     this.sortValueGetter,
     this.isCellEditableDecider,
+    this.editor = EditableCellEditor.text,
+    this.dropdownItems,
+    this.onValueChanged,
   });
 }
