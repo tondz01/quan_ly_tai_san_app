@@ -342,7 +342,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                             if (currentSignature != null &&
                                                 currentSignature.isNotEmpty) {
                                               print(
-                                                "${ApiConfig.getBaseURL()}/api/upload/download/$currentSignature",
+                                                "${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}",
                                               );
                                               return Row(
                                                 children: [
@@ -352,9 +352,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                                           6,
                                                         ),
                                                     child: SizedBox(
-                                                      height: 24,
+                                                      height: 32,
                                                       child: Image.network(
-                                                        '${ApiConfig.getBaseURL()}api/upload/download$currentSignature',
+                                                        '${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}',
                                                         fit: BoxFit.contain,
                                                       ),
                                                     ),
