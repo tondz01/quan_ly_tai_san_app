@@ -3,14 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class StaffList extends StatefulWidget {
-  final List<StaffDTO> data;
-  final void Function(StaffDTO)? onChangeDetail;
-  final void Function(StaffDTO)? onEdit;
-  final void Function(StaffDTO)? onDelete;
+  final List<NhanVien> data;
+  final void Function(NhanVien)? onChangeDetail;
+  final void Function(NhanVien)? onEdit;
+  final void Function(NhanVien)? onDelete;
   const StaffList({
     super.key,
     required this.data,
@@ -24,68 +24,68 @@ class StaffList extends StatefulWidget {
 }
 
 class _StaffListState extends State<StaffList> {
-  List<StaffDTO> selectedItems = [];
+  List<NhanVien> selectedItems = [];
 
   @override
   Widget build(BuildContext context) {
     final columns = [
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Mã nhân viên',
-        getValue: (item) => item.staffId,
+        getValue: (item) => item.id ?? '',
         width: 70,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Tên nhân viên',
-        getValue: (item) => item.name,
+        getValue: (item) => item.hoTen ?? '',
         titleAlignment: TextAlign.start,
         width: 150,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Số điện thoại',
-        getValue: (item) => item.tel,
+        getValue: (item) => item.diDong ?? '',
         titleAlignment: TextAlign.start,
         width: 120,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Email',
-        getValue: (item) => item.email,
+        getValue: (item) => item.emailCongViec ?? '',
         titleAlignment: TextAlign.start,
         width: 120,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Hoạt động',
-        getValue: (item) => item.activity,
+        getValue: (item) => item.isActive == true ? 'Đang hoạt động' : 'Ngừng hoạt động'  ,
         titleAlignment: TextAlign.start,
         width: 150,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Hạn chót cho hoạt động tiếp theo',
-        getValue: (item) => item.timeForActivity,
+        getValue: (item) => item.gioLamViec ?? '',
         titleAlignment: TextAlign.center,
         width: 150,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Phòng ban',
-        getValue: (item) => item.department,
+        getValue: (item) => item.tenPhongBan ?? '',
         titleAlignment: TextAlign.center,
         width: 150,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Chức vụ',
-        getValue: (item) => item.position,
+        getValue: (item) => item.tenChucVu ?? '',
         titleAlignment: TextAlign.center,
         width: 100,
       ),
-      TableBaseConfig.columnTable<StaffDTO>(
+      TableBaseConfig.columnTable<NhanVien>(
         title: 'Người quản lý',
-        getValue: (item) => item.staffOwner,
+        getValue: (item) => item.tenQuanLy ?? '',
         titleAlignment: TextAlign.start,
         width: 150,
       ),
-      TableBaseConfig.columnWidgetBase<StaffDTO>(
+      TableBaseConfig.columnWidgetBase<NhanVien>(
         title: '',
         cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<StaffDTO>(
+            (item) => TableBaseConfig.viewActionBase<NhanVien>(
               item: item,
               onEdit: (item) {
                 widget.onEdit?.call(item);
@@ -169,7 +169,7 @@ class _StaffListState extends State<StaffList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<StaffDTO>(
+            child: TableBaseView<NhanVien>(
               searchTerm: '',
               columns: columns,
               data: widget.data,

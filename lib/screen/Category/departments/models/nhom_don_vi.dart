@@ -34,7 +34,7 @@ class NhomDonVi extends Equatable {
       'tenNhom': tenNhom,
       'ngayTao': ngayTao?.toIso8601String(),
       'nguoiTao': nguoiTao,
-      'idCongTy': "id001", // Assuming a default company ID
+      'idCongTy': "ct001", // Assuming a default company ID
       'isActive': isActive,
     };
   }

@@ -28,7 +28,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _departmentIdController;
   late TextEditingController _departmentNameController;
-  late TextEditingController _employeeCountController;
   NhanVien? _staffDTO;
   NhomDonVi? _group;
   PhongBan? _parentDepartment;
@@ -53,9 +52,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
     );
     _departmentNameController = TextEditingController(
       text: widget.department?.tenPhongBan ?? '',
-    );
-    _employeeCountController = TextEditingController(
-      text: widget.department?.soLuongNhanVien?.toString() ?? '',
     );
     try {
       _staffDTO = context.read<DepartmentBloc>().staffs.firstWhere(
@@ -86,7 +82,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   void dispose() {
     _departmentIdController.dispose();
     _departmentNameController.dispose();
-    _employeeCountController.dispose();
     super.dispose();
   }
 
@@ -222,14 +217,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _employeeCountController,
-                          decoration: inputDecoration('Số nhân viên'),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<PhongBan>(
                           value: _parentDepartment,

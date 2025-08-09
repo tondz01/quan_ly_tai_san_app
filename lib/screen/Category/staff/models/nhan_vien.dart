@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 
 class NhanVien extends Equatable {
@@ -12,7 +14,10 @@ class NhanVien extends Equatable {
   final String? chuKy;
   final String? boPhan;
   final String? chucVu;
+  final String? tenChucVu;
+  final String? chucVuId;
   final String? nguoiQuanLy;
+  final String? tenQuanLy;
   final bool? laQuanLy;
   final String? avatar;
   final String? idCongTy;
@@ -22,9 +27,12 @@ class NhanVien extends Equatable {
   final String? muiGio;
   final String? nguoiTao;
   final String? nguoiCapNhat;
+  final String? phongBanId;
+  final String? tenPhongBan;
   final bool? isActive;
   final DateTime? ngayTao;
   final DateTime? ngayCapNhat;
+  final Uint8List? chuKyData;
 
   const NhanVien({
     this.id,
@@ -37,7 +45,10 @@ class NhanVien extends Equatable {
     this.chuKy,
     this.boPhan,
     this.chucVu,
+    this.tenChucVu,
+    this.chucVuId,
     this.nguoiQuanLy,
+    this.tenQuanLy,
     this.laQuanLy,
     this.avatar,
     this.idCongTy,
@@ -50,6 +61,9 @@ class NhanVien extends Equatable {
     this.isActive,
     this.ngayTao,
     this.ngayCapNhat,
+    this.phongBanId,
+    this.tenPhongBan,
+    this.chuKyData,
   });
 
   factory NhanVien.fromJson(Map<String, dynamic> json) {
@@ -58,27 +72,87 @@ class NhanVien extends Equatable {
       hoTen: json['hoTen'],
       diDong: json['diDong'],
       emailCongViec: json['emailCongViec'],
-      kieuKy: json['kieuKy'],
+      kieuKy: int.parse(json['kieuKy']?.toString() ?? '0'),
       agreementUUId: json['agreementUUId'],
       pin: json['pin'],
       chuKy: json['chuKy'],
       boPhan: json['boPhan'],
       chucVu: json['chucVu'],
+      tenChucVu: json['tenChucVu'],
+      chucVuId: json['chucVuId'],
       nguoiQuanLy: json['nguoiQuanLy'],
+      tenQuanLy: json['tenQuanLy'],
+      phongBanId: json['phongBanId'],
+      tenPhongBan: json['tenPhongBan'],
       laQuanLy: json['laQuanLy'],
       avatar: json['avatar'],
       idCongTy: json['idCongTy'],
-      diaChiLamViec: json['diaChiLamViec'],
-      hinhThucLamViec: json['hinhThucLamViec'],
-      gioLamViec: json['gioLamViec'],
-      muiGio: json['muiGio'],
-      nguoiTao: json['nguoiTao'],
-      nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
-      ngayTao: json['ngayTao'] != null ? DateTime.tryParse(json['ngayTao']) : null,
-      ngayCapNhat: json['ngayCapNhat'] != null ? DateTime.tryParse(json['ngayCapNhat']) : null,
+
     );
   }
+  NhanVien copyWith({
+    String? id,
+    String? hoTen,
+    String? diDong,
+    String? emailCongViec,
+    int? kieuKy,
+    String? agreementUUId,
+    String? pin,
+    String? chuKy,
+    String? boPhan,
+    String? chucVu,
+    String? tenChucVu,
+    String? chucVuId,
+    String? nguoiQuanLy,
+    String? tenQuanLy,
+    bool? laQuanLy,
+    String? avatar,
+    String? idCongTy,
+    String? diaChiLamViec,
+    String? hinhThucLamViec,
+    String? gioLamViec,
+    String? muiGio,
+    String? nguoiTao,
+    String? nguoiCapNhat,
+    bool? isActive,
+    String? ngayTao,
+    String? ngayCapNhat,
+    String? phongBanId,
+    String? tenPhongBan,
+    Uint8List? chuKyData,
+  }) {
+    return NhanVien(
+      id: id ?? this.id,
+      hoTen: hoTen ?? this.hoTen,
+      diDong: diDong ?? this.diDong,
+      emailCongViec: emailCongViec ?? this.emailCongViec,
+      kieuKy: kieuKy ?? this.kieuKy,
+      agreementUUId: agreementUUId ?? this.agreementUUId,
+      pin: pin ?? this.pin,
+      chuKy: chuKy ?? this.chuKy,
+      boPhan: boPhan ?? this.boPhan,
+      chucVu: chucVu ?? this.chucVu,
+      tenChucVu: tenChucVu ?? this.tenChucVu,
+      chucVuId: chucVuId ?? this.chucVuId,
+      nguoiQuanLy: nguoiQuanLy ?? this.nguoiQuanLy,
+      tenQuanLy: tenQuanLy ?? this.tenQuanLy,
+      laQuanLy: laQuanLy ?? this.laQuanLy,
+      avatar: avatar ?? this.avatar,
+      idCongTy: idCongTy ?? this.idCongTy,
+      diaChiLamViec: diaChiLamViec ?? this.diaChiLamViec,
+      hinhThucLamViec: hinhThucLamViec ?? this.hinhThucLamViec,
+      gioLamViec: gioLamViec ?? this.gioLamViec,
+      muiGio: muiGio ?? this.muiGio,
+      nguoiTao: nguoiTao ?? this.nguoiTao,
+      nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
+      isActive: isActive ?? this.isActive,
+      phongBanId: phongBanId ?? this.phongBanId,
+      tenPhongBan: tenPhongBan ?? this.tenPhongBan,
+      chuKyData: chuKyData ?? this.chuKyData,
+    );
+  }
+
 
   Map<String, dynamic> toJson() {
     return {
@@ -95,16 +169,12 @@ class NhanVien extends Equatable {
       'nguoiQuanLy': nguoiQuanLy,
       'laQuanLy': laQuanLy,
       'avatar': avatar,
-      'idCongTy': idCongTy,
+      'idCongTy': "ct001",
       'diaChiLamViec': diaChiLamViec,
       'hinhThucLamViec': hinhThucLamViec,
-      'gioLamViec': gioLamViec,
-      'muiGio': muiGio,
       'nguoiTao': nguoiTao,
-      'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
-      'ngayTao': ngayTao?.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String(),
+      'phongBanId': phongBanId,
     };
   }
 
@@ -121,8 +191,10 @@ class NhanVien extends Equatable {
         boPhan,
         chucVu,
         nguoiQuanLy,
+        tenQuanLy,
         laQuanLy,
         avatar,
+        phongBanId,
         idCongTy,
         diaChiLamViec,
         hinhThucLamViec,

@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/Category/staff/widget/staff_list.dart
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -21,9 +22,9 @@ class StaffManager extends StatefulWidget {
 
 class _StaffManagerState extends State<StaffManager> {
   bool showForm = false;
-  StaffDTO? editingStaff;
+  NhanVien? editingStaff;
 
-  void _showForm([StaffDTO? staff]) {
+  void _showForm([NhanVien? staff]) {
     setState(() {
       isShowInput = true;
       editingStaff = staff;
@@ -34,11 +35,11 @@ class _StaffManagerState extends State<StaffManager> {
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  List<StaffDTO> _filteredData = [];
+  List<NhanVien> _filteredData = [];
   bool isFirstLoad = false;
 
   bool isShowInput = false;
-  void _showDeleteDialog(BuildContext context, StaffDTO staff) {
+  void _showDeleteDialog(BuildContext context, NhanVien staff) {
     showDialog(
       context: context,
       builder:
@@ -70,7 +71,7 @@ class _StaffManagerState extends State<StaffManager> {
     return BlocBuilder<StaffBloc, StaffState>(
       builder: (context, state) {
         if (state is StaffLoaded) {
-          List<StaffDTO> staffs = state.staffs;
+          List<NhanVien> staffs = state.staffs;
           _filteredData = staffs;
 
           return Scaffold(

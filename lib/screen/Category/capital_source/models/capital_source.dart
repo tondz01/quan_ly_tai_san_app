@@ -46,7 +46,7 @@ class NguonKinhPhi extends Equatable {
       'tenNguonKinhPhi': tenNguonKinhPhi,
       'ghiChu': ghiChu,
       'hieuLuc': hieuLuc,
-      'idCongTy': "id001", // Assuming a default company ID
+      'idCongTy': "ct001", // Assuming a default company ID
       'ngayTao': ngayTao?.toIso8601String(),
       'ngayCapNhat': ngayCapNhat?.toIso8601String(),
       'nguoiTao': nguoiTao,

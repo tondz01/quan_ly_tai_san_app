@@ -1,12 +1,20 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/chuc_vu.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:se_gay_components/base_api/api_config.dart';
 
 class StaffFormPage extends StatefulWidget {
-  final StaffDTO? staff;
+  final NhanVien? staff;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
@@ -28,12 +36,17 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _telController;
   late TextEditingController _emailController;
   late TextEditingController _activityController;
-  late TextEditingController _timeForActivityController;
-  late TextEditingController _departmentController;
   late TextEditingController _positionController;
   late TextEditingController _staffIdController;
   late TextEditingController _staffOwnerController;
-
+  late TextEditingController _kieuKyController;
+  late TextEditingController _agreementUUIdController;
+  late TextEditingController _pinController;
+  bool _laQuanLy = false;
+  PhongBan? _phongBan;
+  NhanVien? _staffDTO;
+  ChucVu? _chucVuDTO;
+  Uint8List? _chuKyData;
   @override
   void initState() {
     _initData();
@@ -41,27 +54,50 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
-    _nameController = TextEditingController(text: widget.staff?.name ?? '');
-    _telController = TextEditingController(text: widget.staff?.tel ?? '');
-    _emailController = TextEditingController(text: widget.staff?.email ?? '');
+    _nameController = TextEditingController(text: widget.staff?.hoTen ?? '');
+    _telController = TextEditingController(text: widget.staff?.diDong ?? '');
+    _emailController = TextEditingController(
+      text: widget.staff?.emailCongViec ?? '',
+    );
     _activityController = TextEditingController(
-      text: widget.staff?.activity ?? '',
-    );
-    _timeForActivityController = TextEditingController(
-      text: widget.staff?.timeForActivity ?? '',
-    );
-    _departmentController = TextEditingController(
-      text: widget.staff?.department ?? '',
+      text: widget.staff?.isActive ?? false ? 'Có' : 'Không',
     );
     _positionController = TextEditingController(
-      text: widget.staff?.position ?? '',
+      text: widget.staff?.chucVu ?? '',
     );
-    _staffIdController = TextEditingController(
-      text: widget.staff?.staffId ?? '',
-    );
+    _staffIdController = TextEditingController(text: widget.staff?.id ?? '');
     _staffOwnerController = TextEditingController(
-      text: widget.staff?.staffOwner ?? '',
+      text: widget.staff?.nguoiQuanLy ?? '',
     );
+    try {
+      _phongBan = context.read<StaffBloc>().department.firstWhere(
+        (group) => group.id == widget.staff?.phongBanId,
+      );
+    } catch (e) {
+      _phongBan = null;
+    }
+    try {
+      _staffDTO = context.read<StaffBloc>().staffs.firstWhere(
+        (staff) => staff.id == widget.staff?.id,
+      );
+    } catch (e) {
+      _staffDTO = null;
+    }
+    try {
+      _chucVuDTO = context.read<StaffBloc>().chucvus.firstWhere(
+        (chucVu) => chucVu.id == widget.staff?.chucVuId,
+      );
+    } catch (e) {
+      _chucVuDTO = null;
+    }
+    _kieuKyController = TextEditingController(
+      text: widget.staff?.kieuKy?.toString() ?? '',
+    );
+    _agreementUUIdController = TextEditingController(
+      text: widget.staff?.agreementUUId ?? '',
+    );
+    _pinController = TextEditingController(text: widget.staff?.pin ?? '');
+    _laQuanLy = widget.staff?.laQuanLy ?? false;
   }
 
   @override
@@ -82,26 +118,59 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _telController.dispose();
     _emailController.dispose();
     _activityController.dispose();
-    _timeForActivityController.dispose();
-    _departmentController.dispose();
     _positionController.dispose();
     _staffIdController.dispose();
     _staffOwnerController.dispose();
+    _kieuKyController.dispose();
+    _agreementUUIdController.dispose();
+    _pinController.dispose();
     super.dispose();
   }
 
   void _save() {
     if (_formKey.currentState!.validate()) {
-      final staff = StaffDTO(
-        name: _nameController.text.trim(),
-        tel: _telController.text.trim(),
-        email: _emailController.text.trim(),
-        activity: _activityController.text.trim(),
-        timeForActivity: _timeForActivityController.text.trim(),
-        department: _departmentController.text.trim(),
-        position: _positionController.text.trim(),
-        staffId: _staffIdController.text.trim(),
-        staffOwner: _staffOwnerController.text.trim(),
+      if (widget.staff != null) {
+        final staff = widget.staff!.copyWith(
+          hoTen: _nameController.text.trim(),
+          diDong: _telController.text.trim(),
+          emailCongViec: _emailController.text.trim(),
+          isActive: true, // Assuming isActive is always true for new staff
+          chucVu: _chucVuDTO?.id,
+          id: _staffIdController.text.trim(),
+          nguoiQuanLy: _staffDTO?.id ?? '',
+          kieuKy: int.tryParse(_kieuKyController.text),
+          agreementUUId: _agreementUUIdController.text.trim(),
+          pin: _pinController.text.trim(),
+          // chuKy được upload qua file picker, không nhập text
+          laQuanLy: _laQuanLy,
+          boPhan: _phongBan?.id,
+          chuKyData: _chuKyData,
+        );
+        if (widget.staff == null) {
+          context.read<StaffBloc>().add(AddStaff(staff));
+        } else {
+          context.read<StaffBloc>().add(UpdateStaff(staff));
+        }
+        if (widget.onSaved != null) {
+          widget.onSaved!();
+        }
+      }
+    } else {
+      final staff = NhanVien(
+        hoTen: _nameController.text.trim(),
+        diDong: _telController.text.trim(),
+        emailCongViec: _emailController.text.trim(),
+        isActive: true, // Assuming isActive is always true for new staff
+        chucVu: _chucVuDTO?.id,
+        id: _staffIdController.text.trim(),
+        nguoiQuanLy: _staffDTO?.id ?? '',
+        kieuKy: int.tryParse(_kieuKyController.text),
+        agreementUUId: _agreementUUIdController.text.trim(),
+        pin: _pinController.text.trim(),
+        // chuKy được upload qua file picker, không nhập text
+        laQuanLy: _laQuanLy,
+        boPhan: _phongBan?.id,
+        chuKyData: _chuKyData,
       );
       if (widget.staff == null) {
         context.read<StaffBloc>().add(AddStaff(staff));
@@ -111,6 +180,20 @@ class _StaffFormPageState extends State<StaffFormPage> {
       if (widget.onSaved != null) {
         widget.onSaved!();
       }
+    }
+  }
+
+  File? selectedFile;
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        selectedFile = File(result.files.single.path!);
+        _chuKyData = result.files.single.bytes;
+      });
     }
   }
 
@@ -138,153 +221,277 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   sectionTitle(Icons.info_outline, 'Thông tin nhân viên'),
                   const SizedBox(height: 16),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: TextFormField(
-                          controller: _staffIdController,
-                          decoration: inputDecoration(
-                            'Mã nhân viên',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập mã nhân viên'
-                                      : null,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _staffIdController,
+                              decoration: inputDecoration(
+                                'Mã nhân viên',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập mã nhân viên'
+                                          : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _nameController,
+                              decoration: inputDecoration(
+                                'Tên nhân viên',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập tên nhân viên'
+                                          : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _emailController,
+                              decoration: inputDecoration(
+                                'Email',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập email'
+                                          : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _telController,
+                              decoration: inputDecoration(
+                                'Số điện thoại',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập số điện thoại'
+                                          : null,
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<ChucVu>(
+                              value: _chucVuDTO,
+                              decoration: inputDecoration('Chức vụ'),
+                              items:
+                                  context
+                                      .read<StaffBloc>()
+                                      .chucvus
+                                      .map(
+                                        (chucVu) => DropdownMenuItem(
+                                          value: chucVu,
+                                          child: Row(
+                                            children: [
+                                              const SizedBox(width: 8),
+                                              Text(chucVu.tenChucVu),
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (v) => setState(() => _chucVuDTO = v),
+                            ),
+
+                            const SizedBox(height: 16),
+                            Container(
+                              alignment: Alignment.centerLeft,
+                              child: InkWell(
+                                onTap: _pickFile,
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.grey.shade100,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.upload_file,
+                                        color: Colors.blue,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Builder(
+                                          builder: (_) {
+                                            if (selectedFile != null) {
+                                              return Text(
+                                                "Chữ ký: ${selectedFile!.path.split('/').last}",
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              );
+                                            }
+                                            final currentSignature =
+                                                widget.staff?.chuKy;
+                                            if (currentSignature != null &&
+                                                currentSignature.isNotEmpty) {
+                                              print(
+                                                "${ApiConfig.getBaseURL()}/api/upload/download/$currentSignature",
+                                              );
+                                              return Row(
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6,
+                                                        ),
+                                                    child: SizedBox(
+                                                      height: 24,
+                                                      child: Image.network(
+                                                        '${ApiConfig.getBaseURL()}api/upload/download$currentSignature',
+                                                        fit: BoxFit.contain,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Text(
+                                                    'Nhấn để chọn file chữ ký mới',
+                                                    style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade600,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              );
+                                            }
+                                            return Text(
+                                              'Nhấn để chọn file chữ ký (.png, .jpg...)',
+                                              style: TextStyle(
+                                                color: Colors.grey.shade600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      if (selectedFile != null)
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.close,
+                                            size: 20,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed:
+                                              () => setState(
+                                                () => selectedFile = null,
+                                              ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: _laQuanLy,
+                                  onChanged:
+                                      (val) => setState(
+                                        () => _laQuanLy = val ?? false,
+                                      ),
+                                ),
+                                const Text('Là quản lý'),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: TextFormField(
-                          controller: _nameController,
-                          decoration: inputDecoration(
-                            'Tên nhân viên',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập tên nhân viên'
-                                      : null,
+                        child: Column(
+                          children: [
+                            DropdownButtonFormField<NhanVien>(
+                              value: _staffDTO,
+                              decoration: inputDecoration('Quản lý'),
+                              items:
+                                  context
+                                      .read<StaffBloc>()
+                                      .staffs
+                                      .map(
+                                        (staff) => DropdownMenuItem(
+                                          value: staff,
+                                          child: Row(
+                                            children: [
+                                              const SizedBox(width: 8),
+                                              Text(staff?.hoTen ?? ''),
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (v) => setState(() => _staffDTO = v),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _activityController,
+                              decoration: inputDecoration(
+                                'Hoạt động',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập hoạt động'
+                                          : null,
+                              minLines: 1,
+                              maxLines: 3,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _kieuKyController,
+                              decoration: inputDecoration('Kiểu ký'),
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _agreementUUIdController,
+                              decoration: inputDecoration('Agreement UUID'),
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _pinController,
+                              decoration: inputDecoration('PIN'),
+                            ),
+                            const SizedBox(height: 16),
+                            DropdownButtonFormField<PhongBan>(
+                              value: _phongBan,
+                              decoration: inputDecoration('Phòng/Ban cấp trên'),
+                              items:
+                                  context
+                                      .read<StaffBloc>()
+                                      .department
+                                      .map(
+                                        (p) => DropdownMenuItem(
+                                          value: p,
+                                          child: Text(p.tenPhongBan ?? ''),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (v) => setState(() => _phongBan = v),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _emailController,
-                          decoration: inputDecoration('Email', required: true),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty ? 'Nhập email' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _telController,
-                          decoration: inputDecoration(
-                            'Số điện thoại',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập số điện thoại'
-                                      : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _activityController,
-                          decoration: inputDecoration(
-                            'Hoạt động',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập hoạt động'
-                                      : null,
-                          minLines: 1,
-                          maxLines: 3,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _timeForActivityController,
-                          decoration: inputDecoration(
-                            'Hạn chót cho hoạt động tiếp theo',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập hạn chót cho hoạt động tiếp theo'
-                                      : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _positionController,
-                          decoration: inputDecoration(
-                            'Chức vụ',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập chức vụ'
-                                      : null,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _departmentController,
-                          decoration: inputDecoration(
-                            'Phòng ban',
-                            required: true,
-                          ),
-                          validator:
-                              (v) =>
-                                  v == null || v.isEmpty
-                                      ? 'Nhập phòng ban'
-                                      : null,
-                          minLines: 1,
-                          maxLines: 3,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _staffOwnerController,
-                    decoration: inputDecoration(
-                      'Người quản lý',
-                      required: true,
-                    ),
-                    validator:
-                        (v) =>
-                            v == null || v.isEmpty
-                                ? 'Nhập người quản lý'
-                                : null,
-                    minLines: 1,
-                    maxLines: 3,
                   ),
                   const SizedBox(height: 24),
                   Row(

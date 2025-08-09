@@ -14,6 +14,10 @@ class PhongBan extends Equatable {
   final String? nguoiCapNhat;
   final int? soLuongNhanVien;
 
+
+  final String? ngayTao;
+  final String? ngayCapNhat;
+
   const PhongBan({
     this.id,
     this.idNhomDonVi,
@@ -27,6 +31,8 @@ class PhongBan extends Equatable {
     this.nguoiTao,
     this.nguoiCapNhat,
     this.soLuongNhanVien,
+    this.ngayTao,
+    this.ngayCapNhat,
   });
 
   factory PhongBan.fromJson(Map<String, dynamic> json) {
@@ -43,23 +49,27 @@ class PhongBan extends Equatable {
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       soLuongNhanVien: json['soLuongNhanVien'],
+      ngayTao: json['ngayTao'],
+      ngayCapNhat: json['ngayCapNhat'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'idNhomDonVi': idNhomDonVi,
-      'tenPhongBan': tenPhongBan,
-      'idQuanLy': idQuanLy,
-      'idCongTy': "id001", // Assuming a default company ID
-      'phongCapTren': phongCapTren,
-      'mauSac': mauSac,
-      'tenNhom': tenNhom,
-      'hoTenQuanLy': hoTenQuanLy,
-      'nguoiTao': nguoiTao,
-      'nguoiCapNhat': nguoiCapNhat,
-      'soLuongNhanVien': soLuongNhanVien,
+      'idNhomDonvi': idNhomDonVi ?? "",
+      'tenPhongBan': tenPhongBan ?? "",
+      'idQuanLy': idQuanLy ?? "",
+      'idCongTy': "ct001", // Assuming a default company ID
+      'phongCapTren': phongCapTren ?? "",
+      'mauSac': mauSac ?? "",
+      'tenNhom': tenNhom ?? "",
+      'hoTenQuanLy': hoTenQuanLy ?? "",
+      'nguoiTao': nguoiTao ?? "",
+      'nguoiCapNhat': nguoiCapNhat ?? "",
+      'ngayTao': ngayTao ?? DateTime.now().toIso8601String(),
+      'ngayCapNhat': ngayCapNhat ?? DateTime.now().toIso8601String(),
+      'isActive': true,
     };
   }
 
@@ -76,6 +86,7 @@ class PhongBan extends Equatable {
         hoTenQuanLy,
         nguoiTao,
         nguoiCapNhat,
-        soLuongNhanVien,
+        ngayTao,
+        ngayCapNhat,
       ];
 }
