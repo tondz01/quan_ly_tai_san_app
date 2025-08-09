@@ -255,7 +255,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
     return Row(
       children: [
-        if (url.isNotEmpty && isShowPreview) displayPreview(),
+        // if (url.isNotEmpty && isShowPreview) displayPreview(),
         Expanded(
           child: Container(
             height: MediaQuery.of(context).size.height,

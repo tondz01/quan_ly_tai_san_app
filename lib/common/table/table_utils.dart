@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 Map<String, double> adjustColumnWidths({
   required Map<String, double> originalWidths,
   required double minTableWidth,
@@ -11,8 +13,41 @@ Map<String, double> adjustColumnWidths({
 
   // Phân bổ đều phần dư cho các column
   final extraPerCol = extra / keys.length;
-  return {
-    for (final key in keys)
-      key: originalWidths[key]! + extraPerCol,
-  };
+  return {for (final key in keys) key: originalWidths[key]! + extraPerCol};
+}
+
+TableRow headerRow(List<String> cells) {
+  return TableRow(
+    decoration: const BoxDecoration(color: Color(0xFFEFEFEF)),
+    children:
+        cells.map((text) {
+          return Container(
+            padding: const EdgeInsets.all(6),
+            alignment: Alignment.center,
+            child: Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }).toList(),
+  );
+}
+
+TableRow dataRow(List<String> cells) {
+  return TableRow(
+    children:
+        cells.map((text) {
+          return Container(
+            padding: const EdgeInsets.all(6),
+            height: 60,
+            alignment: Alignment.center,
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }).toList(),
+  );
 }
