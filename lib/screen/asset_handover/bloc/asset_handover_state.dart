@@ -1,39 +1,39 @@
+// bloc/dieu_dong_tai_san_state.dart
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-
-abstract class AssetHandoverState extends Equatable {
-  const AssetHandoverState();
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san.dart';
+abstract class DieuDongTaiSanState extends Equatable {
+  const DieuDongTaiSanState();
 
   @override
   List<Object?> get props => [];
 }
 
-class AssetHandoverInitialState extends AssetHandoverState {}
+class DieuDongTaiSanInitialState extends DieuDongTaiSanState {}
 
-class AssetHandoverLoadingState extends AssetHandoverState {}
+class DieuDongTaiSanLoadingState extends DieuDongTaiSanState {}
 
-class AssetHandoverLoadingDismissState extends AssetHandoverState {}
+class DieuDongTaiSanLoadingDismissState extends DieuDongTaiSanState {}
 
-class GetListAssetHandoverSuccessState extends AssetHandoverState {
-  final List<AssetHandoverDto> data;
+class GetListDieuDongTaiSanSuccessState extends DieuDongTaiSanState {
+  final List<DieuDongTaiSan> data;
 
-  const GetListAssetHandoverSuccessState({required this.data});
+  const GetListDieuDongTaiSanSuccessState({required this.data});
 
   @override
   List<Object> get props => [data];
 }
 
-class GetListAssetHandoverFailedState extends AssetHandoverState {
+class GetListDieuDongTaiSanFailedState extends DieuDongTaiSanState {
   final String title;
   final int? code;
   final String message;
 
-  const GetListAssetHandoverFailedState({
+  const GetListDieuDongTaiSanFailedState({
     required this.title,
     this.code,
     required this.message,
   });
 
   @override
-  List<Object> get props => [title, code!, message];
+  List<Object?> get props => [title, code, message];
 }

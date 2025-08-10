@@ -1,15 +1,21 @@
+// bloc/dieu_dong_tai_san_event.dart
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
-abstract class AssetHandoverEvent extends Equatable {
-  const AssetHandoverEvent();
+abstract class DieuDongTaiSanEvent extends Equatable {
+  const DieuDongTaiSanEvent();
 }
 
-class GetListAssetHandoverEvent extends AssetHandoverEvent {
+/// Lấy danh sách điều động tài sản
+class GetListDieuDongTaiSanEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
+  final String idCongTy;
 
-  const GetListAssetHandoverEvent(this.context);
+  const GetListDieuDongTaiSanEvent({
+    required this.context,
+    required this.idCongTy,
+  });
 
   @override
-  List<Object?> get props => [context];
+  List<Object?> get props => [context, idCongTy];
 }

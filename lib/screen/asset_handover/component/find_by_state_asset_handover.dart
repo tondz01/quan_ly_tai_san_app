@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/dieu_dong_tai_san_provider.dart';
 
-class FindByStateAssetHandover extends StatelessWidget {
-  const FindByStateAssetHandover({super.key, required this.provider});
-  final AssetHandoverProvider provider;
+class FindByStateDieuDongTaiSan extends StatelessWidget {
+  const FindByStateDieuDongTaiSan({super.key, required this.provider});
+  final DieuDongTaiSanProvider provider;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +19,8 @@ class FindByStateAssetHandover extends StatelessWidget {
 class _FilterCheckboxes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AssetHandoverProvider>(context);
-    
-    // Tạo map filter states từ provider
+    final provider = Provider.of<DieuDongTaiSanProvider>(context);
+
     final filterStates = {
       'all': provider.isShowAll,
       'draft': provider.isShowDraft,
@@ -32,7 +31,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'cancel': provider.isShowCancel,
     };
 
-    // Tạo map filter counts từ provider
     final filterCounts = {
       'all': provider.allCount,
       'draft': provider.draftCount,
@@ -43,7 +41,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'cancel': provider.cancelCount,
     };
 
-    // Tạo map filter colors từ FilterStatus enum
     final filterColors = {
       'all': FilterStatus.all.activeColor,
       'draft': FilterStatus.draft.activeColor,
@@ -54,7 +51,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'cancel': FilterStatus.cancel.activeColor,
     };
 
-    // Tạo options sử dụng FilterOptionBuilder
     final options = FilterOptionBuilder.createCustomOptionsWithCount(
       options: [
         {'id': 'all', 'label': 'Tất cả'},
@@ -69,7 +65,6 @@ class _FilterCheckboxes extends StatelessWidget {
       filterCounts: filterCounts,
       filterColors: filterColors,
       onFilterChanged: (id, value) {
-        // Map id về FilterStatus enum
         FilterStatus? status;
         switch (id) {
           case 'all':
@@ -94,7 +89,6 @@ class _FilterCheckboxes extends StatelessWidget {
             status = FilterStatus.cancel;
             break;
         }
-        
         if (status != null) {
           provider.setFilterStatus(status, value);
         }
