@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
+import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
@@ -38,16 +40,18 @@ class ToolAndMaterialTransferDetail extends StatefulWidget {
   });
 
   @override
-  State<ToolAndMaterialTransferDetail> createState() => _ToolAndMaterialTransferDetailState();
+  State<ToolAndMaterialTransferDetail> createState() =>
+      _ToolAndMaterialTransferDetailState();
 }
 
 // GlobalKey để truy cập widget từ bên ngoài
 final GlobalKey<_ToolAndMaterialTransferDetailState> assetTransferDetailKey =
     GlobalKey<_ToolAndMaterialTransferDetailState>();
 
-class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferDetail> {
+class _ToolAndMaterialTransferDetailState
+    extends State<ToolAndMaterialTransferDetail> {
   String url =
-    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
 
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
@@ -832,10 +836,16 @@ class _ToolAndMaterialTransferDetailState extends State<ToolAndMaterialTransferD
   Widget previewDocumentAssetTransfer(ToolAndMaterialTransferDto? item) {
     return InkWell(
       onTap: () {
-        showWebViewPopup(
-          context,
-          url: url,
-          title: 'Preview Document',
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder:
+              (context) => CommonContract(
+                contractType: ContractPage.toolAndMaterialTransferPage(item!),
+                signatureList: [
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
+                ],
+              ),
         );
       },
       child: Row(
