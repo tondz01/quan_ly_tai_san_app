@@ -18,7 +18,7 @@ class AuthRepository extends ApiBase {
 
     try {
       final response = await post(
-        EndPointAPI.ASSET_CATEGORY,
+        EndPointAPI.LOGIN,
         queryParameters: {'tenDangNhap': params.tenDangNhap, 'matKhau': params.matKhau},
       );
 
@@ -28,7 +28,14 @@ class AuthRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] = UserInfoDTO.fromJson(response.data);
+      // result['data'] = UserInfoDTO.fromJson(response.data);
+      final resp = response.data;
+      if (resp is Map<String, dynamic>) {
+        result['data'] = UserInfoDTO.fromJson(resp);
+      } else {
+        // Backend có thể trả về chuỗi hoặc dạng khác -> chuyển thành String để hiển thị
+        result['data'] = resp.toString();
+      }
       AccountHelper.instance.setAuthInfo(result['data']);
     } catch (e) {
       log("Error at createAssetCategory - AssetCategoryRepository: $e");
