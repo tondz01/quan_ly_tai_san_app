@@ -1,4 +1,5 @@
 enum AppRoute {
+  home(path: '/home', name: '/home'),
   dashboard(path: "/dashboard", name: "dashboard"),
   category(path: "/category", name: "category"),
   projectManager(path: "/project-manager", name: "project-manager"),
@@ -20,7 +21,8 @@ enum AppRoute {
   assetCategory(path: "/asset-category", name: "asset-category"),
   assetGroup(path: "/asset-group", name: "asset-group"), 
   assetManagement(path: "/asset-management", name: "asset-management"), 
-  intangibleAsset(path: "/intangible-asset", name: "intangible-asset"); 
+  intangibleAsset(path: "/intangible-asset", name: "intangible-asset"),
+  login(path: "/login", name: "login"); 
 
 
   final String path;

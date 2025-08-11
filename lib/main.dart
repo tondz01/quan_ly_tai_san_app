@@ -11,7 +11,7 @@ import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class Config {
-  static const String environment = "prod";
+  static const String environment = "dev";
 
   static String get baseUrl {
     switch (environment) {
