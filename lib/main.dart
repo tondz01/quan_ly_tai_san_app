@@ -18,7 +18,7 @@ class Config {
       case 'dev':
         return 'http://103.112.211.148:8443';
       default:
-        return 'http://103.112.211.148:8443';
+        return 'https://ecotel-odoo.id.vn:8386';
     }
   }
 }
