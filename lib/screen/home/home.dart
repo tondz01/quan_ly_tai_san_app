@@ -224,7 +224,6 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
-    log('sidebarItems: ${sidebarItems.toString()}');
     return MainWrapper(
       header: null,
       sidebar: Container(

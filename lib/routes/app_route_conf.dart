@@ -8,7 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital
 import 'package:quan_ly_tai_san_app/screen/category/departments/views/department_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/views/project_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/views/staff_manager.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_screen.dart';
+import 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_view.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_2.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
@@ -30,7 +30,7 @@ class AppRouteConf {
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return LoginView(child: child);
+          return Home(child: child);
         },
         routes: [
           // GoRoute(
@@ -48,7 +48,7 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const DashboardScreen(),
+                  child: const DashboardView(),
                 ),
           ),
           GoRoute(

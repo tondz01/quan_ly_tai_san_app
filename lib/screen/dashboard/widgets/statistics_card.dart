@@ -8,31 +8,16 @@ class StatisticsCard extends StatelessWidget {
   final Color color;
   final String? trend;
   final bool? trendUp;
+  final Color? backgroundColor;
 
-  const StatisticsCard({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-    this.trend,
-    this.trendUp,
-  });
+  const StatisticsCard({super.key, required this.title, required this.value, required this.icon, required this.color, this.trend, this.trendUp, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor ?? ColorValue.backgroundBG4,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.3),
-            spreadRadius: 0,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -43,15 +28,8 @@ class StatisticsCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, color: color, size: 24),
               ),
               if (trend != null)
                 Container(
@@ -63,45 +41,20 @@ class StatisticsCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        (trendUp ?? true) ? Icons.trending_up : Icons.trending_down,
-                        size: 12,
-                        color: (trendUp ?? true) ? ColorValue.success : ColorValue.error,
-                      ),
+                      Icon((trendUp ?? true) ? Icons.trending_up : Icons.trending_down, size: 12, color: (trendUp ?? true) ? ColorValue.success : ColorValue.error),
                       const SizedBox(width: 4),
-                      Text(
-                        trend!,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: (trendUp ?? true) ? ColorValue.success : ColorValue.error,
-                        ),
-                      ),
+                      Text(trend!, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: (trendUp ?? true) ? ColorValue.success : ColorValue.error)),
                     ],
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              color: ColorValue.neutral900,
-            ),
-          ),
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: ColorValue.neutral900)),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: ColorValue.neutral600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(title, style: TextStyle(fontSize: 14, color: ColorValue.neutral600, fontWeight: FontWeight.w500)),
         ],
       ),
     );
   }
-} 
+}

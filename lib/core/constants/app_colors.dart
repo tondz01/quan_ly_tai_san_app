@@ -11,6 +11,8 @@ abstract class ColorValue {
   static const Color accentCyan = Color(0xFF00BCD4); // Cyan 500
   static const Color accentLightCyan = Color(0xFF80DEEA); // Cyan 200
 
+  static const Color backgroundBG4= Color(0xFFEDEEFC); // Light Blue 200
+
   // Neutral colors
   static const Color neutral50 = Color(0xFFFAFAFA);
   static const Color neutral100 = Color(0xFFF5F5F5);
