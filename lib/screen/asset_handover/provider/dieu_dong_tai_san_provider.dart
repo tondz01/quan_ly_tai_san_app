@@ -8,9 +8,10 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+
+import '../model/dieu_dong_tai_san_dto.dart';
 
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
@@ -23,45 +24,66 @@ enum FilterStatus {
 
   final String label;
   final Color activeColor;
+
   const FilterStatus(this.label, this.activeColor);
 }
 
 class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
+
   bool get isShowInput => _isShowInput;
+
   bool get isShowCollapse => _isShowCollapse;
-  List<DieuDongTaiSan>? get dataPage => _dataPage;
-  DieuDongTaiSan? get item => _item;
+
+  List<DieuDongTaiSanDto>? get dataPage => _dataPage;
+
+  DieuDongTaiSanDto? get item => _item;
+
   get data => _data;
+
   get columns => _columns;
+
   bool get hasUnsavedChanges => _hasUnsavedChanges;
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
+
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
+
   bool get isShowReady => _filterStatus[FilterStatus.ready] ?? false;
+
   bool get isShowConfirm => _filterStatus[FilterStatus.confirm] ?? false;
+
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
+
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
+
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
 
   // Getter để lấy count cho mỗi status
   int get allCount => _data?.length ?? 0;
+
   int get draftCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
+
   int get readyCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
+
   int get confirmCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
+
   int get browserCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
+
   int get completeCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
+
   int get cancelCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
 
   // Thuộc tính cho tìm kiếm
   String get searchTerm => _searchTerm;
+
   set searchTerm(String value) {
     _searchTerm = value;
     _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
@@ -73,6 +95,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool _hasUnsavedChanges = false;
 
   String? get error => _error;
+
   String? get subScreen => _subScreen;
   String _searchTerm = '';
 
@@ -102,15 +125,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   bool _isLoading = false;
 
-  List<DieuDongTaiSan>? _data;
-  List<DieuDongTaiSan>? _dataPage;
+  List<DieuDongTaiSanDto>? _data;
+  List<DieuDongTaiSanDto>? _dataPage;
+
   // Danh sách dữ liệu đã được lọc
-  List<DieuDongTaiSan> _filteredData = [];
-  List<SgTableColumn<DieuDongTaiSan>> _columns = [];
-  DieuDongTaiSan? _item;
+  List<DieuDongTaiSanDto> _filteredData = [];
+  List<SgTableColumn<DieuDongTaiSanDto>> _columns = [];
+  DieuDongTaiSanDto? _item;
 
   // Method để refresh data và filter
-  void refreshData(BuildContext context,String idCongTy) {
+  void refreshData(BuildContext context, String idCongTy) {
     _isLoading = true;
 
     // Reset filter về trạng thái ban đầu
@@ -121,7 +145,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _searchTerm = '';
 
     // Reload data
-    context.read<DieuDongTaiSanBloc>().add(GetListDieuDongTaiSanEvent(context: context,idCongTy: idCongTy));
+    context.read<DieuDongTaiSanBloc>().add(
+      GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+    );
     notifyListeners();
   }
 
@@ -137,7 +163,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  set dataPage(List<DieuDongTaiSan>? value) {
+  set dataPage(List<DieuDongTaiSanDto>? value) {
     _dataPage = value;
     notifyListeners();
   }
@@ -185,7 +211,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         .any((entry) => entry.value == true);
 
     // Lọc theo trạng thái
-    List<DieuDongTaiSan> statusFiltered;
+    List<DieuDongTaiSanDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(_data!);
     } else {
@@ -242,12 +268,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                 (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
                     false) ||
                 // Người lập phiếu
-                (item.nguoiTao?.toLowerCase().contains(searchLower) ??
-                    false) ||
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
                 // Chi tiết điều động
-                (item.assetHandoverMovements?.any(
+                (item.chiTietDieuDongTaiSan?.any(
                       (detail) =>
-                          detail.name?.toLowerCase().contains(searchLower) ??
+                          detail.tenTaiSan?.toLowerCase().contains(
+                            searchLower,
+                          ) ??
                           false,
                     ) ??
                     false) ||
@@ -257,7 +284,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                 (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
                     false);
           }).toList();
-
     } else {
       _filteredData = statusFiltered;
     }
@@ -279,12 +305,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   // Nội dung tìm kiếm
 
-  void onInit(BuildContext context,String idCongTy) {
+  void onInit(BuildContext context, String idCongTy) {
     onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
 
     _body = Container();
-    getListAssetHandover(context,idCongTy);
+    getListAssetHandover(context, idCongTy);
   }
 
   void onDispose() {
@@ -310,10 +336,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   // Cập nhật danh sách trạng thái
 
-  void getListAssetHandover(BuildContext context,String idCongTy) {
+  void getListAssetHandover(BuildContext context, String idCongTy) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<DieuDongTaiSanBloc>().add(GetListDieuDongTaiSanEvent(context: context,idCongTy: idCongTy));
+      context.read<DieuDongTaiSanBloc>().add(
+        GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+      );
     });
   }
 
@@ -354,13 +382,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetail(BuildContext context, DieuDongTaiSan? item) {
+  void onChangeDetail(BuildContext context, DieuDongTaiSanDto? item) {
     _confirmBeforeLeaving(context, item);
 
     notifyListeners();
   }
 
-  void updateItem(DieuDongTaiSan updatedItem) {
+  void updateItem(DieuDongTaiSanDto updatedItem) {
     if (_data == null) return;
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
     if (index != -1) {
@@ -401,7 +429,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   Future<bool> _showUnsavedChangesDialog(
     BuildContext context,
-    DieuDongTaiSan? item,
+      DieuDongTaiSanDto? item,
   ) async {
     return await showDialog<bool>(
           context: context,
@@ -439,7 +467,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
   Future<bool> _confirmBeforeLeaving(
     BuildContext context,
-    DieuDongTaiSan? item,
+      DieuDongTaiSanDto? item,
   ) async {
     if (hasUnsavedChanges) {
       return await _showUnsavedChangesDialog(context, item);

@@ -3,11 +3,15 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
 class DieuDongTaiSanRepository {
   late final Dio _dio;
+  late final ChiTietDieuDongTaiSanRepository _chiTietDieuDongTaiSanRepository;
 
   DieuDongTaiSanRepository() {
     _dio = Dio(
@@ -27,14 +31,30 @@ class DieuDongTaiSanRepository {
     };
   }
 
-  Future<List<DieuDongTaiSan>> getAll(String idCongTy) async {
+  Future<List<DieuDongTaiSanDto>> getAll(String idCongTy) async {
     final res = await _dio.get('', queryParameters: {"idcongty": idCongTy});
-    return (res.data as List).map((e) => DieuDongTaiSan.fromJson(e)).toList();
+    List<DieuDongTaiSanDto> dieuDongTaiSans =
+        (res.data as List).map((e) => DieuDongTaiSanDto.fromJson(e)).toList();
+    for (DieuDongTaiSanDto dieuDongTaiSan in dieuDongTaiSans) {
+      List<ChiTietDieuDongTaiSan> _chiTietDieuDongTS =
+          await _chiTietDieuDongTaiSanRepository.getAll(
+            dieuDongTaiSan.id.toString(),
+          );
+      dieuDongTaiSan.chiTietDieuDongTaiSan = _chiTietDieuDongTS;
+    }
+
+    return dieuDongTaiSans;
   }
 
-  Future<DieuDongTaiSan> getById(String id) async {
+  Future<DieuDongTaiSanDto> getById(String id) async {
     final res = await _dio.get('/$id');
-    return DieuDongTaiSan.fromJson(res.data);
+    DieuDongTaiSanDto dieuDongTaiSan = DieuDongTaiSanDto.fromJson(res.data);
+    List<ChiTietDieuDongTaiSan> _chiTietDieuDongTS =
+    await _chiTietDieuDongTaiSanRepository.getAll(
+      dieuDongTaiSan.id.toString(),
+    );
+    dieuDongTaiSan.chiTietDieuDongTaiSan = _chiTietDieuDongTS;
+    return dieuDongTaiSan;
   }
 
   Future<int> create(DieuDongTaiSan obj) async {

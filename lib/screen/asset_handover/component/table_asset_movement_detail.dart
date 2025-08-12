@@ -2,10 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/chi_tiet_dieu_dong_tai_san.dart';
 
 class TableAssetMovementDetail extends StatefulWidget {
-  final List<AssetHandoverMovementDto>? item;
+  final List<ChiTietDieuDongTaiSan>? item;
   const TableAssetMovementDetail({super.key, this.item});
 
   @override
@@ -65,9 +65,9 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   controller: _scrollController,
                   
                   scrollDirection: Axis.horizontal,
-                  child: SgEditableTable<AssetHandoverMovementDto>(
+                  child: SgEditableTable<ChiTietDieuDongTaiSan>(
                     initialData: widget.item ?? [],
-                    createEmptyItem: AssetHandoverMovementDto.empty,
+                    createEmptyItem: ChiTietDieuDongTaiSan.empty,
                     rowHeight: 40.0,
                     headerBackgroundColor: Colors.grey.shade50,
                     oddRowBackgroundColor: Colors.white,
@@ -76,57 +76,49 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                     showHorizontalLines: true,
                     addRowText: 'Thêm một dòng',
                     isEditing: false, // Pass the editing state
-                    rowEditableDecider: (item, index) => item.quantity != null,
+                    rowEditableDecider: (item, index) => item.soLuong != null,
                     onDataChanged: (data) {
                       log('Asset movement data changed: ${data.length} items');
                     },
                     columns: [
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'asset',
                         title: 'Tài sản',
                         titleAlignment: TextAlign.center,
                         width: 250,
-                        getValue: (item) => item.name,
-                        setValue: (item, value) => item.name = value,
-                        sortValueGetter: (item) => item.name,
+                        getValue: (item) => item.tenTaiSan,
+                        setValue: (item, value) => item.tenTaiSan = value,
+                        sortValueGetter: (item) => item.tenTaiSan,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'unit',
                         title: 'Đơn vị tính',
                         titleAlignment: TextAlign.center,
                         width: 100,
-                        getValue: (item) => item.measurementUnit,
-                        setValue: (item, value) => item.measurementUnit = value,
-                        sortValueGetter: (item) => item.measurementUnit,
+                        getValue: (item) => item.donViTinh,
+                        setValue: (item, value) => item.donViTinh = value,
+                        sortValueGetter: (item) => item.donViTinh,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'quantity',
                         title: 'Số lượng',
                         titleAlignment: TextAlign.center,
                         width: 100,
-                        getValue: (item) => item.quantity,
-                        setValue: (item, value) => item.quantity = value,
+                        getValue: (item) => item.soLuong,
+                        setValue: (item, value) => item.soLuong = value,
                         sortValueGetter:
-                            (item) => int.tryParse(item.quantity ?? '0') ?? 0,
+                            (item) => int.tryParse(item.soLuong.toString() ?? '0') ?? 0,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'condition',
                         title: 'Tình trạng kỹ thuật',
                         titleAlignment: TextAlign.center,
                         width: 150,
-                        getValue: (item) => item.setCondition,
-                        setValue: (item, value) => item.setCondition = value,
-                        sortValueGetter: (item) => item.setCondition,
+                        getValue: (item) => item.hienTrang,
+                        setValue: (item, value) => item.hienTrang = value,
+                        sortValueGetter: (item) => item.hienTrang,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
-                        field: 'countryOfOrigin',
-                        title: 'Nước sản xuất',
-                        titleAlignment: TextAlign.center,
-                        width: 150,
-                        getValue: (item) => item.countryOfOrigin,
-                        setValue: (item, value) => item.countryOfOrigin = value,
-                        sortValueGetter: (item) => item.countryOfOrigin,
-                      ),
+
                     ],
                   ),
                 ),

@@ -1,49 +1,21 @@
-// dieu_dong_tai_san.dart
-import 'dart:convert';
-
 class DieuDongTaiSan {
   String? id;
   String? soQuyetDinh;
   String? tenPhieu;
-
-  // ID + tên đơn vị giao
   String? idDonViGiao;
-  String? tenDonViGiao;
-
-  // ID + tên đơn vị nhận
   String? idDonViNhan;
-  String? tenDonViNhan;
-
-  // ID + tên đơn vị đề nghị
-  String? idDonViDeNghi;
-  String? tenDonViDeNghi;
-
-  // ID + tên phòng ban xem phiếu
-  String? idPhongBanXemPhieu;
-  String? tenPhongBanXemPhieu;
-
-  // ID + tên người đề nghị
   String? idNguoiDeNghi;
-  String? tenNguoiDeNghi;
-
-  // ID + tên trình duyệt cấp phòng
-  String? idTrinhDuyetCapPhong;
-  String? tenTrinhDuyetCapPhong;
-
-  // ID + tên trình duyệt giám đốc
-  String? idTrinhDuyetGiamDoc;
-  String? tenTrinhDuyetGiamDoc;
-
-  // ID + tên nhân sự xem phiếu
-  String? idNhanSuXemPhieu;
-  String? tenNhanSuXemPhieu;
-
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
   bool? phoPhongXacNhan;
-  String? tggnTuNgay;
-  String? tggnDenNgay;
+  String? idDonViDeNghi;
+  String? idTrinhDuyetCapPhong;
+  DateTime? tggnTuNgay;
+  DateTime? tggnDenNgay;
+  String? idTrinhDuyetGiamDoc;
   String? diaDiemGiaoNhan;
+  String? idPhongBanXemPhieu;
+  String? idNhanSuXemPhieu;
   String? veViec;
   String? canCu;
   String? dieu1;
@@ -53,13 +25,14 @@ class DieuDongTaiSan {
   String? themDongTrong;
   int? trangThai;
   String? idCongTy;
-  String? ngayTao;
-  String? ngayCapNhat;
+  DateTime? ngayTao;
+  DateTime? ngayCapNhat;
   String? nguoiTao;
   String? nguoiCapNhat;
   bool? coHieuLuc;
   int? loai;
   bool? isActive;
+
   String? trichYeu;
   String? duongDanFile;
   String? tenFile;
@@ -70,27 +43,19 @@ class DieuDongTaiSan {
     this.soQuyetDinh,
     this.tenPhieu,
     this.idDonViGiao,
-    this.tenDonViGiao,
     this.idDonViNhan,
-    this.tenDonViNhan,
-    this.idDonViDeNghi,
-    this.tenDonViDeNghi,
-    this.idPhongBanXemPhieu,
-    this.tenPhongBanXemPhieu,
     this.idNguoiDeNghi,
-    this.tenNguoiDeNghi,
-    this.idTrinhDuyetCapPhong,
-    this.tenTrinhDuyetCapPhong,
-    this.idTrinhDuyetGiamDoc,
-    this.tenTrinhDuyetGiamDoc,
-    this.idNhanSuXemPhieu,
-    this.tenNhanSuXemPhieu,
     this.nguoiLapPhieuKyNhay,
     this.quanTrongCanXacNhan,
     this.phoPhongXacNhan,
+    this.idDonViDeNghi,
+    this.idTrinhDuyetCapPhong,
     this.tggnTuNgay,
     this.tggnDenNgay,
+    this.idTrinhDuyetGiamDoc,
     this.diaDiemGiaoNhan,
+    this.idPhongBanXemPhieu,
+    this.idNhanSuXemPhieu,
     this.veViec,
     this.canCu,
     this.dieu1,
@@ -119,27 +84,19 @@ class DieuDongTaiSan {
       soQuyetDinh: json['soQuyetDinh'],
       tenPhieu: json['tenPhieu'],
       idDonViGiao: json['idDonViGiao'],
-      tenDonViGiao: json['tenDonViGiao'],
       idDonViNhan: json['idDonViNhan'],
-      tenDonViNhan: json['tenDonViNhan'],
-      idDonViDeNghi: json['idDonViDeNghi'],
-      tenDonViDeNghi: json['tenDonViDeNghi'],
-      idPhongBanXemPhieu: json['idPhongBanXemPhieu'],
-      tenPhongBanXemPhieu: json['tenPhongBanXemPhieu'],
       idNguoiDeNghi: json['idNguoiDeNghi'],
-      tenNguoiDeNghi: json['tenNguoiDeNghi'],
-      idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'],
-      tenTrinhDuyetCapPhong: json['tenTrinhDuyetCapPhong'],
-      idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'],
-      tenTrinhDuyetGiamDoc: json['tenTrinhDuyetGiamDoc'],
-      idNhanSuXemPhieu: json['idNhanSuXemPhieu'],
-      tenNhanSuXemPhieu: json['tenNhanSuXemPhieu'],
       nguoiLapPhieuKyNhay: json['nguoiLapPhieuKyNhay'],
       quanTrongCanXacNhan: json['quanTrongCanXacNhan'],
       phoPhongXacNhan: json['phoPhongXacNhan'],
-      tggnTuNgay: json['tggnTuNgay'],
-      tggnDenNgay: json['tggnDenNgay'],
+      idDonViDeNghi: json['idDonViDeNghi'],
+      idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'],
+      tggnTuNgay: json['tggnTuNgay'] != null ? DateTime.parse(json['tggnTuNgay']) : null,
+      tggnDenNgay: json['tggnDenNgay'] != null ? DateTime.parse(json['tggnDenNgay']) : null,
+      idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'],
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
+      idPhongBanXemPhieu: json['idPhongBanXemPhieu'],
+      idNhanSuXemPhieu: json['idNhanSuXemPhieu'],
       veViec: json['veViec'],
       canCu: json['canCu'],
       dieu1: json['dieu1'],
@@ -149,8 +106,8 @@ class DieuDongTaiSan {
       themDongTrong: json['themDongTrong'],
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: json['ngayTao'] != null ? DateTime.parse(json['ngayTao']) : null,
+      ngayCapNhat: json['ngayCapNhat'] != null ? DateTime.parse(json['ngayCapNhat']) : null,
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],
@@ -165,51 +122,43 @@ class DieuDongTaiSan {
 
   Map<String, dynamic> toJson() {
     return {
-      "id": id,
-      "soQuyetDinh": soQuyetDinh,
-      "tenPhieu": tenPhieu,
-      "idDonViGiao": idDonViGiao,
-      "tenDonViGiao": tenDonViGiao,
-      "idDonViNhan": idDonViNhan,
-      "tenDonViNhan": tenDonViNhan,
-      "idDonViDeNghi": idDonViDeNghi,
-      "tenDonViDeNghi": tenDonViDeNghi,
-      "idPhongBanXemPhieu": idPhongBanXemPhieu,
-      "tenPhongBanXemPhieu": tenPhongBanXemPhieu,
-      "idNguoiDeNghi": idNguoiDeNghi,
-      "tenNguoiDeNghi": tenNguoiDeNghi,
-      "idTrinhDuyetCapPhong": idTrinhDuyetCapPhong,
-      "tenTrinhDuyetCapPhong": tenTrinhDuyetCapPhong,
-      "idTrinhDuyetGiamDoc": idTrinhDuyetGiamDoc,
-      "tenTrinhDuyetGiamDoc": tenTrinhDuyetGiamDoc,
-      "idNhanSuXemPhieu": idNhanSuXemPhieu,
-      "tenNhanSuXemPhieu": tenNhanSuXemPhieu,
-      "nguoiLapPhieuKyNhay": nguoiLapPhieuKyNhay,
-      "quanTrongCanXacNhan": quanTrongCanXacNhan,
-      "phoPhongXacNhan": phoPhongXacNhan,
-      "tggnTuNgay": tggnTuNgay,
-      "tggnDenNgay": tggnDenNgay,
-      "diaDiemGiaoNhan": diaDiemGiaoNhan,
-      "veViec": veViec,
-      "canCu": canCu,
-      "dieu1": dieu1,
-      "dieu2": dieu2,
-      "dieu3": dieu3,
-      "noiNhan": noiNhan,
-      "themDongTrong": themDongTrong,
-      "trangThai": trangThai,
-      "idCongTy": idCongTy,
-      "ngayTao": ngayTao,
-      "ngayCapNhat": ngayCapNhat,
-      "nguoiTao": nguoiTao,
-      "nguoiCapNhat": nguoiCapNhat,
-      "coHieuLuc": coHieuLuc,
-      "loai": loai,
-      "isActive": isActive,
-      "trichYeu": trichYeu,
-      "duongDanFile": duongDanFile,
-      "tenFile": tenFile,
-      "ngayKy": ngayKy,
+      'id': id,
+      'soQuyetDinh': soQuyetDinh,
+      'tenPhieu': tenPhieu,
+      'idDonViGiao': idDonViGiao,
+      'idDonViNhan': idDonViNhan,
+      'idNguoiDeNghi': idNguoiDeNghi,
+      'nguoiLapPhieuKyNhay': nguoiLapPhieuKyNhay,
+      'quanTrongCanXacNhan': quanTrongCanXacNhan,
+      'phoPhongXacNhan': phoPhongXacNhan,
+      'idDonViDeNghi': idDonViDeNghi,
+      'idTrinhDuyetCapPhong': idTrinhDuyetCapPhong,
+      'tggnTuNgay': tggnTuNgay?.toIso8601String(),
+      'tggnDenNgay': tggnDenNgay?.toIso8601String(),
+      'idTrinhDuyetGiamDoc': idTrinhDuyetGiamDoc,
+      'diaDiemGiaoNhan': diaDiemGiaoNhan,
+      'idPhongBanXemPhieu': idPhongBanXemPhieu,
+      'idNhanSuXemPhieu': idNhanSuXemPhieu,
+      'veViec': veViec,
+      'canCu': canCu,
+      'dieu1': dieu1,
+      'dieu2': dieu2,
+      'dieu3': dieu3,
+      'noiNhan': noiNhan,
+      'themDongTrong': themDongTrong,
+      'trangThai': trangThai,
+      'idCongTy': idCongTy,
+      'ngayTao': ngayTao?.toIso8601String(),
+      'ngayCapNhat': ngayCapNhat?.toIso8601String(),
+      'nguoiTao': nguoiTao,
+      'nguoiCapNhat': nguoiCapNhat,
+      'coHieuLuc': coHieuLuc,
+      'loai': loai,
+      'isActive': isActive,
+      'trichYeu': trichYeu,
+      'duongDanFile': duongDanFile,
+      'tenFile': tenFile,
+      'ngayKy': ngayKy,
     };
   }
 }

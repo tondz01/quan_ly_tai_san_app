@@ -2,44 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/download_file.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/popup/columns_asset_handover.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-List<SgTableColumn<DieuDongTaiSan>> createColumns(
+import '../model/dieu_dong_tai_san_dto.dart';
+
+List<SgTableColumn<DieuDongTaiSanDto>> createColumns(
   BuildContext context,
   Map<String, double> columnWidths,
 ) {
   return [
-    TableColumnBuilder.createTextColumn<DieuDongTaiSan>(
+    TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
       title: 'Phiếu ký nội sinh',
       textColor: Colors.black87,
       getValue: (item) => 'Biên bản điều động tài sản',
       fontSize: 12,
       width: columnWidths['Phiếu ký nội sinh']!,
     ),
-    TableColumnBuilder.createTextColumn<DieuDongTaiSan>(
+    TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
       title: 'Ngày ký',
       textColor: Colors.black87,
       fontSize: 12,
       getValue: (item) => getDateOfSigning(item.ngayKy ?? ''),
       width: columnWidths['Ngày ký']!,
     ),
-    TableColumnBuilder.createTextColumn<DieuDongTaiSan>(
+    TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
       title: 'Ngày hiệu lực',
       textColor: Colors.black87,
       fontSize: 12,
       getValue: (item) => item.tggnTuNgay ?? '',
       width: columnWidths['Ngày hiệu lực']!,
     ),
-    TableColumnBuilder.createTextColumn<DieuDongTaiSan>(
+    TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
       title: 'Trình duyệt ban giám đốc',
       textColor: Colors.black87,
       fontSize: 12,
       getValue: (item) => item.tenTrinhDuyetGiamDoc.toString() ?? '',
       width: columnWidths['Trình duyệt ban giám đốc']!,
     ),
-    SgTableColumn<DieuDongTaiSan>(
+    SgTableColumn<DieuDongTaiSanDto>(
       title: 'Tài liệu duyệt',
       cellBuilder: (item) => showFile(item.duongDanFile??'', context),
       cellAlignment: TextAlign.center,
@@ -47,21 +48,21 @@ List<SgTableColumn<DieuDongTaiSan>> createColumns(
       width: columnWidths['Tài liệu duyệt']!,
       searchable: true,
     ),
-    SgTableColumn<DieuDongTaiSan>(
+    SgTableColumn<DieuDongTaiSanDto>(
       title: 'Có hiệu lực',
       cellBuilder: (item) => buildIsEffective(item),
       cellAlignment: TextAlign.center,
       titleAlignment: TextAlign.center,
       width: columnWidths['Có hiệu lực']!,
     ),
-    TableColumnBuilder.createTextColumn<DieuDongTaiSan>(
+    TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
       title: 'Ký số',
       textColor: Colors.black87,
       fontSize: 12,
       getValue: (item) => item.id ?? '',
       width: columnWidths['Ký số']!,
     ),
-    SgTableColumn<DieuDongTaiSan>(
+    SgTableColumn<DieuDongTaiSanDto>(
       title: '',
       cellBuilder: (item) => buildActions(context, item),
       cellAlignment: TextAlign.center,
@@ -112,7 +113,7 @@ Widget showFile(String url, BuildContext context) {
       : const SizedBox.shrink();
 }
 
-bool onCheckIsEffective(DieuDongTaiSan item) {
+bool onCheckIsEffective(DieuDongTaiSanDto item) {
   bool isUnitConfirm = item.coHieuLuc ?? false;
   bool isDelivererConfirm = item.nguoiLapPhieuKyNhay ?? false;
   bool isReceiverConfirm = item.phoPhongXacNhan ?? false;
@@ -125,7 +126,7 @@ bool onCheckIsEffective(DieuDongTaiSan item) {
       isRepresentativeUnitConfirm;
 }
 
-Widget buildIsEffective(DieuDongTaiSan item) {
+Widget buildIsEffective(DieuDongTaiSanDto item) {
   return SizedBox(
     width: 24,
     height: 24,
@@ -141,7 +142,7 @@ Widget buildIsEffective(DieuDongTaiSan item) {
   );
 }
 
-Widget buildActions(BuildContext context, DieuDongTaiSan item) {
+Widget buildActions(BuildContext context, DieuDongTaiSanDto item) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -178,6 +179,6 @@ String getDateOfSigning(String dateStr) {
   return DateFormat('yyyy-MM-dd').format(newDate);
 }
 
-void _showDocument(BuildContext context, DieuDongTaiSan item) {
+void _showDocument(BuildContext context, DieuDongTaiSanDto item) {
   // TODO: Implement navigation or document preview
 }
