@@ -15,75 +15,65 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(color: Colors.white),
-      child: Row(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Scaffold(
-            backgroundColor: ColorValue.neutral50,
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SGText(text: 'Tổng quan', size: 14, style: TextStyle(fontFamily: 'Inter-SemiBold', fontSize: 14, color: ColorValue.neutral900, fontWeight: FontWeight.w700)),
+              Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SGText(text: 'Tổng quan', size: 14, style: TextStyle(fontFamily: 'Inter-SemiBold', fontSize: 14, color: ColorValue.neutral900, fontWeight: FontWeight.w700)),
-                      Row(
-                        children: [
-                          SGText(text: 'Hôm nay', size: 12, style: TextStyle(fontFamily: 'Inter-Regular', fontSize: 14, color: ColorValue.neutral900, fontWeight: FontWeight.w500)),
-                          Padding(padding: const EdgeInsets.only(left: 2, top: 4), child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: ColorValue.neutral700)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Statistics cards
-                  _buildStatisticsSection(),
-                  const SizedBox(height: 24),
-
-                  // Main content grid
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left column
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          children: [
-                            // Quick actions
-                            QuickActionsWidget(),
-                            const SizedBox(height: 24),
-
-                            // Recent activities
-                            // RecentActivitiesWidget(),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 24),
-
-                      // Right column
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          children: [
-                            // Chart widget
-                            ChartWidget(),
-                            const SizedBox(height: 24),
-
-                            // Asset status
-                            _buildAssetStatusCard(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  SGText(text: 'Hôm nay', size: 12, style: TextStyle(fontFamily: 'Inter-Regular', fontSize: 14, color: ColorValue.neutral900, fontWeight: FontWeight.w500)),
+                  Padding(padding: const EdgeInsets.only(left: 2, top: 4), child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: ColorValue.neutral700)),
                 ],
               ),
-            ),
+            ],
+          ),
+          const SizedBox(height: 24),
+    
+          // Statistics cards
+          _buildStatisticsSection(),
+          const SizedBox(height: 24),
+    
+          // Main content grid
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Left column
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    // Quick actions
+                    QuickActionsWidget(),
+                    const SizedBox(height: 24),
+    
+                    // Recent activities
+                    // RecentActivitiesWidget(),
+                  ],
+                ),
+              ),
+    
+              const SizedBox(width: 24),
+    
+              // Right column
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    // Chart widget
+                    ChartWidget(),
+                    const SizedBox(height: 24),
+    
+                    // Asset status
+                    _buildAssetStatusCard(),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
