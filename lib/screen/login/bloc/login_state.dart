@@ -20,7 +20,7 @@ class LoginLoadingDismissState extends LoginState {}
 
 // Define PostLoginSuccessState class.
 class PostLoginSuccessState extends LoginState {
-  final AuthDTO? data;
+  final UserInfoDTO? data;
 
   const PostLoginSuccessState({required this.data});
 

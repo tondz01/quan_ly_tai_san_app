@@ -8,6 +8,8 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
@@ -21,7 +23,10 @@ class AssetManagementView extends StatefulWidget {
 
 class _AssetManagementViewState extends State<AssetManagementView> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchKhauHaoController =
+      TextEditingController();
   String searchTerm = "";
+  bool isShowKhauHao = false;
 
   @override
   void initState() {
@@ -53,16 +58,22 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                 backgroundColor: ColorValue.neutral50,
                 appBar: AppBar(
                   title: HeaderComponent(
-                    controller: _searchController,
+                    controller:
+                        provider.typeBody == ShowBody.taiSan
+                            ? _searchController
+                            : _searchKhauHaoController,
                     onSearchChanged: (value) {
                       // provider.searchTerm = value;
                     },
                     onTap: () {
                       // provider.onChangeDetailAssetManagement(null);
+                      provider.onChangeBody(ShowBody.taiSan);
                     },
                     onNew: () {
                       // provider.onChangeDetailAssetManagement(null);
-                      provider.onChangeDetail(null);
+                      if (provider.typeBody == ShowBody.taiSan) {
+                        provider.onChangeDetail(null);
+                      }
                     },
                     mainScreen: "Quản lý tài sản",
                     subScreen: provider.subScreen,
@@ -70,23 +81,43 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                 ),
                 body: Column(
                   children: [
-                    Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          childInput: AssetDetail(provider: provider),
-                          childTableView: AssetManagementList(
-                            provider: provider,
+                    provider.typeBody == ShowBody.taiSan
+                        ? Flexible(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: CommonPageView(
+                              childInput: AssetDetail(provider: provider),
+                              childTableView: AssetManagementList(
+                                provider: provider,
+                              ),
+                              title: "Tạo tài sản",
+                              isShowInput: provider.isShowInput,
+                              isShowCollapse: provider.isShowCollapse,
+                              onExpandedChanged: (isExpanded) {
+                                provider.isShowCollapse = isExpanded;
+                              },
+                            ),
                           ),
-                          title: "Tạo tài sản",
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
+                        )
+                        : Flexible(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: CommonPageView(
+                              childInput: AssetDepreciationDetail(
+                                provider: provider,
+                              ),
+                              childTableView: AssetDepreciationList(
+                                provider: provider,
+                              ),
+                              title: "Chi tiết khấu hao tài sản",
+                              isShowInput: provider.isShowInputKhauHao,
+                              isShowCollapse: provider.isShowCollapseKhauHao,
+                              onExpandedChanged: (isExpanded) {
+                                provider.isShowCollapseKhauHao = isExpanded;
+                              },
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
                     // Visibility(
                     //   visible: (provider.data?.length ?? 0) >= 5,
                     //   child: SGPaginationControls(
@@ -135,6 +166,15 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         if (state is GetListChildAssetsFailedState) {
           log('GetListChildAssetsFailedState');
         }
+        if (state is GetListKhauHaoSuccessState) {
+          context.read<AssetManagementProvider>().getListKhauHaoSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListKhauHaoFailedState) {
+          log('GetListChildAssetsFailedState');
+        }
         if (state is GetListAssetGroupSuccessState) {
           context.read<AssetManagementProvider>().getListAssetGroupSuccess(
             context,
@@ -150,7 +190,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
             state,
           );
         }
-        if (state is GetListProjectFailedState) {
+        if (state is GetListKhauHaoFailedState) {
           log('GetListProjectFailedState');
         }
         if (state is GetListCapitalSourceSuccessState) {

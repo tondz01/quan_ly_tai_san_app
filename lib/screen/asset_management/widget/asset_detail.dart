@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
@@ -23,7 +22,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_reques
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/sg_textfield.dart';
 
 class AssetDetail extends StatefulWidget {
   const AssetDetail({super.key, required this.provider});

@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
-import 'package:quan_ly_tai_san_app/screen/login/Repository/auth_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/auth_dto.dart';

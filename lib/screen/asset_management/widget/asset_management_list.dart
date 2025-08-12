@@ -321,10 +321,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                         ),
                         onChange: (value) {
                           log('message ItemAssetGroup: $value');
-                          widget.provider.updateCheckBoxStatus(
-                            item.id,
-                            value,
-                          );
+                          widget.provider.updateCheckBoxStatus(item.id, value);
                           log(
                             'widget.provider.getCheckBoxStatus: ${widget.provider.getCheckBoxStatus(item.id)}',
                           );
@@ -413,6 +410,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               children: [
                 Row(
                   spacing: 8,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Icon(
                       Icons.table_chart,
@@ -439,6 +437,19 @@ class _AssetManagementListState extends State<AssetManagementList> {
                       ),
                     ),
                   ],
+                ),
+                Tooltip(
+                  message: 'Chuyển sang trang khấu hao tài sản',
+                  child: InkWell(
+                    onTap: () {
+                      widget.provider.onChangeBody(ShowBody.khauHao);
+                    },
+                    child: SGText(
+                      size: 14,
+                      text: "Khấu hao tài sản",
+                      color: ColorValue.link,
+                    ),
+                  ),
                 ),
               ],
             ),

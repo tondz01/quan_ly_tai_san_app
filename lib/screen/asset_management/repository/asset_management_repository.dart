@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capita
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -71,6 +72,37 @@ class AssetManagementRepository extends ApiBase {
       );
     } catch (e) {
       log("Error at getListChildAssets - AssetManagementRepository: $e");
+    }
+
+    return result;
+  }
+  //get list Khau Hao
+  Future<Map<String, dynamic>> getListKhauHao(String idCongTy) async {
+    List<AssetDepreciationDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      String url = '${EndPointAPI.CHILD_ASSETS}/khauhaotaisan/$idCongTy';
+      final response = await get(
+        url,
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetDepreciationDto>(
+        response.data,
+        AssetDepreciationDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListKhauHao - AssetManagementRepository: $e");
     }
 
     return result;

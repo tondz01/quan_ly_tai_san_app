@@ -1,72 +1,109 @@
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
-
 class AssetDepreciationDto {
   final String? id;
-  final String? name; // tên Bàn giao tài sản
-  final String? decisionNumber; // Quyết định điều động số
-  final String? order; // Lệnh điều động
-  final String? transferDate; // Ngày bàn giao
-  final String? transferDetail; // Chi tiết bàn giao
-  final String? senderUnit; // Đơn vị giao
-  final String? receiverUnit; // Đơn vị nhận
-  final String? createdBy; // Người tạo
-  final int? state; // Trạng thái
-  final List<AssetHandoverMovementDto>? assetHandoverMovements; // Chi tiết điều động
-  final AssetHandoverDetailDto? assetHandoverDetails; // Chi tiết bàn giao (0: Nháp, 1: Sẵn sàng, 2: Xác nhận, 3: Trình duyệt, 4: Hoàn thành, 5: Hủy)
+  final String? tenTaiSan;
+  final double? nguyenGia;
+  final int? soKyKhauHao;
+  final int? soThangSuDung;
+  final int? soKyKhauHaoConLai;
+  final double? giaTriKhauHao;
+  final double? giaTriThanhLy;
+  final double? giaTriKhauHaoBanDau;
+  final int? kyKhauHaoBanDau;
+  final double? giaTriThanhLyCu; // Trùng tên GiaTriThanhLy trong DB
+  final String? idDuDan;
+  final String? tenDuAn;
+  final String? phuongPhapKhauHao; // as String per request
+  final int? taiKhoanTaiSan;
+  final int? taiKhoanKhauHao;
+  final int? taiKhoanChiPhi;
+  final DateTime? ngayVaoSo;
+  final DateTime? ngaySuDung;
+  final bool? isActive;
 
-  AssetDepreciationDto({
+  const AssetDepreciationDto({
     this.id,
-    this.name,
-    this.decisionNumber,
-    this.order,
-    this.transferDate,
-    this.transferDetail,
-    this.senderUnit,
-    this.receiverUnit,
-    this.createdBy,
-    this.state,
-    this.assetHandoverMovements,
-    this.assetHandoverDetails,
+    this.tenTaiSan,
+    this.nguyenGia,
+    this.soKyKhauHao,
+    this.soThangSuDung,
+    this.soKyKhauHaoConLai,
+    this.giaTriKhauHao,
+    this.giaTriThanhLy,
+    this.giaTriKhauHaoBanDau,
+    this.kyKhauHaoBanDau,
+    this.giaTriThanhLyCu,
+    this.idDuDan,
+    this.tenDuAn,
+    this.phuongPhapKhauHao,
+    this.taiKhoanTaiSan,
+    this.taiKhoanKhauHao,
+    this.taiKhoanChiPhi,
+    this.ngayVaoSo,
+    this.ngaySuDung,
+    this.isActive,
   });
 
   factory AssetDepreciationDto.fromJson(Map<String, dynamic> json) {
+    bool? parseIsActive(dynamic value) {
+      if (value == null) return null;
+      if (value is bool) return value;
+      if (value is num) return value != 0;
+      final str = value.toString().toLowerCase();
+      if (str == 'true') return true;
+      if (str == 'false') return false;
+      return null;
+    }
+
+    int? asInt(dynamic v) => (v is num) ? v.toInt() : int.tryParse(v?.toString() ?? '');
+    double? asDouble(dynamic v) => (v is num) ? v.toDouble() : double.tryParse(v?.toString() ?? '');
+    DateTime? asDate(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+
     return AssetDepreciationDto(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      decisionNumber: json['decisionNumber'] ?? '',
-      order: json['order'] ?? '',
-      transferDate: json['transferDate'] ?? '',
-      transferDetail: json['transferDetail'] ?? '',
-      senderUnit: json['senderUnit'] ?? '',
-      receiverUnit: json['receiverUnit'] ?? '',
-      createdBy: json['createdBy'] ?? '',
-      state: json['state'] ?? -1,
-      assetHandoverMovements: json['assetHandoverMovements'] != null
-          ? (json['assetHandoverMovements'] as List)
-              .map((e) => AssetHandoverMovementDto.fromJson(e))
-              .toList()
-          : null,
-      assetHandoverDetails: json['assetHandoverDetails'] != null
-          ? AssetHandoverDetailDto.fromJson(json['assetHandoverDetails'])
-          : null,
+      id: json['id']?.toString(),
+      tenTaiSan: json['tenTaiSan']?.toString(),
+      nguyenGia: asDouble(json['nguyenGia']),
+      soKyKhauHao: asInt(json['soKyKhauHao']),
+      soThangSuDung: asInt(json['soThangSuDung']),
+      soKyKhauHaoConLai: asInt(json['soKyKhauHaoConLai']),
+      giaTriKhauHao: asDouble(json['giaTriKhauHao']),
+      giaTriThanhLy: asDouble(json['giaTriThanhLy']),
+      giaTriKhauHaoBanDau: asDouble(json['giaTriKhauHaoBanDau']),
+      kyKhauHaoBanDau: asInt(json['kyKhauHaoBanDau']),
+      giaTriThanhLyCu: asDouble(json['giaTriThanhLyCu']),
+      idDuDan: json['idDuDan']?.toString(),
+      tenDuAn: json['tenDuAn']?.toString(),
+      phuongPhapKhauHao: json['phuongPhapKhauHao']?.toString(),
+      taiKhoanTaiSan: asInt(json['taiKhoanTaiSan']),
+      taiKhoanKhauHao: asInt(json['taiKhoanKhauHao']),
+      taiKhoanChiPhi: asInt(json['taiKhoanChiPhi']),
+      ngayVaoSo: asDate(json['ngayVaoSo']),
+      ngaySuDung: asDate(json['ngaySuDung']),
+      isActive: parseIsActive(json['isActive']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      'decisionNumber': decisionNumber,
-      'order': order,
-      'transferDate': transferDate,
-      'transferDetail': transferDetail,
-      'senderUnit': senderUnit,
-      'receiverUnit': receiverUnit,
-      'createdBy': createdBy,
-      'state': state,
-      'assetHandoverMovements': assetHandoverMovements?.map((e) => e.toJson()).toList(),
-      'assetHandoverDetails': assetHandoverDetails?.toJson(),
+      'tenTaiSan': tenTaiSan,
+      'nguyenGia': nguyenGia,
+      'soKyKhauHao': soKyKhauHao,
+      'soThangSuDung': soThangSuDung,
+      'soKyKhauHaoConLai': soKyKhauHaoConLai,
+      'giaTriKhauHao': giaTriKhauHao,
+      'giaTriThanhLy': giaTriThanhLy,
+      'giaTriKhauHaoBanDau': giaTriKhauHaoBanDau,
+      'kyKhauHaoBanDau': kyKhauHaoBanDau,
+      'giaTriThanhLyCu': giaTriThanhLyCu,
+      'idDuDan': idDuDan,
+      'tenDuAn': tenDuAn,
+      'phuongPhapKhauHao': phuongPhapKhauHao,
+      'taiKhoanTaiSan': taiKhoanTaiSan,
+      'taiKhoanKhauHao': taiKhoanKhauHao,
+      'taiKhoanChiPhi': taiKhoanChiPhi,
+      'ngayVaoSo': ngayVaoSo?.toIso8601String(),
+      'ngaySuDung': ngaySuDung?.toIso8601String(),
+      'isActive': isActive,
     };
   }
 }

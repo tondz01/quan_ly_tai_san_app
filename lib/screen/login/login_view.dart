@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
@@ -69,6 +70,9 @@ class _LoginViewState extends State<LoginView> {
           builder: (BuildContext context, LoginState state) {
             return Consumer<LoginProvider>(
               builder: (loginProviderContext, provider, child) {
+                if (provider.isLoggedIn) {
+                  return Home(child: widget.child);
+                }
                 return Scaffold(
                   backgroundColor: SGAppColors.neutral100,
                   body: Center(

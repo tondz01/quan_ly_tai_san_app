@@ -12,8 +12,13 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dar
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/asset_depreciation_view.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/asset_view.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+
+enum ShowBody { taiSan, khauHao }
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
@@ -22,19 +27,25 @@ class AssetManagementProvider with ChangeNotifier {
       _dataGroup == null ||
       _dataProject == null ||
       _dataCapitalSource == null ||
-      _dataDepartment == null;
+      _dataDepartment == null ||
+      _dataKhauHao == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  bool get isShowInputKhauHao => _isShowInputKhauHao;
+  bool get isShowCollapseKhauHao => _isShowCollapseKhauHao;
   get subScreen => _subScreen;
+  get body => _body;
 
   get data => _data;
   get dataDetail => _dataDetail;
+  get dataDepreciationDetail => _dataDepreciationDetail;
   get filteredData => _filteredData ?? _data;
 
   get dataGroup => _dataGroup;
   get dataProject => _dataProject;
   get dataCapitalSource => _dataCapitalSource;
   get dataDepartment => _dataDepartment;
+  get dataKhauHao => _dataKhauHao;
   get itemsLyDoTang => _itemsLyDoTang;
   get itemsHienTrang => _itemsHienTrang;
 
@@ -54,12 +65,31 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set isShowInputKhauHao(bool value) {
+    _isShowInputKhauHao = value;
+    notifyListeners();
+  }
+
+  set isShowCollapseKhauHao(bool value) {
+    _isShowCollapseKhauHao = value;
+    notifyListeners();
+  }
+
+  ShowBody typeBody = ShowBody.taiSan;
+
+  Widget? _body;
+
   // bool _isLoading = true;
   bool _isShowInput = false;
   bool _isShowCollapse = false;
+  bool _isShowInputKhauHao = false;
+  bool _isShowCollapseKhauHao = false;
   String? _error;
 
   String? _subScreen;
+
+  AssetManagementDto? _dataDetail;
+  AssetDepreciationDto? _dataDepreciationDetail;
 
   List<AssetManagementDto>? _data;
   List<AssetGroupDto>? _dataGroup;
@@ -67,8 +97,8 @@ class AssetManagementProvider with ChangeNotifier {
   List<NguonKinhPhi>? _dataCapitalSource;
   List<PhongBan>? _dataDepartment;
   List<AssetManagementDto>? _filteredData;
-  AssetManagementDto? _dataDetail;
   List<ChildAssetDto>? _dataChildAssets;
+  List<AssetDepreciationDto>? _dataKhauHao;
   //List dropdown
   List<DropdownMenuItem<AssetGroupDto>>? _itemsAssetGroup;
   List<DropdownMenuItem<DuAn>>? _itemsDuAn;
@@ -111,12 +141,15 @@ class AssetManagementProvider with ChangeNotifier {
     onLoadItemDropdown();
     isShowInput = false;
     isShowCollapse = false;
+    isShowInputKhauHao = false;
+    isShowCollapseKhauHao = false;
     getDataAll(context);
     notifyListeners();
   }
 
   reset() {
     // _isLoading = true;
+    onChangeBody(ShowBody.taiSan);
     clearFilter();
   }
 
@@ -129,8 +162,26 @@ class AssetManagementProvider with ChangeNotifier {
       bloc.add(GetListProjectEvent(context, 'ct001'));
       bloc.add(GetListCapitalSourceEvent(context, 'ct001'));
       bloc.add(GetListDepartmentEvent(context, 'ct001'));
+      bloc.add(GetListKhauHaoEvent(context, 'ct001'));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
+    }
+  }
+
+  void onChangeBody(ShowBody type) {
+    switch (type) {
+      case ShowBody.taiSan:
+        _subScreen = '';
+        typeBody = ShowBody.taiSan;
+        _isShowCollapse = false;
+        isShowInput = false;
+        break;
+      case ShowBody.khauHao:
+        _subScreen = 'Khấu hao tài sản';
+        _isShowCollapseKhauHao = false;
+        isShowInputKhauHao = false;
+        typeBody = ShowBody.khauHao;
+        break;
     }
   }
 
@@ -142,6 +193,17 @@ class AssetManagementProvider with ChangeNotifier {
     }
     _isShowCollapse = true;
     isShowInput = true;
+  }
+
+  void onChangeDepreciationDetail(AssetDepreciationDto? item) {
+    if (item != null) {
+      _dataDepreciationDetail = item;
+    } else {
+      _dataDepreciationDetail = null;
+    }
+    log('message onChangeDepreciationDetail');
+    _isShowCollapseKhauHao = true;
+    isShowInputKhauHao = true;
   }
 
   // CALL API SUCCESS ---------------------------------------------------------------
@@ -171,6 +233,20 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataChildAssets = state.data;
       _filteredData = List.from(_dataChildAssets!); // Khởi tạo filteredData
+    }
+    notifyListeners();
+  }
+
+  getListKhauHaoSuccess(
+    BuildContext context,
+    GetListKhauHaoSuccessState state,
+  ) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataKhauHao = [];
+      // _filteredData = [];
+    } else {
+      _dataKhauHao = state.data;
     }
     notifyListeners();
   }

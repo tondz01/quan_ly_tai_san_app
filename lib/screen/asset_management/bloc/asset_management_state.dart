@@ -3,6 +3,7 @@ import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capita
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
@@ -38,7 +39,6 @@ class AssetManagementFailedState extends AssetManagementState {
   @override
   List<Object> get props => [title, code!, message];
 }
-
 
 // Danh sách tài sản con
 class GetListChildAssetsSuccessState extends AssetManagementState {
@@ -100,7 +100,30 @@ class GetListAssetGroupFailedState extends AssetManagementState {
   List<Object> get props => [title, code!, message];
 }
 
-// DỰ ÁN
+// KHẤU HAO
+class GetListKhauHaoSuccessState extends AssetManagementState {
+  final List<AssetDepreciationDto> data;
+
+  const GetListKhauHaoSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class GetListKhauHaoFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListKhauHaoFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
 class GetListProjectSuccessState extends AssetManagementState {
   final List<DuAn> data;
 

@@ -126,7 +126,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   // Danh sách các cột
                   SingleChildScrollView(child: _buildColumnLayout()),
@@ -135,16 +135,25 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
 
                   // Buttons
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    // mainAxisSize: MainAxisSize.min,
                     children: [
                       // Button Hủy
-                      TextButton(
+                      ElevatedButton(
                         onPressed: _handleCancel,
-                        style: TextButton.styleFrom(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: ColorValue.primaryText,
+                          side: const BorderSide(
+                            color: ColorValue.neutral300,
+                            width: 1,
+                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24,
                             vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                         child: Text(
@@ -200,14 +209,6 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
 
     // Tạo danh sách tất cả items (bao gồm "Chọn tất cả")
     final List<Widget> allItems = [
-      _buildColumnOption(
-        id: 'select_all',
-        label: widget.selectAllText,
-        isChecked: _selectAll,
-        onChanged: _toggleSelectAll,
-        isSelectAll: true,
-      ),
-      const SizedBox(height: 12),
       ..._columns.where((col) => col.isVisible).map((column) {
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -234,24 +235,37 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
     }
 
     // Nếu có nhiều cột, hiển thị dạng Row với các Column con
-    return Row(
-      spacing: 12,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(numberOfColumns, (columnIndex) {
-        final int startIndex = columnIndex * maxItemsPerColumn;
-        final int endIndex = (columnIndex + 1) * maxItemsPerColumn;
-        final List<Widget> columnItems = allItems.sublist(
-          startIndex,
-          endIndex > totalItems ? totalItems : endIndex,
-        );
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildColumnOption(
+          id: 'select_all',
+          label: widget.selectAllText,
+          isChecked: _selectAll,
+          onChanged: _toggleSelectAll,
+          isSelectAll: true,
+        ),
+        SizedBox(height: 10),
+        Row(
+          spacing: 12,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: columnItems,
-        );
-      }),
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(numberOfColumns, (columnIndex) {
+            final int startIndex = columnIndex * maxItemsPerColumn;
+            final int endIndex = (columnIndex + 1) * maxItemsPerColumn;
+            final List<Widget> columnItems = allItems.sublist(
+              startIndex,
+              endIndex > totalItems ? totalItems : endIndex,
+            );
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: columnItems,
+            );
+          }),
+        ),
+      ],
     );
   }
 

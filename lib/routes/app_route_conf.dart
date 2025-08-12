@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:flutter/widgets.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset_management_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
@@ -22,7 +25,7 @@ import 'routes.dart';
 
 class AppRouteConf {
   GoRouter get router => _router;
-
+  Widget child = Container();
   late final _router = GoRouter(
     initialLocation: AppRoute.dashboard.path,
     debugLogDiagnostics: true,
@@ -30,18 +33,20 @@ class AppRouteConf {
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return Home(child: child);
+          this.child = child;
+          log('message child: $child');
+          return LoginView(child: child);
         },
         routes: [
-          // GoRoute(
-          //   path: AppRoute.home.path,
-          //   name: AppRoute.home.name,
-          //   pageBuilder:
-          //       (context, state) => NoTransitionPage(
-          //         key: state.pageKey,
-          //         child: const Home(),
-          //       ),
-          // ),
+          GoRoute(
+            path: AppRoute.home.path,
+            name: AppRoute.home.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: Home(child: child),
+                ),
+          ),
           GoRoute(
             path: AppRoute.dashboard.path,
             name: AppRoute.dashboard.name,
