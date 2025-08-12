@@ -6,6 +6,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
@@ -86,8 +87,9 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
       setState(() {
         isEditing = widget.provider.isCreate;
       });
-      controllerIdAssetGroup.clear();
-      controllerNameAssetGroup.clear();
+      controllerIdAssetGroup.text = UUIDGenerator.generateWithFormat('NTS****');
+      controllerNameAssetGroup.text = '';
+      getNameAssetGroup();
     }
   }
 
@@ -146,7 +148,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
                 label: 'Có hiệu lực',
                 value: isActive,
                 isEditing: isEditing,
-                isEnable: !isEditing,
+                isDisabled: !isEditing,
                 onChanged: (value) {
                   setState(() {
                     isActive = value;
@@ -233,7 +235,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
         nguoiTao: 'use001',
         nguoiCapNhat: 'use001',
       );
-      
+
       context.read<AssetGroupBloc>().add(
         UpdateAssetGroupEvent(context, request, data!.id!),
       );

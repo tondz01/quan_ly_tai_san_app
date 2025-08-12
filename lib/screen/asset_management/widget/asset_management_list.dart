@@ -422,7 +422,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2.5),
                       child: Text(
-                        'Biên bản bàn giao tài sản (${widget.provider.data.length})',
+                        'Danh sách tài sản (${widget.provider.data.length})',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

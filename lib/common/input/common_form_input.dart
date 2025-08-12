@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
-import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class CommonFormInput extends StatefulWidget {
   const CommonFormInput({
@@ -23,6 +22,7 @@ class CommonFormInput extends StatefulWidget {
     this.items,
     this.onChanged,
     this.fieldName,
+    this.isMoney = false,
     this.validationErrors,
   });
   final String label;
@@ -36,7 +36,7 @@ class CommonFormInput extends StatefulWidget {
   final Function(String)? onChanged;
   final String? fieldName;
   final Map<String, bool>? validationErrors;
-
+  final bool isMoney;
   @override
   State<CommonFormInput> createState() => _CommonFormInputState();
 }
@@ -45,6 +45,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
   late final NumberFormat _numberFormat;
 
   void _onNumberChanged() {
+    if (!widget.isMoney) return;
     final currentText = widget.controller.text;
     // Loại bỏ dấu phân tách trước khi parse để tránh FormatException
     final numericText = currentText.replaceAll('.', '').replaceAll(',', '');
@@ -161,6 +162,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                         value: widget.textContent,
                         defaultValue: widget.textContent,
                         items: widget.items ?? [],
+                        enable: widget.isEnable,
                         colorBorder:
                             (widget.validationErrors != null &&
                                     widget.fieldName != null &&
@@ -170,8 +172,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                                 : SGAppColors.neutral400,
                         showUnderlineBorderOnly: true,
                         enableSearch: false,
-                        isClearController:
-                            false, // Ensure this is false to prevent clearing controller
+                        isClearController:false,
                         fontSize: 16,
                         inputType: widget.inputType,
                         isShowSuffixIcon: true,

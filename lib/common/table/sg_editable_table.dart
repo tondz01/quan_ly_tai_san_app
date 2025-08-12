@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_utils.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
@@ -481,15 +482,22 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
     if (column.editor == EditableCellEditor.dropdown) {
-      final dynamic currentValue = column.getValue(item);
+      final currentValue = column.getValue(item);
+      // final List<DropdownMenuItem<dynamic>> items =
+      //     (column.dropdownItems ?? const <DropdownMenuItem<dynamic>>[])
+      //         .map(
+      //           (e) =>
+      //               DropdownMenuItem<dynamic>(value: e.value, child: e.child),
+      //         )
+      //         .toList();
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: SGDropdownInputButton<dynamic>(
+        child: SGDropdownInputButton<T>(
           height: 32,
           controller: controller,
           value: currentValue,
           defaultValue: currentValue,
-          items: column.dropdownItems ?? const [],
+          items: column.dropdownItems ?? [],
           showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
@@ -527,28 +535,19 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: TextField(
+      child: SGInputText(
         controller: controller,
-        style: const TextStyle(fontSize: 14),
-        decoration: const InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          // border: OutlineInputBorder(),
-          isDense: true,
-        ),
-        onChanged: (value) {
-          _updateCellValue(rowIndex, column.field, value);
-          // cascade updates for text editor too
-          final updater = column.onValueChanged;
-          if (updater != null) {
-            updater(item, rowIndex, value, (
-              String targetField,
-              dynamic targetValue,
-            ) {
-              if (targetField == column.field) return; // avoid recursion
-              _setCellValue(rowIndex, targetField, targetValue);
-            });
-          }
-        },
+        // width: size.width * 0.2,
+        borderRadius: 10,
+        enabled: widget.isEditing,
+        onlyLine: true,
+        showBorder: false,
+        hintText: 'Tìm kiếm',
+        // onChanged: (value) {
+        //   setState(() {
+        //     _searchTerm = value;
+        //   });
+        // },
       ),
     );
   }
@@ -595,7 +594,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 ),
               ),
               suffixIcon: null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
             ),
           ),
           // Text(

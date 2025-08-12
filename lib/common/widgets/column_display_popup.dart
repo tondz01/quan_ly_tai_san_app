@@ -95,90 +95,101 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header với icon và title
-            Row(
-              children: [
-                Icon(Icons.settings, color: ColorValue.primaryBlue, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: ColorValue.primaryText,
-                    ),
+      child: UnconstrainedBox(
+        alignment: Alignment.centerLeft,
+        child: IntrinsicWidth(
+          child: IntrinsicHeight(
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header với icon và title
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.settings,
+                        color: ColorValue.primaryBlue,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: ColorValue.primaryText,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+
+                  // Danh sách các cột
+                  SingleChildScrollView(child: _buildColumnLayout()),
+
+                  const SizedBox(height: 24),
+
+                  // Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Button Hủy
+                      TextButton(
+                        onPressed: _handleCancel,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: Text(
+                          widget.cancelText,
+                          style: const TextStyle(
+                            color: ColorValue.primaryBlue,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Button Lưu
+                      ElevatedButton(
+                        onPressed: _handleSave,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: ColorValue.primaryText,
+                          side: const BorderSide(
+                            color: ColorValue.neutral300,
+                            width: 1,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          widget.saveText,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-
-            // Danh sách các cột
-            Flexible(child: SingleChildScrollView(child: _buildColumnLayout())),
-
-            const SizedBox(height: 24),
-
-            // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Button Hủy
-                TextButton(
-                  onPressed: _handleCancel,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: Text(
-                    widget.cancelText,
-                    style: const TextStyle(
-                      color: ColorValue.primaryBlue,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-
-                // Button Lưu
-                ElevatedButton(
-                  onPressed: _handleSave,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: ColorValue.primaryText,
-                    side: const BorderSide(
-                      color: ColorValue.neutral300,
-                      width: 1,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  child: Text(
-                    widget.saveText,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -226,6 +237,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
     return Row(
       spacing: 12,
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: List.generate(numberOfColumns, (columnIndex) {
         final int startIndex = columnIndex * maxItemsPerColumn;
         final int endIndex = (columnIndex + 1) * maxItemsPerColumn;

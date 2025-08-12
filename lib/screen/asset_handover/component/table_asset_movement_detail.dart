@@ -87,7 +87,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                         titleAlignment: TextAlign.center,
                         width: 250,
                         getValue: (item) => item.name,
-                        setValue: (item, value) => item.name = value,
+                        setValue: (item, value) => item.name = value.name,
                         sortValueGetter: (item) => item.name,
                       ),
                       SgEditableColumn<AssetHandoverMovementDto>(
@@ -96,7 +96,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                         titleAlignment: TextAlign.center,
                         width: 100,
                         getValue: (item) => item.measurementUnit,
-                        setValue: (item, value) => item.measurementUnit = value,
+                        setValue: (item, value) => item.measurementUnit = value.measurementUnit,
                         sortValueGetter: (item) => item.measurementUnit,
                       ),
                       SgEditableColumn<AssetHandoverMovementDto>(
@@ -105,7 +105,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                         titleAlignment: TextAlign.center,
                         width: 100,
                         getValue: (item) => item.quantity,
-                        setValue: (item, value) => item.quantity = value,
+                        setValue: (item, value) => item.quantity = value.quantity,
                         sortValueGetter:
                             (item) => int.tryParse(item.quantity ?? '0') ?? 0,
                       ),
@@ -115,7 +115,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                         titleAlignment: TextAlign.center,
                         width: 150,
                         getValue: (item) => item.setCondition,
-                        setValue: (item, value) => item.setCondition = value,
+                        setValue: (item, value) => item.setCondition = value.setCondition,
                         sortValueGetter: (item) => item.setCondition,
                       ),
                       SgEditableColumn<AssetHandoverMovementDto>(
@@ -124,7 +124,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                         titleAlignment: TextAlign.center,
                         width: 150,
                         getValue: (item) => item.countryOfOrigin,
-                        setValue: (item, value) => item.countryOfOrigin = value,
+                        setValue: (item, value) => item.countryOfOrigin = value.countryOfOrigin,
                         sortValueGetter: (item) => item.countryOfOrigin,
                       ),
                     ],

@@ -43,6 +43,38 @@ class AssetManagementRepository extends ApiBase {
 
     return result;
   }
+  
+  //get list child assets
+  Future<Map<String, dynamic>> getListChildAssets(String idTaiSan) async {
+    List<AssetManagementDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.CHILD_ASSETS,
+        queryParameters: {'idtaisan': idTaiSan},
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+        response.data,
+        AssetManagementDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListChildAssets - AssetManagementRepository: $e");
+    }
+
+    return result;
+  }
 
   // Get danh sách nhóm tài sản
   Future<Map<String, dynamic>> getListAssetGroup([String? idCongTy]) async {

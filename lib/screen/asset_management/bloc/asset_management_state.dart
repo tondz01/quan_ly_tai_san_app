@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/Category/departments/models/departmen
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
 abstract class AssetManagementState extends Equatable {
   const AssetManagementState();
@@ -29,6 +30,28 @@ class AssetManagementFailedState extends AssetManagementState {
   final String message;
 
   const AssetManagementFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+
+// Danh sách tài sản con
+class GetListChildAssetsSuccessState extends AssetManagementState {
+  final List<ChildAssetDto> data;
+  const GetListChildAssetsSuccessState({required this.data});
+}
+
+class GetListChildAssetsFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListChildAssetsFailedState({
     required this.title,
     this.code,
     required this.message,

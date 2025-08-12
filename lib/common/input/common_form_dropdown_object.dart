@@ -81,7 +81,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
                           : SGAppColors.neutral400,
                   showUnderlineBorderOnly: true,
                   enableSearch: false,
-                  isClearController: true,
+                  isClearController: widget.isEditing,
                   fontSize: 16,
                   inputType: widget.inputType,
                   isShowSuffixIcon: true,

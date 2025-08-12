@@ -126,45 +126,43 @@ class _AssetManagementViewState extends State<AssetManagementView> {
           //   state,
           // );
         }
+        if (state is GetListChildAssetsSuccessState) {
+          context.read<AssetManagementProvider>().getListChildAssetsSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListChildAssetsFailedState) {
+          log('GetListChildAssetsFailedState');
+        }
         if (state is GetListAssetGroupSuccessState) {
-          log('GetListAssetGroupSuccessState ${state.data.length}');
           context.read<AssetManagementProvider>().getListAssetGroupSuccess(
             context,
             state,
           );
-          log('message: ${context.read<AssetManagementProvider>().dataGroup}');
         }
         if (state is GetListAssetGroupFailedState) {
           log('GetListAssetGroupFailedState');
         }
         if (state is GetListProjectSuccessState) {
-          log('GetListProjectSuccessState ${state.data.length}');
           context.read<AssetManagementProvider>().getListProjectSuccess(
             context,
             state,
-          );
-          log(
-            'message: ${context.read<AssetManagementProvider>().dataProject}',
           );
         }
         if (state is GetListProjectFailedState) {
           log('GetListProjectFailedState');
         }
         if (state is GetListCapitalSourceSuccessState) {
-          log('GetListCapitalSourceSuccessState ${state.data.length}');
           context.read<AssetManagementProvider>().getListCapitalSourceSuccess(
             context,
             state,
-          );
-          log(
-            'message: ${context.read<AssetManagementProvider>().dataCapitalSource}',
           );
         }
         if (state is GetListCapitalSourceFailedState) {
           log('GetListCapitalSourceFailedState');
         }
         if (state is GetListDepartmentSuccessState) {
-          log('GetListDepartmentSuccessState ${state.data.length}');
           context.read<AssetManagementProvider>().getListDepartmentSuccess(
             context,
             state,
@@ -173,7 +171,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         if (state is GetListDepartmentFailedState) {
           log('Error at GetListDepartmentFailedState: ${state.message}');
         }
-        
       },
     );
   }

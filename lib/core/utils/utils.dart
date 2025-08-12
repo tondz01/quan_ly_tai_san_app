@@ -58,7 +58,7 @@ abstract class AppUtility {
 
   static List<DropdownMenuItem<String>> phuongPhapKhauHaos = [
     const DropdownMenuItem(
-      value: 'Đường thẳng',
+      value: '1',
       child: SGText(text: 'Đường thẳng', size: 14),
     ),
   ];
@@ -81,5 +81,22 @@ abstract class AppUtility {
         duration: Duration(seconds: 2),
       ),
     );
+  }
+
+  static DateTime parseDateTimeOrNow(String? input) {
+    if (input == null || input.trim().isEmpty) return DateTime.now();
+    try {
+      return DateFormat('dd/MM/yyyy HH:mm').parse(input);
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
+  static double parseCurrency(String input) {
+    if (input.isEmpty) return 0.0;
+    String sanitized = input.trim();
+    sanitized = sanitized.replaceAll('.', '');
+    sanitized = sanitized.replaceAll(',', '.');
+    return double.tryParse(sanitized) ?? 0.0;
   }
 }

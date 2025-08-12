@@ -10,6 +10,9 @@ class AssetManagementBloc
     on<GetListAssetManagementEvent>((event, emit) async {
       await _getListAssetManagement(event, emit);
     });
+    on<GetListChildAssetsEvent>((event, emit) async {
+      await _getListChildAssets(event, emit);
+    });
     on<GetListAssetGroupEvent>((event, emit) async {
       await _getListAssetGroup(event, emit);
     });
@@ -35,6 +38,29 @@ class AssetManagementBloc
     emit(AssetManagementLoadingState());
     Map<String, dynamic> result = await AssetManagementRepository()
         .getListAssetManagement(event.idCongTy);
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(GetListAssetManagementSuccessState(data: result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu";
+      emit(
+        GetListAssetManagementFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getListChildAssets(
+    GetListChildAssetsEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository()
+        .getListChildAssets(event.idTaiSan);
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListAssetManagementSuccessState(data: result['data']));
@@ -141,10 +167,7 @@ class AssetManagementBloc
   }
 
   ///CREATE
-  Future<void> _createAsset(
-    CreateAssetEvent event,
-    Emitter emit,
-  ) async {
+  Future<void> _createAsset(CreateAssetEvent event, Emitter emit) async {
     emit(AssetManagementInitialState());
     emit(AssetManagementLoadingState());
     Map<String, dynamic> result = await AssetManagementRepository().createAsset(
