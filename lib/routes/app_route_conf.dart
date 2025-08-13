@@ -30,7 +30,7 @@ class AppRouteConf {
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return LoginView(child: child);
+          return Home(child: child);
         },
         routes: [
           // GoRoute(

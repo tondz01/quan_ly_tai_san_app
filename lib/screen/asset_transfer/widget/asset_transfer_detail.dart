@@ -2,29 +2,28 @@
 
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
-import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class AssetTransferDetail extends StatefulWidget {
@@ -735,7 +734,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
       // Create an AssetTransferDto with the form data
       final AssetTransferDto savedItem = AssetTransferDto(
-        id: item?.id, // Keep original ID if editing an existing item
+        id: item?.id,
+        // Keep original ID if editing an existing item
         documentName: currentDocumentName,
         subject: currentSubject,
         deliveringUnit: currentDeliveringUnit,
@@ -748,7 +748,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         effectiveDate: currentEffectiveDate,
         effectiveDateTo: currentEffectiveDateTo,
         approver: currentApprover,
-        status: item?.status ?? 1, // Keep status or set to draft (0)
+        status: item?.status ?? 1,
+        // Keep status or set to draft (0)
         // Keep the existing movement details or use an empty list
         movementDetails: item?.movementDetails ?? [],
         deliveryLocation: currentDeliveryLocation,
@@ -841,8 +842,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
               (context) => CommonContract(
                 contractType: ContractPage.assetMovePage(item!),
                 signatureList: [
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
                 ],
+                idTaiLieu: item.id.toString(),
+                idNguoiKy: 'admin',
               ),
         );
       },
