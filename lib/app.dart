@@ -30,7 +30,7 @@ class App extends StatelessWidget {
           child: GetMaterialApp.router(
             debugShowCheckedModeBanner: false,
             title: 'Quan Ly Tai San',
-            theme: AppTheme.lightTheme,
+            theme: ThemeData.light(),
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,

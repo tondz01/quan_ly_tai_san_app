@@ -118,25 +118,4 @@ class AppMenuData {
       route: AppRoute.assetHandover.path,
     ),
   ];
-
-  // Chuyển đổi SubMenuItem thành SGSidebarSubItem
-  SGSidebarSubItem convertToSGSubItem(SubMenuItem item, int parentIndex, int subIndex, bool isActive, VoidCallback onTap) {
-    return SGSidebarSubItem(label: item.label, icon: item.icon, isActive: isActive, onTap: onTap);
-  }
-
-  // Chuyển đổi SubMenuGroup thành SGSubItemGroup
-  SGSubItemGroup convertToSGSubItemGroup(SubMenuGroup group, int parentIndex, int groupIndex, int selectedIndex, int selectedSubIndex, Function(int, int) onTapCallback) {
-    return SGSubItemGroup(
-      title: group.title,
-      items: List.generate(group.items.length, (itemIndex) {
-        final subIndex = groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
-        return SGSidebarSubItem(
-          label: group.items[itemIndex].label,
-          icon: group.items[itemIndex].icon,
-          isActive: selectedIndex == parentIndex && selectedSubIndex == subIndex,
-          onTap: () => onTapCallback(parentIndex, subIndex),
-        );
-      }),
-    );
-  }
 }
