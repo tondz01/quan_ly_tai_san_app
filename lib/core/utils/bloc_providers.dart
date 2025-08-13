@@ -29,7 +29,7 @@ List<SingleChildWidget> get blocProvider {
     // BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs(sampleStaffDTOs()))),
     BlocProvider<ToolsAndSuppliesBloc>(create: (_) => ToolsAndSuppliesBloc()),
     BlocProvider<AssetTransferBloc>(create: (_) => AssetTransferBloc()),
-    BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
+    BlocProvider<DieuDongTaiSanBloc>(create: (_) => DieuDongTaiSanBloc()),
     BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs())),
     BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects())),
     BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()..add(LoadDepartments())),

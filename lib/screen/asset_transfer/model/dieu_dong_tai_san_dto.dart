@@ -1,7 +1,7 @@
 // dieu_dong_tai_san.dart
 import 'dart:convert';
 
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'chi_tiet_dieu_dong_tai_san.dart';
 
 class DieuDongTaiSanDto {
   String? id;

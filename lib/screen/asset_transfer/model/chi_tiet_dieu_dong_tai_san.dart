@@ -8,7 +8,7 @@ class ChiTietDieuDongTaiSan {
   late final String donViTinh;
   late final String hienTrang;
   late final int soLuong;
-  final String ghiChu;
+  late final String ghiChu;
   final DateTime ngayTao;
   final DateTime ngayCapNhat;
   final String nguoiTao;

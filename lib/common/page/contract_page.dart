@@ -1,13 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 
 class ContractPage {
-  static Widget assetHandoverPage(AssetHandoverDto _assetHandoverDto) {
+  static Widget assetHandoverPage(DieuDongTaiSanDto _dieuDongTaiSan) {
     return DefaultTextStyle(
       style: GoogleFonts.robotoSerif(),
       child: Column(
@@ -66,8 +65,8 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${_assetHandoverDto.decisionNumber}, ${_assetHandoverDto.transferDate} của Giám đốc Công ty V/v điều động tài sản từ ${_assetHandoverDto.senderUnit}  đến  ${_assetHandoverDto.receiverUnit}\n"
-            "Hôm nay, ${_assetHandoverDto.transferDate}, tại  ${_assetHandoverDto.senderUnit}\n",
+            "Căn cứ vào Quyết định điều động số ${_dieuDongTaiSan.soQuyetDinh}, ${_dieuDongTaiSan.ngayTao} của Giám đốc Công ty V/v điều động tài sản từ ${_dieuDongTaiSan.tenDonViGiao}  đến  ${_dieuDongTaiSan.tenDonViNhan}\n"
+            "Hôm nay, ${_dieuDongTaiSan.ngayTao}, tại  ${_dieuDongTaiSan.tenDonViGiao}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
           Text(
@@ -80,20 +79,20 @@ class ContractPage {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "1. Ông (bà):\t\t${_assetHandoverDto.assetHandoverDetails!.leader}\t\tChức vụ: Nhân viên\t\tĐại diện: Phòng CV",
+                "1. Ông (bà):\t\t${_dieuDongTaiSan.tenNguoiDeNghi}\t\tChức vụ: Nhân viên\t\tĐại diện: Phòng CV",
               ),
               Text(
-                "2. Ông (bà):\t\t${_assetHandoverDto.assetHandoverDetails!.delivererRepresentative}\t\tChức vụ: Trưởng phòng\t\tĐại diện: Kho Công ty (Bên giao)",
+                "2. Ông (bà):\t\t${_dieuDongTaiSan.tenTrinhDuyetCapPhong}\t\tChức vụ: Trưởng phòng\t\tĐại diện: Kho Công ty (Bên giao)",
               ),
               Text(
-                "3. Ông (bà):\t\t${_assetHandoverDto.assetHandoverDetails!.receiverRepresentative}\t\tChức vụ: Phó quản đốc\t\tĐại diện: Phân xưởng khai thác đào lò 1 (Bên nhận)",
+                "3. Ông (bà):\t\t${_dieuDongTaiSan.tenTrinhDuyetGiamDoc}\t\tChức vụ: Phó quản đốc\t\tĐại diện: Phân xưởng khai thác đào lò 1 (Bên nhận)",
               ),
             ],
           ),
           const SizedBox(height: 16),
 
           Text(
-            "Tiến hành giao nhận tài sản tại  ${_assetHandoverDto.receiverUnit} cụ thể như sau:",
+            "Tiến hành giao nhận tài sản tại  ${_dieuDongTaiSan.tenDonViNhan} cụ thể như sau:",
           ),
           const SizedBox(height: 8),
 
@@ -115,7 +114,7 @@ class ContractPage {
                   _tableHeader("STT"),
                   _tableHeader("TÊN TÀI SẢN"),
                   _tableHeader("Ký, mã hiệu quy cách"),
-                  _tableHeader("Nước sản xuất"),
+
                   _tableHeader("Đơn vị tính"),
                   _tableHeader("Số lượng"),
                   _tableHeader("Tình trạng kỹ thuật"),
@@ -123,40 +122,31 @@ class ContractPage {
               ),
               for (
                 int i = 0;
-                i < _assetHandoverDto.assetHandoverMovements!.length;
+                i < _dieuDongTaiSan.chiTietDieuDongTaiSan!.length;
                 i++
               )
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
                     _tableCell(
-                      _assetHandoverDto.assetHandoverMovements![i].name ?? "",
+                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].tenTaiSan ?? "",
                     ),
                     _tableCell(
-                      _assetHandoverDto.assetHandoverMovements![i].handoverId ??
+                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].idTaiSan
+                              .toString() ??
+                          "",
+                    ),
+
+                    _tableCell(
+                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].donViTinh ?? "",
+                    ),
+                    _tableCell(
+                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].soLuong
+                              .toString() ??
                           "",
                     ),
                     _tableCell(
-                      _assetHandoverDto
-                              .assetHandoverMovements![i]
-                              .countryOfOrigin ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto
-                              .assetHandoverMovements![i]
-                              .measurementUnit ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto.assetHandoverMovements![i].quantity ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto
-                              .assetHandoverMovements![i]
-                              .setCondition ??
-                          "",
+                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].hienTrang ?? "",
                     ),
                   ],
                 ),

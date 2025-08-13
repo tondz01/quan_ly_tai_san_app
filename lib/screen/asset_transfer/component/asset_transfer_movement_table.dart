@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 Widget assetTransferMovementTable(
   BuildContext context,
-  List<MovementDetailDto> movementDetails,
+  List<ChiTietDieuDongTaiSan> movementDetails,
   bool isEditing,
 ) {
   return Column(
@@ -25,7 +26,7 @@ Widget assetTransferMovementTable(
 }
 
 Widget movementDetailTable(
-  List<MovementDetailDto> movementDetails,
+  List<ChiTietDieuDongTaiSan> movementDetails,
   bool isEditing,
 ) {
   return Container(
@@ -34,9 +35,9 @@ Widget movementDetailTable(
       borderRadius: BorderRadius.circular(4),
     ),
     padding: const EdgeInsets.only(left: 10, top: 15),
-    child: SgEditableTable<MovementDetailDto>(
+    child: SgEditableTable<ChiTietDieuDongTaiSan>(
       initialData: movementDetails,
-      createEmptyItem: MovementDetailDto.empty,
+      createEmptyItem: ChiTietDieuDongTaiSan.empty,
       rowHeight: 40.0,
       headerBackgroundColor: Colors.grey.shade50,
       oddRowBackgroundColor: Colors.white,
@@ -44,54 +45,55 @@ Widget movementDetailTable(
       showVerticalLines: false,
       showHorizontalLines: true,
       addRowText: 'Thêm một dòng',
-      isEditing: isEditing, // Pass the editing state
+      isEditing: isEditing,
+      // Pass the editing state
       onDataChanged: (data) {},
       columns: [
-        SgEditableColumn<MovementDetailDto>(
+        SgEditableColumn<ChiTietDieuDongTaiSan>(
           field: 'asset',
           title: 'Tài sản',
           titleAlignment: TextAlign.center,
           width: 350,
-          getValue: (item) => item.name,
-          setValue: (item, value) => item.name = value,
-          sortValueGetter: (item) => item.name,
+          getValue: (item) => item.tenTaiSan,
+          setValue: (item, value) => item.tenTaiSan = value,
+          sortValueGetter: (item) => item.tenTaiSan,
           isCellEditableDecider: (item, rowIndex) => false,
         ),
-        SgEditableColumn<MovementDetailDto>(
+        SgEditableColumn<ChiTietDieuDongTaiSan>(
           field: 'unit',
           title: 'Đơn vị tính',
           titleAlignment: TextAlign.center,
           width: 130,
-          getValue: (item) => item.measurementUnit,
-          setValue: (item, value) => item.measurementUnit = value,
-          sortValueGetter: (item) => item.measurementUnit,
+          getValue: (item) => item.donViTinh,
+          setValue: (item, value) => item.donViTinh = value,
+          sortValueGetter: (item) => item.donViTinh,
         ),
-        SgEditableColumn<MovementDetailDto>(
+        SgEditableColumn<ChiTietDieuDongTaiSan>(
           field: 'quantity',
           title: 'Số lượng',
           titleAlignment: TextAlign.center,
           width: 120,
-          getValue: (item) => item.quantity,
-          setValue: (item, value) => item.quantity = value,
-          sortValueGetter: (item) => int.tryParse(item.quantity ?? '0') ?? 0,
+          getValue: (item) => item.soLuong,
+          setValue: (item, value) => item.soLuong = value,
+          sortValueGetter: (item) => int.tryParse(item.soLuong.toString()) ?? 0,
         ),
-        SgEditableColumn<MovementDetailDto>(
+        SgEditableColumn<ChiTietDieuDongTaiSan>(
           field: 'condition',
           title: 'Tình trạng kỹ thuật',
           titleAlignment: TextAlign.center,
           width: 190,
-          getValue: (item) => item.setCondition,
-          setValue: (item, value) => item.setCondition = value,
-          sortValueGetter: (item) => item.setCondition,
+          getValue: (item) => item.hienTrang,
+          setValue: (item, value) => item.hienTrang = value,
+          sortValueGetter: (item) => item.hienTrang,
         ),
-        SgEditableColumn<MovementDetailDto>(
+        SgEditableColumn<ChiTietDieuDongTaiSan>(
           field: 'note',
           title: 'Ghi chú',
           titleAlignment: TextAlign.center,
           width: 150,
-          getValue: (item) => item.note,
-          setValue: (item, value) => item.note = value,
-          sortValueGetter: (item) => item.note,
+          getValue: (item) => item.ghiChu,
+          setValue: (item, value) => item.ghiChu = value,
+          sortValueGetter: (item) => item.ghiChu,
         ),
       ],
     ),

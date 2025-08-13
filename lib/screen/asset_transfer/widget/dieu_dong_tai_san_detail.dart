@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, library_private_types_in_public_api
+// ignore_for_file: deprecated_member_use
 
 import 'dart:developer';
 
@@ -12,26 +12,27 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
+
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/asset_transfer_movement_table.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class ToolAndMaterialTransferDetail extends StatefulWidget {
+import '../bloc/dieu_dong_tai_san_bloc.dart';
+import '../bloc/dieu_dong_tai_san_state.dart';
+
+class DieuDongTaiSanDetail extends StatefulWidget {
   final bool isEditing;
   final bool? isNew;
-  final ToolAndMaterialTransferProvider provider;
+  final DieuDongTaiSanProvider provider;
 
-  const ToolAndMaterialTransferDetail({
+  const DieuDongTaiSanDetail({
     super.key,
     this.isEditing = false,
     this.isNew = false,
@@ -39,18 +40,14 @@ class ToolAndMaterialTransferDetail extends StatefulWidget {
   });
 
   @override
-  State<ToolAndMaterialTransferDetail> createState() =>
-      _ToolAndMaterialTransferDetailState();
+  State<DieuDongTaiSanDetail> createState() => _AssetTransferDetailState();
 }
 
 // GlobalKey để truy cập widget từ bên ngoài
-final GlobalKey<_ToolAndMaterialTransferDetailState> assetTransferDetailKey =
-    GlobalKey<_ToolAndMaterialTransferDetailState>();
+final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
+GlobalKey<_AssetTransferDetailState>();
 
-class _ToolAndMaterialTransferDetailState
-    extends State<ToolAndMaterialTransferDetail> {
-  String url =
-      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
+class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
 
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
@@ -60,15 +57,15 @@ class _ToolAndMaterialTransferDetailState
   late TextEditingController controllerProposingUnit = TextEditingController();
   late TextEditingController controllerQuantity = TextEditingController();
   late TextEditingController controllerDepartmentApproval =
-      TextEditingController();
+  TextEditingController();
   late TextEditingController controllerEffectiveDate = TextEditingController();
   late TextEditingController controllerEffectiveDateTo =
-      TextEditingController();
+  TextEditingController();
   late TextEditingController controllerApprover = TextEditingController();
   late TextEditingController controllerDeliveryLocation =
-      TextEditingController();
+  TextEditingController();
   late TextEditingController controllerViewerDepartments =
-      TextEditingController();
+  TextEditingController();
   late TextEditingController controllerViewerUsers = TextEditingController();
   late TextEditingController controllerReason = TextEditingController();
   late TextEditingController controllerBase = TextEditingController();
@@ -89,8 +86,9 @@ class _ToolAndMaterialTransferDetailState
   bool _controllersInitialized = false;
   String? _selectedFileName;
   String? _selectedFilePath;
-  String idCongTy = "";
-  late ToolAndMaterialTransferDto? item;
+  String idCongTy = 'CT001';
+
+  late DieuDongTaiSanDto? item;
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
@@ -158,7 +156,7 @@ class _ToolAndMaterialTransferDetailState
     _callGetListAssetHandover();
     isEditing = widget.isEditing;
 
-    if (item != null && item!.status == 0) {
+    if (item != null && item!.trangThai == 0) {
       isEditing = true;
     }
     if (widget.isNew == true) {
@@ -167,24 +165,24 @@ class _ToolAndMaterialTransferDetailState
 
     // Initialize controllers with existing values if available (only once)
     if (item != null && !_controllersInitialized) {
-      controllerSubject.text = item?.subject ?? '';
-      controllerDocumentName.text = item?.documentName ?? '';
-      controllerDeliveringUnit.text = item?.deliveringUnit ?? '';
-      controllerReceivingUnit.text = item?.receivingUnit ?? '';
-      controllerRequester.text = item?.requester ?? '';
-      controllerDepartmentApproval.text = item?.departmentApproval ?? '';
-      controllerEffectiveDate.text = item?.effectiveDate ?? '';
-      controllerEffectiveDateTo.text = item?.effectiveDateTo ?? '';
-      controllerApprover.text = item?.approver ?? '';
-      controllerDeliveryLocation.text = item?.deliveryLocation ?? '';
+      controllerSubject.text = item?.trichYeu ?? '';
+      controllerDocumentName.text = item?.tenPhieu ?? '';
+      controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
+      controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
+      controllerRequester.text = item?.tenNguoiDeNghi ?? '';
+      controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
+      controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
+      controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
+      controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
+      controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
 
       // Initialize selected file if available
-      _selectedFileName = item?.documentFileName;
-      _selectedFilePath = item?.documentFilePath;
-      isPreparerInitialed = item?.preparerInitialed ?? false;
-      isRequireManagerApproval = item?.requireManagerApproval ?? false;
-      isDeputyConfirmed = item?.deputyConfirmed ?? false;
-      proposingUnit = item?.proposingUnit;
+      _selectedFileName = item?.tenFile;
+      _selectedFilePath = item?.duongDanFile;
+      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
+      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
+      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+      proposingUnit = item?.tenDonViDeNghi;
 
       _controllersInitialized = true;
     } else if (item == null && !_controllersInitialized) {
@@ -215,19 +213,19 @@ class _ToolAndMaterialTransferDetailState
       controllerProposingUnit.text = proposingUnit!;
     }
 
-    itemsRequester =
-        users
-            .map(
-              (user) => DropdownMenuItem<String>(
-                value: user.id ?? '',
-                child: Text(user.name ?? ''),
-              ),
-            )
-            .toList();
+    // itemsRequester =
+    //     users
+    //         .map(
+    //           (user) => DropdownMenuItem<String>(
+    //         value: user.id ?? '',
+    //         child: Text(user.name ?? ''),
+    //       ),
+    //     )
+    //         .toList();
   }
 
   @override
-  void didUpdateWidget(ToolAndMaterialTransferDetail oldWidget) {
+  void didUpdateWidget(DieuDongTaiSanDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // Kiểm tra nếu provider item thay đổi
@@ -256,19 +254,19 @@ class _ToolAndMaterialTransferDetailState
 
       // Reset editing state
       isEditing = widget.isEditing;
-      if (item != null && item!.status == 0) {
+      if (item != null && item!.trangThai == 0) {
         isEditing = true;
       }
 
       // Reset các biến trạng thái
-      isPreparerInitialed = item?.preparerInitialed ?? false;
-      isRequireManagerApproval = item?.requireManagerApproval ?? false;
-      isDeputyConfirmed = item?.deputyConfirmed ?? false;
-      proposingUnit = item?.proposingUnit;
+      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
+      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
+      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+      proposingUnit = item?.tenDonViDeNghi;
 
       // Reset file upload
-      _selectedFileName = item?.documentFileName;
-      _selectedFilePath = item?.documentFilePath;
+      _selectedFileName = item?.tenFile;
+      _selectedFilePath = item?.duongDanFile;
 
       _validationErrors.clear();
 
@@ -423,26 +421,26 @@ class _ToolAndMaterialTransferDetailState
                         context: context,
                         builder:
                             (context) => AlertDialog(
-                              title: Text('Xác nhận hủy'),
-                              content: Text(
-                                'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(
-                                        context,
-                                      ), // Close dialog
-                                  child: Text('Không'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context); // Close dialog
-                                  },
-                                  child: Text('Có'),
-                                ),
-                              ],
+                          title: Text('Xác nhận hủy'),
+                          content: Text(
+                            'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.pop(
+                                context,
+                              ), // Close dialog
+                              child: Text('Không'),
                             ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Close dialog
+                              },
+                              child: Text('Có'),
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -461,7 +459,7 @@ class _ToolAndMaterialTransferDetailState
                 'Hoàn thành',
               ],
               fontSize: 10,
-              currentStep: item?.status ?? 0,
+              currentStep: item?.trangThai ?? 0,
             ),
           ],
         ),
@@ -480,7 +478,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.document_name'.tr,
                 controller: controllerDocumentName,
                 isEditing: isEditing,
-                textContent: item?.documentName ?? '',
+                textContent: item?.tenPhieu ?? '',
                 fieldName: 'documentName',
                 validationErrors: _validationErrors,
               ),
@@ -488,7 +486,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'Trích yêu',
                 controller: controllerSubject,
                 isEditing: isEditing,
-                textContent: item?.subject ?? '',
+                textContent: item?.trichYeu ?? '',
                 fieldName: 'subject',
                 validationErrors: _validationErrors,
               ),
@@ -496,7 +494,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.delivering_unit'.tr,
                 controller: controllerDeliveringUnit,
                 isEditing: isEditing,
-                textContent: item?.deliveringUnit ?? '',
+                textContent: item?.tenDonViGiao ?? '',
                 isDropdown: false,
                 items: itemsrReceivingUnit,
                 fieldName: 'deliveringUnit',
@@ -506,7 +504,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.receiving_unit'.tr,
                 controller: controllerReceivingUnit,
                 isEditing: isEditing,
-                textContent: item?.receivingUnit ?? '',
+                textContent: item?.tenDonViNhan ?? '',
                 isDropdown: true,
                 items: itemsrReceivingUnit,
                 fieldName: 'receivingUnit',
@@ -516,20 +514,20 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.requester'.tr,
                 controller: controllerRequester,
                 isEditing: isEditing,
-                textContent: item?.requester ?? '',
+                textContent: item?.tenNguoiDeNghi ?? '',
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
                   log('Requester selected: $value');
 
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
-                  proposingUnit = selectedUser.department;
-                  controllerRequester.text = selectedUser.name ?? '';
-                  // Update the proposingUnit controller without triggering a rebuild
-                  // controllerProposingUnit.text = proposingUnit ?? '';
-                  log('proposingUnit set to: $proposingUnit');
+                  // var selectedUser = users.firstWhere(
+                  //       (user) => user.id == value,
+                  // );
+                  // proposingUnit = selectedUser.department;
+                  // controllerRequester.text = selectedUser.name ?? '';
+                  // // Update the proposingUnit controller without triggering a rebuild
+                  // // controllerProposingUnit.text = proposingUnit ?? '';
+                  // log('proposingUnit set to: $proposingUnit');
                 },
                 fieldName: 'requester',
                 validationErrors: _validationErrors,
@@ -580,16 +578,16 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.department_approval'.tr,
                 controller: controllerDepartmentApproval,
                 isEditing: isEditing,
-                textContent: item?.departmentApproval ?? '',
+                textContent: item?.tenTrinhDuyetCapPhong ?? '',
                 fieldName: 'departmentApproval',
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
-                  log('Department approval selected: $value');
-                  var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
-                  );
-                  controllerDepartmentApproval.text = selectedUser.name ?? '';
+                  // log('Department approval selected: $value');
+                  // var selectedUser = users.firstWhere(
+                  //       (user) => user.id == value,
+                  // );
+                  // controllerDepartmentApproval.text = selectedUser.name ?? '';
                 },
                 validationErrors: _validationErrors,
               ),
@@ -598,12 +596,12 @@ class _ToolAndMaterialTransferDetailState
                 controller: controllerEffectiveDate,
                 isEditing: isEditing,
                 textContent:
-                    isEditing
+                isEditing
+                    ? AppUtility.formatDateDdMmYyyy(DateTime.now())
+                    : item?.tggnTuNgay ??
+                    (isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : item?.effectiveDate ??
-                            (isEditing
-                                ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                                : ''),
+                        : ''),
                 fieldName: 'effectiveDate',
                 validationErrors: _validationErrors,
               ),
@@ -611,7 +609,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.effective_date_to'.tr,
                 controller: controllerEffectiveDateTo,
                 isEditing: isEditing,
-                textContent: item?.effectiveDateTo ?? '',
+                textContent: item?.tggnDenNgay ?? '',
                 fieldName: 'effectiveDateTo',
                 validationErrors: _validationErrors,
               ),
@@ -619,12 +617,12 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.approver'.tr,
                 controller: controllerApprover,
                 isEditing: isEditing,
-                textContent: item?.approver ?? '',
+                textContent: item?.tenTrinhDuyetGiamDoc ?? '',
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
                   var selectedUser = users.firstWhere(
-                    (user) => user.id == value,
+                        (user) => user.id == value,
                   );
                   controllerApprover.text = selectedUser.name ?? '';
                 },
@@ -655,9 +653,9 @@ class _ToolAndMaterialTransferDetailState
               ),
 
               // const SizedBox(height: 20),
-              toolAndMaterialTransferMovementTable(
+              assetTransferMovementTable(
                 context,
-                item?.movementDetails ?? [],
+                item?.chiTietDieuDongTaiSan ?? [],
                 isEditing,
               ),
 
@@ -735,39 +733,18 @@ class _ToolAndMaterialTransferDetailState
       final currentDeliveryLocation = controllerDeliveryLocation.text;
 
       // Create an AssetTransferDto with the form data
-      final ToolAndMaterialTransferDto savedItem = ToolAndMaterialTransferDto(
+      final DieuDongTaiSan savedItem = DieuDongTaiSan(
         id: item?.id,
-        // Keep original ID if editing an existing item
-        documentName: currentDocumentName,
-        subject: currentSubject,
-        deliveringUnit: currentDeliveringUnit,
-        receivingUnit: currentReceivingUnit,
-        requester: currentRequester,
-        preparerInitialed: isPreparerInitialed,
-        requireManagerApproval: isRequireManagerApproval,
-        deputyConfirmed: isDeputyConfirmed,
-        departmentApproval: currentDepartmentApproval,
-        effectiveDate: currentEffectiveDate,
-        effectiveDateTo: currentEffectiveDateTo,
-        approver: currentApprover,
-        status: item?.status ?? 1,
-        // Keep status or set to draft (0)
-        // Keep the existing movement details or use an empty list
-        movementDetails: item?.movementDetails ?? [],
-        deliveryLocation: currentDeliveryLocation,
-        // Include document file information
-        documentFilePath: _selectedFilePath,
-        documentFileName: _selectedFileName,
-        proposingUnit: proposingUnit,
+
       );
 
-      final provider = Provider.of<ToolAndMaterialTransferProvider>(
+      final provider = Provider.of<DieuDongTaiSanProvider>(
         context,
         listen: false,
       );
 
       if (item == null) {
-        await provider.createToolAndMaterialTransfer(savedItem);
+        await provider.insertItem(savedItem);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Tạo phiếu điều chuyển thành công'),
@@ -775,7 +752,7 @@ class _ToolAndMaterialTransferDetailState
           ),
         );
       } else {
-        await provider.updateToolAndMaterialTransfer(savedItem);
+        await provider.updateItem(savedItem,savedItem.id.toString());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Cập nhật phiếu điều chuyển thành công'),
@@ -836,20 +813,20 @@ class _ToolAndMaterialTransferDetailState
     }
   }
 
-  Widget previewDocumentAssetTransfer(ToolAndMaterialTransferDto? item) {
+  Widget previewDocumentAssetTransfer(DieuDongTaiSanDto? item) {
     return InkWell(
       onTap: () {
-        showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder:
-              (context) => CommonContract(
-                contractType: ContractPage.toolAndMaterialTransferPage(item!),
-                signatureList: [
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
-                ],
-              ),
-        );
+        // showDialog(
+        //   context: context,
+        //   barrierDismissible: true,
+        //   builder:
+        //       (context) => CommonContract(
+        //     contractType: ContractPage.assetMovePage(item!),
+        //     signatureList: [
+        //       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
+        //     ],
+        //   ),
+        // );
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

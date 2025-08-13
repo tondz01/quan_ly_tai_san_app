@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+
+import '../provider/dieu_dong_tai_san_provider.dart';
 
 class RowFindByStatus extends StatelessWidget {
   const RowFindByStatus({super.key, required this.provider});

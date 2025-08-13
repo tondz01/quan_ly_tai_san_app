@@ -11,16 +11,11 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
-import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
+
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -88,12 +83,13 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
   bool _controllersInitialized = false;
   String? _selectedFileName;
   String? _selectedFilePath;
+  String idCongTy = 'CT001';
 
   late AssetTransferDto? item;
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
-  final List<AssetHandoverDto> listAssetHandover = [];
+  final List<DieuDongTaiSanDto> listAssetHandover = [];
 
   Map<String, bool> _validationErrors = {};
 
@@ -359,20 +355,20 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
     return MultiBlocListener(
       listeners: [
         // Lắng nghe từ AssetHandoverBloc
-        BlocListener<AssetHandoverBloc, AssetHandoverState>(
+        BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
           listener: (context, state) {
-            if (state is GetListAssetHandoverSuccessState) {
+            if (state is GetListDieuDongTaiSanSuccessState) {
               // Handle successful data loading
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
               log('Asset handover data loaded successfully');
-            } else if (state is GetListAssetHandoverFailedState) {
-            } else if (state is AssetHandoverLoadingState) {
+            } else if (state is GetListDieuDongTaiSanFailedState) {
+            } else if (state is DieuDongTaiSanLoadingState) {
               // Show loading indicator
               setState(() {
                 _isUploading = true;
               });
-            } else if (state is AssetHandoverLoadingDismissState) {
+            } else if (state is DieuDongTaiSanLoadingDismissState) {
               // Hide loading indicator
               setState(() {
                 _isUploading = false;
@@ -735,7 +731,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
       // Create an AssetTransferDto with the form data
       final AssetTransferDto savedItem = AssetTransferDto(
-        id: item?.id, // Keep original ID if editing an existing item
+        id: item?.id,
+        // Keep original ID if editing an existing item
         documentName: currentDocumentName,
         subject: currentSubject,
         deliveringUnit: currentDeliveringUnit,
@@ -748,7 +745,8 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
         effectiveDate: currentEffectiveDate,
         effectiveDateTo: currentEffectiveDateTo,
         approver: currentApprover,
-        status: item?.status ?? 1, // Keep status or set to draft (0)
+        status: item?.status ?? 1,
+        // Keep status or set to draft (0)
         // Keep the existing movement details or use an empty list
         movementDetails: item?.movementDetails ?? [],
         deliveryLocation: currentDeliveryLocation,
@@ -819,8 +817,10 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
 
   void _callGetListAssetHandover() {
     try {
-      final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
-      assetHandoverBloc.add(GetListAssetHandoverEvent(context));
+      final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
+      assetHandoverBloc.add(
+        GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

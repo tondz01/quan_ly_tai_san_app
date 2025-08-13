@@ -1,17 +1,17 @@
-// ignore_for_file: use_build_context_synchronously
 
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
+import '../bloc/dieu_dong_tai_san_bloc.dart';
+import '../bloc/dieu_dong_tai_san_event.dart';
+import '../bloc/dieu_dong_tai_san_state.dart' show GetListDieuDongTaiSanSuccessState;
 import '../model/dieu_dong_tai_san_dto.dart';
+import '../repository/dieu_dong_tai_san_repository.dart';
 
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
@@ -134,7 +134,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   DieuDongTaiSanDto? _item;
 
   // Method để refresh data và filter
-  void refreshData(BuildContext context, String idCongTy) {
+  void refreshData(BuildContext context, String idCongTy,int type) {
     _isLoading = true;
 
     // Reset filter về trạng thái ban đầu
@@ -146,7 +146,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
     // Reload data
     context.read<DieuDongTaiSanBloc>().add(
-      GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+      GetListDieuDongTaiSanEvent(context,type,idCongTy),
     );
     notifyListeners();
   }
@@ -305,12 +305,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   // Nội dung tìm kiếm
 
-  void onInit(BuildContext context, String idCongTy) {
+  void onInit(BuildContext context, String idCongTy,int type) {
     onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
 
     _body = Container();
-    getListAssetHandover(context, idCongTy);
+    getListDieuDongTaiSan(context,idCongTy,type);
   }
 
   void onDispose() {
@@ -336,11 +336,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   // Cập nhật danh sách trạng thái
 
-  void getListAssetHandover(BuildContext context, String idCongTy) {
+  void getListDieuDongTaiSan(BuildContext context, String idCongTy, int type) {
     _isLoading = true;
     Future.microtask(() {
       context.read<DieuDongTaiSanBloc>().add(
-        GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+        GetListDieuDongTaiSanEvent(context,type,idCongTy),
       );
     });
   }
@@ -387,28 +387,23 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
     notifyListeners();
   }
-
-  void updateItem(DieuDongTaiSanDto updatedItem) {
-    if (_data == null) return;
-    int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-    if (index != -1) {
-      _data![index] = updatedItem;
-
-      _updatePagination();
-      notifyListeners();
-    } else {}
+  Future<void> insertItem(DieuDongTaiSan _dieuDongTaiSan) async{
+    await DieuDongTaiSanRepository().create(_dieuDongTaiSan);
+    _updatePagination();
+    notifyListeners();
   }
 
-  void deleteItem(String id) {
-    if (_data == null) return;
-    int index = _data!.indexWhere((item) => item.id == id);
-    if (index != -1) {
-      _data!.removeAt(index);
-
-      _updatePagination();
-      notifyListeners();
-    } else {}
+  Future<void> updateItem(DieuDongTaiSan _dieuDongTaiSan, String id) async{
+    await DieuDongTaiSanRepository().update(id, _dieuDongTaiSan);
+    _updatePagination();
+    notifyListeners();
   }
+  Future<void> deleteItem(String id) async{
+    await DieuDongTaiSanRepository().delete(id);
+    _updatePagination();
+    notifyListeners();
+  }
+
 
   getListAssetHandoverSuccess(
     BuildContext context,
