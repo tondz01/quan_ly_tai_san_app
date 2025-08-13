@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -179,7 +180,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
               title: 'Trạng thái',
-              cellBuilder: (item) => widget.provider.showStatus(item.trangThai ?? 0),
+              cellBuilder: (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
             ),

@@ -16,4 +16,5 @@ class EndPointAPI {
   static String CHUC_VU = "/api/chucvu";
   static String ACCOUNT = "/api/taikhoan";
   static String LOGIN = "/api/taikhoan/login";
+  static String UPLOAD_FILE = "/api/upload";
 }

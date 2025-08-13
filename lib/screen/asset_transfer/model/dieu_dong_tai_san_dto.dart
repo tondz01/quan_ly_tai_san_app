@@ -1,6 +1,3 @@
-// dieu_dong_tai_san.dart
-import 'dart:convert';
-
 import 'chi_tiet_dieu_dong_tai_san.dart';
 
 class DieuDongTaiSanDto {

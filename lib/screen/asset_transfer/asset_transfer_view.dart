@@ -15,7 +15,6 @@ import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart'
 class AssetTransferView extends StatefulWidget {
   final int typeAssetTransfer;
 
-
   const AssetTransferView({super.key, required this.typeAssetTransfer});
 
   @override
@@ -49,7 +48,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
       Provider.of<DieuDongTaiSanProvider>(
         context,
         listen: false,
-      ).onInit(context,currentType);
+      ).onInit(context, currentType);
     });
   }
 
@@ -76,15 +75,14 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   Widget build(BuildContext context) {
     return BlocConsumer<DieuDongTaiSanBloc, DieuDongTaiSanState>(
       listener: (context, state) {
-        if (state is DieuDongTaiSanLoadingState) {
-        }
+        if (state is DieuDongTaiSanLoadingState) {}
         if (state is GetListDieuDongTaiSanSuccessState) {
           log('GetListAssetTransferSuccessState');
           context.read<DieuDongTaiSanProvider>().getListDieuDongTaiSanSuccess(
             context,
             state,
           );
-        } 
+        }
         if (state is GetListDieuDongTaiSanFailedState) {
           log('GetListDieuDongTaiSanFailedState');
         }
@@ -97,6 +95,16 @@ class _AssetTransferViewState extends State<AssetTransferView> {
         }
         if (state is GetListAssetFailedState) {
           log('GetListAssetFailedState');
+        }
+        if (state is GetDataDropdownSuccessState) {
+          log('GetDataDropdownSuccessState');
+          context.read<DieuDongTaiSanProvider>().getDataDropdownSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetDataDropdownFailedState) {
+          log('GetDataDropdownFailedState');
         }
       },
       builder: (context, state) {
@@ -139,7 +147,8 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                           childInput: DieuDongTaiSanDetail(provider: provider),
                           childTableView: DieuDongTaiSanList(
                             provider: provider,
-                            typeAssetTransfer: currentType, idCongTy: 'CT001',
+                            typeAssetTransfer: currentType,
+                            idCongTy: 'CT001',
                           ),
                           title: "Chi tiết điều chuyển tài sản",
                           isShowInput: provider.isShowInput,

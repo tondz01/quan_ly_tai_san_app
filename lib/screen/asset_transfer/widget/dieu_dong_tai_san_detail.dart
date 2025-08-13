@@ -9,17 +9,23 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -40,14 +46,14 @@ class DieuDongTaiSanDetail extends StatefulWidget {
   });
 
   @override
-  State<DieuDongTaiSanDetail> createState() => _AssetTransferDetailState();
+  State<DieuDongTaiSanDetail> createState() => _DieuDongTaiSanDetailState();
 }
 
-// GlobalKey để truy cập widget từ bên ngoài
-final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
-    GlobalKey<_AssetTransferDetailState>();
+final GlobalKey<_DieuDongTaiSanDetailState> dieuDongTaiSanDetailKey =
+    GlobalKey<_DieuDongTaiSanDetailState>();
 
-class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
+class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
+  late TextEditingController controllerSoChungTu = TextEditingController();
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
   late TextEditingController controllerDeliveringUnit = TextEditingController();
@@ -85,6 +91,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
   bool _controllersInitialized = false;
   String? _selectedFileName;
   String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
   String idCongTy = 'CT001';
   int typeTransfer = 1;
   List<ChiTietDieuDongTaiSan> listNewDetails = [];
@@ -133,12 +140,6 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
       newValidationErrors['document'] = true;
     }
 
-    // Check movement details
-    // if (item?.movementDetails == null ||
-    //     (item?.movementDetails?.isEmpty ?? true)) {
-    //   newValidationErrors['movementDetails'] = true;
-    // }
-
     // Only update state if validation errors have changed
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
@@ -150,7 +151,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
     return newValidationErrors.isEmpty;
   }
 
-  late NhanVienProvider nhanVienProvider;
+  // late NhanVienProvider nhanVienProvider;
 
   @override
   void initState() {
@@ -167,69 +168,22 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
     }
 
     // Initialize controllers with existing values if available (only once)
-    if (item != null && !_controllersInitialized) {
-      controllerSubject.text = item?.trichYeu ?? '';
-      controllerDocumentName.text = item?.tenPhieu ?? '';
-      controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
-      controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
-      controllerRequester.text = item?.tenNguoiDeNghi ?? '';
-      controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
-      controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
-      controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
-      controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
-      controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
 
-      // Initialize selected file if available
-      _selectedFileName = item?.tenFile;
-      _selectedFilePath = item?.duongDanFile;
-      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
-      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
-      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
-      proposingUnit = item?.tenDonViDeNghi;
-
-      _controllersInitialized = true;
-    } else if (item == null && !_controllersInitialized) {
-      // Initialize controllers for new items (empty strings)
-      controllerSubject.text = '';
-      controllerDocumentName.text = '';
-      controllerDeliveringUnit.text = '';
-      controllerReceivingUnit.text = '';
-      controllerRequester.text = '';
-      controllerDepartmentApproval.text = '';
-      controllerEffectiveDate.text = '';
-      controllerEffectiveDateTo.text = '';
-      controllerApprover.text = '';
-      controllerDeliveryLocation.text = '';
-      controllerProposingUnit.text = '';
-
-      _controllersInitialized = false;
-      _selectedFileName = null;
-      _selectedFilePath = null;
-      isPreparerInitialed = false;
-      isRequireManagerApproval = false;
-      isDeputyConfirmed = false;
-    }
-
-    if (proposingUnit != null &&
-        proposingUnit!.isNotEmpty &&
-        !_controllersInitialized) {
-      controllerProposingUnit.text = proposingUnit!;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      nhanVienProvider = Provider.of<NhanVienProvider>(context, listen: false);
-      final nhanViens = await nhanVienProvider.fetchNhanViens(); // Lấy list
-      setState(() {
-        itemsRequester =
-            nhanViens
-                .map(
-                  (user) => DropdownMenuItem<String>(
-                    value: user.id ?? '',
-                    child: Text(user.hoTen ?? ''),
-                  ),
-                )
-                .toList();
-      });
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   nhanVienProvider = Provider.of<NhanVienProvider>(context, listen: false);
+    //   final nhanViens = await nhanVienProvider.fetchNhanViens(); // Lấy list
+    //   setState(() {
+    //     itemsRequester =
+    //         nhanViens
+    //             .map(
+    //               (user) => DropdownMenuItem<String>(
+    //                 value: user.id ?? '',
+    //                 child: Text(user.hoTen ?? ''),
+    //               ),
+    //             )
+    //             .toList();
+    //   });
+    // });
   }
 
   @override
@@ -267,6 +221,59 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
         isEditing = true;
       }
 
+      if (item != null) {
+        controllerSoChungTu.text = item?.id ?? '';
+        controllerSubject.text = item?.trichYeu ?? '';
+        controllerDocumentName.text = item?.tenPhieu ?? '';
+        controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
+        controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
+        controllerRequester.text = item?.tenNguoiDeNghi ?? '';
+        controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
+        controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
+        controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
+        controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
+        controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
+
+        // Initialize selected file if available
+        _selectedFileName = item?.tenFile;
+        _selectedFilePath = item?.duongDanFile;
+        isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
+        isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
+        isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+        proposingUnit = item?.tenDonViDeNghi;
+
+        _controllersInitialized = true;
+      } else {
+        controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
+          'SCT************',
+        );
+        controllerSubject.text = '';
+        controllerDocumentName.text = '';
+        controllerDeliveringUnit.text = '';
+        controllerReceivingUnit.text = '';
+        controllerRequester.text = '';
+        controllerDepartmentApproval.text = '';
+        controllerEffectiveDate.text = '';
+        controllerEffectiveDateTo.text = '';
+        controllerApprover.text = '';
+        controllerDeliveryLocation.text = '';
+        controllerProposingUnit.text = '';
+
+        _controllersInitialized = false;
+        _selectedFileName = null;
+        _selectedFilePath = null;
+        isPreparerInitialed = false;
+        isRequireManagerApproval = false;
+        isDeputyConfirmed = false;
+        log('controllerEffectiveDateTo: ${controllerSoChungTu.text}');
+      }
+
+      if (proposingUnit != null &&
+          proposingUnit!.isNotEmpty &&
+          !_controllersInitialized) {
+        controllerProposingUnit.text = proposingUnit!;
+      }
+
       // Reset các biến trạng thái
       isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
       isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
@@ -285,36 +292,6 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
       isRefreshing = false;
     });
   }
-
-  final List<DropdownMenuItem<String>> itemsrReceivingUnit = [
-    const DropdownMenuItem(value: 'Ban giám đốc', child: Text('Ban giám đốc')),
-    const DropdownMenuItem(
-      value: 'Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin',
-      child: Text('Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin'),
-    ),
-    const DropdownMenuItem(
-      value: 'Chưa xác định',
-      child: Text('Chưa xác định'),
-    ),
-    const DropdownMenuItem(
-      value: 'Công ty CP Cơ điện Uông bí - Vinacomin',
-      child: Text('Công ty CP Cơ điện Uông bí - Vinacomin'),
-    ),
-    const DropdownMenuItem(
-      value: 'Công ty TNHH Nam Hưng',
-      child: Text('Công ty TNHH Nam Hưng'),
-    ),
-    const DropdownMenuItem(value: 'Công đoàn', child: Text('Công đoàn')),
-    const DropdownMenuItem(value: 'Kho Công ty', child: Text('Kho Công ty')),
-    const DropdownMenuItem(
-      value: 'Phân xưởng KT1',
-      child: Text('Phân xưởng KT1'),
-    ),
-    const DropdownMenuItem(
-      value: 'P.xưởng Thông gió - thoát nước mỏ 1',
-      child: Text('P.xưởng Thông gió - thoát nước mỏ 1'),
-    ),
-  ];
 
   late List<DropdownMenuItem<String>> itemsRequester = [];
 
@@ -463,7 +440,6 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 'Xác nhận',
                 'Trình duyệt',
                 'Duyệt',
-                'Từ chối',
                 'Hủy',
                 'Hoàn thành',
               ],
@@ -483,170 +459,235 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CommonFormInput(
-                label: 'at.document_name'.tr,
-                controller: controllerDocumentName,
-                isEditing: isEditing,
-                textContent: item?.tenPhieu ?? '',
-                fieldName: 'documentName',
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'Trích yêu',
-                controller: controllerSubject,
-                isEditing: isEditing,
-                textContent: item?.trichYeu ?? '',
-                fieldName: 'subject',
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.delivering_unit'.tr,
-                controller: controllerDeliveringUnit,
-                isEditing: isEditing,
-                textContent: item?.tenDonViGiao ?? '',
-                isDropdown: false,
-                items: itemsrReceivingUnit,
-                fieldName: 'deliveringUnit',
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.receiving_unit'.tr,
-                controller: controllerReceivingUnit,
-                isEditing: isEditing,
-                textContent: item?.tenDonViNhan ?? '',
-                isDropdown: true,
-                items: itemsrReceivingUnit,
-                fieldName: 'receivingUnit',
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.requester'.tr,
-                controller: controllerRequester,
-                isEditing: isEditing,
-                textContent: item?.tenNguoiDeNghi ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-                onChanged: (value) {
-                  log('Requester selected: $value');
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 30,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CommonFormInput(
+                          label: 'Số chứng từ',
+                          controller: controllerSoChungTu,
+                          isEditing: false,
+                          textContent: controllerSoChungTu.text,
+                          fieldName: 'soChungTu',
+                          validationErrors: _validationErrors,
+                        ),
+                        CommonFormInput(
+                          label: 'at.document_name'.tr,
+                          controller: controllerDocumentName,
+                          isEditing: isEditing,
+                          textContent: item?.tenPhieu ?? '',
+                          fieldName: 'documentName',
+                          validationErrors: _validationErrors,
+                        ),
+                        CommonFormInput(
+                          label: 'Trích yêu',
+                          controller: controllerSubject,
+                          isEditing: isEditing,
+                          textContent: item?.trichYeu ?? '',
+                          fieldName: 'subject',
+                          validationErrors: _validationErrors,
+                        ),
 
-                  // var selectedUser = users.firstWhere(
-                  //       (user) => user.id == value,
-                  // );
-                  // proposingUnit = selectedUser.department;
-                  // controllerRequester.text = selectedUser.name ?? '';
-                  // // Update the proposingUnit controller without triggering a rebuild
-                  // // controllerProposingUnit.text = proposingUnit ?? '';
-                  // log('proposingUnit set to: $proposingUnit');
-                },
-                fieldName: 'requester',
-                validationErrors: _validationErrors,
-              ),
-              CommonCheckboxInput(
-                label: 'at.preparer_initialed'.tr,
-                value: isPreparerInitialed,
-                isEditing: isEditing,
-                isDisabled: false,
-                onChanged: (newValue) {
-                  setState(() {
-                    isPreparerInitialed = newValue;
-                  });
-                },
-              ),
-              CommonCheckboxInput(
-                label: 'at.require_manager_approval'.tr,
-                value: isRequireManagerApproval,
-                isEditing: isEditing,
-                isDisabled: false,
-                onChanged: (newValue) {
-                  setState(() {
-                    isRequireManagerApproval = newValue;
-                  });
-                },
-              ),
-              if (isRequireManagerApproval)
-                CommonCheckboxInput(
-                  label: 'at.deputy_confirmed'.tr,
-                  value: isDeputyConfirmed,
-                  isEditing: isEditing,
-                  isDisabled: false,
-                  onChanged: (newValue) {
-                    setState(() {
-                      isDeputyConfirmed = newValue;
-                    });
-                  },
-                ),
-              CommonFormInput(
-                label: 'at.proposing_unit'.tr,
-                controller: controllerProposingUnit,
-                isEditing: false,
-                textContent: proposingUnit ?? '',
-                inputType: TextInputType.number,
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.department_approval'.tr,
-                controller: controllerDepartmentApproval,
-                isEditing: isEditing,
-                textContent: item?.tenTrinhDuyetCapPhong ?? '',
-                fieldName: 'departmentApproval',
-                isDropdown: true,
-                items: itemsRequester,
-                onChanged: (value) {
-                  // log('Department approval selected: $value');
-                  // var selectedUser = users.firstWhere(
-                  //       (user) => user.id == value,
-                  // );
-                  // controllerDepartmentApproval.text = selectedUser.name ?? '';
-                },
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.effective_date'.tr,
-                controller: controllerEffectiveDate,
-                isEditing: isEditing,
-                textContent:
-                    isEditing
-                        ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : item?.tggnTuNgay ??
-                            (isEditing
-                                ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                                : ''),
-                fieldName: 'effectiveDate',
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.effective_date_to'.tr,
-                controller: controllerEffectiveDateTo,
-                isEditing: isEditing,
-                textContent: item?.tggnDenNgay ?? '',
-                fieldName: 'effectiveDateTo',
-                validationErrors: _validationErrors,
-              ),
-              CommonFormInput(
-                label: 'at.approver'.tr,
-                controller: controllerApprover,
-                isEditing: isEditing,
-                textContent: item?.tenTrinhDuyetGiamDoc ?? '',
-                isDropdown: true,
-                items: itemsRequester,
-                onChanged: (value) {
-                  // var selectedUser = users.firstWhere(
-                  //   (user) => user.id == value,
-                  // );
-                  // controllerApprover.text = selectedUser.name ?? '';
-                },
-                fieldName: 'approver',
-                validationErrors: _validationErrors,
+                        CmFormDropdownObject<PhongBan>(
+                          label: 'at.delivering_unit'.tr,
+                          controller: controllerDeliveringUnit,
+                          isEditing: isEditing,
+                          items: widget.provider.itemsDDPhongBan,
+                          defaultValue:
+                              controllerDeliveringUnit.text.isNotEmpty
+                                  ? widget.provider.getPhongBanByID(
+                                    controllerDeliveringUnit.text,
+                                  )
+                                  : null,
+                          fieldName: 'delivering_unit',
+                          validationErrors: _validationErrors,
+                          onChanged: (value) {
+                            log('delivering_unit selected: $value');
+                          },
+                        ),
+                        CmFormDropdownObject<PhongBan>(
+                          label: 'at.receiving_unit'.tr,
+                          controller: controllerReceivingUnit,
+                          isEditing: isEditing,
+
+                          items: widget.provider.itemsDDPhongBan,
+                          defaultValue:
+                              controllerReceivingUnit.text.isNotEmpty
+                                  ? widget.provider.getPhongBanByID(
+                                    controllerReceivingUnit.text,
+                                  )
+                                  : null,
+                          fieldName: 'receivingUnit',
+                          validationErrors: _validationErrors,
+                          onChanged: (value) {
+                            log('receivingUnit selected: $value');
+                          },
+                        ),
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'at.requester'.tr,
+                          controller: controllerRequester,
+                          isEditing: isEditing,
+
+                          items: widget.provider.itemsDDNhanVien,
+                          defaultValue:
+                              controllerRequester.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllerRequester.text,
+                                  )
+                                  : null,
+                          fieldName: 'requester',
+                          validationErrors: _validationErrors,
+                          onChanged: (value) {
+                            log('requester selected: $value');
+                            setState(() {
+                              controllerProposingUnit.text =
+                                  widget.provider
+                                      .getPhongBanByID(value.phongBanId ?? '')
+                                      .tenPhongBan ??
+                                  '';
+                            });
+                          },
+                        ),
+                        CommonCheckboxInput(
+                          label: 'at.preparer_initialed'.tr,
+                          value: isPreparerInitialed,
+                          isEditing: isEditing,
+                          isDisabled: false,
+                          onChanged: (newValue) {
+                            setState(() {
+                              isPreparerInitialed = newValue;
+                            });
+                          },
+                        ),
+                        CommonCheckboxInput(
+                          label: 'at.require_manager_approval'.tr,
+                          value: isRequireManagerApproval,
+                          isEditing: isEditing,
+                          isDisabled: false,
+                          onChanged: (newValue) {
+                            setState(() {
+                              isRequireManagerApproval = newValue;
+                            });
+                          },
+                        ),
+                        if (isRequireManagerApproval)
+                          CommonCheckboxInput(
+                            label: 'at.deputy_confirmed'.tr,
+                            value: isDeputyConfirmed,
+                            isEditing: isEditing,
+                            isDisabled: false,
+                            onChanged: (newValue) {
+                              setState(() {
+                                isDeputyConfirmed = newValue;
+                              });
+                            },
+                          ),
+                        CommonFormInput(
+                          label: 'at.proposing_unit'.tr,
+                          controller: controllerProposingUnit,
+                          isEditing: false,
+                          textContent: proposingUnit ?? '',
+                          inputType: TextInputType.number,
+                          validationErrors: _validationErrors,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'at.department_approval'.tr,
+                          controller: controllerDepartmentApproval,
+                          isEditing: isEditing,
+
+                          items: widget.provider.itemsDDNhanVien,
+                          defaultValue:
+                              controllerDepartmentApproval.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllerDepartmentApproval.text,
+                                  )
+                                  : null,
+                          fieldName: 'departmentApproval',
+                          validationErrors: _validationErrors,
+                          onChanged: (value) {
+                            log('department_approval selected: $value');
+                          },
+                        ),
+                        CmFormDate(
+                          label: 'at.effective_date'.tr,
+                          controller: controllerEffectiveDate,
+                          isEditing: isEditing,
+                          onChanged: (value) {
+                            log('Effective date selected: $value');
+                          },
+                          value:
+                              controllerEffectiveDate.text.isNotEmpty
+                                  ? AppUtility.parseFlexibleDateTime(
+                                    controllerEffectiveDate.text,
+                                  )
+                                  : DateTime.now(),
+                        ),
+                        CmFormDate(
+                          label: 'at.effective_date_to'.tr,
+                          controller: controllerEffectiveDateTo,
+                          isEditing: isEditing,
+                          onChanged: (value) {
+                            log('Effective date selected: $value');
+                          },
+                          value:
+                              controllerEffectiveDateTo.text.isNotEmpty
+                                  ? AppUtility.parseFlexibleDateTime(
+                                    controllerEffectiveDateTo.text,
+                                  )
+                                  : DateTime.now(),
+                        ),
+                        // CommonFormInput(
+                        //   label: 'at.effective_date_to'.tr,
+                        //   controller: controllerEffectiveDateTo,
+                        //   isEditing: isEditing,
+                        //   textContent: item?.tggnDenNgay ?? '',
+                        //   fieldName: 'effectiveDateTo',
+                        //   validationErrors: _validationErrors,
+                        // ),
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'at.approver'.tr,
+                          controller: controllerApprover,
+                          isEditing: isEditing,
+
+                          items: widget.provider.itemsDDNhanVien,
+                          defaultValue:
+                              controllerApprover.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllerApprover.text,
+                                  )
+                                  : null,
+                          fieldName: 'approver',
+                          validationErrors: _validationErrors,
+                          onChanged: (value) {
+                            log('Approver selected: $value');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               DocumentUploadWidget(
                 isEditing: isEditing,
                 selectedFileName: _selectedFileName,
                 selectedFilePath: _selectedFilePath,
                 validationErrors: _validationErrors,
-                onFileSelected: (fileName, filePath) {
+                onFileSelected: (fileName, filePath, fileBytes) {
                   setState(() {
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
+                    _selectedFileBytes = fileBytes;
 
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');
@@ -657,8 +698,8 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 isUploading: _isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
-                hintText: 'Định dạng hỗ trợ: .doc, .docx (Microsoft Word)',
-                allowedExtensions: ['doc', 'docx'],
+                hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
+                allowedExtensions: ['pdf', 'docx'],
               ),
 
               // const SizedBox(height: 20),
@@ -703,21 +744,6 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
         ),
       ],
     );
-  }
-
-  String convertStringToIso(String dateString) {
-    // Giả sử dateString đang ở dạng "dd/MM/yyyy"
-    final parts = dateString.split('/');
-    final day = int.parse(parts[0]);
-    final month = int.parse(parts[1]);
-    final year = int.parse(parts[2]);
-
-    final date = DateTime(year, month, day);
-    return DateTime(
-      date.year,
-      date.month,
-      date.day,
-    ).toIso8601String().split('.').first;
   }
 
   Future<void> _uploadWordDocument() async {
@@ -798,8 +824,8 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
         quanTrongCanXacNhan: isRequireManagerApproval,
         phoPhongXacNhan: isDeputyConfirmed,
         idTrinhDuyetCapPhong: currentDepartmentApproval,
-        tggnTuNgay: convertStringToIso(currentEffectiveDate),
-        tggnDenNgay: convertStringToIso(currentEffectiveDateTo),
+        tggnTuNgay: ConfigViewAT.convertStringToIso(currentEffectiveDate),
+        tggnDenNgay: ConfigViewAT.convertStringToIso(currentEffectiveDateTo),
         idTrinhDuyetGiamDoc: currentApprover,
         trangThai: item?.trangThai ?? 1,
         diaDiemGiaoNhan: currentDeliveryLocation,
@@ -831,8 +857,6 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
           ),
         );
       }
-
-      // provider.onChangeScreen(item: null, isMainScreen: true, isEdit: false);
     } catch (e) {
       log('Error saving asset transfer: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -919,6 +943,47 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
           Icon(Icons.visibility, color: ColorValue.link, size: 18),
         ],
       ),
+    );
+  }
+
+  LenhDieuDongRequest _createDieuDongRequest() {
+    return LenhDieuDongRequest(
+      soQuyetDinh: controllerSoChungTu.text,
+      tenPhieu: controllerDocumentName.text,
+      idDonViGiao: controllerDeliveringUnit.text,
+      idDonViNhan: controllerReceivingUnit.text,
+      idNguoiDeNghi: controllerRequester.text,
+      nguoiLapPhieuKyNhay: isPreparerInitialed,
+      quanTrongCanXacNhan: isRequireManagerApproval,
+      phoPhongXacNhan: isDeputyConfirmed,
+      idDonViDeNghi: proposingUnit ?? '',
+      idTrinhDuyetCapPhong: controllerDepartmentApproval.text,
+      tggnTuNgay: ConfigViewAT.convertStringToIso(controllerEffectiveDate.text),
+      tggnDenNgay: ConfigViewAT.convertStringToIso(
+        controllerEffectiveDateTo.text,
+      ),
+      idTrinhDuyetGiamDoc: controllerApprover.text,
+      diaDiemGiaoNhan: controllerDeliveryLocation.text,
+      idPhongBanXemPhieu: controllerDepartmentApproval.text,
+      idNhanSuXemPhieu: controllerApprover.text,
+      veViec: controllerSubject.text,
+      canCu: controllerSubject.text,
+      dieu1: controllerSubject.text,
+      dieu2: controllerSubject.text,
+      dieu3: controllerSubject.text,
+      noiNhan: controllerSubject.text,
+      themDongTrong: controllerSubject.text,
+      trangThai: 1,
+      idCongTy: idCongTy,
+      ngayTao: DateTime.now().toString(),
+      ngayCapNhat: DateTime.now().toString(),
+      nguoiTao: '',
+      nguoiCapNhat: '',
+      coHieuLuc: true,
+      loai: 1,
+      isActive: true,
+      duongDanFile: _selectedFilePath ?? '',
+      tenFile: _selectedFileName ?? '',
     );
   }
 }

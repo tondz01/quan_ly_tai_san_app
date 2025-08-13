@@ -637,7 +637,7 @@ class _ToolAndMaterialTransferDetailState
                 selectedFileName: _selectedFileName,
                 selectedFilePath: _selectedFilePath,
                 validationErrors: _validationErrors,
-                onFileSelected: (fileName, filePath) {
+                onFileSelected: (fileName, filePath, fileBytes) {
                   setState(() {
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;

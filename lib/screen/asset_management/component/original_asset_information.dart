@@ -235,7 +235,7 @@ Widget buildOriginalAssetInfomation(
           isEditing: isEditing,
           enable: !isEditing,
           onChanged: onChangedNgayVaoSo,
-          value: ngayVaoSo,
+          value: DateTime.parse(ctrlNgayVaoSo.text),
         ),
         CmFormDate(
           label: 'Ngày sử dụng',
@@ -243,7 +243,7 @@ Widget buildOriginalAssetInfomation(
           isEditing: isEditing,
           enable: !isEditing,
           onChanged: onChangedNgaySuDung,
-          value: ngaySuDung,
+          value: DateTime.parse(ctrlNgaySuDung.text),
         ),
       ],
     ),

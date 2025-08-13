@@ -332,11 +332,6 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
-    log('------------------------------------------------');
-    log(
-      '----------_dataCapitalSource: ${_dataCapitalSource?.length}---------------',
-    );
-    log('------------------------------------------------');
     notifyListeners();
   }
 

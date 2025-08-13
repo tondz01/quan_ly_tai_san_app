@@ -2,16 +2,22 @@
 
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../bloc/dieu_dong_tai_san_state.dart';
 import '../model/dieu_dong_tai_san_dto.dart';
@@ -33,14 +39,18 @@ enum FilterStatus {
 }
 
 class DieuDongTaiSanProvider with ChangeNotifier {
-  bool get isLoading =>  _data == null || _dataAsset == null;
+  bool get isLoading => _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
   get data => _data;
   get dataAsset => _dataAsset;
-  get columns => _columns;
+  get dataPhongBan => _dataPhongBan;
+  get dataNhanVien => _dataNhanVien;
+
+  get itemsDDPhongBan => _itemsDDPhongBan;
+  get itemsDDNhanVien => _itemsDDNhanVien;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -103,6 +113,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
+  List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
+  List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
+
   // List status
   // late List<ListStatus> _listStatus;
 
@@ -114,10 +127,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool _isShowCollapse = true;
   List<DieuDongTaiSanDto>? _data;
   List<AssetManagementDto>? _dataAsset;
+  List<PhongBan>? _dataPhongBan;
+  List<NhanVien>? _dataNhanVien;
   List<DieuDongTaiSanDto>? _dataPage;
   List<DieuDongTaiSanDto> _filteredData = [];
   DieuDongTaiSanDto? _item;
-  List<SgTableColumn<DieuDongTaiSanDto>> _columns = [];
+
   String idCongTy = 'CT001';
 
   set subScreen(String? value) {
@@ -220,7 +235,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _filteredData =
           statusFiltered.where((item) {
             return (item.tenPhieu?.toLowerCase().contains(searchLower) ??
-                false) ||
+                    false) ||
                 (item.soQuyetDinh?.toLowerCase().contains(searchLower) ??
                     false) ||
                 (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
@@ -228,9 +243,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                 (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.chiTietDieuDongTaiSans?.any(
                       (detail) =>
-                  detail.tenTaiSan?.toLowerCase().contains(searchLower) ??
-                      false,
-                ) ??
+                          detail.tenTaiSan?.toLowerCase().contains(
+                            searchLower,
+                          ) ??
+                          false,
+                    ) ??
                     false) ||
                 (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
                     false) ||
@@ -262,7 +279,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
     controllerDropdownPage = TextEditingController(text: '10');
 
-    getListToolsAndSupplies(context);
+    getDataAll(context);
   }
 
   void onDispose() {
@@ -280,17 +297,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
   }
 
-  void getListToolsAndSupplies(BuildContext context) {
-    Future.microtask(() {
-      context.read<DieuDongTaiSanBloc>().add(
-        GetListDieuDongTaiSanEvent(context, typeDieuDongTaiSan,idCongTy),
-      );
-    });
-     try {
+  void getDataAll(BuildContext context) {
+    try {
       final bloc = context.read<DieuDongTaiSanBloc>();
-      // Gọi song song, không cần delay
-      bloc.add(GetListDieuDongTaiSanEvent(context, typeDieuDongTaiSan,idCongTy));
+      bloc.add(
+        GetListDieuDongTaiSanEvent(context, typeDieuDongTaiSan, idCongTy),
+      );
       bloc.add(GetListAssetEvent(context, idCongTy));
+      bloc.add(GetDataDropdownEvent(context, idCongTy));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -310,12 +324,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
 
     dataPage =
-    _filteredData.isNotEmpty
-        ? _filteredData.sublist(
-      startIndex < totalEntries ? startIndex : 0,
-      endIndex < totalEntries ? endIndex : totalEntries,
-    )
-        : [];
+        _filteredData.isNotEmpty
+            ? _filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
   }
 
   void onPageChanged(int page) {
@@ -345,12 +359,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (_data == null) return;
 
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-
     if (index != -1) {
       _data![index] = updatedItem;
-
       _updatePagination();
-
       notifyListeners();
 
       log('Đã cập nhật item có ID: ${updatedItem.id}');
@@ -362,14 +373,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   void deleteItem(String id) {
     if (_data == null) return;
 
-    // Tìm vị trí của item cần xóa
     int index = _data!.indexWhere((item) => item.id == id);
 
     if (index != -1) {
-      // Xóa item khỏi danh sách
       _data!.removeAt(index);
 
-      // Cập nhật lại trang hiện tại
       _updatePagination();
 
       // Thông báo UI cập nhật
@@ -382,9 +390,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   getListDieuDongTaiSanSuccess(
-      BuildContext context,
-      GetListDieuDongTaiSanSuccessState state,
-      ) {
+    BuildContext context,
+    GetListDieuDongTaiSanSuccessState state,
+  ) {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
@@ -396,10 +404,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
     notifyListeners();
   }
-  getLisTaiSanSuccess(
-      BuildContext context,
-      GetListAssetSuccessState state,
-      ) {
+
+  getLisTaiSanSuccess(BuildContext context, GetListAssetSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
       _dataAsset = [];
@@ -409,138 +415,57 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String onSetMainScreen() {
-    return mainScreen =
-    typeDieuDongTaiSan == 1
-        ? 'Cấp phát tài sản'
-        : typeDieuDongTaiSan == 2
-        ? 'Thu hồi tài sản'
-        : 'Điều động tài sản';
+  getDataDropdownSuccess(
+    BuildContext context,
+    GetDataDropdownSuccessState state,
+  ) {
+    _error = null;
+    if (state.dataPb.isEmpty) {
+      _dataPhongBan = [];
+    } else {
+      _dataPhongBan = state.dataPb;
+      _itemsDDPhongBan = [
+        for (var element in _dataPhongBan!)
+          DropdownMenuItem<PhongBan>(
+            value: element,
+            child: Text(element.tenPhongBan ?? ''),
+          ),
+      ];
+    }
+    if (state.dataNv.isEmpty) {
+      _dataNhanVien = [];
+    } else {
+      _dataNhanVien = state.dataNv;
+      _itemsDDNhanVien = [
+        for (var element in _dataNhanVien!)
+          DropdownMenuItem<NhanVien>(
+            value: element,
+            child: Text(element.hoTen ?? ''),
+          ),
+      ];
+    }
+    notifyListeners();
   }
 
-  String getStatus(int status) {
-    switch (status) {
-      case 0:
-        return 'Nháp';
-      case 1:
-        return 'Chờ xác nhận';
-      case 2:
-        return 'Xác nhận';
-      case 3:
-        return 'Trình Duyệt';
-      case 4:
-        return 'Duyệt';
-      case 5:
-        return 'Từ chối';
-      case 6:
-        return 'Hủy';
-      case 7:
-        return 'Hoàn thành';
-      default:
-        return '';
+  PhongBan getPhongBanByID(String idPhongBan) {
+    if (_dataPhongBan != null && _dataPhongBan!.isNotEmpty) {
+      return _dataPhongBan!.firstWhere(
+        (item) => item.id == idPhongBan,
+        orElse: () => const PhongBan(),
+      );
+    } else {
+      return const PhongBan();
     }
   }
 
-  Widget showEffective(bool isEffective) {
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: Checkbox(
-        value: isEffective,
-        onChanged: null, // Checkbox is read-only, no setState in provider
-        activeColor: const Color(0xFF80C9CB), // màu xanh nhạt
-        checkColor: Colors.white, // dấu tick màu trắng
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(2), // vuông góc
-        ),
-        materialTapTargetSize:
-        MaterialTapTargetSize.shrinkWrap, // thu nhỏ vùng tap
-        visualDensity: VisualDensity.compact, // giảm padding
-      ),
-    );
-  }
-
-  Widget showMovementDetails(List<ChiTietDieuDongTaiSan> movementDetails) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children:
-            movementDetails
-                .map(
-                  (detail) => Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 5,
-                  vertical: 1,
-                ),
-                margin: const EdgeInsets.only(bottom: 2),
-                decoration: BoxDecoration(
-                  color: ColorValue.paleRose,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: SGText(
-                  text: detail.tenTaiSan ?? '',
-                  size: 12,
-                  fontWeight: FontWeight.w500,
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            )
-                .toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget showStatus(int status) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color: getColorStatus(status),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: SGText(
-          text: getStatus(status),
-          size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color getColorStatus(int status) {
-    switch (status) {
-      case 0:
-        return ColorValue.silverGray;
-      case 1:
-        return ColorValue.lightAmber;
-      case 2:
-        return ColorValue.mediumGreen;
-      case 3:
-        return ColorValue.lightBlue;
-      case 4:
-        return ColorValue.cyan;
-      case 5:
-        return ColorValue.brightRed;
-      case 6:
-        return ColorValue.coral;
-      case 7:
-        return ColorValue.forestGreen;
-      default:
-        return ColorValue.paleRose;
+  NhanVien getNhanVienByID(String idNhanVien) {
+    if (_dataNhanVien != null && _dataNhanVien!.isNotEmpty) {
+      return _dataNhanVien!.firstWhere(
+        (item) => item.id == idNhanVien,
+        orElse: () => const NhanVien(),
+      );
+    } else {
+      return const NhanVien();
     }
   }
 
@@ -584,6 +509,114 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (_data == null || updatedItem.id == null) return;
 
     log('Updating asset transfer: ${updatedItem.id}');
+
+    int index = _data!.indexWhere((item) => item.id == updatedItem.id);
+
+    if (index != -1) {
+      _data![index] = updatedItem;
+
+      _filteredData = List.from(_data!);
+      _updatePagination();
+
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveAssetTransfer(
+    BuildContext context,
+    LenhDieuDongRequest request,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    Map<String, dynamic>? result = await uploadWordDocument(
+      context,
+      fileName,
+      filePath,
+      fileBytes,
+    );
+    if (result == null) {
+      notifyListeners();
+      return;
+    }
+    request = request.copyWith(
+      duongDanFile: result['filePath'] ?? '',
+      tenFile: result['fileName'] ?? '',
+    );
+
+    SGLog.debug(
+      "AssetTransferProvider",
+      "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}",
+    );
+    final bloc = context.read<DieuDongTaiSanBloc>();
+    bloc.add(CreateDieuDongEvent(context, request));
+
+    notifyListeners();
+  }
+
+  Future<Map<String, dynamic>?> uploadWordDocument(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await AssetTransferRepository().uploadFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await AssetTransferRepository().uploadFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tệp "$fileName" đã được tải lên thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<void> updateAssetTransfer(DieuDongTaiSanDto updatedItem) async {
+    if (_data == null) return;
+
+    SGLog.debug(
+      "AssetTransferProvider",
+      'Updating asset transfer: ${updatedItem.id}',
+    );
 
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
 

@@ -1,10 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import '../model/dieu_dong_tai_san_dto.dart';
 import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
-    show DieuDongTaiSanEvent, GetListAssetEvent, GetListDieuDongTaiSanEvent;
+    show CreateDieuDongEvent, DieuDongTaiSanEvent, GetDataDropdownEvent, GetListAssetEvent, GetListDieuDongTaiSanEvent;
 import 'dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanBloc
@@ -12,6 +13,7 @@ class DieuDongTaiSanBloc
   DieuDongTaiSanBloc() : super(DieuDongTaiSanInitialState()) {
     on<GetListDieuDongTaiSanEvent>(_getListDieuDongTaiSan);
     on<GetListAssetEvent>(_getListAsset);
+    on<GetDataDropdownEvent>(_getDataDropdown);
   }
 
   Future<void> _getListDieuDongTaiSan(
@@ -20,16 +22,13 @@ class DieuDongTaiSanBloc
   ) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
-    List<DieuDongTaiSanDto> _dieuDongTaiSans = await DieuDongTaiSanRepository()
+    List<DieuDongTaiSanDto> dieuDongTaiSans = await DieuDongTaiSanRepository()
         .getAll(event.idCongTy.toString(), event.typeAssetTransfer);
     emit(DieuDongTaiSanLoadingDismissState());
-    emit(GetListDieuDongTaiSanSuccessState(data: _dieuDongTaiSans));
+    emit(GetListDieuDongTaiSanSuccessState(data: dieuDongTaiSans));
   }
 
-  Future<void> _getListAsset(
-    GetListAssetEvent event,
-    Emitter emit,
-  ) async {
+  Future<void> _getListAsset(GetListAssetEvent event, Emitter emit) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetManagementRepository()
@@ -41,6 +40,56 @@ class DieuDongTaiSanBloc
       String msg = "Lỗi khi lấy dữ liệu";
       emit(
         GetListAssetFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _getDataDropdown(
+    GetDataDropdownEvent event,
+    Emitter emit,
+  ) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    Map<String, dynamic> result = await AssetTransferRepository()
+        .getDataDropdown(event.idCongTy);
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(
+        GetDataDropdownSuccessState(
+          dataPb: result['data_pb'],
+          dataNv: result['data_nv'],
+        ),
+      );
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu";
+      emit(
+        GetListAssetFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+ ///CREATE
+  Future<void> _createAsset(CreateDieuDongEvent event, Emitter emit) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    Map<String, dynamic> result = await AssetTransferRepository().createAsset(
+      event.request,
+    );
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CreateDieuDongSuccessState());
+    } else {
+      String msg = "Lỗi khi tạo nhóm tài sản";
+      emit(
+        CreateDieuDongFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,
