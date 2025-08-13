@@ -25,28 +25,22 @@ import 'routes.dart';
 
 class AppRouteConf {
   GoRouter get router => _router;
-  Widget child = Container();
   late final _router = GoRouter(
-    initialLocation: AppRoute.dashboard.path,
+    initialLocation: AppRoute.login.path,
     debugLogDiagnostics: true,
     errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
+      GoRoute(
+        path: AppRoute.login.path,
+        name: AppRoute.login.name,
+        pageBuilder: (context, state) => NoTransitionPage(child: LoginView()),
+      ),
       ShellRoute(
         builder: (context, state, child) {
-          this.child = child;
           log('message child: $child');
-          return LoginView(child: child);
+          return Home(child: child);
         },
         routes: [
-          GoRoute(
-            path: AppRoute.home.path,
-            name: AppRoute.home.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: Home(child: child),
-                ),
-          ),
           GoRoute(
             path: AppRoute.dashboard.path,
             name: AppRoute.dashboard.name,

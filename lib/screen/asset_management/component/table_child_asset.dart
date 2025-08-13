@@ -55,8 +55,6 @@ Widget table(
     return result;
   }
 
-  final tableKey = GlobalKey<SgEditableTableState<AssetManagementDto>>();
-
   // String infoTaiSan(String assetId) {
   //   String nameTaiSan =
   //       provider.getInfoAssetByChildAsset(assetId)?.tenTaiSan ?? '';
@@ -86,57 +84,37 @@ Widget table(
         // log('data: ${jsonEncode(data)}');
       },
       columns: [
-        // SgEditableColumn<AssetManagementDto>(
-        //   field: 'name_child_asset',
-        //   title: 'Tên tài sản',
-        //   titleAlignment: TextAlign.center,
-        //   width: 350,
-        //   dropdownItems: [
-        //     for (var element in provider.data)
-        //       DropdownMenuItem<AssetManagementDto>(
-        //         value: element,
-        //         child: Text(element.tenTaiSan ?? ''),
-        //       ),
-        //   ],
-
-        //   getValue: (item) => item.tenTaiSan,
-        //   setValue: (item, value) => {
-        //     log('item: ${item.tenTaiSan} ---- value: ${value.tenTaiSan}'),
-        //     item.tenTaiSan = value.tenTaiSan,
-        //   },
-        //   sortValueGetter: (item) => item.tenTaiSan,
-        //   // isCellEditableDecider: (item, rowIndex) => true,
-        //   editor: EditableCellEditor.dropdown,
-        //   isEditable: true,
-        //   onValueChanged: (item, rowIndex, newValue, updateRow) {
-        //     log('message ${item.tenTaiSan}');
-        //     updateRow('id_child_asset', newValue.id);
-        //     updateRow('asset', '${newValue.id} - ${newValue.tenTaiSan}');
-        //     updateRow('donViHienThoi', newValue.idDonViHienThoi);
-        //   },
-        // ),
+      
         SgEditableColumn<AssetManagementDto>(
           field: 'asset',
           title: 'Tài sản',
           titleAlignment: TextAlign.center,
           width: 250,
-          getValue: (item) => item.tenTaiSan,
-          setValue: (item, value) => item.tenTaiSan = value.tenTaiSan,
+          getValue: (item) => item,
+          setValue: (item, value) {
+            if (value is AssetManagementDto) {
+              item.id = value.id;
+              item.tenTaiSan = value.tenTaiSan;
+              item.idDonViHienThoi = value.idDonViHienThoi;
+            }
+          },
           sortValueGetter: (item) => item.tenTaiSan,
           isCellEditableDecider: (item, rowIndex) => true,
-          editor:
-              EditableCellEditor.dropdown, // dạng input dropdown of TextField
+          editor: EditableCellEditor.dropdown,
           dropdownItems: [
             for (var element in provider.data)
               DropdownMenuItem<AssetManagementDto>(
                 value: element,
                 child: Text(element.tenTaiSan ?? ''),
               ),
-          ], // set list dropdown tương tự bên table
+          ],
+          // displayStringForOption: (item) => item.tenTaiSan ?? '',
           onValueChanged: (item, rowIndex, newValue, updateRow) {
-            updateRow('id_child_asset', newValue.id);
-            updateRow('asset', '${newValue.id} - ${newValue.tenTaiSan}');
-            updateRow('donViHienThoi', newValue.idDonViHienThoi);
+            if (newValue is AssetManagementDto) {
+              updateRow('id_child_asset', newValue.id);
+              updateRow('asset', '${newValue.id} - ${newValue.tenTaiSan}');
+              updateRow('donViHienThoi', newValue.idDonViHienThoi);
+            }
           },
         ),
         SgEditableColumn<AssetManagementDto>(
@@ -155,7 +133,9 @@ Widget table(
           titleAlignment: TextAlign.center,
           width: 120,
           getValue: (item) => '${item.id} - ${item.tenTaiSan}',
-          setValue: (item, value) => '',
+          setValue: (item, value) {
+            // Không làm gì khi giá trị được đặt, vì đây là trường readonly
+          },
           sortValueGetter: (item) => '${item.id} - ${item.tenTaiSan}',
           isEditable: false,
         ),

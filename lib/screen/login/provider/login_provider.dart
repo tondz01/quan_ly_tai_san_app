@@ -36,11 +36,11 @@ class LoginProvider with ChangeNotifier {
   }
 
   // onLoginSuccess method
-  onLoginSuccess(BuildContext context, PostLoginSuccessState data, Widget child) async {
+  onLoginSuccess(BuildContext context, PostLoginSuccessState data) async {
     _error = null;
     _isLoggedIn = true;
     notifyListeners();
-    context.go(AppRoute.home.path);
+    context.go(AppRoute.dashboard.path);
   }
 
   // onLoginFailed method

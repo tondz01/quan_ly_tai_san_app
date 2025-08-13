@@ -241,4 +241,9 @@ class AssetManagementDto {
       isActive: true,
     );
   }
+  
+  @override
+  String toString() {
+    return tenTaiSan ?? '';
+  }
 }

@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
@@ -13,8 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/login/widget/login_input_view.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 
 class LoginView extends StatefulWidget {
-  final Widget child;
-  const LoginView({super.key, required this.child});
+  const LoginView({super.key});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -57,7 +58,6 @@ class _LoginViewState extends State<LoginView> {
               context.read<LoginProvider>().onLoginSuccess(
                 context,
                 state,
-                widget.child,
               );
               log('message PostLoginSuccessState');
             }
@@ -71,7 +71,9 @@ class _LoginViewState extends State<LoginView> {
             return Consumer<LoginProvider>(
               builder: (loginProviderContext, provider, child) {
                 if (provider.isLoggedIn) {
-                  return Home(child: widget.child);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    context.go(AppRoute.dashboard.path);
+                  });
                 }
                 return Scaffold(
                   backgroundColor: SGAppColors.neutral100,
