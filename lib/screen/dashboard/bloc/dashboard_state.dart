@@ -1,0 +1,28 @@
+import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+
+abstract class DashboardState extends Equatable {
+  const DashboardState();
+  @override
+  List<Object?> get props => [];
+}
+
+class DashboardInitial extends DashboardState {}
+
+class DashboardLoaded extends DashboardState {
+  final List<NhanVien> staffs;
+  final List<AssetManagementDto> assets;
+  final List<PhongBan> departments;
+  const DashboardLoaded(this.staffs, this.assets, this.departments);
+  @override
+  List<Object?> get props => [staffs, assets];
+}
+
+class DashboardError extends DashboardState {
+  final String message;
+  const DashboardError(this.message);
+  @override
+  List<Object?> get props => [message];
+}

@@ -159,7 +159,6 @@ class _StaffListState extends State<StaffList> {
                     SizedBox(width: 16),
                     IconButton(
                       onPressed: () {
-                        // TODO: Xóa nhân viên đã chọn
                       },
                       icon: Icon(Icons.delete, color: Colors.grey.shade700),
                     ),
