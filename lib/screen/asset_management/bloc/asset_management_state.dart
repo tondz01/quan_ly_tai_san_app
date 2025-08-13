@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
+import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 

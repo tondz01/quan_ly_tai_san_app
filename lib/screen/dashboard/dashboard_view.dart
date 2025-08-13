@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:graphic/graphic.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_text_style.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/statistics_card.dart';
@@ -109,10 +108,7 @@ class _DashboardViewState extends State<DashboardView> {
                   Row(
                     children: [
                       SGText(text: 'Hôm nay (${_getCurrentDate()})', style: AppTextStyle.textStyleRegular12),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 2, top: 4),
-                        child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: ColorValue.neutral700),
-                      ),
+                      Padding(padding: const EdgeInsets.only(left: 2, top: 4), child: Icon(Icons.keyboard_arrow_down_rounded, size: 24, color: ColorValue.neutral700)),
                     ],
                   ),
                 ],
@@ -120,9 +116,9 @@ class _DashboardViewState extends State<DashboardView> {
               const SizedBox(height: 16),
               // Statistics cards
               _buildStatisticsSection(state),
-
+              const SizedBox(height: 16),
               Container(
-                decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                 padding: EdgeInsets.all(12),
                 child: Column(
                   children: [
@@ -143,14 +139,7 @@ class _DashboardViewState extends State<DashboardView> {
                               ),
                               Container(
                                 margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: basicData,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
-                                ),
+                                child: PieDonutChartWithLegend(data: basicData, categoryKey: 'genre', valueKey: 'sold', colors: listColors, chartWidth: 420, chartHeight: 420),
                               ),
                             ],
                           ),
@@ -165,14 +154,7 @@ class _DashboardViewState extends State<DashboardView> {
                               ),
                               Container(
                                 margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: basicData2,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  barWidth: 18,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
+                                child: ScrollableBarChart(data: basicData2, categoryKey: 'genre', valueKey: 'sold', barWidth: 18, spacing: 64, height: 300),
                               ),
                             ],
                           ),
@@ -188,21 +170,11 @@ class _DashboardViewState extends State<DashboardView> {
                               Container(
                                 padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
                                 alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tài sản theo nhóm / mô hình",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
+                                child: SGText(text: "Tài sản theo nhóm / mô hình", style: AppTextStyle.textStyleRegular14),
                               ),
                               Container(
                                 margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: basicData2,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  barWidth: 18,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
+                                child: ScrollableBarChart(data: basicData2, categoryKey: 'genre', valueKey: 'sold', barWidth: 18, spacing: 64, height: 300),
                               ),
                             ],
                           ),
@@ -213,21 +185,11 @@ class _DashboardViewState extends State<DashboardView> {
                               Container(
                                 padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
                                 alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tài sản theo năm sản xuất",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
+                                child: SGText(text: "Tài sản theo năm sản xuất", style: AppTextStyle.textStyleRegular14),
                               ),
                               Container(
                                 margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: basicData2,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  barWidth: 18,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
+                                child: ScrollableBarChart(data: basicData2, categoryKey: 'genre', valueKey: 'sold', barWidth: 18, spacing: 64, height: 300),
                               ),
                             ],
                           ),
@@ -242,20 +204,14 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                     Container(
                       margin: const EdgeInsets.only(top: 10),
-                      child: ScrollableBarChart(
-                        data: basicData2,
-                        categoryKey: 'genre',
-                        valueKey: 'sold',
-                        barWidth: 18,
-                        spacing: 64,
-                        height: 300,
-                      ),
+                      child: ScrollableBarChart(data: basicData2, categoryKey: 'genre', valueKey: 'sold', barWidth: 18, spacing: 64, height: 300),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
               Container(
-                decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                 padding: EdgeInsets.all(12),
                 child: Column(
                   children: [
@@ -264,126 +220,105 @@ class _DashboardViewState extends State<DashboardView> {
                       alignment: Alignment.centerLeft,
                       child: SGText(text: "Hoạt động điều động & bàn giao", style: AppTextStyle.textStyleSemiBold24),
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: 'Phiếu điều động tài sản (tháng/quý)',
-                                  style: AppTextStyle.textStyleRegular14,
+                    SizedBox(
+                      width: double.infinity,
+                      height: 400,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
+                                  alignment: Alignment.centerLeft,
+                                  child: SGText(text: 'Phiếu điều động tài sản (tháng/quý)', style: AppTextStyle.textStyleRegular14),
                                 ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                width: 350,
-                                height: 300,
-                                child: GroupLineChart(
-                                  data: complexGroupData,
-                                  xKey: 'date',
-                                  yKey: 'points',
-                                  groupKey: 'name',
-                                  width: 350,
-                                  height: 300,
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: GroupLineChart(data: complexGroupData, xKey: 'date', yKey: 'points', groupKey: 'name', width: 350, height: 300),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Phiếu điều động CCDC / vật tư",
-                                  style: AppTextStyle.textStyleRegular14,
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
+                                  alignment: Alignment.centerLeft,
+                                  child: SGText(text: "Phiếu điều động CCDC / vật tư", style: AppTextStyle.textStyleRegular14),
                                 ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                width: 350,
-                                height: 300,
-                                child: GroupLineChart(
-                                  data: complexGroupData,
-                                  xKey: 'date',
-                                  yKey: 'points',
-                                  groupKey: 'name',
-                                  width: 350,
-                                  height: 300,
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: GroupLineChart(data: complexGroupData, xKey: 'date', yKey: 'points', groupKey: 'name', width: 350, height: 300),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Bàn giao tài sản theo trạng thái",
-                                  style: AppTextStyle.textStyleRegular14,
+                    SizedBox(
+                      width: double.infinity,
+                      height: 400,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
+                                  alignment: Alignment.centerLeft,
+                                  child: SGText(text: "Bàn giao tài sản theo trạng thái", style: AppTextStyle.textStyleRegular14),
                                 ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: basicData,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
+                                Expanded(
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    margin: const EdgeInsets.only(top: 10),
+                                    child: PieDonutChartWithLegend(data: basicData, categoryKey: 'genre', valueKey: 'sold', colors: listColors, chartWidth: 420, chartHeight: 420),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tiến độ điều động (từ tggnTuNgay đến tggnDenNgay)",
-                                  style: AppTextStyle.textStyleRegular14,
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
+                                  alignment: Alignment.centerLeft,
+                                  child: SGText(text: "Tiến độ điều động (từ tggnTuNgay đến tggnDenNgay)", style: AppTextStyle.textStyleRegular14),
                                 ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                width: 350,
-                                height: 300,
-                                child: GroupLineChart(
-                                  data: complexGroupData,
-                                  xKey: 'date',
-                                  yKey: 'points',
-                                  groupKey: 'name',
-                                  width: 350,
-                                  height: 300,
+                                Expanded(
+                                  child: Container(
+                                    margin: const EdgeInsets.only(top: 10),
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: GroupLineChart(data: complexGroupData, xKey: 'date', yKey: 'points', groupKey: 'name', width: 350, height: 300),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
               Container(
-                decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
                 padding: EdgeInsets.all(12),
                 child: Column(
                   children: [
@@ -404,14 +339,7 @@ class _DashboardViewState extends State<DashboardView> {
                               ),
                               Container(
                                 margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: basicData2,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  barWidth: 18,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
+                                child: ScrollableBarChart(data: basicData2, categoryKey: 'genre', valueKey: 'sold', barWidth: 18, spacing: 64, height: 300),
                               ),
                             ],
                           ),
@@ -422,21 +350,11 @@ class _DashboardViewState extends State<DashboardView> {
                               Container(
                                 padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
                                 alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tỷ lệ nhân viên Active / Inactive",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
+                                child: SGText(text: "Tỷ lệ nhân viên Active / Inactive", style: AppTextStyle.textStyleRegular14),
                               ),
                               Container(
                                 margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: basicData,
-                                  categoryKey: 'genre',
-                                  valueKey: 'sold',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
-                                ),
+                                child: PieDonutChartWithLegend(data: basicData, categoryKey: 'genre', valueKey: 'sold', colors: listColors, chartWidth: 420, chartHeight: 420),
                               ),
                             ],
                           ),
@@ -458,22 +376,17 @@ class _DashboardViewState extends State<DashboardView> {
   Widget _buildStatisticsSection(DashboardState state) {
     final bool isLoading = state is! DashboardLoaded;
     final int assetCount = state is DashboardLoaded ? state.assets.length : 0;
-    final double totalOriginalPrice =
-        state is DashboardLoaded ? state.assets.fold(0.0, (sum, e) => sum + (e.nguyenGia ?? 0)) : 0.0;
+    final double totalOriginalPrice = state is DashboardLoaded ? state.assets.fold(0.0, (sum, e) => sum + (e.nguyenGia ?? 0)) : 0.0;
     final int activeStaffCount = state is DashboardLoaded ? state.staffs.where((s) => s.isActive == true).length : 0;
     final int departmentCount = state is DashboardLoaded ? state.departments.length : 0;
+    final int projectCount = state is DashboardLoaded ? state.projects.length : 0;
     return Container(
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
       padding: EdgeInsets.all(12),
       child: GridView(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: _getCrossAxisCount(context),
-          crossAxisSpacing: 32,
-          mainAxisSpacing: 32,
-          mainAxisExtent: 112,
-        ),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: _getCrossAxisCount(context), crossAxisSpacing: 32, mainAxisSpacing: 32, mainAxisExtent: 112),
         children: [
           StatisticsCard(
             title: 'Tổng tài sản',
@@ -501,28 +414,14 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           StatisticsCard(
             title: 'Dự án',
-            value: '23',
+            value: isLoading ? '...' : projectCount.toString(),
             icon: Icons.cancel,
             trend: '-5%',
             trendUp: false,
             backgroundColor: ColorValue.backgroundBG3,
           ),
-          StatisticsCard(
-            title: 'Nguồn vốn',
-            value: '23',
-            icon: Icons.cancel,
-            trend: '-5%',
-            trendUp: false,
-            backgroundColor: ColorValue.backgroundBG4,
-          ),
-          StatisticsCard(
-            title: 'CCDC/Vật tư',
-            value: '23',
-            icon: Icons.cancel,
-            trend: '-5%',
-            trendUp: false,
-            backgroundColor: ColorValue.backgroundBG3,
-          ),
+          StatisticsCard(title: 'Nguồn vốn', value: '23', icon: Icons.cancel, trend: '-5%', trendUp: false, backgroundColor: ColorValue.backgroundBG4),
+          StatisticsCard(title: 'CCDC/Vật tư', value: '23', icon: Icons.cancel, trend: '-5%', trendUp: false, backgroundColor: ColorValue.backgroundBG3),
         ],
       ),
     );
@@ -551,8 +450,6 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   String _formatCurrency(double value) {
-    return value
-        .toStringAsFixed(0)
-        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match.group(1)},');
+    return value.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match.group(1)},');
   }
 }
