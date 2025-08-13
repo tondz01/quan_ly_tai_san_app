@@ -1,9 +1,4 @@
-// repositories/dieu_dong_tai_san_repository.dart
-import 'dart:io';
-
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
-import 'package:flutter/foundation.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';

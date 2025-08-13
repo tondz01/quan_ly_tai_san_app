@@ -1,14 +1,18 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/original_asset_information.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/other_information.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_child_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
@@ -16,6 +20,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:se_gay_components/common/sg_input_text.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class AssetDetail extends StatefulWidget {
   const AssetDetail({super.key, required this.provider});
@@ -69,6 +75,7 @@ class _AssetDetailState extends State<AssetDetail> {
   TextEditingController ctrlGhiChu = TextEditingController();
   TextEditingController ctrlDonViBanDau = TextEditingController();
   TextEditingController ctrlDonViHienThoi = TextEditingController();
+  TextEditingController ctrlTenTaiSan = TextEditingController();
 
   String? idDuAn;
   String? idNguonKinhPhi;
@@ -77,6 +84,14 @@ class _AssetDetailState extends State<AssetDetail> {
   String? idAssetCategory;
   String? idAssetGroup;
   String? idDepreciationMethod;
+
+  int? phuongPhapKhauHao;
+
+  DuAn? duAn;
+  PhongBan? phongBanBanDau;
+  PhongBan? phongBanHienThoi;
+
+  List<ChildAssetDto> childAssets = [];
 
   @override
   void initState() {
@@ -107,8 +122,17 @@ class _AssetDetailState extends State<AssetDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return BlocListener<AssetManagementBloc, AssetManagementState>(
       listener: (context, state) {
+        if (state is GetListChildAssetsSuccessState) {
+          setState(() {
+            childAssets = state.data;
+          });
+        }
+        if (state is GetListChildAssetsFailedState) {
+          log('GetListChildAssetsFailedState');
+        }
         if (state is CreateAssetSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -116,6 +140,7 @@ class _AssetDetailState extends State<AssetDetail> {
               backgroundColor: Colors.green,
             ),
           );
+          widget.provider.getDataAll(context);
           setState(() {
             isEditing = false;
           });
@@ -137,136 +162,184 @@ class _AssetDetailState extends State<AssetDetail> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade300),
             ),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: buildOriginalAssetInfomation(
-                    context,
-                    isEditing: isEditing,
-                    ctrlMaTaiSan: ctrlMaTaiSan,
-                    ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
-                    ctrlNguyenGia: ctrlNguyenGia,
-                    ctrlGiaTriKhauHaoBanDau: ctrlGiaTriKhauHaoBanDau,
-                    ctrlKyKhauHaoBanDau: ctrlKyKhauHaoBanDau,
-                    ctrlGiaTriThanhLy: ctrlGiaTriThanhLy,
-                    ctrlTenMoHinh: ctrlTenMoHinh,
-                    ctrlPhuongPhapKhauHao: ctrlPhuongPhapKhauHao,
-                    ctrlSoKyKhauHao: ctrlSoKyKhauHao,
-                    ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
-                    ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
-                    ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
-                    ctrlTenNhom: ctrlTenNhom,
-                    ctrlNgayVaoSo: ctrlNgayVaoSo,
-                    ctrlNgaySuDung: ctrlNgaySuDung,
-                    listAssetCategory: listAssetCategory,
-                    listAssetGroup: widget.provider.dataGroup!,
-                    itemsAssetCategory: itemsAssetCategory,
-                    itemsAssetGroup: widget.provider.itemsAssetGroup!,
-                    onAssetCategoryChanged: (value) {
-                      setState(() {
-                        idAssetCategory = value.id;
-                        ctrlPhuongPhapKhauHao.text =
-                            value.phuongPhapKhauHao == 1 ? 'Đường thẳng' : '';
-                        ctrlTaiKhoanTaiSan.text =
-                            value.taiKhoanTaiSan.toString();
-                        ctrlSoKyKhauHao.text = value.kyKhauHao.toString();
-                        ctrlTaiKhoanKhauHao.text =
-                            value.taiKhoanKhauHao.toString();
-                        ctrlTaiKhoanChiPhi.text =
-                            value.taiKhoanChiPhi.toString();
-                        log(
-                          'Asset category changed: ${ctrlTaiKhoanChiPhi.text}',
-                        );
-                      });
-                    },
-                    onAssetGroupChanged: (value) {
-                      setState(() {
-                        idAssetGroup = value.id;
-                      });
-                    },
-                    onDepreciationMethodChanged: (value) {
-                      setState(() {
-                        ctrlPhuongPhapKhauHao.text = value;
-                      });
-                    },
-                    onChangedNgayVaoSo: (value) {},
-                    onChangedNgaySuDung: (value) {},
+                SGText(
+                  text: 'Tên Tài sản',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isEditing ? Colors.black : ColorValue.neutral500,
+                  ),
+                  // fontWeight: FontWeight.w800,
+                ),
+                const SizedBox(width: 10),
+                SGInputText(
+                  controller: ctrlTenTaiSan,
+                  borderRadius: 10,
+                  enabled: isEditing,
+                  onlyLine: true,
+                  showBorder: false,
+                  fontSize: 24,
+                  hintText: 'Tên tài sản',
+                  hintStyle: TextStyle(
+                    fontSize: 24,
+                    color: ColorValue.neutral500,
                   ),
                 ),
-                SizedBox(width: 30),
-                Expanded(
-                  child: buildOtherInformation(
-                    context,
-                    isEditing: isEditing,
-                    ctrlDuAn: ctrlDuAn,
-                    ctrlNguonKinhPhi: ctrlNguonKinhPhi,
-                    ctrlKyHieu: ctrlKyHieu,
-                    ctrlSoKyHieu: ctrlSoKyHieu,
-                    ctrlCongSuat: ctrlCongSuat,
-                    ctrlNuocSanXuat: ctrlNuocSanXuat,
-                    ctrlNamSanXuat: ctrlNamSanXuat,
-                    ctrlLyDoTang: ctrlLyDoTang,
-                    ctrlHienTrang: ctrlHienTrang,
-                    ctrlSoLuong: ctrlSoLuong,
-                    ctrlDonViTinh: ctrlDonViTinh,
-                    ctrlGhiChu: ctrlGhiChu,
-                    ctrlDonViBanDau: ctrlDonViBanDau,
-                    ctrlDonViHienThoi: ctrlDonViHienThoi,
-                    valueKhoiTaoDonVi: valueKhoiTaoDonVi,
-                    listPhongBan: widget.provider.dataDepartment!,
-                    listDuAn: widget.provider.dataProject!,
-                    listNguonKinhPhi: widget.provider.dataCapitalSource!,
-                    itemsPhongBan: widget.provider.itemsPhongBan!,
-                    itemsDuAn: widget.provider.itemsDuAn!,
-                    itemsNguonKinhPhi: widget.provider.itemsNguonKinhPhi!,
-                    provider: widget.provider,
-                    hienTrang: hienTrang,
-                    lyDoTang: lyDoTang,
-                    country: country,
-                    onNuocSanXuatChanged: (value) {
-                      setState(() {
-                        country = value;
-                      });
-                    },
-                    onDuAnChanged: (value) {
-                      setState(() {
-                        idDuAn = value.id;
-                      });
-                    },
-                    onNguonKinhPhiChanged: (value) {
-                      setState(() {
-                        idNguonKinhPhi = value.id;
-                      });
-                    },
-                    onLyDoTangChanged: (value) {
-                      setState(() {
-                        lyDoTang = value;
-                        idLyDoTang = value.id.toString();
-                      });
-                    },
-                    onHienTrangChanged: (value) {
-                      setState(() {
-                        hienTrang = value;
-                        idHienTrang = value.id.toString();
-                      });
-                    },
-                    onKhoiTaoDonViChanged: (value) {
-                      setState(() {
-                        valueKhoiTaoDonVi = value;
-                      });
-                    },
-                    onChangeInitialUsage: (value) {
-                      setState(() {
-                        ctrlDonViBanDau.text = value.id ?? '';
-                      });
-                    },
-                    onChangeCurrentUnit: (value) {
-                      setState(() {
-                        ctrlDonViHienThoi.text = value.id ?? '';
-                      });
-                    },
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: size.width * 0.1,
+                    right: size.width * 0.1,
+                    top: 10,
+                    bottom: 20,
                   ),
+                  child: Divider(color: ColorValue.neutral300, height: 1),
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: buildOriginalAssetInfomation(
+                        context,
+                        isEditing: isEditing,
+                        ctrlMaTaiSan: ctrlMaTaiSan,
+                        ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
+                        ctrlNguyenGia: ctrlNguyenGia,
+                        ctrlGiaTriKhauHaoBanDau: ctrlGiaTriKhauHaoBanDau,
+                        ctrlKyKhauHaoBanDau: ctrlKyKhauHaoBanDau,
+                        ctrlGiaTriThanhLy: ctrlGiaTriThanhLy,
+                        ctrlTenMoHinh: ctrlTenMoHinh,
+                        ctrlPhuongPhapKhauHao: ctrlPhuongPhapKhauHao,
+                        ctrlSoKyKhauHao: ctrlSoKyKhauHao,
+                        ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
+                        ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
+                        ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
+                        ctrlTenNhom: ctrlTenNhom,
+                        ctrlNgayVaoSo: ctrlNgayVaoSo,
+                        ctrlNgaySuDung: ctrlNgaySuDung,
+                        listAssetCategory: listAssetCategory,
+                        listAssetGroup: widget.provider.dataGroup!,
+                        itemsAssetCategory: itemsAssetCategory,
+                        itemsAssetGroup: widget.provider.itemsAssetGroup!,
+                        onAssetCategoryChanged: (value) {
+                          setState(() {
+                            idAssetCategory = value.id;
+                            phuongPhapKhauHao = value.phuongPhapKhauHao;
+                            ctrlPhuongPhapKhauHao.text =
+                                value.phuongPhapKhauHao == 1
+                                    ? 'Đường thẳng'
+                                    : '';
+                            ctrlTaiKhoanTaiSan.text =
+                                value.taiKhoanTaiSan.toString();
+                            ctrlSoKyKhauHao.text = value.kyKhauHao.toString();
+                            ctrlTaiKhoanKhauHao.text =
+                                value.taiKhoanKhauHao.toString();
+                            ctrlTaiKhoanChiPhi.text =
+                                value.taiKhoanChiPhi.toString();
+                            log(
+                              'Asset category changed: ${ctrlTaiKhoanChiPhi.text}',
+                            );
+                          });
+                        },
+                        onAssetGroupChanged: (value) {
+                          setState(() {
+                            idAssetGroup = value.id;
+                          });
+                        },
+                        onDepreciationMethodChanged: (value) {
+                          setState(() {
+                            ctrlPhuongPhapKhauHao.text = value;
+                            phuongPhapKhauHao = int.tryParse(value) ?? 0;
+                          });
+                        },
+                        onChangedNgayVaoSo: (value) {},
+                        onChangedNgaySuDung: (value) {},
+                      ),
+                    ),
+                    SizedBox(width: 30),
+                    Expanded(
+                      child: buildOtherInformation(
+                        context,
+                        isEditing: isEditing,
+                        ctrlDuAn: ctrlDuAn,
+                        ctrlNguonKinhPhi: ctrlNguonKinhPhi,
+                        ctrlKyHieu: ctrlKyHieu,
+                        ctrlSoKyHieu: ctrlSoKyHieu,
+                        ctrlCongSuat: ctrlCongSuat,
+                        ctrlNuocSanXuat: ctrlNuocSanXuat,
+                        ctrlNamSanXuat: ctrlNamSanXuat,
+                        ctrlLyDoTang: ctrlLyDoTang,
+                        ctrlHienTrang: ctrlHienTrang,
+                        ctrlSoLuong: ctrlSoLuong,
+                        ctrlDonViTinh: ctrlDonViTinh,
+                        ctrlGhiChu: ctrlGhiChu,
+                        ctrlDonViBanDau: ctrlDonViBanDau,
+                        ctrlDonViHienThoi: ctrlDonViHienThoi,
+                        valueKhoiTaoDonVi: valueKhoiTaoDonVi,
+                        listPhongBan: widget.provider.dataDepartment!,
+                        listDuAn: widget.provider.dataProject!,
+                        listNguonKinhPhi: widget.provider.dataCapitalSource!,
+                        itemsPhongBan: widget.provider.itemsPhongBan!,
+                        itemsDuAn: widget.provider.itemsDuAn!,
+                        itemsNguonKinhPhi: widget.provider.itemsNguonKinhPhi!,
+                        provider: widget.provider,
+                        duAn: duAn,
+                        hienTrang: hienTrang,
+                        lyDoTang: lyDoTang,
+                        country: country,
+                        phongBanBanDau: phongBanBanDau,
+                        phongBanHienThoi: phongBanHienThoi,
+                        onNuocSanXuatChanged: (value) {
+                          setState(() {
+                            country = value;
+                          });
+                        },
+                        onDuAnChanged: (value) {
+                          setState(() {
+                            duAn = value;
+                            log('message duAn: ${duAn!.id}');
+                          });
+                        },
+                        onKhoiTaoDonViChanged: (value) {
+                          setState(() {
+                            valueKhoiTaoDonVi = value;
+                          });
+                        },
+                        onNguonKinhPhiChanged: (value) {
+                          setState(() {
+                            idNguonKinhPhi = value.id;
+                          });
+                        },
+                        onLyDoTangChanged: (value) {
+                          setState(() {
+                            lyDoTang = value;
+                          });
+                        },
+                        onHienTrangChanged: (value) {
+                          setState(() {
+                            hienTrang = value;
+                          });
+                        },
+                        onChangeInitialUsage: (value) {
+                          setState(() {
+                            phongBanBanDau = value;
+                          });
+                        },
+                        onChangeCurrentUnit: (value) {
+                          setState(() {
+                            phongBanHienThoi = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                tableChildAsset(
+                  context: context,
+                  childAssets: childAssets,
+                  isEditing: isEditing,
+                  provider: widget.provider,
                 ),
               ],
             ),
@@ -344,6 +417,8 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlGhiChu.text = '';
       ctrlDonViBanDau.text = '';
       ctrlDonViHienThoi.text = '';
+      ctrlTenTaiSan.text = '';
+      valueKhoiTaoDonVi = false;
     } else {
       // If data is not null, set controllers with data values
       ctrlMaTaiSan.text = data!.id ?? '';
@@ -376,40 +451,38 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlGhiChu.text = data!.ghiChu ?? '';
       ctrlDonViBanDau.text = data!.idDonViBanDau ?? '';
       ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
+      valueKhoiTaoDonVi = data!.idDonViBanDau != null;
+      ctrlTenTaiSan.text = data!.tenTaiSan ?? '';
     }
     log('message _initController: ${ctrlLyDoTang.text}');
   }
 
   AssetRequest _createAssetRequest() {
+    log('message _createAssetRequest: ${ctrlKyKhauHaoBanDau.text}');
+    log('message nguyenGia: ${ctrlNguyenGia.text}');
+    log('message giaTriThanhLy: ${ctrlGiaTriThanhLy.text}');
+    log('message duAn: ${duAn!.id}');
+
     return AssetRequest(
-      idLoaiTaiSan: ctrlMaTaiSan.text,
-      tenTaiSan: ctrlTenMoHinh.text,
-      nguyenGia: double.tryParse(ctrlNguyenGia.text) ?? 0.0,
-      giaTriKhauHaoBanDau: double.tryParse(ctrlGiaTriKhauHaoBanDau.text) ?? 0.0,
+      id: ctrlMaTaiSan.text,
+      idLoaiTaiSan: idAssetGroup ?? '',
+      tenTaiSan: ctrlTenTaiSan.text,
+      nguyenGia: AppUtility.parseCurrency(ctrlNguyenGia.text),
+      giaTriKhauHaoBanDau: AppUtility.parseCurrency(
+        ctrlGiaTriKhauHaoBanDau.text,
+      ),
       kyKhauHaoBanDau: int.tryParse(ctrlKyKhauHaoBanDau.text) ?? 0,
-      giaTriThanhLy: double.tryParse(ctrlGiaTriThanhLy.text) ?? 0.0,
+      giaTriThanhLy: AppUtility.parseCurrency(ctrlGiaTriThanhLy.text),
       idMoHinhTaiSan: idAssetCategory ?? ctrlTenMoHinh.text,
-      phuongPhapKhauHao: ctrlPhuongPhapKhauHao.text,
+      phuongPhapKhauHao: phuongPhapKhauHao ?? 1,
       soKyKhauHao: int.tryParse(ctrlSoKyKhauHao.text) ?? 0,
       taiKhoanTaiSan: int.tryParse(ctrlTaiKhoanTaiSan.text) ?? 0,
       taiKhoanKhauHao: int.tryParse(ctrlTaiKhoanKhauHao.text) ?? 0,
       taiKhoanChiPhi: int.tryParse(ctrlTaiKhoanChiPhi.text) ?? 0,
       idNhomTaiSan: idAssetGroup ?? '',
-      ngayVaoSo: (() {
-        try {
-          return DateFormat('dd/MM/yyyy HH:mm:ss').parse(ctrlNgayVaoSo.text);
-        } catch (_) {
-          return DateTime.now();
-        }
-      })(),
-      ngaySuDung: (() {
-        try {
-          return DateFormat('dd/MM/yyyy HH:mm:ss').parse(ctrlNgaySuDung.text);
-        } catch (_) {
-          return DateTime.now();
-        }
-      })(),
-      idDuDan: idDuAn ?? '',
+      ngayVaoSo: AppUtility.parseDateTimeOrNow(ctrlNgayVaoSo.text).toIso8601String(),
+      ngaySuDung: AppUtility.parseDateTimeOrNow(ctrlNgaySuDung.text).toIso8601String(),
+      idDuDan: duAn?.id ?? '',
       idNguonVon: idNguonKinhPhi ?? '',
       kyHieu: ctrlKyHieu.text,
       soKyHieu: ctrlSoKyHieu.text,
@@ -421,15 +494,15 @@ class _AssetDetailState extends State<AssetDetail> {
       soLuong: int.tryParse(ctrlSoLuong.text) ?? 0,
       donViTinh: ctrlDonViTinh.text,
       ghiChu: ctrlGhiChu.text,
-      idDonViBanDau: ctrlDonViBanDau.text,
-      idDonViHienThoi: ctrlDonViHienThoi.text,
+      idDonViBanDau: phongBanBanDau?.id ?? '',
+      idDonViHienThoi: phongBanHienThoi?.id ?? '',
       moTa: ctrlGhiChu.text,
       idCongTy: 'ct001', // Cần lấy từ context hoặc config
-      ngayTao: DateTime.now(),
-      ngayCapNhat: DateTime.now(),
+      ngayTao: DateTime.now().toIso8601String(),
+      ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: 'current_user', // Cần lấy từ auth
       nguoiCapNhat: 'current_user', // Cần lấy từ auth
-      isActive: true,
+      active: true,
     );
   }
 
@@ -437,6 +510,7 @@ class _AssetDetailState extends State<AssetDetail> {
     if (!isEditing) return;
 
     final request = _createAssetRequest();
+    log('message request: ${jsonEncode(request)}');
     final bloc = context.read<AssetManagementBloc>();
     bloc.add(CreateAssetEvent(context, request));
   }

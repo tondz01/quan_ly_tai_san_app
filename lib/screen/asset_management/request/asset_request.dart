@@ -1,4 +1,5 @@
 class AssetRequest {
+  final String id;
   final String idLoaiTaiSan;
   final String tenTaiSan;
   final double nguyenGia;
@@ -6,14 +7,14 @@ class AssetRequest {
   final int kyKhauHaoBanDau;
   final double giaTriThanhLy;
   final String idMoHinhTaiSan;
-  final String phuongPhapKhauHao;
+  final int phuongPhapKhauHao;
   final int soKyKhauHao;
   final int taiKhoanTaiSan;
   final int taiKhoanKhauHao;
   final int taiKhoanChiPhi;
   final String idNhomTaiSan;
-  final DateTime ngayVaoSo;
-  final DateTime ngaySuDung;
+  final String ngayVaoSo;
+  final String ngaySuDung;
   final String idDuDan;
   final String idNguonVon;
   final String kyHieu;
@@ -30,13 +31,14 @@ class AssetRequest {
   final String idDonViHienThoi;
   final String moTa;
   final String idCongTy;
-  final DateTime ngayTao;
-  final DateTime ngayCapNhat;
+  final String ngayTao;
+  final String ngayCapNhat;
   final String nguoiTao;
   final String nguoiCapNhat;
-  final bool isActive;
+  final bool active;
 
   AssetRequest({
+    required this.id,
     required this.idLoaiTaiSan,
     required this.tenTaiSan,
     required this.nguyenGia,
@@ -72,11 +74,12 @@ class AssetRequest {
     required this.ngayCapNhat,
     required this.nguoiTao,
     required this.nguoiCapNhat,
-    required this.isActive,
+    required this.active,
   });
 
   factory AssetRequest.fromJson(Map<String, dynamic> json) {
     return AssetRequest(
+      id: json['id'] ?? '',
       idLoaiTaiSan: json['idLoaiTaiSan'] ?? '',
       tenTaiSan: json['tenTaiSan'] ?? '',
       nguyenGia: (json['nguyenGia'] ?? 0.0).toDouble(),
@@ -90,12 +93,8 @@ class AssetRequest {
       taiKhoanKhauHao: json['taiKhoanKhauHao'] ?? 0,
       taiKhoanChiPhi: json['taiKhoanChiPhi'] ?? 0,
       idNhomTaiSan: json['idNhomTaiSan'] ?? '',
-      ngayVaoSo: json['ngayVaoSo'] != null 
-          ? DateTime.parse(json['ngayVaoSo']) 
-          : DateTime.now(),
-      ngaySuDung: json['ngaySuDung'] != null 
-          ? DateTime.parse(json['ngaySuDung']) 
-          : DateTime.now(),
+      ngayVaoSo: json['ngayVaoSo'] ?? DateTime.now().toIso8601String(),
+      ngaySuDung: json['ngaySuDung'] ?? DateTime.now().toIso8601String(),
       idDuDan: json['idDuDan'] ?? '',
       idNguonVon: json['idNguonVon'] ?? '',
       kyHieu: json['kyHieu'] ?? '',
@@ -112,20 +111,17 @@ class AssetRequest {
       idDonViHienThoi: json['idDonViHienThoi'] ?? '',
       moTa: json['moTa'] ?? '',
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao: json['ngayTao'] != null 
-          ? DateTime.parse(json['ngayTao']) 
-          : DateTime.now(),
-      ngayCapNhat: json['ngayCapNhat'] != null 
-          ? DateTime.parse(json['ngayCapNhat']) 
-          : DateTime.now(),
+      ngayTao: json['ngayTao'] ?? DateTime.now().toIso8601String(),
+      ngayCapNhat: json['ngayCapNhat'] ?? DateTime.now().toIso8601String(),
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
-      isActive: json['isActive'] ?? true,
+      active: json['active'] ?? true,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'idLoaiTaiSan': idLoaiTaiSan,
       'tenTaiSan': tenTaiSan,
       'nguyenGia': nguyenGia,
@@ -139,8 +135,8 @@ class AssetRequest {
       'taiKhoanKhauHao': taiKhoanKhauHao,
       'taiKhoanChiPhi': taiKhoanChiPhi,
       'idNhomTaiSan': idNhomTaiSan,
-      'ngayVaoSo': ngayVaoSo.toIso8601String(),
-      'ngaySuDung': ngaySuDung.toIso8601String(),
+      'ngayVaoSo': ngayVaoSo,
+      'ngaySuDung': ngaySuDung,
       'idDuDan': idDuDan,
       'idNguonVon': idNguonVon,
       'kyHieu': kyHieu,
@@ -157,16 +153,17 @@ class AssetRequest {
       'idDonViHienThoi': idDonViHienThoi,
       'moTa': moTa,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat.toIso8601String(),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'isActive': isActive,
+      'active': active,
     };
   }
 
   // Copy with method for easy updates
   AssetRequest copyWith({
+    String? id,
     String? idLoaiTaiSan,
     String? tenTaiSan,
     double? nguyenGia,
@@ -174,14 +171,14 @@ class AssetRequest {
     int? kyKhauHaoBanDau,
     double? giaTriThanhLy,
     String? idMoHinhTaiSan,
-    String? phuongPhapKhauHao,
+    int? phuongPhapKhauHao,
     int? soKyKhauHao,
     int? taiKhoanTaiSan,
     int? taiKhoanKhauHao,
     int? taiKhoanChiPhi,
     String? idNhomTaiSan,
-    DateTime? ngayVaoSo,
-    DateTime? ngaySuDung,
+    String? ngayVaoSo,
+    String? ngaySuDung,
     String? idDuDan,
     String? idNguonVon,
     String? kyHieu,
@@ -198,13 +195,14 @@ class AssetRequest {
     String? idDonViHienThoi,
     String? moTa,
     String? idCongTy,
-    DateTime? ngayTao,
-    DateTime? ngayCapNhat,
+    String? ngayTao,
+    String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
-    bool? isActive,
+    bool? active,
   }) {
     return AssetRequest(
+      id: id ?? this.id,
       idLoaiTaiSan: idLoaiTaiSan ?? this.idLoaiTaiSan,
       tenTaiSan: tenTaiSan ?? this.tenTaiSan,
       nguyenGia: nguyenGia ?? this.nguyenGia,
@@ -240,7 +238,7 @@ class AssetRequest {
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
-      isActive: isActive ?? this.isActive,
+      active: active ?? this.active,
     );
   }
 }

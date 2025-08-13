@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
@@ -32,12 +33,13 @@ enum FilterStatus {
 }
 
 class DieuDongTaiSanProvider with ChangeNotifier {
-  bool get isLoading => _isLoading;
+  bool get isLoading =>  _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
   get data => _data;
+  get dataAsset => _dataAsset;
   get columns => _columns;
   // get listStatus => _listStatus;
 
@@ -109,9 +111,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   String mainScreen = '';
 
   bool _isShowInput = false;
-  bool _isLoading = false;
   bool _isShowCollapse = true;
   List<DieuDongTaiSanDto>? _data;
+  List<AssetManagementDto>? _dataAsset;
   List<DieuDongTaiSanDto>? _dataPage;
   List<DieuDongTaiSanDto> _filteredData = [];
   DieuDongTaiSanDto? _item;
@@ -258,14 +260,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     onDispose();
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
 
-    _isLoading = true;
     controllerDropdownPage = TextEditingController(text: '10');
 
     getListToolsAndSupplies(context);
   }
 
   void onDispose() {
-    _isLoading = false;
     _data = null;
     _error = null;
     _isShowInput = false;
@@ -281,12 +281,19 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   void getListToolsAndSupplies(BuildContext context) {
-    _isLoading = true;
     Future.microtask(() {
       context.read<DieuDongTaiSanBloc>().add(
         GetListDieuDongTaiSanEvent(context, typeDieuDongTaiSan,idCongTy),
       );
     });
+     try {
+      final bloc = context.read<DieuDongTaiSanBloc>();
+      // Gọi song song, không cần delay
+      bloc.add(GetListDieuDongTaiSanEvent(context, typeDieuDongTaiSan,idCongTy));
+      bloc.add(GetListAssetEvent(context, idCongTy));
+    } catch (e) {
+      log('Error adding AssetManagement events: $e');
+    }
   }
 
   void _updatePagination() {
@@ -385,8 +392,19 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = List.from(_data!);
-      _isLoading = false;
       _updatePagination();
+    }
+    notifyListeners();
+  }
+  getLisTaiSanSuccess(
+      BuildContext context,
+      GetListAssetSuccessState state,
+      ) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataAsset = [];
+    } else {
+      _dataAsset = state.data;
     }
     notifyListeners();
   }

@@ -1,7 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -10,14 +11,18 @@ import '../repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 class AssetTransferMovementTable extends StatefulWidget {
   final bool isEditing;
   final List<ChiTietDieuDongTaiSan> initialDetails;
-  final List<String> assetsList; // Danh sách tên tài sản cho dropdown
+  final List<AssetManagementDto> allAssets;
+  final Function(List<AssetManagementDto>)? onDataChanged;
+  // final List<String> assetsList; // Danh sách tên tài sản cho dropdown
 
   const AssetTransferMovementTable(
     BuildContext context, {
     super.key,
     required this.isEditing,
     required this.initialDetails,
-    required this.assetsList,
+    // required this.assetsList,
+    required this.allAssets,
+    required this.onDataChanged,
   });
 
   @override
@@ -42,27 +47,47 @@ class _AssetTransferMovementTableState
     });
   }
 
-  Future<void> _saveRow(ChiTietDieuDongTaiSan item) async {
-    try {
-      if (item.id == null || item.id!.isEmpty) {
-        // Gọi API tạo mới
-        final newId = await repo.create(item);
-        setState(() {
-          item.id = newId.toString();
-        });
-      } else {
-        // Gọi API cập nhật
-        await repo.update(item.id!, item);
+  // Future<void> _saveRow(ChiTietDieuDongTaiSan item) async {
+  //   try {
+  //     if ( item.id.isEmpty) {
+  //       // Gọi API tạo mới
+  //       setState(() {
+  //         listNewDetails.add(item);
+  //       });
+  //     } else {
+  //       // Gọi API cập nhật
+  //       await repo.update(item.id, item);
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Lỗi khi lưu dữ liệu: $e');
+  //   }
+  // }
+
+  List<AssetManagementDto> getAssetsByChildAssets(
+    List<AssetManagementDto> allAssets,
+    List<ChiTietDieuDongTaiSan> chiTietDieuDong,
+  ) {
+    // Map nhanh id -> Asset
+    final Map<String, AssetManagementDto> idToAsset = {
+      for (final a in allAssets)
+        if (a.id != null) a.id!: a,
+    };
+
+    // Duyệt theo thứ tự child, loại trùng idTaiSan
+    final result = <AssetManagementDto>[];
+    final seen = <String>{};
+    for (final c in chiTietDieuDong) {
+      final id = c.idTaiSan;
+      if (seen.add(id)) {
+        final asset = idToAsset[id];
+        if (asset != null) result.add(asset);
       }
-    } catch (e) {
-      debugPrint('Lỗi khi lưu dữ liệu: $e');
     }
+    return result;
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AssetManagementProvider>(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,112 +99,121 @@ class _AssetTransferMovementTableState
             textAlign: TextAlign.start,
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton.icon(
-              onPressed: widget.isEditing ? _addRow : null,
-              icon: const Icon(Icons.add),
-              label: const Text("Thêm một dòng"),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
-          child: SgEditableTable<ChiTietDieuDongTaiSan>(
-            initialData: movementDetails,
-            createEmptyItem: ChiTietDieuDongTaiSan.empty,
+          child: SgEditableTable<AssetManagementDto>(
+            initialData: getAssetsByChildAssets(
+              widget.allAssets,
+              movementDetails,
+            ),
+            createEmptyItem: AssetManagementDto.empty,
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
             oddRowBackgroundColor: Colors.white,
             evenRowBackgroundColor: Colors.white,
             showVerticalLines: false,
             showHorizontalLines: true,
-            isEditing: widget.isEditing,
-            onDataChanged: (data) {
-              setState(() {
-                movementDetails = data;
-              });
-
-              // Lưu API cho từng item vừa thay đổi
-              // Ở đây giả sử SgEditableTable bắn ra list mới mỗi khi cell thay đổi
-              if (data.isNotEmpty) {
-                _saveRow(data.last);
-              }
-            },
+            addRowText: 'Thêm một dòng',
+            isEditing: widget.isEditing, // Pass the editing state
+            omittedSize: 130,
+            onDataChanged: widget.onDataChanged,
             columns: [
-              SgEditableColumn<ChiTietDieuDongTaiSan>(
+              SgEditableColumn<AssetManagementDto>(
                 field: 'asset',
                 title: 'Tài sản',
                 titleAlignment: TextAlign.center,
-                width: 350,
-                getValue: (item) => item.tenTaiSan,
-                setValue: (item, value) => item.tenTaiSan = value,
+                width: 120,
+                getValue: (item) => item,
+                setValue: (item, value) {
+                  if (value is AssetManagementDto) {
+                    item.id = value.id;
+                    item.tenTaiSan = '${value.id} - ${value.tenTaiSan}';
+                    item.idDonViHienThoi = value.idDonViHienThoi;
+                  }
+                },
                 sortValueGetter: (item) => item.tenTaiSan,
-                isCellEditableDecider: (item, rowIndex) => widget.isEditing,
+                isCellEditableDecider: (item, rowIndex) => true,
                 editor: EditableCellEditor.dropdown,
-
-                onValueChanged: (item, rowIndex, newValue, updateRow) async {
-                  item.tenTaiSan = newValue; // gán giá trị mới
-                  await _saveRow(item);
+                dropdownItems: [
+                  for (var element in widget.allAssets)
+                    DropdownMenuItem<AssetManagementDto>(
+                      value: element,
+                      child: Text('${element.id} - ${element.tenTaiSan}'),
+                    ),
+                ],
+                // displayStringForOption: (item) => item.tenTaiSan ?? '',
+                onValueChanged: (item, rowIndex, newValue, updateRow) {
+                  if (newValue is AssetManagementDto) {
+                    updateRow('don_vi_tinh', newValue.donViTinh);
+                    updateRow('so_luong', newValue.soLuong);
+                    updateRow('tinh_trang', newValue.hienTrang);
+                    updateRow('ghi_chu', newValue.ghiChu ?? '');
+                  }
                 },
               ),
-
-              SgEditableColumn<ChiTietDieuDongTaiSan>(
-                field: 'unit',
+              SgEditableColumn<AssetManagementDto>(
+                field: 'don_vi_tinh',
                 title: 'Đơn vị tính',
                 titleAlignment: TextAlign.center,
-                width: 130,
+                width: 100,
                 getValue: (item) => item.donViTinh,
                 setValue: (item, value) => item.donViTinh = value,
                 sortValueGetter: (item) => item.donViTinh,
-                onValueChanged: (item, rowIndex, newValue, updateRow) async {
-                  await _saveRow(item);
-                },
+                isEditable: false,
               ),
-              SgEditableColumn<ChiTietDieuDongTaiSan>(
-                field: 'quantity',
+              SgEditableColumn<AssetManagementDto>(
+                field: 'so_luong',
                 title: 'Số lượng',
                 titleAlignment: TextAlign.center,
-                width: 120,
+                width: 100,
                 getValue: (item) => item.soLuong,
-                setValue: (item, value) => item.soLuong = value,
-                sortValueGetter:
-                    (item) => int.tryParse(item.soLuong.toString()) ?? 0,
-                onValueChanged: (item, rowIndex, newValue, updateRow) async {
-                  await _saveRow(item);
+                setValue: (item, value) {
+                  item.soLuong = value;
                 },
+                sortValueGetter: (item) => item.soLuong,
+                isEditable: false,
               ),
-              SgEditableColumn<ChiTietDieuDongTaiSan>(
-                field: 'condition',
+              SgEditableColumn<AssetManagementDto>(
+                field: 'tinh_trang',
                 title: 'Tình trạng kỹ thuật',
                 titleAlignment: TextAlign.center,
-                width: 190,
-                getValue: (item) => item.hienTrang,
+                width: 100,
+                getValue: (item) => getHienTrang(item.hienTrang ?? -1),
                 setValue: (item, value) => item.hienTrang = value,
-                sortValueGetter: (item) => item.hienTrang,
-                onValueChanged: (item, rowIndex, newValue, updateRow) async {
-                  await _saveRow(item);
-                },
+                sortValueGetter: (item) => getHienTrang(item.hienTrang ?? -1),
+                isEditable: false,
               ),
-              SgEditableColumn<ChiTietDieuDongTaiSan>(
-                field: 'note',
+              SgEditableColumn<AssetManagementDto>(
+                field: 'ghi_chu',
                 title: 'Ghi chú',
                 titleAlignment: TextAlign.center,
-                width: 150,
+                width: 100,
                 getValue: (item) => item.ghiChu,
                 setValue: (item, value) => item.ghiChu = value,
                 sortValueGetter: (item) => item.ghiChu,
-                onValueChanged: (item, rowIndex, newValue, updateRow) async {
-                  await _saveRow(item);
-                },
+                isEditable: false,
               ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  String getHienTrang(int hienTrang) {
+    log('hienTrang: $hienTrang');
+    switch (hienTrang) {
+      case 0:
+        return 'Đang sử dụng';
+      case 1:
+        return 'Chờ sử lý';
+      case 2:
+        return 'Không sử dụng';
+      case 3:
+        return 'Hỏng';
+      default:
+        return '';
+    }
   }
 }

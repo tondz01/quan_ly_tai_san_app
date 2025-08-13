@@ -539,7 +539,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.preparer_initialed'.tr,
                 value: isPreparerInitialed,
                 isEditing: isEditing,
-                isEnable: false,
+                isDisabled: false,
                 onChanged: (newValue) {
                   setState(() {
                     isPreparerInitialed = newValue;
@@ -550,7 +550,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.require_manager_approval'.tr,
                 value: isRequireManagerApproval,
                 isEditing: isEditing,
-                isEnable: false,
+                isDisabled: false,
                 onChanged: (newValue) {
                   setState(() {
                     isRequireManagerApproval = newValue;
@@ -562,7 +562,7 @@ class _ToolAndMaterialTransferDetailState
                   label: 'at.deputy_confirmed'.tr,
                   value: isDeputyConfirmed,
                   isEditing: isEditing,
-                  isEnable: false,
+                  isDisabled: false,
                   onChanged: (newValue) {
                     setState(() {
                       isDeputyConfirmed = newValue;

@@ -76,8 +76,8 @@ class _LoginInputViewState extends State<LoginInputView> {
       // Validate password
       if (password.isEmpty) {
         _passwordError = 'Vui lòng nhập mật khẩu';
-      } else if (password.length < 6) {
-        _passwordError = 'Mật khẩu phải có ít nhất 6 ký tự';
+      } else if (password.length < 4) {
+        _passwordError = 'Mật khẩu phải có ít nhất 4 ký tự';
       } else {
         _passwordError = null;
       }

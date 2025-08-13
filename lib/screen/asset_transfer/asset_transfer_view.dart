@@ -77,13 +77,27 @@ class _AssetTransferViewState extends State<AssetTransferView> {
     return BlocConsumer<DieuDongTaiSanBloc, DieuDongTaiSanState>(
       listener: (context, state) {
         if (state is DieuDongTaiSanLoadingState) {
-        } else if (state is GetListDieuDongTaiSanSuccessState) {
+        }
+        if (state is GetListDieuDongTaiSanSuccessState) {
           log('GetListAssetTransferSuccessState');
           context.read<DieuDongTaiSanProvider>().getListDieuDongTaiSanSuccess(
             context,
             state,
           );
-        } else if (state is GetListDieuDongTaiSanFailedState) {}
+        } 
+        if (state is GetListDieuDongTaiSanFailedState) {
+          log('GetListDieuDongTaiSanFailedState');
+        }
+        if (state is GetListAssetSuccessState) {
+          log('GetListAssetSuccessState');
+          context.read<DieuDongTaiSanProvider>().getLisTaiSanSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListAssetFailedState) {
+          log('GetListAssetFailedState');
+        }
       },
       builder: (context, state) {
         return ChangeNotifierProvider.value(
@@ -110,6 +124,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     onNew: () {
                       // provider.onChangeDetail(context, item)
                       // provider.onChangeDetailAssetTransfer(null);
+                      provider.onChangeDetailDieuDongTaiSan(null);
                     },
                     mainScreen: _getScreenTitle(),
                     subScreen: provider.subScreen,

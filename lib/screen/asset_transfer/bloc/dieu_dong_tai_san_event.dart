@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+
 abstract class DieuDongTaiSanEvent extends Equatable {
   const DieuDongTaiSanEvent();
 }
@@ -9,8 +10,22 @@ class GetListDieuDongTaiSanEvent extends DieuDongTaiSanEvent {
   final int typeAssetTransfer;
   final String idCongTy;
 
-  const GetListDieuDongTaiSanEvent(this.context, this.typeAssetTransfer, this.idCongTy);
+  const GetListDieuDongTaiSanEvent(
+    this.context,
+    this.typeAssetTransfer,
+    this.idCongTy,
+  );
 
   @override
   List<Object?> get props => [context, typeAssetTransfer];
+}
+
+class GetListAssetEvent extends DieuDongTaiSanEvent {
+  final BuildContext context;
+  final String idCongTy;
+
+  const GetListAssetEvent(this.context, this.idCongTy);
+
+  @override
+  List<Object?> get props => [context, idCongTy];
 }

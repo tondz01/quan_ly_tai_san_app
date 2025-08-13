@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:se_gay_components/common/sg_datetime_input_button.dart';
 // import 'package:se_gay_components/common/sg_datetime_input_button.dart';
 
 class CmFormDate extends StatefulWidget {
@@ -72,27 +73,27 @@ class _CmFormDateState extends State<CmFormDate> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // SGDateTimeInputButton(
-                //   controller: widget.controller,
-                //   value: widget.value,
-                //   onChanged: (dt) {
-                //     widget.onChanged?.call(dt);
-                //   },
-                //   width: 260,
-                //   height: 40,
-                //   initWithNow: widget.initWithNow,
-                //   enable: widget.enable,
-                //   // dateFormat: 'dd/MM/yyyy',
-                //   // dateTimeFormat: 'dd/MM/yyyy HH:mm',
-                //   allowTyping: widget.allowTyping,
-                //   showTimeSection: widget.showTimeSection,
-                //   timeOptional: widget.timeOptional,
-                //   includeSeconds: widget.includeSeconds,
-                //   initialIncludeTime: widget.initialIncludeTime,
-                //   colorBorder: SGAppColors.colorBorderGray,
-                //   colorBorderFocus: SGAppColors.info500,
-                //   showUnderlineBorderOnly: true,
-                // ),
+                SGDateTimeInputButton(
+                  controller: widget.controller,
+                  value: widget.value,
+                  onChanged: (dt) {
+                    widget.onChanged?.call(dt);
+                  },
+                  width: 260,
+                  height: 40,
+                  initWithNow: widget.initWithNow,
+                  enable: widget.enable,
+                  // dateFormat: 'dd/MM/yyyy',
+                  // dateTimeFormat: 'dd/MM/yyyy HH:mm',
+                  allowTyping: widget.allowTyping,
+                  showTimeSection: widget.showTimeSection,
+                  timeOptional: widget.timeOptional,
+                  includeSeconds: widget.includeSeconds,
+                  initialIncludeTime: widget.initialIncludeTime,
+                  colorBorder: SGAppColors.colorBorderGray,
+                  colorBorderFocus: SGAppColors.info500,
+                  showUnderlineBorderOnly: true,
+                ),
 
                 if (hasError)
                   Padding(

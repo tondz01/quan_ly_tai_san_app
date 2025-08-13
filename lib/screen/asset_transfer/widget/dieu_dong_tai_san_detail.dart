@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -13,8 +14,10 @@ import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
@@ -84,6 +87,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
   String? _selectedFilePath;
   String idCongTy = 'CT001';
   int typeTransfer = 1;
+  List<ChiTietDieuDongTaiSan> listNewDetails = [];
 
   late DieuDongTaiSanDto? item;
 
@@ -251,6 +255,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
   // Method để làm mới widget
   void _refreshWidget() {
     setState(() {
+      listNewDetails.clear();
       // Reset item từ provider
       item = widget.provider.item;
       log('message item: $item');
@@ -540,7 +545,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 label: 'at.preparer_initialed'.tr,
                 value: isPreparerInitialed,
                 isEditing: isEditing,
-                isEnable: false,
+                isDisabled: false,
                 onChanged: (newValue) {
                   setState(() {
                     isPreparerInitialed = newValue;
@@ -551,7 +556,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 label: 'at.require_manager_approval'.tr,
                 value: isRequireManagerApproval,
                 isEditing: isEditing,
-                isEnable: false,
+                isDisabled: false,
                 onChanged: (newValue) {
                   setState(() {
                     isRequireManagerApproval = newValue;
@@ -563,7 +568,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                   label: 'at.deputy_confirmed'.tr,
                   value: isDeputyConfirmed,
                   isEditing: isEditing,
-                  isEnable: false,
+                  isDisabled: false,
                   onChanged: (newValue) {
                     setState(() {
                       isDeputyConfirmed = newValue;
@@ -661,7 +666,34 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 context,
                 isEditing: true,
                 initialDetails: item?.chiTietDieuDongTaiSans ?? [],
-                assetsList: ['xin chao','hello'],
+                allAssets: widget.provider.dataAsset ?? [],
+                onDataChanged: (data) {
+                  listNewDetails =
+                      data
+                          .map(
+                            (e) => ChiTietDieuDongTaiSan(
+                              id: UUIDGenerator.generateWithFormat('CTDD****'),
+                              idDieuDongTaiSan: controllerSubject.text,
+                              soQuyetDinh: item?.soQuyetDinh ?? '',
+                              tenPhieu: controllerDocumentName.text,
+                              idTaiSan: e.id ?? '',
+                              tenTaiSan: e.tenTaiSan ?? '',
+                              donViTinh: e.donViTinh ?? '',
+                              hienTrang: e.hienTrang ?? 0,
+                              soLuong: e.soLuong ?? 0,
+                              ghiChu: e.ghiChu ?? '',
+                              ngayTao: e.ngayTao ?? '',
+                              ngayCapNhat: e.ngayCapNhat ?? '',
+                              nguoiTao: item?.nguoiTao ?? '',
+                              nguoiCapNhat: item?.nguoiCapNhat ?? '',
+                              isActive: true,
+                            ),
+                          )
+                          .toList();
+
+                  log('listNewDetails: ${listNewDetails.length}');
+                  log('listNewDetails data: ${jsonEncode(listNewDetails)}');
+                },
               ),
 
               SizedBox(height: 10),

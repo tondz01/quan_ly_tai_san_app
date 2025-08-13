@@ -532,7 +532,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.unit_confirm'.tr,
           value: isUnitConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isDisabled: true,
           onChanged: (newValue) {
             setState(() {
               isUnitConfirm = newValue;
@@ -555,7 +555,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.deliverer_confirm'.tr,
           value: isDelivererConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isDisabled: true,
           onChanged: (newValue) {
             setState(() {
               isDelivererConfirm = newValue;
@@ -578,7 +578,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.receiver_confirm'.tr,
           value: isReceiverConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isDisabled: true,
           onChanged: (newValue) {
             setState(() {
               isReceiverConfirm = newValue;
@@ -601,7 +601,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.representative_unit_confirm'.tr,
           value: isRepresentativeUnitConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isDisabled: true,
           onChanged: (newValue) {
             setState(() {
               isRepresentativeUnitConfirm = newValue;
