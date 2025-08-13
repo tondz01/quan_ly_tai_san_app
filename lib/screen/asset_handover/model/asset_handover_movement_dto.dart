@@ -1,55 +1,55 @@
-class MovementDetailDto {
+class AssetHandoverMovementDto {
   String? id;
-  String? assetId;
+  String? handoverId;
   String? name;
   String? measurementUnit;
   String? quantity;
   String? setCondition;
-  String? note;
+  String? countryOfOrigin;
 
-  MovementDetailDto({
+  AssetHandoverMovementDto({
     this.id,
-    this.assetId,
+    this.handoverId,
     this.name,
     this.measurementUnit,
     this.quantity,
     this.setCondition,
-    this.note,
+    this.countryOfOrigin,
   });
 
-  factory MovementDetailDto.fromJson(Map<String, dynamic> json) {
-    return MovementDetailDto(
+  factory AssetHandoverMovementDto.fromJson(Map<String, dynamic> json) {
+    return AssetHandoverMovementDto(
       id: json['id'],
-      assetId: json['assetId'],
+      handoverId: json['handoverId'],
       name: json['name'],
       measurementUnit: json['measurementUnit'],
       quantity: json['quantity'],
       setCondition: json['setCondition'],
-      note: json['note'],
+      countryOfOrigin: json['countryOfOrigin'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'assetId': assetId,
+      'handoverId': handoverId,
       'name': name,
       'measurementUnit': measurementUnit,
       'quantity': quantity,
       'setCondition': setCondition,
-      'note': note,
+      'countryOfOrigin': countryOfOrigin,
     };
-  } 
+  }
 
-  factory MovementDetailDto.empty() {
-    return MovementDetailDto(
+  factory AssetHandoverMovementDto.empty() {
+    return AssetHandoverMovementDto(
       id: '',
-      assetId: '',
+      handoverId: '',
       name: '',
       measurementUnit: '',
       quantity: '',
       setCondition: '',
-      note: '',
+      countryOfOrigin: '',
     );
   }
 }

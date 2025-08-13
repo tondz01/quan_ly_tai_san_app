@@ -12,10 +12,6 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/asset_transfer_movement_table.dart';
@@ -25,6 +21,11 @@ import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+
+import '../../asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import '../../asset_transfer/bloc/dieu_dong_tai_san_event.dart';
+import '../../asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 class ToolAndMaterialTransferDetail extends StatefulWidget {
   final bool isEditing;
@@ -823,9 +824,9 @@ class _ToolAndMaterialTransferDetailState
   void _callGetListAssetHandover() {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
-      );
+      // assetHandoverBloc.add(
+      //   GetListDieuDongTaiSanEvent(context: context,typeAssetTransfer:1, idCongTy: idCongTy),
+      // );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

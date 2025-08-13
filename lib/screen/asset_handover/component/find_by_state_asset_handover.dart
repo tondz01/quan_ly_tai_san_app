@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 
-import '../provider/dieu_dong_tai_san_provider.dart';
-
-class RowFindByStatus extends StatelessWidget {
-  const RowFindByStatus({super.key, required this.provider});
-  final DieuDongTaiSanProvider provider;
+class FindByStateAssetHandover extends StatelessWidget {
+  const FindByStateAssetHandover({super.key, required this.provider});
+  final AssetHandoverProvider provider;
 
   @override
   Widget build(BuildContext context) {
@@ -20,49 +19,52 @@ class RowFindByStatus extends StatelessWidget {
 class _FilterCheckboxes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<DieuDongTaiSanProvider>(context);
+    final provider = Provider.of<AssetHandoverProvider>(context);
     
     // Tạo map filter states từ provider
     final filterStates = {
       'all': provider.isShowAll,
       'draft': provider.isShowDraft,
-      'waitingForConfirmation': provider.isShowWaitingForConfirmation,
-      'confirmed': provider.isShowConfirmed,
+      'ready': provider.isShowReady,
+      'confirm': provider.isShowConfirm,
       'browser': provider.isShowBrowser,
-      'approve': provider.isShowApprove,
-      'reject': provider.isShowReject,
-      'cancel': provider.isShowCancel,
       'complete': provider.isShowComplete,
+      'cancel': provider.isShowCancel,
     };
 
     // Tạo map filter counts từ provider
     final filterCounts = {
       'all': provider.allCount,
       'draft': provider.draftCount,
-      'waitingForConfirmation': provider.waitingForConfirmationCount,
-      'confirmed': provider.confirmedCount,
+      'ready': provider.readyCount,
+      'confirm': provider.confirmCount,
       'browser': provider.browserCount,
-      'approve': provider.approveCount,
-      'reject': provider.rejectCount,
-      'cancel': provider.cancelCount,
       'complete': provider.completeCount,
+      'cancel': provider.cancelCount,
     };
 
     // Tạo map filter colors từ FilterStatus enum
     final filterColors = {
       'all': FilterStatus.all.activeColor,
       'draft': FilterStatus.draft.activeColor,
-      'waitingForConfirmation': FilterStatus.waitingForConfirmation.activeColor,
-      'confirmed': FilterStatus.confirmed.activeColor,
+      'ready': FilterStatus.ready.activeColor,
+      'confirm': FilterStatus.confirm.activeColor,
       'browser': FilterStatus.browser.activeColor,
-      'approve': FilterStatus.approve.activeColor,
-      'reject': FilterStatus.reject.activeColor,
-      'cancel': FilterStatus.cancel.activeColor,
       'complete': FilterStatus.complete.activeColor,
+      'cancel': FilterStatus.cancel.activeColor,
     };
 
     // Tạo options sử dụng FilterOptionBuilder
-    final options = FilterOptionBuilder.createAssetTransferOptionsWithCount(
+    final options = FilterOptionBuilder.createCustomOptionsWithCount(
+      options: [
+        {'id': 'all', 'label': 'Tất cả'},
+        {'id': 'draft', 'label': 'Nháp'},
+        {'id': 'ready', 'label': 'Sẵn sàng'},
+        {'id': 'confirm', 'label': 'Xác nhận'},
+        {'id': 'browser', 'label': 'Trình duyệt'},
+        {'id': 'complete', 'label': 'Hoàn thành'},
+        {'id': 'cancel', 'label': 'Hủy'},
+      ],
       filterStates: filterStates,
       filterCounts: filterCounts,
       filterColors: filterColors,
@@ -76,26 +78,20 @@ class _FilterCheckboxes extends StatelessWidget {
           case 'draft':
             status = FilterStatus.draft;
             break;
-          case 'waitingForConfirmation':
-            status = FilterStatus.waitingForConfirmation;
+          case 'ready':
+            status = FilterStatus.ready;
             break;
-          case 'confirmed':
-            status = FilterStatus.confirmed;
+          case 'confirm':
+            status = FilterStatus.confirm;
             break;
           case 'browser':
             status = FilterStatus.browser;
             break;
-          case 'approve':
-            status = FilterStatus.approve;
-            break;
-          case 'reject':
-            status = FilterStatus.reject;
+          case 'complete':
+            status = FilterStatus.complete;
             break;
           case 'cancel':
             status = FilterStatus.cancel;
-            break;
-          case 'complete':
-            status = FilterStatus.complete;
             break;
         }
         
@@ -105,12 +101,14 @@ class _FilterCheckboxes extends StatelessWidget {
       },
     );
 
-    return CommonFilterCheckbox(
-      options: options,
-      checkColor: Colors.white,
-      textColor: Colors.black87,
-      mainAxisAlignment: MainAxisAlignment.end,
-      showCount: true,
+    return Expanded(
+      child: CommonFilterCheckbox(
+        options: options,
+        checkColor: Colors.white,
+        textColor: Colors.black87,
+        mainAxisAlignment: MainAxisAlignment.end,
+        showCount: true,
+      ),
     );
   }
 }

@@ -1,5 +1,5 @@
 class ChiTietDieuDongTaiSan {
-  final String id;
+  late final String id;
   final String idDieuDongTaiSan;
   final String soQuyetDinh;
   final String tenPhieu;

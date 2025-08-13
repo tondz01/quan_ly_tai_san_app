@@ -2,29 +2,26 @@
 
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
-
+import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/staff/staf_provider.dart/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 import '../bloc/dieu_dong_tai_san_bloc.dart';
+import '../bloc/dieu_dong_tai_san_event.dart';
 import '../bloc/dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanDetail extends StatefulWidget {
@@ -45,10 +42,9 @@ class DieuDongTaiSanDetail extends StatefulWidget {
 
 // GlobalKey để truy cập widget từ bên ngoài
 final GlobalKey<_AssetTransferDetailState> assetTransferDetailKey =
-GlobalKey<_AssetTransferDetailState>();
+    GlobalKey<_AssetTransferDetailState>();
 
 class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
-
   late TextEditingController controllerSubject = TextEditingController();
   late TextEditingController controllerDocumentName = TextEditingController();
   late TextEditingController controllerDeliveringUnit = TextEditingController();
@@ -57,15 +53,15 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
   late TextEditingController controllerProposingUnit = TextEditingController();
   late TextEditingController controllerQuantity = TextEditingController();
   late TextEditingController controllerDepartmentApproval =
-  TextEditingController();
+      TextEditingController();
   late TextEditingController controllerEffectiveDate = TextEditingController();
   late TextEditingController controllerEffectiveDateTo =
-  TextEditingController();
+      TextEditingController();
   late TextEditingController controllerApprover = TextEditingController();
   late TextEditingController controllerDeliveryLocation =
-  TextEditingController();
+      TextEditingController();
   late TextEditingController controllerViewerDepartments =
-  TextEditingController();
+      TextEditingController();
   late TextEditingController controllerViewerUsers = TextEditingController();
   late TextEditingController controllerReason = TextEditingController();
   late TextEditingController controllerBase = TextEditingController();
@@ -87,6 +83,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
   String? _selectedFileName;
   String? _selectedFilePath;
   String idCongTy = 'CT001';
+  int typeTransfer = 1;
 
   late DieuDongTaiSanDto? item;
 
@@ -148,6 +145,8 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
 
     return newValidationErrors.isEmpty;
   }
+
+  late NhanVienProvider nhanVienProvider;
 
   @override
   void initState() {
@@ -212,16 +211,21 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
         !_controllersInitialized) {
       controllerProposingUnit.text = proposingUnit!;
     }
-
-    // itemsRequester =
-    //     users
-    //         .map(
-    //           (user) => DropdownMenuItem<String>(
-    //         value: user.id ?? '',
-    //         child: Text(user.name ?? ''),
-    //       ),
-    //     )
-    //         .toList();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      nhanVienProvider = Provider.of<NhanVienProvider>(context, listen: false);
+      final nhanViens = await nhanVienProvider.fetchNhanViens(); // Lấy list
+      setState(() {
+        itemsRequester =
+            nhanViens
+                .map(
+                  (user) => DropdownMenuItem<String>(
+                    value: user.id ?? '',
+                    child: Text(user.hoTen ?? ''),
+                  ),
+                )
+                .toList();
+      });
+    });
   }
 
   @override
@@ -307,7 +311,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
     ),
   ];
 
-  late final List<DropdownMenuItem<String>> itemsRequester;
+  late List<DropdownMenuItem<String>> itemsRequester = [];
 
   @override
   void dispose() {
@@ -421,26 +425,26 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                         context: context,
                         builder:
                             (context) => AlertDialog(
-                          title: Text('Xác nhận hủy'),
-                          content: Text(
-                            'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed:
-                                  () => Navigator.pop(
-                                context,
-                              ), // Close dialog
-                              child: Text('Không'),
+                              title: Text('Xác nhận hủy'),
+                              content: Text(
+                                'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed:
+                                      () => Navigator.pop(
+                                        context,
+                                      ), // Close dialog
+                                  child: Text('Không'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context); // Close dialog
+                                  },
+                                  child: Text('Có'),
+                                ),
+                              ],
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Close dialog
-                              },
-                              child: Text('Có'),
-                            ),
-                          ],
-                        ),
                       );
                     },
                   ),
@@ -596,12 +600,12 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 controller: controllerEffectiveDate,
                 isEditing: isEditing,
                 textContent:
-                isEditing
-                    ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                    : item?.tggnTuNgay ??
-                    (isEditing
+                    isEditing
                         ? AppUtility.formatDateDdMmYyyy(DateTime.now())
-                        : ''),
+                        : item?.tggnTuNgay ??
+                            (isEditing
+                                ? AppUtility.formatDateDdMmYyyy(DateTime.now())
+                                : ''),
                 fieldName: 'effectiveDate',
                 validationErrors: _validationErrors,
               ),
@@ -621,10 +625,10 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
                 isDropdown: true,
                 items: itemsRequester,
                 onChanged: (value) {
-                  var selectedUser = users.firstWhere(
-                        (user) => user.id == value,
-                  );
-                  controllerApprover.text = selectedUser.name ?? '';
+                  // var selectedUser = users.firstWhere(
+                  //   (user) => user.id == value,
+                  // );
+                  // controllerApprover.text = selectedUser.name ?? '';
                 },
                 fieldName: 'approver',
                 validationErrors: _validationErrors,
@@ -653,10 +657,11 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
               ),
 
               // const SizedBox(height: 20),
-              assetTransferMovementTable(
+              AssetTransferMovementTable(
                 context,
-                item?.chiTietDieuDongTaiSan ?? [],
-                isEditing,
+                isEditing: true,
+                initialDetails: item?.chiTietDieuDongTaiSans ?? [],
+                assetsList: ['xin chao','hello'],
               ),
 
               SizedBox(height: 10),
@@ -666,6 +671,21 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
         ),
       ],
     );
+  }
+
+  String convertStringToIso(String dateString) {
+    // Giả sử dateString đang ở dạng "dd/MM/yyyy"
+    final parts = dateString.split('/');
+    final day = int.parse(parts[0]);
+    final month = int.parse(parts[1]);
+    final year = int.parse(parts[2]);
+
+    final date = DateTime(year, month, day);
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+    ).toIso8601String().split('.').first;
   }
 
   Future<void> _uploadWordDocument() async {
@@ -731,11 +751,30 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
       final currentEffectiveDateTo = controllerEffectiveDateTo.text;
       final currentApprover = controllerApprover.text;
       final currentDeliveryLocation = controllerDeliveryLocation.text;
+      final proposingUnit = controllerProposingUnit.text;
 
       // Create an AssetTransferDto with the form data
-      final DieuDongTaiSan savedItem = DieuDongTaiSan(
+      final DieuDongTaiSanDto savedItem = DieuDongTaiSanDto(
         id: item?.id,
-
+        // Keep original ID if editing an existing item
+        tenPhieu: currentDocumentName,
+        trichYeu: currentSubject,
+        idDonViGiao: currentDeliveringUnit,
+        idDonViNhan: currentReceivingUnit,
+        idNguoiDeNghi: currentRequester,
+        nguoiLapPhieuKyNhay: isPreparerInitialed,
+        quanTrongCanXacNhan: isRequireManagerApproval,
+        phoPhongXacNhan: isDeputyConfirmed,
+        idTrinhDuyetCapPhong: currentDepartmentApproval,
+        tggnTuNgay: convertStringToIso(currentEffectiveDate),
+        tggnDenNgay: convertStringToIso(currentEffectiveDateTo),
+        idTrinhDuyetGiamDoc: currentApprover,
+        trangThai: item?.trangThai ?? 1,
+        diaDiemGiaoNhan: currentDeliveryLocation,
+        // Include document file information
+        duongDanFile: _selectedFilePath,
+        tenFile: _selectedFileName,
+        idDonViDeNghi: proposingUnit,
       );
 
       final provider = Provider.of<DieuDongTaiSanProvider>(
@@ -744,7 +783,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
       );
 
       if (item == null) {
-        await provider.insertItem(savedItem);
+        await provider.createDieuDongTaiSan(savedItem);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Tạo phiếu điều chuyển thành công'),
@@ -752,7 +791,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
           ),
         );
       } else {
-        await provider.updateItem(savedItem,savedItem.id.toString());
+        provider.updateItem(savedItem);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Cập nhật phiếu điều chuyển thành công'),
@@ -801,7 +840,7 @@ class _AssetTransferDetailState extends State<DieuDongTaiSanDetail> {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
       assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+        GetListDieuDongTaiSanEvent(context, typeTransfer, idCongTy),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

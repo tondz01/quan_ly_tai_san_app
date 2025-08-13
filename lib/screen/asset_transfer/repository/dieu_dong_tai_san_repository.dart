@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:flutter/foundation.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';
@@ -22,14 +23,17 @@ class DieuDongTaiSanRepository {
         receiveTimeout: const Duration(seconds: 10),
       ),
     );
+    _chiTietDieuDongTaiSanRepository = ChiTietDieuDongTaiSanRepository();
 
     // Bỏ qua chứng chỉ SSL
-    (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-      final client = HttpClient();
-      client.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-      return client;
-    };
+    // if (!kIsWeb) {
+    //   (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+    //     final client = HttpClient();
+    //     client.badCertificateCallback =
+    //         (X509Certificate cert, String host, int port) => true;
+    //     return client;
+    //   };
+    // }
   }
 
   Future<List<DieuDongTaiSanDto>> getAll(String idCongTy, int type) async {
@@ -46,7 +50,7 @@ class DieuDongTaiSanRepository {
     await Future.wait(
       dieuDongTaiSans.map((dieuDongTaiSan) async {
         dieuDongTaiSan
-            .chiTietDieuDongTaiSan = await _chiTietDieuDongTaiSanRepository
+            .chiTietDieuDongTaiSans = await _chiTietDieuDongTaiSanRepository
             .getAll(dieuDongTaiSan.id.toString());
       }),
     );
@@ -61,7 +65,7 @@ class DieuDongTaiSanRepository {
         await _chiTietDieuDongTaiSanRepository.getAll(
           dieuDongTaiSan.id.toString(),
         );
-    dieuDongTaiSan.chiTietDieuDongTaiSan = _chiTietDieuDongTS;
+    dieuDongTaiSan.chiTietDieuDongTaiSans = _chiTietDieuDongTS;
     return dieuDongTaiSan;
   }
 

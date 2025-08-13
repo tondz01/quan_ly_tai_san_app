@@ -66,7 +66,7 @@ class DieuDongTaiSanDto {
   String? duongDanFile;
   String? tenFile;
   String? ngayKy;
-  List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSan;
+  List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
 
   DieuDongTaiSanDto({
     this.id,
@@ -114,6 +114,7 @@ class DieuDongTaiSanDto {
     this.duongDanFile,
     this.tenFile,
     this.ngayKy,
+    this.chiTietDieuDongTaiSans
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {

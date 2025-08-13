@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/chi_tiet_dieu_dong_tai_san.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+
+import '../../../asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import '../../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 abstract class AssetHandoverColumns {
   static Color getStatusColor(int status) {

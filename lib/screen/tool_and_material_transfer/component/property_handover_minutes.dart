@@ -4,11 +4,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
+import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'popup/columns_asset_handover.dart';
 
 class PropertyHandoverMinutes {
@@ -387,7 +387,7 @@ class _PropertyHandoverMinutesContentState
         title: 'Chi tiết bàn giao',
         cellBuilder:
             (item) => AssetHandoverColumns.buildMovementDetails(
-              item.chiTietDieuDongTaiSan ?? [],
+              item.chiTietDieuDongTaiSans ?? [],
             ),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,

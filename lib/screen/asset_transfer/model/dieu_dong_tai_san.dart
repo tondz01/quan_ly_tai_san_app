@@ -10,8 +10,8 @@ class DieuDongTaiSan {
   bool? phoPhongXacNhan;
   String? idDonViDeNghi;
   String? idTrinhDuyetCapPhong;
-  DateTime? tggnTuNgay;
-  DateTime? tggnDenNgay;
+  String? tggnTuNgay;
+  String? tggnDenNgay;
   String? idTrinhDuyetGiamDoc;
   String? diaDiemGiaoNhan;
   String? idPhongBanXemPhieu;
@@ -25,8 +25,8 @@ class DieuDongTaiSan {
   String? themDongTrong;
   int? trangThai;
   String? idCongTy;
-  DateTime? ngayTao;
-  DateTime? ngayCapNhat;
+  String? ngayTao;
+  String? ngayCapNhat;
   String? nguoiTao;
   String? nguoiCapNhat;
   bool? coHieuLuc;
@@ -91,8 +91,8 @@ class DieuDongTaiSan {
       phoPhongXacNhan: json['phoPhongXacNhan'],
       idDonViDeNghi: json['idDonViDeNghi'],
       idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'],
-      tggnTuNgay: json['tggnTuNgay'] != null ? DateTime.parse(json['tggnTuNgay']) : null,
-      tggnDenNgay: json['tggnDenNgay'] != null ? DateTime.parse(json['tggnDenNgay']) : null,
+      tggnTuNgay: json['tggnTuNgay'],
+      tggnDenNgay: json['tggnDenNgay'],
       idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'],
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       idPhongBanXemPhieu: json['idPhongBanXemPhieu'],
@@ -106,8 +106,8 @@ class DieuDongTaiSan {
       themDongTrong: json['themDongTrong'],
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'] != null ? DateTime.parse(json['ngayTao']) : null,
-      ngayCapNhat: json['ngayCapNhat'] != null ? DateTime.parse(json['ngayCapNhat']) : null,
+      ngayTao: json['ngayTao'],
+      ngayCapNhat: json['ngayCapNhat'],
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],
@@ -133,8 +133,8 @@ class DieuDongTaiSan {
       'phoPhongXacNhan': phoPhongXacNhan,
       'idDonViDeNghi': idDonViDeNghi,
       'idTrinhDuyetCapPhong': idTrinhDuyetCapPhong,
-      'tggnTuNgay': tggnTuNgay?.toIso8601String(),
-      'tggnDenNgay': tggnDenNgay?.toIso8601String(),
+      'tggnTuNgay': tggnTuNgay,
+      'tggnDenNgay': tggnDenNgay,
       'idTrinhDuyetGiamDoc': idTrinhDuyetGiamDoc,
       'diaDiemGiaoNhan': diaDiemGiaoNhan,
       'idPhongBanXemPhieu': idPhongBanXemPhieu,
@@ -148,8 +148,8 @@ class DieuDongTaiSan {
       'themDongTrong': themDongTrong,
       'trangThai': trangThai,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String(),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'coHieuLuc': coHieuLuc,

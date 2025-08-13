@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+
+import '../../screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 class ContractPage {
   static Widget assetHandoverPage(DieuDongTaiSanDto _dieuDongTaiSan) {
@@ -122,31 +123,31 @@ class ContractPage {
               ),
               for (
                 int i = 0;
-                i < _dieuDongTaiSan.chiTietDieuDongTaiSan!.length;
+                i < _dieuDongTaiSan.chiTietDieuDongTaiSans!.length;
                 i++
               )
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
                     _tableCell(
-                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].tenTaiSan ?? "",
+                      _dieuDongTaiSan.chiTietDieuDongTaiSans![i].tenTaiSan ?? "",
                     ),
                     _tableCell(
-                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].idTaiSan
+                      _dieuDongTaiSan.chiTietDieuDongTaiSans![i].idTaiSan
                               .toString() ??
                           "",
                     ),
 
                     _tableCell(
-                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].donViTinh ?? "",
+                      _dieuDongTaiSan.chiTietDieuDongTaiSans![i].donViTinh ?? "",
                     ),
                     _tableCell(
-                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].soLuong
+                      _dieuDongTaiSan.chiTietDieuDongTaiSans![i].soLuong
                               .toString() ??
                           "",
                     ),
                     _tableCell(
-                      _dieuDongTaiSan.chiTietDieuDongTaiSan![i].hienTrang ?? "",
+                      _dieuDongTaiSan.chiTietDieuDongTaiSans![i].hienTrang ?? "",
                     ),
                   ],
                 ),
@@ -171,8 +172,8 @@ class ContractPage {
     );
   }
 
-  static Widget assetMovePage(AssetTransferDto _assetTransferDto) {
-    int type = _assetTransferDto.type ?? 0;
+  static Widget assetMovePage(DieuDongTaiSanDto _assetTransferDto) {
+    int type = _assetTransferDto.loai ?? 0;
     print("Type: $type");
 
     final String typeAssetTransfer =
@@ -240,8 +241,8 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${_assetTransferDto.decisionNumber}, ${_assetTransferDto.decisionDate} của Giám đốc Công ty V/v ${typeAssetTransfer} từ ${_assetTransferDto.deliveringUnit}  đến  ${_assetTransferDto.receivingUnit}\n"
-            "Hôm nay, ${_assetTransferDto.decisionDate}, tại  ${_assetTransferDto.receivingUnit}\n",
+            "Căn cứ vào Quyết định điều động số ${_assetTransferDto.soQuyetDinh}, ${_assetTransferDto.ngayKy} của Giám đốc Công ty V/v ${typeAssetTransfer} từ ${_assetTransferDto.tenDonViGiao}  đến  ${_assetTransferDto.tenDonViNhan}\n"
+            "Hôm nay, ${_assetTransferDto.ngayKy}, tại  ${_assetTransferDto.tenDonViGiao}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
           Text(
@@ -254,14 +255,14 @@ class ContractPage {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "1. Ông (bà):\t\t${_assetTransferDto.requester!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${_assetTransferDto.proposingUnit}",
+                "1. Ông (bà):\t\t${_assetTransferDto.tenNguoiDeNghi!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${_assetTransferDto.tenDonViDeNghi}",
               ),
             ],
           ),
           const SizedBox(height: 16),
 
           Text(
-            "Tiến hành điều động tài sản tại  ${_assetTransferDto.receivingUnit} cụ thể như sau:",
+            "Tiến hành điều động tài sản tại  ${_assetTransferDto.tenDonViGiao} cụ thể như sau:",
           ),
           const SizedBox(height: 8),
 
@@ -289,27 +290,27 @@ class ContractPage {
               ),
               for (
                 int i = 0;
-                i < _assetTransferDto.movementDetails!.length;
+                i < _assetTransferDto.chiTietDieuDongTaiSans!.length;
                 i++
               )
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].name ?? "",
+                      _assetTransferDto.chiTietDieuDongTaiSans![i].tenTaiSan ?? "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].assetId ?? "",
+                      _assetTransferDto.chiTietDieuDongTaiSans![i].idTaiSan ?? "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].measurementUnit ??
+                      _assetTransferDto.chiTietDieuDongTaiSans![i].donViTinh ??
                           "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].quantity ?? "",
+                      _assetTransferDto.chiTietDieuDongTaiSans![i].soLuong.toString() ?? "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].setCondition ?? "",
+                      _assetTransferDto.chiTietDieuDongTaiSans![i].hienTrang ?? "",
                     ),
                   ],
                 ),

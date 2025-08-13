@@ -11,15 +11,15 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+
+import '../../asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import '../../asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 class ToolAndMaterialTransferList extends StatefulWidget {
   final ToolAndMaterialTransferProvider provider;
@@ -411,9 +411,9 @@ class _ToolAndMaterialTransferListState
   void _callGetListAssetHandover() {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
-      );
+      // assetHandoverBloc.add(
+      //   GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
+      // );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

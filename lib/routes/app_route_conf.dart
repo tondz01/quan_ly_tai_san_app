@@ -1,7 +1,7 @@
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset_management_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
+// import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/views/asset_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital_source_manager.dart';
@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/login/login_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
+import '../screen/asset_handover/asset_handover_view.dart';
 import 'routes.dart';
 
 class AppRouteConf {

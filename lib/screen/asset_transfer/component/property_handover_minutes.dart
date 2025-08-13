@@ -384,7 +384,7 @@ class _PropertyHandoverMinutesContentState
       SgTableColumn<DieuDongTaiSanDto>(
         title: 'Chi tiết bàn giao',
         cellBuilder:
-            (item) => AssetHandoverColumns.buildMovementDetails(item.chiTietDieuDongTaiSan ?? []),
+            (item) => AssetHandoverColumns.buildMovementDetails(item.chiTietDieuDongTaiSans ?? []),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,
         width: columnWidths['Chi tiết bàn giao']!,

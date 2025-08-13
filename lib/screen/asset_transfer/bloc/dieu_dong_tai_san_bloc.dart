@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san.dart';
 import '../model/dieu_dong_tai_san_dto.dart';
 import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
@@ -22,5 +23,6 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanLoadingDismissState());
     emit(GetListDieuDongTaiSanSuccessState(data: _dieuDongTaiSans));
   }
+
 
 }

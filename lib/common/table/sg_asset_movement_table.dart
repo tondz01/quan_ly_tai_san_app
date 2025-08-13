@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+
+import '../../screen/tool_and_material_transfer/model/movement_detail_dto.dart';
 
 
 class SgAssetMovementTable extends StatefulWidget {

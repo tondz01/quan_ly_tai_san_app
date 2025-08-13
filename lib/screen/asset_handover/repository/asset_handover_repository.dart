@@ -5,17 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
-import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
-
-class ToolAndMaterialTransferRepository extends ApiBase {
+class AssetHandoverRepository extends ApiBase {
   // Path to the local JSON file for mock data
-  static const String _mockDataToolAndMaterialTransferPath = 'lib/screen/tool_and_material_transfer/model/tool_and_material_transfer_data.json';
+  static const String _mockDataPath = 'lib/screen/asset_handover/model/asset_handover.json';
 
-  Future<Map<String, dynamic>> getListToolAndMaterialTransfer() async {
-    List<DieuDongTaiSanDto> list = [];
+  Future<Map<String, dynamic>> getListAssetHandover() async {
+    List<AssetHandoverDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -25,9 +23,9 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       final jsonString = await _loadLocalJsonData();
       if (jsonString != null) {
         result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-        result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+        result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
           jsonString,
-          ToolAndMaterialTransferDto.fromJson
+          AssetHandoverDto.fromJson
         );
         return result;
       }
@@ -49,25 +47,25 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       
       // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
         response.data, 
-        ToolAndMaterialTransferDto.fromJson
+        AssetHandoverDto.fromJson
       );
     } catch (e) {
-      log("Error at getListAssetTransfer - AssetTransferRepository: $e");
+      log("Error at getListAssetHandover - AssetHandoverRepository: $e");
     }
     
     return result;
   }
   
   /// Load data from local JSON file for development/testing purposes
-  Future<String?> _loadLocalJsonData() async {
+ Future<String?> _loadLocalJsonData() async {
     try {
-      return await rootBundle.loadString(_mockDataToolAndMaterialTransferPath);
+      return await rootBundle.loadString(_mockDataPath);
     } catch (e) {
       // Try to load from file system directly if rootBundle fails
       try {
-        final file = await File(_mockDataToolAndMaterialTransferPath).readAsString();
+        final file = await File(_mockDataPath).readAsString();
         return file;
       } catch (e) {
         log('Failed to load mock data: $e');
