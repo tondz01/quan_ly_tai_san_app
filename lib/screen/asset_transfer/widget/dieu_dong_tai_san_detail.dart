@@ -7,25 +7,28 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
+import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -37,12 +40,14 @@ class DieuDongTaiSanDetail extends StatefulWidget {
   final bool isEditing;
   final bool? isNew;
   final DieuDongTaiSanProvider provider;
+  final int type;
 
   const DieuDongTaiSanDetail({
     super.key,
     this.isEditing = false,
     this.isNew = false,
     required this.provider,
+    required this.type,
   });
 
   @override
@@ -95,6 +100,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   String idCongTy = 'CT001';
   int typeTransfer = 1;
   List<ChiTietDieuDongTaiSan> listNewDetails = [];
+
+  PhongBan? donViGiao;
+  PhongBan? donViNhan;
+  PhongBan? donViDeNghi;
+  NhanVien? nguoiDeNghi;
+  UserInfoDTO? nguoiLapPhieu;
+  NhanVien? nguoiKyCapPhong;
+  NhanVien? nguoiKyGiamDoc;
 
   late DieuDongTaiSanDto? item;
 
@@ -166,24 +179,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     if (widget.isNew == true) {
       onReload();
     }
-
-    // Initialize controllers with existing values if available (only once)
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   nhanVienProvider = Provider.of<NhanVienProvider>(context, listen: false);
-    //   final nhanViens = await nhanVienProvider.fetchNhanViens(); // Lấy list
-    //   setState(() {
-    //     itemsRequester =
-    //         nhanViens
-    //             .map(
-    //               (user) => DropdownMenuItem<String>(
-    //                 value: user.id ?? '',
-    //                 child: Text(user.hoTen ?? ''),
-    //               ),
-    //             )
-    //             .toList();
-    //   });
-    // });
   }
 
   @override
@@ -210,6 +205,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   void _refreshWidget() {
     setState(() {
       listNewDetails.clear();
+      nguoiLapPhieu = widget.provider.userInfo;
       // Reset item từ provider
       item = widget.provider.item;
       log('message item: $item');
@@ -245,7 +241,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         _controllersInitialized = true;
       } else {
         controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
-          'SCT************',
+          'SCT-************',
         );
         controllerSubject.text = '';
         controllerDocumentName.text = '';
@@ -392,7 +388,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     backgroundColor: ColorValue.success,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      _saveAssetTransfer(context);
+                      _handleSave();
                     },
                   ),
                   const SizedBox(width: 8),
@@ -507,6 +503,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             log('delivering_unit selected: $value');
+                            donViGiao = value;
                           },
                         ),
                         CmFormDropdownObject<PhongBan>(
@@ -525,6 +522,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             log('receivingUnit selected: $value');
+                            donViNhan = value;
                           },
                         ),
                         CmFormDropdownObject<NhanVien>(
@@ -544,11 +542,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             log('requester selected: $value');
                             setState(() {
+                              donViDeNghi = widget.provider.getPhongBanByID(
+                                value.phongBanId ?? '',
+                              );
                               controllerProposingUnit.text =
-                                  widget.provider
-                                      .getPhongBanByID(value.phongBanId ?? '')
-                                      .tenPhongBan ??
-                                  '';
+                                  donViDeNghi?.tenPhongBan ?? '';
+                              nguoiDeNghi = value;
                             });
                           },
                         ),
@@ -617,6 +616,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             log('department_approval selected: $value');
+                            nguoiKyCapPhong = value;
                           },
                         ),
                         CmFormDate(
@@ -671,6 +671,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             log('Approver selected: $value');
+                            nguoiKyGiamDoc = value;
                           },
                         ),
                       ],
@@ -694,7 +695,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     }
                   });
                 },
-                onUpload: _uploadWordDocument,
+                // onUpload: _uploadWordDocument,
                 isUploading: _isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
@@ -705,7 +706,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
               // const SizedBox(height: 20),
               AssetTransferMovementTable(
                 context,
-                isEditing: true,
+                isEditing: isEditing,
                 initialDetails: item?.chiTietDieuDongTaiSans ?? [],
                 allAssets: widget.provider.dataAsset ?? [],
                 onDataChanged: (data) {
@@ -713,8 +714,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                       data
                           .map(
                             (e) => ChiTietDieuDongTaiSan(
-                              id: UUIDGenerator.generateWithFormat('CTDD****'),
-                              idDieuDongTaiSan: controllerSubject.text,
+                              id: UUIDGenerator.generateWithFormat('CTDD-****'),
+                              idDieuDongTaiSan: controllerSoChungTu.text,
                               soQuyetDinh: item?.soQuyetDinh ?? '',
                               tenPhieu: controllerDocumentName.text,
                               idTaiSan: e.id ?? '',
@@ -725,8 +726,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ghiChu: e.ghiChu ?? '',
                               ngayTao: e.ngayTao ?? '',
                               ngayCapNhat: e.ngayCapNhat ?? '',
-                              nguoiTao: item?.nguoiTao ?? '',
-                              nguoiCapNhat: item?.nguoiCapNhat ?? '',
+                              nguoiTao: widget.provider.userInfo?.id ?? '',
+                              nguoiCapNhat: widget.provider.userInfo?.id ?? '',
                               isActive: true,
                             ),
                           )
@@ -744,134 +745,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         ),
       ],
     );
-  }
-
-  Future<void> _uploadWordDocument() async {
-    if (_selectedFilePath == null) return;
-
-    setState(() {
-      _isUploading = true;
-    });
-
-    try {
-      await Future.delayed(const Duration(seconds: 2));
-      setState(() {
-        _validationErrors.remove('document');
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Tệp "$_selectedFileName" đã được tải lên thành công'),
-          backgroundColor: Colors.green.shade600,
-        ),
-      );
-    } catch (e) {
-      log('Error uploading file: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isUploading = false;
-      });
-    }
-  }
-
-  Future<void> _saveAssetTransfer(BuildContext context) async {
-    if (!isEditing) return;
-
-    // Validate form first
-    if (!_validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isUploading = true;
-    });
-
-    try {
-      final currentDocumentName = controllerDocumentName.text;
-      final currentSubject = controllerSubject.text;
-      final currentDeliveringUnit = controllerDeliveringUnit.text;
-      final currentReceivingUnit = controllerReceivingUnit.text;
-      final currentRequester = controllerRequester.text;
-      final currentDepartmentApproval = controllerDepartmentApproval.text;
-      final currentEffectiveDate = controllerEffectiveDate.text;
-      final currentEffectiveDateTo = controllerEffectiveDateTo.text;
-      final currentApprover = controllerApprover.text;
-      final currentDeliveryLocation = controllerDeliveryLocation.text;
-      final proposingUnit = controllerProposingUnit.text;
-
-      // Create an AssetTransferDto with the form data
-      final DieuDongTaiSanDto savedItem = DieuDongTaiSanDto(
-        id: item?.id,
-        // Keep original ID if editing an existing item
-        tenPhieu: currentDocumentName,
-        trichYeu: currentSubject,
-        idDonViGiao: currentDeliveringUnit,
-        idDonViNhan: currentReceivingUnit,
-        idNguoiDeNghi: currentRequester,
-        nguoiLapPhieuKyNhay: isPreparerInitialed,
-        quanTrongCanXacNhan: isRequireManagerApproval,
-        phoPhongXacNhan: isDeputyConfirmed,
-        idTrinhDuyetCapPhong: currentDepartmentApproval,
-        tggnTuNgay: ConfigViewAT.convertStringToIso(currentEffectiveDate),
-        tggnDenNgay: ConfigViewAT.convertStringToIso(currentEffectiveDateTo),
-        idTrinhDuyetGiamDoc: currentApprover,
-        trangThai: item?.trangThai ?? 1,
-        diaDiemGiaoNhan: currentDeliveryLocation,
-        // Include document file information
-        duongDanFile: _selectedFilePath,
-        tenFile: _selectedFileName,
-        idDonViDeNghi: proposingUnit,
-      );
-
-      final provider = Provider.of<DieuDongTaiSanProvider>(
-        context,
-        listen: false,
-      );
-
-      if (item == null) {
-        await provider.createDieuDongTaiSan(savedItem);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Tạo phiếu điều chuyển thành công'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        provider.updateItem(savedItem);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cập nhật phiếu điều chuyển thành công'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      log('Error saving asset transfer: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isUploading = false;
-        });
-      }
-    }
   }
 
   void onReload() {
@@ -911,17 +784,19 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Widget previewDocumentAssetTransfer(DieuDongTaiSanDto? item) {
     return InkWell(
       onTap: () {
-        // showDialog(
-        //   context: context,
-        //   barrierDismissible: true,
-        //   builder:
-        //       (context) => CommonContract(
-        //     contractType: ContractPage.assetMovePage(item!),
-        //     signatureList: [
-        //       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
-        //     ],
-        //   ),
-        // );
+        if (item == null) return;
+
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder:
+              (context) => CommonContract(
+                contractType: ContractPage.assetMovePage(item),
+                signatureList: [
+                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
+                ],
+              ),
+        );
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -946,44 +821,105 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     );
   }
 
-  LenhDieuDongRequest _createDieuDongRequest() {
+  LenhDieuDongRequest _createDieuDongRequest(int type, int state) {
     return LenhDieuDongRequest(
+      id: controllerSoChungTu.text,
       soQuyetDinh: controllerSoChungTu.text,
       tenPhieu: controllerDocumentName.text,
-      idDonViGiao: controllerDeliveringUnit.text,
-      idDonViNhan: controllerReceivingUnit.text,
-      idNguoiDeNghi: controllerRequester.text,
+      idDonViGiao: donViGiao?.id ?? '',
+      idDonViNhan: donViNhan?.id ?? '',
+      idNguoiDeNghi: nguoiDeNghi?.id ?? '',
       nguoiLapPhieuKyNhay: isPreparerInitialed,
       quanTrongCanXacNhan: isRequireManagerApproval,
       phoPhongXacNhan: isDeputyConfirmed,
-      idDonViDeNghi: proposingUnit ?? '',
-      idTrinhDuyetCapPhong: controllerDepartmentApproval.text,
-      tggnTuNgay: ConfigViewAT.convertStringToIso(controllerEffectiveDate.text),
-      tggnDenNgay: ConfigViewAT.convertStringToIso(
-        controllerEffectiveDateTo.text,
-      ),
-      idTrinhDuyetGiamDoc: controllerApprover.text,
+      idDonViDeNghi: donViDeNghi?.id ?? '',
+      idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
+      tggnTuNgay:
+          AppUtility.parseDateTimeOrNow(
+            controllerEffectiveDate.text,
+          ).toIso8601String(),
+      tggnDenNgay:
+          AppUtility.parseDateTimeOrNow(
+            controllerEffectiveDateTo.text,
+          ).toIso8601String(),
+      idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllerDeliveryLocation.text,
-      idPhongBanXemPhieu: controllerDepartmentApproval.text,
-      idNhanSuXemPhieu: controllerApprover.text,
-      veViec: controllerSubject.text,
-      canCu: controllerSubject.text,
-      dieu1: controllerSubject.text,
-      dieu2: controllerSubject.text,
-      dieu3: controllerSubject.text,
-      noiNhan: controllerSubject.text,
-      themDongTrong: controllerSubject.text,
-      trangThai: 1,
-      idCongTy: idCongTy,
-      ngayTao: DateTime.now().toString(),
-      ngayCapNhat: DateTime.now().toString(),
-      nguoiTao: '',
-      nguoiCapNhat: '',
+      idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
+      idNhanSuXemPhieu: nguoiKyGiamDoc?.id ?? '',
+      veViec: '',
+      canCu: '',
+      dieu1: '',
+      dieu2: '',
+      dieu3: '',
+      noiNhan: '',
+      themDongTrong: '',
+      trangThai: state,
+      idCongTy: widget.provider.userInfo?.idCongTy ?? '',
+      ngayTao: DateTime.now().toIso8601String(),
+      ngayCapNhat: DateTime.now().toIso8601String(),
+      nguoiTao: widget.provider.userInfo?.id ?? '',
+      nguoiCapNhat: widget.provider.userInfo?.id ?? '',
       coHieuLuc: true,
-      loai: 1,
+      loai: type,
       isActive: true,
+      trichYeu: controllerSubject.text,
       duongDanFile: _selectedFilePath ?? '',
       tenFile: _selectedFileName ?? '',
+      ngayKy: DateTime.now().toIso8601String(),
     );
+
+  }
+
+  List<ChiTietDieuDongRequest> _createDieuDongRequestDetail() {
+    log('listNewDetails: ${jsonEncode(listNewDetails)}');
+    return listNewDetails
+        .map((e) => ChiTietDieuDongRequest(
+          id: e.id,
+          idDieuDongTaiSan: e.idDieuDongTaiSan ,
+          idTaiSan: e.idTaiSan,
+          soLuong: e.soLuong,
+          ghiChu: e.ghiChu,
+          ngayTao: e.ngayTao,
+          ngayCapNhat: e.ngayCapNhat,
+          nguoiTao: widget.provider.userInfo?.id ?? '',
+          nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+          isActive: true,
+        ))
+        .toList();
+  }
+
+  void _handleSave() {
+    if (!isEditing) return;
+    if (!_validateForm()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    // final bloc = context.read<DieuDongTaiSanBloc>();
+    if (item == null) {
+      final request = _createDieuDongRequest(widget.type, 1);
+      final requestDetail = _createDieuDongRequestDetail();
+      log('message request: ${jsonEncode(request)}');
+      log('message requestDetail: ${jsonEncode(requestDetail)}');
+      // bloc.add(CreateDieuDongEvent(context, request));
+      widget.provider.saveAssetTransfer(
+        context,
+        request,
+        requestDetail,
+        _selectedFileName ?? '',
+        _selectedFilePath ?? '',
+        _selectedFileBytes ?? Uint8List(0),
+      );
+    } else {
+      final request = _createDieuDongRequest(widget.type, item!.trangThai ?? 0);
+      final requestDetail = _createDieuDongRequestDetail();
+      log('message requestDetail: ${jsonEncode(requestDetail)}');
+      log('message request: ${jsonEncode(request)}');
+      // bloc.add(UpdateDieuDongEvent(context, request));
+    }
   }
 }

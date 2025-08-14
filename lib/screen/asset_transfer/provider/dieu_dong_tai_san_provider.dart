@@ -1,22 +1,23 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../bloc/dieu_dong_tai_san_state.dart';
@@ -42,6 +43,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isLoading => _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  get userInfo => _userInfo;
   List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
   get data => _data;
@@ -132,6 +134,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   List<DieuDongTaiSanDto>? _dataPage;
   List<DieuDongTaiSanDto> _filteredData = [];
   DieuDongTaiSanDto? _item;
+  UserInfoDTO? _userInfo;
 
   String idCongTy = 'CT001';
 
@@ -243,10 +246,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                 (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.chiTietDieuDongTaiSans?.any(
                       (detail) =>
-                          detail.tenTaiSan?.toLowerCase().contains(
-                            searchLower,
-                          ) ??
-                          false,
+                          detail.tenTaiSan.toLowerCase().contains(searchLower),
                     ) ??
                     false) ||
                 (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
@@ -276,7 +276,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   void onInit(BuildContext context, int typeDieuDongTaiSan) {
     onDispose();
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
+    _userInfo = AccountHelper.instance.getUserInfo();
 
+    log('message onInit: ${_data?.length} -- ${_dataAsset?.length}');
     controllerDropdownPage = TextEditingController(text: '10');
 
     getDataAll(context);
@@ -301,10 +303,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     try {
       final bloc = context.read<DieuDongTaiSanBloc>();
       bloc.add(
-        GetListDieuDongTaiSanEvent(context, typeDieuDongTaiSan, idCongTy),
+        GetListDieuDongTaiSanEvent(
+          context,
+          typeDieuDongTaiSan,
+          _userInfo?.idCongTy ?? '',
+        ),
       );
-      bloc.add(GetListAssetEvent(context, idCongTy));
-      bloc.add(GetDataDropdownEvent(context, idCongTy));
+      bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
+      bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -335,6 +341,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   void onPageChanged(int page) {
     currentPage = page;
     _updatePagination();
+    notifyListeners();
+  }
+
+  void onCloseDetail(BuildContext context) {
+    _isShowCollapse = true;
+    _isShowInput = false;
     notifyListeners();
   }
 
@@ -400,6 +412,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = List.from(_data!);
+      log('message getListDieuDongTaiSanSuccess: ${_data?.length}');
       _updatePagination();
     }
     notifyListeners();
@@ -447,6 +460,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void createDieuDongSuccess(
+    BuildContext context,
+    CreateDieuDongSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
+
   PhongBan getPhongBanByID(String idPhongBan) {
     if (_dataPhongBan != null && _dataPhongBan!.isNotEmpty) {
       return _dataPhongBan!.firstWhere(
@@ -470,40 +493,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   // Add method to create a new asset transfer
-  Future<void> createDieuDongTaiSan(DieuDongTaiSanDto item) async {
-    final newItem = DieuDongTaiSanDto(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      tenPhieu: item.tenPhieu,
-      soQuyetDinh: item.soQuyetDinh,
-      ngayKy: item.ngayKy,
-      trichYeu: item.trichYeu,
-      idNguoiDeNghi: item.idNguoiDeNghi,
-      nguoiTao: 'Current User', // Would come from authentication service
-      idDonViGiao: item.idDonViGiao,
-      idDonViNhan: item.idDonViNhan,
-      idDonViDeNghi: item.idDonViDeNghi,
-      diaDiemGiaoNhan: item.diaDiemGiaoNhan,
-      tggnTuNgay: item.tggnTuNgay,
-      tggnDenNgay: item.tggnDenNgay,
-      nguoiLapPhieuKyNhay: item.nguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: item.quanTrongCanXacNhan,
-      phoPhongXacNhan: item.phoPhongXacNhan,
-      idTrinhDuyetCapPhong: item.idTrinhDuyetCapPhong,
-      idTrinhDuyetGiamDoc: item.idTrinhDuyetGiamDoc,
-      trangThai: 0, // Draft status
-      coHieuLuc: false,
-      duongDanFile: item.duongDanFile,
-      tenFile: item.tenFile,
-    );
-
-    _data ??= [];
-    _data!.add(newItem);
-
-    _filteredData = List.from(_data!);
-    _updatePagination();
-
-    notifyListeners();
-  }
 
   Future<void> updateDieuDongTaiSan(DieuDongTaiSanDto updatedItem) async {
     if (_data == null || updatedItem.id == null) return;
@@ -525,6 +514,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   Future<void> saveAssetTransfer(
     BuildContext context,
     LenhDieuDongRequest request,
+    List<ChiTietDieuDongRequest> requestDetail,
     String fileName,
     String filePath,
     Uint8List fileBytes,
@@ -549,7 +539,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}",
     );
     final bloc = context.read<DieuDongTaiSanBloc>();
-    bloc.add(CreateDieuDongEvent(context, request));
+    bloc.add(CreateDieuDongEvent(context, request, requestDetail));
 
     notifyListeners();
   }

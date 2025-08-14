@@ -13,14 +13,12 @@ class AssetTransferMovementTable extends StatefulWidget {
   final List<ChiTietDieuDongTaiSan> initialDetails;
   final List<AssetManagementDto> allAssets;
   final Function(List<AssetManagementDto>)? onDataChanged;
-  // final List<String> assetsList; // Danh sách tên tài sản cho dropdown
 
   const AssetTransferMovementTable(
     BuildContext context, {
     super.key,
     required this.isEditing,
     required this.initialDetails,
-    // required this.assetsList,
     required this.allAssets,
     required this.onDataChanged,
   });
@@ -41,27 +39,11 @@ class _AssetTransferMovementTableState
     movementDetails = List.from(widget.initialDetails);
   }
 
-  void _addRow() {
-    setState(() {
-      movementDetails.add(ChiTietDieuDongTaiSan.empty());
-    });
+  @override
+  void didUpdateWidget(AssetTransferMovementTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    movementDetails = List.from(widget.initialDetails);
   }
-
-  // Future<void> _saveRow(ChiTietDieuDongTaiSan item) async {
-  //   try {
-  //     if ( item.id.isEmpty) {
-  //       // Gọi API tạo mới
-  //       setState(() {
-  //         listNewDetails.add(item);
-  //       });
-  //     } else {
-  //       // Gọi API cập nhật
-  //       await repo.update(item.id, item);
-  //     }
-  //   } catch (e) {
-  //     debugPrint('Lỗi khi lưu dữ liệu: $e');
-  //   }
-  // }
 
   List<AssetManagementDto> getAssetsByChildAssets(
     List<AssetManagementDto> allAssets,
@@ -88,6 +70,7 @@ class _AssetTransferMovementTableState
 
   @override
   Widget build(BuildContext context) {
+    log('movementDetails: ${movementDetails.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

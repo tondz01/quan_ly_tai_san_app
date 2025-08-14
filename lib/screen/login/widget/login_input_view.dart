@@ -7,7 +7,6 @@ import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/sg_textfield.dart';
 
 class LoginInputView extends StatefulWidget {
   final AuthRequest data;

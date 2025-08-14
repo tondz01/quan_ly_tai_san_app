@@ -60,8 +60,8 @@ Widget buildOriginalAssetInfomation(
   }
 
   log('message buildOriginalAssetInfomation: $isEditing');
-  DateTime? ngayVaoSo;
-  DateTime? ngaySuDung;
+  // DateTime? ngayVaoSo;
+  // DateTime? ngaySuDung;
 
   return MultiBlocListener(
     listeners: [

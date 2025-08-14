@@ -34,22 +34,35 @@ class ChiTietDieuDongTaiSan {
   });
 
   factory ChiTietDieuDongTaiSan.fromJson(Map<String, dynamic> json) {
+    String parseString(dynamic v) => v?.toString() ?? '';
+    int parseInt(dynamic v) {
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      return int.tryParse(v?.toString() ?? '0') ?? 0;
+    }
+    bool parseBool(dynamic v) {
+      if (v is bool) return v;
+      if (v is num) return v != 0;
+      if (v is String) return v.toLowerCase() == 'true' || v == '1';
+      return false;
+    }
+
     return ChiTietDieuDongTaiSan(
-      id: json['id'] as String,
-      idDieuDongTaiSan: json['idDieuDongTaiSan'] as String,
-      soQuyetDinh: json['soQuyetDinh'] as String,
-      tenPhieu: json['tenPhieu'] as String,
-      idTaiSan: json['idTaiSan'] as String,
-      tenTaiSan: json['tenTaiSan'] as String,
-      donViTinh: json['donViTinh'] as String,
-      hienTrang: int.parse(json['hienTrang']),
-      soLuong: json['soLuong'] as int,
-      ghiChu: json['ghiChu'] as String,
-      ngayTao: json['ngayTao'] as String,
-      ngayCapNhat: json['ngayCapNhat'] as String,
-      nguoiTao: json['nguoiTao'] as String,
-      nguoiCapNhat: json['nguoiCapNhat'] as String,
-      isActive: json['isActive'] as bool,
+      id: parseString(json['id']),
+      idDieuDongTaiSan: parseString(json['idDieuDongTaiSan']),
+      soQuyetDinh: parseString(json['soQuyetDinh']),
+      tenPhieu: parseString(json['tenPhieu']),
+      idTaiSan: parseString(json['idTaiSan']),
+      tenTaiSan: parseString(json['tenTaiSan']),
+      donViTinh: parseString(json['donViTinh']),
+      hienTrang: parseInt(json['hienTrang']),
+      soLuong: parseInt(json['soLuong']),
+      ghiChu: parseString(json['ghiChu']),
+      ngayTao: parseString(json['ngayTao']),
+      ngayCapNhat: parseString(json['ngayCapNhat']),
+      nguoiTao: parseString(json['nguoiTao']),
+      nguoiCapNhat: parseString(json['nguoiCapNhat']),
+      isActive: parseBool(json['isActive']),
     );
   }
 

@@ -5,7 +5,12 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_trans
 import '../model/dieu_dong_tai_san_dto.dart';
 import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
-    show CreateDieuDongEvent, DieuDongTaiSanEvent, GetDataDropdownEvent, GetListAssetEvent, GetListDieuDongTaiSanEvent;
+    show
+        CreateDieuDongEvent,
+        DieuDongTaiSanEvent,
+        GetDataDropdownEvent,
+        GetListAssetEvent,
+        GetListDieuDongTaiSanEvent;
 import 'dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanBloc
@@ -14,6 +19,7 @@ class DieuDongTaiSanBloc
     on<GetListDieuDongTaiSanEvent>(_getListDieuDongTaiSan);
     on<GetListAssetEvent>(_getListAsset);
     on<GetDataDropdownEvent>(_getDataDropdown);
+    on<CreateDieuDongEvent>(_createAsset);
   }
 
   Future<void> _getListDieuDongTaiSan(
@@ -76,18 +82,19 @@ class DieuDongTaiSanBloc
     }
   }
 
- ///CREATE
+  ///CREATE
   Future<void> _createAsset(CreateDieuDongEvent event, Emitter emit) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetTransferRepository().createAsset(
       event.request,
+      event.requestDetail,
     );
     emit(DieuDongTaiSanLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(CreateDieuDongSuccessState());
     } else {
-      String msg = "Lỗi khi tạo nhóm tài sản";
+      String msg = "Lỗi khi tạo lệnh điều động";
       emit(
         CreateDieuDongFailedState(
           title: "notice",

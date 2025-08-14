@@ -510,7 +510,6 @@ class _AssetDetailState extends State<AssetDetail> {
     if (!isEditing) return;
 
     final request = _createAssetRequest();
-    log('message request: ${jsonEncode(request)}');
     final bloc = context.read<AssetManagementBloc>();
     bloc.add(CreateAssetEvent(context, request));
   }

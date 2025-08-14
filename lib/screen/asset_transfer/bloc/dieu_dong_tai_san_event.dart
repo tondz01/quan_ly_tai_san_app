@@ -46,9 +46,10 @@ class GetDataDropdownEvent extends DieuDongTaiSanEvent {
 class CreateDieuDongEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
   final LenhDieuDongRequest request;
+  final List<ChiTietDieuDongRequest> requestDetail;
 
-  const CreateDieuDongEvent(this.context, this.request);
+  const CreateDieuDongEvent(this.context, this.request, this.requestDetail);
 
   @override
-  List<Object> get props => [context, request];
+  List<Object> get props => [context, request, requestDetail];
 }

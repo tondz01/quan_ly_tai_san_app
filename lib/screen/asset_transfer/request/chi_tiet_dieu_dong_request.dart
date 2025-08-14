@@ -1,4 +1,5 @@
 class ChiTietDieuDongRequest {
+  final String id;
   final String idDieuDongTaiSan;
   final String idTaiSan;
   final int soLuong;
@@ -10,6 +11,7 @@ class ChiTietDieuDongRequest {
   final bool isActive;
 
   ChiTietDieuDongRequest({
+    required this.id,
     required this.idDieuDongTaiSan,
     required this.idTaiSan,
     required this.soLuong,
@@ -35,6 +37,7 @@ class ChiTietDieuDongRequest {
     }
 
     return ChiTietDieuDongRequest(
+      id: json['id'] ?? '',
       idDieuDongTaiSan: json['idDieuDongTaiSan'] ?? '',
       idTaiSan: json['idTaiSan'] ?? '',
       soLuong: parseInt(json['soLuong']),
@@ -49,6 +52,7 @@ class ChiTietDieuDongRequest {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'idDieuDongTaiSan': idDieuDongTaiSan,
       'idTaiSan': idTaiSan,
       'soLuong': soLuong,
@@ -62,6 +66,7 @@ class ChiTietDieuDongRequest {
   }
 
   ChiTietDieuDongRequest copyWith({
+    String? id,
     String? idDieuDongTaiSan,
     String? idTaiSan,
     int? soLuong,
@@ -73,6 +78,7 @@ class ChiTietDieuDongRequest {
     bool? isActive,
   }) {
     return ChiTietDieuDongRequest(
+      id: id ?? this.id,
       idDieuDongTaiSan: idDieuDongTaiSan ?? this.idDieuDongTaiSan,
       idTaiSan: idTaiSan ?? this.idTaiSan,
       soLuong: soLuong ?? this.soLuong,

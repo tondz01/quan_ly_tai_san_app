@@ -1,4 +1,5 @@
 class LenhDieuDongRequest {
+  final String id;
   final String soQuyetDinh;
   final String tenPhieu;
   final String idDonViGiao;
@@ -12,7 +13,6 @@ class LenhDieuDongRequest {
   final String tggnTuNgay;
   final String tggnDenNgay;
   final String idTrinhDuyetGiamDoc;
-  final String diaDiemGiaoNhan;
   final String idPhongBanXemPhieu;
   final String idNhanSuXemPhieu;
   final String veViec;
@@ -30,11 +30,15 @@ class LenhDieuDongRequest {
   final String nguoiCapNhat;
   final bool coHieuLuc;
   final int loai;
+  final String diaDiemGiaoNhan;
   final bool isActive;
+  final String trichYeu;
   final String duongDanFile;
   final String tenFile;
+  final String ngayKy;
 
   LenhDieuDongRequest({
+    this.id = '',
     required this.soQuyetDinh,
     required this.tenPhieu,
     required this.idDonViGiao,
@@ -67,8 +71,10 @@ class LenhDieuDongRequest {
     required this.coHieuLuc,
     required this.loai,
     required this.isActive,
+    required this.trichYeu,
     required this.duongDanFile,
     required this.tenFile,
+    this.ngayKy = '',
   });
 
   factory LenhDieuDongRequest.fromJson(Map<String, dynamic> json) {
@@ -85,6 +91,7 @@ class LenhDieuDongRequest {
     }
 
     return LenhDieuDongRequest(
+      id: json['id'] ?? '',
       soQuyetDinh: json['soQuyetDinh'] ?? '',
       tenPhieu: json['tenPhieu'] ?? '',
       idDonViGiao: json['idDonViGiao'] ?? '',
@@ -95,8 +102,8 @@ class LenhDieuDongRequest {
       phoPhongXacNhan: parseBool(json['phoPhongXacNhan']),
       idDonViDeNghi: json['idDonViDeNghi'] ?? '',
       idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'] ?? '',
-      tggnTuNgay: json['tggnTuNgay'] ?? '',
-      tggnDenNgay: json['tggnDenNgay'] ?? '',
+      tggnTuNgay: json['tggnTuNgay']?.toIso8601String() ?? '',
+      tggnDenNgay: json['tggnDenNgay']?.toIso8601String() ?? '',
       idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'] ?? '',
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'] ?? '',
       idPhongBanXemPhieu: json['idPhongBanXemPhieu'] ?? '',
@@ -110,20 +117,23 @@ class LenhDieuDongRequest {
       themDongTrong: json['themDongTrong'] ?? '',
       trangThai: parseInt(json['trangThai']),
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao: json['ngayTao'] ?? '',
-      ngayCapNhat: json['ngayCapNhat'] ?? '',
+      ngayTao: json['ngayTao']?.toIso8601String() ?? '',
+      ngayCapNhat: json['ngayCapNhat']?.toIso8601String() ?? '',
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       coHieuLuc: parseBool(json['coHieuLuc']),
       loai: parseInt(json['loai']),
       isActive: parseBool(json['isActive']),
+      trichYeu: json['trichYeu'] ?? '',
       duongDanFile: json['duongDanFile'] ?? '',
       tenFile: json['tenFile'] ?? '',
+      ngayKy: json['ngayKy']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'soQuyetDinh': soQuyetDinh,
       'tenPhieu': tenPhieu,
       'idDonViGiao': idDonViGiao,
@@ -156,12 +166,15 @@ class LenhDieuDongRequest {
       'coHieuLuc': coHieuLuc,
       'loai': loai,
       'isActive': isActive,
+      'trichYeu': trichYeu,
       'duongDanFile': duongDanFile,
       'tenFile': tenFile,
+      'ngayKy': ngayKy,
     };
   }
 
   LenhDieuDongRequest copyWith({
+    String? id,
     String? soQuyetDinh,
     String? tenPhieu,
     String? idDonViGiao,
@@ -194,10 +207,13 @@ class LenhDieuDongRequest {
     bool? coHieuLuc,
     int? loai,
     bool? isActive,
+    String? trichYeu,
     String? duongDanFile,
     String? tenFile,
+    String? ngayKy,
   }) {
     return LenhDieuDongRequest(
+      id: id ?? this.id,
       soQuyetDinh: soQuyetDinh ?? this.soQuyetDinh,
       tenPhieu: tenPhieu ?? this.tenPhieu,
       idDonViGiao: idDonViGiao ?? this.idDonViGiao,
@@ -230,8 +246,10 @@ class LenhDieuDongRequest {
       coHieuLuc: coHieuLuc ?? this.coHieuLuc,
       loai: loai ?? this.loai,
       isActive: isActive ?? this.isActive,
+      trichYeu: trichYeu ?? this.trichYeu,
       duongDanFile: duongDanFile ?? this.duongDanFile,
       tenFile: tenFile ?? this.tenFile,
+      ngayKy: ngayKy ?? this.ngayKy,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -36,7 +37,9 @@ class AuthRepository extends ApiBase {
         // Backend có thể trả về chuỗi hoặc dạng khác -> chuyển thành String để hiển thị
         result['data'] = resp.toString();
       }
-      AccountHelper.instance.setAuthInfo(result['data']);
+      AccountHelper.instance.setUserInfo(result['data']);
+      log('result: ${result['data']}');
+      print('AccountHelper: ${jsonEncode(AccountHelper.instance.getUserInfo())}');
     } catch (e) {
       log("Error at createAssetCategory - AssetCategoryRepository: $e");
     }
