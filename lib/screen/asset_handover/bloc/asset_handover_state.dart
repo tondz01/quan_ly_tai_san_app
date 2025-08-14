@@ -42,5 +42,29 @@ class GetListAssetHandoverFailedState extends AssetHandoverState {
   const GetListAssetHandoverFailedState({required this.title, this.code, required this.message});
 
   @override
-  List<Object> get props => [title, code!, message];
+  List<Object> get props => [title, code ?? 0, message];
 }
+
+
+class CreateAssetHandoverSuccessState extends AssetHandoverState {
+  final String data;
+
+  const CreateAssetHandoverSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class CreateAssetHandoverFailedState extends AssetHandoverState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const CreateAssetHandoverFailedState({required this.title, this.code, required this.message});
+
+  @override
+  List<Object> get props => [title, code ?? 0, message];
+}
+
+
+

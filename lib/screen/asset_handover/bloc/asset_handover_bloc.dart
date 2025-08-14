@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/models/departmen
 import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
 import 'asset_handover_event.dart';
 import 'asset_handover_state.dart';
@@ -14,6 +15,7 @@ import 'asset_handover_state.dart';
 class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
   AssetHandoverBloc() : super(AssetHandoverInitialState()) {
     on<GetListAssetHandoverEvent>(_getListAssetHandover);
+    on<CreateAssetHandoverEvent>(_createAssetHandover);
   }
 
   Future<void> _getListAssetHandover(GetListAssetHandoverEvent event, Emitter emit) async {
@@ -42,5 +44,24 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
         dataAssetTransfer: dataDieuDongTaiSanDto,
       ),
     );
+  }
+
+  Future<void> _createAssetHandover(CreateAssetHandoverEvent event, Emitter emit) async {
+    emit(AssetHandoverLoadingState());
+
+    final Map<String, dynamic> result = await AssetHandoverRepository().createAssetHandover(event.request);
+
+    emit(AssetHandoverLoadingDismissState());
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CreateAssetHandoverSuccessState(data: (result['data'] ?? '').toString()));
+    } else {
+      emit(CreateAssetHandoverFailedState(
+        title: 'Tạo biên bản bàn giao',
+        code: statusCode,
+        message: 'Thất bại khi tạo biên bản bàn giao',
+      ));
+    }
   }
 }

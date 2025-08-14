@@ -26,4 +26,26 @@ class AssetHandoverRepository extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> createAssetHandover(Map<String, dynamic> request) async {
+    Map<String, dynamic> result = {'data': "", 'status_code': Numeral.STATUS_CODE_DEFAULT};
+
+    try {
+      final response = await post(EndPointAPI.ASSET_TRANSFER, data: request);
+
+      final int? status = response.statusCode;
+      final bool isOk = status == Numeral.STATUS_CODE_SUCCESS || status == Numeral.STATUS_CODE_SUCCESS_CREATE || status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error("AssetHandoverRepository", "Error at createAsset - AssetManagementRepository: $e");
+    }
+
+    return result;
+  }
 }
