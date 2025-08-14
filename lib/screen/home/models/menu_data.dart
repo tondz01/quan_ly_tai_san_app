@@ -14,7 +14,14 @@ class MenuItem {
   final String route;
 
   // Constructor với tham số index tùy chọn
-  const MenuItem._internal({required this.label, required this.index, this.icon, this.reportSubItems = const [], this.projectGroups = const [], this.route = '/'});
+  const MenuItem._internal({
+    required this.label,
+    required this.index,
+    this.icon,
+    this.reportSubItems = const [],
+    this.projectGroups = const [],
+    this.route = '/',
+  });
 
   // Factory constructor tự động tạo index
   factory MenuItem({
@@ -29,7 +36,14 @@ class MenuItem {
     // Nếu không, dùng giá trị tiếp theo và tăng biến đếm
     final actualIndex = index ?? _nextIndex++;
 
-    return MenuItem._internal(label: label, index: actualIndex, icon: icon, reportSubItems: reportSubItems, projectGroups: projectGroups, route: route);
+    return MenuItem._internal(
+      label: label,
+      index: actualIndex,
+      icon: icon,
+      reportSubItems: reportSubItems,
+      projectGroups: projectGroups,
+      route: route,
+    );
   }
 }
 
@@ -55,10 +69,7 @@ class SubMenuGroup {
 class AppMenuData {
   // Menu items chính
   final List<MenuItem> menuItems = [
-    MenuItem(
-      label: 'Tổng quan',
-      route: AppRoute.dashboard.path,
-    ),
+    MenuItem(label: 'Tổng quan', route: AppRoute.dashboard.path),
     MenuItem(
       label: 'Danh mục',
       route: AppRoute.category.path,
@@ -68,7 +79,7 @@ class AppMenuData {
         SubMenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path),
         SubMenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path),
         SubMenuItem(label: 'Mô hình tài sản', route: AppRoute.assetCategory.path),
-        SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path)
+        SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path),
       ],
     ),
     MenuItem(
@@ -84,48 +95,50 @@ class AppMenuData {
     ),
     MenuItem(
       label: 'Quản lý CCDC - Vật tư',
-      reportSubItems: 
-        [SubMenuItem(label: 'Công cụ dụng cụ - Vật tư',route: AppRoute.toolsAndSupplies.path),
-      ],
+      reportSubItems: [SubMenuItem(label: 'Công cụ dụng cụ - Vật tư', route: AppRoute.toolsAndSupplies.path)],
     ),
     MenuItem(
       label: 'Điều động tài sản ',
-      reportSubItems: 
-      [
-          SubMenuItem(
-          label: 'Cấp phát tài sản',
-          route: AppRoute.assetTransfer.path,
-          extra: "1",
-        ),
-        SubMenuItem(
-          label: 'Thu hồi tài sản',
-          route: AppRoute.assetTransfer.path,
-          extra: "2",
-        ),
-        SubMenuItem(
-          label: 'Điều chuyển tài sản',
-          route: AppRoute.assetTransfer.path,
-          extra: "3",
-        ),
+      reportSubItems: [
+        SubMenuItem(label: 'Cấp phát tài sản', route: AppRoute.assetTransfer.path, extra: "1"),
+        SubMenuItem(label: 'Thu hồi tài sản', route: AppRoute.assetTransfer.path, extra: "2"),
+        SubMenuItem(label: 'Điều chuyển tài sản', route: AppRoute.assetTransfer.path, extra: "3"),
       ],
     ),
+    MenuItem(label: 'Điều động CCDC - Vật tư', route: AppRoute.toolAndMaterialTransfer.path),
+    MenuItem(label: 'Bàn giao tài sản', route: AppRoute.assetHandover.path),
     MenuItem(
-      label: 'Điều động CCDC - Vật tư',
-      route: AppRoute.toolAndMaterialTransfer.path
-    ),
-    MenuItem(
-      label: 'Bàn giao tài sản',
-      route: AppRoute.assetHandover.path,
+      label: 'Báo cáo',
+      reportSubItems: [
+        SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.inventoryReconciliationReport.path),
+        SubMenuItem(label: 'Biên bản kiẻm kê', route: AppRoute.stocktakingReport.path),
+        SubMenuItem(label: 'Sổ tài sản cố định', route: AppRoute.fixedAssetRegister.path),
+        SubMenuItem(label: 'Sổ tài sản cố định thông tư 200', route: AppRoute.fixedAssetRegisterCircular200.path),
+        SubMenuItem(label: 'Sổ theo dõi', route: AppRoute.trackingRecord.path),
+      ],
     ),
   ];
 
   // Chuyển đổi SubMenuItem thành SGSidebarSubItem
-  SGSidebarSubItem convertToSGSubItem(SubMenuItem item, int parentIndex, int subIndex, bool isActive, VoidCallback onTap) {
+  SGSidebarSubItem convertToSGSubItem(
+    SubMenuItem item,
+    int parentIndex,
+    int subIndex,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
     return SGSidebarSubItem(label: item.label, icon: item.icon, isActive: isActive, onTap: onTap);
   }
 
   // Chuyển đổi SubMenuGroup thành SGSubItemGroup
-  SGSubItemGroup convertToSGSubItemGroup(SubMenuGroup group, int parentIndex, int groupIndex, int selectedIndex, int selectedSubIndex, Function(int, int) onTapCallback) {
+  SGSubItemGroup convertToSGSubItemGroup(
+    SubMenuGroup group,
+    int parentIndex,
+    int groupIndex,
+    int selectedIndex,
+    int selectedSubIndex,
+    Function(int, int) onTapCallback,
+  ) {
     return SGSubItemGroup(
       title: group.title,
       items: List.generate(group.items.length, (itemIndex) {

@@ -16,13 +16,12 @@ import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
@@ -785,16 +784,27 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     return InkWell(
       onTap: () {
         if (item == null) return;
-
+        UserInfoDTO userInfo = widget.provider.userInfo!;
+        String url =
+            '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
         showDialog(
           context: context,
           barrierDismissible: true,
           builder:
-              (context) => CommonContract(
-                contractType: ContractPage.assetMovePage(item),
-                signatureList: [
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s",
-                ],
+              (context) => Padding(
+                padding: const EdgeInsets.only(
+                  left: 24.0,
+                  right: 24.0,
+                  top: 16.0,
+                  bottom: 16.0,
+                ),
+                child: CommonContract(
+                  contractType: ContractPage.assetMovePage(item),
+                  signatureList: <String>[url],
+                  idTaiLieu: item.id.toString(),
+                  idNguoiKy: userInfo.tenDangNhap,
+                  tenNguoiKy: userInfo.hoTen,
+                ),
               ),
         );
       },
@@ -867,24 +877,25 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenFile: _selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
     );
-
   }
 
   List<ChiTietDieuDongRequest> _createDieuDongRequestDetail() {
     log('listNewDetails: ${jsonEncode(listNewDetails)}');
     return listNewDetails
-        .map((e) => ChiTietDieuDongRequest(
-          id: e.id,
-          idDieuDongTaiSan: e.idDieuDongTaiSan ,
-          idTaiSan: e.idTaiSan,
-          soLuong: e.soLuong,
-          ghiChu: e.ghiChu,
-          ngayTao: e.ngayTao,
-          ngayCapNhat: e.ngayCapNhat,
-          nguoiTao: widget.provider.userInfo?.id ?? '',
-          nguoiCapNhat: widget.provider.userInfo?.id ?? '',
-          isActive: true,
-        ))
+        .map(
+          (e) => ChiTietDieuDongRequest(
+            id: e.id,
+            idDieuDongTaiSan: e.idDieuDongTaiSan,
+            idTaiSan: e.idTaiSan,
+            soLuong: e.soLuong,
+            ghiChu: e.ghiChu,
+            ngayTao: e.ngayTao,
+            ngayCapNhat: e.ngayCapNhat,
+            nguoiTao: widget.provider.userInfo?.id ?? '',
+            nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+            isActive: true,
+          ),
+        )
         .toList();
   }
 

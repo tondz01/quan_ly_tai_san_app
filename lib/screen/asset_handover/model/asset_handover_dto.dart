@@ -1,72 +1,135 @@
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
-
 class AssetHandoverDto {
   final String? id;
-  final String? name; // tên Bàn giao tài sản
-  final String? decisionNumber; // Quyết định điều động số
-  final String? order; // Lệnh điều động
-  final String? transferDate; // Ngày bàn giao
-  final String? transferDetail; // Chi tiết bàn giao
-  final String? senderUnit; // Đơn vị giao
-  final String? receiverUnit; // Đơn vị nhận
-  final String? createdBy; // Người tạo
-  final int? state; // Trạng thái
-  final List<AssetHandoverMovementDto>? assetHandoverMovements; // Chi tiết điều động
-  final AssetHandoverDetailDto? assetHandoverDetails; // Chi tiết bàn giao (0: Nháp, 1: Sẵn sàng, 2: Xác nhận, 3: Trình duyệt, 4: Hoàn thành, 5: Hủy)
+  final String? banGiaoTaiSan;
+  final String? quyetDinhDieuDongSo;
+  final String? lenhDieuDong;
+  final String? idDonViGiao;
+  final String? tenDonViGiao;
+  final String? idDonViNhan;
+  final String? tenDonViNhan;
+  final String? idDonViDaiDien;
+  final String? tenDonViDaiDien;
+  final String? ngayBanGiao;
+  final String? idLanhDao;
+  final String? tenLanhDao;
+  final String? idDaiDiendonviBanHanhQD;
+  final String? tenDaiDienBanHanhQD;
+  final bool? daXacNhan;
+  final String? idDaiDienBenGiao;
+  final String? tenDaiDienBenGiao;
+  final bool? daiDienBenGiaoXacNhan;
+  final String? idDaiDienBenNhan;
+  final String? tenDaiDienBenNhan;
+  final bool? daiDienBenNhanXacNhan;
+  final String? donViDaiDienXacNhan;
+  final int? trangThai;
+  final String? note;
+  final String? ngayTao;
+  final String? ngayCapNhat;
+  final String? nguoiTao;
+  final String? nguoiCapNhat;
+  final bool? isActive;
 
   AssetHandoverDto({
     this.id,
-    this.name,
-    this.decisionNumber,
-    this.order,
-    this.transferDate,
-    this.transferDetail,
-    this.senderUnit,
-    this.receiverUnit,
-    this.createdBy,
-    this.state,
-    this.assetHandoverMovements,
-    this.assetHandoverDetails,
+    this.banGiaoTaiSan,
+    this.quyetDinhDieuDongSo,
+    this.lenhDieuDong,
+    this.idDonViGiao,
+    this.tenDonViGiao,
+    this.idDonViNhan,
+    this.tenDonViNhan,
+    this.idDonViDaiDien,
+    this.tenDonViDaiDien,
+    this.ngayBanGiao,
+    this.idLanhDao,
+    this.tenLanhDao,
+    this.idDaiDiendonviBanHanhQD,
+    this.tenDaiDienBanHanhQD,
+    this.daXacNhan,
+    this.idDaiDienBenGiao,
+    this.tenDaiDienBenGiao,
+    this.daiDienBenGiaoXacNhan,
+    this.idDaiDienBenNhan,
+    this.tenDaiDienBenNhan,
+    this.daiDienBenNhanXacNhan,
+    this.donViDaiDienXacNhan,
+    this.trangThai,
+    this.note,
+    this.ngayTao,
+    this.ngayCapNhat,
+    this.nguoiTao,
+    this.nguoiCapNhat,
+    this.isActive,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
     return AssetHandoverDto(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      decisionNumber: json['decisionNumber'] ?? '',
-      order: json['order'] ?? '',
-      transferDate: json['transferDate'] ?? '',
-      transferDetail: json['transferDetail'] ?? '',
-      senderUnit: json['senderUnit'] ?? '',
-      receiverUnit: json['receiverUnit'] ?? '',
-      createdBy: json['createdBy'] ?? '',
-      state: json['state'] ?? -1,
-      assetHandoverMovements: json['assetHandoverMovements'] != null
-          ? (json['assetHandoverMovements'] as List)
-              .map((e) => AssetHandoverMovementDto.fromJson(e))
-              .toList()
-          : null,
-      assetHandoverDetails: json['assetHandoverDetails'] != null
-          ? AssetHandoverDetailDto.fromJson(json['assetHandoverDetails'])
-          : null,
+      id: json['id'],
+      banGiaoTaiSan: json['banGiaoTaiSan'],
+      quyetDinhDieuDongSo: json['quyetDinhDieuDongSo'],
+      lenhDieuDong: json['lenhDieuDong'],
+      idDonViGiao: json['idDonViGiao'],
+      tenDonViGiao: json['tenDonViGiao'],
+      idDonViNhan: json['idDonViNhan'],
+      tenDonViNhan: json['tenDonViNhan'],
+      idDonViDaiDien: json['idDonViDaiDien'],
+      tenDonViDaiDien: json['tenDonViDaiDien'],
+      ngayBanGiao: json['ngayBanGiao'],
+      idLanhDao: json['idLanhDao'],
+      tenLanhDao: json['tenLanhDao'],
+      idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
+      tenDaiDienBanHanhQD: json['tenDaiDienBanHanhQD'],
+      daXacNhan: json['daXacNhan'],
+      idDaiDienBenGiao: json['idDaiDienBenGiao'],
+      tenDaiDienBenGiao: json['tenDaiDienBenGiao'],
+      daiDienBenGiaoXacNhan: json['daiDienBenGiaoXacNhan'],
+      idDaiDienBenNhan: json['idDaiDienBenNhan'],
+      tenDaiDienBenNhan: json['tenDaiDienBenNhan'],
+      daiDienBenNhanXacNhan: json['daiDienBenNhanXacNhan'],
+      donViDaiDienXacNhan: json['donViDaiDienXacNhan'],
+      trangThai: json['trangThai'],
+      note: json['note'],
+      ngayTao: json['ngayTao'],
+      ngayCapNhat: json['ngayCapNhat'],
+      nguoiTao: json['nguoiTao'],
+      nguoiCapNhat: json['nguoiCapNhat'],
+      isActive: json['isActive'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      'decisionNumber': decisionNumber,
-      'order': order,
-      'transferDate': transferDate,
-      'transferDetail': transferDetail,
-      'senderUnit': senderUnit,
-      'receiverUnit': receiverUnit,
-      'createdBy': createdBy,
-      'state': state,
-      'assetHandoverMovements': assetHandoverMovements?.map((e) => e.toJson()).toList(),
-      'assetHandoverDetails': assetHandoverDetails?.toJson(),
+      'banGiaoTaiSan': banGiaoTaiSan,
+      'quyetDinhDieuDongSo': quyetDinhDieuDongSo,
+      'lenhDieuDong': lenhDieuDong,
+      'idDonViGiao': idDonViGiao,
+      'tenDonViGiao': tenDonViGiao,
+      'idDonViNhan': idDonViNhan,
+      'tenDonViNhan': tenDonViNhan,
+      'idDonViDaiDien': idDonViDaiDien,
+      'tenDonViDaiDien': tenDonViDaiDien,
+      'ngayBanGiao': ngayBanGiao,
+      'idLanhDao': idLanhDao,
+      'tenLanhDao': tenLanhDao,
+      'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
+      'tenDaiDienBanHanhQD': tenDaiDienBanHanhQD,
+      'daXacNhan': daXacNhan,
+      'idDaiDienBenGiao': idDaiDienBenGiao,
+      'tenDaiDienBenGiao': tenDaiDienBenGiao,
+      'daiDienBenGiaoXacNhan': daiDienBenGiaoXacNhan,
+      'idDaiDienBenNhan': idDaiDienBenNhan,
+      'tenDaiDienBenNhan': tenDaiDienBenNhan,
+      'daiDienBenNhanXacNhan': daiDienBenNhanXacNhan,
+      'donViDaiDienXacNhan': donViDaiDienXacNhan,
+      'trangThai': trangThai,
+      'note': note,
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
+      'nguoiTao': nguoiTao,
+      'nguoiCapNhat': nguoiCapNhat,
+      'isActive': isActive,
     };
   }
 }

@@ -18,6 +18,11 @@ import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_4.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/login/login_view.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_200.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/so_theo_doi.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
@@ -199,10 +204,51 @@ class AppRouteConf {
                   child: AssetCategoryView(),
                 ),
           ),
-          // GoRoute(
-          //   name: AppRoute.liveVideoVar.name,
-          //   pageBuilder: (_, __) => const NoTransitionPage(child: LiveVideoV2Page()),
-          // ),
+          GoRoute(
+            path: AppRoute.inventoryReconciliationReport.path,
+            name: AppRoute.inventoryReconciliationReport.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BienBanDoiChieuKiemKe(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.stocktakingReport.path,
+            name: AppRoute.stocktakingReport.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BienBanKiemKe(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.fixedAssetRegister.path,
+            name: AppRoute.fixedAssetRegister.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: SoTaiSanCoDinh(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.fixedAssetRegisterCircular200.path,
+            name: AppRoute.fixedAssetRegisterCircular200.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: SoTaiSanCoDinh200(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.trackingRecord.path,
+            name: AppRoute.trackingRecord.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: SoTheoDoi(),
+                ),
+          ),
         ],
       ),
     ],

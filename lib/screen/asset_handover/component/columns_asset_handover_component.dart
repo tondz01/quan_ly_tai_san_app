@@ -9,10 +9,7 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 String url =
     'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
 
-List<SgTableColumn<AssetHandoverDto>> createColumns(
-  BuildContext context,
-  Map<String, double> columnWidths,
-) {
+List<SgTableColumn<AssetHandoverDto>> createColumns(BuildContext context, Map<String, double> columnWidths) {
   return [
     TableColumnBuilder.createTextColumn<AssetHandoverDto>(
       title: 'Phiếu ký nội sinh',
@@ -25,21 +22,21 @@ List<SgTableColumn<AssetHandoverDto>> createColumns(
       title: 'Ngày ký',
       textColor: Colors.black87,
       fontSize: 12,
-      getValue: (item) => getDateOfSigning(item.transferDate ?? ''),
+      getValue: (item) => getDateOfSigning(item.ngayBanGiao ?? ''),
       width: columnWidths['Ngày ký']!,
     ),
     TableColumnBuilder.createTextColumn<AssetHandoverDto>(
       title: 'Ngày hiệu lực',
       textColor: Colors.black87,
       fontSize: 12,
-      getValue: (item) => item.transferDate ?? '',
+      getValue: (item) => item.ngayBanGiao ?? '',
       width: columnWidths['Ngày hiệu lực']!,
     ),
     TableColumnBuilder.createTextColumn<AssetHandoverDto>(
       title: 'Trình duyệt ban giám đốc',
       textColor: Colors.black87,
       fontSize: 12,
-      getValue: (item) => item.assetHandoverDetails!.leader ?? '',
+      getValue: (item) => item.tenLanhDao ?? '',
       width: columnWidths['Trình duyệt ban giám đốc']!,
     ),
     SgTableColumn<AssetHandoverDto>(
@@ -92,20 +89,12 @@ Widget showFile(String url, BuildContext context) {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.file_download_outlined,
-                size: 14,
-                color: Colors.blue.shade700,
-              ),
+              Icon(Icons.file_download_outlined, size: 14, color: Colors.blue.shade700),
               SizedBox(width: 4),
               Flexible(
                 child: Text(
                   'Bàn giao tài sản',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.blue.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.blue.shade700, fontWeight: FontWeight.w500),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -117,17 +106,11 @@ Widget showFile(String url, BuildContext context) {
 }
 
 bool onCheckIsEffective(AssetHandoverDto item) {
-  bool isUnitConfirm = item.assetHandoverDetails!.isUnitConfirm ?? false;
-  bool isDelivererConfirm =
-      item.assetHandoverDetails!.isDelivererConfirm ?? false;
-  bool isReceiverConfirm =
-      item.assetHandoverDetails!.isReceiverConfirm ?? false;
-  bool isRepresentativeUnitConfirm =
-      item.assetHandoverDetails!.isRepresentativeUnitConfirm ?? false;
-  return isUnitConfirm &&
-      isDelivererConfirm &&
-      isReceiverConfirm &&
-      isRepresentativeUnitConfirm;
+  bool isUnitConfirm = item.daXacNhan ?? false;
+  bool isDelivererConfirm = item.daiDienBenGiaoXacNhan ?? false;
+  bool isReceiverConfirm = item.daiDienBenNhanXacNhan ?? false;
+  bool isRepresentativeUnitConfirm = item.donViDaiDienXacNhan == "0" ? true : false;
+  return isUnitConfirm && isDelivererConfirm && isReceiverConfirm && isRepresentativeUnitConfirm;
 }
 
 Widget buildIsEffective(AssetHandoverDto item) {
@@ -160,9 +143,9 @@ Widget buildActions(BuildContext context, AssetHandoverDto item) {
       AssetHandoverColumns.buildActionButton(
         icon: Icons.delete,
         color: Colors.red,
-        tooltip: item.state != 0 ? null : 'Xóa',
+        tooltip: item.trangThai != 0 ? null : 'Xóa',
         onPressed: null,
-        disabled: item.state != 0,
+        disabled: item.trangThai != 0,
       ),
     ],
   );

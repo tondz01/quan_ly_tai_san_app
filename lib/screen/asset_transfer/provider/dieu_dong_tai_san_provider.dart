@@ -173,7 +173,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _applyFilters();
     notifyListeners();
   }
-
+  
   void _applyFilters() {
     if (_data == null) return;
 

@@ -1,8 +1,6 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_datetime_input_button.dart';
-// import 'package:se_gay_components/common/sg_datetime_input_button.dart';
 
 class CmFormDate extends StatefulWidget {
   const CmFormDate({
@@ -46,9 +44,7 @@ class _CmFormDateState extends State<CmFormDate> {
   Widget build(BuildContext context) {
     bool hasError = false;
     if (widget.validationErrors != null) {
-      hasError =
-          widget.fieldName != null &&
-          widget.validationErrors![widget.fieldName] == true;
+      hasError = widget.fieldName != null && widget.validationErrors![widget.fieldName] == true;
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -61,10 +57,7 @@ class _CmFormDateState extends State<CmFormDate> {
               '${widget.label} :',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
-                color:
-                    !widget.isEditing
-                        ? Colors.black87.withOpacity(0.6)
-                        : Colors.black,
+                color: !widget.isEditing ? Colors.black87.withValues(alpha: 0.6) : Colors.black,
               ),
             ),
           ),
@@ -79,7 +72,7 @@ class _CmFormDateState extends State<CmFormDate> {
                   onChanged: (dt) {
                     widget.onChanged?.call(dt);
                   },
-                  width: 260,
+                  width: double.infinity,
                   height: 40,
                   initWithNow: widget.initWithNow,
                   enable: widget.enable,
