@@ -18,43 +18,19 @@ class ContractPage {
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      "TẬP ĐOÀN CÔNG NGHIỆP",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "THAN - KHOÁNG SẢN VIỆT NAM",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "CÔNG TY THAN UÔNG BÍ - TKV",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text("TẬP ĐOÀN CÔNG NGHIỆP", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
+                    Text("THAN - KHOÁNG SẢN VIỆT NAM", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
+                    Text("CÔNG TY THAN UÔNG BÍ - TKV", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      "BIÊN BẢN",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
+                    Text("BIÊN BẢN", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold, fontSize: 20)),
                     Text(
                       "GIAO NHẬN TÀI SẢN",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
+                      style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                   ],
                 ),
@@ -69,18 +45,13 @@ class ContractPage {
             "Hôm nay, ${assetHandoverDto.ngayBanGiao}, tại  ${assetHandoverDto.tenDonViGiao}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
-          Text(
-            "Chúng tôi gồm có:",
-            style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-          ),
+          Text("Chúng tôi gồm có:", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "1. Ông (bà):\t\t${assetHandoverDto.tenLanhDao ?? ''}\t\tChức vụ: Nhân viên\t\tĐại diện: Phòng CV",
-              ),
+              Text("1. Ông (bà):\t\t${assetHandoverDto.tenLanhDao ?? ''}\t\tChức vụ: Nhân viên\t\tĐại diện: Phòng CV"),
               Text(
                 "2. Ông (bà):\t\t${assetHandoverDto.tenDaiDienBenGiao ?? ''}\t\tChức vụ: Trưởng phòng\t\tĐại diện: Kho Công ty (Bên giao)",
               ),
@@ -91,9 +62,7 @@ class ContractPage {
           ),
           const SizedBox(height: 16),
 
-          Text(
-            "Tiến hành giao nhận tài sản tại  ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:",
-          ),
+          Text("Tiến hành giao nhận tài sản tại  ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:"),
           const SizedBox(height: 8),
 
           Table(
@@ -155,7 +124,7 @@ class ContractPage {
 
   static Widget assetMovePage(AssetTransferDto assetTransferDto) {
     int type = assetTransferDto.type ?? 0;
-    SGLog.info("Contract","Type: $type");
+    SGLog.info("Contract", "Type: $type");
 
     final String typeAssetTransfer =
         type == 1
@@ -175,43 +144,19 @@ class ContractPage {
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      "TẬP ĐOÀN CÔNG NGHIỆP",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "THAN - KHOÁNG SẢN VIỆT NAM",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "CÔNG TY THAN UÔNG BÍ - TKV",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text("TẬP ĐOÀN CÔNG NGHIỆP", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
+                    Text("THAN - KHOÁNG SẢN VIỆT NAM", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
+                    Text("CÔNG TY THAN UÔNG BÍ - TKV", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      "BIÊN BẢN",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
+                    Text("BIÊN BẢN", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold, fontSize: 20)),
                     Text(
                       typeAssetTransfer.toUpperCase(),
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
+                      style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                   ],
                 ),
@@ -222,14 +167,11 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${assetTransferDto.decisionNumber}, ${assetTransferDto.decisionDate} của Giám đốc Công ty V/v ${typeAssetTransfer} từ ${assetTransferDto.deliveringUnit}  đến  ${assetTransferDto.receivingUnit}\n"
+            "Căn cứ vào Quyết định điều động số ${assetTransferDto.decisionNumber}, ${assetTransferDto.decisionDate} của Giám đốc Công ty V/v $typeAssetTransfer từ ${assetTransferDto.deliveringUnit}  đến  ${assetTransferDto.receivingUnit}\n"
             "Hôm nay, ${assetTransferDto.decisionDate}, tại  ${assetTransferDto.receivingUnit}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
-          Text(
-            "Chúng tôi gồm có:",
-            style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-          ),
+          Text("Chúng tôi gồm có:", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
           Column(
@@ -242,9 +184,7 @@ class ContractPage {
           ),
           const SizedBox(height: 16),
 
-          Text(
-            "Tiến hành điều động tài sản tại  ${assetTransferDto.receivingUnit} cụ thể như sau:",
-          ),
+          Text("Tiến hành điều động tài sản tại  ${assetTransferDto.receivingUnit} cụ thể như sau:"),
           const SizedBox(height: 8),
 
           Table(
@@ -269,30 +209,15 @@ class ContractPage {
                   _tableHeader("Tình trạng kỹ thuật"),
                 ],
               ),
-              for (
-                int i = 0;
-                i < assetTransferDto.movementDetails!.length;
-                i++
-              )
+              for (int i = 0; i < assetTransferDto.movementDetails!.length; i++)
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
-                    _tableCell(
-                      assetTransferDto.movementDetails![i].name ?? "",
-                    ),
-                    _tableCell(
-                      assetTransferDto.movementDetails![i].assetId ?? "",
-                    ),
-                    _tableCell(
-                      assetTransferDto.movementDetails![i].measurementUnit ??
-                          "",
-                    ),
-                    _tableCell(
-                      assetTransferDto.movementDetails![i].quantity ?? "",
-                    ),
-                    _tableCell(
-                      assetTransferDto.movementDetails![i].setCondition ?? "",
-                    ),
+                    _tableCell(assetTransferDto.movementDetails![i].name ?? ""),
+                    _tableCell(assetTransferDto.movementDetails![i].assetId ?? ""),
+                    _tableCell(assetTransferDto.movementDetails![i].measurementUnit ?? ""),
+                    _tableCell(assetTransferDto.movementDetails![i].quantity ?? ""),
+                    _tableCell(assetTransferDto.movementDetails![i].setCondition ?? ""),
                   ],
                 ),
             ],
@@ -316,9 +241,7 @@ class ContractPage {
     );
   }
 
-  static Widget toolAndMaterialTransferPage(
-    ToolAndMaterialTransferDto _toolAndMaterialTransferDto,
-  ) {
+  static Widget toolAndMaterialTransferPage(ToolAndMaterialTransferDto _toolAndMaterialTransferDto) {
     return DefaultTextStyle(
       style: GoogleFonts.robotoSerif(),
       child: Column(
@@ -330,43 +253,19 @@ class ContractPage {
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      "TẬP ĐOÀN CÔNG NGHIỆP",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "THAN - KHOÁNG SẢN VIỆT NAM",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "CÔNG TY THAN UÔNG BÍ - TKV",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    Text("TẬP ĐOÀN CÔNG NGHIỆP", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
+                    Text("THAN - KHOÁNG SẢN VIỆT NAM", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
+                    Text("CÔNG TY THAN UÔNG BÍ - TKV", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
               Center(
                 child: Column(
                   children: [
-                    Text(
-                      "BIÊN BẢN",
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
+                    Text("BIÊN BẢN", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold, fontSize: 20)),
                     Text(
                       'ĐIỀU ĐỘNG CÔNG CỤ DỤNG CỤ - VẬT TƯ',
-                      style: GoogleFonts.robotoSerif(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
+                      style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
                   ],
                 ),
@@ -381,10 +280,7 @@ class ContractPage {
             "Hôm nay, ${_toolAndMaterialTransferDto.decisionDate}, tại  ${_toolAndMaterialTransferDto.receivingUnit}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
-          Text(
-            "Chúng tôi gồm có:",
-            style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-          ),
+          Text("Chúng tôi gồm có:", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
           Column(
@@ -397,9 +293,7 @@ class ContractPage {
           ),
           const SizedBox(height: 16),
 
-          Text(
-            "Tiến hành điều động tài sản tại  ${_toolAndMaterialTransferDto.receivingUnit} cụ thể như sau:",
-          ),
+          Text("Tiến hành điều động tài sản tại  ${_toolAndMaterialTransferDto.receivingUnit} cụ thể như sau:"),
           const SizedBox(height: 8),
 
           Table(
@@ -424,40 +318,15 @@ class ContractPage {
                   _tableHeader("Tình trạng kỹ thuật"),
                 ],
               ),
-              for (
-                int i = 0;
-                i < _toolAndMaterialTransferDto.movementDetails!.length;
-                i++
-              )
+              for (int i = 0; i < _toolAndMaterialTransferDto.movementDetails!.length; i++)
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
-                    _tableCell(
-                      _toolAndMaterialTransferDto.movementDetails![i].name ??
-                          "",
-                    ),
-                    _tableCell(
-                      _toolAndMaterialTransferDto.movementDetails![i].assetId ??
-                          "",
-                    ),
-                    _tableCell(
-                      _toolAndMaterialTransferDto
-                              .movementDetails![i]
-                              .measurementUnit ??
-                          "",
-                    ),
-                    _tableCell(
-                      _toolAndMaterialTransferDto
-                              .movementDetails![i]
-                              .quantity ??
-                          "",
-                    ),
-                    _tableCell(
-                      _toolAndMaterialTransferDto
-                              .movementDetails![i]
-                              .setCondition ??
-                          "",
-                    ),
+                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].name ?? ""),
+                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].assetId ?? ""),
+                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].measurementUnit ?? ""),
+                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].quantity ?? ""),
+                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].setCondition ?? ""),
                   ],
                 ),
             ],
@@ -484,18 +353,11 @@ class ContractPage {
   static Widget _tableHeader(String text) {
     return Padding(
       padding: const EdgeInsets.all(6),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-      ),
+      child: Text(text, textAlign: TextAlign.center, style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
     );
   }
 
   static Widget _tableCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.all(6),
-      child: Text(text, style: GoogleFonts.robotoSerif()),
-    );
+    return Padding(padding: const EdgeInsets.all(6), child: Text(text, style: GoogleFonts.robotoSerif()));
   }
 }

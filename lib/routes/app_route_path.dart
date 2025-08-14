@@ -19,11 +19,15 @@ enum AppRoute {
   assetHandover(path: "/asset-handover", name: "asset-handover"),
   assetDepreciation(path: "/asset-depreciation", name: "asset-depreciation"),
   assetCategory(path: "/asset-category", name: "asset-category"),
-  assetGroup(path: "/asset-group", name: "asset-group"), 
-  assetManagement(path: "/asset-management", name: "asset-management"), 
+  assetGroup(path: "/asset-group", name: "asset-group"),
+  assetManagement(path: "/asset-management", name: "asset-management"),
   intangibleAsset(path: "/intangible-asset", name: "intangible-asset"),
-  login(path: "/login", name: "login"); 
-
+  inventoryReconciliationReport(path: "/inventory-reconciliation-report", name: "inventory-reconciliation-report"),
+  stocktakingReport(path: "/stocktaking-report", name: "stocktaking-report"),
+  fixedAssetRegister(path: "/fixed-asset-register", name: "fixed-asset-register"),
+  fixedAssetRegisterCircular200(path: "/fixed-asset-register-circular-200", name: "fixed-asset-register-circular-200"),
+  trackingRecord(path: "/tracking-record", name: "tracking-record"),
+  login(path: "/login", name: "login");
 
   final String path;
   final String? name;
