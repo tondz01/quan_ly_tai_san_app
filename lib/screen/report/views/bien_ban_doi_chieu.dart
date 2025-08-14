@@ -124,98 +124,110 @@ Widget _buildBangNoiDung() {
   );
 }
 
-Widget bienBanDoiChieuKiemKe() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+class BienBanDoiChieuKiemKe extends StatefulWidget {
+  const BienBanDoiChieuKiemKe({super.key});
+
+  @override
+  State<BienBanDoiChieuKiemKe> createState() => _BienBanDoiChieuKiemKeState();
+}
+
+class _BienBanDoiChieuKiemKeState extends State<BienBanDoiChieuKiemKe> {
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                "TẬP ĐOÀN CÔNG NGHIỆP",
-                style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+              Column(
+                children: [
+                  Text(
+                    "TẬP ĐOÀN CÔNG NGHIỆP",
+                    style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "THAN - KHOÁNG SẢN VIỆT NAM",
+                    style: GoogleFonts.robotoSerif(),
+                  ),
+                  Text(
+                    "CÔNG TY THAN UÔNG BÍ - TKV",
+                    style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-              Text(
-                "THAN - KHOÁNG SẢN VIỆT NAM",
-                style: GoogleFonts.robotoSerif(),
-              ),
-              Text(
-                "CÔNG TY THAN UÔNG BÍ - TKV",
-                style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+              Column(
+                children: [
+                  Text(
+                    "Mẫu số 03b -ĐC TSCĐ  ",
+                    style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "Ban hành kèm theo QĐ số           /QĐ-TUB",
+                    style: GoogleFonts.robotoSerif(),
+                  ),
+                  Text(
+                    "ngày        /11/2024 của Giám đốc Công ty ",
+                    style: GoogleFonts.robotoSerif(),
+                  ),
+                ],
               ),
             ],
           ),
-          Column(
+          const SizedBox(height: 12),
+          Text(
+            "BIÊN BẢN ĐỐI CHIẾU KIỂM KÊ TÀI SẢN, CÔNG CỤ DỤNG CỤ",
+            style: GoogleFonts.robotoSerif(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          Text(
+            "Có đến thời điểm 0h ngày 01 tháng 01 năm ……",
+            style: GoogleFonts.robotoSerif(),
+          ),
+          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Đơn vị: ………………………",
+              style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildThanhPhan(),
+          const SizedBox(height: 12),
+          _buildBangNoiDung(),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Text(
-                "Mẫu số 03b -ĐC TSCĐ  ",
+                "ỦY VIÊN HỘI ĐỒNG KIỂM KÊ",
                 style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
               ),
               Text(
-                "Ban hành kèm theo QĐ số           /QĐ-TUB",
-                style: GoogleFonts.robotoSerif(),
+                "ĐƠN VỊ ĐƯỢC KIỂM KÊ",
+                style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
               ),
-              Text(
-                "ngày        /11/2024 của Giám đốc Công ty ",
-                style: GoogleFonts.robotoSerif(),
+              Column(
+                children: [
+                  Text(
+                    "CHỦ TỊCH HỘI ĐỒNG",
+                    style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "GIÁM ĐỐC",
+                    style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
             ],
           ),
         ],
       ),
-      const SizedBox(height: 12),
-      Text(
-        "BIÊN BẢN ĐỐI CHIẾU KIỂM KÊ TÀI SẢN, CÔNG CỤ DỤNG CỤ",
-        style: GoogleFonts.robotoSerif(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
-      ),
-      Text(
-        "Có đến thời điểm 0h ngày 01 tháng 01 năm ……",
-        style: GoogleFonts.robotoSerif(),
-      ),
-      const SizedBox(height: 8),
-      const SizedBox(height: 12),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          "Đơn vị: ………………………",
-          style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-        ),
-      ),
-      const SizedBox(height: 12),
-      _buildThanhPhan(),
-      const SizedBox(height: 12),
-      _buildBangNoiDung(),
-      const SizedBox(height: 16),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Text(
-            "ỦY VIÊN HỘI ĐỒNG KIỂM KÊ",
-            style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-          ),
-          Text(
-            "ĐƠN VỊ ĐƯỢC KIỂM KÊ",
-            style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-          ),
-          Column(
-            children: [
-              Text(
-                "CHỦ TỊCH HỘI ĐỒNG",
-                style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "GIÁM ĐỐC",
-                style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-  );
+    );
+  }
 }
