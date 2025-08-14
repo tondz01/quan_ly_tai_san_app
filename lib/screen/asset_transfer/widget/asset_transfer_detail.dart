@@ -845,7 +845,7 @@ class _AssetTransferDetailState extends State<AssetTransferDetail> {
                   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
                 ],
                 idTaiLieu: item.id.toString(),
-                idNguoiKy: 'admin',
+                idNguoiKy: 'admin',tenNguoiKy: "Do Thanh Ton",
               ),
         );
       },

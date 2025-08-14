@@ -4,10 +4,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -18,6 +18,7 @@ class CommonContract extends StatefulWidget {
   final List<String> signatureList;
   final String idTaiLieu;
   final String idNguoiKy;
+  final String tenNguoiKy;
 
   const CommonContract({
     super.key,
@@ -25,6 +26,7 @@ class CommonContract extends StatefulWidget {
     required this.signatureList,
     required this.idTaiLieu,
     required this.idNguoiKy,
+    required this.tenNguoiKy,
   });
 
   @override
@@ -56,7 +58,13 @@ class _CommonContractState extends State<CommonContract> {
   }
 
   // ===== Add signatures =====
-  void _addSignature(Uint8List bytes, int loaiKy, double top, double left) {
+  void _addSignature(
+    Uint8List bytes,
+    int loaiKy,
+    double top,
+    double left,
+    bool isEdit,
+  ) {
     setState(() {
       images.add(
         DraggableImage(
@@ -66,6 +74,7 @@ class _CommonContractState extends State<CommonContract> {
           // 1: ký nháy, 2: ký, 3: ký số
           top: top,
           left: left,
+          isEdit: isEdit,
         ),
       );
     });
@@ -88,7 +97,7 @@ class _CommonContractState extends State<CommonContract> {
       final url = widget.signatureList.first;
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
-        _addSignature(response.bodyBytes, loaiKy, 100, 100);
+        _addSignature(response.bodyBytes, loaiKy, 100, 100, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -112,12 +121,12 @@ class _CommonContractState extends State<CommonContract> {
     _loadSignatures();
   }
 
-  Future<void> _pickImage(int loaiKy) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result != null && result.files.single.bytes != null) {
-      _addSignature(result.files.single.bytes!, loaiKy, 100, 100);
-    }
-  }
+  // Future<void> _pickImage(int loaiKy) async {
+  //   final result = await FilePicker.platform.pickFiles(type: FileType.image);
+  //   if (result != null && result.files.single.bytes != null) {
+  //     _addSignature(result.files.single.bytes!, loaiKy, 100, 100);
+  //   }
+  // }
 
   List<Map<String, dynamic>> signatures = [];
 
@@ -145,11 +154,15 @@ class _CommonContractState extends State<CommonContract> {
         setState(() {
           _isDigital = true;
         });
-      }
-
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        _addSignature(response.bodyBytes, loaiKy, y, x);
+        Uint8List? imgBytes = await _captureWidget(); // hàm này trả Uint8List
+        if (imgBytes != null) {
+          _addSignature(imgBytes, loaiKy, y, x, false);
+        }
+      } else {
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          _addSignature(response.bodyBytes, loaiKy, y, x, false);
+        }
       }
     }
   }
@@ -236,27 +249,14 @@ class _CommonContractState extends State<CommonContract> {
           "x": state.left,
           "y": state.top,
           "idNguoiKy": widget.idNguoiKy,
-          "chuKySo": img.loaiKy == 3 ? "DU_LIEU_CHU_KY_SO" : null,
+          "chuKySo": img.loaiKy == 3 ? signatureValue : null,
           "ngayKy": DateTime.now().toIso8601String(),
           "stt": i + 1,
           // Có thể thêm "Scale": state.scale nếu DB cần
         });
       }
     }
-    if (signatureValue.isNotEmpty) {
-      data.add({
-        "id": UniqueKey().toString(),
-        "idTaiLieu": widget.idTaiLieu,
-        "loaiKy": 3, // 1/2/3
-        "x": 0,
-        "y": 0,
-        "idNguoiKy": widget.idNguoiKy,
-        "chuKySo": signatureValue,
-        "ngayKy": DateTime.now().toIso8601String(),
-        "stt": data.length + 1,
-        // Có thể thêm "Scale": state.scale nếu DB cần
-      });
-    }
+
 
     return data;
   }
@@ -349,13 +349,30 @@ class _CommonContractState extends State<CommonContract> {
     }
   }
 
+  final GlobalKey _captureKey = GlobalKey();
+  Uint8List? capturedImage;
+
+  Future<Uint8List?> _captureWidget() async {
+    try {
+      RenderRepaintBoundary boundary =
+          _captureKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      return byteData?.buffer.asUint8List();
+    } catch (e) {
+      print("Capture error: $e");
+      return null;
+    }
+  }
+
   // ===== Ký hash =====
   Future<void> signing() async {
     String value = widget.idNguoiKy + widget.idTaiLieu;
     String hash = generateSha256(value);
     print("Chu ky SHA-256: $hash");
 
-    // Lấy token trước
+    // 1️⃣ Lấy token trước
     final token = await login();
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -365,6 +382,19 @@ class _CommonContractState extends State<CommonContract> {
     }
 
     try {
+      // 2️⃣ Capture widget trước khi call API
+      Uint8List? imgBytes = await _captureWidget(); // hàm này trả Uint8List
+      if (imgBytes == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Không thể chụp chữ ký')));
+        return;
+      }
+
+      // 3️⃣ Thêm chữ ký vào màn hình
+      _addSignature(imgBytes, 3, 500, 500, true);
+
+      // 4️⃣ Gọi API ký
       final String url = "https://rms.efy.com.vn/signing/hash";
       final Map<String, dynamic> signingPayload = {
         "agreementUUID": "02e80096-912a-4b30-a38e-334ddc110a1e",
@@ -373,7 +403,7 @@ class _CommonContractState extends State<CommonContract> {
         "encryption": "RSA",
         "hash": hash,
         "hashAlgorithm": "SHA-256",
-        "mimeType": "application/sha256-binary"
+        "mimeType": "application/sha256-binary",
       };
       final Map<String, String> headers = {
         "Content-Type": "application/json",
@@ -386,16 +416,15 @@ class _CommonContractState extends State<CommonContract> {
         body: jsonEncode(signingPayload),
       );
 
+      // 5️⃣ Xử lý kết quả
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final Map<String, dynamic> result = jsonDecode(response.body);
-        print(result);
         setState(() {
           signatureValue = result['signatureValue'] ?? '';
         });
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
-        print("Signature: ${signatureValue}");
       } else {
         print("HTTP ${response.statusCode}: ${response.body}");
         ScaffoldMessenger.of(
@@ -455,52 +484,67 @@ class _CommonContractState extends State<CommonContract> {
                     ],
                   ),
                 ),
-
-                // Khu vực tài liệu A4 ngang
-                Expanded(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      child: Container(
-                        width: 842,
-                        // A4 ngang ~ 842x595 @ 72dpi (đang demo UI)
-                        height: 595,
-                        margin: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                          border: Border.all(color: Colors.black12),
+                Stack(
+                  children: [
+                    Positioned(
+                      top: 100,
+                      left: 300,
+                      child: RepaintBoundary(
+                        key: _captureKey,
+                        child: buildSignatureValidContainer(
+                          widget.tenNguoiKy,
+                          DateFormat('dd/MM/yyyy').format(DateTime.now()),
                         ),
-                        child: RepaintBoundary(
-                          key: _contractKey,
-                          child: Stack(
-                            children: [
-                              // Nội dung hợp đồng
-                              Container(
-                                padding: const EdgeInsets.all(24),
-                                child: DefaultTextStyle(
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                  child: widget.contractType,
+                      ),
+                    ),
+
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Container(
+                            width: 842,
+                            // A4 ngang ~ 842x595 @ 72dpi (đang demo UI)
+                            height: 595,
+                            margin: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
                                 ),
+                              ],
+                              border: Border.all(color: Colors.black12),
+                            ),
+                            child: RepaintBoundary(
+                              key: _contractKey,
+                              child: Stack(
+                                children: [
+                                  // Nội dung hợp đồng
+                                  Container(
+                                    padding: const EdgeInsets.all(24),
+                                    child: DefaultTextStyle(
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                      child: widget.contractType,
+                                    ),
+                                  ),
+                                  // Các chữ ký kéo thả
+                                  ...images,
+                                ],
                               ),
-                              // Các chữ ký kéo thả
-                              ...images,
-                            ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
+                // Khu vực tài liệu A4 ngang
 
                 // Thanh chức năng dưới cùng
                 Container(
@@ -577,11 +621,57 @@ class _CommonContractState extends State<CommonContract> {
   }
 }
 
+Widget buildSignatureValidContainer(String name, String date) {
+  return Container(
+    padding: const EdgeInsets.all(6),
+    decoration: BoxDecoration(
+      border: Border.all(color: Colors.green, width: 1),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Chữ ký số",
+          style: TextStyle(
+            color: Colors.red,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "Ký bởi: $name",
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.check, color: Colors.green, size: 20),
+          ],
+        ),
+        Text(
+          "Ký ngày: $date",
+          style: const TextStyle(
+            color: Colors.red,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class DraggableImage extends StatefulWidget {
   final Uint8List bytes;
   final int loaiKy; // 1: ký nháy, 2: ký, 3: ký số
   final double top;
   final double left;
+  final bool isEdit;
 
   const DraggableImage({
     super.key,
@@ -589,6 +679,7 @@ class DraggableImage extends StatefulWidget {
     required this.loaiKy,
     required this.top,
     required this.left,
+    required this.isEdit,
   });
 
   @override
@@ -597,7 +688,6 @@ class DraggableImage extends StatefulWidget {
 
 class _DraggableImageState extends State<DraggableImage> {
   double top = 0;
-
   double left = 0;
   double scale = 1.0;
   bool isSelected = false;
@@ -606,7 +696,6 @@ class _DraggableImageState extends State<DraggableImage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     top = widget.top;
     left = widget.left;
@@ -614,7 +703,6 @@ class _DraggableImageState extends State<DraggableImage> {
 
   @override
   Widget build(BuildContext context) {
-    // Màu nhấn theo loại ký
     final Color accent = switch (widget.loaiKy) {
       1 => Colors.orange,
       2 => Colors.green,
@@ -626,48 +714,58 @@ class _DraggableImageState extends State<DraggableImage> {
       top: top,
       left: left,
       child: GestureDetector(
-        onTap: () => setState(() => isSelected = !isSelected),
-        onPanStart: (details) => lastPanPosition = details.globalPosition,
-        onPanUpdate: (details) {
-          setState(() {
-            final delta =
-                details.globalPosition -
-                (lastPanPosition ?? details.globalPosition);
-            left += delta.dx;
-            top += delta.dy;
-            lastPanPosition = details.globalPosition;
-          });
+        onTap: () {
+          if (widget.isEdit) {
+            setState(() => isSelected = !isSelected);
+          }
         },
+        onPanStart:
+            widget.isEdit
+                ? (details) => lastPanPosition = details.globalPosition
+                : null,
+        onPanUpdate:
+            widget.isEdit
+                ? (details) {
+                  setState(() {
+                    final delta =
+                        details.globalPosition -
+                        (lastPanPosition ?? details.globalPosition);
+                    left += delta.dx;
+                    top += delta.dy;
+                    lastPanPosition = details.globalPosition;
+                  });
+                }
+                : null,
         child: Stack(
-          clipBehavior: Clip.none,
+          clipBehavior: Clip.none, // Đảm bảo zoom không bị cắt
           alignment: Alignment.topRight,
           children: [
-            // Card chữ ký có bo góc + bóng đổ
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 border:
                     isSelected ? Border.all(color: accent, width: 1.2) : null,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(2, 2),
-                  ),
-                ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Transform.scale(
-                  scale: scale,
-                  alignment: Alignment.topLeft,
-                  child: Image.memory(widget.bytes, width: 150),
+              clipBehavior: Clip.none,
+              // Cho phép phần zoom vượt ra ngoài
+              child: Transform.scale(
+                scale: scale,
+                alignment: Alignment.center, // Zoom từ giữa ảnh
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Image.memory(
+                    widget.bytes,
+                    width: 150,
+                    fit: BoxFit.contain, // Không crop ảnh
+                  ),
                 ),
               ),
             ),
 
-            if (isSelected) ...[
+            if (isSelected && widget.isEdit) ...[
               // Nút xoá
               Positioned(
                 top: -10,
@@ -689,9 +787,6 @@ class _DraggableImageState extends State<DraggableImage> {
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(14),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black26, blurRadius: 4),
-                      ],
                     ),
                     child: const Icon(
                       Icons.close,
@@ -727,9 +822,6 @@ class _DraggableImageState extends State<DraggableImage> {
                     decoration: BoxDecoration(
                       color: accent,
                       borderRadius: BorderRadius.circular(6),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black26, blurRadius: 4),
-                      ],
                     ),
                     child: const Icon(
                       Icons.open_with,
@@ -754,7 +846,9 @@ class _DraggableImageState extends State<DraggableImage> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    'X:${left.toStringAsFixed(1)}, Y:${top.toStringAsFixed(1)}, S:${scale.toStringAsFixed(2)}',
+                    'X:${left.toStringAsFixed(1)}, '
+                    'Y:${top.toStringAsFixed(1)}, '
+                    'S:${scale.toStringAsFixed(2)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
