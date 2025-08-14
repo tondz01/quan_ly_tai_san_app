@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+
+import '../model/movement_detail_dto.dart';
 
 Widget toolAndMaterialTransferMovementTable(
   BuildContext context,

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,7 +10,7 @@ class DocumentUploadWidget extends StatefulWidget {
   final String? selectedFileName;
   final String? selectedFilePath;
   final Map<String, bool> validationErrors;
-  final Function(String? fileName, String? filePath) onFileSelected;
+  final Function(String? fileName, String? filePath, Uint8List? fileBytes) onFileSelected;
   final Function()? onUpload;
   final bool isUploading;
   final String label;
@@ -88,9 +89,10 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                             child: Text(
                               widget.selectedFileName ?? 'Chưa chọn tệp',
                               style: TextStyle(
-                                color: widget.selectedFileName != null
-                                    ? Colors.black
-                                    : Colors.grey.shade600,
+                                color:
+                                    widget.selectedFileName != null
+                                        ? Colors.black
+                                        : Colors.grey.shade600,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -98,7 +100,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                           if (widget.selectedFileName != null)
                             InkWell(
                               onTap: () {
-                                widget.onFileSelected(null, null);
+                                widget.onFileSelected(null, null, null);
                               },
                               child: Icon(
                                 Icons.close,
@@ -128,11 +130,12 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                   if (widget.onUpload != null) ...[
                     const SizedBox(width: 12),
                     ElevatedButton(
-                      onPressed: (widget.selectedFileName != null &&
-                              widget.isEditing &&
-                              !widget.isUploading)
-                          ? widget.onUpload
-                          : null,
+                      onPressed:
+                          (widget.selectedFileName != null &&
+                                  widget.isEditing &&
+                                  !widget.isUploading)
+                              ? widget.onUpload
+                              : null,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.green.shade600,
@@ -142,16 +145,17 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                           vertical: 10,
                         ),
                       ),
-                      child: widget.isUploading
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text('Tải lên'),
+                      child:
+                          widget.isUploading
+                              ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text('Tải lên'),
                     ),
                   ],
                 ],
@@ -194,7 +198,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
 
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
-        widget.onFileSelected(file.name, file.path);
+        widget.onFileSelected(file.name, file.path, kIsWeb ? file.bytes : null);
         log('Selected file: ${file.name}, Path: ${file.path}');
       }
     } on PlatformException catch (e) {
@@ -214,4 +218,4 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
       );
     }
   }
-} 
+}

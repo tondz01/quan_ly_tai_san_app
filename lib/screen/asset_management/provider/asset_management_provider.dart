@@ -12,7 +12,11 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dar
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+
+enum ShowBody { taiSan, khauHao }
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
@@ -21,19 +25,25 @@ class AssetManagementProvider with ChangeNotifier {
       _dataGroup == null ||
       _dataProject == null ||
       _dataCapitalSource == null ||
-      _dataDepartment == null;
+      _dataDepartment == null ||
+      _dataKhauHao == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  bool get isShowInputKhauHao => _isShowInputKhauHao;
+  bool get isShowCollapseKhauHao => _isShowCollapseKhauHao;
   get subScreen => _subScreen;
+  get body => _body;
 
   get data => _data;
   get dataDetail => _dataDetail;
+  get dataDepreciationDetail => _dataDepreciationDetail;
   get filteredData => _filteredData ?? _data;
 
   get dataGroup => _dataGroup;
   get dataProject => _dataProject;
   get dataCapitalSource => _dataCapitalSource;
   get dataDepartment => _dataDepartment;
+  get dataKhauHao => _dataKhauHao;
   get itemsLyDoTang => _itemsLyDoTang;
   get itemsHienTrang => _itemsHienTrang;
 
@@ -53,12 +63,31 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set isShowInputKhauHao(bool value) {
+    _isShowInputKhauHao = value;
+    notifyListeners();
+  }
+
+  set isShowCollapseKhauHao(bool value) {
+    _isShowCollapseKhauHao = value;
+    notifyListeners();
+  }
+
+  ShowBody typeBody = ShowBody.taiSan;
+
+  Widget? _body;
+
   // bool _isLoading = true;
   bool _isShowInput = false;
   bool _isShowCollapse = false;
+  bool _isShowInputKhauHao = false;
+  bool _isShowCollapseKhauHao = false;
   String? _error;
 
   String? _subScreen;
+
+  AssetManagementDto? _dataDetail;
+  AssetDepreciationDto? _dataDepreciationDetail;
 
   List<AssetManagementDto>? _data;
   List<AssetGroupDto>? _dataGroup;
@@ -66,8 +95,8 @@ class AssetManagementProvider with ChangeNotifier {
   List<NguonKinhPhi>? _dataCapitalSource;
   List<PhongBan>? _dataDepartment;
   List<AssetManagementDto>? _filteredData;
-  AssetManagementDto? _dataDetail;
-
+  List<ChildAssetDto>? _dataChildAssets;
+  List<AssetDepreciationDto>? _dataKhauHao;
   //List dropdown
   List<DropdownMenuItem<AssetGroupDto>>? _itemsAssetGroup;
   List<DropdownMenuItem<DuAn>>? _itemsDuAn;
@@ -101,9 +130,7 @@ class AssetManagementProvider with ChangeNotifier {
 
   // Thêm method để lấy Country từ ID
   Country? findCountryById(int id) {
-    return countries.firstWhereOrNull(
-      (country) => country.id == id,
-    );
+    return countries.firstWhereOrNull((country) => country.id == id);
   }
 
   List<Map<String, bool>?> checkBoxAssetGroup = [];
@@ -112,12 +139,15 @@ class AssetManagementProvider with ChangeNotifier {
     onLoadItemDropdown();
     isShowInput = false;
     isShowCollapse = false;
+    isShowInputKhauHao = false;
+    isShowCollapseKhauHao = false;
     getDataAll(context);
     notifyListeners();
   }
 
   reset() {
     // _isLoading = true;
+    onChangeBody(ShowBody.taiSan);
     clearFilter();
   }
 
@@ -125,13 +155,31 @@ class AssetManagementProvider with ChangeNotifier {
     try {
       final bloc = context.read<AssetManagementBloc>();
       // Gọi song song, không cần delay
-      bloc.add(GetListAssetManagementEvent(context, 'CT001'));
-      bloc.add(GetListAssetGroupEvent(context, 'CT001'));
-      bloc.add(GetListProjectEvent(context, 'CT001'));
-      bloc.add(GetListCapitalSourceEvent(context, 'CT001'));
-      bloc.add(GetListDepartmentEvent(context, 'CT001'));
+      bloc.add(GetListAssetManagementEvent(context, 'ct001'));
+      bloc.add(GetListAssetGroupEvent(context, 'ct001'));
+      bloc.add(GetListProjectEvent(context, 'ct001'));
+      bloc.add(GetListCapitalSourceEvent(context, 'ct001'));
+      bloc.add(GetListDepartmentEvent(context, 'ct001'));
+      bloc.add(GetListKhauHaoEvent(context, 'ct001'));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
+    }
+  }
+
+  void onChangeBody(ShowBody type) {
+    switch (type) {
+      case ShowBody.taiSan:
+        _subScreen = '';
+        typeBody = ShowBody.taiSan;
+        _isShowCollapse = false;
+        isShowInput = false;
+        break;
+      case ShowBody.khauHao:
+        _subScreen = 'Khấu hao tài sản';
+        _isShowCollapseKhauHao = false;
+        isShowInputKhauHao = false;
+        typeBody = ShowBody.khauHao;
+        break;
     }
   }
 
@@ -143,6 +191,17 @@ class AssetManagementProvider with ChangeNotifier {
     }
     _isShowCollapse = true;
     isShowInput = true;
+  }
+
+  void onChangeDepreciationDetail(AssetDepreciationDto? item) {
+    if (item != null) {
+      _dataDepreciationDetail = item;
+    } else {
+      _dataDepreciationDetail = null;
+    }
+    log('message onChangeDepreciationDetail');
+    _isShowCollapseKhauHao = true;
+    isShowInputKhauHao = true;
   }
 
   // CALL API SUCCESS ---------------------------------------------------------------
@@ -161,10 +220,36 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  createAssetSuccess(
+  getListChildAssetsSuccess(
     BuildContext context,
-    CreateAssetSuccessState state,
+    GetListChildAssetsSuccessState state,
   ) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataChildAssets = [];
+      // _filteredData = [];
+    } else {
+      _dataChildAssets = state.data;
+      _filteredData = List.from(_dataChildAssets!); // Khởi tạo filteredData
+    }
+    notifyListeners();
+  }
+
+  getListKhauHaoSuccess(
+    BuildContext context,
+    GetListKhauHaoSuccessState state,
+  ) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataKhauHao = [];
+      // _filteredData = [];
+    } else {
+      _dataKhauHao = state.data;
+    }
+    notifyListeners();
+  }
+
+  createAssetSuccess(BuildContext context, CreateAssetSuccessState state) {
     _error = null;
     // Thêm tài sản mới vào danh sách
     // if (state.data != null) {
@@ -175,12 +260,13 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  createAssetError(
-    BuildContext context,
-    CreateAssetFailedState state,
-  ) {
+  createAssetError(BuildContext context, CreateAssetFailedState state) {
     _error = state.message;
     notifyListeners();
+  }
+
+  AssetManagementDto? getInfoAssetByChildAsset(String idTaiSan) {
+    return data.firstWhere((element) => element.idTaiSan == idTaiSan);
   }
 
   getListAssetGroupSuccess(
@@ -246,11 +332,6 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
-    log('------------------------------------------------');
-    log(
-      '----------_dataCapitalSource: ${_dataCapitalSource?.length}---------------',
-    );
-    log('------------------------------------------------');
     notifyListeners();
   }
 
@@ -353,19 +434,13 @@ class AssetManagementProvider with ChangeNotifier {
   void onLoadItemDropdown() {
     _itemsCountry = [
       for (var element in listCountry)
-        DropdownMenuItem<Country>(
-          value: element,
-          child: Text(element.name),
-        ),
+        DropdownMenuItem<Country>(value: element, child: Text(element.name)),
     ];
 
     //Item dropdown lý do tăng
     _itemsLyDoTang = [
       for (var element in listLyDoTang)
-        DropdownMenuItem<LyDoTang>(
-          value: element,
-          child: Text(element.name),
-        ),
+        DropdownMenuItem<LyDoTang>(value: element, child: Text(element.name)),
     ];
 
     log('onLoadItemDropdown itemsLyDoTang: ${_itemsLyDoTang.length}');
@@ -373,10 +448,7 @@ class AssetManagementProvider with ChangeNotifier {
     //Item dropdown hien trang
     _itemsHienTrang = [
       for (var element in listHienTrang)
-        DropdownMenuItem<HienTrang>(
-          value: element,
-          child: Text(element.name),
-        ),
+        DropdownMenuItem<HienTrang>(value: element, child: Text(element.name)),
     ];
 
     log('onLoadItemDropdown itemsHienTrang: ${_itemsHienTrang.length}');

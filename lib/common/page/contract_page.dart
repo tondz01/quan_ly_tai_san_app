@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -83,7 +83,7 @@ class ContractPage {
                   _tableHeader("STT"),
                   _tableHeader("TÊN TÀI SẢN"),
                   _tableHeader("Ký, mã hiệu quy cách"),
-                  _tableHeader("Nước sản xuất"),
+
                   _tableHeader("Đơn vị tính"),
                   _tableHeader("Số lượng"),
                   _tableHeader("Tình trạng kỹ thuật"),
@@ -122,8 +122,8 @@ class ContractPage {
     );
   }
 
-  static Widget assetMovePage(AssetTransferDto assetTransferDto) {
-    int type = assetTransferDto.type ?? 0;
+  static Widget assetMovePage(DieuDongTaiSanDto dieuDongTaiSanDto) {
+    int type = dieuDongTaiSanDto.loai ?? 0;
     SGLog.info("Contract", "Type: $type");
 
     final String typeAssetTransfer =
@@ -167,8 +167,8 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${assetTransferDto.decisionNumber}, ${assetTransferDto.decisionDate} của Giám đốc Công ty V/v $typeAssetTransfer từ ${assetTransferDto.deliveringUnit}  đến  ${assetTransferDto.receivingUnit}\n"
-            "Hôm nay, ${assetTransferDto.decisionDate}, tại  ${assetTransferDto.receivingUnit}\n",
+            "Căn cứ vào Quyết định điều động số ${dieuDongTaiSanDto.soQuyetDinh}, ${dieuDongTaiSanDto.ngayCapNhat} của Giám đốc Công ty V/v $typeAssetTransfer từ ${dieuDongTaiSanDto.tenDonViGiao}  đến  ${dieuDongTaiSanDto.tenDonViNhan}\n"
+            "Hôm nay, ${dieuDongTaiSanDto.ngayCapNhat}, tại  ${dieuDongTaiSanDto.tenDonViNhan}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
           Text("Chúng tôi gồm có:", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
@@ -178,13 +178,13 @@ class ContractPage {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "1. Ông (bà):\t\t${assetTransferDto.requester!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${assetTransferDto.proposingUnit}",
+                "1. Ông (bà):\t\t${dieuDongTaiSanDto.tenNguoiDeNghi!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${dieuDongTaiSanDto.tenPhongBanXemPhieu}",
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          Text("Tiến hành điều động tài sản tại  ${assetTransferDto.receivingUnit} cụ thể như sau:"),
+          Text("Tiến hành điều động tài sản tại  ${dieuDongTaiSanDto.tenDonViNhan} cụ thể như sau:"),
           const SizedBox(height: 8),
 
           Table(
@@ -209,15 +209,15 @@ class ContractPage {
                   _tableHeader("Tình trạng kỹ thuật"),
                 ],
               ),
-              for (int i = 0; i < assetTransferDto.movementDetails!.length; i++)
+              for (int i = 0; i < dieuDongTaiSanDto.chiTietDieuDongTaiSans!.length; i++)
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
-                    _tableCell(assetTransferDto.movementDetails![i].name ?? ""),
-                    _tableCell(assetTransferDto.movementDetails![i].assetId ?? ""),
-                    _tableCell(assetTransferDto.movementDetails![i].measurementUnit ?? ""),
-                    _tableCell(assetTransferDto.movementDetails![i].quantity ?? ""),
-                    _tableCell(assetTransferDto.movementDetails![i].setCondition ?? ""),
+                    _tableCell(dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].tenTaiSan),
+                    _tableCell(dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].idTaiSan),
+                    _tableCell(dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].donViTinh),
+                    _tableCell(dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].soLuong.toString()),
+                    _tableCell(dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].ghiChu),
                   ],
                 ),
             ],

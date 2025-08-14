@@ -56,7 +56,10 @@ abstract class AppUtility {
   }
 
   static List<DropdownMenuItem<String>> phuongPhapKhauHaos = [
-    const DropdownMenuItem(value: 'Đường thẳng', child: SGText(text: 'Đường thẳng', size: 14)),
+    const DropdownMenuItem(
+      value: '1',
+      child: SGText(text: 'Đường thẳng', size: 14),
+    ),
   ];
 
   static String formatCurrencyNumber(String input) {
@@ -90,6 +93,43 @@ abstract class AppUtility {
         }
       }
     } catch (_) {}
+    return null;
+  }
+
+  static DateTime parseDateTimeOrNow(String? input) {
+    if (input == null || input.trim().isEmpty) return DateTime.now();
+    try {
+      return DateFormat('dd/MM/yyyy HH:mm').parse(input);
+    } catch (_) {
+      return DateTime.now();
+    }
+  }
+
+  static double parseCurrency(String input) {
+    if (input.isEmpty) return 0.0;
+    String sanitized = input.trim();
+    sanitized = sanitized.replaceAll('.', '');
+    sanitized = sanitized.replaceAll(',', '.');
+    return double.tryParse(sanitized) ?? 0.0;
+  }
+
+  static DateTime? parseFlexibleDateTime(String input) {
+    if (input.isEmpty) return null;
+    try {
+      return DateTime.parse(input);
+    } catch (_) {}
+    final patterns = [
+      'dd/MM/yyyy HH:mm:ss',
+      'dd/MM/yyyy HH:mm',
+      'dd/MM/yyyy',
+      'yyyy-MM-dd HH:mm:ss',
+      'yyyy-MM-dd',
+    ];
+    for (final p in patterns) {
+      try {
+        return DateFormat(p).parseStrict(input);
+      } catch (_) {}
+    }
     return null;
   }
 }

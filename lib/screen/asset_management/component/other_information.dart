@@ -49,18 +49,23 @@ Widget buildOtherInformation(
   required List<DropdownMenuItem<NguonKinhPhi>> itemsNguonKinhPhi,
   required Function(Country)? onNuocSanXuatChanged,
   required AssetManagementProvider provider,
+  DuAn? duAn,
   HienTrang? hienTrang,
   LyDoTang? lyDoTang,
   Country? country,
+  PhongBan? phongBanBanDau,
+  PhongBan? phongBanHienThoi,
 }) {
   return Column(
     children: [
-      SGText(text: 'Thông tin khác', size: 14),
+      SGText(text: 'Thông tin khác', size: 16, fontWeight: FontWeight.w600),
+      const SizedBox(height: 10),
       Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
       SizedBox(height: 8),
 
       CmFormDropdownObject<DuAn>(
         label: 'Dự án',
+        value: duAn,
         controller: ctrlDuAn,
         isEditing: isEditing,
         items: itemsDuAn,
@@ -97,7 +102,7 @@ Widget buildOtherInformation(
         label: 'Ký hiệu',
         controller: ctrlKyHieu,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlKyHieu.text,
         fieldName: 'kyHieu',
         validationErrors: validationErrors,
       ),
@@ -106,9 +111,9 @@ Widget buildOtherInformation(
         label: 'Số ký hiệu',
         controller: ctrlSoKyHieu,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlSoKyHieu.text,
         fieldName: 'soKyHieu',
-        inputType: TextInputType.number,
+        // inputType: TextInputType.number,
         validationErrors: validationErrors,
       ),
 
@@ -116,7 +121,7 @@ Widget buildOtherInformation(
         label: 'Công suất',
         controller: ctrlCongSuat,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlCongSuat.text,
         fieldName: 'congSuat',
         validationErrors: validationErrors,
       ),
@@ -142,7 +147,7 @@ Widget buildOtherInformation(
         label: 'Năm sản xuất',
         controller: ctrlNamSanXuat,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlNamSanXuat.text,
         fieldName: 'namSanXuat',
         inputType: TextInputType.number,
         validationErrors: validationErrors,
@@ -186,7 +191,7 @@ Widget buildOtherInformation(
         label: 'Số lượng',
         controller: ctrlSoLuong,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlSoLuong.text,
         fieldName: 'soLuong',
         inputType: TextInputType.number,
         validationErrors: validationErrors,
@@ -196,7 +201,7 @@ Widget buildOtherInformation(
         label: 'Đơn vị tính',
         controller: ctrlDonViTinh,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlDonViTinh.text,
         fieldName: 'donViTinh',
         validationErrors: validationErrors,
       ),
@@ -205,7 +210,7 @@ Widget buildOtherInformation(
         label: 'Ghi chú',
         controller: ctrlGhiChu,
         isEditing: isEditing,
-        textContent: '',
+        textContent: ctrlGhiChu.text,
         fieldName: 'ghiChu',
         validationErrors: validationErrors,
       ),
@@ -213,15 +218,16 @@ Widget buildOtherInformation(
       CommonCheckboxInput(
         label: 'Khoi tạo đơn vị',
         value: valueKhoiTaoDonVi,
-        onChanged: onKhoiTaoDonViChanged,
         isEditing: isEditing,
-        isEnable: false,
+        isDisabled: !isEditing,
+        onChanged: onKhoiTaoDonViChanged,
       ),
 
       if (valueKhoiTaoDonVi)
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị sử dụng ban đầu',
           controller: ctrlDonViBanDau,
+          value: phongBanBanDau,
           isEditing: isEditing,
           items: itemsPhongBan,
           defaultValue:
@@ -239,6 +245,7 @@ Widget buildOtherInformation(
       CmFormDropdownObject<PhongBan>(
         label: 'Đơn vị hiện thời',
         controller: ctrlDonViHienThoi,
+        value: phongBanHienThoi,
         isEditing: isEditing,
         items: itemsPhongBan,
         defaultValue:

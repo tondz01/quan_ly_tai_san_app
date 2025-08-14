@@ -6,12 +6,13 @@ import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/app.dart';
 import 'package:quan_ly_tai_san_app/core/utils/app_bloc_observer.dart';
 import 'package:quan_ly_tai_san_app/injection.dart' as di;
+import 'package:get_storage/get_storage.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class Config {
-  static const String environment = "prod";
+  static const String environment = "prd";
 
   static String get baseUrl {
     switch (environment) {
@@ -25,6 +26,7 @@ class Config {
 
 void main() async {
   ApiConfig.setBaseURL(Config.baseUrl);
+  await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
   Intl.defaultLocale = 'vi_VN';
   await initializeDateFormatting('vi');

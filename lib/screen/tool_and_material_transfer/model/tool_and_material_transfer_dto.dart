@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+import 'movement_detail_dto.dart';
 
 class ToolAndMaterialTransferDto {
   final String? id;

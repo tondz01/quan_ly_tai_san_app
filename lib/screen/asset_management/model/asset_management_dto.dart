@@ -1,46 +1,46 @@
 import 'dart:convert';
 
 class AssetManagementDto {
-  final String? id;
-  final String? tenTaiSan;
-  final double? nguyenGia;
-  final double? giaTriKhauHaoBanDau;
-  final int? kyKhauHaoBanDau;
-  final double? giaTriThanhLy;
-  final String? idMoHinhTaiSan;
-  final String? tenMoHinh;
-  final String? idNhomTaiSan;
-  final String? tenNhom;
-  final String? idDuAn;
-  final String? tenDuAn;
-  final String? idNguonVon;
-  final String? tenNguonKinhPhi;
-  final String? phuongPhapKhauHao;
-  final int? soKyKhauHao;
-  final int? taiKhoanTaiSan;
-  final int? taiKhoanKhauHao;
-  final int? taiKhoanChiPhi;
-  final DateTime? ngayVaoSo;
-  final DateTime? ngaySuDung;
-  final String? kyHieu;
-  final String? soKyHieu;
-  final String? congSuat;
-  final String? nuocSanXuat;
-  final int? namSanXuat;
-  final int? lyDoTang;
-  final int? hienTrang;
-  final int? soLuong;
-  final String? donViTinh;
-  final String? ghiChu;
-  final String? idDonViBanDau;
-  final String? idDonViHienThoi;
-  final String? moTa;
-  final String? idCongTy;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
-  final String? nguoiTao;
-  final String? nguoiCapNhat;
-  final bool? isActive;
+  String? id;
+  String? tenTaiSan;
+  double? nguyenGia;
+  double? giaTriKhauHaoBanDau;
+  int? kyKhauHaoBanDau;
+  double? giaTriThanhLy;
+  String? idMoHinhTaiSan;
+  String? tenMoHinh;
+  String? idNhomTaiSan;
+  String? tenNhom;
+  String? idDuAn;
+  String? tenDuAn;
+  String? idNguonVon;
+  String? tenNguonKinhPhi;
+  int? phuongPhapKhauHao;
+  int? soKyKhauHao;
+  int? taiKhoanTaiSan;
+  int? taiKhoanKhauHao;
+  int? taiKhoanChiPhi;
+  DateTime? ngayVaoSo;
+  DateTime? ngaySuDung;
+  String? kyHieu;
+  String? soKyHieu;
+  String? congSuat;
+  String? nuocSanXuat;
+  int? namSanXuat;
+  int? lyDoTang;
+  int? hienTrang;
+  int? soLuong;
+  String? donViTinh;
+  String? ghiChu;
+  String? idDonViBanDau;
+  String? idDonViHienThoi;
+  String? moTa;
+  String? idCongTy;
+  String? ngayTao;
+  String? ngayCapNhat;
+  String? nguoiTao;
+  String? nguoiCapNhat;
+  bool? isActive;
 
   AssetManagementDto({
     this.id,
@@ -106,12 +106,14 @@ class AssetManagementDto {
       taiKhoanTaiSan: json['taiKhoanTaiSan'],
       taiKhoanKhauHao: json['taiKhoanKhauHao'],
       taiKhoanChiPhi: json['taiKhoanChiPhi'],
-      ngayVaoSo: json['ngayVaoSo'] != null
-          ? DateTime.tryParse(json['ngayVaoSo'])
-          : null,
-      ngaySuDung: json['ngaySuDung'] != null
-          ? DateTime.tryParse(json['ngaySuDung'])
-          : null,
+      ngayVaoSo:
+          json['ngayVaoSo'] != null
+              ? DateTime.tryParse(json['ngayVaoSo'])
+              : null,
+      ngaySuDung:
+          json['ngaySuDung'] != null
+              ? DateTime.tryParse(json['ngaySuDung'])
+              : null,
       kyHieu: json['kyHieu'],
       soKyHieu: json['soKyHieu'],
       congSuat: json['congSuat'],
@@ -126,12 +128,8 @@ class AssetManagementDto {
       idDonViHienThoi: json['idDonViHienThoi'],
       moTa: json['moTa'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'] != null
-          ? DateTime.tryParse(json['ngayTao'])
-          : null,
-      ngayCapNhat: json['ngayCapNhat'] != null
-          ? DateTime.tryParse(json['ngayCapNhat'])
-          : null,
+      ngayTao: json['ngayTao'],
+      ngayCapNhat: json['ngayCapNhat'],
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -175,8 +173,8 @@ class AssetManagementDto {
       'idDonViHienThoi': idDonViHienThoi,
       'moTa': moTa,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String(),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -194,4 +192,54 @@ class AssetManagementDto {
       (json.decode(assets) as List<dynamic>)
           .map<AssetManagementDto>((item) => AssetManagementDto.fromJson(item))
           .toList();
+
+  factory AssetManagementDto.empty() {
+    return AssetManagementDto(
+      id: '',
+      tenTaiSan: '',
+      nguyenGia: null,
+      giaTriKhauHaoBanDau: null,
+      kyKhauHaoBanDau: null,
+      giaTriThanhLy: null,
+      idMoHinhTaiSan: '',
+      tenMoHinh: '',
+      idNhomTaiSan: '',
+      tenNhom: '',
+      idDuAn: '',
+      tenDuAn: '',
+      idNguonVon: '',
+      tenNguonKinhPhi: '',
+      phuongPhapKhauHao: null,
+      soKyKhauHao: null,
+      taiKhoanTaiSan: null,
+      taiKhoanKhauHao: null,
+      taiKhoanChiPhi: null,
+      ngayVaoSo: DateTime.now(),
+      ngaySuDung: DateTime.now(),
+      kyHieu : '',
+      soKyHieu: '',
+      congSuat: '',
+      nuocSanXuat: '',
+      namSanXuat: null,
+      lyDoTang: null,
+      hienTrang: -1,
+      soLuong: null,
+      donViTinh: '',
+      ghiChu: '',
+      idDonViBanDau: '',
+      idDonViHienThoi: '',
+      moTa: '',
+      idCongTy: '',
+      ngayTao: DateTime.now().toIso8601String(),
+      ngayCapNhat: DateTime.now().toIso8601String(),
+      nguoiTao: '',
+      nguoiCapNhat: '',
+      isActive: true,
+    );
+  }
+  
+  @override
+  String toString() {
+    return tenTaiSan ?? '';
+  }
 }
