@@ -1,13 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ContractPage {
-  static Widget assetHandoverPage(AssetHandoverDto _assetHandoverDto) {
+  static Widget assetHandoverPage(AssetHandoverDto assetHandoverDto) {
     return DefaultTextStyle(
       style: GoogleFonts.robotoSerif(),
       child: Column(
@@ -66,8 +65,8 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${_assetHandoverDto.decisionNumber}, ${_assetHandoverDto.transferDate} của Giám đốc Công ty V/v điều động tài sản từ ${_assetHandoverDto.senderUnit}  đến  ${_assetHandoverDto.receiverUnit}\n"
-            "Hôm nay, ${_assetHandoverDto.transferDate}, tại  ${_assetHandoverDto.senderUnit}\n",
+            "Căn cứ vào Quyết định điều động số ${assetHandoverDto.quyetDinhDieuDongSo}, ${assetHandoverDto.ngayBanGiao} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao}  đến  ${assetHandoverDto.tenDonViNhan}\n"
+            "Hôm nay, ${assetHandoverDto.ngayBanGiao}, tại  ${assetHandoverDto.tenDonViGiao}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
           Text(
@@ -80,20 +79,20 @@ class ContractPage {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "1. Ông (bà):\t\t${_assetHandoverDto.assetHandoverDetails!.leader}\t\tChức vụ: Nhân viên\t\tĐại diện: Phòng CV",
+                "1. Ông (bà):\t\t${assetHandoverDto.tenLanhDao ?? ''}\t\tChức vụ: Nhân viên\t\tĐại diện: Phòng CV",
               ),
               Text(
-                "2. Ông (bà):\t\t${_assetHandoverDto.assetHandoverDetails!.delivererRepresentative}\t\tChức vụ: Trưởng phòng\t\tĐại diện: Kho Công ty (Bên giao)",
+                "2. Ông (bà):\t\t${assetHandoverDto.tenDaiDienBenGiao ?? ''}\t\tChức vụ: Trưởng phòng\t\tĐại diện: Kho Công ty (Bên giao)",
               ),
               Text(
-                "3. Ông (bà):\t\t${_assetHandoverDto.assetHandoverDetails!.receiverRepresentative}\t\tChức vụ: Phó quản đốc\t\tĐại diện: Phân xưởng khai thác đào lò 1 (Bên nhận)",
+                "3. Ông (bà):\t\t${assetHandoverDto.tenDaiDienBenNhan ?? ''}\t\tChức vụ: Phó quản đốc\t\tĐại diện: Phân xưởng khai thác đào lò 1 (Bên nhận)",
               ),
             ],
           ),
           const SizedBox(height: 16),
 
           Text(
-            "Tiến hành giao nhận tài sản tại  ${_assetHandoverDto.receiverUnit} cụ thể như sau:",
+            "Tiến hành giao nhận tài sản tại  ${assetHandoverDto.tenDonViNhan ?? ''} cụ thể như sau:",
           ),
           const SizedBox(height: 8),
 
@@ -121,45 +120,18 @@ class ContractPage {
                   _tableHeader("Tình trạng kỹ thuật"),
                 ],
               ),
-              for (
-                int i = 0;
-                i < _assetHandoverDto.assetHandoverMovements!.length;
-                i++
-              )
-                TableRow(
-                  children: [
-                    _tableCell((i + 1).toString()),
-                    _tableCell(
-                      _assetHandoverDto.assetHandoverMovements![i].name ?? "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto.assetHandoverMovements![i].handoverId ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto
-                              .assetHandoverMovements![i]
-                              .countryOfOrigin ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto
-                              .assetHandoverMovements![i]
-                              .measurementUnit ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto.assetHandoverMovements![i].quantity ??
-                          "",
-                    ),
-                    _tableCell(
-                      _assetHandoverDto
-                              .assetHandoverMovements![i]
-                              .setCondition ??
-                          "",
-                    ),
-                  ],
-                ),
+              // Dữ liệu chi tiết chưa được cung cấp trong AssetHandoverDto
+              TableRow(
+                children: [
+                  _tableCell(""),
+                  _tableCell(""),
+                  _tableCell(""),
+                  _tableCell(""),
+                  _tableCell(""),
+                  _tableCell(""),
+                  _tableCell(""),
+                ],
+              ),
             ],
           ),
 
@@ -181,9 +153,9 @@ class ContractPage {
     );
   }
 
-  static Widget assetMovePage(AssetTransferDto _assetTransferDto) {
-    int type = _assetTransferDto.type ?? 0;
-    print("Type: $type");
+  static Widget assetMovePage(AssetTransferDto assetTransferDto) {
+    int type = assetTransferDto.type ?? 0;
+    SGLog.info("Contract","Type: $type");
 
     final String typeAssetTransfer =
         type == 1
@@ -250,8 +222,8 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${_assetTransferDto.decisionNumber}, ${_assetTransferDto.decisionDate} của Giám đốc Công ty V/v ${typeAssetTransfer} từ ${_assetTransferDto.deliveringUnit}  đến  ${_assetTransferDto.receivingUnit}\n"
-            "Hôm nay, ${_assetTransferDto.decisionDate}, tại  ${_assetTransferDto.receivingUnit}\n",
+            "Căn cứ vào Quyết định điều động số ${assetTransferDto.decisionNumber}, ${assetTransferDto.decisionDate} của Giám đốc Công ty V/v ${typeAssetTransfer} từ ${assetTransferDto.deliveringUnit}  đến  ${assetTransferDto.receivingUnit}\n"
+            "Hôm nay, ${assetTransferDto.decisionDate}, tại  ${assetTransferDto.receivingUnit}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
           Text(
@@ -264,14 +236,14 @@ class ContractPage {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "1. Ông (bà):\t\t${_assetTransferDto.requester!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${_assetTransferDto.proposingUnit}",
+                "1. Ông (bà):\t\t${assetTransferDto.requester!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${assetTransferDto.proposingUnit}",
               ),
             ],
           ),
           const SizedBox(height: 16),
 
           Text(
-            "Tiến hành điều động tài sản tại  ${_assetTransferDto.receivingUnit} cụ thể như sau:",
+            "Tiến hành điều động tài sản tại  ${assetTransferDto.receivingUnit} cụ thể như sau:",
           ),
           const SizedBox(height: 8),
 
@@ -299,27 +271,27 @@ class ContractPage {
               ),
               for (
                 int i = 0;
-                i < _assetTransferDto.movementDetails!.length;
+                i < assetTransferDto.movementDetails!.length;
                 i++
               )
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].name ?? "",
+                      assetTransferDto.movementDetails![i].name ?? "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].assetId ?? "",
+                      assetTransferDto.movementDetails![i].assetId ?? "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].measurementUnit ??
+                      assetTransferDto.movementDetails![i].measurementUnit ??
                           "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].quantity ?? "",
+                      assetTransferDto.movementDetails![i].quantity ?? "",
                     ),
                     _tableCell(
-                      _assetTransferDto.movementDetails![i].setCondition ?? "",
+                      assetTransferDto.movementDetails![i].setCondition ?? "",
                     ),
                   ],
                 ),

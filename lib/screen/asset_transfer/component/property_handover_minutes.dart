@@ -352,7 +352,7 @@ class _PropertyHandoverMinutesContentState
 
   int _getCountByState(String key) {
     final status = _statusValues[key] ?? 0;
-    return widget.data.where((item) => item.state == status).length;
+    return widget.data.where((item) => item.trangThai == status).length;
   }
 
   List<SgTableColumn<AssetHandoverDto>> _createColumns(
@@ -363,7 +363,7 @@ class _PropertyHandoverMinutesContentState
       TableColumnBuilder.createTextColumn<AssetHandoverDto>(
         title: 'Quyết định điều động',
         textColor: Colors.black87,
-        getValue: (item) => item.decisionNumber ?? '',
+        getValue: (item) => item.quyetDinhDieuDongSo ?? '',
         fontSize: 12,
         width: columnWidths['Quyết định điều động']!,
       ),
@@ -371,20 +371,20 @@ class _PropertyHandoverMinutesContentState
         title: 'Lệnh điều động',
         textColor: Colors.black87,
         fontSize: 12,
-        getValue: (item) => item.order ?? '',
+        getValue: (item) => item.lenhDieuDong ?? '',
         width: columnWidths['Lệnh điều động']!,
       ),
       TableColumnBuilder.createTextColumn<AssetHandoverDto>(
         title: 'Ngày bàn giao',
         textColor: Colors.black87,
         fontSize: 12,
-        getValue: (item) => item.transferDate ?? '',
+        getValue: (item) => item.ngayBanGiao ?? '',
         width: columnWidths['Ngày bàn giao']!,
       ),
       SgTableColumn<AssetHandoverDto>(
         title: 'Chi tiết bàn giao',
         cellBuilder:
-            (item) => AssetHandoverColumns.buildMovementDetails(item.assetHandoverMovements ?? []),
+            (item) => AssetHandoverColumns.buildMovementDetails(const []),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,
         width: columnWidths['Chi tiết bàn giao']!,
@@ -393,19 +393,19 @@ class _PropertyHandoverMinutesContentState
         title: 'Đơn vị giao',
         textColor: Colors.black87,
         fontSize: 12,
-        getValue: (item) => item.senderUnit ?? '',
+        getValue: (item) => item.tenDonViGiao ?? '',
         width: columnWidths['Đơn vị giao']!,
       ),
       TableColumnBuilder.createTextColumn<AssetHandoverDto>(
         title: 'Đơn vị nhận',
         textColor: Colors.black87,
         fontSize: 12,
-        getValue: (item) => item.receiverUnit ?? '',
+        getValue: (item) => item.tenDonViNhan ?? '',
         width: columnWidths['Đơn vị nhận']!,
       ),
       SgTableColumn<AssetHandoverDto>(
         title: 'Trạng thái',
-        cellBuilder: (item) => AssetHandoverColumns.buildStatus(item.state ?? 0),
+        cellBuilder: (item) => AssetHandoverColumns.buildStatus(item.trangThai ?? 0),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,
         width: columnWidths['Trạng thái']!,

@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
-import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 
 class CommonFormInput extends StatefulWidget {
   const CommonFormInput({

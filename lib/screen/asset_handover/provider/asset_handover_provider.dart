@@ -46,18 +46,12 @@ class AssetHandoverProvider with ChangeNotifier {
 
   // Getter để lấy count cho mỗi status
   int get allCount => _data?.length ?? 0;
-  int get draftCount =>
-      _data?.where((item) => (item.state ?? 0) == 0).length ?? 0;
-  int get readyCount =>
-      _data?.where((item) => (item.state ?? 0) == 1).length ?? 0;
-  int get confirmCount =>
-      _data?.where((item) => (item.state ?? 0) == 2).length ?? 0;
-  int get browserCount =>
-      _data?.where((item) => (item.state ?? 0) == 3).length ?? 0;
-  int get completeCount =>
-      _data?.where((item) => (item.state ?? 0) == 4).length ?? 0;
-  int get cancelCount =>
-      _data?.where((item) => (item.state ?? 0) == 5).length ?? 0;
+  int get draftCount => _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
+  int get readyCount => _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
+  int get confirmCount => _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
+  int get browserCount => _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
+  int get completeCount => _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
+  int get cancelCount => _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
 
   // Thuộc tính cho tìm kiếm
   String get searchTerm => _searchTerm;
@@ -190,35 +184,29 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {
       statusFiltered =
           _data!.where((item) {
-            int itemStatus = item.state ?? -1;
+            int itemStatus = item.trangThai ?? -1;
 
-            if (_filterStatus[FilterStatus.draft] == true &&
-                (itemStatus == 0)) {
+            if (_filterStatus[FilterStatus.draft] == true && (itemStatus == 0)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.ready] == true &&
-                (itemStatus == 1)) {
+            if (_filterStatus[FilterStatus.ready] == true && (itemStatus == 1)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.confirm] == true &&
-                (itemStatus == 2)) {
+            if (_filterStatus[FilterStatus.confirm] == true && (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true &&
-                (itemStatus == 3)) {
+            if (_filterStatus[FilterStatus.browser] == true && (itemStatus == 3)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 4)) {
+            if (_filterStatus[FilterStatus.complete] == true && (itemStatus == 4)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 5)) {
+            if (_filterStatus[FilterStatus.cancel] == true && (itemStatus == 5)) {
               return true;
             }
 
@@ -231,32 +219,14 @@ class AssetHandoverProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           statusFiltered.where((item) {
-            return
-            // Tên phiếu
-            (item.name?.toLowerCase().contains(searchLower) ?? false) ||
-                // Số quyết định
-                (item.decisionNumber?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                // Người đề nghị
-                (item.createdBy?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                // Người lập phiếu
-                (item.createdBy?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                // Chi tiết điều động
-                (item.assetHandoverMovements?.any(
-                      (detail) =>
-                          detail.name?.toLowerCase().contains(searchLower) ??
-                          false,
-                    ) ??
-                    false) ||
-                // Đơn vị giao/nhận
-                (item.senderUnit?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.receiverUnit?.toLowerCase().contains(searchLower) ??
-                    false);
+            return (item.banGiaoTaiSan?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.quyetDinhDieuDongSo?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenDonViDaiDien?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenLanhDao?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ?? false);
           }).toList();
-
     } else {
       _filteredData = statusFiltered;
     }
@@ -381,10 +351,7 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {}
   }
 
-  getListAssetHandoverSuccess(
-    BuildContext context,
-    GetListAssetHandoverSuccessState state,
-  ) {
+  getListAssetHandoverSuccess(BuildContext context, GetListAssetHandoverSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
@@ -398,24 +365,16 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> _showUnsavedChangesDialog(
-    BuildContext context,
-    AssetHandoverDto? item,
-  ) async {
+  Future<bool> _showUnsavedChangesDialog(BuildContext context, AssetHandoverDto? item) async {
     return await showDialog<bool>(
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Thay đổi chưa lưu'),
-              content: const Text(
-                'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
-              ),
+              content: const Text('Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?'),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Hủy'),
-                ),
+                TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Hủy')),
                 TextButton(
                   onPressed: () {
                     _item = item;
@@ -436,10 +395,7 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
-  Future<bool> _confirmBeforeLeaving(
-    BuildContext context,
-    AssetHandoverDto? item,
-  ) async {
+  Future<bool> _confirmBeforeLeaving(BuildContext context, AssetHandoverDto? item) async {
     if (hasUnsavedChanges) {
       return await _showUnsavedChangesDialog(context, item);
     } else {

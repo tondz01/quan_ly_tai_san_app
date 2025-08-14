@@ -92,9 +92,9 @@ abstract class AssetHandoverColumns {
         buildActionButton(
           icon: Icons.delete,
           color: Colors.red,
-          tooltip: item.state != 0 ? null : 'Xóa',
+          tooltip: item.trangThai != 0 ? null : 'Xóa',
           onPressed: null,
-          disabled: item.state != 0,
+          disabled: item.trangThai != 0,
         ),
       ],
     );

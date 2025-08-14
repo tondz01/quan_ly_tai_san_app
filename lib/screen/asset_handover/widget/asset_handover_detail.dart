@@ -5,12 +5,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
@@ -22,12 +23,7 @@ class AssetHandoverDetail extends StatefulWidget {
   final bool isEditing;
   final bool isNew;
 
-  const AssetHandoverDetail({
-    super.key,
-    this.isEditing = false,
-    this.isNew = false,
-    required this.provider,
-  });
+  const AssetHandoverDetail({super.key, this.isEditing = false, this.isNew = false, required this.provider});
 
   @override
   State<AssetHandoverDetail> createState() => _AssetHandoverDetailState();
@@ -41,14 +37,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
   late TextEditingController controllerLeader = TextEditingController();
-  late TextEditingController controllerIssuingUnitRepresentative =
-      TextEditingController();
-  late TextEditingController controllerDelivererRepresentative =
-      TextEditingController();
-  late TextEditingController controllerReceiverRepresentative =
-      TextEditingController();
-  late TextEditingController controllerRepresentativeUnit =
-      TextEditingController();
+  late TextEditingController controllerIssuingUnitRepresentative = TextEditingController();
+  late TextEditingController controllerDelivererRepresentative = TextEditingController();
+  late TextEditingController controllerReceiverRepresentative = TextEditingController();
+  late TextEditingController controllerRepresentativeUnit = TextEditingController();
 
   bool isEditing = false;
 
@@ -61,7 +53,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   String? proposingUnit;
 
   AssetHandoverDto? item;
-  AssetHandoverDetailDto? itemDetail;
 
   // Lưu trữ giá trị ban đầu để so sánh
   Map<String, dynamic> _originalValues = {};
@@ -77,8 +68,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   void didUpdateWidget(AssetHandoverDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Kiểm tra nếu có thay đổi trong item hoặc isEditing
-    if (oldWidget.provider.item != item ||
-        oldWidget.isEditing != widget.isEditing) {
+    if (oldWidget.provider.item != item || oldWidget.isEditing != widget.isEditing) {
       // Cập nhật lại trạng thái editing
       if (mounted) {
         _initData();
@@ -93,29 +83,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     item = widget.provider.item;
     isEditing = widget.isEditing;
     if (item != null) {
-      if (item!.state == 0) {
+      if (item!.trangThai == 0) {
         isEditing = true;
       }
-      itemDetail = item!.assetHandoverDetails;
     } else {
       isEditing = true;
     }
-    isUnitConfirm = itemDetail?.isUnitConfirm ?? false;
-    isDelivererConfirm = itemDetail?.isDelivererConfirm ?? false;
-    isReceiverConfirm = itemDetail?.isReceiverConfirm ?? false;
-    isRepresentativeUnitConfirm =
-        itemDetail?.isRepresentativeUnitConfirm ?? false;
+
+    isUnitConfirm = item?.daXacNhan ?? false;
+    isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
+    isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+    isRepresentativeUnitConfirm = item?.donViDaiDienXacNhan == "0" ? true : false;
 
     itemsRequester =
         users.isNotEmpty
-            ? users
-                .map(
-                  (user) => DropdownMenuItem<String>(
-                    value: user.id ?? '',
-                    child: Text(user.name ?? ''),
-                  ),
-                )
-                .toList()
+            ? users.map((user) => DropdownMenuItem<String>(value: user.id ?? '', child: Text(user.name ?? ''))).toList()
             : <DropdownMenuItem<String>>[];
 
     // Cập nhật controllers với dữ liệu mới
@@ -128,23 +110,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   void _updateControllers() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
 
-    // Cập nhật các controller với dữ liệu mới
-    controllerHandoverNumber.text = item?.decisionNumber ?? '';
-    controllerDocumentName.text = item?.name ?? '';
-    controllerOrder.text = item?.order ?? '';
-    controllerSenderUnit.text = item?.senderUnit ?? '';
-    controllerReceiverUnit.text = item?.receiverUnit ?? '';
-    controllerTransferDate.text = item?.transferDate ?? '';
-    controllerLeader.text = itemDetail?.leader ?? '';
-    controllerIssuingUnitRepresentative.text =
-        itemDetail?.issuingUnitRepresentative ?? '';
-    controllerDelivererRepresentative.text =
-        itemDetail?.delivererRepresentative ?? '';
-    controllerReceiverRepresentative.text =
-        itemDetail?.receiverRepresentative ?? '';
-    controllerRepresentativeUnit.text = itemDetail?.representativeUnit ?? '';
+    controllerHandoverNumber.text = item?.quyetDinhDieuDongSo ?? '';
+    controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
+    controllerOrder.text = item?.lenhDieuDong ?? '';
+    controllerSenderUnit.text = item?.tenDonViGiao ?? '';
+    controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
+    controllerTransferDate.text = item?.ngayBanGiao ?? '';
+    controllerLeader.text = item?.tenLanhDao ?? '';
+    controllerIssuingUnitRepresentative.text = item?.tenDaiDienBanHanhQD ?? '';
+    controllerDelivererRepresentative.text = item?.tenDaiDienBenGiao ?? '';
+    controllerReceiverRepresentative.text = item?.tenDaiDienBenNhan ?? '';
+    controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
 
-    // Thêm listener cho các controller để theo dõi thay đổi
     _addControllerListeners();
   }
 
@@ -178,22 +155,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   void _saveOriginalValues() {
     _originalValues = {
-      'decisionNumber': item?.decisionNumber ?? '',
-      'name': item?.name ?? '',
-      'order': item?.order ?? '',
-      'senderUnit': item?.senderUnit ?? '',
-      'receiverUnit': item?.receiverUnit ?? '',
-      'transferDate': item?.transferDate ?? '',
-      'leader': itemDetail?.leader ?? '',
-      'issuingUnitRepresentative': itemDetail?.issuingUnitRepresentative ?? '',
-      'delivererRepresentative': itemDetail?.delivererRepresentative ?? '',
-      'receiverRepresentative': itemDetail?.receiverRepresentative ?? '',
-      'representativeUnit': itemDetail?.representativeUnit ?? '',
-      'isUnitConfirm': itemDetail?.isUnitConfirm ?? false,
-      'isDelivererConfirm': itemDetail?.isDelivererConfirm ?? false,
-      'isReceiverConfirm': itemDetail?.isReceiverConfirm ?? false,
-      'isRepresentativeUnitConfirm':
-          itemDetail?.isRepresentativeUnitConfirm ?? false,
+      'decisionNumber': item?.quyetDinhDieuDongSo ?? '',
+      'name': item?.banGiaoTaiSan ?? '',
+      'order': item?.lenhDieuDong ?? '',
+      'senderUnit': item?.tenDonViGiao ?? '',
+      'receiverUnit': item?.tenDonViNhan ?? '',
+      'transferDate': item?.ngayBanGiao ?? '',
+      'leader': item?.tenLanhDao ?? '',
+      'issuingUnitRepresentative': item?.tenDaiDienBanHanhQD ?? '',
+      'delivererRepresentative': item?.tenDaiDienBenGiao ?? '',
+      'receiverRepresentative': item?.tenDaiDienBenNhan ?? '',
+      'representativeUnit': item?.tenDonViDaiDien ?? '',
+      'isUnitConfirm': item?.daXacNhan ?? false,
+      'isDelivererConfirm': item?.daiDienBenGiaoXacNhan ?? false,
+      'isReceiverConfirm': item?.daiDienBenNhanXacNhan ?? false,
+      'isRepresentativeUnitConfirm': isRepresentativeUnitConfirm,
     };
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -217,14 +193,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         controllerReceiverUnit.text != _originalValues['receiverUnit'] ||
         controllerTransferDate.text != _originalValues['transferDate'] ||
         controllerLeader.text != _originalValues['leader'] ||
-        controllerIssuingUnitRepresentative.text !=
-            _originalValues['issuingUnitRepresentative'] ||
-        controllerDelivererRepresentative.text !=
-            _originalValues['delivererRepresentative'] ||
-        controllerReceiverRepresentative.text !=
-            _originalValues['receiverRepresentative'] ||
-        controllerRepresentativeUnit.text !=
-            _originalValues['representativeUnit'];
+        controllerIssuingUnitRepresentative.text != _originalValues['issuingUnitRepresentative'] ||
+        controllerDelivererRepresentative.text != _originalValues['delivererRepresentative'] ||
+        controllerReceiverRepresentative.text != _originalValues['receiverRepresentative'] ||
+        controllerRepresentativeUnit.text != _originalValues['representativeUnit'];
     log('message hasChanges1: $hasChanges');
     // Kiểm tra thay đổi trong các checkbox
     hasChanges =
@@ -232,8 +204,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         isUnitConfirm != _originalValues['isUnitConfirm'] ||
         isDelivererConfirm != _originalValues['isDelivererConfirm'] ||
         isReceiverConfirm != _originalValues['isReceiverConfirm'] ||
-        isRepresentativeUnitConfirm !=
-            _originalValues['isRepresentativeUnitConfirm'];
+        isRepresentativeUnitConfirm != _originalValues['isRepresentativeUnitConfirm'];
     log('message hasChanges2: $hasChanges');
     if (hasChanges != widget.provider.hasUnsavedChanges) {
       // Sử dụng addPostFrameCallback để tránh gọi setState trong quá trình build
@@ -261,8 +232,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       isUnitConfirm = _originalValues['isUnitConfirm'] ?? false;
       isDelivererConfirm = _originalValues['isDelivererConfirm'] ?? false;
       isReceiverConfirm = _originalValues['isReceiverConfirm'] ?? false;
-      isRepresentativeUnitConfirm =
-          _originalValues['isRepresentativeUnitConfirm'] ?? false;
+      isRepresentativeUnitConfirm = _originalValues['isRepresentativeUnitConfirm'] ?? false;
     });
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -278,24 +248,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       value: 'Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin',
       child: Text('Chưa xác định / C.Ty TNHH MTV Môi trường - Vinacomin'),
     ),
-    const DropdownMenuItem(
-      value: 'Chưa xác định',
-      child: Text('Chưa xác định'),
-    ),
+    const DropdownMenuItem(value: 'Chưa xác định', child: Text('Chưa xác định')),
     const DropdownMenuItem(
       value: 'Công ty CP Cơ điện Uông bí - Vinacomin',
       child: Text('Công ty CP Cơ điện Uông bí - Vinacomin'),
     ),
-    const DropdownMenuItem(
-      value: 'Công ty TNHH Nam Hưng',
-      child: Text('Công ty TNHH Nam Hưng'),
-    ),
+    const DropdownMenuItem(value: 'Công ty TNHH Nam Hưng', child: Text('Công ty TNHH Nam Hưng')),
     const DropdownMenuItem(value: 'Công đoàn', child: Text('Công đoàn')),
     const DropdownMenuItem(value: 'Kho Công ty', child: Text('Kho Công ty')),
-    const DropdownMenuItem(
-      value: 'Phân xưởng KT1',
-      child: Text('Phân xưởng KT1'),
-    ),
+    const DropdownMenuItem(value: 'Phân xưởng KT1', child: Text('Phân xưởng KT1')),
     const DropdownMenuItem(
       value: 'P.xưởng Thông gió - thoát nước mỏ 1',
       child: Text('P.xưởng Thông gió - thoát nước mỏ 1'),
@@ -320,10 +281,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
-      child: Padding(
-        padding: const EdgeInsets.only(top: 10.0),
-        child: _buildTableDetail(),
-      ),
+      child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail()),
     );
   }
 
@@ -342,49 +300,27 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 children: [
                   if (widget.provider.hasUnsavedChanges)
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'Có thay đổi chưa lưu',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(4)),
+                      child: const Text('Có thay đổi chưa lưu', style: TextStyle(color: Colors.white, fontSize: 12)),
                     ),
                   const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: _saveChanges,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
                     child: const Text('Lưu'),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: _cancelChanges,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
-                    ),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, foregroundColor: Colors.white),
                     child: const Text('Hủy'),
                   ),
                 ],
               ),
             SgIndicator(
-              steps: [
-                'Nháp',
-                'Sẵn sàng',
-                'Xác nhận',
-                'Trình duyệt',
-                'Hoàn thành',
-                'Hủy',
-              ],
-              currentStep: item?.state ?? 0,
+              steps: ['Nháp', 'Sẵn sàng', 'Xác nhận', 'Trình duyệt', 'Hoàn thành', 'Hủy'],
+              currentStep: item?.trangThai ?? 0,
               fontSize: 10,
             ),
           ],
@@ -405,12 +341,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               _buildInfoAssetHandoverMobile(isWideScreen),
               const SizedBox(height: 20),
               if (!isEditing)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: TableAssetMovementDetail(
-                    item: item?.assetHandoverMovements,
-                  ),
-                ),
+                Padding(padding: const EdgeInsets.only(bottom: 20), child: TableAssetMovementDetail(item: null)),
               previewDocumentAssetTransfer(item),
             ],
           ),
@@ -430,13 +361,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         ],
       );
     } else {
-      return Column(
-        children: [_buildInfoAssetHandover(), _buildAssetHandoverDetail()],
-      );
+      return Column(children: [_buildInfoAssetHandover(), _buildAssetHandoverDetail()]);
     }
   }
 
   Widget _buildInfoAssetHandover() {
+    DateTime? ngayBanGiao;
     return Column(
       children: [
         CommonFormInput(
@@ -452,7 +382,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.document_name'.tr,
           controller: controllerDocumentName,
           isEditing: isEditing,
-          textContent: item?.name ?? '',
+          textContent: item?.banGiaoTaiSan ?? '',
           onChanged: (value) {
             _checkForChanges();
           },
@@ -461,7 +391,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.order'.tr,
           controller: controllerOrder,
           isEditing: isEditing,
-          textContent: item?.order ?? '',
+          textContent: item?.lenhDieuDong ?? '',
           onChanged: (value) {
             _checkForChanges();
           },
@@ -470,7 +400,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.sender_unit'.tr,
           controller: controllerSenderUnit,
           isEditing: isEditing,
-          textContent: item?.senderUnit ?? '',
+          textContent: item?.tenDonViGiao ?? '',
           isDropdown: true,
           items: itemsrReceivingUnit,
           onChanged: (value) {
@@ -481,27 +411,28 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.receiver_unit'.tr,
           controller: controllerReceiverUnit,
           isEditing: isEditing,
-          textContent: item?.receiverUnit ?? '',
+          textContent: item?.tenDonViNhan ?? '',
           isDropdown: true,
           items: itemsrReceivingUnit,
           onChanged: (value) {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDate(
           label: 'ah.transfer_date'.tr,
           controller: controllerTransferDate,
           isEditing: isEditing,
-          textContent: item?.transferDate ?? '',
-          onChanged: (value) {
-            _checkForChanges();
+          value: ngayBanGiao,
+          onChanged: (dt) {
+            // controllerTransferDate.text = dt != null ? dt.toString() : DateTime.now().toString();
+            // _checkForChanges();
           },
         ),
         CommonFormInput(
           label: 'ah.leader'.tr,
           controller: controllerLeader,
           isEditing: isEditing,
-          textContent: itemDetail?.leader ?? '',
+          textContent: item?.tenLanhDao ?? '',
           isDropdown: true,
           items: itemsRequester,
           onChanged: (value) {
@@ -519,7 +450,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.issuing_unit_representative'.tr,
           controller: controllerIssuingUnitRepresentative,
           isEditing: isEditing,
-          textContent: itemDetail?.issuingUnitRepresentative ?? '',
+          textContent: item?.tenDaiDienBanHanhQD ?? '',
           isDropdown: true,
           items: itemsRequester,
           onChanged: (value) {
@@ -542,7 +473,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.deliverer_representative'.tr,
           controller: controllerDelivererRepresentative,
           isEditing: isEditing,
-          textContent: itemDetail?.delivererRepresentative ?? '',
+          textContent: item?.tenDaiDienBenGiao ?? '',
           isDropdown: true,
           items: itemsRequester,
           onChanged: (value) {
@@ -565,7 +496,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.receiver_representative'.tr,
           controller: controllerReceiverRepresentative,
           isEditing: isEditing,
-          textContent: itemDetail?.receiverRepresentative ?? '',
+          textContent: item?.tenDaiDienBenNhan ?? '',
           isDropdown: true,
           items: itemsRequester,
           onChanged: (value) {
@@ -588,7 +519,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.representative_unit'.tr,
           controller: controllerRepresentativeUnit,
           isEditing: isEditing,
-          textContent: itemDetail?.representativeUnit ?? '',
+          textContent: item?.tenDonViDaiDien ?? '',
           isDropdown: true,
           items: itemsRequester,
           onChanged: (value) {
@@ -620,8 +551,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           builder:
               (context) => CommonContract(
                 contractType: ContractPage.assetHandoverPage(item!),
-                signatureList:
-                    ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'], idTaiLieu: item.id.toString(),idNguoiKy: 'admin',
+                signatureList: [
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
+                ],
+                idTaiLieu: item.id.toString(),
+                idNguoiKy: 'admin',
               ),
         );
       },
@@ -634,11 +568,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             child: SGText(
               text: "Xem trước tài liệu",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ColorValue.link,
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link),
             ),
           ),
           SizedBox(width: 8),
