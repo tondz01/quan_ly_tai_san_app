@@ -27,7 +27,8 @@ enum AppRoute {
   fixedAssetRegister(path: "/fixed-asset-register", name: "fixed-asset-register"),
   fixedAssetRegisterCircular200(path: "/fixed-asset-register-circular-200", name: "fixed-asset-register-circular-200"),
   trackingRecord(path: "/tracking-record", name: "tracking-record"),
-  login(path: "/login", name: "login");
+  login(path: "/login", name: "login"),
+  account(path: "/account", name: "account");
 
   final String path;
   final String? name;

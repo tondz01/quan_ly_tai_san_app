@@ -55,7 +55,7 @@ class AssetCategoryRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> createAssetCategory(
-    AssetCategoryRequest params,
+    AssetCategoryDto params,
   ) async {
     AssetCategoryDto? data;
     Map<String, dynamic> result = {
@@ -69,13 +69,35 @@ class AssetCategoryRepository extends ApiBase {
         data: params.toJson(),
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-        result['status_code'] = response.statusCode;
+      final int? status = response.statusCode;
+      final bool isOk = status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        if (response.data is Map<String, dynamic>) {
+          result['message'] = (response.data['message'] ?? '').toString();
+        }
         return result;
       }
 
+      // Normalize to success for bloc check
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] = AssetCategoryDto.fromJson(response.data);
+      final resp = response.data;
+      if (resp is Map<String, dynamic>) {
+        result['message'] = (resp['message'] ?? '').toString();
+        // Prefer affectedRows if provided, fallback to data or 1
+        if (resp.containsKey('affectedRows')) {
+          result['data'] = resp['affectedRows'];
+        } else if (resp.containsKey('data')) {
+          result['data'] = resp['data'] ?? 1;
+        } else {
+          result['data'] = 1;
+        }
+      } else {
+        result['data'] = resp ?? 1;
+      }
+      print('object result: ${result['data']}');
     } catch (e) {
       log("Error at createAssetCategory - AssetCategoryRepository: $e");
     }
@@ -84,7 +106,7 @@ class AssetCategoryRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> updateAssetCategory(
-    AssetCategoryRequest params,
+    AssetCategoryDto params,
     String id,
   ) async {
     Map<String, dynamic>? data;

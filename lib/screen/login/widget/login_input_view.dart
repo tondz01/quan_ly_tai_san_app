@@ -35,12 +35,10 @@ class _LoginInputViewState extends State<LoginInputView> {
   String? _emailError;
   String? _passwordError;
 
-  late AuthRequest _data;
 
   @override
   void initState() {
     super.initState();
-    _data = widget.data;
   }
 
   void _handleLogin() {

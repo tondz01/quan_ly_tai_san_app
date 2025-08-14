@@ -1,6 +1,3 @@
-import 'dart:developer';
-
-import 'package:flutter/widgets.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset_management_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
@@ -18,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_3.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_4.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/login/login_view.dart';
+import 'package:quan_ly_tai_san_app/screen/login/account_view.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh.dart';
@@ -244,10 +242,15 @@ class AppRouteConf {
             path: AppRoute.trackingRecord.path,
             name: AppRoute.trackingRecord.name,
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: SoTheoDoi(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: SoTheoDoi()),
+          ),
+          GoRoute(
+            path: AppRoute.account.path,
+            name: AppRoute.account.name,
+            pageBuilder:
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: AccountView()),
           ),
         ],
       ),

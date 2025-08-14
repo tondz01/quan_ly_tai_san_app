@@ -1,12 +1,18 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/component/asset_category_form.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/request/asset_category_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 class AssetCategoryDetail extends StatefulWidget {
   final AssetCategoryProvider provider;
@@ -29,14 +35,8 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
   String idCongTy = '';
   DateTime? createdAt;
 
-  Map<String, TextEditingController> controllers = {};
-  final List<DropdownMenuItem<String>> phuongPhapKhauHaos = [
-    const DropdownMenuItem(value: '1', child: Text('Đường thẳng')),
-  ];
-  final List<DropdownMenuItem<String>> loaiKyKhauHao = [
-    const DropdownMenuItem(value: 'Tháng', child: Text('Tháng')),
-    const DropdownMenuItem(value: 'Năm', child: Text('Năm')),
-  ];
+  String? loaiKyKhauHao;
+  String? phuongPhapKhauHao;
 
   final TextEditingController ctrlIdMoHinh = TextEditingController();
   final TextEditingController ctrlTenMoHinh = TextEditingController();
@@ -73,7 +73,6 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
     ctrlTaiKhoanChiPhi.dispose();
     super.dispose();
   }
-
   /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
   String getDateNow() {
     final now = DateTime.now();
@@ -106,9 +105,11 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
       ctrlPhuongPhapKhauHao.text = data?.phuongPhapKhauHao.toString() ?? '';
       ctrlKyKhauHao.text = data?.kyKhauHao.toString() ?? '';
       ctrlLoaiKyKhauHao.text = data?.loaiKyKhauHao.toString() ?? '';
-      ctrlTaiKhoanTaiSan.text = data?.taiKhoanChiPhi ?? '';
+      ctrlTaiKhoanTaiSan.text = data?.taiKhoanTaiSan ?? '';
       ctrlTaiKhoanKhauHao.text = data?.taiKhoanKhauHao ?? '';
       ctrlTaiKhoanChiPhi.text = data?.taiKhoanChiPhi ?? '';
+      loaiKyKhauHao = data?.loaiKyKhauHao;
+      phuongPhapKhauHao = data?.phuongPhapKhauHao.toString();
       // isActive = data!.hieuLuc ?? false;
     } else {
       // log('message _initData: ${widget.provider.isCreate}');
@@ -123,6 +124,8 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
       ctrlTaiKhoanTaiSan.text = '';
       ctrlTaiKhoanKhauHao.text = '';
       ctrlTaiKhoanChiPhi.text = '';
+      loaiKyKhauHao = '';
+      phuongPhapKhauHao = '';
       // controllerIdAssetCategory.text = '';
       // controllerNameAssetCategory.text = '';
     }
@@ -148,13 +151,13 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
           ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
           ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
           ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
-          itemsPhuongPhapKhauHaos: phuongPhapKhauHaos,
-          itemsLoaiKyKhauHaos: loaiKyKhauHao,
           onChangedPhuongPhapKhauHaos: (value) {
             log('message phuongPhapKhauHao: $value');
+            phuongPhapKhauHao = value;
           },
           onChangedLoaiKyKhauHaos: (value) {
             log('message loaiKyKhauHao: $value');
+            loaiKyKhauHao = value;
           },
         ),
       ],
@@ -170,7 +173,9 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
               icon: Icons.save,
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
-              onPressed: () {},
+              onPressed: () {
+                _saveChanges();
+              },
             ),
             const SizedBox(width: 8),
             MaterialTextButton(
@@ -197,22 +202,37 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
         );
   }
 
-  // void _saveChanges() {
-  //   log('message: _saveChanges');
-  //   AssetCategoryRequest request = AssetCategoryRequest(
-  //     id: ctrlIdMoHinh.text,
-  //     tenMoHinh: ctrlTenMoHinh.text,
-  //     idCongTy: 'ct001',
-  //     ghiChu: ''
-  //     ngayTao: DateTime.parse(getDateNow()),
-  //     ngayCapNhat: DateTime.parse(getDateNow()),
-  //     nguoiTao: 'TK001',
-  //     nguoiCapNhat: 'TK001',
-  //     isActive: isActive,
-  //   );
+  void _saveChanges() {
+    log('message: _saveChanges');
+    UserInfoDTO userInfo = widget.provider.userInfo!;
+    AssetCategoryDto request = AssetCategoryDto(
+      id: ctrlIdMoHinh.text,
+      tenMoHinh: ctrlTenMoHinh.text,
+      phuongPhapKhauHao: int.tryParse(phuongPhapKhauHao ?? '0') ?? 0,
+      kyKhauHao: int.tryParse(ctrlKyKhauHao.text) ?? 0,
+      loaiKyKhauHao: loaiKyKhauHao,
+      taiKhoanTaiSan: ctrlTaiKhoanTaiSan.text,
+      taiKhoanKhauHao: ctrlTaiKhoanKhauHao.text,
+      taiKhoanChiPhi: ctrlTaiKhoanChiPhi.text,
+      idCongTy: idCongTy,
+      ngayTao: getDateNow(),
+      ngayCapNhat: getDateNow(),
+      nguoiTao: userInfo.id,
+      nguoiCapNhat: userInfo.id,
+      isActive: isActive,
+    );
 
-  //   widget.provider.createAssetCategory(context, request);
-  // }
+    log('message request: ${jsonEncode(request)}');
+    if (data == null) {
+      context.read<AssetCategoryBloc>().add(
+        CreateAssetCategoryEvent(context, request),
+      );
+    } else {
+      context.read<AssetCategoryBloc>().add(
+        UpdateAssetCategoryEvent(context, request, data!.id ?? ''),
+      );
+    }
+  }
 
   void _cancelChanges() {
     log('message: _cancelChanges');

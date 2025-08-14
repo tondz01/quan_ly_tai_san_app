@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
 
@@ -16,16 +17,24 @@ class PostLoginEvent extends LoginEvent {
 }
 
 class GetUsersEvent extends LoginEvent {
-  const GetUsersEvent();
-  
+  final BuildContext context;
+  const GetUsersEvent(this.context);
+
   @override
-  // TODO: implement props
-  List<Object?> get props => throw UnimplementedError();
+  List<Object> get props => [context];
+}
+class GetNhanVienEvent extends LoginEvent {
+  final BuildContext context;
+  final String idCongTy;
+  const GetNhanVienEvent(this.context, this.idCongTy);
+
+  @override
+  List<Object> get props => [context, idCongTy];
 }
 
-class CreateUserEvent extends LoginEvent {
+class CreateAccountEvent extends LoginEvent {
   final UserInfoDTO user;
-  const CreateUserEvent(this.user);
+  const CreateAccountEvent(this.user);
 
   @override
   List<Object?> get props => [user];

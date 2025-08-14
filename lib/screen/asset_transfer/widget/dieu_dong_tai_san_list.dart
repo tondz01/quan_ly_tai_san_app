@@ -5,6 +5,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
+import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
@@ -12,6 +14,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
@@ -20,6 +23,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_han
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
@@ -377,14 +381,31 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         iconColor: ColorValue.cyan,
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
-        onPressed:
-            () => showWebViewPopup(
-              context,
-              url: item.duongDanFile.toString(),
-              title: item.tenFile ?? 'Tài liệu',
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.9,
-            ),
+        onPressed: () {
+          UserInfoDTO userInfo = widget.provider.userInfo!;
+          String url =
+              '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder:
+                (context) => Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: 16.0,
+                    bottom: 16.0,
+                  ),
+                  child: CommonContract(
+                    contractType: ContractPage.assetMovePage(item),
+                    signatureList: <String>[url],
+                    idTaiLieu: item.id.toString(),
+                    idNguoiKy: userInfo.tenDangNhap,
+                    tenNguoiKy: userInfo.hoTen,
+                  ),
+                ),
+          );
+        },
       ),
       ActionButtonConfig(
         icon: Icons.delete,

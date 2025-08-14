@@ -4,6 +4,8 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
@@ -20,7 +22,10 @@ class AuthRepository extends ApiBase {
     try {
       final response = await post(
         EndPointAPI.LOGIN,
-        queryParameters: {'tenDangNhap': params.tenDangNhap, 'matKhau': params.matKhau},
+        queryParameters: {
+          'tenDangNhap': params.tenDangNhap,
+          'matKhau': params.matKhau,
+        },
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -39,7 +44,9 @@ class AuthRepository extends ApiBase {
       }
       AccountHelper.instance.setUserInfo(result['data']);
       log('result: ${result['data']}');
-      print('AccountHelper: ${jsonEncode(AccountHelper.instance.getUserInfo())}');
+      print(
+        'AccountHelper: ${jsonEncode(AccountHelper.instance.getUserInfo())}',
+      );
     } catch (e) {
       log("Error at createAssetCategory - AssetCategoryRepository: $e");
     }
@@ -47,20 +54,51 @@ class AuthRepository extends ApiBase {
     return result;
   }
 
-  Future<Response<UserInfoDTO>> createUser(UserInfoDTO user) async {
+  Future<Map<String, dynamic>> createAccount(UserInfoDTO params) async {
+    UserInfoDTO? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
     try {
-      final response = await post(EndPointAPI.ACCOUNT, data: user.toJson());
-      final userCreated = UserInfoDTO.fromJson(
-        Map<String, dynamic>.from(response.data),
-      );
-      return Response<UserInfoDTO>(
-        data: userCreated,
-        statusCode: response.statusCode,
-        requestOptions: response.requestOptions,
-      );
-    } on Exception {
-      rethrow;
+      final response = await post(EndPointAPI.ACCOUNT, data: params.toJson());
+
+      final int? status = response.statusCode;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        if (response.data is Map<String, dynamic>) {
+          result['message'] = (response.data['message'] ?? '').toString();
+        }
+        return result;
+      }
+
+      // Normalize to success for bloc check
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      final resp = response.data;
+      if (resp is Map<String, dynamic>) {
+        result['message'] = (resp['message'] ?? '').toString();
+        // Prefer affectedRows if provided, fallback to data or 1
+        if (resp.containsKey('affectedRows')) {
+          result['data'] = resp['affectedRows'];
+        } else if (resp.containsKey('data')) {
+          result['data'] = resp['data'] ?? 1;
+        } else {
+          result['data'] = 1;
+        }
+      } else {
+        result['data'] = resp ?? 1;
+      }
+      print('object result: ${result['data']}');
+    } catch (e) {
+      log("Error at createAccount - AuthRepository: $e");
     }
+
+    return result;
   }
 
   Future<Response<UserInfoDTO>> updateUser(String id, UserInfoDTO user) async {
@@ -100,28 +138,61 @@ class AuthRepository extends ApiBase {
     }
   }
 
-  Future<Response<List<UserInfoDTO>>> getUsers() async {
+  Future<Map<String, dynamic>> getListUser() async {
+    List<UserInfoDTO> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
     try {
-      // final response = await get(url);
-      final response = fakeUserList;
-      // Giả sử API trả về List<Map>
-      final List<UserInfoDTO> users =
-          (response as List)
-              .map((e) => UserInfoDTO.fromJson(Map<String, dynamic>.from(e)))
-              .toList();
-      // return Response<List<UserInfoDTO>>(
-      //   data: users,
-      //   statusCode: response.statusCode,
-      //   requestOptions: response.requestOptions,
-      // );
-      return Response<List<UserInfoDTO>>(
-        data: users,
-        statusCode: 200,
-        requestOptions: RequestOptions(path: EndPointAPI.ACCOUNT),
+      final response = await get(EndPointAPI.ACCOUNT);
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<UserInfoDTO>(
+        response.data,
+        UserInfoDTO.fromJson,
       );
-    } on Exception {
-      rethrow;
+    } catch (e) {
+      log("Error at getListUser - AuthRepository: $e");
     }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getListNhanVien(String idCongTy) async {
+    List<NhanVien> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.NHAN_VIEN,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<NhanVien>(
+        response.data,
+        NhanVien.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListNhanVien - AuthRepository: $e");
+    }
+    return result;
   }
 }
 

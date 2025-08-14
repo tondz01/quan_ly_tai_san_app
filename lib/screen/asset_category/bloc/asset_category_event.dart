@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/request/asset_category_request.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 
 abstract class AssetCategoryEvent extends Equatable {
   const AssetCategoryEvent();
@@ -18,7 +18,7 @@ class GetListAssetCategoryEvent extends AssetCategoryEvent {
 
 class CreateAssetCategoryEvent extends AssetCategoryEvent {
   final BuildContext context;
-  final AssetCategoryRequest params;
+  final AssetCategoryDto params;
 
   const CreateAssetCategoryEvent(this.context, this.params);
 
@@ -28,7 +28,7 @@ class CreateAssetCategoryEvent extends AssetCategoryEvent {
 
 class UpdateAssetCategoryEvent extends AssetCategoryEvent {
   final BuildContext context;
-  final AssetCategoryRequest params;
+  final AssetCategoryDto params;
   final String id;
 
   const UpdateAssetCategoryEvent(this.context, this.params, this.id);

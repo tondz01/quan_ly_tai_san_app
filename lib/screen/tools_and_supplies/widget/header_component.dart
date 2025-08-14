@@ -15,6 +15,7 @@ class HeaderComponent extends StatefulWidget {
     required this.onNew,
     required this.mainScreen,
     this.subScreen,
+    this.isShowSearch = true,
     this.child,
   });
   final TextEditingController controller;
@@ -24,6 +25,7 @@ class HeaderComponent extends StatefulWidget {
   final String? mainScreen;
   final String? subScreen;
   final Widget? child;
+  final bool? isShowSearch;
   @override
   State<HeaderComponent> createState() => _HeaderComponentState();
 }
@@ -39,6 +41,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
       onTap: widget.onTap,
       onNew: widget.onNew,
       mainScreen: widget.mainScreen,
+      isShowSearch: widget.isShowSearch,
       child: widget.child,
     );
   }
@@ -52,6 +55,7 @@ Widget buildHeader(
   Function()? onTap,
   Function()? onNew,
   String? mainScreen,
+  bool? isShowSearch,
   Widget? child,
 }) {
   final typeSize = TypeSizeScreenExtension.getSizeScreen(width);
@@ -65,6 +69,7 @@ Widget buildHeader(
         mainScreen,
         onNew,
         onTap,
+        isShowSearch,
         child,
       )
       : _buildHeaderScreenLarge(
@@ -74,7 +79,8 @@ Widget buildHeader(
         subScreen,
         mainScreen,
         onNew,
-        onTap,  
+        onTap,
+        isShowSearch,
         child,
       );
 }
@@ -87,6 +93,7 @@ Widget _buildHeaderScreenLarge(
   String? mainScreen,
   Function()? onNew,
   Function()? onTap,
+  bool? isShowSearch,
   Widget? child,
 ) {
   return Row(
@@ -111,6 +118,7 @@ Widget _buildHeaderScreenSmall(
   String? mainScreen,
   Function()? onNew,
   Function()? onTap,
+  bool? isShowSearch,
   Widget? child,
 ) {
   return Column(
@@ -121,6 +129,7 @@ Widget _buildHeaderScreenSmall(
       // if (subScreen != null && subScreen.isNotEmpty) 
       const SizedBox(height: 5),
       // if (subScreen == null || subScreen.isEmpty)
+      if (isShowSearch == true)
         _buildSearchField(width, controller, onSearchChanged),
       if (child != null) child,
     ],
