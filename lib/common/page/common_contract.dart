@@ -257,7 +257,6 @@ class _CommonContractState extends State<CommonContract> {
       }
     }
 
-
     return data;
   }
 
@@ -444,184 +443,157 @@ class _CommonContractState extends State<CommonContract> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              children: [
-                // Thanh tiêu đề nhẹ
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+            // Thanh tiêu đề
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
                   ),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 6,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.description, color: Colors.blueAccent),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Soạn & Ký Tài Liệu',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.description, color: Colors.blueAccent),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Soạn & Ký Tài Liệu',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: _exportToPdf,
-                        icon: const Icon(Icons.picture_as_pdf),
-                        label: const Text('Xuất PDF'),
-                      ),
-                    ],
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: _exportToPdf,
+                    icon: const Icon(Icons.picture_as_pdf),
+                    label: const Text('Xuất PDF'),
                   ),
-                ),
-                Stack(
-                  children: [
-                    Positioned(
-                      top: 100,
-                      left: 300,
-                      child: RepaintBoundary(
-                        key: _captureKey,
-                        child: buildSignatureValidContainer(
-                          widget.tenNguoiKy,
-                          DateFormat('dd/MM/yyyy').format(DateTime.now()),
-                        ),
-                      ),
-                    ),
+                ],
+              ),
+            ),
 
-                    Expanded(
-                      child: Center(
-                        child: SingleChildScrollView(
-                          child: Container(
-                            width: 842,
-                            // A4 ngang ~ 842x595 @ 72dpi (đang demo UI)
-                            height: 595,
-                            margin: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
+            // Nội dung cuộn được
+            Expanded(
+              child: SingleChildScrollView(
+                child: Center(
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: (MediaQuery.of(context).size.height - 100) / 2,
+                        left: (MediaQuery.of(context).size.width - 200) / 2,
+                        child: RepaintBoundary(
+                          key: _captureKey,
+                          child: buildSignatureValidContainer(
+                            widget.tenNguoiKy,
+                            DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                          ),
+                        ),
+                      ),
+                      // Tài liệu A4
+                      Container(
+                        width: 842,
+                        height: 595,
+                        margin: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                          border: Border.all(color: Colors.black12),
+                        ),
+                        child: RepaintBoundary(
+                          key: _contractKey,
+                          child: Stack(
+                            children: [
+                              // Nội dung hợp đồng
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                child: DefaultTextStyle(
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                  child: widget.contractType,
                                 ),
-                              ],
-                              border: Border.all(color: Colors.black12),
-                            ),
-                            child: RepaintBoundary(
-                              key: _contractKey,
-                              child: Stack(
-                                children: [
-                                  // Nội dung hợp đồng
-                                  Container(
-                                    padding: const EdgeInsets.all(24),
-                                    child: DefaultTextStyle(
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black87,
-                                      ),
-                                      child: widget.contractType,
-                                    ),
-                                  ),
-                                  // Các chữ ký kéo thả
-                                  ...images,
-                                ],
                               ),
-                            ),
+                              // Các chữ ký kéo thả
+                              ...images,
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                // Khu vực tài liệu A4 ngang
 
-                // Thanh chức năng dưới cùng
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                  color: Colors.white,
-                  child: Row(
-                    children: [
-                      // Nhóm nút ký
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildFab(
-                            Icons.edit,
-                            'Ký nháy',
-                            Colors.orange,
-                            () => _addFirstSignatureFromList(1),
-                          ),
-                          _buildFab(
-                            Icons.brush,
-                            'Ký',
-                            Colors.green,
-                            () => _addFirstSignatureFromList(2),
-                          ),
-                          _buildFab(
-                            Icons.vpn_key,
-                            'Ký số',
-                            Colors.blue,
-                            () async => await signing(),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      // Nút xác nhận
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 2,
-                        ),
-                        onPressed: _submitting ? null : _confirmSignatures,
-                        icon:
-                            _submitting
-                                ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                                : const Icon(Icons.check_circle),
-                        label: Text(
-                          _submitting ? 'Đang lưu...' : 'Xác nhận',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ),
+                      // Chữ ký đặt giữa màn hình
+
                     ],
                   ),
                 ),
-              ],
+              ),
+            ),
+
+            // Thanh nút ký & xác nhận
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+              color: Colors.white,
+              child: Row(
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildFab(Icons.edit, 'Ký nháy', Colors.orange,
+                              () => _addFirstSignatureFromList(1)),
+                      _buildFab(Icons.brush, 'Ký', Colors.green,
+                              () => _addFirstSignatureFromList(2)),
+                      _buildFab(Icons.vpn_key, 'Ký số', Colors.blue,
+                              () async => await signing()),
+                    ],
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      foregroundColor: Colors.white,
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    onPressed: _submitting ? null : _confirmSignatures,
+                    icon: _submitting
+                        ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                        : const Icon(Icons.check_circle),
+                    label: Text(
+                      _submitting ? 'Đang lưu...' : 'Xác nhận',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
+
   }
 }
 
