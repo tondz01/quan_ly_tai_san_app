@@ -1,13 +1,11 @@
 // ignore_for_file: deprecated_member_use, library_private_types_in_public_api
 
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
@@ -836,7 +834,6 @@ class _ToolAndMaterialTransferDetailState
     }
   }
 
-
   Widget previewDocumentAssetTransfer(ToolAndMaterialTransferDto? item) {
     return InkWell(
       onTap: () {
@@ -851,6 +848,7 @@ class _ToolAndMaterialTransferDetailState
                 ],
                 idTaiLieu: item.id.toString(),
                 idNguoiKy: 'admin',
+                tenNguoiKy: "Do Thanh Ton",
               ),
         );
       },

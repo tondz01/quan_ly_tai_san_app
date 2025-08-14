@@ -621,7 +621,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               (context) => CommonContract(
                 contractType: ContractPage.assetHandoverPage(item!),
                 signatureList:
-                    ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'], idTaiLieu: item.id.toString(),idNguoiKy: 'admin',
+                    ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'], idTaiLieu: item.id.toString(),idNguoiKy: 'admin',tenNguoiKy: "Do Thanh Ton",
               ),
         );
       },
