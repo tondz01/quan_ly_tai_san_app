@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/movement_detail_dto.dart';
+
+import '../../screen/tool_and_material_transfer/model/movement_detail_dto.dart';
 
 
 class SgAssetMovementTable extends StatefulWidget {
@@ -56,35 +57,35 @@ class _SgAssetMovementTableState extends State<SgAssetMovementTable> {
               title: 'Tài sản',
               width: 250,
               getValue: (item) => item.name,
-              setValue: (item, value) => item.name = value, // name is final, so do nothing
+              setValue: (item, value) => item.name = value.name, // name is final, so do nothing
             ),
             SgEditableColumn<MovementDetailDto>(
               field: 'unit',
               title: 'Đơn vị tính',
               width: 100,
               getValue: (item) => item.measurementUnit,
-              setValue: (item, value) => item.measurementUnit = value,
+              setValue: (item, value) => item.measurementUnit = value.measurementUnit,
             ),
             SgEditableColumn<MovementDetailDto>(
               field: 'quantity',
               title: 'Số lượng',
               width: 100,
               getValue: (item) => item.quantity,
-              setValue: (item, value) => item.quantity = value,
+              setValue: (item, value) => item.quantity = value.quantity,
             ),
             SgEditableColumn<MovementDetailDto>(
               field: 'condition',
               title: 'Tình trạng kỹ thuật',
               width: 150,
               getValue: (item) => item.setCondition,
-              setValue: (item, value) => item.setCondition = value,
+              setValue: (item, value) => item.setCondition = value.setCondition,
             ),
             SgEditableColumn<MovementDetailDto>(
               field: 'note',
               title: 'Ghi chú',
               width: 150,
               getValue: (item) => item.note,
-              setValue: (item, value) => item.note = value,
+              setValue: (item, value) => item.note = value.note,
             ),
           ],
         ),

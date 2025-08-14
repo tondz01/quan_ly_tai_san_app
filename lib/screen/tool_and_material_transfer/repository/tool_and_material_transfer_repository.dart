@@ -5,16 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/asset_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+
+import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 class ToolAndMaterialTransferRepository extends ApiBase {
   // Path to the local JSON file for mock data
   static const String _mockDataToolAndMaterialTransferPath = 'lib/screen/tool_and_material_transfer/model/tool_and_material_transfer_data.json';
 
   Future<Map<String, dynamic>> getListToolAndMaterialTransfer() async {
-    List<AssetTransferDto> list = [];
+    List<DieuDongTaiSanDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,

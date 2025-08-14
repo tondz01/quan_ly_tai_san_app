@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/asset_transfer_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/asset_transfer_list.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
@@ -25,6 +26,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late int currentType;
+  String idCongTy = "CT001";
 
   @override
   void initState() {
@@ -44,7 +46,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
   void _initData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetTransferProvider>(
+      Provider.of<DieuDongTaiSanProvider>(
         context,
         listen: false,
       ).onInit(context, currentType);
@@ -72,21 +74,11 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetTransferBloc, AssetTransferState>(
-      listener: (context, state) {
-        if (state is AssetTransferLoadingState) {
-        } else if (state is GetListAssetTransferSuccessState) {
-          log('GetListAssetTransferSuccessState');
-          context.read<AssetTransferProvider>().getListAssetTransferSuccess(
-            context,
-            state,
-          );
-        } else if (state is GetListAssetTransferFailedState) {}
-      },
+    return BlocConsumer<DieuDongTaiSanBloc, DieuDongTaiSanState>(
       builder: (context, state) {
         return ChangeNotifierProvider.value(
-          value: context.read<AssetTransferProvider>(),
-          child: Consumer<AssetTransferProvider>(
+          value: context.read<DieuDongTaiSanProvider>(),
+          child: Consumer<DieuDongTaiSanProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -106,7 +98,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       // provider.onChangeDetailAssetTransfer(null);
                     },
                     onNew: () {
-                      provider.onChangeDetailAssetTransfer(null);
+                      // provider.onChangeDetail(context, item)
+                      // provider.onChangeDetailAssetTransfer(null);
+                      provider.onChangeDetailDieuDongTaiSan(null);
                     },
                     mainScreen: _getScreenTitle(),
                     subScreen: provider.subScreen,
@@ -118,10 +112,14 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
-                          childInput: AssetTransferDetail(provider: provider),
-                          childTableView: AssetTransferList(
+                          childInput: DieuDongTaiSanDetail(
+                            provider: provider,
+                            type: currentType,
+                          ),
+                          childTableView: DieuDongTaiSanList(
                             provider: provider,
                             typeAssetTransfer: currentType,
+                            idCongTy: 'CT001',
                           ),
                           title: "Chi tiết điều chuyển tài sản",
                           isShowInput: provider.isShowInput,
@@ -151,6 +149,50 @@ class _AssetTransferViewState extends State<AssetTransferView> {
             },
           ),
         );
+      },
+      listener: (context, state) {
+        if (state is DieuDongTaiSanLoadingState) {}
+        if (state is GetListDieuDongTaiSanSuccessState) {
+          log('GetListAssetTransferSuccessState');
+          context.read<DieuDongTaiSanProvider>().getListDieuDongTaiSanSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListDieuDongTaiSanFailedState) {
+          log('GetListDieuDongTaiSanFailedState');
+        }
+        if (state is GetListAssetSuccessState) {
+          log('GetListAssetSuccessState');
+          context.read<DieuDongTaiSanProvider>().getLisTaiSanSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListAssetFailedState) {
+          log('GetListAssetFailedState');
+        }
+        if (state is GetDataDropdownSuccessState) {
+          log('GetDataDropdownSuccessState');
+          context.read<DieuDongTaiSanProvider>().getDataDropdownSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetDataDropdownFailedState) {
+          log('GetDataDropdownFailedState');
+        }
+        if (state is CreateDieuDongSuccessState) {
+          log('CreateDieuDongSuccessState');
+          context.read<DieuDongTaiSanProvider>().createDieuDongSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CreateDieuDongFailedState) {
+          log('CreateDieuDongFailedState');
+          AppUtility.showSnackBar(context, state.message);
+        }
       },
     );
   }

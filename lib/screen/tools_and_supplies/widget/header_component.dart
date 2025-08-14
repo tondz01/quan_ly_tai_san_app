@@ -94,8 +94,9 @@ Widget _buildHeaderScreenLarge(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       _buildHeaderNameScreen(mainScreen, subScreen, onNew, onTap),
-      if (subScreen != null && subScreen.isNotEmpty) const SizedBox(width: 16),
-      if (subScreen == null || subScreen.isEmpty)
+      // if (subScreen != null && subScreen.isNotEmpty) 
+      const SizedBox(width: 16),
+      // if (subScreen == null || subScreen.isEmpty)
         Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
       if (child != null) child,
     ],
@@ -117,8 +118,9 @@ Widget _buildHeaderScreenSmall(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _buildHeaderNameScreen(mainScreen, subScreen, onNew, onTap),
-      if (subScreen != null && subScreen.isNotEmpty) const SizedBox(height: 5),
-      if (subScreen == null || subScreen.isEmpty)
+      // if (subScreen != null && subScreen.isNotEmpty) 
+      const SizedBox(height: 5),
+      // if (subScreen == null || subScreen.isEmpty)
         _buildSearchField(width, controller, onSearchChanged),
       if (child != null) child,
     ],
@@ -158,7 +160,7 @@ Widget _buildHeaderNameScreen(
             ),
           ),
           if (isSubScreen)
-            SGText(text: subScreen, overflow: TextOverflow.ellipsis),
+            SGText(text: subScreen, overflow: TextOverflow.ellipsis, size: 12,),
         ],
       ),
     ],

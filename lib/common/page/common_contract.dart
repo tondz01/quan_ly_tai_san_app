@@ -442,7 +442,7 @@ class _CommonContractState extends State<CommonContract> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff6f7fb),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
@@ -456,6 +456,10 @@ class _CommonContractState extends State<CommonContract> {
                   ),
                   decoration: const BoxDecoration(
                     color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black12,

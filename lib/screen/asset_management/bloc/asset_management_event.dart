@@ -16,6 +16,15 @@ class GetListAssetManagementEvent extends AssetManagementEvent {
   @override
   List<Object?> get props => [context, idCongTy];
 }
+class GetListKhauHaoEvent extends AssetManagementEvent {
+  final BuildContext context;
+  final String idCongTy;
+
+  const GetListKhauHaoEvent(this.context, this.idCongTy);
+
+  @override
+  List<Object?> get props => [context, idCongTy];
+}
 
 // Nhóm tài sản
 class GetListAssetGroupEvent extends AssetManagementEvent {
@@ -48,6 +57,17 @@ class GetListCapitalSourceEvent extends AssetManagementEvent {
 
   @override
   List<Object?> get props => [context, idCongTy];
+}
+
+//Danh sách tài sản con
+class GetListChildAssetsEvent extends AssetManagementEvent {
+  final BuildContext context;
+  final String idTaiSan;
+
+  const GetListChildAssetsEvent(this.context, this.idTaiSan);
+
+  @override
+  List<Object?> get props => [context, idTaiSan];
 }
 
 class GetListDepartmentEvent extends AssetManagementEvent {

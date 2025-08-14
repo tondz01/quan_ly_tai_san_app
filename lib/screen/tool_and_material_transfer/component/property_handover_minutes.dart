@@ -4,15 +4,15 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
+import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'popup/columns_asset_handover.dart';
 
 class PropertyHandoverMinutes {
-  static void showPopup(BuildContext context, List<AssetHandoverDto> data) {
+  static void showPopup(BuildContext context, List<DieuDongTaiSanDto> data) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -88,7 +88,8 @@ class PropertyHandoverMinutes {
 }
 
 class _PropertyHandoverMinutesContent extends StatefulWidget {
-  final List<AssetHandoverDto> data;
+  final List<DieuDongTaiSanDto> data;
+
   const _PropertyHandoverMinutesContent({required this.data});
 
   @override
@@ -252,7 +253,8 @@ class _PropertyHandoverMinutesContentState
         child: Scrollbar(
           thumbVisibility: true,
           controller: horizontalScrollController,
-          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+          notificationPredicate:
+              (notif) => notif.metrics.axis == Axis.horizontal,
           child: SingleChildScrollView(
             controller: horizontalScrollController,
             scrollDirection: Axis.horizontal,
@@ -265,7 +267,7 @@ class _PropertyHandoverMinutesContentState
 
   Widget _buildTableWidget() {
     final columns = _buildColumns();
-    final table = SgTable<AssetHandoverDto>(
+    final table = SgTable<DieuDongTaiSanDto>(
       rowHeight: 45.0,
       data: widget.data,
       titleStyleHeader: const TextStyle(
@@ -309,7 +311,7 @@ class _PropertyHandoverMinutesContentState
     );
   }
 
-  List<SgTableColumn<AssetHandoverDto>> _buildColumns() {
+  List<SgTableColumn<DieuDongTaiSanDto>> _buildColumns() {
     if (_isSmallScreen) {
       return _buildSmallScreenColumns();
     } else {
@@ -317,7 +319,7 @@ class _PropertyHandoverMinutesContentState
     }
   }
 
-  List<SgTableColumn<AssetHandoverDto>> _buildSmallScreenColumns() {
+  List<SgTableColumn<DieuDongTaiSanDto>> _buildSmallScreenColumns() {
     const columnWidths = {
       'Quyết định điều động': 150.0,
       'Lệnh điều động': 200.0,
@@ -332,7 +334,7 @@ class _PropertyHandoverMinutesContentState
     return _createColumns(context, columnWidths);
   }
 
-  List<SgTableColumn<AssetHandoverDto>> _buildLargeScreenColumns() {
+  List<SgTableColumn<DieuDongTaiSanDto>> _buildLargeScreenColumns() {
     final screenWidth = MediaQuery.of(context).size.width * 0.9;
     final availableWidth = screenWidth - 40;
 
@@ -355,62 +357,65 @@ class _PropertyHandoverMinutesContentState
     return widget.data.where((item) => item.trangThai == status).length;
   }
 
-  List<SgTableColumn<AssetHandoverDto>> _createColumns(
+  List<SgTableColumn<DieuDongTaiSanDto>> _createColumns(
     BuildContext context,
     Map<String, double> columnWidths,
   ) {
     return [
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
+      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
         title: 'Quyết định điều động',
         textColor: Colors.black87,
-        getValue: (item) => item.quyetDinhDieuDongSo ?? '',
+        getValue: (item) => item.soQuyetDinh ?? '',
         fontSize: 12,
         width: columnWidths['Quyết định điều động']!,
       ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
+      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
         title: 'Lệnh điều động',
         textColor: Colors.black87,
         fontSize: 12,
-        getValue: (item) => item.lenhDieuDong ?? '',
+        getValue: (item) => item.tenPhieu ?? '',
         width: columnWidths['Lệnh điều động']!,
       ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
+      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
         title: 'Ngày bàn giao',
         textColor: Colors.black87,
         fontSize: 12,
-        getValue: (item) => item.ngayBanGiao ?? '',
+        getValue: (item) => item.ngayCapNhat ?? '',
         width: columnWidths['Ngày bàn giao']!,
       ),
-      SgTableColumn<AssetHandoverDto>(
+      SgTableColumn<DieuDongTaiSanDto>(
         title: 'Chi tiết bàn giao',
         cellBuilder:
-            (item) => AssetHandoverColumns.buildMovementDetails(const []),
+            (item) => AssetHandoverColumns.buildMovementDetails(
+              item.chiTietDieuDongTaiSans ?? [],
+            ),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,
         width: columnWidths['Chi tiết bàn giao']!,
       ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
+      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
         title: 'Đơn vị giao',
         textColor: Colors.black87,
         fontSize: 12,
         getValue: (item) => item.tenDonViGiao ?? '',
         width: columnWidths['Đơn vị giao']!,
       ),
-      TableColumnBuilder.createTextColumn<AssetHandoverDto>(
+      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
         title: 'Đơn vị nhận',
         textColor: Colors.black87,
         fontSize: 12,
         getValue: (item) => item.tenDonViNhan ?? '',
         width: columnWidths['Đơn vị nhận']!,
       ),
-      SgTableColumn<AssetHandoverDto>(
+      SgTableColumn<DieuDongTaiSanDto>(
         title: 'Trạng thái',
-        cellBuilder: (item) => AssetHandoverColumns.buildStatus(item.trangThai ?? 0),
+        cellBuilder:
+            (item) => AssetHandoverColumns.buildStatus(item.trangThai ?? 0),
         cellAlignment: TextAlign.center,
         titleAlignment: TextAlign.center,
         width: columnWidths['Trạng thái']!,
       ),
-      SgTableColumn<AssetHandoverDto>(
+      SgTableColumn<DieuDongTaiSanDto>(
         title: '',
         cellBuilder: (item) => AssetHandoverColumns.buildActions(context, item),
         cellAlignment: TextAlign.center,

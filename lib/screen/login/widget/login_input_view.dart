@@ -1,10 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
 import 'package:se_gay_components/common/sg_button.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/sg_textfield.dart';
 
 class LoginInputView extends StatefulWidget {
   final AuthRequest data;
@@ -60,7 +62,6 @@ class _LoginInputViewState extends State<LoginInputView> {
     _passwordController.dispose();
     _usernameFocusNode.dispose();
     _passwordFocusNode.dispose();
-    print("dispose input");
     super.dispose();
   }
 
@@ -76,8 +77,8 @@ class _LoginInputViewState extends State<LoginInputView> {
       // Validate password
       if (password.isEmpty) {
         _passwordError = 'Vui lòng nhập mật khẩu';
-      } else if (password.length < 6) {
-        _passwordError = 'Mật khẩu phải có ít nhất 6 ký tự';
+      } else if (password.length < 4) {
+        _passwordError = 'Mật khẩu phải có ít nhất 4 ký tự';
       } else {
         _passwordError = null;
       }
@@ -103,11 +104,11 @@ class _LoginInputViewState extends State<LoginInputView> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            SGTextField(
+            SGInputText(
               controller: _usernameController,
               label: "Email",
               hintText: "Nhập email",
-              keyboardType: TextInputType.emailAddress,
+              keyboardInputType: TextInputType.emailAddress,
               prefixIcon: const Icon(Icons.email_outlined),
               textInputAction: TextInputAction.next,
               // onChanged: (value) {
@@ -131,14 +132,16 @@ class _LoginInputViewState extends State<LoginInputView> {
               ),
             ],
             const SizedBox(height: 16),
-            SGTextField(
+            SGInputText(
               controller: _passwordController,
               label: "Mật khẩu",
               hintText: "Nhập mật khẩu",
               obscureText: _obscurePassword,
+              isPassword: true,
               // borderRadius: 8,
               // isTextRequire: true,
               prefixIcon: const Icon(Icons.lock_outline),
+              keyboardInputType: TextInputType.visiblePassword,
               suffixIcon: IconButton(
                 alignment: Alignment.center,
                 icon: Icon(
@@ -147,12 +150,13 @@ class _LoginInputViewState extends State<LoginInputView> {
                 onPressed: () {
                   setState(() {
                     _obscurePassword = !_obscurePassword;
+                    log('message _obscurePassword: $_obscurePassword');
                   });
                 },
               ),
               // focusNode: _passwordFocusNode,
               textInputAction: TextInputAction.next,
-              // onSubmitted: (value) => _handleLogin(),
+              onSubmitted: (value) => _handleLogin(),
               // onChanged: (value) {
               //   setState(() {
               //     if (value.trim().isEmpty) {

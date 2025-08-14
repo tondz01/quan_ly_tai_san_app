@@ -1,10 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nested/nested.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/asset_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/bloc/asset_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/models/sample_asset.dart';
@@ -20,6 +19,8 @@ import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 
+import '../../screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+
 List<SingleChildWidget> get blocProvider {
   return [
     // BlocProvider<BaseBloc>(
@@ -28,8 +29,8 @@ List<SingleChildWidget> get blocProvider {
     // BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects(sampleProjects()))),
     // BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs(sampleStaffDTOs()))),
     BlocProvider<ToolsAndSuppliesBloc>(create: (_) => ToolsAndSuppliesBloc()),
-    BlocProvider<AssetTransferBloc>(create: (_) => AssetTransferBloc()),
-    BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
+    // BlocProvider<AssetTransferBloc>(create: (_) => AssetTransferBloc()),
+    BlocProvider<DieuDongTaiSanBloc>(create: (_) => DieuDongTaiSanBloc()),
     BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs())),
     BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()..add(LoadProjects())),
     BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()..add(LoadDepartments())),
@@ -39,6 +40,7 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<AssetGroupBloc>(create: (_) => AssetGroupBloc()),
     BlocProvider<AssetManagementBloc>(create: (_) => AssetManagementBloc()),
     BlocProvider<AssetCategoryBloc>(create: (_) => AssetCategoryBloc()),
+    BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
     BlocProvider<LoginBloc>(create: (_) => LoginBloc()),
   ];
 }

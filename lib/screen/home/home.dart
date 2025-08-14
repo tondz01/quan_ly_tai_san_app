@@ -46,6 +46,7 @@ class _HomeState extends State<Home> {
   void didUpdateWidget(Home oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Cập nhật selectedIndex khi widget được update
+    log('message didUpdateWidget');
     _updateSelectedIndexFromRoute();
   }
 

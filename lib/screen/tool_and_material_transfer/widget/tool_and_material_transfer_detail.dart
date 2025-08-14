@@ -15,16 +15,17 @@ import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+
+import '../../asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import '../../asset_transfer/bloc/dieu_dong_tai_san_event.dart';
+import '../../asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 class ToolAndMaterialTransferDetail extends StatefulWidget {
   final bool isEditing;
@@ -89,12 +90,12 @@ class _ToolAndMaterialTransferDetailState
   bool _controllersInitialized = false;
   String? _selectedFileName;
   String? _selectedFilePath;
-
+  String idCongTy = "";
   late ToolAndMaterialTransferDto? item;
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
-  final List<AssetHandoverDto> listAssetHandover = [];
+  final List<DieuDongTaiSanDto> listAssetHandover = [];
 
   Map<String, bool> _validationErrors = {};
 
@@ -360,20 +361,20 @@ class _ToolAndMaterialTransferDetailState
     return MultiBlocListener(
       listeners: [
         // Lắng nghe từ AssetHandoverBloc
-        BlocListener<AssetHandoverBloc, AssetHandoverState>(
+        BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
           listener: (context, state) {
-            if (state is GetListAssetHandoverSuccessState) {
+            if (state is GetListDieuDongTaiSanSuccessState) {
               // Handle successful data loading
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
               log('Asset handover data loaded successfully');
-            } else if (state is GetListAssetHandoverFailedState) {
-            } else if (state is AssetHandoverLoadingState) {
+            } else if (state is GetListDieuDongTaiSanFailedState) {
+            } else if (state is DieuDongTaiSanLoadingState) {
               // Show loading indicator
               setState(() {
                 _isUploading = true;
               });
-            } else if (state is AssetHandoverLoadingDismissState) {
+            } else if (state is DieuDongTaiSanLoadingDismissState) {
               // Hide loading indicator
               setState(() {
                 _isUploading = false;
@@ -538,7 +539,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.preparer_initialed'.tr,
                 value: isPreparerInitialed,
                 isEditing: isEditing,
-                isEnable: false,
+                isDisabled: false,
                 onChanged: (newValue) {
                   setState(() {
                     isPreparerInitialed = newValue;
@@ -549,7 +550,7 @@ class _ToolAndMaterialTransferDetailState
                 label: 'at.require_manager_approval'.tr,
                 value: isRequireManagerApproval,
                 isEditing: isEditing,
-                isEnable: false,
+                isDisabled: false,
                 onChanged: (newValue) {
                   setState(() {
                     isRequireManagerApproval = newValue;
@@ -561,7 +562,7 @@ class _ToolAndMaterialTransferDetailState
                   label: 'at.deputy_confirmed'.tr,
                   value: isDeputyConfirmed,
                   isEditing: isEditing,
-                  isEnable: false,
+                  isDisabled: false,
                   onChanged: (newValue) {
                     setState(() {
                       isDeputyConfirmed = newValue;
@@ -636,7 +637,7 @@ class _ToolAndMaterialTransferDetailState
                 selectedFileName: _selectedFileName,
                 selectedFilePath: _selectedFilePath,
                 validationErrors: _validationErrors,
-                onFileSelected: (fileName, filePath) {
+                onFileSelected: (fileName, filePath, fileBytes) {
                   setState(() {
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
@@ -822,8 +823,10 @@ class _ToolAndMaterialTransferDetailState
 
   void _callGetListAssetHandover() {
     try {
-      final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(context);
-      assetHandoverBloc.add(GetListAssetHandoverEvent(context));
+      final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
+      // assetHandoverBloc.add(
+      //   GetListDieuDongTaiSanEvent(context: context,typeAssetTransfer:1, idCongTy: idCongTy),
+      // );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
