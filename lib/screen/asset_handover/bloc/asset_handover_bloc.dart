@@ -1,36 +1,40 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 
 import 'asset_handover_event.dart';
 import 'asset_handover_state.dart';
 
-class AssetHandoverBloc
-    extends Bloc<AssetHandoverEvent, AssetHandoverState> {
+class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
   AssetHandoverBloc() : super(AssetHandoverInitialState()) {
     on<GetListAssetHandoverEvent>(_getListAssetHandover);
   }
 
-  Future<void> _getListAssetHandover(
-    GetListAssetHandoverEvent event,
-    Emitter emit,
-  ) async {
+  Future<void> _getListAssetHandover(GetListAssetHandoverEvent event, Emitter emit) async {
     emit(AssetHandoverInitialState());
     emit(AssetHandoverLoadingState());
-    Map<String, dynamic> result = await AssetHandoverRepository()
-        .getListAssetHandover();  
+
+    List<PhongBan> dataDepartment = [];
+    List<NhanVien> dataStaff = [];
+    List<AssetHandoverDto> dataAssetHandoverDto = [];
+
+    Map<String, dynamic> result = await AssetHandoverRepository().getListAssetHandover();
+    dataDepartment = await DepartmentsProvider().fetchDepartments();
+    dataStaff = await NhanVienProvider().fetchNhanViens();
+    dataAssetHandoverDto = result['data'];
+
     emit(AssetHandoverLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(GetListAssetHandoverSuccessState(data: result['data']));
-    } else {
-      String msg = "Lỗi khi lấy dữ liệu";
-      emit(
-        GetListAssetHandoverFailedState(
-          title: "notice",
-          code: result['status_code'],
-          message: msg,
-        ),
-      );
-    }
+
+    emit(
+      GetListAssetHandoverSuccessState(
+        data: dataAssetHandoverDto,
+        dataDepartment: dataDepartment,
+        dataStaff: dataStaff,
+      ),
+    );
   }
 }

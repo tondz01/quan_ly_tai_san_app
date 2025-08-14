@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
@@ -15,6 +16,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -57,6 +60,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   // Lưu trữ giá trị ban đầu để so sánh
   Map<String, dynamic> _originalValues = {};
 
+  List<PhongBan> listPhongBan = [];
+  List<NhanVien> listNhanVien = [];
+
+  List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
+  List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
+
   @override
   void initState() {
     _initData();
@@ -95,10 +104,22 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
     isRepresentativeUnitConfirm = item?.donViDaiDienXacNhan == "0" ? true : false;
 
-    itemsRequester =
-        users.isNotEmpty
-            ? users.map((user) => DropdownMenuItem<String>(value: user.id ?? '', child: Text(user.name ?? ''))).toList()
-            : <DropdownMenuItem<String>>[];
+    listNhanVien = widget.provider.dataStaff ?? [];
+    listPhongBan = widget.provider.dataDepartment ?? [];
+
+    itemsNhanVien =
+        listNhanVien.isNotEmpty
+            ? listNhanVien
+                .map((user) => DropdownMenuItem<NhanVien>(value: user, child: Text(user.hoTen ?? '')))
+                .toList()
+            : <DropdownMenuItem<NhanVien>>[];
+
+    itemsPhongBan =
+        listPhongBan.isNotEmpty
+            ? listPhongBan
+                .map((user) => DropdownMenuItem<PhongBan>(value: user, child: Text(user.tenPhongBan ?? '')))
+                .toList()
+            : <DropdownMenuItem<PhongBan>>[];
 
     // Cập nhật controllers với dữ liệu mới
     _updateControllers();
@@ -242,6 +263,22 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
+  PhongBan getPhongBan({required List<PhongBan> listPhongBan, required String idPhongBan}) {
+    final found = listPhongBan.where((item) => item.id == idPhongBan);
+    if (found.isEmpty) {
+      return PhongBan();
+    }
+    return found.first;
+  }
+
+  NhanVien getNhanVien({required List<NhanVien> listNhanVien, required String idNhanVien}) {
+    final found = listNhanVien.where((item) => item.id == idNhanVien);
+    if (found.isEmpty) {
+      return NhanVien();
+    }
+    return found.first;
+  }
+
   final List<DropdownMenuItem<String>> itemsrReceivingUnit = [
     const DropdownMenuItem(value: 'Ban giám đốc', child: Text('Ban giám đốc')),
     const DropdownMenuItem(
@@ -262,8 +299,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       child: Text('P.xưởng Thông gió - thoát nước mỏ 1'),
     ),
   ];
-
-  List<DropdownMenuItem<String>> itemsRequester = [];
 
   @override
   void dispose() {
@@ -396,24 +431,30 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDropdownObject<PhongBan>(
           label: 'ah.sender_unit'.tr,
           controller: controllerSenderUnit,
           isEditing: isEditing,
-          textContent: item?.tenDonViGiao ?? '',
-          isDropdown: true,
-          items: itemsrReceivingUnit,
+          defaultValue:
+              controllerSenderUnit.text.isNotEmpty
+                  ? getPhongBan(listPhongBan: listPhongBan, idPhongBan: controllerSenderUnit.text)
+                  : null,
+          fieldName: 'senderUnit',
+          items: itemsPhongBan,
           onChanged: (value) {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDropdownObject<PhongBan>(
           label: 'ah.receiver_unit'.tr,
           controller: controllerReceiverUnit,
           isEditing: isEditing,
-          textContent: item?.tenDonViNhan ?? '',
-          isDropdown: true,
-          items: itemsrReceivingUnit,
+          defaultValue:
+              controllerReceiverUnit.text.isNotEmpty
+                  ? getPhongBan(listPhongBan: listPhongBan, idPhongBan: controllerReceiverUnit.text)
+                  : null,
+          fieldName: 'receiverUnit',
+          items: itemsPhongBan,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -428,13 +469,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             // _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDropdownObject<NhanVien>(
           label: 'ah.leader'.tr,
           controller: controllerLeader,
           isEditing: isEditing,
-          textContent: item?.tenLanhDao ?? '',
-          isDropdown: true,
-          items: itemsRequester,
+          defaultValue:
+              controllerLeader.text.isNotEmpty
+                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: controllerLeader.text)
+                  : null,
+          fieldName: 'leader',
+          items: itemsNhanVien,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -446,13 +490,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget _buildAssetHandoverDetail() {
     return Column(
       children: [
-        CommonFormInput(
+        CmFormDropdownObject<NhanVien>(
           label: 'ah.issuing_unit_representative'.tr,
           controller: controllerIssuingUnitRepresentative,
           isEditing: isEditing,
-          textContent: item?.tenDaiDienBanHanhQD ?? '',
-          isDropdown: true,
-          items: itemsRequester,
+          defaultValue:
+              controllerIssuingUnitRepresentative.text.isNotEmpty
+                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: controllerIssuingUnitRepresentative.text)
+                  : null,
+          fieldName: 'issuingUnitRepresentative',
+          items: itemsNhanVien,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -461,7 +508,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.unit_confirm'.tr,
           value: isUnitConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isEnable: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isUnitConfirm = newValue;
@@ -469,13 +516,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDropdownObject<NhanVien>(
           label: 'ah.deliverer_representative'.tr,
           controller: controllerDelivererRepresentative,
           isEditing: isEditing,
-          textContent: item?.tenDaiDienBenGiao ?? '',
-          isDropdown: true,
-          items: itemsRequester,
+          defaultValue:
+              controllerDelivererRepresentative.text.isNotEmpty
+                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: controllerDelivererRepresentative.text)
+                  : null,
+          fieldName: 'delivererRepresentative',
+          items: itemsNhanVien,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -484,7 +534,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.deliverer_confirm'.tr,
           value: isDelivererConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isEnable: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isDelivererConfirm = newValue;
@@ -492,13 +542,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDropdownObject<NhanVien>(
           label: 'ah.receiver_representative'.tr,
           controller: controllerReceiverRepresentative,
           isEditing: isEditing,
-          textContent: item?.tenDaiDienBenNhan ?? '',
-          isDropdown: true,
-          items: itemsRequester,
+          defaultValue:
+              controllerReceiverRepresentative.text.isNotEmpty
+                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: controllerReceiverRepresentative.text)
+                  : null,
+          fieldName: 'receiverRepresentative',
+          items: itemsNhanVien,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -507,7 +560,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.receiver_confirm'.tr,
           value: isReceiverConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isEnable: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isReceiverConfirm = newValue;
@@ -515,13 +568,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        CmFormDropdownObject<NhanVien>(
           label: 'ah.representative_unit'.tr,
           controller: controllerRepresentativeUnit,
           isEditing: isEditing,
-          textContent: item?.tenDonViDaiDien ?? '',
-          isDropdown: true,
-          items: itemsRequester,
+          defaultValue:
+              controllerRepresentativeUnit.text.isNotEmpty
+                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: controllerRepresentativeUnit.text)
+                  : null,
+          fieldName: 'representativeUnit',
+          items: itemsNhanVien,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -530,7 +586,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.representative_unit_confirm'.tr,
           value: isRepresentativeUnitConfirm,
           isEditing: isEditing,
-          isEnable: true,
+          isEnable: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isRepresentativeUnitConfirm = newValue;
@@ -551,8 +607,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           builder:
               (context) => CommonContract(
                 contractType: ContractPage.assetHandoverPage(item!),
-                signatureList:
-                    ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'], idTaiLieu: item.id.toString(),idNguoiKy: 'admin',tenNguoiKy: "Do Thanh Ton",
+                signatureList: [
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
+                ],
+                idTaiLieu: item.id.toString(),
+                idNguoiKy: 'admin',
+                tenNguoiKy: "Do Thanh Ton",
               ),
         );
       },

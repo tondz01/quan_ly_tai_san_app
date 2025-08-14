@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 
 abstract class AssetHandoverState extends Equatable {
   const AssetHandoverState();
@@ -16,8 +18,11 @@ class AssetHandoverLoadingDismissState extends AssetHandoverState {}
 
 class GetListAssetHandoverSuccessState extends AssetHandoverState {
   final List<AssetHandoverDto> data;
+  final List<PhongBan> dataDepartment;
+  final List<NhanVien> dataStaff;
+  // final List<NhanVien> dataStaff;
 
-  const GetListAssetHandoverSuccessState({required this.data});
+  const GetListAssetHandoverSuccessState({required this.data, required this.dataDepartment, required this.dataStaff});
 
   @override
   List<Object> get props => [data];
@@ -28,11 +33,7 @@ class GetListAssetHandoverFailedState extends AssetHandoverState {
   final int? code;
   final String message;
 
-  const GetListAssetHandoverFailedState({
-    required this.title,
-    this.code,
-    required this.message,
-  });
+  const GetListAssetHandoverFailedState({required this.title, this.code, required this.message});
 
   @override
   List<Object> get props => [title, code!, message];

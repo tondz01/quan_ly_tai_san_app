@@ -9,6 +9,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
@@ -30,6 +32,8 @@ class AssetHandoverProvider with ChangeNotifier {
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   List<AssetHandoverDto>? get dataPage => _dataPage;
+  List<PhongBan>? get dataDepartment => _dataDepartment;
+  List<NhanVien>? get dataStaff => _dataStaff;
   AssetHandoverDto? get item => _item;
   get data => _data;
   get columns => _columns;
@@ -97,9 +101,11 @@ class AssetHandoverProvider with ChangeNotifier {
 
   List<AssetHandoverDto>? _data;
   List<AssetHandoverDto>? _dataPage;
+  List<PhongBan>? _dataDepartment;
+  List<NhanVien>? _dataStaff;
   // Danh sách dữ liệu đã được lọc
   List<AssetHandoverDto> _filteredData = [];
-  List<SgTableColumn<AssetHandoverDto>> _columns = [];
+  final List<SgTableColumn<AssetHandoverDto>> _columns = [];
   AssetHandoverDto? _item;
 
   // Method để refresh data và filter
@@ -356,8 +362,14 @@ class AssetHandoverProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataDepartment = [];
+      _dataStaff = [];
+
     } else {
       _data = state.data;
+      _dataDepartment = state.dataDepartment;
+      _dataStaff = state.dataStaff;
+
       _filteredData = List.from(_data!);
       _isLoading = false;
       _updatePagination();
