@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -180,7 +181,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
               title: 'Trạng thái',
-              cellBuilder: (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
+              cellBuilder:
+                  (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
             ),
@@ -392,7 +394,23 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai != 0) {widget.provider.deleteItem(item.id ?? '')},
+              if (item.trangThai == 0)
+                {
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa nhóm tài sản',
+                    message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                    highlight: item.tenPhieu!,
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      context.read<DieuDongTaiSanBloc>().add(
+                        DeleteDieuDongEvent(context, item.id!),
+                      );
+                    },
+                  ),
+                },
             },
       ),
     ]);
@@ -403,7 +421,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       case 1:
         return 'Phiếu duyệt cấp phát tài sản';
       case 2:
-        return 'Phiếu duyệt chuyển tài sản' ;
+        return 'Phiếu duyệt chuyển tài sản';
       case 3:
         return 'Phiếu duyệt thu hồi tài sản';
     }
@@ -413,7 +431,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   void _callGetListAssetHandover() {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(GetListDieuDongTaiSanEvent(context,widget.typeAssetTransfer,widget.idCongTy));
+      assetHandoverBloc.add(
+        GetListDieuDongTaiSanEvent(
+          context,
+          widget.typeAssetTransfer,
+          widget.idCongTy,
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

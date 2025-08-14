@@ -2,13 +2,11 @@ import 'dart:developer';
 import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/component/asset_category_form.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/request/asset_category_request.dart';
 
 class AssetCategoryDetail extends StatefulWidget {
   final AssetCategoryProvider provider;
@@ -28,7 +26,7 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
   bool isEditing = false;
   bool isActive = false;
   String? nameAssetCategory;
-  String idCongTy = 'ct001';
+  String idCongTy = '';
   DateTime? createdAt;
 
   Map<String, TextEditingController> controllers = {};
@@ -98,6 +96,7 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
   }
 
   _initData() {
+    idCongTy = widget.provider.userInfo?.idCongTy ?? '';
     if (widget.provider.dataDetail != null) {
       setState(() {
         isEditing = false;

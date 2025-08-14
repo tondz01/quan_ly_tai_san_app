@@ -7,10 +7,12 @@ import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
     show
         CreateDieuDongEvent,
+        DeleteDieuDongEvent,
         DieuDongTaiSanEvent,
         GetDataDropdownEvent,
         GetListAssetEvent,
-        GetListDieuDongTaiSanEvent;
+        GetListDieuDongTaiSanEvent,
+        UpdateDieuDongEvent;
 import 'dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanBloc
@@ -19,7 +21,9 @@ class DieuDongTaiSanBloc
     on<GetListDieuDongTaiSanEvent>(_getListDieuDongTaiSan);
     on<GetListAssetEvent>(_getListAsset);
     on<GetDataDropdownEvent>(_getDataDropdown);
-    on<CreateDieuDongEvent>(_createAsset);
+    on<CreateDieuDongEvent>(_createLenhDieuDong);
+    on<UpdateDieuDongEvent>(_updateDieuDong);
+    on<DeleteDieuDongEvent>(_deleteDieuDong);
   }
 
   Future<void> _getListDieuDongTaiSan(
@@ -83,7 +87,7 @@ class DieuDongTaiSanBloc
   }
 
   ///CREATE
-  Future<void> _createAsset(CreateDieuDongEvent event, Emitter emit) async {
+  Future<void> _createLenhDieuDong(CreateDieuDongEvent event, Emitter emit) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetTransferRepository().createAsset(
@@ -101,6 +105,39 @@ class DieuDongTaiSanBloc
           code: result['status_code'],
           message: msg,
         ),
+      );
+    }
+  }
+
+  Future<void> _updateDieuDong(UpdateDieuDongEvent event, Emitter emit) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    int result = await DieuDongTaiSanRepository().update(
+      event.id,
+      event.params,
+    );
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateDieuDongSuccessState(data: result.toString()));
+    } else {
+      String msg = "Lỗi khi cập nhật lệnh điều động";
+      emit(
+        PutPostDeleteFailedState(title: "notice", code: result, message: msg),
+      );
+    }
+  }
+
+  Future<void> _deleteDieuDong(DeleteDieuDongEvent event, Emitter emit) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    int result = await DieuDongTaiSanRepository().delete(event.id);
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result == Numeral.STATUS_CODE_SUCCESS) {
+      emit(DeleteDieuDongSuccessState(data: result.toString()));
+    } else {
+      String msg = "Lỗi khi xóa lệnh điều động";
+      emit(
+        PutPostDeleteFailedState(title: "notice", code: result, message: msg),
       );
     }
   }

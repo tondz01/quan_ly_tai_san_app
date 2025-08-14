@@ -58,7 +58,7 @@ abstract class AppUtility {
   static List<DropdownMenuItem<String>> phuongPhapKhauHaos = [
     const DropdownMenuItem(
       value: '1',
-      child: SGText(text: 'Đường thẳng', size: 14),
+      child: Text('Đường thẳng'),
     ),
   ];
 

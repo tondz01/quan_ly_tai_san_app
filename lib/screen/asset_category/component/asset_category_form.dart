@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 
 Widget buildAssetCategoryForm({
@@ -35,7 +37,7 @@ Widget buildAssetCategoryForm({
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CommonFormInput(
-                label: 'Tên mô hình tài sản',
+                label: 'Mã mô hình tài sản',
                 controller: ctrlIdMohinh,
                 isEditing: isEditing,
                 textContent: isEditing ? '' : data!.id ?? '',
@@ -52,16 +54,19 @@ Widget buildAssetCategoryForm({
                   // _checkForChanges();
                 },
               ),
-              CommonFormInput(
+              CmFormDropdownObject<String>(
                 label: 'Phương pháp khấu hao',
                 controller: ctrlPhuongPhapKhauHao,
                 isEditing: isEditing,
-                textContent:
-                    ctrlPhuongPhapKhauHao.text == '1' ? 'Đường thảng' : '',
-                isDropdown: true,
-                items: itemsPhuongPhapKhauHaos,
+                items: AppUtility.phuongPhapKhauHaos,
+                defaultValue:
+                    ctrlPhuongPhapKhauHao.text.isNotEmpty
+                        ?  ctrlPhuongPhapKhauHao.text == '1' ? 'Đường thảng' : ''
+                        : null,
                 onChanged: onChangedPhuongPhapKhauHaos,
+                fieldName: 'phuongPhapKhauHao',
               ),
+          
               CommonFormInput(
                 label: 'Kỳ khấu hao',
                 controller: ctrlKyKhauHao,
