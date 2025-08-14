@@ -11,11 +11,10 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
@@ -62,9 +61,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   List<PhongBan> listPhongBan = [];
   List<NhanVien> listNhanVien = [];
+  List<DieuDongTaiSanDto> listAssetTransfer = [];
 
   List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
+  List<DropdownMenuItem<DieuDongTaiSanDto>> itemsAssetTransfer = [];
 
   @override
   void initState() {
@@ -106,6 +107,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
+    listAssetTransfer = widget.provider.dataAssetTransfer ?? [];
 
     itemsNhanVien =
         listNhanVien.isNotEmpty
@@ -120,6 +122,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 .map((user) => DropdownMenuItem<PhongBan>(value: user, child: Text(user.tenPhongBan ?? '')))
                 .toList()
             : <DropdownMenuItem<PhongBan>>[];
+    itemsAssetTransfer =
+        listAssetTransfer.isNotEmpty
+            ? listAssetTransfer
+                .map(
+                  (assetTransfer) => DropdownMenuItem<DieuDongTaiSanDto>(
+                    value: assetTransfer,
+                    child: Text(assetTransfer.tenPhieu ?? ''),
+                  ),
+                )
+                .toList()
+            : <DropdownMenuItem<DieuDongTaiSanDto>>[];
 
     // Cập nhật controllers với dữ liệu mới
     _updateControllers();
@@ -261,6 +274,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         widget.provider.hasUnsavedChanges = false;
       }
     });
+  }
+
+  DieuDongTaiSanDto getAssetTransfer({
+    required List<DieuDongTaiSanDto> listAssetTransfer,
+    required String idAssetTransfer,
+  }) {
+    final found = listAssetTransfer.where((item) => item.id == idAssetTransfer);
+    if (found.isEmpty) {
+      return DieuDongTaiSanDto();
+    }
+    return found.first;
   }
 
   PhongBan getPhongBan({required List<PhongBan> listPhongBan, required String idPhongBan}) {
@@ -422,11 +446,25 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             _checkForChanges();
           },
         ),
-        CommonFormInput(
+        // CommonFormInput(
+        //   label: 'ah.order'.tr,
+        //   controller: controllerOrder,
+        //   isEditing: isEditing,
+        //   textContent: item?.lenhDieuDong ?? '',
+        //   onChanged: (value) {
+        //     _checkForChanges();
+        //   },
+        // ),
+        CmFormDropdownObject<DieuDongTaiSanDto>(
           label: 'ah.order'.tr,
           controller: controllerOrder,
           isEditing: isEditing,
-          textContent: item?.lenhDieuDong ?? '',
+          defaultValue:
+              controllerOrder.text.isNotEmpty
+                  ? getAssetTransfer(listAssetTransfer: listAssetTransfer, idAssetTransfer: controllerOrder.text)
+                  : null,
+          fieldName: 'order',
+          items: itemsAssetTransfer,
           onChanged: (value) {
             _checkForChanges();
           },
@@ -508,13 +546,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.unit_confirm'.tr,
           value: isUnitConfirm,
           isEditing: isEditing,
-          isEnable: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isUnitConfirm = newValue;
             });
             _checkForChanges();
           },
+          isDisabled: !isEditing,
         ),
         CmFormDropdownObject<NhanVien>(
           label: 'ah.deliverer_representative'.tr,
@@ -534,7 +572,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.deliverer_confirm'.tr,
           value: isDelivererConfirm,
           isEditing: isEditing,
-          isEnable: !isEditing,
+          isDisabled: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isDelivererConfirm = newValue;
@@ -560,7 +598,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.receiver_confirm'.tr,
           value: isReceiverConfirm,
           isEditing: isEditing,
-          isEnable: !isEditing,
+          isDisabled: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isReceiverConfirm = newValue;
@@ -586,7 +624,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'ah.representative_unit_confirm'.tr,
           value: isRepresentativeUnitConfirm,
           isEditing: isEditing,
-          isEnable: !isEditing,
+          isDisabled: !isEditing,
           onChanged: (newValue) {
             setState(() {
               isRepresentativeUnitConfirm = newValue;

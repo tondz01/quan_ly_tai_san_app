@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
@@ -21,11 +23,14 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     List<PhongBan> dataDepartment = [];
     List<NhanVien> dataStaff = [];
     List<AssetHandoverDto> dataAssetHandoverDto = [];
+    List<DieuDongTaiSanDto> dataDieuDongTaiSanDto = [];
 
     Map<String, dynamic> result = await AssetHandoverRepository().getListAssetHandover();
+    Map<String, dynamic> resultAssetTransfer = await AssetTransferRepository().getListDieuDongTaiSan("ct001");
     dataDepartment = await DepartmentsProvider().fetchDepartments();
     dataStaff = await NhanVienProvider().fetchNhanViens();
     dataAssetHandoverDto = result['data'];
+    dataDieuDongTaiSanDto = resultAssetTransfer['data'];
 
     emit(AssetHandoverLoadingDismissState());
 
@@ -34,6 +39,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
         data: dataAssetHandoverDto,
         dataDepartment: dataDepartment,
         dataStaff: dataStaff,
+        dataAssetTransfer: dataDieuDongTaiSanDto,
       ),
     );
   }

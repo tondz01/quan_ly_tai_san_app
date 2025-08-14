@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -32,6 +33,7 @@ class AssetHandoverProvider with ChangeNotifier {
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   List<AssetHandoverDto>? get dataPage => _dataPage;
+  List<DieuDongTaiSanDto>? get dataAssetTransfer => _dataAssetTransfer;
   List<PhongBan>? get dataDepartment => _dataDepartment;
   List<NhanVien>? get dataStaff => _dataStaff;
   AssetHandoverDto? get item => _item;
@@ -101,6 +103,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
   List<AssetHandoverDto>? _data;
   List<AssetHandoverDto>? _dataPage;
+  List<DieuDongTaiSanDto>? _dataAssetTransfer;
   List<PhongBan>? _dataDepartment;
   List<NhanVien>? _dataStaff;
   // Danh sách dữ liệu đã được lọc
@@ -364,12 +367,13 @@ class AssetHandoverProvider with ChangeNotifier {
       _filteredData = [];
       _dataDepartment = [];
       _dataStaff = [];
-
+      _dataAssetTransfer = [];
     } else {
       _data = state.data;
       _dataDepartment = state.dataDepartment;
       _dataStaff = state.dataStaff;
-
+      _dataAssetTransfer = state.dataAssetTransfer;
+      
       _filteredData = List.from(_data!);
       _isLoading = false;
       _updatePagination();
