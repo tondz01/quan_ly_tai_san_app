@@ -71,7 +71,7 @@ abstract class AssetHandoverColumns {
         borderRadius: BorderRadius.circular(4),
       ),
       child: SGText(
-        text: detail.tenTaiSan ?? '',
+        text: detail.tenTaiSan,
         size: 12,
         fontWeight: FontWeight.w500,
         textAlign: TextAlign.left,

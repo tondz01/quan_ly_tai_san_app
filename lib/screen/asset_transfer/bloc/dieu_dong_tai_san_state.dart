@@ -110,3 +110,38 @@ class CreateDieuDongFailedState extends DieuDongTaiSanState {
   @override
   List<Object> get props => [title, code!, message];
 }
+
+//UPDATE
+class UpdateDieuDongSuccessState extends DieuDongTaiSanState {
+  final String data;
+
+  const UpdateDieuDongSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+//DELETE
+class DeleteDieuDongSuccessState extends DieuDongTaiSanState {
+  final String data;
+
+  const DeleteDieuDongSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class PutPostDeleteFailedState extends DieuDongTaiSanState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const PutPostDeleteFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}

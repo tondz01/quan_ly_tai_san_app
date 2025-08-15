@@ -1,6 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -173,7 +170,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _applyFilters();
     notifyListeners();
   }
-  
+
   void _applyFilters() {
     if (_data == null) return;
 
@@ -382,25 +379,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
   }
 
-  void deleteItem(String id) {
-    if (_data == null) return;
-
-    int index = _data!.indexWhere((item) => item.id == id);
-
-    if (index != -1) {
-      _data!.removeAt(index);
-
-      _updatePagination();
-
-      // Thông báo UI cập nhật
-      notifyListeners();
-
-      log('Đã xóa item có ID: $id');
-    } else {
-      log('Không tìm thấy item có ID: $id');
-    }
-  }
-
   getListDieuDongTaiSanSuccess(
     BuildContext context,
     GetListDieuDongTaiSanSuccessState state,
@@ -492,23 +470,32 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
   }
 
-  // Add method to create a new asset transfer
+  void updateDieuDongSuccess(
+    BuildContext context,
+    UpdateDieuDongSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhật thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
 
-  Future<void> updateDieuDongTaiSan(DieuDongTaiSanDto updatedItem) async {
-    if (_data == null || updatedItem.id == null) return;
+  void deleteDieuDongSuccess(
+    BuildContext context,
+    DeleteDieuDongSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Xóa thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
 
-    log('Updating asset transfer: ${updatedItem.id}');
-
-    int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-
-    if (index != -1) {
-      _data![index] = updatedItem;
-
-      _filteredData = List.from(_data!);
-      _updatePagination();
-
-      notifyListeners();
-    }
+  void putPostDeleteFailed(
+    BuildContext context,
+    PutPostDeleteFailedState state,
+  ) {
+    AppUtility.showSnackBar(context, state.message);
+    notifyListeners();
   }
 
   Future<void> saveAssetTransfer(

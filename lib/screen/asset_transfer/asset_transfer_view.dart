@@ -193,6 +193,27 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           log('CreateDieuDongFailedState');
           AppUtility.showSnackBar(context, state.message);
         }
+        if (state is UpdateDieuDongSuccessState) {
+          log('UpdateDieuDongSuccessState');
+          context.read<DieuDongTaiSanProvider>().updateDieuDongSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is DeleteDieuDongSuccessState) {
+          log('DeleteDieuDongSuccessState');
+          context.read<DieuDongTaiSanProvider>().deleteDieuDongSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is PutPostDeleteFailedState) {
+          log('PutPostDeleteFailedState');
+          context.read<DieuDongTaiSanProvider>().putPostDeleteFailed(
+            context,
+            state,
+          );
+        }
       },
     );
   }

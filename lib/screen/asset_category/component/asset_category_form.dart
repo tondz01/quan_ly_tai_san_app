@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 
 Widget buildAssetCategoryForm({
@@ -14,8 +16,6 @@ Widget buildAssetCategoryForm({
   required TextEditingController ctrlTaiKhoanTaiSan,
   required TextEditingController ctrlTaiKhoanKhauHao,
   required TextEditingController ctrlTaiKhoanChiPhi,
-  required List<DropdownMenuItem<String>>? itemsPhuongPhapKhauHaos,
-  required List<DropdownMenuItem<String>>? itemsLoaiKyKhauHaos,
   required Function(String)? onChangedPhuongPhapKhauHaos,
   required Function(String)? onChangedLoaiKyKhauHaos,
 }) {
@@ -35,10 +35,10 @@ Widget buildAssetCategoryForm({
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CommonFormInput(
-                label: 'Tên mô hình tài sản',
+                label: 'Mã mô hình tài sản',
                 controller: ctrlIdMohinh,
                 isEditing: isEditing,
-                textContent: isEditing ? '' : data!.id ?? '',
+                textContent: ctrlIdMohinh.text,
                 onChanged: (value) {
                   // _checkForChanges();
                 },
@@ -47,21 +47,26 @@ Widget buildAssetCategoryForm({
                 label: 'Tên mô hình tài sản',
                 controller: ctrlTenMoHinh,
                 isEditing: isEditing,
-                textContent: isEditing ? '' : data!.tenMoHinh ?? '',
+                textContent: ctrlTenMoHinh.text,
                 onChanged: (value) {
                   // _checkForChanges();
                 },
               ),
-              CommonFormInput(
+              CmFormDropdownObject<String>(
                 label: 'Phương pháp khấu hao',
                 controller: ctrlPhuongPhapKhauHao,
                 isEditing: isEditing,
-                textContent:
-                    ctrlPhuongPhapKhauHao.text == '1' ? 'Đường thảng' : '',
-                isDropdown: true,
-                items: itemsPhuongPhapKhauHaos,
+                items: AppUtility.phuongPhapKhauHaos,
+                defaultValue:
+                    ctrlPhuongPhapKhauHao.text.isNotEmpty
+                        ? ctrlPhuongPhapKhauHao.text == '1'
+                            ? 'Đường thảng'
+                            : ''
+                        : null,
                 onChanged: onChangedPhuongPhapKhauHaos,
+                fieldName: 'phuongPhapKhauHao',
               ),
+
               CommonFormInput(
                 label: 'Kỳ khấu hao',
                 controller: ctrlKyKhauHao,
@@ -76,33 +81,43 @@ Widget buildAssetCategoryForm({
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CommonFormInput(
+              CmFormDropdownObject<String>(
                 label: 'Loại kỳ khấu hao',
                 controller: ctrlLoaiKyKhauHao,
                 isEditing: isEditing,
-                textContent: '',
-                isDropdown: true,
-                items: itemsLoaiKyKhauHaos,
+                items: AppUtility.loaiKyKhauHaos,
+                defaultValue:
+                    ctrlLoaiKyKhauHao.text.isNotEmpty
+                        ? ctrlLoaiKyKhauHao.text == '1'
+                            ? 'Tháng'
+                            : ctrlLoaiKyKhauHao.text == '2'
+                                ? 'Năm'
+                            : ''
+                        : null,
                 onChanged: onChangedLoaiKyKhauHaos,
+                fieldName: 'loaiKyKhauHao',
               ),
+              
               CommonFormInput(
                 label: 'Tài khoản tài sản',
                 controller: ctrlTaiKhoanTaiSan,
                 isEditing: isEditing,
-                textContent: '',
-                // inputType: TextInputType.number,
+                textContent: ctrlTaiKhoanTaiSan.text,
+                inputType: TextInputType.number,
               ),
               CommonFormInput(
                 label: 'Tài khoản khấu hao',
                 controller: ctrlTaiKhoanKhauHao,
                 isEditing: isEditing,
-                textContent: '',
+                textContent: ctrlTaiKhoanKhauHao.text,
+                inputType: TextInputType.number,
               ),
               CommonFormInput(
                 label: 'Tài khoản chi phí',
                 controller: ctrlTaiKhoanChiPhi,
                 isEditing: isEditing,
-                textContent: '',
+                textContent: ctrlTaiKhoanChiPhi.text,
+                inputType: TextInputType.number,
               ),
             ],
           ),

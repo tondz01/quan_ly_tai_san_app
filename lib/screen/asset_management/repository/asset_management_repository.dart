@@ -44,7 +44,7 @@ class AssetManagementRepository extends ApiBase {
 
     return result;
   }
-  
+
   //get list child assets
   Future<Map<String, dynamic>> getListChildAssets(String idTaiSan) async {
     List<AssetManagementDto> list = [];
@@ -76,6 +76,7 @@ class AssetManagementRepository extends ApiBase {
 
     return result;
   }
+
   //get list Khau Hao
   Future<Map<String, dynamic>> getListKhauHao(String idCongTy) async {
     List<AssetDepreciationDto> list = [];
@@ -86,9 +87,7 @@ class AssetManagementRepository extends ApiBase {
 
     try {
       String url = '${EndPointAPI.CHILD_ASSETS}/khauhaotaisan/$idCongTy';
-      final response = await get(
-        url,
-      );
+      final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -243,7 +242,21 @@ class AssetManagementRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] = AssetManagementDto.fromJson(response.data);
+      final resp = response.data;
+      if (resp is Map<String, dynamic>) {
+        result['message'] = (resp['message'] ?? '').toString();
+        // Prefer affectedRows if provided, fallback to data or 1
+        if (resp.containsKey('affectedRows')) {
+          result['data'] = resp['affectedRows'];
+        } else if (resp.containsKey('data')) {
+          result['data'] = resp['data'] ?? 1;
+        } else {
+          result['data'] = 1;
+        }
+      } else {
+        result['data'] = resp ?? 1;
+      }
+      // result['data'] = AssetManagementDto.fromJson(response.data);
     } catch (e) {
       log("Error at createAsset - AssetManagementRepository: $e");
     }

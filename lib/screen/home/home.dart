@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
+import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -299,7 +300,9 @@ class _HomeState extends State<Home> {
         // Settings button
         MaterialIconButton(
           icon: Icons.settings,
-          onPressed: () {},
+          onPressed: () {
+            context.go(AppRoute.account.path);
+          },
           tooltip: 'Cài đặt',
         ),
         const SizedBox(width: 8),

@@ -312,9 +312,6 @@ class AssetManagementProvider with ChangeNotifier {
             child: Text(element.tenDuAn ?? ''),
           ),
       ];
-      log('------------------------------------------------');
-      log('----------itemsDuAn: ${_itemsDuAn?.length}---------------');
-      log('------------------------------------------------');
     }
     notifyListeners();
   }
@@ -348,10 +345,6 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
-
-    log('------------------------------------------------');
-    log('----------_dataDepartment: ${_dataDepartment?.length}---------------');
-    log('------------------------------------------------');
     notifyListeners();
   }
 

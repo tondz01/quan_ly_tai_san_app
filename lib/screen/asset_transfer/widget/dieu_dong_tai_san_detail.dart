@@ -27,6 +27,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -99,6 +100,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   String idCongTy = 'CT001';
   int typeTransfer = 1;
   List<ChiTietDieuDongTaiSan> listNewDetails = [];
+  List<ChiTietDieuDongTaiSan> _initialDetails = [];
 
   PhongBan? donViGiao;
   PhongBan? donViNhan;
@@ -237,6 +239,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
         proposingUnit = item?.tenDonViDeNghi;
 
+        // Lưu snapshot chi tiết ban đầu để so sánh
+        _initialDetails = List<ChiTietDieuDongTaiSan>.from(
+          item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
+        );
+
         _controllersInitialized = true;
       } else {
         controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
@@ -320,6 +327,66 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
   void findPhongBan(String? value) {
     log('message');
+  }
+
+  List<Map<String, dynamic>> _normalizeDetails(
+    List<ChiTietDieuDongTaiSan> list,
+  ) {
+    final data = list
+        .map(
+          (d) => {
+            'idTaiSan': d.idTaiSan,
+            'soLuong': d.soLuong,
+            'hienTrang': d.hienTrang,
+            'ghiChu': d.ghiChu,
+          },
+        )
+        .toList();
+    data.sort(
+      (a, b) => (a['idTaiSan'] as String).compareTo(b['idTaiSan'] as String),
+    );
+    return data;
+  }
+
+  bool _detailsChanged() {
+    if (item == null) return listNewDetails.isNotEmpty;
+    final beforeJson = jsonEncode(_normalizeDetails(_initialDetails));
+    final afterJson = jsonEncode(_normalizeDetails(listNewDetails));
+    return beforeJson != afterJson;
+  }
+
+  Future<void> _syncDetails(String idDieuDongTaiSan) async {
+    try {
+      final repo = ChiTietDieuDongTaiSanRepository();
+      for (final d in _initialDetails) {
+        if (d.id.isNotEmpty) {
+          await repo.delete(d.id);
+        }
+      }
+      for (final d in listNewDetails) {
+        await repo.create(
+          ChiTietDieuDongTaiSan(
+            id: d.id,
+            idDieuDongTaiSan: idDieuDongTaiSan,
+            soQuyetDinh: d.soQuyetDinh,
+            tenPhieu: d.tenPhieu,
+            idTaiSan: d.idTaiSan,
+            tenTaiSan: d.tenTaiSan,
+            donViTinh: d.donViTinh,
+            hienTrang: d.hienTrang,
+            soLuong: d.soLuong,
+            ghiChu: d.ghiChu,
+            ngayTao: d.ngayTao,
+            ngayCapNhat: d.ngayCapNhat,
+            nguoiTao: d.nguoiTao,
+            nguoiCapNhat: d.nguoiCapNhat,
+            isActive: d.isActive,
+          ),
+        );
+      }
+    } catch (e) {
+      log('Sync details error: $e');
+    }
   }
 
   @override
@@ -899,7 +966,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         .toList();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!isEditing) return;
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -925,12 +992,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         _selectedFilePath ?? '',
         _selectedFileBytes ?? Uint8List(0),
       );
-    } else {
+    } else if (item != null && isEditing) {
       final request = _createDieuDongRequest(widget.type, item!.trangThai ?? 0);
-      final requestDetail = _createDieuDongRequestDetail();
-      log('message requestDetail: ${jsonEncode(requestDetail)}');
-      log('message request: ${jsonEncode(request)}');
-      // bloc.add(UpdateDieuDongEvent(context, request));
+      // Cập nhật chi tiết nếu có thay đổi
+      if (_detailsChanged()) {
+        await _syncDetails(item!.id!);
+      }
+      context.read<DieuDongTaiSanBloc>().add(
+        UpdateDieuDongEvent(context, request, item!.id!),
+      );
     }
   }
 }
