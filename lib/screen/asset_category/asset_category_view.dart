@@ -73,7 +73,7 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
                     onNew: () {
                       provider.onChangeDetail(null);
                     },
-                    mainScreen: 'Nhóm tài sản',
+                    mainScreen: 'Mô hình tài sản',
                   ),
                 ),
                 body: Column(
@@ -82,7 +82,7 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
-                          title: "Chi tiết nhóm tài sản",
+                          title: "Chi tiết mô hình tài sản",
                           childInput: AssetCategoryDetail(provider: provider),
                           childTableView: AssetCategoryList(provider: provider),
                           isShowInput: provider.isShowInput,

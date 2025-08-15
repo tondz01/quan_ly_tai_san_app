@@ -10,8 +10,8 @@ class AssetCategoryDto {
   final String? taiKhoanKhauHao;
   final String? taiKhoanChiPhi;
   final String? idCongTy;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
+  final String? ngayTao;
+  final String? ngayCapNhat;
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
@@ -50,12 +50,8 @@ class AssetCategoryDto {
       taiKhoanKhauHao: json['taiKhoanKhauHao'],
       taiKhoanChiPhi: json['taiKhoanChiPhi'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'] != null
-          ? DateTime.tryParse(json['ngayTao'].toString())
-          : null,
-      ngayCapNhat: json['ngayCapNhat'] != null
-          ? DateTime.tryParse(json['ngayCapNhat'].toString())
-          : null,
+      ngayTao: json['ngayTao'],
+      ngayCapNhat: json['ngayCapNhat'],
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -73,8 +69,8 @@ class AssetCategoryDto {
       'taiKhoanKhauHao': taiKhoanKhauHao,
       'taiKhoanChiPhi': taiKhoanChiPhi,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.millisecondsSinceEpoch,
-      'ngayCapNhat': ngayCapNhat?.millisecondsSinceEpoch,
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,

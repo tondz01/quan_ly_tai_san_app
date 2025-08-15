@@ -9,12 +9,15 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bl
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 class AssetCategoryProvider with ChangeNotifier {
   String? get error => _error;
   String get searchTerm => _searchTerm;
 
   get data => _data;
+  get userInfo => _userInfo;
   get filteredData => _filteredData;
   get dataPage => _dataPage;
   get dataDetail => _dataDetail;
@@ -45,6 +48,7 @@ class AssetCategoryProvider with ChangeNotifier {
   List<AssetCategoryDto>? _filteredData;
   List<AssetCategoryDto>? _dataPage;
   AssetCategoryDto? _dataDetail;
+  UserInfoDTO? _userInfo;
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -71,6 +75,7 @@ class AssetCategoryProvider with ChangeNotifier {
   onInit(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
     getListAssetCategory(context);
+    _userInfo = AccountHelper.instance.getUserInfo();
   }
 
   void _applyFilters() {

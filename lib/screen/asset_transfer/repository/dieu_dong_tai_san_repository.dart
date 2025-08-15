@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';
@@ -69,7 +70,7 @@ class DieuDongTaiSanRepository {
     return res.data;
   }
 
-  Future<int> update(String id, DieuDongTaiSan obj) async {
+  Future<int> update(String id, LenhDieuDongRequest obj) async {
     final res = await _dio.put('/$id', data: obj.toJson());
     return res.data;
   }

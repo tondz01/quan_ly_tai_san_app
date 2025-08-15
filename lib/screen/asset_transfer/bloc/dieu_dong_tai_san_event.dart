@@ -53,3 +53,24 @@ class CreateDieuDongEvent extends DieuDongTaiSanEvent {
   @override
   List<Object> get props => [context, request, requestDetail];
 }
+
+class UpdateDieuDongEvent extends DieuDongTaiSanEvent {
+  final BuildContext context;
+  final LenhDieuDongRequest params;
+  final String id;
+
+  const UpdateDieuDongEvent(this.context, this.params, this.id);
+
+  @override
+  List<Object?> get props => [context, params, id];
+}
+
+class DeleteDieuDongEvent extends DieuDongTaiSanEvent {
+  final BuildContext context;
+  final String id;
+
+  const DeleteDieuDongEvent(this.context, this.id);
+
+  @override
+  List<Object?> get props => [context, id];
+}

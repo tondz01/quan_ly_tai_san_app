@@ -75,4 +75,38 @@ class UserInfoDTO {
       'ngayCapNhat': ngayCapNhat?.toIso8601String(),
     };
   }
+  
+  UserInfoDTO copyWith({
+    String? id,
+    String? tenDangNhap,
+    String? matKhau,
+    String? hoTen,
+    String? email,
+    String? soDienThoai,
+    String? hinhAnh,
+    String? nguoiTao,
+    String? nguoiCapNhat,
+    String? idCongTy,
+    int? rule,
+    bool? isActive,
+    DateTime? ngayTao,
+    DateTime? ngayCapNhat,
+  }) {
+    return UserInfoDTO(
+      id: id ?? this.id,
+      tenDangNhap: tenDangNhap ?? this.tenDangNhap,
+      matKhau: matKhau ?? this.matKhau,
+      hoTen: hoTen ?? this.hoTen,
+      email: email ?? this.email,
+      soDienThoai: soDienThoai ?? this.soDienThoai,
+      hinhAnh: hinhAnh ?? this.hinhAnh,
+      nguoiTao: nguoiTao ?? this.nguoiTao,
+      nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
+      idCongTy: idCongTy ?? this.idCongTy,
+      rule: rule ?? this.rule,
+      isActive: isActive ?? this.isActive,
+      ngayTao: ngayTao ?? this.ngayTao,
+      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+    );
+  }
 }
