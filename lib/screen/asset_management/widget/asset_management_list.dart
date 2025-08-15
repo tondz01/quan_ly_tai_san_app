@@ -3,11 +3,16 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
@@ -37,6 +42,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
     'don_vi_tinh',
     'ky_hieu',
     'so_ky_hieu',
+    'actions',
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -124,6 +130,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
         id: 'nam_san_xuat',
         label: 'Năm sản xuất',
         isChecked: visibleColumnIds.contains('nam_san_xuat'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('actions'),
       ),
     ];
   }
@@ -266,6 +277,16 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Năm sản xuất',
               getValue: (item) => item.namSanXuat?.toString() ?? '',
               width: 100,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetManagementDto>(
+              title: '',
+              cellBuilder: (item) => viewAction(item),
+              width: 120,
+              searchable: true,
             ),
           );
           break;
@@ -468,5 +489,34 @@ class _AssetManagementListState extends State<AssetManagementList> {
         ],
       ),
     );
+  }
+
+  Widget viewAction(AssetManagementDto item) {
+    return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.delete,
+        tooltip: 'Xóa',
+        iconColor: Colors.red.shade700,
+        backgroundColor: Colors.red.shade50,
+        borderColor: Colors.red.shade200,
+        onPressed:
+            () => {
+              showConfirmDialog(
+                context,
+                type: ConfirmType.delete,
+                title: 'Xóa nhóm tài sản',
+                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
+                highlight: item.tenNhom!,
+                cancelText: 'Không',
+                confirmText: 'Xóa',
+                onConfirm: () {
+                  context.read<AssetManagementBloc>().add(
+                    DeleteAssetEvent(context, item.id!),
+                  );
+                },
+              ),
+            },
+      ),
+    ]);
   }
 }

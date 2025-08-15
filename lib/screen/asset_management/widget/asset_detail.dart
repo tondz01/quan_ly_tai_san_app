@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_d
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
@@ -90,7 +92,8 @@ class _AssetDetailState extends State<AssetDetail> {
   PhongBan? phongBanBanDau;
   PhongBan? phongBanHienThoi;
 
-  List<ChildAssetDto> childAssets = [];
+  List<ChildAssetDto> newChildAssets = [];
+  List<ChildAssetDto> initialChildAssets = [];
 
   @override
   void initState() {
@@ -108,6 +111,7 @@ class _AssetDetailState extends State<AssetDetail> {
   }
 
   _initData() {
+    newChildAssets.clear();
     if (widget.provider.dataDetail != null) {
       data = widget.provider.dataDetail;
       isEditing = false;
@@ -119,6 +123,26 @@ class _AssetDetailState extends State<AssetDetail> {
     _initController();
   }
 
+  List<Map<String, dynamic>> _normalizeDetails(List<ChildAssetDto> list) {
+    final data =
+        list
+            .map(
+              (d) => {
+                'idTaiSan': d.idTaiSan,
+                'ngayTao': d.ngayTao,
+                'ngayCapNhat': d.ngayCapNhat,
+                'nguoiTao': d.nguoiTao,
+                'nguoiCapNhat': d.nguoiCapNhat,
+                'isActive': d.isActive,
+              },
+            )
+            .toList();
+    data.sort(
+      (a, b) => (a['idTaiSan'] as String).compareTo(b['idTaiSan'] as String),
+    );
+    return data;
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -126,7 +150,7 @@ class _AssetDetailState extends State<AssetDetail> {
       listener: (context, state) {
         if (state is GetListChildAssetsSuccessState) {
           setState(() {
-            childAssets = state.data;
+            newChildAssets = state.data;
           });
         }
         if (state is GetListChildAssetsFailedState) {
@@ -334,11 +358,31 @@ class _AssetDetailState extends State<AssetDetail> {
                     ),
                   ],
                 ),
-                tableChildAsset(
-                  context: context,
-                  childAssets: childAssets,
+                TableChildAsset(
+                  context,
                   isEditing: isEditing,
-                  provider: widget.provider,
+                  initialDetails: widget.provider.dataChildAssets ?? [],
+                  allAssets: widget.provider.data!,
+                  onDataChanged: (data) {
+                    setState(() {
+                      newChildAssets =
+                          data
+                              .map(
+                                (e) => ChildAssetDto(
+                                  id: e.id,
+                                  idTaiSan: e.id,
+                                  ngayTao: DateTime.now().toIso8601String(),
+                                  ngayCapNhat: DateTime.now().toIso8601String(),
+                                  nguoiTao: e.nguoiTao,
+                                  nguoiCapNhat: e.nguoiCapNhat,
+                                  isActive: e.isActive,
+                                ),
+                              )
+                              .toList();
+
+                    log('message newChildAssets: ${jsonEncode(newChildAssets)}');
+                    });
+                  },
                 ),
               ],
             ),
@@ -457,11 +501,6 @@ class _AssetDetailState extends State<AssetDetail> {
   }
 
   AssetRequest _createAssetRequest() {
-    log('message _createAssetRequest: ${ctrlKyKhauHaoBanDau.text}');
-    log('message nguyenGia: ${ctrlNguyenGia.text}');
-    log('message giaTriThanhLy: ${ctrlGiaTriThanhLy.text}');
-    log('message duAn: ${duAn!.id}');
-
     return AssetRequest(
       id: ctrlMaTaiSan.text,
       idLoaiTaiSan: idAssetGroup ?? '',
@@ -479,8 +518,10 @@ class _AssetDetailState extends State<AssetDetail> {
       taiKhoanKhauHao: int.tryParse(ctrlTaiKhoanKhauHao.text) ?? 0,
       taiKhoanChiPhi: int.tryParse(ctrlTaiKhoanChiPhi.text) ?? 0,
       idNhomTaiSan: idAssetGroup ?? '',
-      ngayVaoSo: AppUtility.parseDateTimeOrNow(ctrlNgayVaoSo.text).toIso8601String(),
-      ngaySuDung: AppUtility.parseDateTimeOrNow(ctrlNgaySuDung.text).toIso8601String(),
+      ngayVaoSo:
+          AppUtility.parseDateTimeOrNow(ctrlNgayVaoSo.text).toIso8601String(),
+      ngaySuDung:
+          AppUtility.parseDateTimeOrNow(ctrlNgaySuDung.text).toIso8601String(),
       idDuDan: duAn?.id ?? '',
       idNguonVon: idNguonKinhPhi ?? '',
       kyHieu: ctrlKyHieu.text,
@@ -505,11 +546,69 @@ class _AssetDetailState extends State<AssetDetail> {
     );
   }
 
-  void _handleSave() {
+  List<ChildAssetDto> _createChildAssets() {
+    return newChildAssets
+        .map(
+          (e) => ChildAssetDto(
+            id: e.id,
+            idTaiSan: e.id,
+            ngayTao: DateTime.now().toIso8601String(),
+            ngayCapNhat: DateTime.now().toIso8601String(),
+            nguoiTao: e.nguoiTao,
+            nguoiCapNhat: e.nguoiCapNhat,
+            isActive: e.isActive,
+          ),
+        )
+        .toList();
+  }
+
+  bool _detailsChanged() {
+    if (data == null) return newChildAssets.isNotEmpty;
+    final beforeJson = jsonEncode(_normalizeDetails(initialChildAssets));
+    final afterJson = jsonEncode(_normalizeDetails(newChildAssets));
+    return beforeJson != afterJson;
+  }
+
+  Future<void> _syncDetails(String idTaiSan) async {
+    try {
+      final repo = AssetManagementRepository();
+      for (final d in initialChildAssets) {
+        if (d.id != null) {
+          await repo.delete(d.id!);
+        }
+      }
+      for (final d in newChildAssets) {
+        await repo.create(
+          ChildAssetDto(
+            id: d.id,
+            idTaiSan: d.id,
+            ngayTao: DateTime.now().toIso8601String(),
+            ngayCapNhat: DateTime.now().toIso8601String(),
+            nguoiTao: d.nguoiTao,
+            nguoiCapNhat: d.nguoiCapNhat,
+            isActive: d.isActive,
+          ),
+        );
+      }
+    } catch (e) {
+      log('Sync details error: $e');
+    }
+  }
+
+  Future<void> _handleSave() async {
     if (!isEditing) return;
 
     final request = _createAssetRequest();
+    final childAssets = _createChildAssets();
     final bloc = context.read<AssetManagementBloc>();
-    bloc.add(CreateAssetEvent(context, request));
+    if (data == null) {
+      bloc.add(CreateAssetEvent(context, request, childAssets));
+    } else {
+      // Cập nhật chi tiết nếu có thay đổi
+      if (_detailsChanged()) {
+        await _syncDetails(data!.id!);
+      }
+      bloc.add(UpdateAssetEvent(context, request, data!.id!));
+    }
   }
 }

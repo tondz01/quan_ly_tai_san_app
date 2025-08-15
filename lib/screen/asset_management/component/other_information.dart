@@ -216,7 +216,7 @@ Widget buildOtherInformation(
       ),
 
       CommonCheckboxInput(
-        label: 'Khoi tạo đơn vị',
+        label: 'Khởi tạo đơn vị',
         value: valueKhoiTaoDonVi,
         isEditing: isEditing,
         isDisabled: !isEditing,

@@ -853,7 +853,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         if (item == null) return;
         UserInfoDTO userInfo = widget.provider.userInfo!;
         String url =
-            '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
+            '${Config.baseUrl}/api/upload/download/${item.tenFile}';
         showDialog(
           context: context,
           barrierDismissible: true,
@@ -981,8 +981,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     if (item == null) {
       final request = _createDieuDongRequest(widget.type, 1);
       final requestDetail = _createDieuDongRequestDetail();
-      log('message request: ${jsonEncode(request)}');
-      log('message requestDetail: ${jsonEncode(requestDetail)}');
       // bloc.add(CreateDieuDongEvent(context, request));
       widget.provider.saveAssetTransfer(
         context,

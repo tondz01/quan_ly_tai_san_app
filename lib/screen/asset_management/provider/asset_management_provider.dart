@@ -35,6 +35,7 @@ class AssetManagementProvider with ChangeNotifier {
   get body => _body;
 
   get data => _data;
+  get dataChildAssets => _dataChildAssets;
   get dataDetail => _dataDetail;
   get dataDepreciationDetail => _dataDepreciationDetail;
   get filteredData => _filteredData ?? _data;
@@ -114,6 +115,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<HienTrang> listHienTrang = AppUtility.listHienTrang;
   List<DropdownMenuItem<HienTrang>> _itemsHienTrang = [];
 
+  //Tài sản con
   HienTrang getHienTrang(int id) {
     return listHienTrang.firstWhere((element) => element.id == id);
   }
