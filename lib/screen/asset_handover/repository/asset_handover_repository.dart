@@ -34,7 +34,10 @@ class AssetHandoverRepository extends ApiBase {
       final response = await post(EndPointAPI.ASSET_TRANSFER, data: request);
 
       final int? status = response.statusCode;
-      final bool isOk = status == Numeral.STATUS_CODE_SUCCESS || status == Numeral.STATUS_CODE_SUCCESS_CREATE || status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
       if (!isOk) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
@@ -44,6 +47,54 @@ class AssetHandoverRepository extends ApiBase {
       result['data'] = response.data.toString();
     } catch (e) {
       SGLog.error("AssetHandoverRepository", "Error at createAsset - AssetManagementRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateAssetHandover(Map<String, dynamic> request, String id) async {
+    Map<String, dynamic> result = {'data': "", 'status_code': Numeral.STATUS_CODE_DEFAULT};
+
+    try {
+      final response = await put("${EndPointAPI.ASSET_TRANSFER}/$id", data: request);
+      final int? status = response.statusCode;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error("AssetHandoverRepository", "Error at updateAsset - AssetManagementRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteAssetHandover(String id) async {
+    Map<String, dynamic> result = {'data': "", 'status_code': Numeral.STATUS_CODE_DEFAULT};
+
+    try {
+      final response = await delete("${EndPointAPI.ASSET_TRANSFER}/$id");
+      final int? status = response.statusCode;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error("AssetHandoverRepository", "Error at updateAsset - AssetManagementRepository: $e");
     }
 
     return result;

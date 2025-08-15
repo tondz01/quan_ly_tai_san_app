@@ -16,6 +16,8 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
   AssetHandoverBloc() : super(AssetHandoverInitialState()) {
     on<GetListAssetHandoverEvent>(_getListAssetHandover);
     on<CreateAssetHandoverEvent>(_createAssetHandover);
+    on<UpdateAssetHandoverEvent>(_updateAssetHandover);
+    on<DeleteAssetHandoverEvent>(_deleteAssetHandover);
   }
 
   Future<void> _getListAssetHandover(GetListAssetHandoverEvent event, Emitter emit) async {
@@ -51,17 +53,46 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
 
     final Map<String, dynamic> result = await AssetHandoverRepository().createAssetHandover(event.request);
 
-    emit(AssetHandoverLoadingDismissState());
-
     final int? statusCode = result['status_code'] as int?;
     if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
       emit(CreateAssetHandoverSuccessState(data: (result['data'] ?? '').toString()));
     } else {
-      emit(CreateAssetHandoverFailedState(
-        title: 'Tạo biên bản bàn giao',
-        code: statusCode,
-        message: 'Thất bại khi tạo biên bản bàn giao',
-      ));
+      emit(ErrorState(title: 'Tạo biên bản bàn giao', code: statusCode, message: 'Thất bại khi tạo biên bản bàn giao'));
     }
+    emit(AssetHandoverLoadingDismissState());
+  }
+
+  Future<void> _updateAssetHandover(UpdateAssetHandoverEvent event, Emitter emit) async {
+    emit(AssetHandoverLoadingState());
+
+    final Map<String, dynamic> result = await AssetHandoverRepository().updateAssetHandover(event.request, event.id);
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateAssetHandoverSuccessState(data: (result['data'] ?? '').toString()));
+    } else {
+      emit(
+        ErrorState(
+          title: 'Cập nhật biên bản bàn giao',
+          code: statusCode,
+          message: 'Thất bại khi cập nhật biên bản bàn giao',
+        ),
+      );
+    }
+    emit(AssetHandoverLoadingDismissState());
+  }
+
+  Future<void> _deleteAssetHandover(DeleteAssetHandoverEvent event, Emitter emit) async {
+    emit(AssetHandoverLoadingState());
+
+    final Map<String, dynamic> result = await AssetHandoverRepository().deleteAssetHandover(event.id);
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+      emit(DeleteAssetHandoverSuccessState(data: (result['data'] ?? '').toString()));
+    } else {
+      emit(ErrorState(title: 'Xóa biên bản bàn giao', code: statusCode, message: 'Thất bại khi xóa biên bản bàn giao'));
+    }
+    emit(AssetHandoverLoadingDismissState());
   }
 }

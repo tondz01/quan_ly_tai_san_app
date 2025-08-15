@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\flutter
-FLUTTER_APPLICATION_PATH=F:\Ecotel\quan_ly_tai_san_app
+FLUTTER_ROOT=C:\Flutter\flutter
+FLUTTER_APPLICATION_PATH=E:\FlutterData\quan_ly_tai_san_v2\quan_ly_tai_san_app
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib\main.dart
 FLUTTER_BUILD_DIR=build

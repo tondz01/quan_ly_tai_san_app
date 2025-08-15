@@ -59,6 +59,11 @@ class AssetHandoverProvider with ChangeNotifier {
   int get completeCount => _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
   int get cancelCount => _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
 
+  set isLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   // Thuộc tính cho tìm kiếm
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -78,7 +83,7 @@ class AssetHandoverProvider with ChangeNotifier {
   int typeAssetTransfer = 1;
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 0;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
@@ -349,35 +354,24 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {}
   }
 
-  void deleteItem(String id) {
-    if (_data == null) return;
-    int index = _data!.indexWhere((item) => item.id == id);
-    if (index != -1) {
-      _data!.removeAt(index);
-
-      _updatePagination();
-      notifyListeners();
-    } else {}
-  }
-
   getListAssetHandoverSuccess(BuildContext context, GetListAssetHandoverSuccessState state) {
     _error = null;
+
+    _dataDepartment = state.dataDepartment;
+    _dataStaff = state.dataStaff;
+    _dataAssetTransfer = state.dataAssetTransfer;
+
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
-      _dataDepartment = [];
-      _dataStaff = [];
-      _dataAssetTransfer = [];
+      _item = null;
     } else {
       _data = state.data;
-      _dataDepartment = state.dataDepartment;
-      _dataStaff = state.dataStaff;
-      _dataAssetTransfer = state.dataAssetTransfer;
-      
+
       _filteredData = List.from(_data!);
-      _isLoading = false;
       _updatePagination();
     }
+    _isLoading = false;
     notifyListeners();
   }
 

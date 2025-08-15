@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 
 abstract class AssetHandoverEvent extends Equatable {
   const AssetHandoverEvent();
@@ -23,4 +22,25 @@ class CreateAssetHandoverEvent extends AssetHandoverEvent {
 
   @override
   List<Object?> get props => [context, request];
+}
+
+class UpdateAssetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final Map<String, dynamic> request;
+  final String id;
+
+  const UpdateAssetHandoverEvent(this.context, this.request, this.id);
+
+  @override
+  List<Object?> get props => [context, request];
+}
+
+class DeleteAssetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final String id;
+
+  const DeleteAssetHandoverEvent(this.context, this.id);
+
+  @override
+  List<Object?> get props => [context, id];
 }

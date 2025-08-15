@@ -1,20 +1,22 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/columns_asset_handover_component.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -247,7 +249,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade300, width: 1),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: Offset(0, 2))],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .05), blurRadius: 4, offset: Offset(0, 2))],
             ),
             child: Column(
               children: [
@@ -343,7 +345,22 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai != 0) {widget.provider.deleteItem(item.id ?? '')},
+              if (item.trangThai == 0)
+                {
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa biên bản bàn giao',
+                    message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan}',
+                    highlight: item.banGiaoTaiSan!,
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      widget.provider.isLoading = true;
+                      context.read<AssetHandoverBloc>().add(DeleteAssetHandoverEvent(context, item.id!));
+                    },
+                  ),
+                },
             },
       ),
     ]);
@@ -365,7 +382,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-  Widget showMovementDetails(List<AssetHandoverMovementDto> movementDetails) {
+  Widget showMovementDetails(List<ChiTietDieuDongTaiSan> movementDetails) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 48.0),
       child: SingleChildScrollView(
@@ -383,7 +400,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         margin: const EdgeInsets.only(bottom: 2),
                         decoration: BoxDecoration(color: ColorValue.paleRose, borderRadius: BorderRadius.circular(4)),
                         child: SGText(
-                          text: detail.name ?? '',
+                          text: detail.tenPhieu,
                           size: 12,
                           fontWeight: FontWeight.w500,
                           textAlign: TextAlign.left,
