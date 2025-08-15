@@ -13,6 +13,7 @@ abstract class TableBaseConfig {
     String? searchTerm,
     Function(T item)? onRowTap,
     Function(List<T> items)? onSelectionChanged,
+    bool isShowCheckboxes = true,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -41,7 +42,7 @@ abstract class TableBaseConfig {
         oddRowBackgroundColor: Colors.white,
         evenRowBackgroundColor: Colors.grey.shade50,
         selectedRowColor: ColorValue.accentLightCyan,
-        showCheckboxes: true,
+        showCheckboxes: isShowCheckboxes,
         showVerticalLines: false,
         showHorizontalLines: true,
         columns: columns,

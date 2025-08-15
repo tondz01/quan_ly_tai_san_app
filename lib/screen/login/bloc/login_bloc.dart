@@ -1,20 +1,19 @@
 import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dio/dio.dart' as dio;
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/auth_dto.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginInitialState()) {
     on<PostLoginEvent>(_postLogin);
-    on<GetUsersEvent>(_getUsers);
-    on<CreateUserEvent>(_createUser);
+    on<GetUsersEvent>(_getListUser);
+    on<CreateAccountEvent>(_createAccount);
     on<UpdateUserEvent>(_updateUser);
     on<DeleteUserEvent>(_deleteUser);
+    on<GetNhanVienEvent>(_getListNhanVien);
   }
 
   // Handle PostLoginEvent.
@@ -22,14 +21,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   // Call method postLogin(event) api in AuthRepository.
   // Handle LoginSuccessState or LoginFailedState.
   // Emit to view.
-  Future<void> _postLogin(
-    PostLoginEvent event,
-    Emitter emit,
-  ) async {
+  Future<void> _postLogin(PostLoginEvent event, Emitter emit) async {
     emit(LoginInitialState());
     emit(LoginLoadingState());
-    Map<String, dynamic> result = await AuthRepository()
-        .login(event.params);
+    Map<String, dynamic> result = await AuthRepository().login(event.params);
     emit(LoginLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(PostLoginSuccessState(data: result['data']));
@@ -46,51 +41,70 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     }
   }
 
-
-  Future<void> _getUsers(GetUsersEvent event, Emitter emit) async {
+  Future<void> _getListUser(GetUsersEvent event, Emitter emit) async {
+    emit(LoginInitialState());
     emit(LoginLoadingState());
-    try {
-      final result = await AuthRepository().getUsers();
-      emit(LoginLoadingDismissState());
-      if (result.statusCode == 200 && result.data != null) {
-        emit(GetUsersSuccessState(result.data!));
-      } else {
-        emit(
-          PostLoginFailedState(
-            title: "notice",
-            code: result.statusCode ?? -1,
-            message: result.statusMessage ?? '',
-          ),
-        );
-      }
-    } catch (e) {
-      emit(LoginLoadingDismissState());
+    Map<String, dynamic> result = await AuthRepository().getListUser();
+    emit(LoginLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(GetUsersSuccessState(result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu";
       emit(
-        PostLoginFailedState(title: "error", code: -1, message: e.toString()),
+        GetUsersFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
       );
     }
   }
 
-  Future<void> _createUser(CreateUserEvent event, Emitter emit) async {
+  Future<void> _getListNhanVien(GetNhanVienEvent event, Emitter emit) async {
+    emit(LoginInitialState());
+    emit(LoginLoadingState());
+    Map<String, dynamic> result = await AuthRepository().getListNhanVien(
+      event.idCongTy,
+    );
+    emit(LoginLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(GetNhanVienSuccessState(result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu";
+      emit(
+        GetNhanVienFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _createAccount(CreateAccountEvent event, Emitter emit) async {
     emit(LoginLoadingState());
     try {
-      final result = await AuthRepository().createUser(event.user);
+      final result = await AuthRepository().createAccount(event.user);
       emit(LoginLoadingDismissState());
-      if (result.statusCode == 200 && result.data != null) {
-        emit(CreateUserSuccessState(result.data!));
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        emit(CreateAccountSuccessState(result['data'].toString()));
       } else {
         emit(
-          PostLoginFailedState(
+          CreateAccountFailedState(
             title: "notice",
-            code: result.statusCode ?? -1,
-            message: result.statusMessage ?? '',
+            code: result['status_code'] ?? -1,
+            message: result['message'] ?? '',
           ),
         );
       }
     } catch (e) {
       emit(LoginLoadingDismissState());
       emit(
-        PostLoginFailedState(title: "error", code: -1, message: e.toString()),
+        CreateAccountFailedState(
+          title: "error", 
+          code: -1, 
+          message: e.toString(),
+        ),
       );
     }
   }

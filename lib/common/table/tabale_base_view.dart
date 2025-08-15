@@ -13,6 +13,7 @@ class TableBaseView<T> extends StatefulWidget {
     this.horizontalController,
     this.onRowTap,
     this.onSelectionChanged,
+    this.isShowCheckboxes = true,
   });
   final String searchTerm;
   final List<SgTableColumn<T>> columns;
@@ -20,6 +21,7 @@ class TableBaseView<T> extends StatefulWidget {
   final ScrollController? horizontalController;
   final Function(T item)? onRowTap;
   final Function(List<T> items)? onSelectionChanged;
+  final bool isShowCheckboxes;
   @override
   State<TableBaseView<T>> createState() => _TableBaseViewState<T>();
 }
@@ -60,6 +62,7 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
           scrollDirection: Axis.vertical,
           child: TableBaseConfig.tableBase<T>(
             columns: newColumns,
+            isShowCheckboxes: widget.isShowCheckboxes,
             data: widget.data,
             searchTerm: widget.searchTerm,
             onRowTap: (item) {
