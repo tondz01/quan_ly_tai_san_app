@@ -90,7 +90,7 @@ class DieuDongTaiSanBloc
   Future<void> _createLenhDieuDong(CreateDieuDongEvent event, Emitter emit) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
-    Map<String, dynamic> result = await AssetTransferRepository().createAsset(
+    Map<String, dynamic> result = await AssetTransferRepository().createAssetTransfer(
       event.request,
       event.requestDetail,
     );

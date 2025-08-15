@@ -31,6 +31,12 @@ class AssetManagementBloc
     on<CreateAssetEvent>((event, emit) async {
       await _createAsset(event, emit);
     });
+    on<UpdateAssetEvent>((event, emit) async {
+      await _updateAsset(event, emit);
+    });
+    on<DeleteAssetEvent>((event, emit) async {
+      await _deleteAsset(event, emit);
+    });
   }
 
   Future<void> _getListAssetManagement(
@@ -57,10 +63,7 @@ class AssetManagementBloc
   }
 
   // CALL API GET LIST KHẤU HAO
-  Future<void> _getListKhauHao(
-    GetListKhauHaoEvent event,
-    Emitter emit,
-  ) async {
+  Future<void> _getListKhauHao(GetListKhauHaoEvent event, Emitter emit) async {
     emit(AssetManagementInitialState());
     emit(AssetManagementLoadingState());
     Map<String, dynamic> result = await AssetManagementRepository()
@@ -199,6 +202,7 @@ class AssetManagementBloc
     emit(AssetManagementLoadingState());
     Map<String, dynamic> result = await AssetManagementRepository().createAsset(
       event.request,
+      event.childAssets,
     );
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
@@ -207,6 +211,49 @@ class AssetManagementBloc
       String msg = "Lỗi khi tạo nhóm tài sản";
       emit(
         CreateAssetFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  ///UPDATE
+  Future<void> _updateAsset(UpdateAssetEvent event, Emitter emit) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository().updateAsset(
+      event.id,
+      event.request,
+    );
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateAssetSuccessState());
+    } else {
+      String msg = "Lỗi khi tạo nhóm tài sản";
+      emit(
+        UpdateAndDeleteAssetFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+  Future<void> _deleteAsset(DeleteAssetEvent event, Emitter emit) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository().deleteAsset(
+      event.id,
+    );
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CreateAssetSuccessState());
+    } else {
+      String msg = "Lỗi khi tạo nhóm tài sản";
+      emit(
+        UpdateAndDeleteAssetFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,

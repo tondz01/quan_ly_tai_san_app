@@ -73,6 +73,7 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
     ctrlTaiKhoanChiPhi.dispose();
     super.dispose();
   }
+
   /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
   String getDateNow() {
     final now = DateTime.now();
@@ -184,7 +185,12 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
               onPressed: () {
-                isEditing = false;
+                setState(() {
+                  isEditing = false;
+                  _initData();
+                });
+                
+                // widget.provider.onCloseDetail(context);
               },
             ),
           ],

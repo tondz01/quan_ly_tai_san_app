@@ -59,10 +59,6 @@ Widget buildOriginalAssetInfomation(
     }
   }
 
-  log('message buildOriginalAssetInfomation: $isEditing');
-  // DateTime? ngayVaoSo;
-  // DateTime? ngaySuDung;
-
   return MultiBlocListener(
     listeners: [
       // Lắng nghe từ AssetCategoryBloc
@@ -99,7 +95,11 @@ Widget buildOriginalAssetInfomation(
     ],
     child: Column(
       children: [
-        SGText(text: 'Thông tin tài sản gôc', size: 16, fontWeight: FontWeight.w600),
+        SGText(
+          text: 'Thông tin tài sản gôc',
+          size: 16,
+          fontWeight: FontWeight.w600,
+        ),
         const SizedBox(height: 10),
         Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
         SizedBox(height: 8),
@@ -156,7 +156,7 @@ Widget buildOriginalAssetInfomation(
           label: 'Mô hình tài sản',
           controller: ctrlTenMoHinh,
           isEditing: isEditing,
-          
+
           items: itemsAssetCategory,
           defaultValue:
               ctrlTenMoHinh.text.isNotEmpty
@@ -235,7 +235,10 @@ Widget buildOriginalAssetInfomation(
           isEditing: isEditing,
           enable: !isEditing,
           onChanged: onChangedNgayVaoSo,
-          value: DateTime.parse(ctrlNgayVaoSo.text),
+          value:
+              ctrlNgayVaoSo.text.isNotEmpty
+                  ? AppUtility.parseFlexibleDateTime(ctrlNgayVaoSo.text)
+                  : DateTime.now(),
         ),
         CmFormDate(
           label: 'Ngày sử dụng',
@@ -243,7 +246,10 @@ Widget buildOriginalAssetInfomation(
           isEditing: isEditing,
           enable: !isEditing,
           onChanged: onChangedNgaySuDung,
-          value: DateTime.parse(ctrlNgaySuDung.text),
+          value:
+              ctrlNgaySuDung.text.isNotEmpty
+                  ? AppUtility.parseFlexibleDateTime(ctrlNgaySuDung.text)
+                  : DateTime.now(),
         ),
       ],
     ),

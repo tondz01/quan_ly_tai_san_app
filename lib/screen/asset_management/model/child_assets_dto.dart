@@ -3,8 +3,8 @@ import 'dart:convert';
 class ChildAssetDto {
   String? id;
   String? idTaiSan;
-  DateTime? ngayTao;
-  DateTime? ngayCapNhat;
+  String? ngayTao;
+  String? ngayCapNhat;
   String? nguoiTao;
   String? nguoiCapNhat;
   bool? isActive;
@@ -18,24 +18,6 @@ class ChildAssetDto {
     this.nguoiCapNhat,
     this.isActive,
   });
-
-  static DateTime? _parseDateYmd(dynamic v) {
-    if (v == null) return null;
-    if (v is DateTime) return v;
-    if (v is String && v.isNotEmpty) {
-      // Expect format yyyy-MM-dd
-      try {
-        return DateTime.parse(v);
-      } catch (_) {
-        return null;
-      }
-    }
-    if (v is int) {
-      // Accept epoch ms as fallback
-      return DateTime.fromMillisecondsSinceEpoch(v);
-    }
-    return null;
-  }
 
   static bool? _parseBool(dynamic v) {
     if (v == null) return null;
@@ -53,8 +35,8 @@ class ChildAssetDto {
     return ChildAssetDto(
       id: json['id'] as String?,
       idTaiSan: json['idTaiSan'] as String?,
-      ngayTao: _parseDateYmd(json['ngayTao']),
-      ngayCapNhat: _parseDateYmd(json['ngayCapNhat']),
+      ngayTao: json['ngayTao'].toIso8601String(),
+      ngayCapNhat: json['ngayCapNhat'].toIso8601String(),
       nguoiTao: json['nguoiTao'] as String?,
       nguoiCapNhat: json['nguoiCapNhat'] as String?,
       isActive: _parseBool(json['isActive']),
@@ -62,16 +44,13 @@ class ChildAssetDto {
   }
 
   Map<String, dynamic> toJson() {
-    String? _fmt(DateTime? d) =>
-        d == null
-            ? null
-            : '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+   
 
     return {
       'id': id,
       'idTaiSan': idTaiSan,
-      'ngayTao': _fmt(ngayTao),
-      'ngayCapNhat': _fmt(ngayCapNhat),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -81,8 +60,8 @@ class ChildAssetDto {
   ChildAssetDto copyWith({
     String? id,
     String? idTaiSan,
-    DateTime? ngayTao,
-    DateTime? ngayCapNhat,
+    String? ngayTao,
+    String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
     bool? isActive,
@@ -114,8 +93,8 @@ class ChildAssetDto {
     return ChildAssetDto(
       id: '',
       idTaiSan: '',
-      ngayTao: DateTime.now(),
-      ngayCapNhat: DateTime.now(),
+      ngayTao: DateTime.now().toIso8601String(),
+      ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,

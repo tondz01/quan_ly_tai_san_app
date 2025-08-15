@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
@@ -47,7 +48,7 @@ class AssetTransferRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> createAsset(
+  Future<Map<String, dynamic>> createAssetTransfer(
     LenhDieuDongRequest request,
     List<ChiTietDieuDongRequest> requestDetail,
   ) async {
@@ -74,7 +75,6 @@ class AssetTransferRepository extends ApiBase {
       }
 
       final dynamic respData = response.data;
-      
 
       for (var detail in requestDetail) {
         final responseDetail = await post(

@@ -72,6 +72,12 @@ class AssetCategoryProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onCloseDetail(BuildContext context) {
+    _isShowCollapse = true;
+    isShowInput = false;
+    notifyListeners();
+  }
+
   onInit(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
     getListAssetCategory(context);
@@ -102,12 +108,6 @@ class AssetCategoryProvider with ChangeNotifier {
 
     // Sau khi lọc, cập nhật lại phân trang
     _updatePagination();
-  }
-
-  onCloseDetail(BuildContext context) {
-    _isShowCollapse = true;
-    isShowInput = false;
-    notifyListeners();
   }
 
   void getListAssetCategory(BuildContext context) {
