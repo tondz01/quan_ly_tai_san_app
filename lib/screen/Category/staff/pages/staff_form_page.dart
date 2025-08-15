@@ -356,6 +356,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                                       child: Image.network(
                                                         '${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}',
                                                         fit: BoxFit.contain,
+                                                        errorBuilder: (context, error, stackTrace) {
+                                                          return SizedBox();
+                                                        },
                                                       ),
                                                     ),
                                                   ),
