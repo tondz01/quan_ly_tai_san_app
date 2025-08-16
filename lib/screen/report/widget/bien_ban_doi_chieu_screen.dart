@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
+import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
@@ -50,103 +52,91 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final columns = [
+      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Phiếu bàn giao', getValue: (item) => item.quyetDinhDieuDongSo ?? '', width: 0),
+      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị giao', getValue: (item) => item.tenDonViGiao ?? '', width: 0),
+      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị nhận', getValue: (item) => item.tenDonViNhan ?? '', width: 0),
+      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Ngày hiệu lực', getValue: (item) => _formatDate(item.ngayBanGiao), width: 0),
+      TableBaseConfig.columnWidgetBase<AssetHandoverDto>(title: 'Trạng thái', cellBuilder: (item) => ConfigViewAT.showStatus(item.trangThai ?? 0), width: 120, searchable: true),
+    ];
     return Scaffold(
       body:
-      _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingRowColor: MaterialStateProperty.all(Colors.grey[200]),
-          columnSpacing: 24,
-          headingTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-          columns: const [
-            DataColumn(label: Text("Phiếu bàn giao")),
-            DataColumn(label: Text("Đơn vị giao")),
-            DataColumn(label: Text("Đơn vị nhận")),
-            DataColumn(label: Text("Ngày hiệu lực")),
-            DataColumn(label: Text("Trạng thái")),
-          ],
-          rows:
-          _list.map((item) {
-            return DataRow(
-              onSelectChanged: (value) async {
-                DieuDongTaiSanDto dieuDongTaiSanDto =
-                await DieuDongTaiSanRepository().getById(
-                  item.quyetDinhDieuDongSo.toString(),
-                );
-                List<ChiTietDieuDongTaiSan>?
-                chiTietDieuDongTaiSans =
-                    dieuDongTaiSanDto.chiTietDieuDongTaiSans;
-                print(chiTietDieuDongTaiSans);
-                if (chiTietDieuDongTaiSans != null) {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    builder:
-                        (context) => Padding(
-                      padding: const EdgeInsets.only(
-                        left: 24.0,
-                        right: 24.0,
-                        top: 16.0,
-                        bottom: 16.0,
-                      ),
-                      child: AssetMoveReport(
-                        contractType: BienBanDoiChieuKiemKePage(
-                          // assetHandoverDto: item,
-                          // chiTietDieuDongTaiSans:
-                          // chiTietDieuDongTaiSans,
-                        ),
-                        signatureList: <String>[
-                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
-                        ],
-                        idTaiLieu: item.id.toString(),
-                        idNguoiKy: "thanhtonvk",
-                        tenNguoiKy: "Do Thanh Ton",
-                      ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300, width: 1),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: Offset(0, 2))],
                     ),
-                  );
-                }
-              },
-              color: MaterialStateProperty.resolveWith<Color?>((
-                  Set<MaterialState> states,
-                  ) {
-                if (states.contains(MaterialState.hovered)) {
-                  return Colors.blue.withOpacity(0.08); // màu hover
-                }
-                if (states.contains(MaterialState.selected)) {
-                  return Colors.blue.withOpacity(0.15);
-                }
-                return null;
-              }),
-              cells: [
-                DataCell(Text(item.quyetDinhDieuDongSo ?? '')),
-                DataCell(Text(item.tenDonViGiao ?? '')),
-                DataCell(Text(item.tenDonViNhan ?? '')),
-                DataCell(Text(_formatDate(item.ngayBanGiao))),
-                DataCell(
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.circle,
-                        size: 12,
-                        color: ConfigViewAT.getColorStatus(
-                          item.trangThai!,
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Biên bản kiểm tra đối chiếu kiểm kê (${_list.length})',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
+                                  ),
+                                ],
+                              ),
+                              // FindByStateAssetHandover(provider: widget.provider),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(ConfigViewAT.getStatus(item.trangThai!)),
-                    ],
+                        Expanded(
+                          child: TableBaseView<AssetHandoverDto>(
+                            searchTerm: '',
+                            columns: columns,
+                            data: _list,
+                            horizontalController: ScrollController(),
+                            onRowTap: (item) async {
+                              DieuDongTaiSanDto dieuDongTaiSanDto = await DieuDongTaiSanRepository().getById(item.quyetDinhDieuDongSo.toString());
+                              List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans = dieuDongTaiSanDto.chiTietDieuDongTaiSans;
+                              if (chiTietDieuDongTaiSans != null) {
+                                if (mounted) {
+                                  showDialog(
+                                    context: this.context,
+                                    barrierDismissible: true,
+                                    builder:
+                                        (context) => Padding(
+                                          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
+                                          child: AssetMoveReport(
+                                            contractType: BienBanDoiChieuKiemKePage(
+                                              // assetHandoverDto: item,
+                                              // chiTietDieuDongTaiSans:
+                                              // chiTietDieuDongTaiSans,
+                                            ),
+                                            signatureList: <String>['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
+                                            idTaiLieu: item.id.toString(),
+                                            idNguoiKy: "thanhtonvk",
+                                            tenNguoiKy: "Do Thanh Ton",
+                                          ),
+                                        ),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            );
-          }).toList(),
-        ),
-      ),
+              ),
     );
   }
 }
