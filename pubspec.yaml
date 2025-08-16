@@ -89,9 +89,6 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - lib/screen/asset_transfer/model/asset_movement_data.json
-    - lib/screen/asset_transfer/model/asset_allocation_data.json
-    - lib/screen/asset_transfer/model/asset_recovery_data.json
     - lib/screen/tool_and_material_transfer/model/tool_and_material_transfer_data.json
     - assets/
     - assets/images/
