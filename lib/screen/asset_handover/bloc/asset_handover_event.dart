@@ -13,3 +13,34 @@ class GetListAssetHandoverEvent extends AssetHandoverEvent {
   @override
   List<Object?> get props => [context];
 }
+
+class CreateAssetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final Map<String, dynamic> request;
+
+  const CreateAssetHandoverEvent(this.context, this.request);
+
+  @override
+  List<Object?> get props => [context, request];
+}
+
+class UpdateAssetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final Map<String, dynamic> request;
+  final String id;
+
+  const UpdateAssetHandoverEvent(this.context, this.request, this.id);
+
+  @override
+  List<Object?> get props => [context, request];
+}
+
+class DeleteAssetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final String id;
+
+  const DeleteAssetHandoverEvent(this.context, this.id);
+
+  @override
+  List<Object?> get props => [context, id];
+}

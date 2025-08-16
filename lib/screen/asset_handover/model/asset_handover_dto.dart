@@ -1,5 +1,6 @@
 class AssetHandoverDto {
   final String? id;
+  final String? idCongTy;
   final String? banGiaoTaiSan;
   final String? quyetDinhDieuDongSo;
   final String? lenhDieuDong;
@@ -32,6 +33,7 @@ class AssetHandoverDto {
 
   AssetHandoverDto({
     this.id,
+    this.idCongTy,
     this.banGiaoTaiSan,
     this.quyetDinhDieuDongSo,
     this.lenhDieuDong,
@@ -66,6 +68,7 @@ class AssetHandoverDto {
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
     return AssetHandoverDto(
       id: json['id'],
+      idCongTy: json['idCongTy'],
       banGiaoTaiSan: json['banGiaoTaiSan'],
       quyetDinhDieuDongSo: json['quyetDinhDieuDongSo'],
       lenhDieuDong: json['lenhDieuDong'],
@@ -101,6 +104,7 @@ class AssetHandoverDto {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'idCongTy': idCongTy,
       'banGiaoTaiSan': banGiaoTaiSan,
       'quyetDinhDieuDongSo': quyetDinhDieuDongSo,
       'lenhDieuDong': lenhDieuDong,

@@ -1,15 +1,15 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import 'bloc/asset_handover_bloc.dart';
 import 'bloc/asset_handover_state.dart';
@@ -64,9 +64,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
       final selectedSubIndex = menuSelectionData!['selectedSubIndex'] as int?;
 
       if (selectedIndex != null && selectedSubIndex != null) {
-        log(
-          'Updating menu selection: index=$selectedIndex, subIndex=$selectedSubIndex',
-        );
+        SGLog.debug('AssetHandoverView', 'Updating menu selection: index=$selectedIndex, subIndex=$selectedSubIndex');
         // Có thể thêm logic để cập nhật menu selection ở đây nếu cần
       }
     }
@@ -87,10 +85,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
 
   void _initData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<AssetHandoverProvider>(
-        context,
-        listen: false,
-      );
+      final provider = Provider.of<AssetHandoverProvider>(context, listen: false);
 
       // Chỉ khởi tạo nếu không có data từ router
       if (assetHandoverData == null) {
@@ -110,21 +105,34 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
     return BlocConsumer<AssetHandoverBloc, AssetHandoverState>(
       listener: (context, state) {
         if (state is AssetHandoverLoadingState) {
-          // Mostrar loading
         } else if (state is GetListAssetHandoverSuccessState) {
-          log('GetListAssetHandoverSuccessState ${state.data.length}');
-          context.read<AssetHandoverProvider>().getListAssetHandoverSuccess(
+          context.read<AssetHandoverProvider>().getListAssetHandoverSuccess(context, state);
+        } else if (state is CreateAssetHandoverSuccessState) {
+          ScaffoldMessenger.of(
             context,
-            state,
+          ).showSnackBar(SnackBar(content: Text('Tạo biên bản bàn giao thành công'), backgroundColor: Colors.green));
+          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+          context.read<AssetHandoverProvider>().isShowInput = false;
+        } else if (state is UpdateAssetHandoverSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cập nhật biên bản bàn giao thành công'), backgroundColor: Colors.green),
           );
-        } else if (state is GetListAssetHandoverFailedState) {
-          // Manejar error
-          log('GetListAssetHandoverFailedState');
+          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+          context.read<AssetHandoverProvider>().isShowInput = false;
+        } else if (state is DeleteAssetHandoverSuccessState) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Xóa biên bản bàn giao thành công'), backgroundColor: Colors.green));
+          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+          context.read<AssetHandoverProvider>().isShowInput = false;
+        } else if (state is ErrorState) {
+          context.read<AssetHandoverProvider>().isLoading = false;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red));
         }
       },
       builder: (context, state) {
-        // Usar el ChangeNotifierProvider.value en lugar de Consumer
-        // Esto asegura que todos los cambios en el provider actualizan la UI
         return ChangeNotifierProvider.value(
           value: context.read<AssetHandoverProvider>(),
           child: Consumer<AssetHandoverProvider>(
@@ -132,16 +140,15 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (provider.data == null) {
-                return const Center(child: Text('Không có dữ liệu'));
-              }
-
+              // Ensure pagination controller is initialized before use
+              provider.controllerDropdownPage ??= TextEditingController(
+                text: provider.rowsPerPage.toString(),
+              );
               return Scaffold(
                 appBar: AppBar(
                   title: HeaderComponent(
                     controller: _searchController,
                     onSearchChanged: (value) {
-                      // Cập nhật trạng thái tìm kiếm trong provider
                       provider.searchTerm = value;
                     },
                     onTap: provider.onTapBackHeader,
@@ -175,8 +182,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                         totalPages: provider.totalPages,
                         currentPage: provider.currentPage,
                         rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
+                        controllerDropdownPage: provider.controllerDropdownPage!,
                         items: provider.items,
                         onPageChanged: provider.onPageChanged,
                         onRowsPerPageChanged: provider.onRowsPerPageChanged,
