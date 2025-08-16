@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
+import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -17,6 +19,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_stat
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -32,10 +36,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
   String urlPreview = '';
-  List<String> listUrlTest = [
-    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b',
-    'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FQuy%E1%BA%BFt%20%C4%91%E1%BB%8Bnh%20C%E1%BA%A5p%20ph%C3%A1t%20t%C3%A0i%20s%E1%BA%A3n%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=cddb7a63-4c00-4954-99a8-afc27deb1996',
-  ];
 
   bool isShowPreview = false;
   // Column display options
@@ -62,37 +62,13 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(id: 'name', label: 'Bàn giao tài sản', isChecked: visibleColumnIds.contains('name')),
-      ColumnDisplayOption(
-        id: 'decision_number',
-        label: 'Quyết định điều động',
-        isChecked: visibleColumnIds.contains('decision_number'),
-      ),
-      ColumnDisplayOption(
-        id: 'transfer_order',
-        label: 'Lệnh điều động',
-        isChecked: visibleColumnIds.contains('transfer_order'),
-      ),
-      ColumnDisplayOption(
-        id: 'transfer_date',
-        label: 'Ngày bàn giao',
-        isChecked: visibleColumnIds.contains('transfer_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'movement_details',
-        label: 'Chi tiết bàn giao',
-        isChecked: visibleColumnIds.contains('movement_details'),
-      ),
+      ColumnDisplayOption(id: 'decision_number', label: 'Quyết định điều động', isChecked: visibleColumnIds.contains('decision_number')),
+      ColumnDisplayOption(id: 'transfer_order', label: 'Lệnh điều động', isChecked: visibleColumnIds.contains('transfer_order')),
+      ColumnDisplayOption(id: 'transfer_date', label: 'Ngày bàn giao', isChecked: visibleColumnIds.contains('transfer_date')),
+      ColumnDisplayOption(id: 'movement_details', label: 'Chi tiết bàn giao', isChecked: visibleColumnIds.contains('movement_details')),
       ColumnDisplayOption(id: 'sender_unit', label: 'Đơn vị giao', isChecked: visibleColumnIds.contains('sender_unit')),
-      ColumnDisplayOption(
-        id: 'receiver_unit',
-        label: 'Đơn vị nhận',
-        isChecked: visibleColumnIds.contains('receiver_unit'),
-      ),
-      ColumnDisplayOption(
-        id: 'created_by',
-        label: 'Người lập phiếu',
-        isChecked: visibleColumnIds.contains('created_by'),
-      ),
+      ColumnDisplayOption(id: 'receiver_unit', label: 'Đơn vị nhận', isChecked: visibleColumnIds.contains('receiver_unit')),
+      ColumnDisplayOption(id: 'created_by', label: 'Người lập phiếu', isChecked: visibleColumnIds.contains('created_by')),
       ColumnDisplayOption(id: 'status', label: 'Trạng thái', isChecked: visibleColumnIds.contains('status')),
       ColumnDisplayOption(id: 'actions', label: 'Thao tác', isChecked: visibleColumnIds.contains('status')),
     ];
@@ -105,41 +81,19 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
         case 'name':
-          columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Bàn giao tài sản',
-              getValue: (item) => item.banGiaoTaiSan ?? '',
-              width: 170,
-            ),
-          );
+          columns.add(TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Bàn giao tài sản', getValue: (item) => item.banGiaoTaiSan ?? '', width: 170));
           break;
         case 'decision_number':
-          columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Quyết định điều động',
-              getValue: (item) => item.quyetDinhDieuDongSo ?? '',
-              width: 120,
-            ),
-          );
+          columns.add(TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Quyết định điều động', getValue: (item) => item.quyetDinhDieuDongSo ?? '', width: 120));
           break;
         case 'transfer_order':
-          columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Lệnh điều động',
-              getValue: (item) => item.lenhDieuDong ?? '',
-              width: 120,
-            ),
-          );
+          columns.add(TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Lệnh điều động', getValue: (item) => item.lenhDieuDong ?? '', width: 120));
           break;
         case 'transfer_date':
           columns.add(
             TableBaseConfig.columnTable<AssetHandoverDto>(
               title: 'Ngày bàn giao',
-              getValue:
-                  (item) =>
-                      item.ngayBanGiao != null
-                          ? AppUtility.formatDateDdMmYyyy(AppUtility.parseDate(item.ngayBanGiao) ?? DateTime.now())
-                          : '',
+              getValue: (item) => item.ngayBanGiao != null ? AppUtility.formatDateDdMmYyyy(AppUtility.parseDate(item.ngayBanGiao) ?? DateTime.now()) : '',
               width: 150,
             ),
           );
@@ -157,51 +111,21 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           );
           break;
         case 'sender_unit':
-          columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Đơn vị giao',
-              getValue: (item) => item.tenDonViGiao ?? '',
-              width: 120,
-            ),
-          );
+          columns.add(TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị giao', getValue: (item) => item.tenDonViGiao ?? '', width: 120));
           break;
         case 'receiver_unit':
-          columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Đơn vị nhận',
-              getValue: (item) => item.tenDonViNhan ?? '',
-              width: 120,
-            ),
-          );
+          columns.add(TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị nhận', getValue: (item) => item.tenDonViNhan ?? '', width: 120));
           break;
         case 'created_by':
-          columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Người lập phiếu',
-              getValue: (item) => item.nguoiTao ?? '',
-              width: 120,
-            ),
-          );
+          columns.add(TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Người lập phiếu', getValue: (item) => item.nguoiTao ?? '', width: 120));
           break;
         case 'status':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: 'Trạng thái',
-              cellBuilder: (item) => showStatus(item.trangThai ?? 0),
-              width: 150,
-              searchable: true,
-            ),
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(title: 'Trạng thái', cellBuilder: (item) => showStatus(item.trangThai ?? 0), width: 150, searchable: true),
           );
           break;
         case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: '',
-              cellBuilder: (item) => viewAction(item),
-              width: 120,
-              searchable: true,
-            ),
-          );
+          columns.add(TableBaseConfig.columnWidgetBase<AssetHandoverDto>(title: '', cellBuilder: (item) => viewAction(item), width: 120, searchable: true));
           break;
       }
     }
@@ -218,9 +142,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           visibleColumnIds = selectedColumns;
           _updateColumnOptions();
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Đã cập nhật hiển thị cột'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Đã cập nhật hiển thị cột'), backgroundColor: Colors.green));
       },
       onCancel: () {
         // Reset về trạng thái ban đầu
@@ -255,10 +177,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               children: [
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -273,10 +192,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: _showColumnDisplayPopup,
-                            child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                          ),
+                          GestureDetector(onTap: _showColumnDisplayPopup, child: Icon(Icons.settings, color: ColorValue.link, size: 18)),
                         ],
                       ),
 
@@ -330,11 +246,28 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         iconColor: ColorValue.cyan,
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
-        onPressed: () {
-          setState(() {
-            isShowPreview = true;
-            url = listUrlTest[Random().nextInt(listUrlTest.length)];
-          });
+        onPressed: () async {
+          isShowPreview = true;
+          await widget.provider.getListDetailAssetMobilization(item.lenhDieuDong ?? '');
+
+          if (mounted) {
+            UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
+            showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder:
+                  (context) => Padding(
+                    padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
+                    child: CommonContract(
+                      contractType: ContractPage.assetHandoverPage(item, widget.provider.dataDetailAssetMobilization),
+                      signatureList: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
+                      idTaiLieu: item.id.toString(),
+                      idNguoiKy: userInfo.tenDangNhap,
+                      tenNguoiKy: userInfo.hoTen,
+                    ),
+                  ),
+            );
+          }
         },
       ),
       ActionButtonConfig(
@@ -373,11 +306,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(color: getColorStatus(status), borderRadius: BorderRadius.circular(4)),
-        child: SGText(
-          text: getStatus(status),
-          size: 12,
-          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12),
-        ),
+        child: SGText(text: getStatus(status), size: 12, style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontSize: 12)),
       ),
     );
   }
@@ -399,12 +328,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                         margin: const EdgeInsets.only(bottom: 2),
                         decoration: BoxDecoration(color: ColorValue.paleRose, borderRadius: BorderRadius.circular(4)),
-                        child: SGText(
-                          text: detail.tenPhieu,
-                          size: 12,
-                          fontWeight: FontWeight.w500,
-                          textAlign: TextAlign.left,
-                        ),
+                        child: SGText(text: detail.tenPhieu, size: 12, fontWeight: FontWeight.w500, textAlign: TextAlign.left),
                       ),
                     )
                     .toList(),
