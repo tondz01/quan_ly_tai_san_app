@@ -204,6 +204,18 @@ class CreateAssetSuccessState extends AssetManagementState {
   @override
   List<Object> get props => [];
 }
+class UpdateAssetSuccessState extends AssetManagementState {
+  const UpdateAssetSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+class DeleteAssetSuccessState extends AssetManagementState {
+  const DeleteAssetSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
 
 class CreateAssetFailedState extends AssetManagementState {
   final String title;
@@ -211,6 +223,20 @@ class CreateAssetFailedState extends AssetManagementState {
   final String message;
 
   const CreateAssetFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+class UpdateAndDeleteAssetFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const UpdateAndDeleteAssetFailedState({
     required this.title,
     this.code,
     required this.message,

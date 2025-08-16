@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+
 class AssetDepreciationDto {
   final String? id;
   final String? tenTaiSan;
@@ -19,6 +21,7 @@ class AssetDepreciationDto {
   final DateTime? ngayVaoSo;
   final DateTime? ngaySuDung;
   final bool? isActive;
+  final List<ChildAssetDto>? childAssets;
 
   const AssetDepreciationDto({
     this.id,
@@ -41,6 +44,7 @@ class AssetDepreciationDto {
     this.ngayVaoSo,
     this.ngaySuDung,
     this.isActive,
+    this.childAssets,
   });
 
   factory AssetDepreciationDto.fromJson(Map<String, dynamic> json) {
@@ -79,6 +83,11 @@ class AssetDepreciationDto {
       ngayVaoSo: asDate(json['ngayVaoSo']),
       ngaySuDung: asDate(json['ngaySuDung']),
       isActive: parseIsActive(json['isActive']),
+      childAssets: json['childAssets'] != null
+          ? (json['childAssets'] as List)
+              .map((e) => ChildAssetDto.fromJson(e))
+              .toList()
+          : null,
     );
   }
 
@@ -104,6 +113,7 @@ class AssetDepreciationDto {
       'ngayVaoSo': ngayVaoSo?.toIso8601String(),
       'ngaySuDung': ngaySuDung?.toIso8601String(),
       'isActive': isActive,
+      'childAssets': childAssets?.map((e) => e.toJson()).toList(),
     };
   }
 }

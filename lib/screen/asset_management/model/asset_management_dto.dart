@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+
 class AssetManagementDto {
   String? id;
   String? tenTaiSan;
@@ -41,6 +43,7 @@ class AssetManagementDto {
   String? nguoiTao;
   String? nguoiCapNhat;
   bool? isActive;
+  List<ChildAssetDto>? childAssets;
 
   AssetManagementDto({
     this.id,
@@ -83,6 +86,7 @@ class AssetManagementDto {
     this.nguoiTao,
     this.nguoiCapNhat,
     this.isActive,
+    this.childAssets,
   });
 
   factory AssetManagementDto.fromJson(Map<String, dynamic> json) {
@@ -133,6 +137,11 @@ class AssetManagementDto {
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
+      childAssets: json['childAssets'] != null 
+          ? (json['childAssets'] as List<dynamic>)
+              .map<ChildAssetDto>((item) => ChildAssetDto.fromJson(item as Map<String, dynamic>))
+              .toList()
+          : [],
     );
   }
 
@@ -178,6 +187,7 @@ class AssetManagementDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
     };
   }
 
@@ -235,11 +245,100 @@ class AssetManagementDto {
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,
+      childAssets: [],
     );
   }
   
   @override
   String toString() {
     return tenTaiSan ?? '';
+  }
+  
+  AssetManagementDto copyWith({
+    String? id,
+    String? tenTaiSan,
+    double? nguyenGia,
+    double? giaTriKhauHaoBanDau,
+    int? kyKhauHaoBanDau,
+    double? giaTriThanhLy,
+    String? idMoHinhTaiSan,
+    String? tenMoHinh,
+    String? idNhomTaiSan,
+    String? tenNhom,
+    String? idDuAn,
+    String? tenDuAn,
+    String? idNguonVon,
+    String? tenNguonKinhPhi,
+    int? phuongPhapKhauHao,
+    int? soKyKhauHao,
+    int? taiKhoanTaiSan,
+    int? taiKhoanKhauHao,
+    int? taiKhoanChiPhi,
+    DateTime? ngayVaoSo,
+    DateTime? ngaySuDung,
+    String? kyHieu,
+    String? soKyHieu,
+    String? congSuat,
+    String? nuocSanXuat,
+    int? namSanXuat,
+    int? lyDoTang,
+    int? hienTrang,
+    int? soLuong,
+    String? donViTinh,
+    String? ghiChu,
+    String? idDonViBanDau,
+    String? idDonViHienThoi,
+    String? moTa,
+    String? idCongTy,
+    String? ngayTao,
+    String? ngayCapNhat,
+    String? nguoiTao,
+    String? nguoiCapNhat,
+    bool? isActive,
+    List<ChildAssetDto>? childAssets,
+  }) {
+    return AssetManagementDto(
+      id: id ?? this.id,
+      tenTaiSan: tenTaiSan ?? this.tenTaiSan,
+      nguyenGia: nguyenGia ?? this.nguyenGia,
+      giaTriKhauHaoBanDau: giaTriKhauHaoBanDau ?? this.giaTriKhauHaoBanDau,
+      kyKhauHaoBanDau: kyKhauHaoBanDau ?? this.kyKhauHaoBanDau,
+      giaTriThanhLy: giaTriThanhLy ?? this.giaTriThanhLy,
+      idMoHinhTaiSan: idMoHinhTaiSan ?? this.idMoHinhTaiSan,
+      tenMoHinh: tenMoHinh ?? this.tenMoHinh,
+      idNhomTaiSan: idNhomTaiSan ?? this.idNhomTaiSan,
+      tenNhom: tenNhom ?? this.tenNhom,
+      idDuAn: idDuAn ?? this.idDuAn,
+      tenDuAn: tenDuAn ?? this.tenDuAn,
+      idNguonVon: idNguonVon ?? this.idNguonVon,
+      tenNguonKinhPhi: tenNguonKinhPhi ?? this.tenNguonKinhPhi,
+      phuongPhapKhauHao: phuongPhapKhauHao ?? this.phuongPhapKhauHao,
+      soKyKhauHao: soKyKhauHao ?? this.soKyKhauHao,
+      taiKhoanTaiSan: taiKhoanTaiSan ?? this.taiKhoanTaiSan,
+      taiKhoanKhauHao: taiKhoanKhauHao ?? this.taiKhoanKhauHao,
+      taiKhoanChiPhi: taiKhoanChiPhi ?? this.taiKhoanChiPhi,
+      ngayVaoSo: ngayVaoSo ?? this.ngayVaoSo,
+      ngaySuDung: ngaySuDung ?? this.ngaySuDung,
+      kyHieu: kyHieu ?? this.kyHieu,
+      soKyHieu: soKyHieu ?? this.soKyHieu,
+      congSuat: congSuat ?? this.congSuat,
+      nuocSanXuat: nuocSanXuat ?? this.nuocSanXuat,
+      namSanXuat: namSanXuat ?? this.namSanXuat,
+      lyDoTang: lyDoTang ?? this.lyDoTang,
+      hienTrang: hienTrang ?? this.hienTrang,
+      soLuong: soLuong ?? this.soLuong,
+      donViTinh: donViTinh ?? this.donViTinh,
+      ghiChu: ghiChu ?? this.ghiChu,
+      idDonViBanDau: idDonViBanDau ?? this.idDonViBanDau,
+      idDonViHienThoi: idDonViHienThoi ?? this.idDonViHienThoi,
+      moTa: moTa ?? this.moTa,
+      idCongTy: idCongTy ?? this.idCongTy,
+      ngayTao: ngayTao ?? this.ngayTao,
+      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      nguoiTao: nguoiTao ?? this.nguoiTao,
+      nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
+      isActive: isActive ?? this.isActive,
+      childAssets: childAssets ?? this.childAssets,
+    );
   }
 }

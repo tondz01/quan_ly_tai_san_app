@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 
 abstract class AssetManagementEvent extends Equatable {
@@ -16,6 +17,7 @@ class GetListAssetManagementEvent extends AssetManagementEvent {
   @override
   List<Object?> get props => [context, idCongTy];
 }
+
 class GetListKhauHaoEvent extends AssetManagementEvent {
   final BuildContext context;
   final String idCongTy;
@@ -83,9 +85,29 @@ class GetListDepartmentEvent extends AssetManagementEvent {
 class CreateAssetEvent extends AssetManagementEvent {
   final BuildContext context;
   final AssetRequest request;
+  final List<ChildAssetDto> childAssets;
 
-  const CreateAssetEvent(this.context, this.request);
+  const CreateAssetEvent(this.context, this.request, this.childAssets);
 
   @override
   List<Object> get props => [context, request];
+}
+class UpdateAssetEvent extends AssetManagementEvent {
+  final BuildContext context;
+  final AssetRequest request;
+  final String id;
+
+  const UpdateAssetEvent(this.context, this.request, this.id);
+
+  @override
+  List<Object> get props => [context, request];
+}
+class DeleteAssetEvent extends AssetManagementEvent {
+  final BuildContext context;
+  final String id;
+
+  const DeleteAssetEvent(this.context, this.id);
+
+  @override
+  List<Object> get props => [context, id];
 }

@@ -64,16 +64,20 @@ Widget _buildBangNoiDung() {
     "Ghi chú",
   ];
 
-  // Chia thành 2 phần
+  // Tách làm 2 bảng
   final firstPart = headers.sublist(0, 9);
-  final secondPart = [headers[0]] + headers.sublist(9); // thêm Số TT vào bảng 2
+  final secondPart =
+      [headers[0]] + headers.sublist(9); // thêm cột Số TT vào bảng 2
 
   Widget buildTable(List<String> tableHeaders) {
     return Table(
       border: TableBorder.all(color: Colors.black),
-      defaultColumnWidth: const FixedColumnWidth(120),
-      columnWidths: {0: const FixedColumnWidth(50)},
+      defaultColumnWidth: const FlexColumnWidth(), // co giãn vừa khung
+      columnWidths: const {
+        0: FixedColumnWidth(50), // cột STT luôn nhỏ
+      },
       children: [
+        // Header
         TableRow(
           decoration: BoxDecoration(color: Colors.grey[300]),
           children:
@@ -86,7 +90,7 @@ Widget _buildBangNoiDung() {
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 10,
+                          fontSize: 11,
                         ),
                         softWrap: true,
                       ),
@@ -94,20 +98,11 @@ Widget _buildBangNoiDung() {
                   )
                   .toList(),
         ),
-        ...List.generate(3, (rowIndex) {
+        // Các dòng nhập liệu
+        ...List.generate(3, (_) {
           return TableRow(
-            children: List.generate(tableHeaders.length, (colIndex) {
-              return Padding(
-                padding: const EdgeInsets.all(6),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.all(4),
-                    border: InputBorder.none,
-                  ),
-                  style: const TextStyle(fontSize: 13),
-                ),
-              );
+            children: List.generate(tableHeaders.length, (_) {
+              return Padding(padding: const EdgeInsets.all(4), child: Text(""));
             }),
           );
         }),
@@ -116,22 +111,32 @@ Widget _buildBangNoiDung() {
   }
 
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
+      Text(
+        "Bảng 1",
+        style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+      ),
       buildTable(firstPart),
-      const SizedBox(height: 8),
+      const SizedBox(height: 12),
+      Text(
+        "Bảng 2",
+        style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold),
+      ),
       buildTable(secondPart),
     ],
   );
 }
 
-class BienBanDoiChieuKiemKe extends StatefulWidget {
-  const BienBanDoiChieuKiemKe({super.key});
+class BienBanDoiChieuKiemKePage extends StatefulWidget {
+  const BienBanDoiChieuKiemKePage({super.key});
 
   @override
-  State<BienBanDoiChieuKiemKe> createState() => _BienBanDoiChieuKiemKeState();
+  State<BienBanDoiChieuKiemKePage> createState() =>
+      _BienBanDoiChieuKiemKePageState();
 }
 
-class _BienBanDoiChieuKiemKeState extends State<BienBanDoiChieuKiemKe> {
+class _BienBanDoiChieuKiemKePageState extends State<BienBanDoiChieuKiemKePage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
