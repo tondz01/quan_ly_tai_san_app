@@ -19,4 +19,5 @@ class EndPointAPI {
   static String LOGIN = "/api/taikhoan/login";
   static String UPLOAD_FILE = "/api/upload";
   static String DIEU_DONG_TAI_SAN = "/api/dieudongtaisan";
+  static String BAO_CAO = "/api/baocao";
 }

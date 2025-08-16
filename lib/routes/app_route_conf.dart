@@ -1,6 +1,7 @@
 import 'package:quan_ly_tai_san_app/screen/asset_management/asset_management_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
+
 // import 'package:quan_ly_tai_san_app/screen/asset_handover/asset_handover_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category/asset/views/asset_manager.dart';
@@ -16,15 +17,18 @@ import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_4.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/login/login_view.dart';
 import 'package:quan_ly_tai_san_app/screen/login/account_view.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu_page.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_200.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_theo_doi.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_doi_chieu_screen.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/report_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
 import '../screen/asset_handover/asset_handover_view.dart';
+import '../screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'routes.dart';
 
 class AppRouteConf {
@@ -202,24 +206,7 @@ class AppRouteConf {
                   child: AssetCategoryView(),
                 ),
           ),
-          GoRoute(
-            path: AppRoute.inventoryReconciliationReport.path,
-            name: AppRoute.inventoryReconciliationReport.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BienBanDoiChieuKiemKe(),
-                ),
-          ),
-          GoRoute(
-            path: AppRoute.stocktakingReport.path,
-            name: AppRoute.stocktakingReport.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BienBanKiemKe(),
-                ),
-          ),
+
           GoRoute(
             path: AppRoute.fixedAssetRegister.path,
             name: AppRoute.fixedAssetRegister.name,
@@ -251,6 +238,51 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) =>
                     NoTransitionPage(key: state.pageKey, child: AccountView()),
+          ),
+          GoRoute(
+            path: AppRoute.allocationReport.path,
+            name: AppRoute.allocationReport.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: ReportScreen(idCongty: 'CT001', loai: 1),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.transferReport.path,
+            name: AppRoute.transferReport.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: ReportScreen(idCongty: 'CT001', loai: 2),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.recoveryReport.path,
+            name: AppRoute.recoveryReport.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: ReportScreen(idCongty: 'CT001', loai: 3),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.bienBanKiemKe.path,
+            name: AppRoute.bienBanKiemKe.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BienBanKiemKeScreen(idCongty: 'CT001'),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.bienBanDoiChieu.path,
+            name: AppRoute.bienBanDoiChieu.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BienBanDoiChieuScreen(idCongty: "CT001"),
+                ),
           ),
         ],
       ),
