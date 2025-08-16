@@ -5,8 +5,8 @@ import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 
 class TableAssetMovementDetail extends StatefulWidget {
-  final List<ChiTietDieuDongTaiSan>? item;
-  const TableAssetMovementDetail({super.key, this.item});
+  final List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization;
+  const TableAssetMovementDetail({super.key, this.listDetailAssetMobilization});
 
   @override
   State<TableAssetMovementDetail> createState() => _TableAssetMovementDetailState();
@@ -14,7 +14,7 @@ class TableAssetMovementDetail extends StatefulWidget {
 
 class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
   final ScrollController _scrollController = ScrollController();
-  bool isExpanded = false;
+  bool isExpanded = true;
   String getHienTrang(int hienTrang) {
     log('hienTrang: $hienTrang');
     switch (hienTrang) {
@@ -69,7 +69,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   child: SgEditableTable<ChiTietDieuDongTaiSan>(
-                    initialData: widget.item ?? [],
+                    initialData: widget.listDetailAssetMobilization ?? [],
                     createEmptyItem: ChiTietDieuDongTaiSan.empty,
                     rowHeight: 40.0,
                     headerBackgroundColor: Colors.grey.shade50,
@@ -85,7 +85,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                     columns: [
                       SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'asset',
-                        title: 'Tài sản',
+                        title: 'Tên tài sản',
                         titleAlignment: TextAlign.center,
                         width: 120,
                         getValue: (item) => item.tenTaiSan,

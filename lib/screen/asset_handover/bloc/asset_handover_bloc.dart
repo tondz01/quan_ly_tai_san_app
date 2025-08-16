@@ -38,14 +38,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
 
     emit(AssetHandoverLoadingDismissState());
 
-    emit(
-      GetListAssetHandoverSuccessState(
-        data: dataAssetHandoverDto,
-        dataDepartment: dataDepartment,
-        dataStaff: dataStaff,
-        dataAssetTransfer: dataDieuDongTaiSanDto,
-      ),
-    );
+    emit(GetListAssetHandoverSuccessState(data: dataAssetHandoverDto, dataDepartment: dataDepartment, dataStaff: dataStaff, dataAssetTransfer: dataDieuDongTaiSanDto));
   }
 
   Future<void> _createAssetHandover(CreateAssetHandoverEvent event, Emitter emit) async {
@@ -71,13 +64,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
       emit(UpdateAssetHandoverSuccessState(data: (result['data'] ?? '').toString()));
     } else {
-      emit(
-        ErrorState(
-          title: 'Cập nhật biên bản bàn giao',
-          code: statusCode,
-          message: 'Thất bại khi cập nhật biên bản bàn giao',
-        ),
-      );
+      emit(ErrorState(title: 'Cập nhật biên bản bàn giao', code: statusCode, message: 'Thất bại khi cập nhật biên bản bàn giao'));
     }
     emit(AssetHandoverLoadingDismissState());
   }

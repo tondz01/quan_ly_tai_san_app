@@ -10,7 +10,6 @@ import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
@@ -121,26 +120,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     listAssetTransfer = widget.provider.dataAssetTransfer ?? [];
 
     itemsNhanVien =
-        listNhanVien.isNotEmpty
-            ? listNhanVien
-                .map((user) => DropdownMenuItem<NhanVien>(value: user, child: Text(user.hoTen ?? '')))
-                .toList()
-            : <DropdownMenuItem<NhanVien>>[];
+        listNhanVien.isNotEmpty ? listNhanVien.map((user) => DropdownMenuItem<NhanVien>(value: user, child: Text(user.hoTen ?? ''))).toList() : <DropdownMenuItem<NhanVien>>[];
 
     itemsPhongBan =
         listPhongBan.isNotEmpty
-            ? listPhongBan
-                .map((user) => DropdownMenuItem<PhongBan>(value: user, child: Text(user.tenPhongBan ?? '')))
-                .toList()
+            ? listPhongBan.map((user) => DropdownMenuItem<PhongBan>(value: user, child: Text(user.tenPhongBan ?? ''))).toList()
             : <DropdownMenuItem<PhongBan>>[];
     itemsAssetTransfer =
         listAssetTransfer.isNotEmpty
-            ? listAssetTransfer
-                .map(
-                  (assetTransfer) =>
-                      DropdownMenuItem<DieuDongTaiSanDto>(value: assetTransfer, child: Text(assetTransfer.id ?? '')),
-                )
-                .toList()
+            ? listAssetTransfer.map((assetTransfer) => DropdownMenuItem<DieuDongTaiSanDto>(value: assetTransfer, child: Text(assetTransfer.id ?? ''))).toList()
             : <DropdownMenuItem<DieuDongTaiSanDto>>[];
 
     // Cập nhật controllers với dữ liệu mới
@@ -293,9 +281,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   void _saveChanges() {
     if (!isEditing) return;
     if (!_validateForm()) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
       return;
     }
     _saveAssetHandover();
@@ -310,10 +296,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
-  DieuDongTaiSanDto getAssetTransfer({
-    required List<DieuDongTaiSanDto> listAssetTransfer,
-    required String idAssetTransfer,
-  }) {
+  DieuDongTaiSanDto getAssetTransfer({required List<DieuDongTaiSanDto> listAssetTransfer, required String idAssetTransfer}) {
     final found = listAssetTransfer.where((item) => item.id == idAssetTransfer);
     if (found.isEmpty) {
       return DieuDongTaiSanDto();
@@ -351,10 +334,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail()),
-    );
+    return SingleChildScrollView(scrollDirection: Axis.vertical, child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail()));
   }
 
   Widget _buildTableDetail() {
@@ -377,40 +357,24 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                       child: const Text('Có thay đổi chưa lưu', style: TextStyle(color: Colors.white, fontSize: 12)),
                     ),
                   const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _saveChanges,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                    child: const Text('Lưu'),
-                  ),
+                  ElevatedButton(onPressed: _saveChanges, style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white), child: const Text('Lưu')),
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _cancelChanges,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, foregroundColor: Colors.white),
-                    child: const Text('Hủy'),
-                  ),
+                  ElevatedButton(onPressed: _cancelChanges, style: ElevatedButton.styleFrom(backgroundColor: Colors.grey, foregroundColor: Colors.white), child: const Text('Hủy')),
                 ],
               ),
-            SgIndicator(
-              steps: ['Nháp', 'Sẵn sàng', 'Xác nhận', 'Trình duyệt', 'Hoàn thành', 'Hủy'],
-              currentStep: item?.trangThai ?? 0,
-              fontSize: 10,
-            ),
+            SgIndicator(steps: ['Nháp', 'Sẵn sàng', 'Xác nhận', 'Trình duyệt', 'Hoàn thành', 'Hủy'], currentStep: item?.trangThai ?? 0, fontSize: 10),
           ],
         ),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInfoAssetHandoverMobile(isWideScreen),
               const SizedBox(height: 20),
-              Padding(padding: const EdgeInsets.only(bottom: 20), child: TableAssetMovementDetail(item: null)),
+              Padding(padding: const EdgeInsets.only(bottom: 20), child: TableAssetMovementDetail(listDetailAssetMobilization: widget.provider.dataDetailAssetMobilization)),
               previewDocumentAssetTransfer(item),
             ],
           ),
@@ -423,11 +387,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (isWideScreen) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: _buildInfoAssetHandover()),
-          const SizedBox(width: 20),
-          Expanded(child: _buildAssetHandoverDetail()),
-        ],
+        children: [Expanded(child: _buildInfoAssetHandover()), const SizedBox(width: 20), Expanded(child: _buildAssetHandoverDetail())],
       );
     } else {
       return Column(children: [_buildInfoAssetHandover(), _buildAssetHandoverDetail()]);
@@ -459,14 +419,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Lệnh điều động',
           controller: controllerOrder,
           isEditing: isEditing,
-          defaultValue:
-              item?.lenhDieuDong != null
-                  ? getAssetTransfer(listAssetTransfer: listAssetTransfer, idAssetTransfer: item!.lenhDieuDong!)
-                  : null,
+          defaultValue: item?.lenhDieuDong != null ? getAssetTransfer(listAssetTransfer: listAssetTransfer, idAssetTransfer: item!.lenhDieuDong!) : null,
           fieldName: 'order',
           items: itemsAssetTransfer,
           onChanged: (value) {
             dieuDongTaiSan = value;
+            widget.provider.getListDetailAssetMobilization(value.id ?? '');
           },
           validationErrors: _validationErrors,
         ),
@@ -474,10 +432,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đơn vị giao',
           controller: controllerSenderUnit,
           isEditing: isEditing,
-          defaultValue:
-              item?.idDonViGiao != null
-                  ? getPhongBan(listPhongBan: listPhongBan, idPhongBan: item!.idDonViGiao!)
-                  : null,
+          defaultValue: item?.idDonViGiao != null ? getPhongBan(listPhongBan: listPhongBan, idPhongBan: item!.idDonViGiao!) : null,
           fieldName: 'senderUnit',
           items: itemsPhongBan,
           onChanged: (value) {
@@ -489,10 +444,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đơn vị nhận',
           controller: controllerReceiverUnit,
           isEditing: isEditing,
-          defaultValue:
-              item?.idDonViNhan != null
-                  ? getPhongBan(listPhongBan: listPhongBan, idPhongBan: item!.idDonViNhan!)
-                  : null,
+          defaultValue: item?.idDonViNhan != null ? getPhongBan(listPhongBan: listPhongBan, idPhongBan: item!.idDonViNhan!) : null,
           fieldName: 'receiverUnit',
           items: itemsPhongBan,
           onChanged: (value) {
@@ -513,8 +465,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Lãnh đạo',
           controller: controllerLeader,
           isEditing: isEditing,
-          defaultValue:
-              item?.idLanhDao != null ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idLanhDao!) : null,
+          defaultValue: item?.idLanhDao != null ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idLanhDao!) : null,
           fieldName: 'leader',
           items: itemsNhanVien,
           validationErrors: _validationErrors,
@@ -533,10 +484,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đại diện Đơn vị ban hành QĐ',
           controller: controllerIssuingUnitRepresentative,
           isEditing: isEditing,
-          defaultValue:
-              item?.idDaiDiendonviBanHanhQD != null
-                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDaiDiendonviBanHanhQD!)
-                  : null,
+          defaultValue: item?.idDaiDiendonviBanHanhQD != null ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDaiDiendonviBanHanhQD!) : null,
           fieldName: 'issuingUnitRepresentative',
           items: itemsNhanVien,
           onChanged: (value) {
@@ -559,10 +507,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đại diện bên giao',
           controller: controllerDelivererRepresentative,
           isEditing: isEditing,
-          defaultValue:
-              item?.idDaiDienBenGiao != null
-                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDaiDienBenGiao!)
-                  : null,
+          defaultValue: item?.idDaiDienBenGiao != null ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDaiDienBenGiao!) : null,
           fieldName: 'delivererRepresentative',
           items: itemsNhanVien,
           onChanged: (value) {
@@ -585,10 +530,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đại diện bên nhận',
           controller: controllerReceiverRepresentative,
           isEditing: isEditing,
-          defaultValue:
-              item?.idDaiDienBenNhan != null
-                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDaiDienBenNhan!)
-                  : null,
+          defaultValue: item?.idDaiDienBenNhan != null ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDaiDienBenNhan!) : null,
           fieldName: 'receiverRepresentative',
           items: itemsNhanVien,
           onChanged: (value) {
@@ -611,10 +553,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đơn vị Đại diện',
           controller: controllerRepresentativeUnit,
           isEditing: isEditing,
-          defaultValue:
-              item?.idDonViDaiDien != null
-                  ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDonViDaiDien!)
-                  : null,
+          defaultValue: item?.idDonViDaiDien != null ? getNhanVien(listNhanVien: listNhanVien, idNhanVien: item!.idDonViDaiDien!) : null,
           fieldName: 'representativeUnit',
           items: itemsNhanVien,
           onChanged: (value) {
@@ -649,10 +588,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               (context) => Padding(
                 padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
                 child: CommonContract(
-                  contractType: ContractPage.assetHandoverPage(item),
-                  signatureList: [
-                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
-                  ],
+                  contractType: ContractPage.assetHandoverPage(item, widget.provider.dataDetailAssetMobilization),
+                  signatureList: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
                   idTaiLieu: item.id.toString(),
                   idNguoiKy: userInfo.tenDangNhap,
                   tenNguoiKy: userInfo.hoTen,
@@ -666,11 +603,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 2.5),
-            child: SGText(
-              text: "Xem trước tài liệu",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link),
-            ),
+            child: SGText(text: "Xem trước tài liệu", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link)),
           ),
           SizedBox(width: 8),
           Icon(Icons.visibility, color: ColorValue.link, size: 18),

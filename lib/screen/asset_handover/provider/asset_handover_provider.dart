@@ -9,6 +9,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
@@ -36,6 +38,8 @@ class AssetHandoverProvider with ChangeNotifier {
   List<DieuDongTaiSanDto>? get dataAssetTransfer => _dataAssetTransfer;
   List<PhongBan>? get dataDepartment => _dataDepartment;
   List<NhanVien>? get dataStaff => _dataStaff;
+  List<ChiTietDieuDongTaiSan>? get dataDetailAssetMobilization => _dataDetailAssetMobilization;
+
   AssetHandoverDto? get item => _item;
   get data => _data;
   get columns => _columns;
@@ -111,6 +115,7 @@ class AssetHandoverProvider with ChangeNotifier {
   List<DieuDongTaiSanDto>? _dataAssetTransfer;
   List<PhongBan>? _dataDepartment;
   List<NhanVien>? _dataStaff;
+  List<ChiTietDieuDongTaiSan>? _dataDetailAssetMobilization;
   // Danh sách dữ liệu đã được lọc
   List<AssetHandoverDto> _filteredData = [];
   final List<SgTableColumn<AssetHandoverDto>> _columns = [];
@@ -187,9 +192,7 @@ class AssetHandoverProvider with ChangeNotifier {
   void _applyFilters() {
     if (_data == null) return;
 
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
+    bool hasActiveFilter = _filterStatus.entries.where((entry) => entry.key != FilterStatus.all).any((entry) => entry.value == true);
 
     // Lọc theo trạng thái
     List<AssetHandoverDto> statusFiltered;
@@ -313,13 +316,7 @@ class AssetHandoverProvider with ChangeNotifier {
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
 
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
+    dataPage = _filteredData.isNotEmpty ? _filteredData.sublist(startIndex < totalEntries ? startIndex : 0, endIndex < totalEntries ? endIndex : totalEntries) : [];
   }
 
   void onPageChanged(int page) {
@@ -338,6 +335,9 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onChangeDetail(BuildContext context, AssetHandoverDto? item) {
+    if (item != null) {
+      getListDetailAssetMobilization(item.lenhDieuDong ?? '');
+    }
     _confirmBeforeLeaving(context, item);
 
     notifyListeners();
@@ -414,5 +414,14 @@ class AssetHandoverProvider with ChangeNotifier {
       isShowCollapse = true;
     }
     return true;
+  }
+
+  Future<void> getListDetailAssetMobilization(String id) async {
+    if (id.isEmpty) return;
+    _isLoading = true;
+    final Map<String, dynamic> result = await AssetHandoverRepository().getListDetailAssetMobilization(id);
+    _dataDetailAssetMobilization = result['data'];
+    _isLoading = false;
+    notifyListeners();
   }
 }

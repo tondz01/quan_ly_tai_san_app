@@ -42,20 +42,13 @@ class DieuDongTaiSanDetail extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
   final int type;
 
-  const DieuDongTaiSanDetail({
-    super.key,
-    this.isEditing = false,
-    this.isNew = false,
-    required this.provider,
-    required this.type,
-  });
+  const DieuDongTaiSanDetail({super.key, this.isEditing = false, this.isNew = false, required this.provider, required this.type});
 
   @override
   State<DieuDongTaiSanDetail> createState() => _DieuDongTaiSanDetailState();
 }
 
-final GlobalKey<_DieuDongTaiSanDetailState> dieuDongTaiSanDetailKey =
-    GlobalKey<_DieuDongTaiSanDetailState>();
+final GlobalKey<_DieuDongTaiSanDetailState> dieuDongTaiSanDetailKey = GlobalKey<_DieuDongTaiSanDetailState>();
 
 class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   late TextEditingController controllerSoChungTu = TextEditingController();
@@ -66,16 +59,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   late TextEditingController controllerRequester = TextEditingController();
   late TextEditingController controllerProposingUnit = TextEditingController();
   late TextEditingController controllerQuantity = TextEditingController();
-  late TextEditingController controllerDepartmentApproval =
-      TextEditingController();
+  late TextEditingController controllerDepartmentApproval = TextEditingController();
   late TextEditingController controllerEffectiveDate = TextEditingController();
-  late TextEditingController controllerEffectiveDateTo =
-      TextEditingController();
+  late TextEditingController controllerEffectiveDateTo = TextEditingController();
   late TextEditingController controllerApprover = TextEditingController();
-  late TextEditingController controllerDeliveryLocation =
-      TextEditingController();
-  late TextEditingController controllerViewerDepartments =
-      TextEditingController();
+  late TextEditingController controllerDeliveryLocation = TextEditingController();
+  late TextEditingController controllerViewerDepartments = TextEditingController();
   late TextEditingController controllerViewerUsers = TextEditingController();
   late TextEditingController controllerReason = TextEditingController();
   late TextEditingController controllerBase = TextEditingController();
@@ -240,15 +229,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         proposingUnit = item?.tenDonViDeNghi;
 
         // Lưu snapshot chi tiết ban đầu để so sánh
-        _initialDetails = List<ChiTietDieuDongTaiSan>.from(
-          item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
-        );
+        _initialDetails = List<ChiTietDieuDongTaiSan>.from(item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[]);
 
         _controllersInitialized = true;
       } else {
-        controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
-          'SCT-************',
-        );
+        controllerSoChungTu.text = UUIDGenerator.generateWithFormat('SCT-************');
         controllerSubject.text = '';
         controllerDocumentName.text = '';
         controllerDeliveringUnit.text = '';
@@ -270,9 +255,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         log('controllerEffectiveDateTo: ${controllerSoChungTu.text}');
       }
 
-      if (proposingUnit != null &&
-          proposingUnit!.isNotEmpty &&
-          !_controllersInitialized) {
+      if (proposingUnit != null && proposingUnit!.isNotEmpty && !_controllersInitialized) {
         controllerProposingUnit.text = proposingUnit!;
       }
 
@@ -329,22 +312,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     log('message');
   }
 
-  List<Map<String, dynamic>> _normalizeDetails(
-    List<ChiTietDieuDongTaiSan> list,
-  ) {
-    final data = list
-        .map(
-          (d) => {
-            'idTaiSan': d.idTaiSan,
-            'soLuong': d.soLuong,
-            'hienTrang': d.hienTrang,
-            'ghiChu': d.ghiChu,
-          },
-        )
-        .toList();
-    data.sort(
-      (a, b) => (a['idTaiSan'] as String).compareTo(b['idTaiSan'] as String),
-    );
+  List<Map<String, dynamic>> _normalizeDetails(List<ChiTietDieuDongTaiSan> list) {
+    final data = list.map((d) => {'idTaiSan': d.idTaiSan, 'soLuong': d.soLuong, 'hienTrang': d.hienTrang, 'ghiChu': d.ghiChu}).toList();
+    data.sort((a, b) => (a['idTaiSan'] as String).compareTo(b['idTaiSan'] as String));
     return data;
   }
 
@@ -428,13 +398,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           },
         ),
       ],
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
-          child: _buildTableDetail(),
-        ),
-      ),
+      child: SingleChildScrollView(scrollDirection: Axis.vertical, child: Padding(padding: const EdgeInsets.only(top: 10.0), child: _buildTableDetail())),
     );
   }
 
@@ -470,15 +434,10 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         builder:
                             (context) => AlertDialog(
                               title: Text('Xác nhận hủy'),
-                              content: Text(
-                                'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
-                              ),
+                              content: Text('Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.'),
                               actions: [
                                 TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(
-                                        context,
-                                      ), // Close dialog
+                                  onPressed: () => Navigator.pop(context), // Close dialog
                                   child: Text('Không'),
                                 ),
                                 TextButton(
@@ -495,29 +454,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 ],
               ),
             const SizedBox(width: 5),
-            SgIndicator(
-              steps: [
-                'Nháp',
-                'Chờ xác nhận',
-                'Xác nhận',
-                'Trình duyệt',
-                'Duyệt',
-                'Hủy',
-                'Hoàn thành',
-              ],
-              fontSize: 10,
-              currentStep: item?.trangThai ?? 0,
-            ),
+            SgIndicator(steps: ['Nháp', 'Chờ xác nhận', 'Xác nhận', 'Trình duyệt', 'Duyệt', 'Hủy', 'Hoàn thành'], fontSize: 10, currentStep: item?.trangThai ?? 0),
           ],
         ),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -559,12 +502,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           controller: controllerDeliveringUnit,
                           isEditing: isEditing,
                           items: widget.provider.itemsDDPhongBan,
-                          defaultValue:
-                              controllerDeliveringUnit.text.isNotEmpty
-                                  ? widget.provider.getPhongBanByID(
-                                    controllerDeliveringUnit.text,
-                                  )
-                                  : null,
+                          defaultValue: controllerDeliveringUnit.text.isNotEmpty ? widget.provider.getPhongBanByID(controllerDeliveringUnit.text) : null,
                           fieldName: 'delivering_unit',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
@@ -578,12 +516,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: isEditing,
 
                           items: widget.provider.itemsDDPhongBan,
-                          defaultValue:
-                              controllerReceivingUnit.text.isNotEmpty
-                                  ? widget.provider.getPhongBanByID(
-                                    controllerReceivingUnit.text,
-                                  )
-                                  : null,
+                          defaultValue: controllerReceivingUnit.text.isNotEmpty ? widget.provider.getPhongBanByID(controllerReceivingUnit.text) : null,
                           fieldName: 'receivingUnit',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
@@ -597,22 +530,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: isEditing,
 
                           items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllerRequester.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllerRequester.text,
-                                  )
-                                  : null,
+                          defaultValue: controllerRequester.text.isNotEmpty ? widget.provider.getNhanVienByID(controllerRequester.text) : null,
                           fieldName: 'requester',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             log('requester selected: $value');
                             setState(() {
-                              donViDeNghi = widget.provider.getPhongBanByID(
-                                value.phongBanId ?? '',
-                              );
-                              controllerProposingUnit.text =
-                                  donViDeNghi?.tenPhongBan ?? '';
+                              donViDeNghi = widget.provider.getPhongBanByID(value.phongBanId ?? '');
+                              controllerProposingUnit.text = donViDeNghi?.tenPhongBan ?? '';
                               nguoiDeNghi = value;
                             });
                           },
@@ -672,12 +597,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: isEditing,
 
                           items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllerDepartmentApproval.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllerDepartmentApproval.text,
-                                  )
-                                  : null,
+                          defaultValue: controllerDepartmentApproval.text.isNotEmpty ? widget.provider.getNhanVienByID(controllerDepartmentApproval.text) : null,
                           fieldName: 'departmentApproval',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
@@ -692,12 +612,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             log('Effective date selected: $value');
                           },
-                          value:
-                              controllerEffectiveDate.text.isNotEmpty
-                                  ? AppUtility.parseFlexibleDateTime(
-                                    controllerEffectiveDate.text,
-                                  )
-                                  : DateTime.now(),
+                          value: controllerEffectiveDate.text.isNotEmpty ? AppUtility.parseFlexibleDateTime(controllerEffectiveDate.text) : DateTime.now(),
                         ),
                         CmFormDate(
                           label: 'at.effective_date_to'.tr,
@@ -706,12 +621,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             log('Effective date selected: $value');
                           },
-                          value:
-                              controllerEffectiveDateTo.text.isNotEmpty
-                                  ? AppUtility.parseFlexibleDateTime(
-                                    controllerEffectiveDateTo.text,
-                                  )
-                                  : DateTime.now(),
+                          value: controllerEffectiveDateTo.text.isNotEmpty ? AppUtility.parseFlexibleDateTime(controllerEffectiveDateTo.text) : DateTime.now(),
                         ),
                         // CommonFormInput(
                         //   label: 'at.effective_date_to'.tr,
@@ -727,12 +637,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: isEditing,
 
                           items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllerApprover.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllerApprover.text,
-                                  )
-                                  : null,
+                          defaultValue: controllerApprover.text.isNotEmpty ? widget.provider.getNhanVienByID(controllerApprover.text) : null,
                           fieldName: 'approver',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
@@ -834,16 +739,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   void _callGetListAssetHandover() {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(context, typeTransfer, idCongTy),
-      );
+      assetHandoverBloc.add(GetListDieuDongTaiSanEvent(context, typeTransfer, idCongTy));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi khi lấy danh sách: ${e.toString()}'), backgroundColor: Colors.red));
     }
   }
 
@@ -852,19 +750,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       onTap: () {
         if (item == null) return;
         UserInfoDTO userInfo = widget.provider.userInfo!;
-        String url =
-            '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
+        String url = '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
         showDialog(
           context: context,
           barrierDismissible: true,
           builder:
               (context) => Padding(
-                padding: const EdgeInsets.only(
-                  left: 24.0,
-                  right: 24.0,
-                  top: 16.0,
-                  bottom: 16.0,
-                ),
+                padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
                 child: CommonContract(
                   contractType: ContractPage.assetMovePage(item),
                   signatureList: <String>[url],
@@ -881,15 +773,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 2.5),
-            child: SGText(
-              text: "Xem trước tài liệu",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ColorValue.link,
-              ),
-            ),
+            child: SGText(text: "Xem trước tài liệu", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ColorValue.link)),
           ),
           SizedBox(width: 8),
           Icon(Icons.visibility, color: ColorValue.link, size: 18),
@@ -911,14 +795,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       phoPhongXacNhan: isDeputyConfirmed,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
-      tggnTuNgay:
-          AppUtility.parseDateTimeOrNow(
-            controllerEffectiveDate.text,
-          ).toIso8601String(),
-      tggnDenNgay:
-          AppUtility.parseDateTimeOrNow(
-            controllerEffectiveDateTo.text,
-          ).toIso8601String(),
+      tggnTuNgay: AppUtility.parseDateTimeOrNow(controllerEffectiveDate.text).toIso8601String(),
+      tggnDenNgay: AppUtility.parseDateTimeOrNow(controllerEffectiveDateTo.text).toIso8601String(),
       idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllerDeliveryLocation.text,
       idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
@@ -969,12 +847,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Future<void> _handleSave() async {
     if (!isEditing) return;
     if (!_validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'), backgroundColor: Colors.red));
       return;
     }
     // final bloc = context.read<DieuDongTaiSanBloc>();
@@ -984,23 +857,16 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       log('message request: ${jsonEncode(request)}');
       log('message requestDetail: ${jsonEncode(requestDetail)}');
       // bloc.add(CreateDieuDongEvent(context, request));
-      widget.provider.saveAssetTransfer(
-        context,
-        request,
-        requestDetail,
-        _selectedFileName ?? '',
-        _selectedFilePath ?? '',
-        _selectedFileBytes ?? Uint8List(0),
-      );
+      widget.provider.saveAssetTransfer(context, request, requestDetail, _selectedFileName ?? '', _selectedFilePath ?? '', _selectedFileBytes ?? Uint8List(0));
     } else if (item != null && isEditing) {
       final request = _createDieuDongRequest(widget.type, item!.trangThai ?? 0);
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {
         await _syncDetails(item!.id!);
       }
-      context.read<DieuDongTaiSanBloc>().add(
-        UpdateDieuDongEvent(context, request, item!.id!),
-      );
+      if (mounted) {
+        context.read<DieuDongTaiSanBloc>().add(UpdateDieuDongEvent(context, request, item!.id!));
+      }
     }
   }
 }

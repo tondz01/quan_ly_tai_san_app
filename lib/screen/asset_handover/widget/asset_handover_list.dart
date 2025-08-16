@@ -269,7 +269,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 2.5),
                             child: Text(
-                              'Biên bản bàn giao tài sản (${widget.provider.data.length})',
+                              'Biên bản bàn giao tài sản (${widget.provider.data?.length ?? 0})',
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
                             ),
                           ),

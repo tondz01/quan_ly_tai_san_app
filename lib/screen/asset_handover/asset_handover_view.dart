@@ -140,6 +140,10 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }
+              // Ensure pagination controller is initialized before use
+              provider.controllerDropdownPage ??= TextEditingController(
+                text: provider.rowsPerPage.toString(),
+              );
               return Scaffold(
                 appBar: AppBar(
                   title: HeaderComponent(
