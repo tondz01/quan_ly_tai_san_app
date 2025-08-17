@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -10,8 +11,11 @@ import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
+import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 
 class StaffFormPage extends StatefulWidget {
   final NhanVien? staff;
@@ -47,6 +51,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
   NhanVien? _staffDTO;
   ChucVu? _chucVuDTO;
   Uint8List? _chuKyData;
+
+  bool _kyNhay = false;
+  bool _kyThuong = false;
+  bool _kySo = false;
+  
   @override
   void initState() {
     _initData();
@@ -56,6 +65,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
   void _initData() {
     _nameController = TextEditingController(text: widget.staff?.hoTen ?? '');
     _telController = TextEditingController(text: widget.staff?.diDong ?? '');
+    _kieuKyController = TextEditingController(
+      text: widget.staff?.kieuKy?.toString() ?? '',
+    );
+    _changeTypeKy(widget.staff?.kieuKy ?? 0);
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
@@ -90,9 +103,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
     } catch (e) {
       _chucVuDTO = null;
     }
-    _kieuKyController = TextEditingController(
-      text: widget.staff?.kieuKy?.toString() ?? '',
-    );
     _agreementUUIdController = TextEditingController(
       text: widget.staff?.agreementUUId ?? '',
     );
@@ -128,55 +138,66 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _save() {
+    log('check save nhân viên');
+    UserInfoDTO? userInfoDTO = AccountHelper.instance.getUserInfo();
+
     if (_formKey.currentState!.validate()) {
+      log('check validate');
+      
+      // Tạo đối tượng nhân viên từ dữ liệu form
+      final NhanVien staff;
       if (widget.staff != null) {
-        final staff = widget.staff!.copyWith(
+        log('cập nhật nhân viên hiện có');
+        staff = widget.staff!.copyWith(
           hoTen: _nameController.text.trim(),
           diDong: _telController.text.trim(),
           emailCongViec: _emailController.text.trim(),
-          isActive: true, // Assuming isActive is always true for new staff
+          isActive: true,
           chucVu: _chucVuDTO?.id,
+          chucVuId: _chucVuDTO?.id,
           id: _staffIdController.text.trim(),
           nguoiQuanLy: _staffDTO?.id ?? '',
           kieuKy: int.tryParse(_kieuKyController.text),
           agreementUUId: _agreementUUIdController.text.trim(),
           pin: _pinController.text.trim(),
-          // chuKy được upload qua file picker, không nhập text
           laQuanLy: _laQuanLy,
           boPhan: _phongBan?.id,
+          phongBanId: _phongBan?.id,
           chuKyData: _chuKyData,
+          ngayCapNhat: DateTime.now().toIso8601String(),
+          nguoiCapNhat: userInfoDTO?.tenDangNhap ?? '',
         );
-        if (widget.staff == null) {
-          context.read<StaffBloc>().add(AddStaff(staff));
-        } else {
-          context.read<StaffBloc>().add(UpdateStaff(staff));
-        }
-        if (widget.onSaved != null) {
-          widget.onSaved!();
-        }
+      } else {
+        log('thêm mới nhân viên');
+        staff = NhanVien(
+          id: _staffIdController.text.trim(),
+          hoTen: _nameController.text.trim(),
+          diDong: _telController.text.trim(),
+          emailCongViec: _emailController.text.trim(),
+          isActive: true,
+          chucVu: _chucVuDTO?.id,
+          chucVuId: _chucVuDTO?.id,
+          nguoiQuanLy: _staffDTO?.id ?? '',
+          kieuKy: int.tryParse(_kieuKyController.text),
+          agreementUUId: _agreementUUIdController.text.trim(),
+          pin: _pinController.text.trim(),
+          laQuanLy: _laQuanLy,
+          boPhan: _phongBan?.id,
+          phongBanId: _phongBan?.id,
+          chuKyData: _chuKyData,
+          ngayTao: DateTime.now(),
+          nguoiTao: userInfoDTO?.tenDangNhap ?? '',
+        );
       }
-    } else {
-      final staff = NhanVien(
-        hoTen: _nameController.text.trim(),
-        diDong: _telController.text.trim(),
-        emailCongViec: _emailController.text.trim(),
-        isActive: true, // Assuming isActive is always true for new staff
-        chucVu: _chucVuDTO?.id,
-        id: _staffIdController.text.trim(),
-        nguoiQuanLy: _staffDTO?.id ?? '',
-        kieuKy: int.tryParse(_kieuKyController.text),
-        agreementUUId: _agreementUUIdController.text.trim(),
-        pin: _pinController.text.trim(),
-        // chuKy được upload qua file picker, không nhập text
-        laQuanLy: _laQuanLy,
-        boPhan: _phongBan?.id,
-        chuKyData: _chuKyData,
-      );
+      
+      // Thêm hoặc cập nhật nhân viên
       if (widget.staff == null) {
         context.read<StaffBloc>().add(AddStaff(staff));
       } else {
         context.read<StaffBloc>().add(UpdateStaff(staff));
       }
+      
+      // Gọi callback nếu có
       if (widget.onSaved != null) {
         widget.onSaved!();
       }
@@ -356,7 +377,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                                       child: Image.network(
                                                         '${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}',
                                                         fit: BoxFit.contain,
-                                                        errorBuilder: (context, error, stackTrace) {
+                                                        errorBuilder: (
+                                                          context,
+                                                          error,
+                                                          stackTrace,
+                                                        ) {
                                                           return SizedBox();
                                                         },
                                                       ),
@@ -435,7 +460,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                           child: Row(
                                             children: [
                                               const SizedBox(width: 8),
-                                              Text(staff?.hoTen ?? ''),
+                                              Text(staff.hoTen ?? ''),
                                             ],
                                           ),
                                         ),
@@ -459,11 +484,13 @@ class _StaffFormPageState extends State<StaffFormPage> {
                               maxLines: 3,
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _kieuKyController,
-                              decoration: inputDecoration('Kiểu ký'),
-                              keyboardType: TextInputType.number,
-                            ),
+                            // TextFormField(
+                            //   controller: _kieuKyController,
+                            //   decoration: inputDecoration('Kiểu ký'),
+                            //   keyboardType: TextInputType.number,
+                            // ),
+                            _buildKieuKy(),
+
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _agreementUUIdController,
@@ -539,5 +566,44 @@ class _StaffFormPageState extends State<StaffFormPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildKieuKy() {
+    final kyOptions = [
+      {'text': 'Ký nháy', 'value': _kyNhay, 'type': 1},
+      {'text': 'Ký thường', 'value': _kyThuong, 'type': 2},
+      {'text': 'Ký số', 'value': _kySo, 'type': 3},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        spacing: 16,
+        children: [
+          const SGText(text: "Kiểu ký:"),
+          ...kyOptions.map((option) => Row(
+                spacing: 8,
+                children: [
+                  SGText(text: option['text'] as String),
+                  SgCheckbox(
+                    value: option['value'] as bool,
+                    onChanged: (_) => setState(() {
+                      _changeTypeKy(option['type'] as int);
+                    }),
+                  ),
+                ],
+              )),
+        ],
+      ),
+    );
+  }
+
+  void _changeTypeKy(int type) {
+    setState(() {
+      _kyNhay = type == 1;
+      _kyThuong = type == 2;
+      _kySo = type == 3;
+      _kieuKyController.text = type.toString();
+    });
   }
 }

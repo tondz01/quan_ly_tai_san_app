@@ -10,9 +10,9 @@ class AssetManagementBloc
     on<GetListAssetManagementEvent>((event, emit) async {
       await _getListAssetManagement(event, emit);
     });
-    on<GetListChildAssetsEvent>((event, emit) async {
-      await _getListChildAssets(event, emit);
-    });
+    // on<GetListChildAssetsEvent>((event, emit) async {
+    //   await _getListChildAssets(event, emit);
+    // });
     on<GetListKhauHaoEvent>((event, emit) async {
       await _getListKhauHao(event, emit);
     });
@@ -27,6 +27,9 @@ class AssetManagementBloc
     });
     on<GetListDepartmentEvent>((event, emit) async {
       await _getListDepartment(event, emit);
+    });
+    on<GetAllChildAssetsEvent>((event, emit) async {
+      await _getAllChildAssets(event, emit);
     });
     on<CreateAssetEvent>((event, emit) async {
       await _createAsset(event, emit);
@@ -83,28 +86,28 @@ class AssetManagementBloc
     }
   }
 
-  Future<void> _getListChildAssets(
-    GetListChildAssetsEvent event,
-    Emitter emit,
-  ) async {
-    emit(AssetManagementInitialState());
-    emit(AssetManagementLoadingState());
-    Map<String, dynamic> result = await AssetManagementRepository()
-        .getListChildAssets(event.idTaiSan);
-    emit(AssetManagementLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(GetListAssetManagementSuccessState(data: result['data']));
-    } else {
-      String msg = "Lỗi khi lấy dữ liệu";
-      emit(
-        GetListAssetManagementFailedState(
-          title: "notice",
-          code: result['status_code'],
-          message: msg,
-        ),
-      );
-    }
-  }
+  // Future<void> _getListChildAssets(
+  //   GetListChildAssetsEvent event,
+  //   Emitter emit,
+  // ) async {
+  //   emit(AssetManagementInitialState());
+  //   emit(AssetManagementLoadingState());
+  //   Map<String, dynamic> result = await AssetManagementRepository()
+  //       .getListChildAssets(event.idTaiSan);
+  //   emit(AssetManagementLoadingDismissState());
+  //   if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+  //     emit(GetListAssetManagementSuccessState(data: result['data']));
+  //   } else {
+  //     String msg = "Lỗi khi lấy dữ liệu";
+  //     emit(
+  //       GetListAssetManagementFailedState(
+  //         title: "notice",
+  //         code: result['status_code'],
+  //         message: msg,
+  //       ),
+  //     );
+  //   }
+  // }
 
   Future<void> _getListAssetGroup(
     GetListAssetGroupEvent event,
@@ -196,6 +199,29 @@ class AssetManagementBloc
     }
   }
 
+  Future<void> _getAllChildAssets(
+    GetAllChildAssetsEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+    Map<String, dynamic> result = await AssetManagementRepository()
+        .getAllChildAssets(event.idCongTy);
+    emit(AssetManagementLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(GetAllChildAssetsSuccessState(data: result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu tài sản con";
+      emit(
+        GetAllChildAssetsFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
   ///CREATE
   Future<void> _createAsset(CreateAssetEvent event, Emitter emit) async {
     emit(AssetManagementInitialState());
@@ -241,6 +267,7 @@ class AssetManagementBloc
       );
     }
   }
+
   Future<void> _deleteAsset(DeleteAssetEvent event, Emitter emit) async {
     emit(AssetManagementInitialState());
     emit(AssetManagementLoadingState());

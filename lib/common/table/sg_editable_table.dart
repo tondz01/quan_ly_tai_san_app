@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -30,7 +32,8 @@ class SgEditableTable<T> extends StatefulWidget {
   final Function(List<T>)? onDataChanged;
   final T Function() createEmptyItem;
   final bool isEditing; // Add isEditing property
-  final double? omittedSize; // kích thước sẽ bị lược bỏ khi tính adjustColumnWidths
+  final double?
+  omittedSize; // kích thước sẽ bị lược bỏ khi tính adjustColumnWidths
   // NEW: Per-row editable settings
   final bool defaultRowEditable;
   final bool Function(T item, int rowIndex)? rowEditableDecider;
@@ -313,11 +316,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width - (widget.omittedSize ?? 0);
+    final screenWidth =
+        MediaQuery.of(context).size.width - (widget.omittedSize ?? 0);
     final newWidths = adjustColumnWidths(
-      originalWidths: {
-        for (final col in widget.columns) col.title: col.width,
-      },
+      originalWidths: {for (final col in widget.columns) col.title: col.width},
       minTableWidth: screenWidth,
     );
 
@@ -497,7 +499,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: SGDropdownInputButton<T>(
-          height: 32,
+          height: 40,
           controller: controller,
           value: currentValue,
           defaultValue: currentValue,
@@ -505,7 +507,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
-          inputType: TextInputType.text,
+          inputType: column.inputType ?? TextInputType.text,
           isShowSuffixIcon: true,
           hintText: '',
           textAlign: TextAlign.left,
@@ -536,23 +538,37 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         ),
       );
     }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: SGInputText(
-        controller: controller,
-        // width: size.width * 0.2,
-        borderRadius: 10,
-        enabled: widget.isEditing,
-        onlyLine: true,
-        showBorder: false,
-        hintText: 'Tìm kiếm',
-        // onChanged: (value) {
-        //   setState(() {
-        //     _searchTerm = value;
-        //   });
-        // },
-      ),
+    return SGInputText(
+      controller: controller,
+      height: 32,
+      // width: size.width * 0.2,
+      inputFormatters:
+          column.inputType == TextInputType.number
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : null,
+      borderRadius: 10,
+      enabled: widget.isEditing,
+      onlyLine: true,
+      showBorder: false,
+      hintText: 'Nhập thông tin',
+      onChanged: (value) {
+        setState(() {
+          controller.text = value;
+          log('message onChanged: $value');
+          _updateCellValue(rowIndex, column.field, value);
+          // cascade updates
+          final updater = column.onValueChanged;
+          if (updater != null) {
+            updater(item, rowIndex, value, (
+              String targetField,
+              dynamic targetValue,
+            ) {
+              if (targetField == column.field) return; // avoid recursion
+              _setCellValue(rowIndex, targetField, targetValue);
+            });
+          }
+        });
+      },
     );
   }
 
@@ -598,7 +614,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
                 ),
               ),
               suffixIcon: null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 15,
+              ),
             ),
           ),
           // Text(
@@ -666,6 +685,7 @@ class SgEditableColumn<T> {
   final void Function(T, dynamic) setValue;
   final dynamic Function(T)? sortValueGetter;
   final bool Function(T item, int rowIndex)? isCellEditableDecider;
+  final TextInputType? inputType;
   // NEW: editor type and dropdown config
   final EditableCellEditor editor;
   final List<DropdownMenuItem<T>>? dropdownItems;
@@ -693,5 +713,6 @@ class SgEditableColumn<T> {
     this.editor = EditableCellEditor.text,
     this.dropdownItems,
     this.onValueChanged,
+    this.inputType,
   });
 }

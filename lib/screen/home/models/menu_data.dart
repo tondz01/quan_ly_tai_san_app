@@ -101,11 +101,19 @@ class AppMenuData {
       label: 'Điều động tài sản ',
       reportSubItems: [
         SubMenuItem(label: 'Cấp phát tài sản', route: AppRoute.assetTransfer.path, extra: "1"),
-        SubMenuItem(label: 'Thu hồi tài sản', route: AppRoute.assetTransfer.path, extra: "2"),
         SubMenuItem(label: 'Điều chuyển tài sản', route: AppRoute.assetTransfer.path, extra: "3"),
+        SubMenuItem(label: 'Thu hồi tài sản', route: AppRoute.assetTransfer.path, extra: "2"),
       ],
     ),
-    MenuItem(label: 'Điều động CCDC - Vật tư', route: AppRoute.toolAndMaterialTransfer.path),
+    MenuItem(
+      label: 'Điều động CCDC - Vật tư',
+      route: AppRoute.toolAndMaterialTransfer.path,
+      reportSubItems: [
+        SubMenuItem(label: 'Cấp phát CCDC - vật tư', route: AppRoute.toolAndMaterialTransfer.path, extra: "1"),
+        SubMenuItem(label: 'Điều chuyển CCDC - vật tư', route: AppRoute.toolAndMaterialTransfer.path, extra: "3"),
+        SubMenuItem(label: 'Thu hồi CCDC - vật tư', route: AppRoute.toolAndMaterialTransfer.path, extra: "2"),
+      ],
+    ),
     MenuItem(label: 'Bàn giao tài sản', route: AppRoute.assetHandover.path),
     MenuItem(
       label: 'Báo cáo',

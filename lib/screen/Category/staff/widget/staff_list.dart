@@ -125,6 +125,7 @@ class _StaffListState extends State<StaffList> {
               ),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,

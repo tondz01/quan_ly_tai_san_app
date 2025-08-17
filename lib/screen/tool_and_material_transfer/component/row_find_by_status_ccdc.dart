@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 
-class RowFindByStatus extends StatelessWidget {
-  const RowFindByStatus({super.key, required this.provider});
+
+class RowFindByStatusCcdc extends StatelessWidget {
+  const RowFindByStatusCcdc({super.key, required this.provider});
   final ToolAndMaterialTransferProvider provider;
 
   @override

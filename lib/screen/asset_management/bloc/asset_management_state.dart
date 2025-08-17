@@ -181,6 +181,14 @@ class GetListDepartmentSuccessState extends AssetManagementState {
   @override
   List<Object> get props => [data];
 }
+class GetAllChildAssetsSuccessState extends AssetManagementState {
+  final List<ChildAssetDto> data;
+
+  const GetAllChildAssetsSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
 
 class GetListDepartmentFailedState extends AssetManagementState {
   final String title;
@@ -188,6 +196,20 @@ class GetListDepartmentFailedState extends AssetManagementState {
   final String message;
 
   const GetListDepartmentFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+class GetAllChildAssetsFailedState extends AssetManagementState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetAllChildAssetsFailedState({
     required this.title,
     this.code,
     required this.message,

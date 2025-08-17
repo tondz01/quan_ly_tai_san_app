@@ -5,41 +5,50 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
+import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-import '../../asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
-import '../../asset_transfer/bloc/dieu_dong_tai_san_state.dart';
-import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
-
 class ToolAndMaterialTransferList extends StatefulWidget {
   final ToolAndMaterialTransferProvider provider;
+  final int typeAssetTransfer;
+  final String idCongTy;
 
-  const ToolAndMaterialTransferList({super.key, required this.provider});
+  const ToolAndMaterialTransferList({
+    super.key,
+    required this.provider,
+    required this.typeAssetTransfer,
+    required this.idCongTy,
+  });
 
   @override
-  State<ToolAndMaterialTransferList> createState() =>
-      _ToolAndMaterialTransferListState();
+  State<ToolAndMaterialTransferList> createState() => _ToolAndMaterialTransferListState();
 }
 
-class _ToolAndMaterialTransferListState
-    extends State<ToolAndMaterialTransferList> {
-  String url =
-      'https://firebasestorage.googleapis.com/v0/b/shopifyappdata.appspot.com/o/document%2FB%C3%A0n%20giao%20t%C3%A0i%20s%E1%BA%A3n.pdf?alt=media&token=497ba34e-891b-45b0-b228-704ca958760b';
-
+class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferList> {
   bool isUploading = false;
 
-  final List<DieuDongTaiSanDto> listAssetHandover = [];
-  String idCongTy = "";
+  final List<ToolAndMaterialTransferDto> listAssetHandover = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -117,7 +126,7 @@ class _ToolAndMaterialTransferListState
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Phiếu ký nội sinh',
               width: 150,
-              getValue: (item) => item.documentName ?? '',
+              getValue: (item) => getName(item.loai ?? 0),
             ),
           );
           break;
@@ -126,7 +135,7 @@ class _ToolAndMaterialTransferListState
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày ký',
               width: 100,
-              getValue: (item) => item.decisionDate ?? '',
+              getValue: (item) => item.ngayKy ?? '',
             ),
           );
           break;
@@ -135,7 +144,7 @@ class _ToolAndMaterialTransferListState
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày có hiệu lực',
               width: 100,
-              getValue: (item) => item.effectiveDate ?? '',
+              getValue: (item) => item.tggnTuNgay ?? '',
             ),
           );
           break;
@@ -144,7 +153,7 @@ class _ToolAndMaterialTransferListState
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Trình duyệt ban giám đốc',
               width: 150,
-              getValue: (item) => item.approver ?? '',
+              getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
             ),
           );
           break;
@@ -153,10 +162,12 @@ class _ToolAndMaterialTransferListState
             SgTableColumn<ToolAndMaterialTransferDto>(
               title: 'Tài liệu duyệt',
               cellBuilder:
-                  (item) =>
-                      SgDownloadFile(url: url, name: item.documentName ?? ''),
-              sortValueGetter: (item) => item.documentFileName ?? '',
-              searchValueGetter: (item) => item.documentFileName ?? '',
+                  (item) => SgDownloadFile(
+                    url: item.duongDanFile.toString(),
+                    name: item.tenFile ?? '',
+                  ),
+              sortValueGetter: (item) => item.tenFile ?? '',
+              searchValueGetter: (item) => item.tenFile ?? '',
               cellAlignment: TextAlign.center,
               titleAlignment: TextAlign.center,
               width: 150,
@@ -178,7 +189,7 @@ class _ToolAndMaterialTransferListState
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
               title: 'Trạng thái',
               cellBuilder:
-                  (item) => widget.provider.showStatus(item.status ?? 0),
+                  (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
             ),
@@ -231,29 +242,17 @@ class _ToolAndMaterialTransferListState
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns =
-        _buildColumns();
+    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns = _buildColumns();
     log('message widget.provider.data: ${MediaQuery.of(context).size.width}');
 
     return MultiBlocListener(
       listeners: [
-        BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
+        BlocListener<ToolAndMaterialTransferBloc, ToolAndMaterialTransferState>(
           listener: (context, state) {
-            if (state is GetListDieuDongTaiSanSuccessState) {
+            if (state is GetListToolAndMaterialTransferSuccessState) {
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-            } else if (state is GetListDieuDongTaiSanFailedState) {
-            } else if (state is DieuDongTaiSanLoadingState) {
-              // Show loading indicator
-              setState(() {
-                isUploading = true;
-              });
-            } else if (state is DieuDongTaiSanLoadingDismissState) {
-              // Hide loading indicator
-              setState(() {
-                isUploading = false;
-              });
-            }
+            } else if (state is GetListToolAndMaterialTransferFailedState) {}
           },
         ),
       ],
@@ -317,7 +316,7 @@ class _ToolAndMaterialTransferListState
                 Padding(
                   padding: const EdgeInsets.only(bottom: 2.5),
                   child: Text(
-                    'Điều động CCDC-Vật tư (${widget.provider.data.length})',
+                    '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -333,7 +332,7 @@ class _ToolAndMaterialTransferListState
               ],
             ),
             SizedBox(height: 20),
-            RowFindByStatus(provider: widget.provider),
+            RowFindByStatusCcdc(provider: widget.provider),
           ],
         )
         : Row(
@@ -344,76 +343,125 @@ class _ToolAndMaterialTransferListState
                 Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
                 SizedBox(width: 8),
                 Text(
-                  'Điều động CCDC-Vật tư (${widget.provider.data.length})',
+                  '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.grey.shade700,
                   ),
                 ),
-                Spacer(),
+                // Spacer(),
                 GestureDetector(
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
               ],
             ),
-            RowFindByStatus(provider: widget.provider),
+            RowFindByStatusCcdc(provider: widget.provider),
           ],
         );
   }
 
   Widget viewAction(ToolAndMaterialTransferDto item) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.book_outlined,
-        tooltip: 'Biên bản bản giao',
-        iconColor: ColorValue.lightAmber,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed:
-            () => PropertyHandoverMinutes.showPopup(
-              context,
-              listAssetHandover
-                  .where((itemAH) => itemAH.id == item.idAssetHandover)
-                  .toList(),
-            ),
-      ),
+      // ActionButtonConfig(
+      //   icon: Icons.book_outlined,
+      //   tooltip: 'Biên bản bản giao',
+      //   iconColor: ColorValue.lightAmber,
+      //   backgroundColor: Colors.red.shade50,
+      //   borderColor: Colors.red.shade200,
+      //   onPressed:
+      //       () => PropertyHandoverMinutes.showPopup(
+      //         context,
+      //         listAssetHandover
+      //             .where((itemAH) => itemAH.id == item.id)
+      //             .toList(),
+      //       ),
+      // ),
       ActionButtonConfig(
         icon: Icons.visibility,
         tooltip: 'Xem',
         iconColor: ColorValue.cyan,
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
-        onPressed:
-            () => showWebViewPopup(
-              context,
-              url: url,
-              title: item.documentName ?? 'Tài liệu',
-              width: MediaQuery.of(context).size.width * 0.8,
-              height: MediaQuery.of(context).size.height * 0.9,
-            ),
+        onPressed: () {
+          UserInfoDTO userInfo = widget.provider.userInfo!;
+          String url =
+              '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder:
+                (context) => Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24.0,
+                    right: 24.0,
+                    top: 16.0,
+                    bottom: 16.0,
+                  ),
+                  child: CommonContract(
+                    contractType: ContractPage.toolAndMaterialTransferPage(item),
+                    signatureList: <String>[url],
+                    idTaiLieu: item.id.toString(),
+                    idNguoiKy: userInfo.tenDangNhap,
+                    tenNguoiKy: userInfo.hoTen,
+                  ),
+                ),
+          );
+        },
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.status != 0 ? null : 'Xóa',
-        iconColor: item.status != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: item.trangThai != 0 ? null : 'Xóa',
+        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.status != 0) {widget.provider.deleteItem(item.id ?? '')},
+              if (item.trangThai == 0)
+                {
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa nhóm tài sản',
+                    message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                    highlight: item.tenPhieu!,
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      context.read<DieuDongTaiSanBloc>().add(
+                        DeleteDieuDongEvent(context, item.id!),
+                      );
+                    },
+                  ),
+                },
             },
       ),
     ]);
   }
 
+  String getName(int type) {
+    switch (type) {
+      case 1:
+        return 'Phiếu duyệt cấp phát tài sản';
+      case 2:
+        return 'Phiếu duyệt chuyển tài sản';
+      case 3:
+        return 'Phiếu duyệt thu hồi tài sản';
+    }
+    return '';
+  }
+
   void _callGetListAssetHandover() {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      // assetHandoverBloc.add(
-      //   GetListDieuDongTaiSanEvent(context: context, idCongTy: idCongTy),
-      // );
+      assetHandoverBloc.add(
+        GetListDieuDongTaiSanEvent(
+          context,
+          widget.typeAssetTransfer,
+          widget.idCongTy,
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

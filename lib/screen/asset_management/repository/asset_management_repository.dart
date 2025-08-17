@@ -39,21 +39,6 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         AssetManagementDto.fromJson,
       );
-
-      // Lấy danh sách tài sản con cho từng tài sản
-      List<AssetManagementDto> assets = result['data'];
-      for (var i = 0; i < assets.length; i++) {
-        if (assets[i].id != null) {
-          final childAssetsResult = await getListChildAssets(assets[i].id!);
-          if (childAssetsResult['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-            List<ChildAssetDto> childAssets = (childAssetsResult['data'] as List<dynamic>)
-                .map((e) => ChildAssetDto.fromJson(e))
-                .toList();
-            assets[i] = assets[i].copyWith(childAssets: childAssets);
-          }
-        }
-      }
-      result['data'] = assets;
     } catch (e) {
       log("Error at getListAssetManagement - AssetManagementRepository: $e");
     }
@@ -62,7 +47,36 @@ class AssetManagementRepository extends ApiBase {
   }
 
   //get list child assets
-  Future<Map<String, dynamic>> getListChildAssets(String idTaiSan) async {
+  // Future<Map<String, dynamic>> getListChildAssets(String idTaiSan) async {
+  //   List<ChildAssetDto> list = [];
+  //   Map<String, dynamic> result = {
+  //     'data': list,
+  //     'status_code': Numeral.STATUS_CODE_DEFAULT,
+  //   };
+
+  //   try {
+  //     String url = '${EndPointAPI.CHILD_ASSETS}/$idTaiSan';
+  //     final response = await get(url);
+  //     if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+  //       result['status_code'] = response.statusCode;
+  //       return result;
+  //     }
+
+  //     result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+  //     // Parse response data using the common ResponseParser utility
+  //     result['data'] = ResponseParser.parseToList<ChildAssetDto>(
+  //       response.data,
+  //       ChildAssetDto.fromJson,
+  //     );
+  //   } catch (e) {
+  //     log("Error at getListChildAssets - AssetManagementRepository: $e");
+  //   }
+
+  //   return result;
+  // }
+  //get list child assets
+  Future<Map<String, dynamic>> getAllChildAssets(String idCongTy) async {
     List<ChildAssetDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -70,10 +84,8 @@ class AssetManagementRepository extends ApiBase {
     };
 
     try {
-      final response = await get(
-        EndPointAPI.CHILD_ASSETS,
-        queryParameters: {'idTaiSan': idTaiSan},
-      );
+      String url = '${EndPointAPI.CHILD_ASSETS}/getall/$idCongTy';
+      final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

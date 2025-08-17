@@ -172,7 +172,12 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: ToolAndMaterialTransferView(),
+                  child: ToolAndMaterialTransferView(
+                    typeAssetTransfer:
+                        state.extra != null && state.extra is String
+                            ? int.tryParse(state.extra as String) ?? 0
+                            : 0,
+                  ),
                 ),
           ),
           GoRoute(

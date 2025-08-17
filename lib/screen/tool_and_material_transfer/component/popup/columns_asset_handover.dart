@@ -3,8 +3,8 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-import '../../../asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
-import '../../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import '../../model/detail_tool_and_material_transfer_dto.dart';
+import '../../model/tool_and_material_transfer_dto.dart';
 
 abstract class AssetHandoverColumns {
   static Color getStatusColor(int status) {
@@ -45,7 +45,7 @@ abstract class AssetHandoverColumns {
     }
   }
 
-  static Widget buildMovementDetails(List<ChiTietDieuDongTaiSan> movementDetails) {
+  static Widget buildMovementDetails(List<DetailToolAndMaterialTransferDto> movementDetails) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 48.0),
       child: SingleChildScrollView(
@@ -62,7 +62,7 @@ abstract class AssetHandoverColumns {
     );
   }
 
-  static Widget buildMovementDetailItem(ChiTietDieuDongTaiSan detail) {
+  static Widget buildMovementDetailItem(DetailToolAndMaterialTransferDto detail) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       margin: const EdgeInsets.only(bottom: 2),
@@ -71,7 +71,7 @@ abstract class AssetHandoverColumns {
         borderRadius: BorderRadius.circular(4),
       ),
       child: SGText(
-        text: detail.tenTaiSan ?? '',
+        text: detail.tenCCDCVatTu,
         size: 12,
         fontWeight: FontWeight.w500,
         textAlign: TextAlign.left,
@@ -79,7 +79,7 @@ abstract class AssetHandoverColumns {
     );
   }
 
-  static Widget buildActions(BuildContext context, DieuDongTaiSanDto item) {
+  static Widget buildActions(BuildContext context, ToolAndMaterialTransferDto item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -151,7 +151,7 @@ abstract class AssetHandoverColumns {
     );
   }
 
-  static void showDocument(BuildContext context, DieuDongTaiSanDto item) {
+  static void showDocument(BuildContext context, ToolAndMaterialTransferDto item) {
     // Tạo data với thông tin menu selection
     Map<String, dynamic> navigationData = {
       'AssetHandoverDto': item,
