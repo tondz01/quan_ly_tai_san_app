@@ -20,6 +20,9 @@ class AssetDepreciationList extends StatefulWidget {
 class _AssetDepreciationListState extends State<AssetDepreciationList> {
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
+    'ngayCuoiKyKh',
+    'namCuaKy',
+    'thangCuaKy',
     'butToanKhauHao',
     'boPhanSuDung',
     'taiSanKhauHao',
@@ -39,6 +42,21 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'ngayCuoiKyKh',
+        label: 'Ngày cuối kỳ Kh',
+        isChecked: visibleColumnIds.contains('ngayCuoiKyKh'),
+      ),
+      ColumnDisplayOption(
+        id: 'namCuaKy',
+        label: 'Năm của kỳ',
+        isChecked: visibleColumnIds.contains('namCuaKy'),
+      ),
+      ColumnDisplayOption(
+        id: 'thangCuaKy',
+        label: 'Tháng của kỳ',
+        isChecked: visibleColumnIds.contains('thangCuaKy'),
+      ),
       ColumnDisplayOption(
         id: 'butToanKhauHao',
         label: 'Bút toán khấu hao',
@@ -83,6 +101,33 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'ngayCuoiKyKh':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Ngày cuối kỳ Kh',
+              getValue: (item) => item.ngayVaoSo.toString(),
+              width: 120,
+            ),
+          );
+          break;
+        case 'namCuaKy':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Năm của kỳ',
+              getValue: (item) => item.ngayVaoSo?.year.toString() ?? '',
+              width: 80,
+            ),
+          );
+          break;
+        case 'thangCuaKy':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Tháng của kỳ',
+              getValue: (item) => item.ngayVaoSo?.month.toString() ?? '',
+              width: 80,
+            ),
+          );
+          break;
         case 'butToanKhauHao':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
@@ -169,12 +214,9 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildAssetManagementTable(),
-      ],
+      children: [_buildAssetManagementTable()],
     );
   }
-
 
   void _showColumnDisplayPopup() async {
     await showColumnDisplayPopup(
