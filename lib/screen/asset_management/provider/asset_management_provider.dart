@@ -147,11 +147,16 @@ class AssetManagementProvider with ChangeNotifier {
     reset();
     _userInfo = AccountHelper.instance.getUserInfo();
     onLoadItemDropdown();
-    isShowInput = false;
-    isShowCollapse = false;
+    onCloseDetail(context);
     isShowInputKhauHao = false;
     isShowCollapseKhauHao = false;
     getDataAll(context);
+    notifyListeners();
+  }
+
+  void onCloseDetail(BuildContext context) {
+    _isShowCollapse = true;
+    _isShowInput = false;
     notifyListeners();
   }
 
@@ -212,10 +217,11 @@ class AssetManagementProvider with ChangeNotifier {
   List<ChildAssetDto> getListChildAssetsByIdAsset(String idTaiSan) {
     List<ChildAssetDto> list = [];
     for (var element in _dataChildAssets!) {
-      if (element.idTaiSan == idTaiSan) {
+      if (element.idTaiSanCha == idTaiSan) {
         list.add(element);
       }
     }
+    log('getListChildAssetsByIdAsset: ${list.length}');
     return list;
   }
 
@@ -283,6 +289,7 @@ class AssetManagementProvider with ChangeNotifier {
     //   _filteredData = List.from(_data!);
     // }
     getDataAll(context);
+    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     notifyListeners();
   }
 
@@ -312,11 +319,6 @@ class AssetManagementProvider with ChangeNotifier {
             child: Text(element.tenNhom ?? ''),
           ),
       ];
-      log('------------------------------------------------');
-      log(
-        '----------_itemsAssetGroup: ${_itemsAssetGroup?.length}---------------',
-      );
-      log('------------------------------------------------');
     }
     notifyListeners();
   }
@@ -380,6 +382,23 @@ class AssetManagementProvider with ChangeNotifier {
   ) {
     _error = null;
     _dataChildAssets = state.data;
+    notifyListeners();
+  }
+
+  void updateAssetSuccess(
+    BuildContext context,
+    UpdateAssetSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhật thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
+
+  deleteAssetSuccess(BuildContext context, DeleteAssetSuccessState state) {
+    _error = null;
+    getDataAll(context);
+    AppUtility.showSnackBar(context, 'Xóa thành công!');
     notifyListeners();
   }
 

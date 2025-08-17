@@ -97,10 +97,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   int typeDieuDongTaiSan = 1;
 
-  late int totalEntries;
-  late int totalPages;
-  late int startIndex;
-  late int endIndex;
+  int totalEntries = 0;
+  int totalPages = 1;
+  int startIndex = 0;
+  int endIndex = 0;
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
@@ -275,6 +275,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
     _userInfo = AccountHelper.instance.getUserInfo();
 
+    // Khởi tạo các biến pagination
+    totalEntries = 0;
+    totalPages = 1;
+    startIndex = 0;
+    endIndex = 0;
+    currentPage = 1;
+
     log('message onInit: ${_data?.length} -- ${_dataAsset?.length}');
     controllerDropdownPage = TextEditingController(text: '10');
 
@@ -289,6 +296,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _isShowCollapse = true;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
+    
+    // Reset các biến pagination
+    totalEntries = 0;
+    totalPages = 1;
+    startIndex = 0;
+    endIndex = 0;
+    currentPage = 1;
+    
     log('onDispose DieuDongTaiSanProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
@@ -325,6 +340,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       startIndex = 0;
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
+
+    // Đảm bảo startIndex và endIndex không vượt quá giới hạn
+    if (startIndex < 0) startIndex = 0;
+    if (endIndex > totalEntries) endIndex = totalEntries;
 
     dataPage =
         _filteredData.isNotEmpty
@@ -388,7 +407,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
     } else {
-      _data = state.data;
+      _data = state.data.where((element) => element.loai == typeDieuDongTaiSan).toList();
       _filteredData = List.from(_data!);
       log('message getListDieuDongTaiSanSuccess: ${_data?.length}');
       _updatePagination();

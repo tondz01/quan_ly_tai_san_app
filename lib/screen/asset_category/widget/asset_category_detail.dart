@@ -11,7 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_ev
 import 'package:quan_ly_tai_san_app/screen/asset_category/component/asset_category_form.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/request/asset_category_request.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 class AssetCategoryDetail extends StatefulWidget {
@@ -240,9 +239,6 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
     }
   }
 
-  void _cancelChanges() {
-    log('message: _cancelChanges');
-  }
 
   String getDepreciationMethod(int type) {
     String nameDepreciationMethod = 'Đường thẳng';

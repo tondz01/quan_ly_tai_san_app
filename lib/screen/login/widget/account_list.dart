@@ -41,6 +41,7 @@ class _AccountListState extends State<AccountList> {
     'nguoiCapNhat',
     'idCongTy',
     'rule',
+    'actions'
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -104,6 +105,11 @@ class _AccountListState extends State<AccountList> {
         id: 'rule',
         label: 'Quyền',
         isChecked: visibleColumnIds.contains('rule'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('actions'),
       ),
     ];
   }
@@ -199,6 +205,16 @@ class _AccountListState extends State<AccountList> {
             TableBaseConfig.columnTable<UserInfoDTO>(
               title: 'Công ty',
               getValue: (item) => item.idCongTy.toString(),
+              width: 120,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<UserInfoDTO>(
+              title: '',
+              cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
             ),

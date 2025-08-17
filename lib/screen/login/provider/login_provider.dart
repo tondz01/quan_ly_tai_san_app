@@ -83,6 +83,72 @@ class LoginProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Logout method
+  void logout(BuildContext context) {
+    try {
+      // Reset trạng thái đăng nhập
+      _isLoggedIn = false;
+      _userInfo = null;
+      _users = null;
+      _nhanViens = null;
+      _error = null;
+      _isLoading = false;
+      
+      // Xóa thông tin user khỏi storage
+      AccountHelper.instance.setUserInfo(null);
+      AccountHelper.instance.setAuthInfo(null);
+      AccountHelper.instance.setToken('');
+      AccountHelper.instance.setRememberLogin(false);
+      
+      // Thông báo cho UI cập nhật
+      notifyListeners();
+      
+      // Chuyển về màn hình login
+      if (context.mounted) {
+        context.go(AppRoute.login.path);
+      }
+      
+      log('Logout thành công');
+    } catch (e) {
+      log('Lỗi khi logout: $e');
+      _error = 'Có lỗi xảy ra khi đăng xuất';
+      notifyListeners();
+    }
+  }
+
+  // Force logout (khi token hết hạn hoặc có lỗi)
+  void forceLogout(BuildContext context, {String? reason}) {
+    try {
+      // Reset trạng thái đăng nhập
+      _isLoggedIn = false;
+      _userInfo = null;
+      _users = null;
+      _nhanViens = null;
+      _error = reason ?? 'Phiên đăng nhập đã hết hạn';
+      _isLoading = false;
+      
+      // Xóa thông tin user khỏi storage
+      AccountHelper.instance.setUserInfo(null);
+      AccountHelper.instance.setAuthInfo(null);
+      AccountHelper.instance.setToken('');
+      AccountHelper.instance.setRememberLogin(false);
+      
+      // Thông báo cho UI cập nhật
+      notifyListeners();
+      
+      // Chuyển về màn hình login
+      if (context.mounted) {
+        context.go(AppRoute.login.path);
+      }
+      
+      log('Force logout: ${reason ?? "Phiên đăng nhập đã hết hạn"}');
+    } catch (e) {
+      log('Lỗi khi force logout: $e');
+      _error = 'Có lỗi xảy ra khi đăng xuất';
+      notifyListeners();
+    }
+  }
+
   getUsersSuccess(BuildContext context, GetUsersSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
@@ -98,6 +164,12 @@ class LoginProvider with ChangeNotifier {
     _error = null;
     getDataAll(context);
     AppUtility.showSnackBar(context, 'Tạo account thành công');
+    notifyListeners();
+  }
+  deleteUserSuccess(BuildContext context, DeleteUserSuccessState state) {
+    _error = null;
+    getDataAll(context);
+    AppUtility.showSnackBar(context, 'Xóa account thành công');
     notifyListeners();
   }
 

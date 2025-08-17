@@ -124,8 +124,7 @@ class AuthRepository extends ApiBase {
   Future<Response<void>> deleteUser(String id) async {
     try {
       final response = await delete(
-        EndPointAPI.ACCOUNT,
-        queryParameters: {'id': id},
+        '${EndPointAPI.ACCOUNT}/$id',
       );
       // Don't try to parse response.data if it's empty
       return Response<void>(

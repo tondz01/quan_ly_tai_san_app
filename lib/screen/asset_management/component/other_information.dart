@@ -190,7 +190,7 @@ Widget buildOtherInformation(
       CommonFormInput(
         label: 'Số lượng',
         controller: ctrlSoLuong,
-        isEditing: isEditing,
+        isEditing: false,
         textContent: ctrlSoLuong.text,
         fieldName: 'soLuong',
         inputType: TextInputType.number,

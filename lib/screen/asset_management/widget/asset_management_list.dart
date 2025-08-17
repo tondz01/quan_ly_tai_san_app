@@ -203,7 +203,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Số lượng TS con',
-              getValue: (item) => item.soLuong?.toString() ?? '',
+              getValue:
+                  (item) =>
+                      widget.provider
+                          .getListChildAssetsByIdAsset(item.id ?? '')
+                          .length
+                          .toString(),
               width: 120,
             ),
           );

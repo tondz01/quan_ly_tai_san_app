@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 import '../../../common/page/contract_page.dart';
 import '../../asset_transfer/component/config_view_asset_transfer.dart';
 import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import '../views/asset_move_report.dart';
 
 class ReportScreen extends StatefulWidget {
   final String idCongty;
@@ -104,6 +106,7 @@ class _ReportScreenState extends State<ReportScreen> {
                             data: _list,
                             horizontalController: ScrollController(),
                             onRowTap: (item) async {
+                              UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
                               item = await DieuDongTaiSanRepository().getById(item.id.toString());
                               if (mounted) {
                                 showDialog(
@@ -112,12 +115,12 @@ class _ReportScreenState extends State<ReportScreen> {
                                   builder:
                                       (context) => Padding(
                                         padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
-                                        child: AssetMoveReport(
+                                        child: CommonContract(
                                           contractType: ContractPage.assetMovePage(item),
                                           signatureList: <String>['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
                                           idTaiLieu: item.id.toString(),
-                                          idNguoiKy: "thanhtonvk",
-                                          tenNguoiKy: "Do Thanh Ton",
+                                          idNguoiKy: userInfo.tenDangNhap,
+                                          tenNguoiKy: userInfo.hoTen,
                                         ),
                                       ),
                                 );

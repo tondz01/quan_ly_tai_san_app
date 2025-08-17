@@ -29,12 +29,11 @@ class MaterialIconButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(
         icon,
-        color: foregroundColor ?? ColorValue.primaryBlue,
+        color: foregroundColor ?? Colors.amberAccent,
         size: size ?? 20,
       ),
       tooltip: tooltip,
       style: IconButton.styleFrom(
-        backgroundColor: backgroundColor ?? ColorValue.neutral100,
         shape: RoundedRectangleBorder(
           borderRadius: borderRadius ?? BorderRadius.circular(8),
         ),
