@@ -409,9 +409,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               .where((item) => item.loai == typeToolAndMaterialTransfer)
               .toList();
       _filteredData = List.from(_data!);
-      log('message getListToolAndMaterialTransferSuccess: ${_data?.length}');
-      _updatePagination();
     }
+    _updatePagination();
     notifyListeners();
   }
 

@@ -33,7 +33,7 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     List<DieuDongTaiSanDto> dieuDongTaiSans = await DieuDongTaiSanRepository()
-        .getAll(event.idCongTy.toString(), event.typeAssetTransfer);
+        .getAll( event.typeAssetTransfer);
     emit(DieuDongTaiSanLoadingDismissState());
     emit(GetListDieuDongTaiSanSuccessState(data: dieuDongTaiSans));
   }

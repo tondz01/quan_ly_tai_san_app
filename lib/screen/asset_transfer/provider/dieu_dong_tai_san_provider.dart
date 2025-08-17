@@ -296,14 +296,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _isShowCollapse = true;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
-    
+
     // Reset các biến pagination
     totalEntries = 0;
     totalPages = 1;
     startIndex = 0;
     endIndex = 0;
     currentPage = 1;
-    
+
     log('onDispose DieuDongTaiSanProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
@@ -407,11 +407,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
     } else {
-      _data = state.data.where((element) => element.loai == typeDieuDongTaiSan).toList();
+      _data =
+          state.data
+              .where((element) => element.loai == typeDieuDongTaiSan)
+              .toList();
       _filteredData = List.from(_data!);
-      log('message getListDieuDongTaiSanSuccess: ${_data?.length}');
-      _updatePagination();
     }
+    _updatePagination();
     notifyListeners();
   }
 
@@ -544,8 +546,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       "AssetTransferProvider",
       "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}",
     );
-    final bloc = context.read<DieuDongTaiSanBloc>();
-    bloc.add(CreateDieuDongEvent(context, request, requestDetail));
+    if (context.mounted) {
+      final bloc = context.read<DieuDongTaiSanBloc>();
+      bloc.add(CreateDieuDongEvent(context, request, requestDetail));
+    }
 
     notifyListeners();
   }
