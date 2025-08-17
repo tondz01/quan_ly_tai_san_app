@@ -29,6 +29,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/t
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:path/path.dart' as path;
 
 import '../bloc/tool_and_material_transfer_bloc.dart';
 import '../bloc/tool_and_material_transfer_event.dart';
@@ -819,7 +820,8 @@ class _ToolAndMaterialTransferDetailState
               ),
 
               SizedBox(height: 10),
-              if (item != null && item!.detailToolAndMaterialTransfers!.isNotEmpty)
+              if (item != null &&
+                  item!.detailToolAndMaterialTransfers!.isNotEmpty)
                 previewDocumentAssetTransfer(item),
             ],
           ),
@@ -868,9 +870,17 @@ class _ToolAndMaterialTransferDetailState
     return InkWell(
       onTap: () {
         if (item == null) return;
-        UserInfoDTO userInfo = widget.provider.userInfo!;
         log('message item: ${jsonEncode(item)}');
-        String url = '${Config.baseUrl}/api/upload/download/${item.tenFile}';
+        UserInfoDTO userInfo = widget.provider.userInfo!;
+        log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
+        NhanVien nhanVien = widget.provider.getNhanVienByID(
+          userInfo.tenDangNhap,
+        );
+        String tenFile = path.basename(nhanVien.chuKy.toString());
+        log('nhanVien.chuKy: ${nhanVien.chuKy}');
+        String url = '${Config.baseUrl}/api/upload/download/$tenFile';
+
+        log('message String url: $url');
         showDialog(
           context: context,
           barrierDismissible: true,
@@ -915,7 +925,10 @@ class _ToolAndMaterialTransferDetailState
     );
   }
 
-  ToolAndMaterialTransferDto _createToolAndMaterialTransRequest(int type, int state) {
+  ToolAndMaterialTransferDto _createToolAndMaterialTransRequest(
+    int type,
+    int state,
+  ) {
     return ToolAndMaterialTransferDto(
       id: controllerSoChungTu.text,
       soQuyetDinh: controllerSoChungTu.text,
@@ -1014,7 +1027,10 @@ class _ToolAndMaterialTransferDetailState
         _selectedFileBytes ?? Uint8List(0),
       );
     } else if (item != null && isEditing) {
-      final request = _createToolAndMaterialTransRequest(widget.type, item!.trangThai ?? 0);
+      final request = _createToolAndMaterialTransRequest(
+        widget.type,
+        item!.trangThai ?? 0,
+      );
       // Cập nhật chi tiết nếu có thay đổi
       request.copyWith(ngayCapNhat: userInfo.tenDangNhap);
       if (_detailsChanged()) {
