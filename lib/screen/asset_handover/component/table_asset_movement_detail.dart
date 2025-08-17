@@ -2,11 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_movement_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 
 class TableAssetMovementDetail extends StatefulWidget {
-  final List<AssetHandoverMovementDto>? item;
-  const TableAssetMovementDetail({super.key, this.item});
+  final List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization;
+  const TableAssetMovementDetail({super.key, this.listDetailAssetMobilization});
 
   @override
   State<TableAssetMovementDetail> createState() => _TableAssetMovementDetailState();
@@ -14,7 +14,22 @@ class TableAssetMovementDetail extends StatefulWidget {
 
 class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
   final ScrollController _scrollController = ScrollController();
-  bool isExpanded = false;
+  bool isExpanded = true;
+  String getHienTrang(int hienTrang) {
+    log('hienTrang: $hienTrang');
+    switch (hienTrang) {
+      case 0:
+        return 'Đang sử dụng';
+      case 1:
+        return 'Chờ sử lý';
+      case 2:
+        return 'Không sử dụng';
+      case 3:
+        return 'Hỏng';
+      default:
+        return '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +37,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
       onTap: () {
         setState(() {
           isExpanded = !isExpanded;
-          log('isExpanded: $isExpanded');
         });
-        // Gọi callback nếu có
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -37,23 +50,14 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
           children: [
             Row(
               children: [
-                Icon(
-                  isExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: Colors.grey[600],
-                ),
+                Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
                   'Chi tiết tài sản điều chuyển',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[700]),
                 ),
                 const Spacer(),
-                Text(
-                  isExpanded ? 'Thu gọn' : 'Mở rộng',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
+                Text(isExpanded ? 'Thu gọn' : 'Mở rộng', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
               ],
             ),
             AnimatedCrossFade(
@@ -63,11 +67,10 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                 interactive: true,
                 child: SingleChildScrollView(
                   controller: _scrollController,
-                  
                   scrollDirection: Axis.horizontal,
-                  child: SgEditableTable<AssetHandoverMovementDto>(
-                    initialData: widget.item ?? [],
-                    createEmptyItem: AssetHandoverMovementDto.empty,
+                  child: SgEditableTable<ChiTietDieuDongTaiSan>(
+                    initialData: widget.listDetailAssetMobilization ?? [],
+                    createEmptyItem: ChiTietDieuDongTaiSan.empty,
                     rowHeight: 40.0,
                     headerBackgroundColor: Colors.grey.shade50,
                     oddRowBackgroundColor: Colors.white,
@@ -76,65 +79,61 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                     showHorizontalLines: true,
                     addRowText: 'Thêm một dòng',
                     isEditing: false, // Pass the editing state
-                    rowEditableDecider: (item, index) => item.quantity != null,
                     onDataChanged: (data) {
                       log('Asset movement data changed: ${data.length} items');
                     },
                     columns: [
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'asset',
-                        title: 'Tài sản',
+                        title: 'Tên tài sản',
                         titleAlignment: TextAlign.center,
-                        width: 250,
-                        getValue: (item) => item.name,
-                        setValue: (item, value) => item.name = value.name,
-                        sortValueGetter: (item) => item.name,
+                        width: 120,
+                        getValue: (item) => item.tenTaiSan,
+                        setValue: (item, value) {},
+                        sortValueGetter: (item) => item.tenTaiSan,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'unit',
                         title: 'Đơn vị tính',
                         titleAlignment: TextAlign.center,
                         width: 100,
-                        getValue: (item) => item.measurementUnit,
-                        setValue: (item, value) => item.measurementUnit = value.measurementUnit,
-                        sortValueGetter: (item) => item.measurementUnit,
+                        getValue: (item) => item.donViTinh,
+                        setValue: (item, value) {},
+                        sortValueGetter: (item) => item.donViTinh,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'quantity',
                         title: 'Số lượng',
                         titleAlignment: TextAlign.center,
                         width: 100,
-                        getValue: (item) => item.quantity,
-                        setValue: (item, value) => item.quantity = value.quantity,
-                        sortValueGetter:
-                            (item) => int.tryParse(item.quantity ?? '0') ?? 0,
+                        getValue: (item) => item.soLuong,
+                        setValue: (item, value) {},
+                        sortValueGetter: (item) => item.soLuong,
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
                         field: 'condition',
                         title: 'Tình trạng kỹ thuật',
                         titleAlignment: TextAlign.center,
                         width: 150,
-                        getValue: (item) => item.setCondition,
-                        setValue: (item, value) => item.setCondition = value.setCondition,
-                        sortValueGetter: (item) => item.setCondition,
+                        getValue: (item) => getHienTrang(item.hienTrang),
+                        setValue: (item, value) {},
+                        sortValueGetter: (item) => getHienTrang(item.hienTrang),
                       ),
-                      SgEditableColumn<AssetHandoverMovementDto>(
-                        field: 'countryOfOrigin',
-                        title: 'Nước sản xuất',
+                      SgEditableColumn<ChiTietDieuDongTaiSan>(
+                        field: 'node',
+                        title: 'Ghi chú',
                         titleAlignment: TextAlign.center,
-                        width: 150,
-                        getValue: (item) => item.countryOfOrigin,
-                        setValue: (item, value) => item.countryOfOrigin = value.countryOfOrigin,
-                        sortValueGetter: (item) => item.countryOfOrigin,
+                        width: 100,
+                        getValue: (item) => item.ghiChu,
+                        setValue: (item, value) {},
+                        sortValueGetter: (item) => item.ghiChu,
+                        isEditable: false,
                       ),
                     ],
                   ),
                 ),
               ),
-              crossFadeState:
-                  isExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
+              crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
               duration: Duration(milliseconds: 200),
             ),
           ],

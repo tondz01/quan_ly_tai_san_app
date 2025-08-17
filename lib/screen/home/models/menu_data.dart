@@ -118,8 +118,12 @@ class AppMenuData {
     MenuItem(
       label: 'Báo cáo',
       reportSubItems: [
-        SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.inventoryReconciliationReport.path),
-        SubMenuItem(label: 'Biên bản kiẻm kê', route: AppRoute.stocktakingReport.path),
+        SubMenuItem(label: "Báo cáo Cấp phát tài sản trong kỳ", route: AppRoute.allocationReport.path),
+        SubMenuItem(label: "Báo cáo Điều chuyển tài sản trong kỳ", route: AppRoute.transferReport.path),
+        SubMenuItem(label: "Báo cáo Thu hồi tài sản trong kỳ", route: AppRoute.recoveryReport.path),
+        SubMenuItem(label: 'Biên bản kiểm kê', route: AppRoute.bienBanKiemKe.path),
+        SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.bienBanDoiChieu.path),
+
         SubMenuItem(label: 'Sổ tài sản cố định', route: AppRoute.fixedAssetRegister.path),
         SubMenuItem(label: 'Sổ tài sản cố định thông tư 200', route: AppRoute.fixedAssetRegisterCircular200.path),
         SubMenuItem(label: 'Sổ theo dõi', route: AppRoute.trackingRecord.path),
