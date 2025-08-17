@@ -5,8 +5,8 @@ class AssetGroupRequest {
   final String idCongTy;
   final DateTime ngayTao;
   final DateTime ngayCapNhat;
-  final String nguoiTao;
-  final String nguoiCapNhat;
+  final String? nguoiTao;
+  final String? nguoiCapNhat;
   final bool isActive;
 
   AssetGroupRequest({
@@ -16,8 +16,8 @@ class AssetGroupRequest {
     required this.idCongTy,
     required this.ngayTao,
     required this.ngayCapNhat,
-    required this.nguoiTao,
-    required this.nguoiCapNhat,
+    this.nguoiTao,
+    this.nguoiCapNhat,
     required this.isActive,
   });
 
@@ -44,8 +44,8 @@ class AssetGroupRequest {
       'idCongTy': idCongTy,
       'ngayTao': ngayTao.toIso8601String(),
       'ngayCapNhat': ngayCapNhat.toIso8601String(),
-      'nguoiTao': nguoiTao,
-      'nguoiCapNhat': nguoiCapNhat,
+      'nguoiTao': nguoiTao ?? '',
+      'nguoiCapNhat': nguoiCapNhat ?? '',
       'isActive': isActive,
     };
   }

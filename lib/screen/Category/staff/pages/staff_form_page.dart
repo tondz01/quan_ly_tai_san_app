@@ -55,7 +55,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   bool _kyNhay = false;
   bool _kyThuong = false;
   bool _kySo = false;
-  
+
   @override
   void initState() {
     _initData();
@@ -68,7 +68,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _kieuKyController = TextEditingController(
       text: widget.staff?.kieuKy?.toString() ?? '',
     );
-    _changeTypeKy(widget.staff?.kieuKy ?? 0);
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
@@ -108,6 +107,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
     );
     _pinController = TextEditingController(text: widget.staff?.pin ?? '');
     _laQuanLy = widget.staff?.laQuanLy ?? false;
+    _kyNhay = widget.staff?.kyNhay ?? false;
+    _kyThuong = widget.staff?.kieuKy == 2;
+    _kySo = widget.staff?.kieuKy == 3;
   }
 
   @override
@@ -143,7 +145,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
     if (_formKey.currentState!.validate()) {
       log('check validate');
-      
+
       // Tạo đối tượng nhân viên từ dữ liệu form
       final NhanVien staff;
       if (widget.staff != null) {
@@ -165,7 +167,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
           phongBanId: _phongBan?.id,
           chuKyData: _chuKyData,
           ngayCapNhat: DateTime.now().toIso8601String(),
-          nguoiCapNhat: userInfoDTO?.tenDangNhap ?? '',
+          nguoiCapNhat: userInfoDTO?.id ?? '',
+          kyNhay: _kyNhay,
+          kyThuong: _kyThuong,
+          kySo: _kySo,
         );
       } else {
         log('thêm mới nhân viên');
@@ -186,17 +191,20 @@ class _StaffFormPageState extends State<StaffFormPage> {
           phongBanId: _phongBan?.id,
           chuKyData: _chuKyData,
           ngayTao: DateTime.now(),
-          nguoiTao: userInfoDTO?.tenDangNhap ?? '',
+          nguoiTao: userInfoDTO?.id ?? '',
+          kyNhay: _kyNhay,
+          kyThuong: _kyThuong,
+          kySo: _kySo,
         );
       }
-      
+
       // Thêm hoặc cập nhật nhân viên
       if (widget.staff == null) {
         context.read<StaffBloc>().add(AddStaff(staff));
       } else {
         context.read<StaffBloc>().add(UpdateStaff(staff));
       }
-      
+
       // Gọi callback nếu có
       if (widget.onSaved != null) {
         widget.onSaved!();
@@ -320,133 +328,8 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       .toList(),
                               onChanged: (v) => setState(() => _chucVuDTO = v),
                             ),
+                            const SizedBox(height: 16),
 
-                            const SizedBox(height: 16),
-                            Container(
-                              alignment: Alignment.centerLeft,
-                              child: InkWell(
-                                onTap: _pickFile,
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                    horizontal: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    color: Colors.grey.shade100,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.upload_file,
-                                        color: Colors.blue,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Builder(
-                                          builder: (_) {
-                                            if (selectedFile != null) {
-                                              return Text(
-                                                "Chữ ký: ${selectedFile!.path.split('/').last}",
-                                                style: const TextStyle(
-                                                  color: Colors.black,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              );
-                                            }
-                                            final currentSignature =
-                                                widget.staff?.chuKy;
-                                            if (currentSignature != null &&
-                                                currentSignature.isNotEmpty) {
-                                              print(
-                                                "${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}",
-                                              );
-                                              return Row(
-                                                children: [
-                                                  ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          6,
-                                                        ),
-                                                    child: SizedBox(
-                                                      height: 32,
-                                                      child: Image.network(
-                                                        '${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}',
-                                                        fit: BoxFit.contain,
-                                                        errorBuilder: (
-                                                          context,
-                                                          error,
-                                                          stackTrace,
-                                                        ) {
-                                                          return SizedBox();
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  Text(
-                                                    'Nhấn để chọn file chữ ký mới',
-                                                    style: TextStyle(
-                                                      color:
-                                                          Colors.grey.shade600,
-                                                    ),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              );
-                                            }
-                                            return Text(
-                                              'Nhấn để chọn file chữ ký (.png, .jpg...)',
-                                              style: TextStyle(
-                                                color: Colors.grey.shade600,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      if (selectedFile != null)
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.close,
-                                            size: 20,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed:
-                                              () => setState(
-                                                () => selectedFile = null,
-                                              ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _laQuanLy,
-                                  onChanged:
-                                      (val) => setState(
-                                        () => _laQuanLy = val ?? false,
-                                      ),
-                                ),
-                                const Text('Là quản lý'),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          children: [
                             DropdownButtonFormField<NhanVien>(
                               value: _staffDTO,
                               decoration: inputDecoration('Quản lý'),
@@ -468,7 +351,13 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       .toList(),
                               onChanged: (v) => setState(() => _staffDTO = v),
                             ),
-                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          children: [
                             TextFormField(
                               controller: _activityController,
                               decoration: inputDecoration(
@@ -489,19 +378,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             //   decoration: inputDecoration('Kiểu ký'),
                             //   keyboardType: TextInputType.number,
                             // ),
-                            _buildKieuKy(),
-
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _agreementUUIdController,
-                              decoration: inputDecoration('Agreement UUID'),
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _pinController,
-                              decoration: inputDecoration('PIN'),
-                            ),
-                            const SizedBox(height: 16),
                             DropdownButtonFormField<PhongBan>(
                               value: _phongBan,
                               decoration: inputDecoration('Phòng/Ban cấp trên'),
@@ -518,6 +394,26 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       .toList(),
                               onChanged: (v) => setState(() => _phongBan = v),
                             ),
+                            _buildKieuKy(),
+                            if (_kySo)
+                              Column(
+                                children: [
+                                  const SizedBox(height: 16),
+                                  TextFormField(
+                                    controller: _agreementUUIdController,
+                                    decoration: inputDecoration(
+                                      'Agreement UUID',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  TextFormField(
+                                    controller: _pinController,
+                                    decoration: inputDecoration('PIN'),
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            if (_kyNhay || _kyThuong) _buildUploadFileChuKy(),
                           ],
                         ),
                       ),
@@ -568,42 +464,143 @@ class _StaffFormPageState extends State<StaffFormPage> {
     );
   }
 
-  Widget _buildKieuKy() {
-    final kyOptions = [
-      {'text': 'Ký nháy', 'value': _kyNhay, 'type': 1},
-      {'text': 'Ký thường', 'value': _kyThuong, 'type': 2},
-      {'text': 'Ký số', 'value': _kySo, 'type': 3},
-    ];
+  Container _buildUploadFileChuKy() {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: InkWell(
+        onTap: _pickFile,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey.shade100,
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.upload_file, color: Colors.blue),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Builder(
+                  builder: (_) {
+                    if (selectedFile != null) {
+                      return Text(
+                        "Chữ ký: ${selectedFile!.path.split('/').last}",
+                        style: const TextStyle(color: Colors.black),
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    }
+                    final currentSignature = widget.staff?.chuKy;
+                    if (currentSignature != null &&
+                        currentSignature.isNotEmpty) {
+                      print(
+                        "${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}",
+                      );
+                      return Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: SizedBox(
+                              height: 32,
+                              child: Image.network(
+                                '${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return SizedBox();
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Nhấn để chọn file chữ ký mới',
+                            style: TextStyle(color: Colors.grey.shade600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      );
+                    }
+                    return Text(
+                      'Nhấn để chọn file chữ ký (.png, .jpg...)',
+                      style: TextStyle(color: Colors.grey.shade600),
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+              ),
+              if (selectedFile != null)
+                IconButton(
+                  icon: const Icon(Icons.close, size: 20, color: Colors.red),
+                  onPressed: () => setState(() => selectedFile = null),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  Widget _buildKieuKy() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         spacing: 16,
         children: [
           const SGText(text: "Kiểu ký:"),
-          ...kyOptions.map((option) => Row(
-                spacing: 8,
-                children: [
-                  SGText(text: option['text'] as String),
-                  SgCheckbox(
-                    value: option['value'] as bool,
-                    onChanged: (_) => setState(() {
-                      _changeTypeKy(option['type'] as int);
+          Row(
+            spacing: 8,
+            children: [
+              const SGText(text: "Ký nháy"),
+              SgCheckbox(
+                value: _kyNhay,
+                onChanged:
+                    (value) => setState(() {
+                      _kyNhay = value;
+                      _kieuKyController.text = _kyNhay ? '1' : '0';
                     }),
-                  ),
-                ],
-              )),
+              ),
+            ],
+          ),
+          Row(
+            spacing: 8,
+            children: [
+              const SGText(text: "Ký thường"),
+              SgCheckbox(
+                value: _kyThuong,
+                onChanged:
+                    (value) => setState(() {
+                      _kyThuong = value;
+                      _kieuKyController.text = _kyThuong ? '2' : '0';
+                    }),
+              ),
+            ],
+          ),
+          Row(
+            spacing: 8,
+            children: [
+              const SGText(text: "Ký số"),
+              SgCheckbox(
+                value: _kySo,
+                onChanged:
+                    (value) => setState(() {
+                      _kySo = value;
+                      _kieuKyController.text = _kySo ? '3' : '0';
+                    }),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  void _changeTypeKy(int type) {
-    setState(() {
-      _kyNhay = type == 1;
-      _kyThuong = type == 2;
-      _kySo = type == 3;
-      _kieuKyController.text = type.toString();
-    });
-  }
+  // void _changeTypeKy(int type) {
+  //   setState(() {
+  //     _kyNhay = type == 1;
+  //     _kyThuong = type == 2;
+  //     _kySo = type == 3;
+  //     _kieuKyController.text = type.toString();
+  //   });
+  // }
 }

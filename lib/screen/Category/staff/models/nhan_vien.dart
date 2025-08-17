@@ -34,6 +34,11 @@ class NhanVien extends Equatable {
   final DateTime? ngayCapNhat;
   final Uint8List? chuKyData;
 
+  //kiểu ký
+  final bool? kyNhay;
+  final bool? kyThuong;
+  final bool? kySo;
+
   const NhanVien({
     this.id,
     this.hoTen,
@@ -64,6 +69,9 @@ class NhanVien extends Equatable {
     this.phongBanId,
     this.tenPhongBan,
     this.chuKyData,
+    this.kyNhay,
+    this.kyThuong,
+    this.kySo,
   });
 
   factory NhanVien.fromJson(Map<String, dynamic> json) {
@@ -88,7 +96,9 @@ class NhanVien extends Equatable {
       avatar: json['avatar'],
       idCongTy: json['idCongTy'],
       isActive: json['isActive'],
-
+      kyNhay: json['kyNhay'],
+      kyThuong: json['kyThuong'],
+      kySo: json['kySo'],
     );
   }
   NhanVien copyWith({
@@ -121,6 +131,9 @@ class NhanVien extends Equatable {
     String? phongBanId,
     String? tenPhongBan,
     Uint8List? chuKyData,
+    bool? kyNhay,
+    bool? kyThuong,
+    bool? kySo,
   }) {
     return NhanVien(
       id: id ?? this.id,
@@ -150,6 +163,9 @@ class NhanVien extends Equatable {
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
       chuKyData: chuKyData ?? this.chuKyData,
+      kyNhay: kyNhay ?? this.kyNhay,
+      kyThuong: kyThuong ?? this.kyThuong,
+      kySo: kySo ?? this.kySo,
     );
   }
 
@@ -175,6 +191,9 @@ class NhanVien extends Equatable {
       'nguoiTao': nguoiTao,
       'isActive': isActive,
       'phongBanId': phongBanId,
+      'kyNhay': kyNhay,
+      'kyThuong': kyThuong,
+      'kySo': kySo,
     };
   }
 
@@ -205,5 +224,8 @@ class NhanVien extends Equatable {
         isActive,
         ngayTao,
         ngayCapNhat,
+        kyNhay,
+        kyThuong,
+        kySo,
       ];
 }
