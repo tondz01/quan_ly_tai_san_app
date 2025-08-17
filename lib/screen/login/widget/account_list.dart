@@ -196,9 +196,9 @@ class _AccountListState extends State<AccountList> {
           break;
         case 'idCongTy':
           columns.add(
-            TableBaseConfig.columnWidgetBase<UserInfoDTO>(
-              title: '',
-              cellBuilder: (item) => SgCheckbox(value: item.isActive ?? false),
+            TableBaseConfig.columnTable<UserInfoDTO>(
+              title: 'Công ty',
+              getValue: (item) => item.idCongTy.toString(),
               width: 120,
               searchable: true,
             ),
@@ -342,9 +342,7 @@ class _AccountListState extends State<AccountList> {
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {
-                  context.read<LoginBloc>().add(
-                    DeleteUserEvent(item.id),
-                  );
+                  context.read<LoginBloc>().add(DeleteUserEvent(item.id));
                 },
               ),
             },

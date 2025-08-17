@@ -329,6 +329,7 @@ class ContractPage {
   }
 
   static Widget toolAndMaterialTransferPage(ToolAndMaterialTransferDto toolAndMaterialTransferDto) {
+  static Widget toolAndMaterialTransferPage(ToolAndMaterialTransferDto toolAndMaterialTransferDto) {
     return DefaultTextStyle(
       style: GoogleFonts.robotoSerif(),
       child: Column(
@@ -366,6 +367,10 @@ class ContractPage {
 
           SizedBox(height: 24 * SettingPage.scale),
 
+          Text(
+            "Căn cứ vào Quyết định điều động số ${toolAndMaterialTransferDto.soQuyetDinh}, ${toolAndMaterialTransferDto.ngayCapNhat} của Giám đốc Công ty V/v Điều động CCDC - Vật tư từ ${toolAndMaterialTransferDto.tenDonViGiao}  đến  ${toolAndMaterialTransferDto.tenDonViNhan}\n"
+            "Hôm nay, ${toolAndMaterialTransferDto.ngayCapNhat}, tại  ${toolAndMaterialTransferDto.tenDonViNhan}\n",
+            style: GoogleFonts.robotoSerif(height: 1.6),
           SGText(
             text:
                 "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${toolAndMaterialTransferDto.decisionNumber}, ${toolAndMaterialTransferDto.decisionDate} của Giám đốc Công ty V/v Điều động CCDC - Vật tư từ ${toolAndMaterialTransferDto.deliveringUnit}  đến  ${toolAndMaterialTransferDto.receivingUnit}\n"

@@ -7,16 +7,25 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-class AssetTransferRepository extends ApiBase {
+class ToolAndMaterialTransferRepository extends ApiBase {
+  late final DetailToolAndMaterialTransferRepository _detailCcdcVt;
+  
+  ToolAndMaterialTransferRepository() {
+    _detailCcdcVt = DetailToolAndMaterialTransferRepository();
+  }
+  
   // Get danh sách tài sản
-  Future<Map<String, dynamic>> getListDieuDongTaiSan(String idCongTy) async {
-    List<DieuDongTaiSanDto> list = [];
+  Future<Map<String, dynamic>> getListToolAndMaterialTransfer(
+    String idCongTy,
+    int type,
+  ) async {
+    List<ToolAndMaterialTransferDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -24,7 +33,7 @@ class AssetTransferRepository extends ApiBase {
 
     try {
       final response = await get(
-        EndPointAPI.DIEU_DONG_TAI_SAN,
+        EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
         queryParameters: {'idcongty': idCongTy},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -35,23 +44,25 @@ class AssetTransferRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
-        response.data,
-        DieuDongTaiSanDto.fromJson,
+      result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+        response.data.where((e) => e['loai'] == type).toList(),
+        ToolAndMaterialTransferDto.fromJson,
       );
       log('response.data điều động: ${result['data']}');
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      log(
+        "Error at getListToolAndMaterialTransfer - AssetTransferRepository: $e",
+      );
     }
 
     return result;
   }
 
-  Future<Map<String, dynamic>> createAssetTransfer(
-    LenhDieuDongRequest request,
-    List<ChiTietDieuDongRequest> requestDetail,
+  Future<Map<String, dynamic>> createToolAndMaterialTransfer(
+    ToolAndMaterialTransferDto request,
+    List<DetailToolAndMaterialTransferDto> requestDetail,
   ) async {
-    DieuDongTaiSanDto? data;
+    ToolAndMaterialTransferDto? data;
     Map<String, dynamic> result = {
       'data': data,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -59,7 +70,7 @@ class AssetTransferRepository extends ApiBase {
 
     try {
       final response = await post(
-        EndPointAPI.DIEU_DONG_TAI_SAN,
+        EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
         data: request.toJson(),
       );
 
@@ -77,7 +88,7 @@ class AssetTransferRepository extends ApiBase {
 
       for (var detail in requestDetail) {
         final responseDetail = await post(
-          EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
+          EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER,
           data: detail.toJson(),
         );
         final int? statusDetail = responseDetail.statusCode;
@@ -93,9 +104,9 @@ class AssetTransferRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       if (respData is Map<String, dynamic>) {
-        result['data'] = DieuDongTaiSanDto.fromJson(respData);
+        result['data'] = ToolAndMaterialTransferDto.fromJson(respData);
       } else {
-        result['data'] = DieuDongTaiSanDto();
+        result['data'] = ToolAndMaterialTransferDto();
       }
     } catch (e) {
       log("Error at createAsset - AssetManagementRepository: $e");
@@ -210,5 +221,58 @@ class AssetTransferRepository extends ApiBase {
     }
 
     return result;
+  }
+
+  Future<List<ToolAndMaterialTransferDto>> getAllToolAndMeterialTransfer(
+    String idCongTy,
+    int type,
+  ) async {
+    final res = await get(EndPointAPI.TOOL_AND_MATERIAL_TRANSFER, queryParameters: {"idcongty": idCongTy});
+    List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
+        (res.data as List)
+            .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+            .where((e) => e.loai == type)
+            .toList();
+
+    await Future.wait(
+      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+        toolAndMaterialTransfer.detailToolAndMaterialTransfers =
+            await _detailCcdcVt.getAll(
+              toolAndMaterialTransfer.id.toString(),
+            );
+      }),
+    );
+
+    return toolAndMaterialTransfers;
+  }
+
+  Future<ToolAndMaterialTransferDto> getById(String id) async {
+    String url = '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/$id';
+    final res = await get(url);
+    ToolAndMaterialTransferDto toolAndMaterialTransfer =
+        ToolAndMaterialTransferDto.fromJson(res.data);
+    List<DetailToolAndMaterialTransferDto> chiTietDieuDongTS =
+        await _detailCcdcVt.getAll(
+          toolAndMaterialTransfer.id.toString(),
+        );
+    toolAndMaterialTransfer.detailToolAndMaterialTransfers = chiTietDieuDongTS;
+    return toolAndMaterialTransfer;
+  }
+
+  Future<int> create(ToolAndMaterialTransferDto obj) async {
+    final res = await post(EndPointAPI.TOOL_AND_MATERIAL_TRANSFER, data: obj.toJson());
+    return res.data;
+  }
+
+  Future<int> update(String id, ToolAndMaterialTransferDto obj) async {
+    String url = '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/$id';
+    final res = await put(url, data: obj.toJson());
+    return res.data;
+  }
+
+  Future<int> deleteToolAndMaterialTransfer(String id) async {
+    String url = '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/$id';
+    final res = await delete(url);
+    return res.data;
   }
 }
