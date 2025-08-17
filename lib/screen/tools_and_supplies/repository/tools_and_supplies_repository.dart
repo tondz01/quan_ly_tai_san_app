@@ -22,7 +22,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-
+  
     try {
       final response = await get(
         EndPointAPI.TOOLS_AND_SUPPLIES,

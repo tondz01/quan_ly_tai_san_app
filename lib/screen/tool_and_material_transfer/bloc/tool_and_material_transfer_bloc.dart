@@ -33,7 +33,6 @@ class ToolAndMaterialTransferBloc
     emit(ToolAndMaterialTransferLoadingState());
     List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
         await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(
-          event.idCongTy.toString(),
           event.typeAssetTransfer,
         );
     emit(ToolAndMaterialTransferLoadingDismissState());
