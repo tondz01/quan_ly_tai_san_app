@@ -54,7 +54,7 @@ class ToolAndMaterialTransferDetail extends StatefulWidget {
       _ToolAndMaterialTransferDetailState();
 }
 
-final GlobalKey<_ToolAndMaterialTransferDetailState> dieuDongTaiSanDetailKey =
+final dieuDongTaiSanDetailKey =
     GlobalKey<_ToolAndMaterialTransferDetailState>();
 
 class _ToolAndMaterialTransferDetailState
@@ -964,8 +964,8 @@ class _ToolAndMaterialTransferDetailState
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
       ngayTao: DateTime.now().toIso8601String(),
       ngayCapNhat: DateTime.now().toIso8601String(),
-      nguoiTao: '',
-      nguoiCapNhat: '',
+      nguoiTao: widget.provider.userInfo?.id ?? '',
+      nguoiCapNhat: widget.provider.userInfo?.id ?? '',
       coHieuLuc: true,
       loai: type,
       isActive: true,
@@ -1036,9 +1036,11 @@ class _ToolAndMaterialTransferDetailState
       if (_detailsChanged()) {
         await _syncDetails(item!.id!);
       }
-      context.read<ToolAndMaterialTransferBloc>().add(
-        UpdateToolAndMaterialTransferEvent(context, request, item!.id!),
-      );
+      if (mounted) {
+        context.read<ToolAndMaterialTransferBloc>().add(
+          UpdateToolAndMaterialTransferEvent(context, request, item!.id!),
+        );
+      }
     }
   }
 }

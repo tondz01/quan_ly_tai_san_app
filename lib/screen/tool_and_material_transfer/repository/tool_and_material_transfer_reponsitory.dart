@@ -7,6 +7,8 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
@@ -15,11 +17,11 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolAndMaterialTransferRepository extends ApiBase {
   late final DetailToolAndMaterialTransferRepository _detailCcdcVt;
-  
+
   ToolAndMaterialTransferRepository() {
     _detailCcdcVt = DetailToolAndMaterialTransferRepository();
   }
-  
+
   // Get danh sách tài sản
   Future<Map<String, dynamic>> getListToolAndMaterialTransfer(
     String idCongTy,
@@ -224,10 +226,13 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   }
 
   Future<List<ToolAndMaterialTransferDto>> getAllToolAndMeterialTransfer(
-    String idCongTy,
     int type,
   ) async {
-    final res = await get(EndPointAPI.TOOL_AND_MATERIAL_TRANSFER, queryParameters: {"idcongty": idCongTy});
+    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
+
+    final res = await get(
+      '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.id}',
+    );
     List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
         (res.data as List)
             .map((e) => ToolAndMaterialTransferDto.fromJson(e))
@@ -237,9 +242,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     await Future.wait(
       toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
         toolAndMaterialTransfer.detailToolAndMaterialTransfers =
-            await _detailCcdcVt.getAll(
-              toolAndMaterialTransfer.id.toString(),
-            );
+            await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
       }),
     );
 
@@ -252,15 +255,16 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     ToolAndMaterialTransferDto toolAndMaterialTransfer =
         ToolAndMaterialTransferDto.fromJson(res.data);
     List<DetailToolAndMaterialTransferDto> chiTietDieuDongTS =
-        await _detailCcdcVt.getAll(
-          toolAndMaterialTransfer.id.toString(),
-        );
+        await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
     toolAndMaterialTransfer.detailToolAndMaterialTransfers = chiTietDieuDongTS;
     return toolAndMaterialTransfer;
   }
 
   Future<int> create(ToolAndMaterialTransferDto obj) async {
-    final res = await post(EndPointAPI.TOOL_AND_MATERIAL_TRANSFER, data: obj.toJson());
+    final res = await post(
+      EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
+      data: obj.toJson(),
+    );
     return res.data;
   }
 

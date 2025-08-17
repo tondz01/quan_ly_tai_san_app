@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';
 import '../model/dieu_dong_tai_san.dart';
@@ -32,17 +35,23 @@ class DieuDongTaiSanRepository {
     // }
   }
 
-  Future<List<DieuDongTaiSanDto>> getAll(String idCongTy, int type) async {
-    final res = await _dio.get('', queryParameters: {"idcongty": idCongTy});
-    print('log dieu dong tai san');
-    print(res);
+  Future<List<DieuDongTaiSanDto>> getAll(int type) async {
+    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
-    List<DieuDongTaiSanDto> dieuDongTaiSans =
+    final res = await _dio.get('/getbyuserid/${userInfo.id}');
+    List<DieuDongTaiSanDto> dieuDongTaiSans = [];
+    dieuDongTaiSans =
         (res.data as List)
             .map((e) => DieuDongTaiSanDto.fromJson(e))
             .where((e) => e.loai == type)
             .toList();
-
+    if (dieuDongTaiSans.isEmpty) {
+      SGLog.debug(
+        'getAll',
+        'No asset transfers found for user: ${userInfo.id}',
+      );
+      return [];
+    }
     await Future.wait(
       dieuDongTaiSans.map((dieuDongTaiSan) async {
         dieuDongTaiSan
@@ -51,17 +60,21 @@ class DieuDongTaiSanRepository {
       }),
     );
 
+    SGLog.debug(
+      'getAll',
+      'Fetched all asset transfers: ${dieuDongTaiSans.length}',
+    );
     return dieuDongTaiSans;
   }
 
   Future<DieuDongTaiSanDto> getById(String id) async {
     final res = await _dio.get('/$id');
     DieuDongTaiSanDto dieuDongTaiSan = DieuDongTaiSanDto.fromJson(res.data);
-    List<ChiTietDieuDongTaiSan> _chiTietDieuDongTS =
+    List<ChiTietDieuDongTaiSan> chiTietDieuDongTS =
         await _chiTietDieuDongTaiSanRepository.getAll(
           dieuDongTaiSan.id.toString(),
         );
-    dieuDongTaiSan.chiTietDieuDongTaiSans = _chiTietDieuDongTS;
+    dieuDongTaiSan.chiTietDieuDongTaiSans = chiTietDieuDongTS;
     return dieuDongTaiSan;
   }
 

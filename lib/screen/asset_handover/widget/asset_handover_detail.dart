@@ -234,8 +234,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "note": "",
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
-      "nguoiTao": currentUser?.hoTen ?? '',
-      "nguoiCapNhat": currentUser?.hoTen ?? '',
+      "nguoiTao": currentUser?.id ?? '',
+      "nguoiCapNhat": currentUser?.id ?? '',
       "isActive": true,
     };
 
