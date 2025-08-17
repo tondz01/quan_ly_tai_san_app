@@ -552,7 +552,7 @@ packages:
   se_gay_components:
     dependency: "direct main"
     description:
-      path: "D:\\Project\\SeGayComponent"
+      path: "E:\\DataApp\\DataFlutter\\Segayv2\\SeGayComponent"
       relative: false
     source: path
     version: "1.0.0+1"

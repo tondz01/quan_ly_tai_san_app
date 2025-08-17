@@ -67,6 +67,9 @@ class SubMenuGroup {
 
 /// Class quản lý toàn bộ dữ liệu menu
 class AppMenuData {
+  AppMenuData() {
+    MenuItem._nextIndex = 0;
+  }
   // Menu items chính
   final List<MenuItem> menuItems = [
     MenuItem(label: 'Tổng quan', route: AppRoute.dashboard.path),
@@ -93,10 +96,7 @@ class AppMenuData {
       //   SubMenuGroup(title: 'Khấu hao tài sản', items: [SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path)]),
       // ],
     ),
-    MenuItem(
-      label: 'Quản lý CCDC - Vật tư',
-      route: AppRoute.toolsAndSupplies.path
-    ),
+    MenuItem(label: 'Quản lý CCDC - Vật tư', route: AppRoute.toolsAndSupplies.path),
     MenuItem(
       label: 'Điều động tài sản ',
       reportSubItems: [
