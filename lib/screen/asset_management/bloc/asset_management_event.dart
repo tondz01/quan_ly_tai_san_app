@@ -81,6 +81,16 @@ class GetListDepartmentEvent extends AssetManagementEvent {
   @override
   List<Object?> get props => [context, idCongTy];
 }
+// GET ALL TÀI SẢN CON
+class GetAllChildAssetsEvent extends AssetManagementEvent {
+  final BuildContext context;
+  final String idCongTy;
+
+  const GetAllChildAssetsEvent(this.context, this.idCongTy);
+
+  @override
+  List<Object?> get props => [context, idCongTy];
+}
 
 class CreateAssetEvent extends AssetManagementEvent {
   final BuildContext context;

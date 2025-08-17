@@ -1,23 +1,26 @@
+import 'dart:convert';
+
 class ToolsAndSuppliesDto {
-  final String id;
-  final String idDonVi;
-  final String ten;
-  final DateTime ngayNhap;
-  final String donViTinh;
-  final int soLuong;
-  final double giaTri;
-  final String soKyHieu;
-  final String kyHieu;
-  final String congSuat;
-  final String nuocSanXuat;
-  final int namSanXuat;
-  final String ghiChu;
-  final String idCongTy;
-  final DateTime ngayTao;
-  final DateTime ngayCapNhat;
-  final String nguoiTao;
-  final String nguoiCapNhat;
-  final bool isActive;
+  String id;
+  String idDonVi;
+  String ten;
+  DateTime ngayNhap;
+  String donViTinh;
+  int soLuong;
+  double giaTri;
+  String soKyHieu;
+  String kyHieu;
+  String congSuat;
+  String nuocSanXuat;
+  int namSanXuat;
+  String ghiChu;
+  String idCongTy;
+  DateTime ngayTao;
+  DateTime ngayCapNhat;
+  String nguoiTao;
+  String nguoiCapNhat;
+  int soLuongXuat;
+  bool isActive;
 
   ToolsAndSuppliesDto({
     required this.id,
@@ -39,6 +42,7 @@ class ToolsAndSuppliesDto {
     required this.nguoiTao,
     required this.nguoiCapNhat,
     required this.isActive,
+    this.soLuongXuat = 0,
   });
 
   factory ToolsAndSuppliesDto.fromJson(Map<String, dynamic> json) {
@@ -46,9 +50,10 @@ class ToolsAndSuppliesDto {
       id: json['id'] ?? '',
       idDonVi: json['idDonVi'] ?? '',
       ten: json['ten'] ?? '',
-      ngayNhap: json['ngayNhap'] != null 
-          ? DateTime.parse(json['ngayNhap'].toString())
-          : DateTime.now(),
+      ngayNhap:
+          json['ngayNhap'] != null
+              ? DateTime.parse(json['ngayNhap'].toString())
+              : DateTime.now(),
       donViTinh: json['donViTinh'] ?? '',
       soLuong: json['soLuong'] ?? 0,
       giaTri: json['giaTri'] ?? 0.0,
@@ -59,15 +64,18 @@ class ToolsAndSuppliesDto {
       namSanXuat: json['namSanXuat'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao: json['ngayTao'] != null 
-          ? DateTime.parse(json['ngayTao'].toString())
-          : DateTime.now(),
-      ngayCapNhat: json['ngayCapNhat'] != null 
-          ? DateTime.parse(json['ngayCapNhat'].toString())
-          : DateTime.now(),
+      ngayTao:
+          json['ngayTao'] != null
+              ? DateTime.parse(json['ngayTao'].toString())
+              : DateTime.now(),
+      ngayCapNhat:
+          json['ngayCapNhat'] != null
+              ? DateTime.parse(json['ngayCapNhat'].toString())
+              : DateTime.now(),
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
+      soLuongXuat: json['soLuongXuat'] ?? 0,
     );
   }
 
@@ -92,6 +100,97 @@ class ToolsAndSuppliesDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'soLuongXuat': soLuongXuat.toString(),
     };
+  }
+
+  factory ToolsAndSuppliesDto.empty() {
+    return ToolsAndSuppliesDto(
+      id: '',
+      idDonVi: '',
+      ten: '',
+      ngayNhap: DateTime.now(),
+      donViTinh: '',
+      soLuong: 0,
+      giaTri: 0.0,
+      soKyHieu: '',
+      kyHieu: '',
+      congSuat: '',
+      nuocSanXuat: '',
+      namSanXuat: 0,
+      ghiChu: '',
+      idCongTy: '',
+      ngayTao: DateTime.now(),
+      ngayCapNhat: DateTime.now(),
+      nguoiTao: '',
+      nguoiCapNhat: '',
+      isActive: true,
+      soLuongXuat: 0,
+    );
+  }
+
+  static List<ToolsAndSuppliesDto> fromJsonList(List<dynamic> jsonList) {
+    return jsonList.map((json) => ToolsAndSuppliesDto.fromJson(json)).toList();
+  }
+
+  static String encode(List<ToolsAndSuppliesDto> assets) =>
+      json.encode(assets.map((asset) => asset.toJson()).toList());
+
+  static List<ToolsAndSuppliesDto> decode(String assets) =>
+      (json.decode(assets) as List<dynamic>)
+          .map<ToolsAndSuppliesDto>(
+            (item) => ToolsAndSuppliesDto.fromJson(item),
+          )
+          .toList();
+
+  @override
+  String toString() {
+    return ten; // hoặc bất kỳ field nào bạn muốn hiển thị
+  }
+
+  ToolsAndSuppliesDto copyWith({
+    String? id,
+    String? idDonVi,
+    String? ten,
+    DateTime? ngayNhap,
+    String? donViTinh,
+    int? soLuong,
+    double? giaTri,
+    String? soKyHieu,
+    String? kyHieu,
+    String? congSuat,
+    String? nuocSanXuat,
+    int? namSanXuat,
+    String? ghiChu,
+    String? idCongTy,
+    DateTime? ngayTao,
+    DateTime? ngayCapNhat,
+    String? nguoiTao,
+    String? nguoiCapNhat,
+    int? soLuongXuat,
+    bool? isActive,
+  }) {
+    return ToolsAndSuppliesDto(
+      id: id ?? this.id,
+      idDonVi: idDonVi ?? this.idDonVi,
+      ten: ten ?? this.ten,
+      ngayNhap: ngayNhap ?? this.ngayNhap,
+      donViTinh: donViTinh ?? this.donViTinh,
+      soLuong: soLuong ?? this.soLuong,
+      giaTri: giaTri ?? this.giaTri,
+      soKyHieu: soKyHieu ?? this.soKyHieu,
+      kyHieu: kyHieu ?? this.kyHieu,
+      congSuat: congSuat ?? this.congSuat,
+      nuocSanXuat: nuocSanXuat ?? this.nuocSanXuat,
+      namSanXuat: namSanXuat ?? this.namSanXuat,
+      ghiChu: ghiChu ?? this.ghiChu,
+      idCongTy: idCongTy ?? this.idCongTy,
+      ngayTao: ngayTao ?? this.ngayTao,
+      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      nguoiTao: nguoiTao ?? this.nguoiTao,
+      nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
+      isActive: isActive ?? this.isActive,
+      soLuongXuat: soLuongXuat ?? this.soLuongXuat,
+    );
   }
 }

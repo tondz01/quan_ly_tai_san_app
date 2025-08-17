@@ -32,11 +32,18 @@ class ChildAssetDto {
   }
 
   factory ChildAssetDto.fromJson(Map<String, dynamic> json) {
+    String? formatDateIfNotNull(dynamic value) {
+      if (value == null) return null;
+      if (value is String) return value;
+      if (value is DateTime) return value.toIso8601String();
+      return null;
+    }
+    
     return ChildAssetDto(
       id: json['id'] as String?,
       idTaiSan: json['idTaiSan'] as String?,
-      ngayTao: json['ngayTao'].toIso8601String(),
-      ngayCapNhat: json['ngayCapNhat'].toIso8601String(),
+      ngayTao: formatDateIfNotNull(json['ngayTao']),
+      ngayCapNhat: formatDateIfNotNull(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'] as String?,
       nguoiCapNhat: json['nguoiCapNhat'] as String?,
       isActive: _parseBool(json['isActive']),

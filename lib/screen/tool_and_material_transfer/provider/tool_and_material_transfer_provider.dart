@@ -1,18 +1,24 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
-import '../model/movement_detail_dto.dart';
+import '../bloc/tool_and_material_transfer_state.dart';
+import '../model/tool_and_material_transfer_dto.dart';
 
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
@@ -31,13 +37,19 @@ enum FilterStatus {
 }
 
 class ToolAndMaterialTransferProvider with ChangeNotifier {
-  bool get isLoading => _isLoading;
+  bool get isLoading => _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  get userInfo => _userInfo;
   List<ToolAndMaterialTransferDto>? get dataPage => _dataPage;
   ToolAndMaterialTransferDto? get item => _item;
   get data => _data;
-  get columns => _columns;
+  get dataAsset => _dataAsset;
+  get dataPhongBan => _dataPhongBan;
+  get dataNhanVien => _dataNhanVien;
+
+  get itemsDDPhongBan => _itemsDDPhongBan;
+  get itemsDDNhanVien => _itemsDDNhanVien;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -54,21 +66,21 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   // Getter để lấy count cho mỗi status
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
-      _data?.where((item) => (item.status ?? 0) == 0).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
   int get waitingForConfirmationCount =>
-      _data?.where((item) => (item.status ?? 0) == 1).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get confirmedCount =>
-      _data?.where((item) => (item.status ?? 0) == 2).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
   int get browserCount =>
-      _data?.where((item) => (item.status ?? 0) == 3).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
   int get approveCount =>
-      _data?.where((item) => (item.status ?? 0) == 4).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
   int get rejectCount =>
-      _data?.where((item) => (item.status ?? 0) == 5).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.status ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.status ?? 0) == 7).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 7).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -82,6 +94,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   // Nội dung tìm kiếm
   String _searchTerm = '';
+
+  int typeToolAndMaterialTransfer = 1;
 
   late int totalEntries;
   late int totalPages;
@@ -98,20 +112,28 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
+  List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
+  List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
+
   // List status
   // late List<ListStatus> _listStatus;
 
   String? _error;
   String? _subScreen;
+  String mainScreen = '';
 
   bool _isShowInput = false;
-  bool _isLoading = false;
   bool _isShowCollapse = true;
   List<ToolAndMaterialTransferDto>? _data;
+  List<ToolsAndSuppliesDto>? _dataAsset;
+  List<PhongBan>? _dataPhongBan;
+  List<NhanVien>? _dataNhanVien;
   List<ToolAndMaterialTransferDto>? _dataPage;
   List<ToolAndMaterialTransferDto> _filteredData = [];
   ToolAndMaterialTransferDto? _item;
-  List<SgTableColumn<ToolAndMaterialTransferDto>> _columns = [];
+  UserInfoDTO? _userInfo;
+
+  String idCongTy = 'CT001';
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -163,7 +185,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     } else {
       statusFiltered =
           _data!.where((item) {
-            int itemStatus = item.status ?? 0;
+            int itemStatus = item.trangThai ?? 0;
             log('itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true &&
                 (itemStatus == 0)) {
@@ -212,22 +234,24 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           statusFiltered.where((item) {
-            return (item.documentName?.toLowerCase().contains(searchLower) ??
+            return (item.tenPhieu?.toLowerCase().contains(searchLower) ??
                     false) ||
-                (item.decisionNumber?.toLowerCase().contains(searchLower) ??
+                (item.soQuyetDinh?.toLowerCase().contains(searchLower) ??
                     false) ||
-                (item.requester?.toLowerCase().contains(searchLower) ??
+                (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
                     false) ||
-                (item.creator?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.movementDetails?.any(
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.detailToolAndMaterialTransfers?.any(
                       (detail) =>
-                          detail.name?.toLowerCase().contains(searchLower) ??
+                          detail.tenCCDCVatTu?.toLowerCase().contains(
+                            searchLower,
+                          ) ??
                           false,
                     ) ??
                     false) ||
-                (item.deliveringUnit?.toLowerCase().contains(searchLower) ??
+                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
                     false) ||
-                (item.receivingUnit?.toLowerCase().contains(searchLower) ??
+                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
                     false);
           }).toList();
     } else {
@@ -249,17 +273,32 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     FilterStatus.complete: false,
   };
 
-  void onInit(BuildContext context) {
-    onDispose();
-    
-    _isLoading = true;
+  void onInit(BuildContext context, int type) {
+    typeToolAndMaterialTransfer = type;
+    _initData(context);
+  }
+
+  void refreshData(BuildContext context, int type) {
+    typeToolAndMaterialTransfer = type;
+    _data = null;
+    _dataPage = null;
+    _item = null;
+    log('message refreshData: ${_data?.length} -- ${_dataAsset?.length}');
+    notifyListeners();
+    _initData(context);
+  }
+
+  void _initData(BuildContext context) {
+    _userInfo = AccountHelper.instance.getUserInfo();
+    onCloseDetail(context);
+
+    log('message onInit: ${_data?.length} -- ${_dataAsset?.length}');
     controllerDropdownPage = TextEditingController(text: '10');
 
-    getListToolsAndSupplies(context);
+    getDataAll(context);
   }
 
   void onDispose() {
-    _isLoading = false;
     _data = null;
     _error = null;
     _isShowInput = false;
@@ -267,20 +306,28 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _isShowCollapse = true;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
-    log('onDispose AssetTransferProvider');
+    log('onDispose ToolAndMaterialTransferProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
   }
 
-  void getListToolsAndSupplies(BuildContext context) {
-    _isLoading = true;
-    Future.microtask(() {
-      context.read<ToolAndMaterialTransferBloc>().add(
-        GetListToolAndMaterialTransferEvent(context),
+  void getDataAll(BuildContext context) {
+    try {
+      final bloc = context.read<ToolAndMaterialTransferBloc>();
+      bloc.add(
+        GetListToolAndMaterialTransferEvent(
+          context,
+          typeToolAndMaterialTransfer,
+          _userInfo?.idCongTy ?? '',
+        ),
       );
-    });
+      bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
+      bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
+    } catch (e) {
+      log('Error adding AssetManagement events: $e');
+    }
   }
 
   void _updatePagination() {
@@ -311,10 +358,16 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onCloseDetail(BuildContext context) {
+    _isShowCollapse = true;
+    _isShowInput = false;
+    notifyListeners();
+  }
+
   void onChangeDetailToolAndMaterialTransfer(ToolAndMaterialTransferDto? item) {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
     _item = item;
-    log('message onChangeDetailAssetTransfer: $_item');
+    log('message onChangeDetailToolAndMaterialTransfer: $_item');
     isShowInput = true;
     isShowCollapse = true;
     notifyListeners();
@@ -332,39 +385,14 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (_data == null) return;
 
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-
     if (index != -1) {
       _data![index] = updatedItem;
-
       _updatePagination();
-
       notifyListeners();
 
       log('Đã cập nhật item có ID: ${updatedItem.id}');
     } else {
       log('Không tìm thấy item có ID: ${updatedItem.id}');
-    }
-  }
-
-  void deleteItem(String id) {
-    if (_data == null) return;
-
-    // Tìm vị trí của item cần xóa
-    int index = _data!.indexWhere((item) => item.id == id);
-
-    if (index != -1) {
-      // Xóa item khỏi danh sách
-      _data!.removeAt(index);
-
-      // Cập nhật lại trang hiện tại
-      _updatePagination();
-
-      // Thông báo UI cập nhật
-      notifyListeners();
-
-      log('Đã xóa item có ID: $id');
-    } else {
-      log('Không tìm thấy item có ID: $id');
     }
   }
 
@@ -377,184 +405,217 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
     } else {
-      _data = state.data;
+      _data =
+          state.data
+              .where((item) => item.loai == typeToolAndMaterialTransfer)
+              .toList();
       _filteredData = List.from(_data!);
-      _isLoading = false;
+      log('message getListToolAndMaterialTransferSuccess: ${_data?.length}');
       _updatePagination();
     }
     notifyListeners();
   }
 
+  getLisTaiSanSuccess(BuildContext context, GetListAssetSuccessState state) {
+    _error = null;
+    if (state.data.isEmpty) {
+      _dataAsset = [];
+    } else {
+      _dataAsset = state.data;
+    }
+    notifyListeners();
+  }
 
+  getDataDropdownSuccess(
+    BuildContext context,
+    GetDataDropdownSuccessState state,
+  ) {
+    _error = null;
+    if (state.dataPb.isEmpty) {
+      _dataPhongBan = [];
+    } else {
+      _dataPhongBan = state.dataPb;
+      _itemsDDPhongBan = [
+        for (var element in _dataPhongBan!)
+          DropdownMenuItem<PhongBan>(
+            value: element,
+            child: Text(element.tenPhongBan ?? ''),
+          ),
+      ];
+    }
+    if (state.dataNv.isEmpty) {
+      _dataNhanVien = [];
+    } else {
+      _dataNhanVien = state.dataNv;
+      _itemsDDNhanVien = [
+        for (var element in _dataNhanVien!)
+          DropdownMenuItem<NhanVien>(
+            value: element,
+            child: Text(element.hoTen ?? ''),
+          ),
+      ];
+    }
+    notifyListeners();
+  }
 
+  void createDieuDongSuccess(
+    BuildContext context,
+    CreateDieuDongSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
 
-  String getStatus(int status) {
-    switch (status) {
-      case 0:
-        return 'Nháp';
-      case 1:
-        return 'Chờ xác nhận';
-      case 2:
-        return 'Xác nhận';
-      case 3:
-        return 'Trình Duyệt';
-      case 4:
-        return 'Duyệt';
-      case 5:
-        return 'Từ chối';
-      case 6:
-        return 'Hủy';
-      case 7:
-        return 'Hoàn thành';
-      default:
-        return '';
+  PhongBan getPhongBanByID(String idPhongBan) {
+    if (_dataPhongBan != null && _dataPhongBan!.isNotEmpty) {
+      return _dataPhongBan!.firstWhere(
+        (item) => item.id == idPhongBan,
+        orElse: () => const PhongBan(),
+      );
+    } else {
+      return const PhongBan();
     }
   }
 
-  Widget showEffective(bool isEffective) {
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: Checkbox(
-        value: isEffective,
-        onChanged: null, // Checkbox is read-only, no setState in provider
-        activeColor: const Color(0xFF80C9CB), // màu xanh nhạt
-        checkColor: Colors.white, // dấu tick màu trắng
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(2), // vuông góc
-        ),
-        materialTapTargetSize:
-            MaterialTapTargetSize.shrinkWrap, // thu nhỏ vùng tap
-        visualDensity: VisualDensity.compact, // giảm padding
-      ),
-    );
-  }
-
-  Widget showMovementDetails(List<MovementDetailDto> movementDetails) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children:
-                movementDetails
-                    .map(
-                      (detail) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          color: ColorValue.paleRose,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: SGText(
-                          text: detail.name ?? '',
-                          size: 12,
-                          fontWeight: FontWeight.w500,
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                    )
-                    .toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget showStatus(int status) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color: getColorStatus(status),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: SGText(
-          text: getStatus(status),
-          size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color getColorStatus(int status) {
-    switch (status) {
-      case 0:
-        return ColorValue.silverGray;
-      case 1:
-        return ColorValue.lightAmber;
-      case 2:
-        return ColorValue.mediumGreen;
-      case 3:
-        return ColorValue.lightBlue;
-      case 4:
-        return ColorValue.cyan;
-      case 5:
-        return ColorValue.brightRed;
-      case 6:
-        return ColorValue.coral;
-      case 7:
-        return ColorValue.forestGreen;
-      default:
-        return ColorValue.paleRose;
+  NhanVien getNhanVienByID(String idNhanVien) {
+    if (_dataNhanVien != null && _dataNhanVien!.isNotEmpty) {
+      return _dataNhanVien!.firstWhere(
+        (item) => item.id == idNhanVien,
+        orElse: () => const NhanVien(),
+      );
+    } else {
+      return const NhanVien();
     }
   }
 
-  // Add method to create a new asset transfer
-  Future<void> createToolAndMaterialTransfer(ToolAndMaterialTransferDto item) async {
-    final newItem = ToolAndMaterialTransferDto(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      documentName: item.documentName,
-      decisionNumber: item.decisionNumber,
-      decisionDate: item.decisionDate,
-      subject: item.subject,
-      requester: item.requester,
-      creator: 'Current User', // Would come from authentication service
-      movementDetails: item.movementDetails,
-      deliveringUnit: item.deliveringUnit,
-      receivingUnit: item.receivingUnit,
-      proposingUnit: item.proposingUnit,
-      deliveryLocation: item.deliveryLocation,
-      effectiveDate: item.effectiveDate,
-      effectiveDateTo: item.effectiveDateTo,
-      preparerInitialed: item.preparerInitialed,
-      requireManagerApproval: item.requireManagerApproval,
-      deputyConfirmed: item.deputyConfirmed,
-      departmentApproval: item.departmentApproval,
-      approver: item.approver,
-      status: 0, // Draft status
-      isEffective: false,
-      documentFilePath: item.documentFilePath,
-      documentFileName: item.documentFileName,
+  void updateDieuDongSuccess(
+    BuildContext context,
+    UpdateDieuDongSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhật thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
+
+  void deleteDieuDongSuccess(
+    BuildContext context,
+    DeleteDieuDongSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Xóa thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
+
+  void putPostDeleteFailed(
+    BuildContext context,
+    PutPostDeleteFailedState state,
+  ) {
+    AppUtility.showSnackBar(context, state.message);
+    notifyListeners();
+  }
+
+  Future<void> saveAssetTransfer(
+    BuildContext context,
+    ToolAndMaterialTransferDto request,
+    List<DetailToolAndMaterialTransferDto> requestDetail,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    Map<String, dynamic>? result = await uploadWordDocument(
+      context,
+      fileName,
+      filePath,
+      fileBytes,
     );
+    if (result == null) {
+      notifyListeners();
+      return;
+    }
+    request.duongDanFile = result['filePath'] ?? '';
+    request.tenFile = result['fileName'] ?? '';
 
-    _data ??= [];
-    _data!.add(newItem);
-
-    _filteredData = List.from(_data!);
-    _updatePagination();
+    SGLog.debug(
+      "AssetTransferProvider",
+      "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}",
+    );
+    final bloc = context.read<ToolAndMaterialTransferBloc>();
+    bloc.add(
+      CreateToolAndMaterialTransferEvent(context, request, requestDetail),
+    );
 
     notifyListeners();
   }
 
-  Future<void> updateToolAndMaterialTransfer(ToolAndMaterialTransferDto updatedItem) async {
-    if (_data == null || updatedItem.id == null) return;
+  Future<Map<String, dynamic>?> uploadWordDocument(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await ToolAndMaterialTransferRepository().uploadFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await ToolAndMaterialTransferRepository().uploadFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tệp "$fileName" đã được tải lên thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
+  }
 
-    log('Updating asset transfer: ${updatedItem.id}');
+  Future<void> updateAssetTransfer(
+    ToolAndMaterialTransferDto updatedItem,
+  ) async {
+    if (_data == null) return;
+
+    SGLog.debug(
+      "AssetTransferProvider",
+      'Updating asset transfer: ${updatedItem.id}',
+    );
 
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
 

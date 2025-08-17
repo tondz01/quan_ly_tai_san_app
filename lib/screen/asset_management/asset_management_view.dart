@@ -211,6 +211,15 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         if (state is GetListDepartmentFailedState) {
           log('Error at GetListDepartmentFailedState: ${state.message}');
         }
+        if (state is GetAllChildAssetsSuccessState) {
+          context.read<AssetManagementProvider>().getAllChildAssetsSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetAllChildAssetsFailedState) {
+          log('GetAllChildAssetsFailedState');
+        }
       },
     );
   }

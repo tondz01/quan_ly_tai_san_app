@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -15,6 +16,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 enum ShowBody { taiSan, khauHao }
 
@@ -39,6 +42,8 @@ class AssetManagementProvider with ChangeNotifier {
   get dataDetail => _dataDetail;
   get dataDepreciationDetail => _dataDepreciationDetail;
   get filteredData => _filteredData ?? _data;
+
+  get userInfo => _userInfo;
 
   get dataGroup => _dataGroup;
   get dataProject => _dataProject;
@@ -86,6 +91,8 @@ class AssetManagementProvider with ChangeNotifier {
   String? _error;
 
   String? _subScreen;
+
+  UserInfoDTO? _userInfo;
 
   AssetManagementDto? _dataDetail;
   AssetDepreciationDto? _dataDepreciationDetail;
@@ -138,6 +145,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<Map<String, bool>?> checkBoxAssetGroup = [];
   onInit(BuildContext context) {
     reset();
+    _userInfo = AccountHelper.instance.getUserInfo();
     onLoadItemDropdown();
     isShowInput = false;
     isShowCollapse = false;
@@ -156,13 +164,15 @@ class AssetManagementProvider with ChangeNotifier {
   Future<void> getDataAll(BuildContext context) async {
     try {
       final bloc = context.read<AssetManagementBloc>();
+      String idCongTy = _userInfo?.idCongTy ?? '';
       // Gọi song song, không cần delay
-      bloc.add(GetListAssetManagementEvent(context, 'ct001'));
-      bloc.add(GetListAssetGroupEvent(context, 'ct001'));
-      bloc.add(GetListProjectEvent(context, 'ct001'));
-      bloc.add(GetListCapitalSourceEvent(context, 'ct001'));
-      bloc.add(GetListDepartmentEvent(context, 'ct001'));
-      bloc.add(GetListKhauHaoEvent(context, 'ct001'));
+      bloc.add(GetListAssetManagementEvent(context, idCongTy));
+      bloc.add(GetListAssetGroupEvent(context, idCongTy));
+      bloc.add(GetListProjectEvent(context, idCongTy));
+      bloc.add(GetListCapitalSourceEvent(context, idCongTy));
+      bloc.add(GetListDepartmentEvent(context, idCongTy));
+      bloc.add(GetListKhauHaoEvent(context, idCongTy));
+      bloc.add(GetAllChildAssetsEvent(context, idCongTy));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -188,11 +198,25 @@ class AssetManagementProvider with ChangeNotifier {
   void onChangeDetail(AssetManagementDto? item) {
     if (item != null) {
       _dataDetail = item;
+      _dataDetail = _dataDetail?.copyWith(
+        childAssets: getListChildAssetsByIdAsset(item.id ?? ''),
+      );
+      log('Check load detail asset: ${jsonEncode(_dataDetail)}');
     } else {
       _dataDetail = null;
     }
     _isShowCollapse = true;
     isShowInput = true;
+  }
+
+  List<ChildAssetDto> getListChildAssetsByIdAsset(String idTaiSan) {
+    List<ChildAssetDto> list = [];
+    for (var element in _dataChildAssets!) {
+      if (element.idTaiSan == idTaiSan) {
+        list.add(element);
+      }
+    }
+    return list;
   }
 
   void onChangeDepreciationDetail(AssetDepreciationDto? item) {
@@ -347,6 +371,15 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
+    notifyListeners();
+  }
+
+  getAllChildAssetsSuccess(
+    BuildContext context,
+    GetAllChildAssetsSuccessState state,
+  ) {
+    _error = null;
+    _dataChildAssets = state.data;
     notifyListeners();
   }
 

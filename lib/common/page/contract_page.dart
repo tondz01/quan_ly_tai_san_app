@@ -257,7 +257,7 @@ class ContractPage {
     );
   }
 
-  static Widget toolAndMaterialTransferPage(ToolAndMaterialTransferDto _toolAndMaterialTransferDto) {
+  static Widget toolAndMaterialTransferPage(ToolAndMaterialTransferDto toolAndMaterialTransferDto) {
     return DefaultTextStyle(
       style: GoogleFonts.robotoSerif(),
       child: Column(
@@ -289,8 +289,8 @@ class ContractPage {
           const SizedBox(height: 12),
 
           Text(
-            "Căn cứ vào Quyết định điều động số ${_toolAndMaterialTransferDto.decisionNumber}, ${_toolAndMaterialTransferDto.decisionDate} của Giám đốc Công ty V/v Điều động CCDC - Vật tư từ ${_toolAndMaterialTransferDto.deliveringUnit}  đến  ${_toolAndMaterialTransferDto.receivingUnit}\n"
-            "Hôm nay, ${_toolAndMaterialTransferDto.decisionDate}, tại  ${_toolAndMaterialTransferDto.receivingUnit}\n",
+            "Căn cứ vào Quyết định điều động số ${toolAndMaterialTransferDto.soQuyetDinh}, ${toolAndMaterialTransferDto.ngayCapNhat} của Giám đốc Công ty V/v Điều động CCDC - Vật tư từ ${toolAndMaterialTransferDto.tenDonViGiao}  đến  ${toolAndMaterialTransferDto.tenDonViNhan}\n"
+            "Hôm nay, ${toolAndMaterialTransferDto.ngayCapNhat}, tại  ${toolAndMaterialTransferDto.tenDonViNhan}\n",
             style: GoogleFonts.robotoSerif(height: 1.6),
           ),
           Text("Chúng tôi gồm có:", style: GoogleFonts.robotoSerif(fontWeight: FontWeight.bold)),
@@ -298,11 +298,15 @@ class ContractPage {
 
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Text("1. Ông (bà):\t\t${_toolAndMaterialTransferDto.requester!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${_toolAndMaterialTransferDto.proposingUnit}")],
+            children: [
+              Text(
+                "1. Ông (bà):\t\t${toolAndMaterialTransferDto.tenNguoiDeNghi!}\t\tChức vụ: Nhân viên\t\tĐại diện: ${toolAndMaterialTransferDto.tenPhongBanXemPhieu}",
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
-          Text("Tiến hành điều động tài sản tại  ${_toolAndMaterialTransferDto.receivingUnit} cụ thể như sau:"),
+          Text("Tiến hành điều động tài sản tại  ${toolAndMaterialTransferDto.tenDonViNhan} cụ thể như sau:"),
           const SizedBox(height: 8),
 
           Table(
@@ -320,15 +324,15 @@ class ContractPage {
                   _tableHeader("Tình trạng kỹ thuật"),
                 ],
               ),
-              for (int i = 0; i < _toolAndMaterialTransferDto.movementDetails!.length; i++)
+              for (int i = 0; i < toolAndMaterialTransferDto.detailToolAndMaterialTransfers!.length; i++)
                 TableRow(
                   children: [
                     _tableCell((i + 1).toString()),
-                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].name ?? ""),
-                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].assetId ?? ""),
-                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].measurementUnit ?? ""),
-                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].quantity ?? ""),
-                    _tableCell(_toolAndMaterialTransferDto.movementDetails![i].setCondition ?? ""),
+                    _tableCell(toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].tenCCDCVatTu ?? ''),
+                    _tableCell(toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].idCCDCVatTu),
+                    _tableCell(toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].donViTinh ?? ''),
+                    _tableCell(toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].soLuong.toString()),
+                    _tableCell(toolAndMaterialTransferDto.detailToolAndMaterialTransfers![i].ghiChu),
                   ],
                 ),
             ],
