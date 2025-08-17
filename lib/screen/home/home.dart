@@ -114,7 +114,6 @@ class _HomeState extends State<Home> {
       // Trả về danh sách rỗng nếu index không hợp lệ
       return [];
     }
-    
     return List.generate(_menuData.menuItems[parentIndex].reportSubItems.length, (subIndex) {
       final subItem = _menuData.menuItems[parentIndex].reportSubItems[subIndex];
       return SGSidebarSubItem(
