@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
 import 'package:se_gay_components/common/sg_button.dart';
+import 'package:se_gay_components/common/sg_button_icon.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -34,7 +35,6 @@ class _LoginInputViewState extends State<LoginInputView> {
 
   String? _emailError;
   String? _passwordError;
-
 
   @override
   void initState() {
@@ -94,14 +94,23 @@ class _LoginInputViewState extends State<LoginInputView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            CircleAvatar(
+              radius: 32,
+              child: Image.asset(
+                'assets/images/log_ct_001.png',
+                fit: BoxFit.cover,
+              ), // kích thước avatar
+            ),
+            const SizedBox(height: 16),
             const SGText(
               text: "Đăng nhập",
               size: 28,
               fontWeight: FontWeight.bold,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             SGInputText(
               controller: _usernameController,
               label: "Email",
@@ -180,14 +189,16 @@ class _LoginInputViewState extends State<LoginInputView> {
               ),
             ],
             const SizedBox(height: 24),
-            SGButton(
+            SGButtonIcon(
               text: "Đăng nhập",
               // onclick: _handleLogin,
               onPressed: _handleLogin,
               borderRadius: 8,
               // height: 48,
               // textSize: 16,
+              defaultBGColor: Colors.blue,
               fontWeight: FontWeight.bold,
+              // colorHover: Colors.blue,
               // activeColor: SGAppColors.primary600,
             ),
             const SizedBox(height: 16),

@@ -7,6 +7,8 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
@@ -23,6 +25,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   int _selectedSubIndex = 0;
+  UserInfoDTO? userInfo;
   final SGPopupManager _popupManager = SGPopupManager();
   // Khởi tạo model menu data
   final AppMenuData _menuData = AppMenuData();
@@ -36,6 +39,64 @@ class _HomeState extends State<Home> {
     super.initState();
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
+
+    // Lắng nghe thay đổi route để cập nhật selectedIndex
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateSelectedIndexFromRoute();
+    });
+  }
+
+  @override
+  void didUpdateWidget(Home oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Cập nhật selectedIndex khi widget được update
+    log('message didUpdateWidget');
+    _updateSelectedIndexFromRoute();
+  }
+
+  void _updateSelectedIndexFromRoute() {
+    final currentLocation = GoRouterState.of(context).uri.path;
+    final extra = GoRouterState.of(context).extra;
+    userInfo = AccountHelper.instance.getUserInfo();
+
+    log('Current route: $currentLocation, extra: $extra');
+
+    // Tìm menu item tương ứng với route hiện tại
+    for (int i = 0; i < _menuData.menuItems.length; i++) {
+      final menuItem = _menuData.menuItems[i];
+
+      // Kiểm tra route chính
+      if (menuItem.route == currentLocation) {
+        _updateSelectedIndex(i, 0);
+        return;
+      }
+
+      // Kiểm tra subItems
+      for (int j = 0; j < menuItem.reportSubItems.length; j++) {
+        final subItem = menuItem.reportSubItems[j];
+        if (subItem.route == currentLocation) {
+          _updateSelectedIndex(i, j);
+          return;
+        }
+      }
+
+      // Kiểm tra projectGroups
+      for (
+        int groupIndex = 0;
+        groupIndex < menuItem.projectGroups.length;
+        groupIndex++
+      ) {
+        final group = menuItem.projectGroups[groupIndex];
+        for (int itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
+          final item = group.items[itemIndex];
+          if (item.route == currentLocation) {
+            final subIndex = groupIndex * 100 + itemIndex;
+            _updateSelectedIndex(i, subIndex);
+            return;
+          }
+        }
+      }
+    }
   }
 
   void _updateSelectedIndex(int index, int subIndex) {
@@ -153,22 +214,45 @@ class _HomeState extends State<Home> {
       header: null,
       sidebar: Container(
         padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
-        decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: ColorValue.neutral200.withValues(alpha: .3), offset: const Offset(0, 1), blurRadius: 2)]),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          boxShadow: [
+            BoxShadow(
+              color: ColorValue.neutral200.withOpacity(0.3),
+              offset: const Offset(0, 1),
+              blurRadius: 2,
+            ),
+          ],
+        ),
         child: Row(
           children: [
-            if (AppImage.imageLogo.isNotEmpty) SizedBox(width: 48, height: 48, child: Image.asset(AppImage.imageLogo)),
+            if (AppImage.imageLogo.isNotEmpty)
+              // SizedBox(
+              //   width: 48,
+              //   height: 48,
+              //   child: Image.asset(AppImage.imageLogo),
+              // ),
+              CircleAvatar(
+                radius: 24,
+                child: Image.asset(
+                  AppImage.imageLogo,
+                  fit: BoxFit.cover,
+                ), // kích thước avatar
+              ),
             const SizedBox(width: 16),
             Expanded(
-              child: SGSidebarHorizontal(
-                items: sidebarItems,
-                onShowSubItems: (subItems) {
-                  // Cập nhật lại UI nếu cần thiết
-                  setState(() {});
-                },
-              ),
+              child: sidebarItems.isNotEmpty 
+                ? SGSidebarHorizontal(
+                    items: sidebarItems,
+                    onShowSubItems: (subItems) {
+                      // Cập nhật lại UI nếu cần thiết
+                      setState(() {});
+                    },
+                  )
+                : const SizedBox.shrink(),
             ),
             const SizedBox(width: 16),
-            _buildHeaderActionRight(),
+            userInfo != null ? _buildHeaderActionRight(userInfo!) : const SizedBox.shrink(),
           ],
         ),
       ),
@@ -199,7 +283,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildHeaderActionRight() {
+  Widget _buildHeaderActionRight(UserInfoDTO userInfo) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -249,10 +333,20 @@ class _HomeState extends State<Home> {
         ),
         const SizedBox(width: 16),
         // User avatar
-        CircleAvatar(
-          radius: 20,
-          backgroundColor: ColorValue.primaryLightBlue,
-          child: CircleAvatar(radius: 18, backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=3'), backgroundColor: Colors.white),
+        Tooltip(
+          message:
+              'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: ColorValue.primaryLightBlue,
+            child: CircleAvatar(
+              radius: 18,
+              backgroundImage: const NetworkImage(
+                'https://i.pravatar.cc/150?img=3',
+              ),
+              backgroundColor: Colors.white,
+            ),
+          ),
         ),
       ],
     );

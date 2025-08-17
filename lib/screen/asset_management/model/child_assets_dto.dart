@@ -2,7 +2,8 @@ import 'dart:convert';
 
 class ChildAssetDto {
   String? id;
-  String? idTaiSan;
+  String? idTaiSanCon;
+  String? idTaiSanCha;
   String? ngayTao;
   String? ngayCapNhat;
   String? nguoiTao;
@@ -11,7 +12,8 @@ class ChildAssetDto {
 
   ChildAssetDto({
     this.id,
-    this.idTaiSan,
+    this.idTaiSanCon,
+    this.idTaiSanCha,
     this.ngayTao,
     this.ngayCapNhat,
     this.nguoiTao,
@@ -41,7 +43,8 @@ class ChildAssetDto {
     
     return ChildAssetDto(
       id: json['id'] as String?,
-      idTaiSan: json['idTaiSan'] as String?,
+      idTaiSanCon: json['idTaiSanCon'] as String?,
+      idTaiSanCha: json['idTaiSanCha'] as String?,
       ngayTao: formatDateIfNotNull(json['ngayTao']),
       ngayCapNhat: formatDateIfNotNull(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'] as String?,
@@ -55,7 +58,8 @@ class ChildAssetDto {
 
     return {
       'id': id,
-      'idTaiSan': idTaiSan,
+      'idTaiSanCon': idTaiSanCon,
+      'idTaiSanCha': idTaiSanCha,
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
@@ -66,7 +70,8 @@ class ChildAssetDto {
 
   ChildAssetDto copyWith({
     String? id,
-    String? idTaiSan,
+    String? idTaiSanCon,
+    String? idTaiSanCha,
     String? ngayTao,
     String? ngayCapNhat,
     String? nguoiTao,
@@ -75,7 +80,8 @@ class ChildAssetDto {
   }) {
     return ChildAssetDto(
       id: id ?? this.id,
-      idTaiSan: idTaiSan ?? this.idTaiSan,
+      idTaiSanCon: idTaiSanCon ?? this.idTaiSanCon,
+      idTaiSanCha: idTaiSanCha ?? this.idTaiSanCha,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       nguoiTao: nguoiTao ?? this.nguoiTao,
@@ -99,7 +105,8 @@ class ChildAssetDto {
   factory ChildAssetDto.empty() {
     return ChildAssetDto(
       id: '',
-      idTaiSan: '',
+      idTaiSanCon: '',
+      idTaiSanCha: '',
       ngayTao: DateTime.now().toIso8601String(),
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: '',

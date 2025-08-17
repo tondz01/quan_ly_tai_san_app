@@ -95,7 +95,7 @@ class AppMenuData {
     ),
     MenuItem(
       label: 'Quản lý CCDC - Vật tư',
-      reportSubItems: [SubMenuItem(label: 'Công cụ dụng cụ - Vật tư', route: AppRoute.toolsAndSupplies.path)],
+      route: AppRoute.toolsAndSupplies.path
     ),
     MenuItem(
       label: 'Điều động tài sản ',

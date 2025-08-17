@@ -48,10 +48,17 @@ class _HeaderState extends State<Header> {
       ),
       child: Row(
         children: [
-          widget.imageLogoLeft != null ? Image.asset(widget.imageLogoLeft!) : SvgPicture.asset(AppSvgs.iconLogo),
+          widget.imageLogoLeft != null ? CircleAvatar(
+              radius: 32,
+              child: Image.asset(
+                widget.imageLogoLeft!,
+                fit: BoxFit.cover,
+              ), // kích thước avatar
+            ): SvgPicture.asset(AppSvgs.iconLogo),
           const SizedBox(width: 24),
           Expanded(
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Search input with Material Design
                 // MaterialSearchField(

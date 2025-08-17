@@ -42,6 +42,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
     'chucVu',
     'tenQuanLy',
     'tenPhongBan',
+    'trangThaiTaiKhoan',
     'nguoiTao',
   ];
 
@@ -49,7 +50,8 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
   void initState() {
     super.initState();
     _initializeColumnOptions();
-    lableTitle = 'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
+    lableTitle =
+        'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
     // body = _buildTableStaff(_buildColumns());
   }
 
@@ -99,6 +101,11 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
         id: 'tenPhongBan',
         label: 'Phòng ban',
         isChecked: visibleColumnIds.contains('tenPhongBan'),
+      ),
+      ColumnDisplayOption(
+        id: 'trangThaiTaiKhoan',
+        label: 'Trạng thái tài khoản',
+        isChecked: visibleColumnIds.contains('trangThaiTaiKhoan'),
       ),
       ColumnDisplayOption(
         id: 'nguoiTao',
@@ -201,6 +208,16 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
               getValue: (item) => item.tenPhongBan ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
+            ),
+          );
+          break;
+        case 'trangThaiTaiKhoan':
+          columns.add(
+            TableBaseConfig.columnTable<NhanVien>(
+              title: 'Trạng thái tài khoản',
+              getValue: (item) => _getTrangThaiTaiKhoan(item),
+              width: 150,
+              titleAlignment: TextAlign.center,
             ),
           );
           break;
@@ -379,11 +396,23 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.add_circle,
-        tooltip: 'Tạo account',
-        iconColor: Colors.red.shade700,
+        tooltip: _getTooltipForAction(item),
+        iconColor: _getIconColorForAction(item),
         backgroundColor: Colors.transparent,
         borderColor: Colors.transparent,
         onPressed: () {
+          // Kiểm tra xem đã có tài khoản của nhân viên này chưa
+          if (_hasExistingAccount(item)) {
+            // Đã có tài khoản, hiển thị thông báo
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Nhân viên ${item.hoTen} đã có tài khoản!'),
+                backgroundColor: Colors.orange.shade600,
+              ),
+            );
+            return;
+          }
+
           final userInfo = UserInfoDTO(
             id: getUuIdAccount(),
             tenDangNhap: item.id ?? '',
@@ -402,13 +431,28 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
           );
           setState(() {
             lableTitle = 'Tạo account cho nhân viên ${item.hoTen}';
+            // showDialog(
+            //   context: context,
+            //   builder:
+            //       (context) => AccountDetail(
+            //         userInfo: userInfo,
+            //         onPressedCancel: () {
+            //           setState(() {
+            //             body = null;
+            //             lableTitle =
+            //                 'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
+            //           });
+            //         },
+            //       ),
+            // );
             body = Expanded(
               child: AccountDetail(
                 userInfo: userInfo,
                 onPressedCancel: () {
                   setState(() {
                     body = null;
-                    lableTitle = 'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
+                    lableTitle =
+                        'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
                   });
                 },
               ),
@@ -417,5 +461,43 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
         },
       ),
     ]);
+  }
+
+  /// Kiểm tra xem nhân viên đã có tài khoản chưa
+  bool _hasExistingAccount(NhanVien item) {
+    if (widget.provider.users == null || widget.provider.users!.isEmpty) {
+      return false;
+    }
+
+    // So sánh tenDangNhap của user với id của nhân viên
+    return widget.provider.users!.any(
+      (user) =>
+          user.tenDangNhap.trim().toLowerCase() ==
+          (item.id ?? '').trim().toLowerCase(),
+    );
+  }
+
+  /// Lấy trạng thái tài khoản của nhân viên
+  String _getTrangThaiTaiKhoan(NhanVien item) {
+    if (_hasExistingAccount(item)) {
+      return 'Đã có tài khoản';
+    }
+    return 'Chưa có tài khoản';
+  }
+
+  /// Lấy tooltip cho nút action
+  String _getTooltipForAction(NhanVien item) {
+    if (_hasExistingAccount(item)) {
+      return 'Đã có tài khoản';
+    }
+    return 'Tạo account';
+  }
+
+  /// Lấy màu icon cho nút action
+  Color _getIconColorForAction(NhanVien item) {
+    if (_hasExistingAccount(item)) {
+      return Colors.grey.shade400; // Màu xám khi đã có tài khoản
+    }
+    return Colors.red.shade700; // Màu đỏ khi chưa có tài khoản
   }
 }

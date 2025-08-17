@@ -276,9 +276,9 @@ class AssetManagementBloc
     );
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(CreateAssetSuccessState());
+      emit(DeleteAssetSuccessState());
     } else {
-      String msg = "Lỗi khi tạo nhóm tài sản";
+      String msg = "Lỗi khi xóa tài sản";
       emit(
         UpdateAndDeleteAssetFailedState(
           title: "notice",
