@@ -17,8 +17,6 @@ import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_4.dart';
 import 'package:quan_ly_tai_san_app/screen/home/home.dart';
 import 'package:quan_ly_tai_san_app/screen/login/login_view.dart';
 import 'package:quan_ly_tai_san_app/screen/login/account_view.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu_page.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_200.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_theo_doi.dart';

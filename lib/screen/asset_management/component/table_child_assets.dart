@@ -6,13 +6,13 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class TableChildAsset extends StatefulWidget {
+class TableChildAssets extends StatefulWidget {
   final bool isEditing;
   final List<ChildAssetDto> initialDetails;
   final List<AssetManagementDto> allAssets;
   final Function(List<AssetManagementDto>)? onDataChanged;
 
-  const TableChildAsset(
+  const TableChildAssets(
     BuildContext context, {
     super.key,
     required this.isEditing,
@@ -22,28 +22,29 @@ class TableChildAsset extends StatefulWidget {
   });
 
   @override
-  State<TableChildAsset> createState() => _TableChildAssetState();
+  State<TableChildAssets> createState() => _TableChildAssetsState();
 }
 
-class _TableChildAssetState extends State<TableChildAsset> {
-  late List<ChildAssetDto> childAssets;
+class _TableChildAssetsState extends State<TableChildAssets> {
+  late List<ChildAssetDto> movementDetails;
 
   @override
   void initState() {
     super.initState();
-    childAssets = List.from(widget.initialDetails);
+    movementDetails = List.from(widget.initialDetails);
   }
 
   @override
-  void didUpdateWidget(TableChildAsset oldWidget) {
+  void didUpdateWidget(TableChildAssets oldWidget) {
     super.didUpdateWidget(oldWidget);
-    childAssets = List.from(widget.initialDetails);
+    movementDetails = List.from(widget.initialDetails);
   }
 
   List<AssetManagementDto> getAssetsByChildAssets(
     List<AssetManagementDto> allAssets,
     List<ChildAssetDto> chiTietDieuDong,
   ) {
+    // Map nhanh id -> Asset
     final Map<String, AssetManagementDto> idToAsset = {
       for (final a in allAssets)
         if (a.id != null) a.id!: a,
@@ -53,8 +54,8 @@ class _TableChildAssetState extends State<TableChildAsset> {
     final result = <AssetManagementDto>[];
     final seen = <String>{};
     for (final c in chiTietDieuDong) {
-      final id = c.idTaiSan!;
-      if (seen.add(id)) {
+      final id = c.idTaiSanCon;
+      if (seen.add(id ?? '')) {
         final asset = idToAsset[id];
         if (asset != null) result.add(asset);
       }
@@ -64,14 +65,14 @@ class _TableChildAssetState extends State<TableChildAsset> {
 
   @override
   Widget build(BuildContext context) {
-    log('movementDetails: ${childAssets.length}');
+    log('movementDetails: ${movementDetails.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: const SGText(
-            text: 'Tài sản con:',
+            text: 'Chi tiết tài sản điều chuyển:',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             textAlign: TextAlign.start,
           ),
@@ -80,7 +81,10 @@ class _TableChildAssetState extends State<TableChildAsset> {
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
           child: SgEditableTable<AssetManagementDto>(
-            initialData: getAssetsByChildAssets(widget.allAssets, childAssets),
+            initialData: getAssetsByChildAssets(
+              widget.allAssets,
+              movementDetails,
+            ),
             createEmptyItem: AssetManagementDto.empty,
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
@@ -97,12 +101,12 @@ class _TableChildAssetState extends State<TableChildAsset> {
                 field: 'asset',
                 title: 'Tài sản',
                 titleAlignment: TextAlign.center,
-                width: 250,
+                width: 120,
                 getValue: (item) => item,
                 setValue: (item, value) {
                   if (value is AssetManagementDto) {
                     item.id = value.id;
-                    item.tenTaiSan = value.tenTaiSan;
+                    item.tenTaiSan = '${value.id} - ${value.tenTaiSan}';
                     item.idDonViHienThoi = value.idDonViHienThoi;
                   }
                 },
@@ -113,51 +117,59 @@ class _TableChildAssetState extends State<TableChildAsset> {
                   for (var element in widget.allAssets)
                     DropdownMenuItem<AssetManagementDto>(
                       value: element,
-                      child: Text(element.tenTaiSan ?? ''),
+                      child: Text('${element.id} - ${element.tenTaiSan}'),
                     ),
                 ],
                 // displayStringForOption: (item) => item.tenTaiSan ?? '',
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
                   if (newValue is AssetManagementDto) {
-                    updateRow('id_child_asset', newValue.id);
-                    updateRow(
-                      'asset',
-                      '${newValue.id} - ${newValue.tenTaiSan}',
-                    );
-                    updateRow('donViHienThoi', newValue.idDonViHienThoi);
+                    updateRow('don_vi_tinh', newValue.donViTinh);
+                    updateRow('so_luong', newValue.soLuong);
+                    updateRow('tinh_trang', newValue.hienTrang);
+                    updateRow('ghi_chu', newValue.ghiChu ?? '');
                   }
                 },
               ),
               SgEditableColumn<AssetManagementDto>(
-                field: 'id_child_asset',
-                title: 'Mã tài sản',
+                field: 'don_vi_tinh',
+                title: 'Đơn vị tính',
                 titleAlignment: TextAlign.center,
-                width: 130,
-                getValue: (item) => item.id,
-                setValue: (item, value) => item.id = value,
-                sortValueGetter: (item) => item.id,
+                width: 100,
+                getValue: (item) => item.donViTinh,
+                setValue: (item, value) => item.donViTinh = value,
+                sortValueGetter: (item) => item.donViTinh,
                 isEditable: false,
               ),
               SgEditableColumn<AssetManagementDto>(
-                field: 'asset',
-                title: 'Tài sản',
+                field: 'so_luong',
+                title: 'Số lượng',
                 titleAlignment: TextAlign.center,
-                width: 120,
-                getValue: (item) => '${item.id} - ${item.tenTaiSan}',
+                width: 100,
+                getValue: (item) => item.soLuong,
                 setValue: (item, value) {
-                  // Không làm gì khi giá trị được đặt, vì đây là trường readonly
+                  item.soLuong = value;
                 },
-                sortValueGetter: (item) => '${item.id} - ${item.tenTaiSan}',
+                sortValueGetter: (item) => item.soLuong,
                 isEditable: false,
               ),
               SgEditableColumn<AssetManagementDto>(
-                field: 'donViHienThoi',
-                title: 'Đơn vị hiện thời',
+                field: 'tinh_trang',
+                title: 'Tình trạng kỹ thuật',
                 titleAlignment: TextAlign.center,
-                width: 190,
-                getValue: (item) => item.idDonViHienThoi,
-                setValue: (item, value) => item.idDonViHienThoi = value,
-                sortValueGetter: (item) => item.idDonViHienThoi,
+                width: 100,
+                getValue: (item) => getHienTrang(item.hienTrang ?? -1),
+                setValue: (item, value) => item.hienTrang = value,
+                sortValueGetter: (item) => getHienTrang(item.hienTrang ?? -1),
+                isEditable: false,
+              ),
+              SgEditableColumn<AssetManagementDto>(
+                field: 'ghi_chu',
+                title: 'Ghi chú',
+                titleAlignment: TextAlign.center,
+                width: 100,
+                getValue: (item) => item.ghiChu,
+                setValue: (item, value) => item.ghiChu = value,
+                sortValueGetter: (item) => item.ghiChu,
                 isEditable: false,
               ),
             ],
@@ -165,5 +177,21 @@ class _TableChildAssetState extends State<TableChildAsset> {
         ),
       ],
     );
+  }
+
+  String getHienTrang(int hienTrang) {
+    log('hienTrang: $hienTrang');
+    switch (hienTrang) {
+      case 0:
+        return 'Đang sử dụng';
+      case 1:
+        return 'Chờ sử lý';
+      case 2:
+        return 'Không sử dụng';
+      case 3:
+        return 'Hỏng';
+      default:
+        return '';
+    }
   }
 }

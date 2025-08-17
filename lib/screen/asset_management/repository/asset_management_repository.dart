@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -84,7 +85,7 @@ class AssetManagementRepository extends ApiBase {
     };
 
     try {
-      String url = '${EndPointAPI.CHILD_ASSETS}/getall/$idCongTy';
+      String url = '${EndPointAPI.CHILD_ASSETS}/getall';
       final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -326,10 +327,14 @@ class AssetManagementRepository extends ApiBase {
       }
 
       final dynamic respData = response.data;
+      String idTaiSan = request.id;
+      log('message String idTaiSan = respData: $idTaiSan');
 
       for (var detail in requestDetail) {
+        detail.copyWith(idTaiSanCha: idTaiSan);
+        log('message /api/taisancon/: ${jsonEncode(detail)}');
         final responseDetail = await post(
-          EndPointAPI.CHILD_ASSETS,
+          '${EndPointAPI.CHILD_ASSETS}/',
           data: detail.toJson(),
         );
         final int? statusDetail = responseDetail.statusCode;

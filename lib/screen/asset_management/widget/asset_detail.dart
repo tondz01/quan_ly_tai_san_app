@@ -6,11 +6,12 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/Category/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/original_asset_information.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/other_information.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_child_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_child_assets.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
@@ -111,7 +112,7 @@ class _AssetDetailState extends State<AssetDetail> {
   }
 
   _initData() {
-    newChildAssets.clear();
+    // newChildAssets.clear();
     if (widget.provider.dataDetail != null) {
       data = widget.provider.dataDetail;
       isEditing = false;
@@ -128,7 +129,8 @@ class _AssetDetailState extends State<AssetDetail> {
         list
             .map(
               (d) => {
-                'idTaiSan': d.idTaiSan,
+                'idTaiSan': d.idTaiSanCha,
+                'idTaiSanCon': d.idTaiSanCon,
                 'ngayTao': d.ngayTao,
                 'ngayCapNhat': d.ngayCapNhat,
                 'nguoiTao': d.nguoiTao,
@@ -150,7 +152,7 @@ class _AssetDetailState extends State<AssetDetail> {
       listener: (context, state) {
         if (state is GetListChildAssetsSuccessState) {
           setState(() {
-            newChildAssets = state.data;
+            // newChildAssets = state.data;
           });
         }
         if (state is GetListChildAssetsFailedState) {
@@ -358,30 +360,32 @@ class _AssetDetailState extends State<AssetDetail> {
                     ),
                   ],
                 ),
-                TableChildAsset(
+                TableChildAssets(
                   context,
                   isEditing: isEditing,
-                  initialDetails: widget.provider.dataChildAssets ?? [],
-                  allAssets: widget.provider.data!,
-                  onDataChanged: (data) {
-                    setState(() {
-                      newChildAssets =
-                          data
-                              .map(
-                                (e) => ChildAssetDto(
-                                  id: e.id,
-                                  idTaiSan: e.id,
-                                  ngayTao: DateTime.now().toIso8601String(),
-                                  ngayCapNhat: DateTime.now().toIso8601String(),
-                                  nguoiTao: e.nguoiTao,
-                                  nguoiCapNhat: e.nguoiCapNhat,
-                                  isActive: e.isActive,
-                                ),
-                              )
-                              .toList();
-
-                    log('message newChildAssets: ${jsonEncode(newChildAssets)}');
-                    });
+                  initialDetails: data?.childAssets ?? [],
+                  allAssets: widget.provider.data ?? [],
+                  onDataChanged: (dataChange) {
+                    // setState(() {
+                    newChildAssets =
+                        dataChange
+                            .map(
+                              (e) => ChildAssetDto(
+                                id: e.id,
+                                idTaiSanCha: data?.id ?? '',
+                                idTaiSanCon: e.id,
+                                ngayTao: DateTime.now().toIso8601String(),
+                                ngayCapNhat: DateTime.now().toIso8601String(),
+                                nguoiTao: e.nguoiTao,
+                                nguoiCapNhat: e.nguoiCapNhat,
+                                isActive: e.isActive,
+                              ),
+                            )
+                            .toList();
+                    log('message newChildAssets: ${jsonEncode(dataChange)}');
+                    // setState(() {
+                    // });
+                    // });
                   },
                 ),
               ],
@@ -455,7 +459,7 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlNamSanXuat.text = '';
       ctrlLyDoTang.text = '';
       ctrlHienTrang.text = '';
-      ctrlSoLuong.text = '';
+      ctrlSoLuong.text = 1.toString();
       ctrlDonViTinh.text = '';
       ctrlGhiChu.text = '';
       ctrlDonViBanDau.text = '';
@@ -551,7 +555,8 @@ class _AssetDetailState extends State<AssetDetail> {
         .map(
           (e) => ChildAssetDto(
             id: e.id,
-            idTaiSan: e.id,
+            idTaiSanCon: e.id,
+            idTaiSanCha: data?.id ?? '',
             ngayTao: DateTime.now().toIso8601String(),
             ngayCapNhat: DateTime.now().toIso8601String(),
             nguoiTao: e.nguoiTao,
@@ -581,7 +586,8 @@ class _AssetDetailState extends State<AssetDetail> {
         await repo.create(
           ChildAssetDto(
             id: d.id,
-            idTaiSan: d.id,
+            idTaiSanCon: d.id,
+            idTaiSanCha: data?.id ?? '',
             ngayTao: DateTime.now().toIso8601String(),
             ngayCapNhat: DateTime.now().toIso8601String(),
             nguoiTao: d.nguoiTao,
@@ -599,9 +605,14 @@ class _AssetDetailState extends State<AssetDetail> {
     if (!isEditing) return;
 
     final request = _createAssetRequest();
-    final childAssets = _createChildAssets();
+    var childAssets = _createChildAssets();
     final bloc = context.read<AssetManagementBloc>();
     if (data == null) {
+      log('message requestrequestrequestrequestrequest: ${jsonEncode(request)}');
+      childAssets = childAssets.map((d) => d.copyWith(
+        id: UUIDGenerator.generateWithFormat('TSC-******'),
+        idTaiSanCha: request.id,
+      )).toList();
       bloc.add(CreateAssetEvent(context, request, childAssets));
     } else {
       // Cập nhật chi tiết nếu có thay đổi

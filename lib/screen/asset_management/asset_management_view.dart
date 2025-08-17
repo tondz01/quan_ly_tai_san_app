@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
@@ -219,6 +220,30 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         }
         if (state is GetAllChildAssetsFailedState) {
           log('GetAllChildAssetsFailedState');
+        }
+        if (state is CreateAssetSuccessState) {
+          log('DeleteAssetSuccessState');
+          context.read<AssetManagementProvider>().createAssetSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is DeleteAssetSuccessState) {
+          log('DeleteAssetSuccessState');
+          context.read<AssetManagementProvider>().deleteAssetSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is UpdateAssetSuccessState) {
+          context.read<AssetManagementProvider>().updateAssetSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is UpdateAndDeleteAssetFailedState) {
+          log('DeleteAssetFailedState');
+          AppUtility.showSnackBar(context, state.message);
         }
       },
     );

@@ -819,7 +819,7 @@ class _ToolAndMaterialTransferDetailState
               ),
 
               SizedBox(height: 10),
-              if (item!.detailToolAndMaterialTransfers!.isNotEmpty)
+              if (item != null && item!.detailToolAndMaterialTransfers!.isNotEmpty)
                 previewDocumentAssetTransfer(item),
             ],
           ),

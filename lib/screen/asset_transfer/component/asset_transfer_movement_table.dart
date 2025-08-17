@@ -14,13 +14,22 @@ class AssetTransferMovementTable extends StatefulWidget {
   final List<AssetManagementDto> allAssets;
   final Function(List<AssetManagementDto>)? onDataChanged;
 
-  const AssetTransferMovementTable(BuildContext context, {super.key, required this.isEditing, required this.initialDetails, required this.allAssets, required this.onDataChanged});
+  const AssetTransferMovementTable(
+    BuildContext context, {
+    super.key,
+    required this.isEditing,
+    required this.initialDetails,
+    required this.allAssets,
+    required this.onDataChanged,
+  });
 
   @override
-  State<AssetTransferMovementTable> createState() => _AssetTransferMovementTableState();
+  State<AssetTransferMovementTable> createState() =>
+      _AssetTransferMovementTableState();
 }
 
-class _AssetTransferMovementTableState extends State<AssetTransferMovementTable> {
+class _AssetTransferMovementTableState
+    extends State<AssetTransferMovementTable> {
   late List<ChiTietDieuDongTaiSan> movementDetails;
   final repo = ChiTietDieuDongTaiSanRepository();
 
@@ -36,7 +45,10 @@ class _AssetTransferMovementTableState extends State<AssetTransferMovementTable>
     movementDetails = List.from(widget.initialDetails);
   }
 
-  List<AssetManagementDto> getAssetsByChildAssets(List<AssetManagementDto> allAssets, List<ChiTietDieuDongTaiSan> chiTietDieuDong) {
+  List<AssetManagementDto> getAssetsByChildAssets(
+    List<AssetManagementDto> allAssets,
+    List<ChiTietDieuDongTaiSan> chiTietDieuDong,
+  ) {
     // Map nhanh id -> Asset
     final Map<String, AssetManagementDto> idToAsset = {
       for (final a in allAssets)
@@ -64,13 +76,20 @@ class _AssetTransferMovementTableState extends State<AssetTransferMovementTable>
       children: [
         Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          child: const SGText(text: 'Chi tiết tài sản điều chuyển:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.start),
+          child: const SGText(
+            text: 'Chi tiết tài sản điều chuyển:',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.start,
+          ),
         ),
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
           child: SgEditableTable<AssetManagementDto>(
-            initialData: getAssetsByChildAssets(widget.allAssets, movementDetails),
+            initialData: getAssetsByChildAssets(
+              widget.allAssets,
+              movementDetails,
+            ),
             createEmptyItem: AssetManagementDto.empty,
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
@@ -99,7 +118,13 @@ class _AssetTransferMovementTableState extends State<AssetTransferMovementTable>
                 sortValueGetter: (item) => item.tenTaiSan,
                 isCellEditableDecider: (item, rowIndex) => true,
                 editor: EditableCellEditor.dropdown,
-                dropdownItems: [for (var element in widget.allAssets) DropdownMenuItem<AssetManagementDto>(value: element, child: Text('${element.id} - ${element.tenTaiSan}'))],
+                dropdownItems: [
+                  for (var element in widget.allAssets)
+                    DropdownMenuItem<AssetManagementDto>(
+                      value: element,
+                      child: Text('${element.id} - ${element.tenTaiSan}'),
+                    ),
+                ],
                 // displayStringForOption: (item) => item.tenTaiSan ?? '',
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
                   if (newValue is AssetManagementDto) {

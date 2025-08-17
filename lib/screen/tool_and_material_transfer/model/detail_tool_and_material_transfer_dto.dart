@@ -60,47 +60,11 @@ class DetailToolAndMaterialTransferDto {
       return parsed;
     }
     
-    double parseDouble(dynamic v) {
-      if (v is double) return v;
-      if (v is int) return v.toDouble();
-      if (v is num) return v.toDouble();
-      return double.tryParse(v?.toString() ?? '0') ?? 0;
-    }
-    
     bool parseBool(dynamic v) {
       if (v is bool) return v;
       if (v is num) return v != 0;
       if (v is String) return v.toLowerCase() == 'true' || v == '1';
       return false;
-    }
-    
-    // Hàm hỗ trợ parse timestamp
-    DateTime parseTimestamp(dynamic value) {
-      if (value == null) return DateTime.now();
-      
-      // Xử lý trường hợp timestamp từ server
-      if (value is Map && value.containsKey('seconds')) {
-        final seconds = value['seconds'] as int;
-        final nanoseconds = value['nanoseconds'] as int? ?? 0;
-        return DateTime.fromMillisecondsSinceEpoch(
-          seconds * 1000 + (nanoseconds / 1000000).round(),
-        );
-      }
-      
-      // Xử lý trường hợp ISO string
-      if (value is String) {
-        try {
-          return DateTime.parse(value);
-        } catch (e) {
-          return DateTime.now();
-        }
-      }
-      
-      if (value is DateTime) {
-        return value;
-      }
-      
-      return DateTime.now();
     }
 
     return DetailToolAndMaterialTransferDto(

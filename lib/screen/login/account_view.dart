@@ -57,29 +57,46 @@ class _AccountViewState extends State<AccountView> {
 
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
-                    controller: TextEditingController(),
-                    isShowSearch: false,
-                    onSearchChanged: (value) {
-                      // Cập nhật trạng thái tìm kiếm trong provider
-                      // provider.searchTerm = value;
-                    },
-                    onTap: () {},
-                    onNew:
-                        () => showDialog(
-                          context: context,
-                          builder:
-                              (context) => Dialog(
-                                // shape: RoundedRectangleBorder(
-                                //   borderRadius: BorderRadius.circular(16),
-                                // ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: StaffListByAccount(provider: provider),
-                                ),
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: HeaderComponent(
+                          controller: TextEditingController(),
+                          isShowSearch: false,
+                          onSearchChanged: (value) {
+                            // Cập nhật trạng thái tìm kiếm trong provider
+                            // provider.searchTerm = value;
+                          },
+                          onTap: () {},
+                          onNew:
+                              () => showDialog(
+                                context: context,
+                                builder:
+                                    (context) => Dialog(
+                                      // shape: RoundedRectangleBorder(
+                                      //   borderRadius: BorderRadius.circular(16),
+                                      // ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: StaffListByAccount(
+                                          provider: provider,
+                                        ),
+                                      ),
+                                    ),
                               ),
+                          mainScreen: 'User',
                         ),
-                    mainScreen: 'User',
+                      ),
+                      Tooltip(
+                        message: 'Đăng xuất',
+                        child: IconButton(
+                          onPressed: () {
+                            context.read<LoginProvider>().logout(context);
+                          },
+                          icon: const Icon(Icons.logout_outlined, size: 24),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 body: Column(
@@ -133,6 +150,10 @@ class _AccountViewState extends State<AccountView> {
         if (state is CreateAccountSuccessState) {
           log('CreateUserSuccessState');
           context.read<LoginProvider>().createUserSuccess(context, state);
+        }
+        if (state is DeleteUserSuccessState) {
+          log('DeleteUserSuccessState');
+          context.read<LoginProvider>().deleteUserSuccess(context, state);
         }
         if (state is GetNhanVienSuccessState) {
           log('GetNhanVienSuccessState');
