@@ -147,7 +147,7 @@ class _CommonContractState extends State<CommonContract> {
     try {
       final pdf = pw.Document();
       final boundary = _contractKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary != null) {
+      if (boundary != null && boundary.debugNeedsPaint == false) {
         // Ẩn viền chọn trước khi chụp (bỏ chọn tất cả)
         final selectedStates =
             images.map((img) {
@@ -162,12 +162,29 @@ class _CommonContractState extends State<CommonContract> {
         }
         await Future.delayed(const Duration(milliseconds: 50));
 
-        final image = await boundary.toImage(pixelRatio: 3.0);
+        final image = await boundary.toImage(pixelRatio: 2.0);
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         final pngBytes = byteData!.buffer.asUint8List();
 
+        // Kiểm tra kích thước ảnh
+        final imageWidth = image.width.toDouble();
+        final imageHeight = image.height.toDouble();
+        
+        if (imageWidth.isNaN || imageHeight.isNaN || imageWidth <= 0 || imageHeight <= 0) {
+          throw Exception('Kích thước ảnh không hợp lệ: ${imageWidth}x$imageHeight');
+        }
+
         final imageProvider = pw.MemoryImage(pngBytes);
-        pdf.addPage(pw.Page(pageFormat: PdfPageFormat.a4.landscape, build: (context) => pw.Center(child: pw.Image(imageProvider))));
+        pdf.addPage(pw.Page(
+          pageFormat: PdfPageFormat.a4.portrait, 
+          margin: pw.EdgeInsets.zero,
+          build: (context) => pw.SizedBox.expand(
+            child: pw.FittedBox(
+              fit: pw.BoxFit.fill,
+              child: pw.Image(imageProvider),
+            ),
+          ),
+        ));
 
         await Printing.sharePdf(bytes: await pdf.save(), filename: 'document.pdf');
 
@@ -416,8 +433,6 @@ class _CommonContractState extends State<CommonContract> {
                             ],
                           ),
                         ),
-
-                        // Chữ ký đặt giữa màn hình
                       ],
                     ),
                   ),
