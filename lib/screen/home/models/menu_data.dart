@@ -123,7 +123,6 @@ class AppMenuData {
         SubMenuItem(label: "Báo cáo Thu hồi tài sản trong kỳ", route: AppRoute.recoveryReport.path),
         SubMenuItem(label: 'Biên bản kiểm kê', route: AppRoute.bienBanKiemKe.path),
         SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.bienBanDoiChieu.path),
-
         SubMenuItem(label: 'Sổ tài sản cố định', route: AppRoute.fixedAssetRegister.path),
         SubMenuItem(label: 'Sổ tài sản cố định thông tư 200', route: AppRoute.fixedAssetRegisterCircular200.path),
         SubMenuItem(label: 'Sổ theo dõi', route: AppRoute.trackingRecord.path),
