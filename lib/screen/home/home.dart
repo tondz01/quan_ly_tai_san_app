@@ -1,6 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -9,6 +8,7 @@ import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
@@ -88,7 +88,10 @@ class _HomeState extends State<Home> {
         paddingButton: const EdgeInsets.only(bottom: 8, left: 12, right: 12),
         popupOffsetY: 3.0,
         popupPadding: EdgeInsets.symmetric(
-          vertical: (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) ? 0 : 2,
+          vertical:
+              (item.reportSubItems.isEmpty && item.projectGroups.isEmpty)
+                  ? 0
+                  : 2,
         ),
         onTap:
             () => setState(() {
@@ -102,7 +105,10 @@ class _HomeState extends State<Home> {
               }
             }),
         subItems: item.reportSubItems.isNotEmpty ? _buildSubItems(index) : null,
-        subItemGroups: item.projectGroups.isNotEmpty ? _buildSubItemGroups(index, item.projectGroups) : null,
+        subItemGroups:
+            item.projectGroups.isNotEmpty
+                ? _buildSubItemGroups(index, item.projectGroups)
+                : null,
       );
     });
   }
@@ -114,45 +120,58 @@ class _HomeState extends State<Home> {
       // Trả về danh sách rỗng nếu index không hợp lệ
       return [];
     }
-    return List.generate(_menuData.menuItems[parentIndex].reportSubItems.length, (subIndex) {
-      final subItem = _menuData.menuItems[parentIndex].reportSubItems[subIndex];
-      return SGSidebarSubItem(
-        label: subItem.label,
-        icon: subItem.icon,
-        isActive: (_selectedIndex == parentIndex && _selectedSubIndex == subIndex),
-        onTap:
-            () => setState(() {
-              _updateSelectedIndex(parentIndex, subIndex);
-              _popupManager.closeAllPopups();
-              if (subItem.route.isNotEmpty) {
-                isItemOne = false;
-                context.go(subItem.route, extra: subItem.extra);
-              }
-            }),
-      );
-    });
+    return List.generate(
+      _menuData.menuItems[parentIndex].reportSubItems.length,
+      (subIndex) {
+        final subItem =
+            _menuData.menuItems[parentIndex].reportSubItems[subIndex];
+        return SGSidebarSubItem(
+          label: subItem.label,
+          icon: subItem.icon,
+          isActive:
+              (_selectedIndex == parentIndex && _selectedSubIndex == subIndex),
+          onTap:
+              () => setState(() {
+                _updateSelectedIndex(parentIndex, subIndex);
+                _popupManager.closeAllPopups();
+                if (subItem.route.isNotEmpty) {
+                  isItemOne = false;
+                  context.go(subItem.route, extra: subItem.extra);
+                }
+              }),
+        );
+      },
+    );
   }
 
   // Tạo subItemGroups có nhóm từ model
-  List<SGSubItemGroup> _buildSubItemGroups(int parentIndex, List<SubMenuGroup> groupData) {
+  List<SGSubItemGroup> _buildSubItemGroups(
+    int parentIndex,
+    List<SubMenuGroup> groupData,
+  ) {
     // Kiểm tra xem parentIndex có hợp lệ không
     if (parentIndex < 0 || parentIndex >= _menuData.menuItems.length) {
       // Trả về danh sách rỗng nếu index không hợp lệ
       return [];
     }
-    
+
     return List.generate(groupData.length, (groupIndex) {
       final group = groupData[groupIndex];
       return SGSubItemGroup(
         title: group.title,
         items: List.generate(group.items.length, (itemIndex) {
           final item = group.items[itemIndex];
-          final subIndex = groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
-          SGLog.debug("Home", 'Check: ${(_selectedIndex == parentIndex && _selectedSubIndex == subIndex)}');
+          final subIndex =
+              groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
+          SGLog.debug(
+            "Home",
+            'Check: ${(_selectedIndex == parentIndex && _selectedSubIndex == subIndex)}',
+          );
           return SGSidebarSubItem(
             label: item.label,
             icon: item.icon,
-            isActive: _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
+            isActive:
+                _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
             onTap:
                 () => setState(() {
                   _updateSelectedIndex(parentIndex, subIndex);
@@ -182,7 +201,10 @@ class _HomeState extends State<Home> {
             if (AppImage.imageLogo.isNotEmpty)
               CircleAvatar(
                 radius: 24,
-                child: Image.asset(AppImage.imageLogo, fit: BoxFit.cover), // kích thước avatar
+                child: Image.asset(
+                  AppImage.imageLogo,
+                  fit: BoxFit.cover,
+                ), // kích thước avatar
               ),
             const SizedBox(width: 16),
             Expanded(
@@ -198,7 +220,9 @@ class _HomeState extends State<Home> {
                       : const SizedBox.shrink(),
             ),
             const SizedBox(width: 16),
-            userInfo != null ? _buildHeaderActionRight(userInfo!) : const SizedBox.shrink(),
+            userInfo != null
+                ? _buildHeaderActionRight(userInfo!)
+                : const SizedBox.shrink(),
           ],
         ),
       ),
@@ -234,12 +258,13 @@ class _HomeState extends State<Home> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // Settings button
+        if(userInfo.rule == 0 || userInfo.rule == 1)
         MaterialIconButton(
           icon: Icons.settings,
           onPressed: () {
             context.go(AppRoute.account.path);
           },
-          tooltip: 'Cài đặt',
+          tooltip: 'Quản lý tài khoản',
         ),
         // const SizedBox(width: 8),
         // Chat button with popup
@@ -278,7 +303,8 @@ class _HomeState extends State<Home> {
         const SizedBox(width: 16),
         // User avatar
         Tooltip(
-          message: 'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
+          message:
+              'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
           child: CircleAvatar(
             radius: 20,
             backgroundColor: ColorValue.primaryLightBlue,
@@ -289,16 +315,26 @@ class _HomeState extends State<Home> {
             ),
           ),
         ),
+        const SizedBox(width: 16),
+        Tooltip(
+          message: 'Đăng xuất',
+          child: IconButton(
+            onPressed: () {
+              context.read<LoginProvider>().logout(context);
+            },
+            icon: const Icon(Icons.logout_outlined, size: 24,color: ColorValue.background,),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildTimeOption(String title) {
-    return InkWell(
-      onTap: () {
-        SGLog.debug('Header', '$title selected');
-      },
-      child: Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text(title)),
-    );
-  }
+  // Widget _buildTimeOption(String title) {
+  //   return InkWell(
+  //     onTap: () {
+  //       SGLog.debug('Header', '$title selected');
+  //     },
+  //     child: Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text(title)),
+  //   );
+  // }
 }

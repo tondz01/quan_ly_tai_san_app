@@ -188,7 +188,7 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
                   isEditing = false;
                   _initData();
                 });
-                
+
                 // widget.provider.onCloseDetail(context);
               },
             ),
@@ -208,37 +208,47 @@ class _AssetCategoryDetailState extends State<AssetCategoryDetail> {
   }
 
   void _saveChanges() {
-    log('message: _saveChanges');
     UserInfoDTO userInfo = widget.provider.userInfo!;
-    AssetCategoryDto request = AssetCategoryDto(
-      id: ctrlIdMoHinh.text,
-      tenMoHinh: ctrlTenMoHinh.text,
-      phuongPhapKhauHao: int.tryParse(phuongPhapKhauHao ?? '0') ?? 0,
-      kyKhauHao: int.tryParse(ctrlKyKhauHao.text) ?? 0,
-      loaiKyKhauHao: loaiKyKhauHao,
-      taiKhoanTaiSan: ctrlTaiKhoanTaiSan.text,
-      taiKhoanKhauHao: ctrlTaiKhoanKhauHao.text,
-      taiKhoanChiPhi: ctrlTaiKhoanChiPhi.text,
-      idCongTy: idCongTy,
-      ngayTao: getDateNow(),
-      ngayCapNhat: getDateNow(),
-      nguoiTao: userInfo.id,
-      nguoiCapNhat: userInfo.id,
-      isActive: isActive,
-    );
-
-    log('message request: ${jsonEncode(request)}');
     if (data == null) {
+      AssetCategoryDto request = AssetCategoryDto(
+        id: ctrlIdMoHinh.text,
+        tenMoHinh: ctrlTenMoHinh.text,
+        phuongPhapKhauHao: int.tryParse(phuongPhapKhauHao ?? '0') ?? 0,
+        kyKhauHao: int.tryParse(ctrlKyKhauHao.text) ?? 0,
+        loaiKyKhauHao: loaiKyKhauHao,
+        taiKhoanTaiSan: ctrlTaiKhoanTaiSan.text,
+        taiKhoanKhauHao: ctrlTaiKhoanKhauHao.text,
+        taiKhoanChiPhi: ctrlTaiKhoanChiPhi.text,
+        idCongTy: idCongTy,
+        ngayTao: getDateNow(),
+        ngayCapNhat: getDateNow(),
+        nguoiTao: userInfo.id,
+        isActive: isActive,
+      );
       context.read<AssetCategoryBloc>().add(
         CreateAssetCategoryEvent(context, request),
       );
     } else {
+      AssetCategoryDto request = AssetCategoryDto(
+        id: ctrlIdMoHinh.text,
+        tenMoHinh: ctrlTenMoHinh.text,
+        phuongPhapKhauHao: int.tryParse(phuongPhapKhauHao ?? '0') ?? 0,
+        kyKhauHao: int.tryParse(ctrlKyKhauHao.text) ?? 0,
+        loaiKyKhauHao: loaiKyKhauHao,
+        taiKhoanTaiSan: ctrlTaiKhoanTaiSan.text,
+        taiKhoanKhauHao: ctrlTaiKhoanKhauHao.text,
+        taiKhoanChiPhi: ctrlTaiKhoanChiPhi.text,
+        idCongTy: idCongTy,
+        ngayTao: getDateNow(),
+        ngayCapNhat: getDateNow(),
+        nguoiCapNhat: userInfo.id,
+        isActive: isActive,
+      );
       context.read<AssetCategoryBloc>().add(
         UpdateAssetCategoryEvent(context, request, data!.id ?? ''),
       );
     }
   }
-
 
   String getDepreciationMethod(int type) {
     String nameDepreciationMethod = 'Đường thẳng';

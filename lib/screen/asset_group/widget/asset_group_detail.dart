@@ -12,6 +12,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 class AssetGroupDetail extends StatefulWidget {
   final AssetGroupProvider provider;
@@ -206,6 +208,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   }
 
   void _saveChanges() {
+    UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
     log('message: _saveChanges');
     if (data == null) {
       AssetGroupRequest request = AssetGroupRequest(
@@ -216,8 +219,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
         idCongTy: 'CT001',
         ngayTao: DateTime.parse(getDateNow()),
         ngayCapNhat: DateTime.parse(getDateNow()),
-        nguoiTao: 'use001',
-        nguoiCapNhat: 'use001',
+        nguoiTao: userInfo?.id ?? '',
       );
 
       context.read<AssetGroupBloc>().add(
@@ -232,8 +234,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
         idCongTy: 'CT001',
         ngayTao: DateTime.parse(getDateNow()),
         ngayCapNhat: DateTime.parse(getDateNow()),
-        nguoiTao: 'use001',
-        nguoiCapNhat: 'use001',
+        nguoiCapNhat: userInfo?.id ?? '',
       );
 
       context.read<AssetGroupBloc>().add(
