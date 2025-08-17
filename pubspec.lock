@@ -552,9 +552,11 @@ packages:
   se_gay_components:
     dependency: "direct main"
     description:
-      path: "D:\\Project\\SeGayComponent"
-      relative: false
-    source: path
+      path: "."
+      ref: main
+      resolved-ref: "2fe821e90f3f055393b0b63a932cb592efdbeea0"
+      url: "https://github.com/congcuong207/SeGayComponent.git"
+    source: git
     version: "1.0.0+1"
   sky_engine:
     dependency: transitive

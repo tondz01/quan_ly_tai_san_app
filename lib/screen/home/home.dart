@@ -26,9 +26,9 @@ class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   int _selectedSubIndex = 0;
   UserInfoDTO? userInfo;
-  final SGPopupManager _popupManager = SGPopupManager();
+  late SGPopupManager _popupManager;
   // Khởi tạo model menu data
-  final AppMenuData _menuData = AppMenuData();
+  late AppMenuData _menuData;
   // Thêm biến để theo dõi trạng thái của popup
   bool _isPopupOpen = false;
 
@@ -37,66 +37,14 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    _menuData = AppMenuData();
+    _popupManager = SGPopupManager();
+    _selectedIndex = 0;
+    _selectedSubIndex = 0;
+
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
-
-    // Lắng nghe thay đổi route để cập nhật selectedIndex
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateSelectedIndexFromRoute();
-    });
-  }
-
-  @override
-  void didUpdateWidget(Home oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Cập nhật selectedIndex khi widget được update
-    log('message didUpdateWidget');
-    _updateSelectedIndexFromRoute();
-  }
-
-  void _updateSelectedIndexFromRoute() {
-    final currentLocation = GoRouterState.of(context).uri.path;
-    final extra = GoRouterState.of(context).extra;
     userInfo = AccountHelper.instance.getUserInfo();
-
-    log('Current route: $currentLocation, extra: $extra');
-
-    // Tìm menu item tương ứng với route hiện tại
-    for (int i = 0; i < _menuData.menuItems.length; i++) {
-      final menuItem = _menuData.menuItems[i];
-
-      // Kiểm tra route chính
-      if (menuItem.route == currentLocation) {
-        _updateSelectedIndex(i, 0);
-        return;
-      }
-
-      // Kiểm tra subItems
-      for (int j = 0; j < menuItem.reportSubItems.length; j++) {
-        final subItem = menuItem.reportSubItems[j];
-        if (subItem.route == currentLocation) {
-          _updateSelectedIndex(i, j);
-          return;
-        }
-      }
-
-      // Kiểm tra projectGroups
-      for (
-        int groupIndex = 0;
-        groupIndex < menuItem.projectGroups.length;
-        groupIndex++
-      ) {
-        final group = menuItem.projectGroups[groupIndex];
-        for (int itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
-          final item = group.items[itemIndex];
-          if (item.route == currentLocation) {
-            final subIndex = groupIndex * 100 + itemIndex;
-            _updateSelectedIndex(i, subIndex);
-            return;
-          }
-        }
-      }
-    }
   }
 
   void _updateSelectedIndex(int index, int subIndex) {
@@ -105,9 +53,6 @@ class _HomeState extends State<Home> {
         _selectedIndex = index;
         _selectedSubIndex = subIndex;
       });
-      log(
-        'Updated selectedIndex: $_selectedIndex, selectedSubIndex: $_selectedSubIndex',
-      );
     }
   }
 
@@ -126,6 +71,7 @@ class _HomeState extends State<Home> {
   }
 
   List<SGSidebarHorizontalItem> _getItems() {
+    SGLog.debug("Home", "Check: ${_menuData.menuItems.length}");
     // Tạo danh sách items từ model
     return List.generate(_menuData.menuItems.length, (index) {
       final item = _menuData.menuItems[index];
@@ -141,82 +87,78 @@ class _HomeState extends State<Home> {
         borderRadiusButton: 4.0,
         paddingButton: const EdgeInsets.only(bottom: 8, left: 12, right: 12),
         popupOffsetY: 3.0,
-        popupPadding: const EdgeInsets.symmetric(vertical: 2),
+        popupPadding: EdgeInsets.symmetric(
+          vertical: (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) ? 0 : 2,
+        ),
         onTap:
             () => setState(() {
               if (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) {
-                _selectedIndex = item.index;
+                // Đảm bảo index được dùng là vị trí của item trong mảng
+                _selectedIndex = index;
                 if (item.route.isNotEmpty) {
                   isItemOne = true;
                   context.go(item.route);
                 }
               }
             }),
-        subItems:
-            item.reportSubItems.isNotEmpty ? _buildSubItems(item.index) : null,
-        subItemGroups:
-            item.projectGroups.isNotEmpty
-                ? _buildSubItemGroups(item.index, item.projectGroups)
-                : null,
+        subItems: item.reportSubItems.isNotEmpty ? _buildSubItems(index) : null,
+        subItemGroups: item.projectGroups.isNotEmpty ? _buildSubItemGroups(index, item.projectGroups) : null,
       );
     });
   }
 
   // Tạo subItems thông thường từ model
   List<SGSidebarSubItem> _buildSubItems(int parentIndex) {
-    return List.generate(
-      _menuData.menuItems[parentIndex].reportSubItems.length,
-      (subIndex) {
-        final subItem =
-            _menuData.menuItems[parentIndex].reportSubItems[subIndex];
-        return SGSidebarSubItem(
-          label: subItem.label,
-          icon: subItem.icon,
-          isActive:
-              _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
-          onTap:
-              () => setState(() {
-                _selectedIndex = parentIndex;
-                _selectedSubIndex = subIndex;
-                _popupManager.closeAllPopups();
-                if (subItem.route.isNotEmpty) {
-                  isItemOne = false;
-                  log('subItem.route: ${subItem.extra}');
-                  context.go(subItem.route, extra: subItem.extra);
-                }
-              }),
-        );
-      },
-    );
+    // Kiểm tra xem parentIndex có hợp lệ không
+    if (parentIndex < 0 || parentIndex >= _menuData.menuItems.length) {
+      // Trả về danh sách rỗng nếu index không hợp lệ
+      return [];
+    }
+    return List.generate(_menuData.menuItems[parentIndex].reportSubItems.length, (subIndex) {
+      final subItem = _menuData.menuItems[parentIndex].reportSubItems[subIndex];
+      return SGSidebarSubItem(
+        label: subItem.label,
+        icon: subItem.icon,
+        isActive: (_selectedIndex == parentIndex && _selectedSubIndex == subIndex),
+        onTap:
+            () => setState(() {
+              _updateSelectedIndex(parentIndex, subIndex);
+              _popupManager.closeAllPopups();
+              if (subItem.route.isNotEmpty) {
+                isItemOne = false;
+                context.go(subItem.route, extra: subItem.extra);
+              }
+            }),
+      );
+    });
   }
 
   // Tạo subItemGroups có nhóm từ model
-  List<SGSubItemGroup> _buildSubItemGroups(
-    int parentIndex,
-    List<SubMenuGroup> groupData,
-  ) {
+  List<SGSubItemGroup> _buildSubItemGroups(int parentIndex, List<SubMenuGroup> groupData) {
+    // Kiểm tra xem parentIndex có hợp lệ không
+    if (parentIndex < 0 || parentIndex >= _menuData.menuItems.length) {
+      // Trả về danh sách rỗng nếu index không hợp lệ
+      return [];
+    }
+    
     return List.generate(groupData.length, (groupIndex) {
       final group = groupData[groupIndex];
-
       return SGSubItemGroup(
         title: group.title,
         items: List.generate(group.items.length, (itemIndex) {
           final item = group.items[itemIndex];
-          final subIndex =
-              groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
+          final subIndex = groupIndex * 100 + itemIndex; // Tạo subIndex duy nhất
+          SGLog.debug("Home", 'Check: ${(_selectedIndex == parentIndex && _selectedSubIndex == subIndex)}');
           return SGSidebarSubItem(
             label: item.label,
             icon: item.icon,
-            isActive:
-                _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
+            isActive: _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
             onTap:
                 () => setState(() {
-                  _selectedIndex = parentIndex;
-                  _selectedSubIndex = subIndex;
+                  _updateSelectedIndex(parentIndex, subIndex);
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
                     isItemOne = false;
-                    log('item.extra: ${item.extra}');
                     context.go(item.route, extra: item.extra);
                   }
                 }),
@@ -230,47 +172,30 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     // Lấy danh sách items từ model
     final sidebarItems = _getItems();
-    log('sidebarItems: ${sidebarItems.toString()}');
     return MainWrapper(
       header: null,
       sidebar: Container(
         padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
-        decoration: BoxDecoration(
-          color: Colors.blue,
-          boxShadow: [
-            BoxShadow(
-              color: ColorValue.neutral200.withOpacity(0.3),
-              offset: const Offset(0, 1),
-              blurRadius: 2,
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: Colors.blue),
         child: Row(
           children: [
             if (AppImage.imageLogo.isNotEmpty)
-              // SizedBox(
-              //   width: 48,
-              //   height: 48,
-              //   child: Image.asset(AppImage.imageLogo),
-              // ),
               CircleAvatar(
                 radius: 24,
-                child: Image.asset(
-                  AppImage.imageLogo,
-                  fit: BoxFit.cover,
-                ), // kích thước avatar
+                child: Image.asset(AppImage.imageLogo, fit: BoxFit.cover), // kích thước avatar
               ),
             const SizedBox(width: 16),
             Expanded(
-              child: sidebarItems.isNotEmpty 
-                ? SGSidebarHorizontal(
-                    items: sidebarItems,
-                    onShowSubItems: (subItems) {
-                      // Cập nhật lại UI nếu cần thiết
-                      setState(() {});
-                    },
-                  )
-                : const SizedBox.shrink(),
+              child:
+                  sidebarItems.isNotEmpty
+                      ? SGSidebarHorizontal(
+                        items: sidebarItems,
+                        onShowSubItems: (subItems) {
+                          // Cập nhật lại UI nếu cần thiết
+                          setState(() {});
+                        },
+                      )
+                      : const SizedBox.shrink(),
             ),
             const SizedBox(width: 16),
             userInfo != null ? _buildHeaderActionRight(userInfo!) : const SizedBox.shrink(),
@@ -283,13 +208,11 @@ class _HomeState extends State<Home> {
           children: [
             // Content
             widget.child,
-
             // Thêm barrier chỉ hiển thị khi popup đang mở
             if (_isPopupOpen && !isItemOne)
               Positioned.fill(
                 child: GestureDetector(
                   onTap: () {
-                    SGLog.debug("Home", "Barrier tapped");
                     primaryFocus?.unfocus();
                     FocusScope.of(context).unfocus();
                     _popupManager.closeAllPopups();
@@ -318,85 +241,50 @@ class _HomeState extends State<Home> {
           },
           tooltip: 'Cài đặt',
         ),
-        const SizedBox(width: 8),
+        // const SizedBox(width: 8),
         // Chat button with popup
-        PopupMenuButton<String>(
-          offset: const Offset(-83, 10),
-          child: MaterialIconButton(
-            icon: Icons.chat_bubble_outline,
-            onPressed: null,
-            tooltip: 'Chat',
-          ),
-          itemBuilder:
-              (context) => [
-                PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
-                PopupMenuItem(
-                  value: 'yesterday',
-                  child: _buildTimeOption('Yesterday'),
-                ),
-                PopupMenuItem(
-                  value: 'last7days',
-                  child: _buildTimeOption('Last 7 days'),
-                ),
-                PopupMenuItem(
-                  value: 'thismonth',
-                  child: _buildTimeOption('This month'),
-                ),
-                PopupMenuItem(
-                  value: 'custom',
-                  child: _buildTimeOption('Custom range'),
-                ),
-              ],
-          onSelected: (value) {
-            SGLog.debug('Header', '$value selected');
-          },
-        ),
-        const SizedBox(width: 8),
+        // PopupMenuButton<String>(
+        //   offset: const Offset(-83, 10),
+        //   child: MaterialIconButton(icon: Icons.chat_bubble_outline, onPressed: null, tooltip: 'Chat'),
+        //   itemBuilder:
+        //       (context) => [
+        //         PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
+        //         PopupMenuItem(value: 'yesterday', child: _buildTimeOption('Yesterday')),
+        //         PopupMenuItem(value: 'last7days', child: _buildTimeOption('Last 7 days')),
+        //         PopupMenuItem(value: 'thismonth', child: _buildTimeOption('This month')),
+        //         PopupMenuItem(value: 'custom', child: _buildTimeOption('Custom range')),
+        //       ],
+        //   onSelected: (value) {
+        //     SGLog.debug('Header', '$value selected');
+        //   },
+        // ),
+        // const SizedBox(width: 8),
         // Time button with popup
-        PopupMenuButton<String>(
-          offset: const Offset(-83, 10),
-          child: MaterialIconButton(
-            icon: Icons.access_time,
-            onPressed: null,
-            tooltip: 'Thời gian',
-          ),
-          itemBuilder:
-              (context) => [
-                PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
-                PopupMenuItem(
-                  value: 'yesterday',
-                  child: _buildTimeOption('Yesterday'),
-                ),
-                PopupMenuItem(
-                  value: 'last7days',
-                  child: _buildTimeOption('Last 7 days'),
-                ),
-                PopupMenuItem(
-                  value: 'thismonth',
-                  child: _buildTimeOption('This month'),
-                ),
-                PopupMenuItem(
-                  value: 'custom',
-                  child: _buildTimeOption('Custom range'),
-                ),
-              ],
-          onSelected: (value) {
-            SGLog.debug('Header', '$value selected');
-          },
-        ),
+        // PopupMenuButton<String>(
+        //   offset: const Offset(-83, 10),
+        //   child: MaterialIconButton(icon: Icons.access_time, onPressed: null, tooltip: 'Thời gian'),
+        //   itemBuilder:
+        //       (context) => [
+        //         PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
+        //         PopupMenuItem(value: 'yesterday', child: _buildTimeOption('Yesterday')),
+        //         PopupMenuItem(value: 'last7days', child: _buildTimeOption('Last 7 days')),
+        //         PopupMenuItem(value: 'thismonth', child: _buildTimeOption('This month')),
+        //         PopupMenuItem(value: 'custom', child: _buildTimeOption('Custom range')),
+        //       ],
+        //   onSelected: (value) {
+        //     SGLog.debug('Header', '$value selected');
+        //   },
+        // ),
         const SizedBox(width: 16),
         // User avatar
         Tooltip(
-          message:
-              'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
+          message: 'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
           child: CircleAvatar(
             radius: 20,
             backgroundColor: ColorValue.primaryLightBlue,
             child: CircleAvatar(
               radius: 18,
-              backgroundImage: const NetworkImage(
-                'https://i.pravatar.cc/150?img=3',
-              ),
+              backgroundImage: AssetImage(AppImage.imageUser),
               backgroundColor: Colors.white,
             ),
           ),
@@ -410,10 +298,7 @@ class _HomeState extends State<Home> {
       onTap: () {
         SGLog.debug('Header', '$title selected');
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Text(title),
-      ),
+      child: Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text(title)),
     );
   }
 }

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu_page.dart';
 import '../../asset_transfer/component/config_view_asset_transfer.dart';
 import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import '../views/asset_move_report.dart';
 
 class BienBanDoiChieuScreen extends StatefulWidget {
   final String idCongty;
@@ -108,22 +110,19 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
                               List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans = dieuDongTaiSanDto.chiTietDieuDongTaiSans;
                               if (chiTietDieuDongTaiSans != null) {
                                 if (mounted) {
+                                  UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
                                   showDialog(
                                     context: this.context,
                                     barrierDismissible: true,
                                     builder:
                                         (context) => Padding(
                                           padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
-                                          child: AssetMoveReport(
-                                            contractType: BienBanDoiChieuKiemKePage(
-                                              // assetHandoverDto: item,
-                                              // chiTietDieuDongTaiSans:
-                                              // chiTietDieuDongTaiSans,
-                                            ),
+                                          child: CommonContract(
+                                            contractType: BienBanDoiChieuKiemKePage(),
                                             signatureList: <String>['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
                                             idTaiLieu: item.id.toString(),
-                                            idNguoiKy: "thanhtonvk",
-                                            tenNguoiKy: "Do Thanh Ton",
+                                            idNguoiKy: userInfo.tenDangNhap,
+                                            tenNguoiKy: userInfo.hoTen,
                                           ),
                                         ),
                                   );
