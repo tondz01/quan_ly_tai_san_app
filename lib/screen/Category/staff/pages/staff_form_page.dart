@@ -261,6 +261,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 'Mã nhân viên',
                                 required: true,
                               ),
+                              enabled: !isEdit, // Read-only khi update
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
@@ -358,19 +359,26 @@ class _StaffFormPageState extends State<StaffFormPage> {
                       Expanded(
                         child: Column(
                           children: [
-                            TextFormField(
-                              controller: _activityController,
+                            DropdownButtonFormField<String>(
+                              value: _activityController.text.isNotEmpty ? _activityController.text : null,
                               decoration: inputDecoration(
                                 'Hoạt động',
                                 required: true,
                               ),
+                              items: [
+                                DropdownMenuItem(value: 'Có', child: Text('Có')),
+                                DropdownMenuItem(value: 'Không', child: Text('Không')),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _activityController.text = value ?? '';
+                                });
+                              },
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
-                                          ? 'Nhập hoạt động'
+                                          ? 'Chọn hoạt động'
                                           : null,
-                              minLines: 1,
-                              maxLines: 3,
                             ),
                             const SizedBox(height: 16),
                             // TextFormField(

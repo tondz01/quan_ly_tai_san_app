@@ -68,34 +68,82 @@ class _AssetFormPageState extends State<AssetFormPage> {
   @override
   void initState() {
     super.initState();
-    _assetIdController = TextEditingController(text: widget.asset?.assetId ?? '');
-    _originalPriceController = TextEditingController(text: widget.asset?.originalPrice ?? '');
-    _initialDepreciationValueController = TextEditingController(text: widget.asset?.initialDepreciationValue ?? '');
-    _initialDepreciationPeriodController = TextEditingController(text: widget.asset?.initialDepreciationPeriod ?? '');
-    _liquidationValueController = TextEditingController(text: widget.asset?.liquidationValue ?? '');
-    _assetModelController = TextEditingController(text: widget.asset?.assetModel ?? '');
-    _depreciationMethodController = TextEditingController(text: widget.asset?.depreciationMethod ?? '');
-    _depreciationPeriodsController = TextEditingController(text: widget.asset?.depreciationPeriods ?? '');
-    _assetAccountController = TextEditingController(text: widget.asset?.assetAccount ?? '');
-    _depreciationAccountController = TextEditingController(text: widget.asset?.depreciationAccount ?? '');
-    _costAccountController = TextEditingController(text: widget.asset?.costAccount ?? '');
-    _assetGroupController = TextEditingController(text: widget.asset?.assetGroup ?? '');
-    _entryDateController = TextEditingController(text: widget.asset?.entryDate ?? '');
-    _usageDateController = TextEditingController(text: widget.asset?.usageDate ?? '');
-    _projectController = TextEditingController(text: widget.asset?.project ?? '');
-    _fundingSourceController = TextEditingController(text: widget.asset?.fundingSource ?? '');
+    _assetIdController = TextEditingController(
+      text: widget.asset?.assetId ?? '',
+    );
+    _originalPriceController = TextEditingController(
+      text: widget.asset?.originalPrice ?? '',
+    );
+    _initialDepreciationValueController = TextEditingController(
+      text: widget.asset?.initialDepreciationValue ?? '',
+    );
+    _initialDepreciationPeriodController = TextEditingController(
+      text: widget.asset?.initialDepreciationPeriod ?? '',
+    );
+    _liquidationValueController = TextEditingController(
+      text: widget.asset?.liquidationValue ?? '',
+    );
+    _assetModelController = TextEditingController(
+      text: widget.asset?.assetModel ?? '',
+    );
+    _depreciationMethodController = TextEditingController(
+      text: widget.asset?.depreciationMethod ?? '',
+    );
+    _depreciationPeriodsController = TextEditingController(
+      text: widget.asset?.depreciationPeriods ?? '',
+    );
+    _assetAccountController = TextEditingController(
+      text: widget.asset?.assetAccount ?? '',
+    );
+    _depreciationAccountController = TextEditingController(
+      text: widget.asset?.depreciationAccount ?? '',
+    );
+    _costAccountController = TextEditingController(
+      text: widget.asset?.costAccount ?? '',
+    );
+    _assetGroupController = TextEditingController(
+      text: widget.asset?.assetGroup ?? '',
+    );
+    _entryDateController = TextEditingController(
+      text: widget.asset?.entryDate ?? '',
+    );
+    _usageDateController = TextEditingController(
+      text: widget.asset?.usageDate ?? '',
+    );
+    _projectController = TextEditingController(
+      text: widget.asset?.project ?? '',
+    );
+    _fundingSourceController = TextEditingController(
+      text: widget.asset?.fundingSource ?? '',
+    );
     _symbolController = TextEditingController(text: widget.asset?.symbol ?? '');
-    _symbolNumberController = TextEditingController(text: widget.asset?.symbolNumber ?? '');
-    _capacityController = TextEditingController(text: widget.asset?.capacity ?? '');
-    _countryOfOriginController = TextEditingController(text: widget.asset?.countryOfOrigin ?? '');
-    _yearOfManufactureController = TextEditingController(text: widget.asset?.yearOfManufacture ?? '');
-    _reasonForIncreaseController = TextEditingController(text: widget.asset?.reasonForIncrease ?? '');
+    _symbolNumberController = TextEditingController(
+      text: widget.asset?.symbolNumber ?? '',
+    );
+    _capacityController = TextEditingController(
+      text: widget.asset?.capacity ?? '',
+    );
+    _countryOfOriginController = TextEditingController(
+      text: widget.asset?.countryOfOrigin ?? '',
+    );
+    _yearOfManufactureController = TextEditingController(
+      text: widget.asset?.yearOfManufacture ?? '',
+    );
+    _reasonForIncreaseController = TextEditingController(
+      text: widget.asset?.reasonForIncrease ?? '',
+    );
     _statusController = TextEditingController(text: widget.asset?.status ?? '');
-    _quantityController = TextEditingController(text: widget.asset?.quantity ?? '');
+    _quantityController = TextEditingController(
+      text: widget.asset?.quantity ?? '',
+    );
     _unitController = TextEditingController(text: widget.asset?.unit ?? '');
     _noteController = TextEditingController(text: widget.asset?.note ?? '');
-    _initialUsageUnitController = TextEditingController(text: widget.asset?.initialUsageUnit ?? '');
-    _currentUnitController = TextEditingController(text: widget.asset?.currentUnit ?? '');
+    _initialUsageUnitController = TextEditingController(
+      text: widget.asset?.initialUsageUnit ?? '',
+    );
+    _currentUnitController = TextEditingController(
+      text: widget.asset?.currentUnit ?? '',
+    );
     _initialUnitCreated = widget.asset?.initialUnitCreated ?? false;
   }
 
@@ -132,7 +180,11 @@ class _AssetFormPageState extends State<AssetFormPage> {
     super.dispose();
   }
 
-  InputDecoration _inputDecoration(String label, {bool required = false, String? hint}) {
+  InputDecoration _inputDecoration(
+    String label, {
+    bool required = false,
+    String? hint,
+  }) {
     return InputDecoration(
       labelText: required ? '$label *' : label,
       hintText: hint,
@@ -157,11 +209,20 @@ class _AssetFormPageState extends State<AssetFormPage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
             if (desc != null)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
-                child: Text(desc, style: const TextStyle(color: Color(0xFF687082), fontSize: 13)),
+                child: Text(
+                  desc,
+                  style: const TextStyle(
+                    color: Color(0xFF687082),
+                    fontSize: 13,
+                  ),
+                ),
               ),
           ],
         ),
@@ -187,8 +248,10 @@ class _AssetFormPageState extends State<AssetFormPage> {
       final asset = AssetDTO(
         assetId: _assetIdController.text.trim(),
         originalPrice: _originalPriceController.text.trim(),
-        initialDepreciationValue: _initialDepreciationValueController.text.trim(),
-        initialDepreciationPeriod: _initialDepreciationPeriodController.text.trim(),
+        initialDepreciationValue:
+            _initialDepreciationValueController.text.trim(),
+        initialDepreciationPeriod:
+            _initialDepreciationPeriodController.text.trim(),
         liquidationValue: _liquidationValueController.text.trim(),
         assetModel: _assetModelController.text.trim(),
         depreciationMethod: _depreciationMethodController.text.trim(),
@@ -233,7 +296,9 @@ class _AssetFormPageState extends State<AssetFormPage> {
     final isEdit = widget.asset != null;
     return Center(
       child: Container(
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+        ),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: const Color(0xFFF7F9FC),
@@ -245,7 +310,11 @@ class _AssetFormPageState extends State<AssetFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _sectionTitle(Icons.inventory_2, isEdit ? 'Cập nhật tài sản' : 'Thêm tài sản', 'Nhập thông tin tài sản.'),
+                _sectionTitle(
+                  Icons.inventory_2,
+                  isEdit ? 'Cập nhật tài sản' : 'Thêm tài sản',
+                  'Nhập thông tin tài sản.',
+                ),
                 _sectionCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,17 +325,32 @@ class _AssetFormPageState extends State<AssetFormPage> {
                         children: [
                           Expanded(
                             child: TextFormField(
+                              enabled: !isEdit, // Read-only khi update
                               controller: _assetIdController,
-                              decoration: _inputDecoration('Mã tài sản', required: true),
-                              validator: (v) => v == null || v.isEmpty ? 'Nhập mã tài sản' : null,
+                              decoration: _inputDecoration(
+                                'Mã tài sản',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập mã tài sản'
+                                          : null,
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: _originalPriceController,
-                              decoration: _inputDecoration('Nguyên giá', required: true),
-                              validator: (v) => v == null || v.isEmpty ? 'Nhập nguyên giá' : null,
+                              decoration: _inputDecoration(
+                                'Nguyên giá',
+                                required: true,
+                              ),
+                              validator:
+                                  (v) =>
+                                      v == null || v.isEmpty
+                                          ? 'Nhập nguyên giá'
+                                          : null,
                             ),
                           ),
                         ],
@@ -277,14 +361,18 @@ class _AssetFormPageState extends State<AssetFormPage> {
                           Expanded(
                             child: TextFormField(
                               controller: _initialDepreciationValueController,
-                              decoration: _inputDecoration('Giá trị khấu hao ban đầu'),
+                              decoration: _inputDecoration(
+                                'Giá trị khấu hao ban đầu',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: _initialDepreciationPeriodController,
-                              decoration: _inputDecoration('Kỳ khấu hao ban đầu'),
+                              decoration: _inputDecoration(
+                                'Kỳ khấu hao ban đầu',
+                              ),
                             ),
                           ),
                         ],
@@ -312,10 +400,30 @@ class _AssetFormPageState extends State<AssetFormPage> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: depreciationMethods.contains(_depreciationMethodController.text) ? _depreciationMethodController.text : null,
-                              decoration: _inputDecoration('Phương pháp khấu hao'),
-                              items: depreciationMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                              onChanged: (v) => setState(() => _depreciationMethodController.text = v ?? ''),
+                              value:
+                                  depreciationMethods.contains(
+                                        _depreciationMethodController.text,
+                                      )
+                                      ? _depreciationMethodController.text
+                                      : null,
+                              decoration: _inputDecoration(
+                                'Phương pháp khấu hao',
+                              ),
+                              items:
+                                  depreciationMethods
+                                      .map(
+                                        (m) => DropdownMenuItem(
+                                          value: m,
+                                          child: Text(m),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged:
+                                  (v) => setState(
+                                    () =>
+                                        _depreciationMethodController.text =
+                                            v ?? '',
+                                  ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -340,7 +448,9 @@ class _AssetFormPageState extends State<AssetFormPage> {
                           Expanded(
                             child: TextFormField(
                               controller: _depreciationAccountController,
-                              decoration: _inputDecoration('Tài khoản khấu hao'),
+                              decoration: _inputDecoration(
+                                'Tài khoản khấu hao',
+                              ),
                             ),
                           ),
                         ],
@@ -357,10 +467,26 @@ class _AssetFormPageState extends State<AssetFormPage> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: assetGroups.contains(_assetGroupController.text) ? _assetGroupController.text : null,
+                              value:
+                                  assetGroups.contains(
+                                        _assetGroupController.text,
+                                      )
+                                      ? _assetGroupController.text
+                                      : null,
                               decoration: _inputDecoration('Nhóm tài sản'),
-                              items: assetGroups.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-                              onChanged: (v) => setState(() => _assetGroupController.text = v ?? ''),
+                              items:
+                                  assetGroups
+                                      .map(
+                                        (g) => DropdownMenuItem(
+                                          value: g,
+                                          child: Text(g),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged:
+                                  (v) => setState(
+                                    () => _assetGroupController.text = v ?? '',
+                                  ),
                             ),
                           ),
                         ],
@@ -497,7 +623,9 @@ class _AssetFormPageState extends State<AssetFormPage> {
                           Expanded(
                             child: TextFormField(
                               controller: _initialUsageUnitController,
-                              decoration: _inputDecoration('Đơn vị sử dụng ban đầu'),
+                              decoration: _inputDecoration(
+                                'Đơn vị sử dụng ban đầu',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -540,7 +668,9 @@ class _AssetFormPageState extends State<AssetFormPage> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF7B8EC8),
                         side: const BorderSide(color: Color(0xFFE6EAF3)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child: const Text('Hủy'),
                     ),
@@ -550,8 +680,13 @@ class _AssetFormPageState extends State<AssetFormPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2264E5),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
                       ),
                       child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
                     ),
@@ -564,4 +699,4 @@ class _AssetFormPageState extends State<AssetFormPage> {
       ),
     );
   }
-} 
+}

@@ -131,6 +131,7 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
                             Expanded(
                               child: TextFormField(
                                 controller: _codeController,
+                                enabled: !isEdit, // Read-only khi update
                                 decoration: inputDecoration(
                                   'Mã nguồn kinh phí',
                                   required: true,

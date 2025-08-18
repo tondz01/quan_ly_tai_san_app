@@ -116,6 +116,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _codeController,
+                          enabled: !isEdit, // Read-only khi update
                           decoration: inputDecoration(
                             'Mã dự án',
                             required: true,

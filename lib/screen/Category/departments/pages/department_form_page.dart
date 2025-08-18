@@ -146,6 +146,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             'Mã đơn vị',
                             required: true,
                           ),
+                          enabled: !isEdit, // Read-only khi update
                           validator:
                               (v) =>
                                   v == null || v.isEmpty
