@@ -63,16 +63,15 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       add(LoadStaffs());
     });
     on<UpdateStaff>((event, emit) async {
-         await _provider.updateNhanVien(event.staff, event.staff.chuKyData);
-
+      await _provider.updateNhanVien(event.staff, event.staff.chuKyData);
       add(LoadStaffs());
-
     });
-    on<DeleteStaff>((event, emit) {
+    on<DeleteStaff>((event, emit) async {
       if (state is StaffLoaded) {
-        final staffs = List<NhanVien>.from((state as StaffLoaded).staffs);
-        staffs.removeWhere((element) => element.id == event.staff.id);
-        emit(StaffLoaded(staffs));
+        await _provider.deleteNhanVien(event.staff.id ?? '');
+        add(LoadStaffs());
+      } else {
+        emit(StaffLoaded([event.staff]));
       }
     });
   }
