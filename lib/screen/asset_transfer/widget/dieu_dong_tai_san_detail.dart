@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -11,14 +12,12 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
@@ -30,8 +29,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:path/path.dart' as path;
 
 import '../bloc/dieu_dong_tai_san_bloc.dart';
 import '../bloc/dieu_dong_tai_san_event.dart';
@@ -55,6 +52,7 @@ class DieuDongTaiSanDetail extends StatefulWidget {
   State<DieuDongTaiSanDetail> createState() => _DieuDongTaiSanDetailState();
 }
 
+// ignore: library_private_types_in_public_api
 final GlobalKey<_DieuDongTaiSanDetailState> dieuDongTaiSanDetailKey =
     GlobalKey<_DieuDongTaiSanDetailState>();
 
@@ -112,6 +110,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   NhanVien? nguoiKyGiamDoc;
 
   late DieuDongTaiSanDto? item;
+  DieuDongTaiSanDto? itemPreview;
 
   final Map<String, TextEditingController> contractTermsControllers = {};
 
@@ -174,6 +173,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     item = widget.provider.item;
     _callGetListAssetHandover();
     isEditing = widget.isEditing;
+    _refreshWidget();
 
     if (item != null && item!.trangThai == 0) {
       isEditing = true;
@@ -234,7 +234,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
         // Initialize selected file if available
         _selectedFileName = item?.tenFile;
+        log('item?.tenFile: ${item?.tenFile}');
         _selectedFilePath = item?.duongDanFile;
+        log('item?.duongDanFile: ${item?.duongDanFile}');
         isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
         isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
         isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
@@ -800,14 +802,29 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ),
                           )
                           .toList();
-
-                  log('listNewDetails: ${listNewDetails.length}');
-                  log('listNewDetails data: ${jsonEncode(listNewDetails)}');
+                  // widget.provider.changeIsShowPreview(
+                  //   listNewDetails.isNotEmpty && _selectedFilePath != null,
+                  //   _createDieuDong(widget.type, listNewDetails),
+                  // );
+                  log('itemPreview: ${widget.provider.itemPreview?.toJson()}');
                 },
               ),
 
               SizedBox(height: 10),
-              previewDocumentAssetTransfer(item),
+              previewDocumentAssetTransfer(
+                context: context,
+                item: item ?? itemPreview,
+                provider: widget.provider,
+                isShowKy: false,
+                callBack: () {
+                  setState(() {
+                    _createDieuDong(widget.type, listNewDetails);
+                    itemPreview = _createDieuDong(widget.type, listNewDetails);
+                    log('_createDieuDong: ${itemPreview?.toJson()}');
+                  });
+                },
+                isDisabled: !widget.provider.isShowPreview,
+              ),
             ],
           ),
         ),
@@ -847,64 +864,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         ),
       );
     }
-  }
-
-  Widget previewDocumentAssetTransfer(DieuDongTaiSanDto? item) {
-    return InkWell(
-      onTap: () {
-        if (item == null) return;
-        UserInfoDTO userInfo = widget.provider.userInfo!;
-        log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
-        NhanVien nhanVien = widget.provider.getNhanVienByID(
-          userInfo.tenDangNhap,
-        );
-        String tenFile = path.basename(nhanVien.chuKy.toString());
-        log('nhanVien.chuKy: ${nhanVien.chuKy}');
-        String url = '${Config.baseUrl}/api/upload/download/$tenFile';
-
-        log('message String url: $url');
-        showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder:
-              (context) => Padding(
-                padding: const EdgeInsets.only(
-                  left: 24.0,
-                  right: 24.0,
-                  top: 16.0,
-                  bottom: 16.0,
-                ),
-                child: CommonContract(
-                  contractType: ContractPage.assetMovePage(item),
-                  signatureList: [url],
-                  idTaiLieu: item.id.toString(),
-                  idNguoiKy: userInfo.tenDangNhap,
-                  tenNguoiKy: userInfo.hoTen,
-                ),
-              ),
-        );
-      },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2.5),
-            child: SGText(
-              text: "Xem trước tài liệu",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ColorValue.link,
-              ),
-            ),
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.visibility, color: ColorValue.link, size: 18),
-        ],
-      ),
-    );
   }
 
   LenhDieuDongRequest _createDieuDongRequest(int type, int state) {
@@ -955,6 +914,61 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     );
   }
 
+  DieuDongTaiSanDto? _createDieuDong(
+    int type,
+    List<ChiTietDieuDongTaiSan> listNewDetails,
+  ) {
+    setState(() {
+      log('listNewDetails: ${jsonEncode(listNewDetails)}');
+    });
+    return DieuDongTaiSanDto(
+      id: controllerSoChungTu.text,
+      soQuyetDinh: controllerSoChungTu.text,
+      tenPhieu: controllerDocumentName.text,
+      idDonViGiao: donViGiao?.id ?? '',
+      idDonViNhan: donViNhan?.id ?? '',
+      idNguoiDeNghi: nguoiDeNghi?.id ?? '',
+      nguoiLapPhieuKyNhay: isPreparerInitialed,
+      quanTrongCanXacNhan: isRequireManagerApproval,
+      phoPhongXacNhan: isDeputyConfirmed,
+      idDonViDeNghi: donViDeNghi?.id ?? '',
+      idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
+      tggnTuNgay:
+          AppUtility.parseDateTimeOrNow(
+            controllerEffectiveDate.text,
+          ).toIso8601String(),
+      tggnDenNgay:
+          AppUtility.parseDateTimeOrNow(
+            controllerEffectiveDateTo.text,
+          ).toIso8601String(),
+      idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
+      diaDiemGiaoNhan: controllerDeliveryLocation.text,
+      idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
+      idNhanSuXemPhieu: nguoiKyGiamDoc?.id ?? '',
+      veViec: '',
+      canCu: '',
+      dieu1: '',
+      dieu2: '',
+      dieu3: '',
+      noiNhan: '',
+      themDongTrong: '',
+      trangThai: 0,
+      idCongTy: widget.provider.userInfo?.idCongTy ?? '',
+      ngayTao: DateTime.now().toIso8601String(),
+      ngayCapNhat: DateTime.now().toIso8601String(),
+      nguoiTao: widget.provider.userInfo?.id ?? '',
+      nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+      coHieuLuc: true,
+      loai: type,
+      isActive: true,
+      trichYeu: controllerSubject.text,
+      duongDanFile: _selectedFilePath ?? '',
+      tenFile: _selectedFileName ?? '',
+      ngayKy: DateTime.now().toIso8601String(),
+      chiTietDieuDongTaiSans: listNewDetails,
+    );
+  }
+
   List<ChiTietDieuDongRequest> _createDieuDongRequestDetail() {
     log('listNewDetails: ${jsonEncode(listNewDetails)}');
     return listNewDetails
@@ -988,7 +1002,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
     // final bloc = context.read<DieuDongTaiSanBloc>();
     if (item == null) {
-      final request = _createDieuDongRequest(widget.type, 1);
+      final request = _createDieuDongRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
       // bloc.add(CreateDieuDongEvent(context, request));
       widget.provider.saveAssetTransfer(

@@ -161,6 +161,7 @@ class DieuDongTaiSanDto {
       duongDanFile: json['duongDanFile'],
       tenFile: json['tenFile'],
       ngayKy: json['ngayKy'],
+      chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
     );
   }
 
@@ -211,6 +212,7 @@ class DieuDongTaiSanDto {
       "duongDanFile": duongDanFile,
       "tenFile": tenFile,
       "ngayKy": ngayKy,
+      "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
     };
   }
 }

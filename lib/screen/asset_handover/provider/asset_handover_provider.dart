@@ -424,4 +424,13 @@ class AssetHandoverProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  NhanVien getNhanVien({required String idNhanVien}) {
+    if (dataStaff == null) return NhanVien();
+    final found = dataStaff?.firstWhere((item) => item.id == idNhanVien);
+    if (found == null) {
+      return NhanVien();
+    }
+    return found;
+  }
 }

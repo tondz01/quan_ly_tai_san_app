@@ -18,11 +18,13 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
@@ -43,6 +45,7 @@ class DieuDongTaiSanList extends StatefulWidget {
 
 class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isUploading = false;
+  List<DieuDongTaiSanDto> selectedItems = [];
 
   final List<DieuDongTaiSanDto> listAssetHandover = [];
 
@@ -288,6 +291,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 onRowTap: (item) {
                   widget.provider.onChangeDetailDieuDongTaiSan(item);
                 },
+                onSelectionChanged: (items) {
+                  setState(() {
+                    selectedItems = items;
+                  });
+                },
               ),
             ),
           ],
@@ -325,6 +333,41 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
+                SizedBox(width: 8),
+                Visibility(
+                  visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (selectedItems.isNotEmpty) {
+                        DieuDongTaiSanDto? item = selectedItems.first;
+                        previewDocument(
+                          context: context,
+                          item: item,
+                          provider: widget.provider,
+                        );
+                      }
+                    },
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        Tooltip(
+                          message: 'Ký biên bản',
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                            size: 18,
+                          ),
+                        ),
+                        SGText(
+                          text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                          color: Colors.blue,
+                          size: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 20),
@@ -333,6 +376,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         )
         : Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -346,14 +390,50 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     color: Colors.grey.shade700,
                   ),
                 ),
+
                 // Spacer(),
                 GestureDetector(
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
+                SizedBox(width: 8),
+                Visibility(
+                  visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (selectedItems.isNotEmpty) {
+                        DieuDongTaiSanDto? item = selectedItems.first;
+                        previewDocument(
+                          context: context,
+                          item: item,
+                          provider: widget.provider,
+                        );
+                      }
+                    },
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        Tooltip(
+                          message: 'Ký biên bản',
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                            size: 18,
+                          ),
+                        ),
+                        SGText(
+                          text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                          color: Colors.blue,
+                          size: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-            RowFindByStatus(provider: widget.provider),
+            Expanded(child: RowFindByStatus(provider: widget.provider)),
           ],
         );
   }
@@ -381,28 +461,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () {
-          UserInfoDTO userInfo = widget.provider.userInfo!;
-          String url =
-              '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
-          showDialog(
+          previewDocument(
             context: context,
-            barrierDismissible: true,
-            builder:
-                (context) => Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: 16.0,
-                    bottom: 16.0,
-                  ),
-                  child: CommonContract(
-                    contractType: ContractPage.assetMovePage(item),
-                    signatureList: <String>[url],
-                    idTaiLieu: item.id.toString(),
-                    idNguoiKy: userInfo.tenDangNhap,
-                    tenNguoiKy: userInfo.hoTen,
-                  ),
-                ),
+            item: item,
+            provider: widget.provider,
+            isShowKy: false,
           );
         },
       ),

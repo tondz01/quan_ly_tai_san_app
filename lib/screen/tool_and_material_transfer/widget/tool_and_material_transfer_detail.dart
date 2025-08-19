@@ -11,25 +11,21 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/tool_and_material_transfer_table.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:path/path.dart' as path;
 
 import '../bloc/tool_and_material_transfer_bloc.dart';
 import '../bloc/tool_and_material_transfer_event.dart';
@@ -178,9 +174,7 @@ class _ToolAndMaterialTransferDetailState
     if (item != null && item!.trangThai == 0) {
       isEditing = true;
     }
-    if (widget.isNew == true) {
-      onReload();
-    }
+    onReload();
   }
 
   @override
@@ -210,7 +204,6 @@ class _ToolAndMaterialTransferDetailState
       nguoiLapPhieu = widget.provider.userInfo;
       // Reset item từ provider
       item = widget.provider.item;
-      log('message item: ${jsonEncode(item)}');
       isNew = item == null;
 
       // Reset editing state
@@ -235,6 +228,8 @@ class _ToolAndMaterialTransferDetailState
         // Initialize selected file if available
         _selectedFileName = item?.tenFile;
         _selectedFilePath = item?.duongDanFile;
+
+        log('message item?.nguoiLapPhieuKyNhay: $_selectedFileName');
         isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
         isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
         isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
@@ -269,7 +264,6 @@ class _ToolAndMaterialTransferDetailState
         isPreparerInitialed = false;
         isRequireManagerApproval = false;
         isDeputyConfirmed = false;
-        log('controllerEffectiveDateTo: ${controllerSoChungTu.text}');
       }
 
       if (proposingUnit != null &&
@@ -691,7 +685,6 @@ class _ToolAndMaterialTransferDetailState
                           fieldName: 'departmentApproval',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
-                            log('department_approval selected: $value');
                             nguoiKyCapPhong = value;
                           },
                         ),
@@ -700,7 +693,6 @@ class _ToolAndMaterialTransferDetailState
                           controller: controllerEffectiveDate,
                           isEditing: isEditing,
                           onChanged: (value) {
-                            log('Effective date selected: $value');
                           },
                           value:
                               controllerEffectiveDate.text.isNotEmpty
@@ -714,7 +706,6 @@ class _ToolAndMaterialTransferDetailState
                           controller: controllerEffectiveDateTo,
                           isEditing: isEditing,
                           onChanged: (value) {
-                            log('Effective date selected: $value');
                           },
                           value:
                               controllerEffectiveDateTo.text.isNotEmpty
@@ -813,16 +804,15 @@ class _ToolAndMaterialTransferDetailState
                             ),
                           )
                           .toList();
-
-                  log('listNewDetails: ${listNewDetails.length}');
-                  log('listNewDetails data: ${jsonEncode(listNewDetails)}');
                 },
               ),
 
               SizedBox(height: 10),
-              if (item != null &&
-                  item!.detailToolAndMaterialTransfers!.isNotEmpty)
-                previewDocumentAssetTransfer(item),
+              previewDocumentToolAndMaterialTransfer(
+                context: context,
+                item: item,
+                provider: widget.provider,
+              ),
             ],
           ),
         ),
@@ -864,65 +854,6 @@ class _ToolAndMaterialTransferDetailState
         ),
       );
     }
-  }
-
-  Widget previewDocumentAssetTransfer(ToolAndMaterialTransferDto? item) {
-    return InkWell(
-      onTap: () {
-        if (item == null) return;
-        log('message item: ${jsonEncode(item)}');
-        UserInfoDTO userInfo = widget.provider.userInfo!;
-        log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
-        NhanVien nhanVien = widget.provider.getNhanVienByID(
-          userInfo.tenDangNhap,
-        );
-        String tenFile = path.basename(nhanVien.chuKy.toString());
-        log('nhanVien.chuKy: ${nhanVien.chuKy}');
-        String url = '${Config.baseUrl}/api/upload/download/$tenFile';
-
-        log('message String url: $url');
-        showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder:
-              (context) => Padding(
-                padding: const EdgeInsets.only(
-                  left: 24.0,
-                  right: 24.0,
-                  top: 16.0,
-                  bottom: 16.0,
-                ),
-                child: CommonContract(
-                  contractType: ContractPage.toolAndMaterialTransferPage(item),
-                  signatureList: <String>[url],
-                  idTaiLieu: item.id.toString(),
-                  idNguoiKy: userInfo.tenDangNhap,
-                  tenNguoiKy: userInfo.hoTen,
-                ),
-              ),
-        );
-      },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2.5),
-            child: SGText(
-              text: "Xem trước tài liệu",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: ColorValue.link,
-              ),
-            ),
-          ),
-          SizedBox(width: 8),
-          Icon(Icons.visibility, color: ColorValue.link, size: 18),
-        ],
-      ),
-    );
   }
 
   ToolAndMaterialTransferDto _createToolAndMaterialTransRequest(
