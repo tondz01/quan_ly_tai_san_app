@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -41,36 +44,36 @@ class NhanVienProvider extends ApiBase {
     String? fileName,
   }) async {
     try {
-      final formData = FormData();
-
+      // final formData = FormData();
+      log('nhanVien: ${jsonEncode(nhanVien.toJson())}');
       // Trường data là JSON, set contentType application/json
-      formData.files.add(
-        MapEntry(
-          'data',
-          MultipartFile.fromString(
-            jsonEncode(nhanVien.toJson()),
-            contentType: MediaType('application', 'json'),
-          ),
-        ),
-      );
+      // formData.files.add(
+      //   MapEntry(
+      //     'data',
+      //     MultipartFile.fromString(
+      //       jsonEncode(nhanVien.toJson()),
+      //       contentType: MediaType('application', 'json'),
+      //     ),
+      //   ),
+      // );
 
-      if (avatarFile != null && avatarFile.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'chuky',
-            MultipartFile.fromBytes(
-              avatarFile,
-              filename: 'chuky.png',
-              contentType: MediaType('image', 'png'),
-            ),
-          ),
-        );
-      }
-      logFormData(formData);
+      // if (avatarFile != null && avatarFile.isNotEmpty) {
+      //   formData.files.add(
+      //     MapEntry(
+      //       'chuky',
+      //       MultipartFile.fromBytes(
+      //         avatarFile,
+      //         filename: 'chuky.png',
+      //         contentType: MediaType('image', 'png'),
+      //       ),
+      //     ),
+      //   );
+      // }
+      // logFormData(formData);
 
       final response = await post(
         EndPointAPI.NHAN_VIEN,
-        data: formData,
+        data: nhanVien.toJson(),
         options: Options(headers: {'Content-Type': 'multipart/form-data'}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -82,39 +85,44 @@ class NhanVienProvider extends ApiBase {
     }
   }
 
-  Future<void> updateNhanVien(NhanVien nhanVien, Uint8List? avatarFile) async {
+  Future<void> updateNhanVien(NhanVien nhanVien) async {
     try {
-      final formData = FormData();
+      // final formData = FormData();
 
       // Trường data là JSON, set contentType application/json
-      formData.files.add(
-        MapEntry(
-          'data',
-          MultipartFile.fromString(
-            jsonEncode(nhanVien.toJson()),
-            contentType: MediaType('application', 'json'),
-          ),
-        ),
-      );
-      if (avatarFile != null && avatarFile.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'chuky',
-            MultipartFile.fromBytes(
-              avatarFile,
-              filename: 'chuky.png',
-              contentType: MediaType('image', 'png'),
-            ),
-          ),
-        );
-      }
+      // formData.files.add(
+      //   MapEntry(
+      //     'data',
+      //     MultipartFile.fromString(
+      //       jsonEncode(nhanVien.toJson()),
+      //       contentType: MediaType('application', 'json'),
+      //     ),
+      //   ),
+      // );
+      // if (avatarFile != null && avatarFile.isNotEmpty) {
+      //   formData.files.add(
+      //     MapEntry(
+      //       'chuky',
+      //       MultipartFile.fromBytes(
+      //         avatarFile,
+      //         filename: 'chuky.png',
+      //         contentType: MediaType('image', 'png'),
+      //       ),
+      //     ),
+      //   );
+      // }
 
-      logFormData(formData);
+      // logFormData(formData);
 
       final response = await put(
         '${EndPointAPI.NHAN_VIEN}/${nhanVien.id}',
-        data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        data: nhanVien.toJson(),
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json',
+          },
+        ),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
       } else {
@@ -148,6 +156,48 @@ class NhanVienProvider extends ApiBase {
         '(${file.length} bytes, ${file.contentType})',
       );
     }
+  }
+
+  // Thêm: gọi API lấy Agreement UUID
+  Future<Map<String, dynamic>> getAgreementUUID({
+    required String idNhanVien,
+    required String pin,
+  }) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.NHAN_VIEN}/get-ky-so',
+        queryParameters: {'idnhanvien': idNhanVien, 'pin': pin},
+      );
+
+      result['status_code'] =
+          response.statusCode ?? Numeral.STATUS_CODE_DEFAULT;
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final resp = response.data;
+        if (resp is Map<String, dynamic>) {
+          // Nếu backend trả {'data': 'uuid'} hoặc {'agreementUuid': '...'}
+          result['data'] =
+              (resp['data'] ?? resp['agreementUuid'] ?? resp['uuid'] ?? '')
+                  .toString();
+          result['message'] = (resp['message'] ?? '').toString();
+        } else {
+          result['data'] = resp.toString();
+        }
+      } else {
+        // Trả message nếu có
+        if (response.data is Map<String, dynamic>) {
+          result['message'] = (response.data['message'] ?? '').toString();
+        }
+      }
+    } catch (e) {
+      log("Error at getAgreementUUID - AuthRepository: $e");
+    }
+
+    return result;
   }
 
   // Trước khi gọi API

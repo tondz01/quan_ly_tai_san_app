@@ -69,8 +69,8 @@ previewDocument({
   UserInfoDTO userInfo = provider.userInfo!;
   log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
-  String tenFile = path.basename(nhanVien.chuKy.toString());
-  log('nhanVien.chuKy: ${nhanVien.chuKy}');
+  String tenFile = path.basename(nhanVien.chyKyNhay.toString());
+  log('nhanVien.chuKy: ${nhanVien.chyKyNhay}');
   String url = '${Config.baseUrl}/api/upload/download/$tenFile';
   return showDialog(
     context: context,

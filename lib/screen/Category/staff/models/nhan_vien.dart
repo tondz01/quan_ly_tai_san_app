@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:equatable/equatable.dart';
 
 class NhanVien extends Equatable {
@@ -8,10 +6,10 @@ class NhanVien extends Equatable {
   final String? diDong;
   final String? emailCongViec;
 
-  final int? kieuKy;
   final String? agreementUUId;
   final String? pin;
-  final String? chuKy;
+  final String? chyKyNhay;
+  final String? chyKyThuong;
   final String? boPhan;
   final String? chucVu;
   final String? tenChucVu;
@@ -32,7 +30,6 @@ class NhanVien extends Equatable {
   final bool? isActive;
   final DateTime? ngayTao;
   final DateTime? ngayCapNhat;
-  final Uint8List? chuKyData;
 
   //kiểu ký
   final bool? kyNhay;
@@ -44,10 +41,10 @@ class NhanVien extends Equatable {
     this.hoTen,
     this.diDong,
     this.emailCongViec,
-    this.kieuKy,
     this.agreementUUId,
     this.pin,
-    this.chuKy,
+    this.chyKyNhay,
+    this.chyKyThuong,
     this.boPhan,
     this.chucVu,
     this.tenChucVu,
@@ -68,7 +65,6 @@ class NhanVien extends Equatable {
     this.ngayCapNhat,
     this.phongBanId,
     this.tenPhongBan,
-    this.chuKyData,
     this.kyNhay,
     this.kyThuong,
     this.kySo,
@@ -80,10 +76,10 @@ class NhanVien extends Equatable {
       hoTen: json['hoTen'],
       diDong: json['diDong'],
       emailCongViec: json['emailCongViec'],
-      kieuKy: int.parse(json['kieuKy']?.toString() ?? '0'),
       agreementUUId: json['agreementUUId'],
       pin: json['pin'],
-      chuKy: json['chuKy'],
+      chyKyNhay: json['chuKy'],
+      chyKyThuong: json['chuKyThuong'],
       boPhan: json['boPhan'],
       chucVu: json['chucVu'],
       tenChucVu: json['tenChucVu'],
@@ -106,10 +102,10 @@ class NhanVien extends Equatable {
     String? hoTen,
     String? diDong,
     String? emailCongViec,
-    int? kieuKy,
     String? agreementUUId,
     String? pin,
     String? chuKy,
+    String? chuKyThuong,
     String? boPhan,
     String? chucVu,
     String? tenChucVu,
@@ -130,7 +126,6 @@ class NhanVien extends Equatable {
     String? ngayCapNhat,
     String? phongBanId,
     String? tenPhongBan,
-    Uint8List? chuKyData,
     bool? kyNhay,
     bool? kyThuong,
     bool? kySo,
@@ -140,10 +135,10 @@ class NhanVien extends Equatable {
       hoTen: hoTen ?? this.hoTen,
       diDong: diDong ?? this.diDong,
       emailCongViec: emailCongViec ?? this.emailCongViec,
-      kieuKy: kieuKy ?? this.kieuKy,
       agreementUUId: agreementUUId ?? this.agreementUUId,
       pin: pin ?? this.pin,
-      chuKy: chuKy ?? this.chuKy,
+      chyKyNhay: chuKy ?? this.chyKyNhay,
+      chyKyThuong: chuKyThuong ?? this.chyKyThuong,
       boPhan: boPhan ?? this.boPhan,
       chucVu: chucVu ?? this.chucVu,
       tenChucVu: tenChucVu ?? this.tenChucVu,
@@ -162,13 +157,11 @@ class NhanVien extends Equatable {
       isActive: isActive ?? this.isActive,
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
-      chuKyData: chuKyData ?? this.chuKyData,
       kyNhay: kyNhay ?? this.kyNhay,
       kyThuong: kyThuong ?? this.kyThuong,
       kySo: kySo ?? this.kySo,
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {
@@ -176,10 +169,10 @@ class NhanVien extends Equatable {
       'hoTen': hoTen,
       'diDong': diDong,
       'emailCongViec': emailCongViec,
-      'kieuKy': kieuKy,
       'agreementUUId': agreementUUId,
       'pin': pin,
-      'chuKy': chuKy,
+      'chuKy': chyKyNhay,
+      'chuKyThuong': chyKyThuong,
       'boPhan': boPhan,
       'chucVu': chucVu,
       'nguoiQuanLy': nguoiQuanLy,
@@ -199,33 +192,33 @@ class NhanVien extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        hoTen,
-        diDong,
-        emailCongViec,
-        kieuKy,
-        agreementUUId,
-        pin,
-        chuKy,
-        boPhan,
-        chucVu,
-        nguoiQuanLy,
-        tenQuanLy,
-        laQuanLy,
-        avatar,
-        phongBanId,
-        idCongTy,
-        diaChiLamViec,
-        hinhThucLamViec,
-        gioLamViec,
-        muiGio,
-        nguoiTao,
-        nguoiCapNhat,
-        isActive,
-        ngayTao,
-        ngayCapNhat,
-        kyNhay,
-        kyThuong,
-        kySo,
-      ];
+    id,
+    hoTen,
+    diDong,
+    emailCongViec,
+    agreementUUId,
+    pin,
+    chyKyNhay,
+    chyKyThuong,
+    boPhan,
+    chucVu,
+    nguoiQuanLy,
+    tenQuanLy,
+    laQuanLy,
+    avatar,
+    phongBanId,
+    idCongTy,
+    diaChiLamViec,
+    hinhThucLamViec,
+    gioLamViec,
+    muiGio,
+    nguoiTao,
+    nguoiCapNhat,
+    isActive,
+    ngayTao,
+    ngayCapNhat,
+    kyNhay,
+    kyThuong,
+    kySo,
+  ];
 }

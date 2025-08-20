@@ -102,7 +102,8 @@ class _CommonContractState extends State<CommonContract> {
       return;
     }
     try {
-      final url = widget.signatureList.first;
+      final url =
+          loaiKy == 2 ? widget.signatureList[1] : widget.signatureList.first;
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         _addSignature(response.bodyBytes, loaiKy, top, left, true);
@@ -548,7 +549,7 @@ class _CommonContractState extends State<CommonContract> {
                         IconButton(
                           tooltip: 'Đóng',
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close, color: Colors.blue,),
+                          icon: const Icon(Icons.close, color: Colors.blue),
                         ),
                       ],
                     ),

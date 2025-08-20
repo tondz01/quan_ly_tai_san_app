@@ -16,7 +16,7 @@ import 'package:path/path.dart' as path;
 
 Widget previewDocumentToolAndMaterialTransfer({
   required BuildContext context,
-  required ToolAndMaterialTransferDto ? item,
+  required ToolAndMaterialTransferDto? item,
   required ToolAndMaterialTransferProvider provider,
   bool isShowKy = true,
 }) {
@@ -64,9 +64,11 @@ previewDocumentToolAndMaterial({
   UserInfoDTO userInfo = provider.userInfo!;
   log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
-  String tenFile = path.basename(nhanVien.chuKy.toString());
-  log('nhanVien.chuKy: ${nhanVien.chuKy}');
-  String url = '${Config.baseUrl}/api/upload/download/$tenFile';
+  String tenFile = path.basename(nhanVien.chyKyNhay.toString());
+  String tenFileKyThuong = path.basename(nhanVien.chyKyThuong.toString());
+  log('nhanVien.chuKy: ${nhanVien.chyKyNhay}');
+  String urlKyNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
+  String urlKyThuong = '${Config.baseUrl}/api/upload/download/$tenFileKyThuong';
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -80,7 +82,7 @@ previewDocumentToolAndMaterial({
           ),
           child: CommonContract(
             contractType: ContractPage.toolAndMaterialTransferPage(item),
-            signatureList: [url],
+            signatureList: [urlKyNhay, urlKyThuong],
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,

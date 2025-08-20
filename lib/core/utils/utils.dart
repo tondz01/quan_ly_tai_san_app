@@ -44,7 +44,8 @@ abstract class AppUtility {
   static bool fuzzySearch(String text, String searchTerm) {
     if (searchTerm.isEmpty) return true;
 
-    List<String> searchWords = searchTerm.split(' ').where((word) => word.isNotEmpty).toList();
+    List<String> searchWords =
+        searchTerm.split(' ').where((word) => word.isNotEmpty).toList();
 
     for (String word in searchWords) {
       if (!text.contains(word)) {
@@ -55,21 +56,12 @@ abstract class AppUtility {
   }
 
   static List<DropdownMenuItem<String>> phuongPhapKhauHaos = [
-    const DropdownMenuItem(
-      value: '1',
-      child: Text('Đường thẳng'),
-    ),
+    const DropdownMenuItem(value: '1', child: Text('Đường thẳng')),
   ];
 
   static List<DropdownMenuItem<String>> loaiKyKhauHaos = [
-    const DropdownMenuItem(
-      value: '1',
-      child: Text('Tháng'),
-    ),
-    const DropdownMenuItem(
-      value: '2',
-      child: Text('Năm'),
-    ),
+    const DropdownMenuItem(value: '1', child: Text('Tháng')),
+    const DropdownMenuItem(value: '2', child: Text('Năm')),
   ];
 
   static String formatCurrencyNumber(String input) {
@@ -82,10 +74,18 @@ abstract class AppUtility {
     }
   }
 
-  static void showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.green, duration: Duration(seconds: 2)));
+  static void showSnackBar(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   static DateTime? parseDate(String? input) {
