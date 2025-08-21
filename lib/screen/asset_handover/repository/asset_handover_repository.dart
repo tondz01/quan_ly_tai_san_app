@@ -185,7 +185,7 @@ class AssetHandoverRepository extends ApiBase {
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
-    Map<String, dynamic> request = {'userId': userId, 'docId': docId};
+    // Map<String, dynamic> request = {'userId': userId, 'docId': docId};
 
     try {
       final resp1 = await post(
