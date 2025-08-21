@@ -38,7 +38,7 @@ class DieuDongTaiSanRepository {
 	Future<List<DieuDongTaiSanDto>> getAll(int type) async {
 		UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
-		final res = await _dio.get('/getbyuserid/${userInfo.id}');
+		final res = await _dio.get('/getbyuserid/${userInfo.tenDangNhap}');
 		List<DieuDongTaiSanDto> dieuDongTaiSans = [];
 		dieuDongTaiSans =
 			(res.data as List)
@@ -48,7 +48,7 @@ class DieuDongTaiSanRepository {
 		if (dieuDongTaiSans.isEmpty) {
 			SGLog.debug(
 				'getAll',
-				'No asset transfers found for user: ${userInfo.id}',
+				'No asset transfers found for user: ${userInfo.tenDangNhap}',
 			);
 			return [];
 		}

@@ -80,7 +80,7 @@ class NhanVien extends Equatable {
       emailCongViec: json['emailCongViec'],
       agreementUUId: json['agreementUUId'],
       pin: json['pin'],
-      chuKyNhay: json['chuKy'],
+      chuKyNhay: json['chuKyNhay'],
       chuKyThuong: json['chuKyThuong'],
       boPhan: json['boPhan'],
       chucVu: json['chucVu'],

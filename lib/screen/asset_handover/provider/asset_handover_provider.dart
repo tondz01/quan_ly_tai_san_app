@@ -366,6 +366,8 @@ class AssetHandoverProvider with ChangeNotifier {
       _filteredData = [];
       _item = null;
     } else {
+      _filteredData.clear();
+      _data?.clear();
       _data = state.data;
 
       _filteredData = List.from(_data!);

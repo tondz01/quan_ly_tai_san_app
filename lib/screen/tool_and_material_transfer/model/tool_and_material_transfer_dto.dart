@@ -37,6 +37,10 @@ class ToolAndMaterialTransferDto {
   String? idNhanSuXemPhieu;
   String? tenNhanSuXemPhieu;
 
+  //Id nhân viên xác nhận của đơn vị giao
+  String? idTPDonViGiao;
+  String? idPPDonViNhan;
+
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
   bool? phoPhongXacNhan;
@@ -121,7 +125,9 @@ class ToolAndMaterialTransferDto {
     this.duongDanFile,
     this.tenFile,
     this.ngayKy,
-    this.detailToolAndMaterialTransfers
+    this.detailToolAndMaterialTransfers,
+    this.idTPDonViGiao,
+    this.idPPDonViNhan,
   });
 
   factory ToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -184,6 +190,8 @@ class ToolAndMaterialTransferDto {
       tenFile: json['tenFile'],
       ngayKy: json['ngayKy'],
       detailToolAndMaterialTransfers: parseDetails(json['chiTietToolAndMaterialTransfers']),
+      idTPDonViGiao: json['idTPDonViGiao'],
+      idPPDonViNhan: json['idPPDonViNhan'],
     );
   }
 
@@ -236,6 +244,8 @@ class ToolAndMaterialTransferDto {
       "tenFile": tenFile,
       "ngayKy": ngayKy,
       "chiTietToolAndMaterialTransfers": detailToolAndMaterialTransfers?.map((detail) => detail.toJson()).toList(),
+      "idTPDonViGiao": idTPDonViGiao,
+      "idPPDonViNhan": idPPDonViNhan,
     };
   }
   
@@ -288,6 +298,8 @@ class ToolAndMaterialTransferDto {
       tenFile: '',
       ngayKy: '',
       detailToolAndMaterialTransfers: [],
+      idTPDonViGiao: '',
+      idPPDonViNhan: '',
     );
   }
 
@@ -339,6 +351,8 @@ class ToolAndMaterialTransferDto {
     String? tenFile,
     String? ngayKy,
     List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers,
+    String? idTPDonViGiao,
+    String? idPPDonViNhan,
   }) {
     return ToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -387,6 +401,8 @@ class ToolAndMaterialTransferDto {
       tenFile: tenFile ?? this.tenFile,
       ngayKy: ngayKy ?? this.ngayKy,
       detailToolAndMaterialTransfers: detailToolAndMaterialTransfers ?? this.detailToolAndMaterialTransfers,
+      idTPDonViGiao: idTPDonViGiao ?? this.idTPDonViGiao,
+      idPPDonViNhan: idPPDonViNhan ?? this.idPPDonViNhan,
     );
   }
   

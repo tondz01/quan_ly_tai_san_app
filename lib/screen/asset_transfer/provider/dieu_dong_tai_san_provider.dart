@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -329,6 +330,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   void getDataAll(BuildContext context) {
     try {
+      onCloseDetail(context);
       final bloc = context.read<DieuDongTaiSanBloc>();
       bloc.add(
         GetListDieuDongTaiSanEvent(
@@ -339,6 +341,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       );
       bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
       bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
+      
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -419,14 +422,34 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     GetListDieuDongTaiSanSuccessState state,
   ) {
     _error = null;
+    log('message state.data: ${jsonEncode(state.data)}');
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
     } else {
+      _filteredData.clear();
+      _data?.clear();
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
+              .where((item) {
+                final idSignatureGroup1 =
+                    [item.nguoiTao].whereType<String>().toList();
+                final idSignatureGroup2 =
+                    [
+                      item.idTrinhDuyetCapPhong,
+                      item.idTrinhDuyetGiamDoc,
+                    ].whereType<String>().toList();
+
+                final inGroup1 = idSignatureGroup1.contains(userInfo.tenDangNhap);
+                final inGroup2 = idSignatureGroup2.contains(userInfo.tenDangNhap);
+
+                return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
+              })
               .toList();
+      log(
+        'message _data typeDieuDongTaiSan: $typeDieuDongTaiSan} -- ${jsonEncode(state.data)}',
+      );
       _filteredData = List.from(_data!);
     }
     _updatePagination();

@@ -73,8 +73,11 @@ previewDocument({
   log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
   String tenFile = path.basename(nhanVien.chuKyNhay.toString());
+  String tenFileThuong = path.basename(nhanVien.chuKyThuong.toString());
   log('nhanVien.chuKy: ${nhanVien.chuKyNhay}');
-  String url = '${Config.baseUrl}/api/upload/download/$tenFile';
+  log('nhanVien.chukythuong: ${nhanVien.chuKyThuong}');
+  String urlNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
+  String urlThuong = '${Config.baseUrl}/api/upload/download/$tenFileThuong';
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -88,7 +91,7 @@ previewDocument({
           ),
           child: CommonContract(
             contractType: ContractPage.assetMovePage(item),
-            signatureList: [url],
+            signatureList: [urlNhay, urlThuong],
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,

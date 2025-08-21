@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -54,6 +56,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       TextEditingController();
 
   bool isEditing = false;
+  UserInfoDTO? currentUser;
 
   bool isUnitConfirm = false;
   bool isDelivererConfirm = false;
@@ -69,6 +72,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   List<PhongBan> listPhongBan = [];
   List<NhanVien> listNhanVien = [];
+  List<NhanVien> listNhanVienDonViNhan = [];
+  List<NhanVien> listNhanVienDonViGiao = [];
   List<DieuDongTaiSanDto> listAssetTransfer = [];
 
   List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
@@ -109,12 +114,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   void _initData() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
-
+    currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
     if (item != null) {
-      if (item!.trangThai == 0) {
+      if (item!.trangThai == 0 && currentUser!.tenDangNhap != item!.nguoiTao) {
         isEditing = true;
+      }
+      if (currentUser!.tenDangNhap != item!.nguoiTao) {
+        isEditing = false;
       }
     } else {
       isEditing = true;
@@ -124,12 +132,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
     isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
     isRepresentativeUnitConfirm =
-        item?.donViDaiDienXacNhan == "0" ? true : false;
+        item?.donViDaiDienXacNhan == "0" ? false : true;
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
     listAssetTransfer = widget.provider.dataAssetTransfer ?? [];
 
+    if (item != null) {
+      log(' errorr ------------------------------------------------');
+      getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
+    }
     itemsNhanVien =
         listNhanVien.isNotEmpty
             ? listNhanVien
@@ -170,6 +182,23 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     // Lưu giá trị ban đầu để so sánh
     // _saveOriginalValues();
+  }
+
+  void getStaffDonViGiaoAndNhan(String idDonViNhan, String idDonViGiao) {
+    log('message getStaffDonViGiaoAndNhan ${idDonViNhan} -- ${idDonViGiao}');
+    listNhanVienDonViNhan =
+        widget.provider.dataStaff
+            ?.where((element) => element.phongBanId == idDonViNhan)
+            .toList() ??
+        [];
+    listNhanVienDonViGiao =
+        widget.provider.dataStaff
+            ?.where((element) => element.phongBanId == idDonViGiao)
+            .toList() ??
+        [];
+
+    log('message getStaffDonViGiaoAndNhan ${listNhanVienDonViNhan.length}');
+    log('message getStaffDonViGiaoAndNhan listNhanVienDonViGiao ${listNhanVienDonViGiao.length}');
   }
 
   Map<String, bool> _validationErrors = {};
@@ -241,8 +270,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   void _saveAssetHandover() {
     context.read<AssetHandoverProvider>().isLoading = true;
 
-    UserInfoDTO? currentUser = AccountHelper.instance.getUserInfo();
-
     String ngayBanGiao = "";
     ngayBanGiao = _formatDate(controllerTransferDate.text);
 
@@ -268,8 +295,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "note": "",
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
-      "nguoiTao": currentUser?.id ?? '',
-      "nguoiCapNhat": currentUser?.id ?? '',
+      "nguoiTao": currentUser?.tenDangNhap ?? '',
+      "nguoiCapNhat": '',
       "isActive": true,
     };
 
@@ -278,6 +305,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         CreateAssetHandoverEvent(context, request),
       );
     } else if (item!.trangThai == 0) {
+      request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
       context.read<AssetHandoverBloc>().add(
         UpdateAssetHandoverEvent(context, request, item!.id!),
       );
@@ -439,11 +467,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             SgIndicator(
               steps: [
                 'Nháp',
-                'Sẵn sàng',
+                'Chờ xác nhận',
                 'Xác nhận',
-                'Trình duyệt',
-                'Hoàn thành',
+                'Chờ duyệt',
                 'Hủy',
+                'Hoàn thành',
               ],
               currentStep: item?.trangThai ?? 0,
               fontSize: 10,
@@ -492,7 +520,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 item: item,
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
-                isShowKy: false
+                isShowKy: false,
               ),
             ],
           ),
@@ -557,6 +585,24 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             setState(() {
               _selectedFileName = dieuDongTaiSan?.tenFile;
               _selectedFilePath = dieuDongTaiSan?.duongDanFile;
+
+              //change Đơn vị giao
+              donViGiao = getPhongBan(
+                listPhongBan: listPhongBan,
+                idPhongBan: dieuDongTaiSan?.idDonViGiao ?? '',
+              );
+              controllerSenderUnit.text = donViGiao?.tenPhongBan ?? '';
+
+              //change Đơn vị nhận
+              donViNhan = getPhongBan(
+                listPhongBan: listPhongBan,
+                idPhongBan: dieuDongTaiSan?.idDonViNhan ?? '',
+              );
+              controllerReceiverUnit.text = donViNhan?.tenPhongBan ?? '';
+              getStaffDonViGiaoAndNhan(
+                dieuDongTaiSan?.idDonViNhan ?? '',
+                dieuDongTaiSan?.idDonViGiao ?? '',
+              );
             });
             widget.provider.getListDetailAssetMobilization(value.id ?? '');
           },
@@ -565,7 +611,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị giao',
           controller: controllerSenderUnit,
-          isEditing: isEditing,
+          isEditing: false,
           defaultValue:
               item?.idDonViGiao != null
                   ? getPhongBan(
@@ -583,7 +629,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị nhận',
           controller: controllerReceiverUnit,
-          isEditing: isEditing,
+          isEditing: false,
           defaultValue:
               item?.idDonViNhan != null
                   ? getPhongBan(
@@ -668,7 +714,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   )
                   : null,
           fieldName: 'delivererRepresentative',
-          items: itemsNhanVien,
+          items: [
+            ...listNhanVienDonViGiao.map(
+              (e) => DropdownMenuItem<NhanVien>(
+                value: e,
+                child: Text(e.hoTen ?? ''),
+              ),
+            ),
+          ],
           onChanged: (value) {
             nguoiDaiDienBenGiao = value;
           },
@@ -696,7 +749,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   )
                   : null,
           fieldName: 'receiverRepresentative',
-          items: itemsNhanVien,
+          items: [
+            ...listNhanVienDonViNhan.map(
+              (e) => DropdownMenuItem<NhanVien>(
+                value: e,
+                child: Text(e.hoTen ?? ''),
+              ),
+            ),
+          ],
           onChanged: (value) {
             nguoiDaiDienBenNhan = value;
           },

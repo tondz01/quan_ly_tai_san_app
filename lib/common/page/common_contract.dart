@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -106,6 +107,7 @@ class _CommonContractState extends State<CommonContract> {
     try {
       final url =
           loaiKy == 2 ? widget.signatureList[1] : widget.signatureList.first;
+      log('Check link chữ ký: $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         _addSignature(response.bodyBytes, loaiKy, top, left, true);

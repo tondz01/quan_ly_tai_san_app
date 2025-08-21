@@ -406,7 +406,25 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     } else {
       _data =
           state.data
-              .where((item) => item.loai == typeToolAndMaterialTransfer)
+              .where((element) => element.loai == typeToolAndMaterialTransfer)
+              .where((item) {
+                final idSignatureGroup1 =
+                    [item.nguoiTao].whereType<String>().toList();
+                final idSignatureGroup2 =
+                    [
+                      item.idTrinhDuyetCapPhong,
+                      item.idTrinhDuyetGiamDoc,
+                    ].whereType<String>().toList();
+
+                final inGroup1 = idSignatureGroup1.contains(
+                  userInfo.tenDangNhap,
+                );
+                final inGroup2 = idSignatureGroup2.contains(
+                  userInfo.tenDangNhap,
+                );
+
+                return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
+              })
               .toList();
       _filteredData = List.from(_data!);
     }

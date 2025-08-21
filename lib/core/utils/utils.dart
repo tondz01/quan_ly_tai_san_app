@@ -78,10 +78,11 @@ abstract class AppUtility {
     BuildContext context,
     String message, {
     bool isError = false,
+    TextAlign? textAlign = TextAlign.left,
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, textAlign: textAlign),
         backgroundColor: isError ? Colors.red : Colors.green,
         duration: Duration(seconds: 2),
       ),

@@ -231,7 +231,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
     final res = await get(
-      '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.id}',
+      '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}',
     );
     List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
         (res.data as List)

@@ -37,6 +37,10 @@ class DieuDongTaiSanDto {
   String? idNhanSuXemPhieu;
   String? tenNhanSuXemPhieu;
 
+  //Id nhân viên xác nhận của đơn vị giao
+  String? idTPDonViGiao;
+  String? idPPDonViNhan;
+
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
   bool? phoPhongXacNhan;
@@ -111,7 +115,9 @@ class DieuDongTaiSanDto {
     this.duongDanFile,
     this.tenFile,
     this.ngayKy,
-    this.chiTietDieuDongTaiSans
+    this.chiTietDieuDongTaiSans,
+    this.idTPDonViGiao,
+    this.idPPDonViNhan,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -162,6 +168,8 @@ class DieuDongTaiSanDto {
       tenFile: json['tenFile'],
       ngayKy: json['ngayKy'],
       chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
+      idTPDonViGiao: json['idTPDonViGiao'],
+      idPPDonViNhan: json['idPPDonViNhan'],
     );
   }
 
@@ -213,6 +221,8 @@ class DieuDongTaiSanDto {
       "tenFile": tenFile,
       "ngayKy": ngayKy,
       "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
+      "idTPDonViGiao": idTPDonViGiao,
+      "idPPDonViNhan": idPPDonViNhan,
     };
   }
 }

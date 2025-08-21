@@ -123,6 +123,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Xóa biên bản bàn giao thành công'), backgroundColor: Colors.green));
+        
           context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is ErrorState) {
@@ -130,6 +131,11 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red));
+        } else if (state is UpdateSigningStatusSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Cập nhật trạng thái ký biên bản thành công'), backgroundColor: Colors.green),
+          );
+          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
         }
       },
       builder: (context, state) {

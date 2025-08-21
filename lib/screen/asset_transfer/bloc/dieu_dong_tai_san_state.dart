@@ -129,6 +129,7 @@ class DeleteDieuDongSuccessState extends DieuDongTaiSanState {
   @override
   List<Object> get props => [data];
 }
+
 class UpdateSigningStatusSuccessState extends DieuDongTaiSanState {
   const UpdateSigningStatusSuccessState();
 

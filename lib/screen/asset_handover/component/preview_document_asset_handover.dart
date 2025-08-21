@@ -3,10 +3,13 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
@@ -91,6 +94,18 @@ previewDocumentHandover({
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
             isShowKy: isShowKy,
+            eventSignature: () {
+              final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
+                context,
+              );
+              assetHandoverBloc.add(
+                UpdateSigningStatusEvent(
+                  context,
+                  userInfo.tenDangNhap,
+                  item.id.toString(),
+                ),
+              );
+            },
           ),
         ),
   );

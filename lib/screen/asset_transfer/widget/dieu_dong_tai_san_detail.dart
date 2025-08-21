@@ -82,11 +82,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   late TextEditingController controllerArticle2 = TextEditingController();
   late TextEditingController controllerArticle3 = TextEditingController();
   late TextEditingController controllerDestination = TextEditingController();
+  late TextEditingController controllerTPDonViGiao = TextEditingController();
+  late TextEditingController controllerPPDonViNhan = TextEditingController();
 
   bool isEditing = false;
-  bool isPreparerInitialed = false;
-  bool isRequireManagerApproval = false;
-  bool isDeputyConfirmed = false;
+  bool isNguoiLapPhieuKyNhay = false;
+  bool isQuanTrongCanXacNhan = false;
+  bool isPhoPhongXacNhan = false;
   bool _isUploading = false;
   bool isRefreshing = false;
   bool isNew = false;
@@ -100,11 +102,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   int typeTransfer = 1;
   List<ChiTietDieuDongTaiSan> listNewDetails = [];
   List<ChiTietDieuDongTaiSan> _initialDetails = [];
+  List<NhanVien> listStaffByDepartment = [];
 
   PhongBan? donViGiao;
   PhongBan? donViNhan;
   PhongBan? donViDeNghi;
   NhanVien? nguoiDeNghi;
+  NhanVien? tPDonViGiao;
+  NhanVien? pPDonViNhan;
   UserInfoDTO? nguoiLapPhieu;
   NhanVien? nguoiKyCapPhong;
   NhanVien? nguoiKyGiamDoc;
@@ -232,21 +237,34 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
         controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
 
+        //load date value dropdown
+        donViGiao = widget.provider.getPhongBanByID(item?.idDonViGiao ?? '');
+        donViNhan = widget.provider.getPhongBanByID(item?.idDonViNhan ?? '');
+        donViDeNghi = widget.provider.getPhongBanByID(
+          item?.idDonViDeNghi ?? '',
+        );
+        nguoiDeNghi = widget.provider.getNhanVienByID(
+          item?.idNguoiDeNghi ?? '',
+        );
+        tPDonViGiao = widget.provider.getNhanVienByID(
+          item?.idTPDonViGiao ?? '',
+        );
+        pPDonViNhan = widget.provider.getNhanVienByID(
+          item?.idPPDonViNhan ?? '',
+        );
+
         // Initialize selected file if available
         _selectedFileName = item?.tenFile;
-        log('item?.tenFile: ${item?.tenFile}');
         _selectedFilePath = item?.duongDanFile;
-        log('item?.duongDanFile: ${item?.duongDanFile}');
-        isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
-        isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
-        isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+        isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
+        isQuanTrongCanXacNhan = item?.quanTrongCanXacNhan ?? false;
+        isPhoPhongXacNhan = item?.phoPhongXacNhan ?? false;
         proposingUnit = item?.tenDonViDeNghi;
 
         // Lưu snapshot chi tiết ban đầu để so sánh
         _initialDetails = List<ChiTietDieuDongTaiSan>.from(
           item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
-
         _controllersInitialized = true;
       } else {
         controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
@@ -267,9 +285,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         _controllersInitialized = false;
         _selectedFileName = null;
         _selectedFilePath = null;
-        isPreparerInitialed = false;
-        isRequireManagerApproval = false;
-        isDeputyConfirmed = false;
+        isNguoiLapPhieuKyNhay = false;
+        isQuanTrongCanXacNhan = false;
+        isPhoPhongXacNhan = false;
+        donViGiao = null;
+        donViNhan = null;
+        donViDeNghi = null;
+        nguoiDeNghi = null;
+        tPDonViGiao = null;
+        pPDonViNhan = null;
         log('controllerEffectiveDateTo: ${controllerSoChungTu.text}');
       }
 
@@ -280,9 +304,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       }
 
       // Reset các biến trạng thái
-      isPreparerInitialed = item?.nguoiLapPhieuKyNhay ?? false;
-      isRequireManagerApproval = item?.quanTrongCanXacNhan ?? false;
-      isDeputyConfirmed = item?.phoPhongXacNhan ?? false;
+      isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
+      isQuanTrongCanXacNhan = item?.quanTrongCanXacNhan ?? false;
+      isPhoPhongXacNhan = item?.phoPhongXacNhan ?? false;
       proposingUnit = item?.tenDonViDeNghi;
 
       // Reset file upload
@@ -504,7 +528,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 'Nháp',
                 'Chờ xác nhận',
                 'Xác nhận',
-                'Trình duyệt',
+                'Chờ duyệt',
                 'Duyệt',
                 'Hủy',
                 'Hoàn thành',
@@ -573,7 +597,16 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             log('delivering_unit selected: $value');
-                            donViGiao = value;
+                            setState(() {
+                              donViGiao = value;
+                              listStaffByDepartment =
+                                  widget.provider.dataNhanVien
+                                      .where(
+                                        (element) =>
+                                            element.phongBanId == donViGiao!.id,
+                                      )
+                                      .toList();
+                            });
                           },
                         ),
                         CmFormDropdownObject<PhongBan>(
@@ -623,38 +656,113 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         ),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
-                          value: isPreparerInitialed,
+                          value: isNguoiLapPhieuKyNhay,
                           isEditing: isEditing,
-                          isDisabled: false,
+                          isDisabled: !isEditing,
                           onChanged: (newValue) {
                             setState(() {
-                              isPreparerInitialed = newValue;
+                              isNguoiLapPhieuKyNhay = newValue;
                             });
                           },
                         ),
                         CommonCheckboxInput(
                           label: 'at.require_manager_approval'.tr,
-                          value: isRequireManagerApproval,
+                          value: isQuanTrongCanXacNhan,
                           isEditing: isEditing,
-                          isDisabled: false,
+                          isDisabled: !isEditing,
                           onChanged: (newValue) {
                             setState(() {
-                              isRequireManagerApproval = newValue;
+                              log('donViGiao: $donViGiao');
+                              if (donViGiao == null) {
+                                AppUtility.showSnackBar(
+                                  context,
+                                  'Vui lòng chọn đơn vị giao trước.',
+                                  isError: true,
+                                );
+                                return;
+                              }
+                              isQuanTrongCanXacNhan = newValue;
+                              if (!isQuanTrongCanXacNhan) {
+                                isPhoPhongXacNhan = false;
+                              }
                             });
                           },
                         ),
-                        if (isRequireManagerApproval)
-                          CommonCheckboxInput(
-                            label: 'at.deputy_confirmed'.tr,
-                            value: isDeputyConfirmed,
+                        Visibility(
+                          visible: isQuanTrongCanXacNhan,
+                          child: CmFormDropdownObject<NhanVien>(
+                            label: 'Trưởng phòng xác nhận',
+                            controller: controllerTPDonViGiao,
                             isEditing: isEditing,
-                            isDisabled: false,
-                            onChanged: (newValue) {
+
+                            items: [
+                              ...listStaffByDepartment.map(
+                                (e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e.hoTen ?? ''),
+                                ),
+                              ),
+                            ],
+                            defaultValue:
+                                controllerTPDonViGiao.text.isNotEmpty
+                                    ? widget.provider.getNhanVienByID(
+                                      controllerTPDonViGiao.text,
+                                    )
+                                    : null,
+                            fieldName: 'tPDonViGiao',
+                            validationErrors: _validationErrors,
+                            value: tPDonViGiao,
+                            onChanged: (value) {
+                              log('tPDonViGiao selected: $value');
                               setState(() {
-                                isDeputyConfirmed = newValue;
+                                tPDonViGiao = value;
                               });
                             },
                           ),
+                        ),
+                        if (isQuanTrongCanXacNhan)
+                          CommonCheckboxInput(
+                            label: 'at.deputy_confirmed'.tr,
+                            value: isPhoPhongXacNhan,
+                            isEditing: isEditing,
+                            isDisabled: !isEditing,
+                            onChanged: (newValue) {
+                              setState(() {
+                                isPhoPhongXacNhan = newValue;
+                              });
+                            },
+                          ),
+                        Visibility(
+                          visible: isPhoPhongXacNhan,
+                          child: CmFormDropdownObject<NhanVien>(
+                            label: 'Phó phòng xác nhận',
+                            controller: controllerPPDonViNhan,
+                            isEditing: isEditing,
+
+                            items: [
+                              ...listStaffByDepartment.map(
+                                (e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e.hoTen ?? ''),
+                                ),
+                              ),
+                            ],
+                            defaultValue:
+                                controllerPPDonViNhan.text.isNotEmpty
+                                    ? widget.provider.getNhanVienByID(
+                                      controllerPPDonViNhan.text,
+                                    )
+                                    : null,
+                            fieldName: 'pPDonViNhan',
+                            validationErrors: _validationErrors,
+                            onChanged: (value) {
+                              log('pPDonViNhan selected: $value');
+                              setState(() {
+                                pPDonViNhan = value;
+                              });
+                            },
+                          ),
+                        ),
                         CommonFormInput(
                           label: 'at.proposing_unit'.tr,
                           controller: controllerProposingUnit,
@@ -874,9 +982,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       idDonViGiao: donViGiao?.id ?? '',
       idDonViNhan: donViNhan?.id ?? '',
       idNguoiDeNghi: nguoiDeNghi?.id ?? '',
-      nguoiLapPhieuKyNhay: isPreparerInitialed,
-      quanTrongCanXacNhan: isRequireManagerApproval,
-      phoPhongXacNhan: isDeputyConfirmed,
+      nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
+      quanTrongCanXacNhan: isQuanTrongCanXacNhan,
+      phoPhongXacNhan: isPhoPhongXacNhan,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
@@ -902,8 +1010,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
       ngayTao: DateTime.now().toIso8601String(),
       ngayCapNhat: DateTime.now().toIso8601String(),
-      nguoiTao: widget.provider.userInfo?.id ?? '',
-      nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+      nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+      nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
       coHieuLuc: true,
       loai: type,
       isActive: true,
@@ -918,9 +1026,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     int type,
     List<ChiTietDieuDongTaiSan> listNewDetails,
   ) {
-    setState(() {
-      log('listNewDetails: ${jsonEncode(listNewDetails)}');
-    });
     return DieuDongTaiSanDto(
       id: controllerSoChungTu.text,
       soQuyetDinh: controllerSoChungTu.text,
@@ -928,9 +1033,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       idDonViGiao: donViGiao?.id ?? '',
       idDonViNhan: donViNhan?.id ?? '',
       idNguoiDeNghi: nguoiDeNghi?.id ?? '',
-      nguoiLapPhieuKyNhay: isPreparerInitialed,
-      quanTrongCanXacNhan: isRequireManagerApproval,
-      phoPhongXacNhan: isDeputyConfirmed,
+      nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
+      quanTrongCanXacNhan: isQuanTrongCanXacNhan,
+      phoPhongXacNhan: isPhoPhongXacNhan,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
@@ -956,8 +1061,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
       ngayTao: DateTime.now().toIso8601String(),
       ngayCapNhat: DateTime.now().toIso8601String(),
-      nguoiTao: widget.provider.userInfo?.id ?? '',
-      nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+      nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+      nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
       coHieuLuc: true,
       loai: type,
       isActive: true,
@@ -970,7 +1075,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   List<ChiTietDieuDongRequest> _createDieuDongRequestDetail() {
-    log('listNewDetails: ${jsonEncode(listNewDetails)}');
     return listNewDetails
         .map(
           (e) => ChiTietDieuDongRequest(
@@ -981,8 +1085,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             ghiChu: e.ghiChu,
             ngayTao: e.ngayTao,
             ngayCapNhat: e.ngayCapNhat,
-            nguoiTao: widget.provider.userInfo?.id ?? '',
-            nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+            nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+            nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
             isActive: true,
           ),
         )
@@ -1002,7 +1106,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
     // final bloc = context.read<DieuDongTaiSanBloc>();
     if (item == null) {
-      final request = _createDieuDongRequest(widget.type, 0);
+      final request = _createDieuDongRequest(widget.type, getState());
       final requestDetail = _createDieuDongRequestDetail();
       // bloc.add(CreateDieuDongEvent(context, request));
       widget.provider.saveAssetTransfer(
@@ -1015,6 +1119,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       );
     } else if (item != null && isEditing) {
       final request = _createDieuDongRequest(widget.type, item!.trangThai ?? 0);
+      request.copyWith(
+        nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
+      );
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {
         await _syncDetails(item!.id!);
@@ -1025,5 +1132,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         );
       }
     }
+  }
+
+  int getState() {
+    int state = 0;
+    if (!isNguoiLapPhieuKyNhay && !isQuanTrongCanXacNhan) {
+      state = 3;
+    } else if (!isNguoiLapPhieuKyNhay) {
+      state = 1;
+    } else if (isNguoiLapPhieuKyNhay) {
+      state = 0;
+    }
+    return state;
   }
 }

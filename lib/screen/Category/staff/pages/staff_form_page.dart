@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -149,6 +150,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     } catch (e) {
       _chucVuDTO = null;
     }
+    log('message widget.staff?.agreementUUId: ${jsonEncode(widget.staff)}');
     _agreementUUIdController = TextEditingController(
       text: widget.staff?.agreementUUId ?? '',
     );
@@ -160,6 +162,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
     selectedFileChuKyNhay =
         widget.staff?.chuKyNhay != null ? File(widget.staff!.chuKyNhay!) : null;
+    log('message selectedFileChuKyNhay: ${widget.staff?.chuKyNhay}');
     selectedFileChuKyThuong =
         widget.staff?.chuKyThuong != null
             ? File(widget.staff!.chuKyThuong!)

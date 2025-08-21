@@ -74,6 +74,7 @@ class DeleteDieuDongEvent extends DieuDongTaiSanEvent {
   @override
   List<Object?> get props => [context, id];
 }
+
 class UpdateSigningStatusEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
   final String id;

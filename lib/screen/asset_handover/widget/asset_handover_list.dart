@@ -16,6 +16,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_docu
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -373,13 +375,31 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       child: GestureDetector(
         onTap: () {
           if (selectedItems.isNotEmpty) {
-            AssetHandoverDto? item = selectedItems.first;
-            previewDocumentHandover(
-              context: context,
-              item: item,
-              itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-              provider: widget.provider,
-            );
+            UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
+            AssetHandoverDto? item =
+                selectedItems.isNotEmpty ? selectedItems.first : null;
+            final idSignature =
+                [
+                  item?.idDaiDiendonviBanHanhQD,
+                  item?.idDaiDienBenGiao,
+                  item?.idDaiDienBenNhan,
+                  item?.idDonViDaiDien,
+                ].whereType<String>().toList();
+
+            if (idSignature.contains(userInfo?.tenDangNhap)) {
+              previewDocumentHandover(
+                context: context,
+                item: item!,
+                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                provider: widget.provider,
+              );
+            } else {
+              AppUtility.showSnackBar(
+                context,
+                'Bạn không có quyền ký biên bản này',
+                isError: true,
+              );
+            }
           }
         },
         child: Row(

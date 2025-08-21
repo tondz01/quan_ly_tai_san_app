@@ -140,8 +140,8 @@ class AssetTransferRepository extends ApiBase {
     };
 
     try {
-      final response = await get(
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai//$idDieuDong',
+      final response = await post(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai/$idDieuDong',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

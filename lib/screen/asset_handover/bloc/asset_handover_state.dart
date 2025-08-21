@@ -52,6 +52,13 @@ class UpdateAssetHandoverSuccessState extends AssetHandoverState {
   List<Object> get props => [data];
 }
 
+class UpdateSigningStatusSuccessState extends AssetHandoverState {
+  const UpdateSigningStatusSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+
 class DeleteAssetHandoverSuccessState extends AssetHandoverState {
   final String data;
 

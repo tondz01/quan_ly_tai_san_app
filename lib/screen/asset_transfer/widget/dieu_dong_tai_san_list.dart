@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
@@ -20,6 +21,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_han
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -42,6 +45,7 @@ class DieuDongTaiSanList extends StatefulWidget {
 class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isUploading = false;
   List<DieuDongTaiSanDto> selectedItems = [];
+  UserInfoDTO? userInfo;
 
   final List<DieuDongTaiSanDto> listAssetHandover = [];
 
@@ -61,6 +65,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   @override
   void initState() {
     super.initState();
+    userInfo = AccountHelper.instance.getUserInfo();
     _initializeColumnOptions();
     _callGetListAssetHandover();
   }
@@ -336,6 +341,37 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     onTap: () {
                       if (selectedItems.isNotEmpty) {
                         DieuDongTaiSanDto? item = selectedItems.first;
+                        final idSignatureGroup1 =
+                            [item.nguoiTao].whereType<String>().toList();
+                        final idSignatureGroup2 =
+                            [
+                              item.idTrinhDuyetCapPhong,
+                              item.idTrinhDuyetGiamDoc,
+                            ].whereType<String>().toList();
+                        final allIdSignature = [
+                          ...idSignatureGroup1,
+                          ...idSignatureGroup2,
+                        ];
+                        // idSignatureGroup2.contains(userInfo?.tenDangNhap);
+                        if (idSignatureGroup2.contains(userInfo?.tenDangNhap) &&
+                            item.trangThai! < 3) {
+                          AppUtility.showSnackBar(
+                            context,
+                            'Bạn chứa thể ký phần này do các đơn vị trước chưa ký. \nVui lòng đợi các đơn vị trước ký xong mới ký tiếp',
+                            isError: true,
+                            textAlign: TextAlign.center,
+                          );
+                          return;
+                        }
+                        if (!allIdSignature.contains(userInfo?.tenDangNhap)) {
+                          AppUtility.showSnackBar(
+                            context,
+                            'Bạn không có quyền ký văn bản này',
+                            isError: true,
+                          );
+                          return;
+                        }
+
                         previewDocument(
                           context: context,
                           item: item,
@@ -355,7 +391,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                           ),
                         ),
                         SGText(
-                          text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                          text:
+                              'Số lượng biên bản đã chọn: ${selectedItems.length}',
                           color: Colors.blue,
                           size: 14,
                           fontWeight: FontWeight.w500,
@@ -399,6 +436,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     onTap: () {
                       if (selectedItems.isNotEmpty) {
                         DieuDongTaiSanDto? item = selectedItems.first;
+
                         previewDocument(
                           context: context,
                           item: item,
@@ -418,7 +456,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                           ),
                         ),
                         SGText(
-                          text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                          text:
+                              'Số lượng biên bản đã chọn: ${selectedItems.length}',
                           color: Colors.blue,
                           size: 14,
                           fontWeight: FontWeight.w500,
