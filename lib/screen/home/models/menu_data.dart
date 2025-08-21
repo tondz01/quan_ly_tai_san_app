@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/sg_sidebar_horizontal.dart';
 
 /// Class đại diện cho một mục trong menu
@@ -53,8 +54,9 @@ class SubMenuItem {
   final IconData? icon;
   final String route;
   final String? extra;
+  final VoidCallback? onTap;
 
-  const SubMenuItem({required this.label, this.icon, this.route = '/', this.extra});
+  const SubMenuItem({required this.label, this.icon, this.route = '', this.extra, this.onTap});
 }
 
 /// Class đại diện cho một nhóm các mục trong submenu
@@ -121,8 +123,18 @@ class AppMenuData {
         SubMenuItem(label: "Báo cáo Cấp phát tài sản trong kỳ", route: AppRoute.allocationReport.path),
         SubMenuItem(label: "Báo cáo Điều chuyển tài sản trong kỳ", route: AppRoute.transferReport.path),
         SubMenuItem(label: "Báo cáo Thu hồi tài sản trong kỳ", route: AppRoute.recoveryReport.path),
-        SubMenuItem(label: 'Biên bản kiểm kê', route: AppRoute.bienBanKiemKe.path),
-        // SubMenuItem(label: 'Báo cáo kiểm kê CCDC', route: AppRoute.baoCaoKiemKeCCDC.path),
+        SubMenuItem(
+          label: 'Biên bản kiểm kê',
+          onTap: () {
+            SGLog.debug("Menu", "Biên bản kiểm kê");
+          },
+        ),
+        SubMenuItem(
+          label: 'Báo cáo kiểm kê CCDC',
+          onTap: () {
+            SGLog.debug("Menu", "Biên bản kiểm kê ccdc");
+          },
+        ),
         // SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.bienBanDoiChieu.path),
         // SubMenuItem(label: 'Sổ tài sản cố định', route: AppRoute.fixedAssetRegister.path),
         // SubMenuItem(label: 'Sổ tài sản cố định thông tư 200', route: AppRoute.fixedAssetRegisterCircular200.path),

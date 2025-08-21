@@ -71,7 +71,6 @@ class _HomeState extends State<Home> {
   }
 
   List<SGSidebarHorizontalItem> _getItems() {
-    SGLog.debug("Home", "Check: ${_menuData.menuItems.length}");
     // Tạo danh sách items từ model
     return List.generate(_menuData.menuItems.length, (index) {
       final item = _menuData.menuItems[index];
@@ -134,6 +133,7 @@ class _HomeState extends State<Home> {
               () => setState(() {
                 _updateSelectedIndex(parentIndex, subIndex);
                 _popupManager.closeAllPopups();
+                subItem.onTap?.call();
                 if (subItem.route.isNotEmpty) {
                   isItemOne = false;
                   context.go(subItem.route, extra: subItem.extra);
