@@ -12,7 +12,8 @@ import 'dieu_dong_tai_san_event.dart'
         GetDataDropdownEvent,
         GetListAssetEvent,
         GetListDieuDongTaiSanEvent,
-        UpdateDieuDongEvent;
+        UpdateDieuDongEvent,
+        UpdateSigningStatusEvent;
 import 'dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanBloc
@@ -24,6 +25,7 @@ class DieuDongTaiSanBloc
     on<CreateDieuDongEvent>(_createLenhDieuDong);
     on<UpdateDieuDongEvent>(_updateDieuDong);
     on<DeleteDieuDongEvent>(_deleteDieuDong);
+    on<UpdateSigningStatusEvent>(_updateSigningStatus);
   }
 
   Future<void> _getListDieuDongTaiSan(
@@ -33,7 +35,7 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     List<DieuDongTaiSanDto> dieuDongTaiSans = await DieuDongTaiSanRepository()
-        .getAll( event.typeAssetTransfer);
+        .getAll(event.typeAssetTransfer);
     emit(DieuDongTaiSanLoadingDismissState());
     emit(GetListDieuDongTaiSanSuccessState(data: dieuDongTaiSans));
   }
@@ -87,13 +89,14 @@ class DieuDongTaiSanBloc
   }
 
   ///CREATE
-  Future<void> _createLenhDieuDong(CreateDieuDongEvent event, Emitter emit) async {
+  Future<void> _createLenhDieuDong(
+    CreateDieuDongEvent event,
+    Emitter emit,
+  ) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
-    Map<String, dynamic> result = await AssetTransferRepository().createAssetTransfer(
-      event.request,
-      event.requestDetail,
-    );
+    Map<String, dynamic> result = await AssetTransferRepository()
+        .createAssetTransfer(event.request, event.requestDetail);
     emit(DieuDongTaiSanLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(CreateDieuDongSuccessState());
@@ -138,6 +141,30 @@ class DieuDongTaiSanBloc
       String msg = "Lỗi khi xóa lệnh điều động";
       emit(
         PutPostDeleteFailedState(title: "notice", code: result, message: msg),
+      );
+    }
+  }
+
+  Future<void> _updateSigningStatus(
+    UpdateSigningStatusEvent event,
+    Emitter emit,
+  ) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    Map<String, dynamic> result = await AssetTransferRepository().updateState(
+      event.id,
+    );
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateSigningStatusSuccessState());
+    } else {
+      String msg = "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
+      emit(
+        UpdateSigningStatusFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
       );
     }
   }

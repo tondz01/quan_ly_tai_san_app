@@ -101,6 +101,7 @@ class _StaffManagerState extends State<StaffManager> {
                     child: CommonPageView(
                       childInput: StaffFormPage(
                         staff: editingStaff,
+                        staffs: staffs,
                         onCancel: () {
                           setState(() {
                             isShowInput = false;

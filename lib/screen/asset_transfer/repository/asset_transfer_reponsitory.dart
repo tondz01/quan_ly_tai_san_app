@@ -133,6 +133,36 @@ class AssetTransferRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> updateState(String idDieuDong) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai//$idDieuDong',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+        response.data,
+        DieuDongTaiSanDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> uploadFileBytes(
     String fileName,
     Uint8List fileBytes,

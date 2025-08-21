@@ -5,10 +5,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -21,7 +18,6 @@ import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart'
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverDetail extends StatefulWidget {

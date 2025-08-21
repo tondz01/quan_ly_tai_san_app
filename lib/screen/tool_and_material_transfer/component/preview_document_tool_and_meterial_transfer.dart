@@ -64,9 +64,8 @@ previewDocumentToolAndMaterial({
   UserInfoDTO userInfo = provider.userInfo!;
   log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
-  String tenFile = path.basename(nhanVien.chyKyNhay.toString());
-  String tenFileKyThuong = path.basename(nhanVien.chyKyThuong.toString());
-  log('nhanVien.chuKy: ${nhanVien.chyKyNhay}');
+  String tenFile = path.basename(nhanVien.chuKyNhay.toString());
+  String tenFileKyThuong = path.basename(nhanVien.chuKyThuong.toString());
   String urlKyNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
   String urlKyThuong = '${Config.baseUrl}/api/upload/download/$tenFileKyThuong';
   return showDialog(

@@ -91,7 +91,6 @@ class GetDataDropdownFailedState extends DieuDongTaiSanState {
 //CREATED
 class CreateDieuDongSuccessState extends DieuDongTaiSanState {
   const CreateDieuDongSuccessState();
-
   @override
   List<Object> get props => [];
 }
@@ -130,6 +129,12 @@ class DeleteDieuDongSuccessState extends DieuDongTaiSanState {
   @override
   List<Object> get props => [data];
 }
+class UpdateSigningStatusSuccessState extends DieuDongTaiSanState {
+  const UpdateSigningStatusSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
 
 class PutPostDeleteFailedState extends DieuDongTaiSanState {
   final String title;
@@ -137,6 +142,20 @@ class PutPostDeleteFailedState extends DieuDongTaiSanState {
   final String message;
 
   const PutPostDeleteFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+class UpdateSigningStatusFailedState extends DieuDongTaiSanState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const UpdateSigningStatusFailedState({
     required this.title,
     this.code,
     required this.message,

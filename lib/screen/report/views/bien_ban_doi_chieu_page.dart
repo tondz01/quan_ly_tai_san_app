@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:se_gay_components/common/sg_text.dart' show SGText;
 

@@ -8,13 +8,14 @@ class NhanVien extends Equatable {
 
   final String? agreementUUId;
   final String? pin;
-  final String? chyKyNhay;
-  final String? chyKyThuong;
+  final String? chuKyNhay;
+  final String? chuKyThuong;
   final String? boPhan;
   final String? chucVu;
   final String? tenChucVu;
   final String? chucVuId;
   final String? nguoiQuanLy;
+  final String? quanLyId;
   final String? tenQuanLy;
   final bool? laQuanLy;
   final String? avatar;
@@ -43,13 +44,14 @@ class NhanVien extends Equatable {
     this.emailCongViec,
     this.agreementUUId,
     this.pin,
-    this.chyKyNhay,
-    this.chyKyThuong,
+    this.chuKyNhay,
+    this.chuKyThuong,
     this.boPhan,
     this.chucVu,
     this.tenChucVu,
     this.chucVuId,
     this.nguoiQuanLy,
+    this.quanLyId,
     this.tenQuanLy,
     this.laQuanLy,
     this.avatar,
@@ -78,13 +80,14 @@ class NhanVien extends Equatable {
       emailCongViec: json['emailCongViec'],
       agreementUUId: json['agreementUUId'],
       pin: json['pin'],
-      chyKyNhay: json['chuKy'],
-      chyKyThuong: json['chuKyThuong'],
+      chuKyNhay: json['chuKy'],
+      chuKyThuong: json['chuKyThuong'],
       boPhan: json['boPhan'],
       chucVu: json['chucVu'],
       tenChucVu: json['tenChucVu'],
       chucVuId: json['chucVuId'],
       nguoiQuanLy: json['nguoiQuanLy'],
+      quanLyId: json['quanLyId'],
       tenQuanLy: json['tenQuanLy'],
       phongBanId: json['phongBanId'],
       tenPhongBan: json['tenPhongBan'],
@@ -104,13 +107,14 @@ class NhanVien extends Equatable {
     String? emailCongViec,
     String? agreementUUId,
     String? pin,
-    String? chuKy,
+    String? chuKyNhay,
     String? chuKyThuong,
     String? boPhan,
     String? chucVu,
     String? tenChucVu,
     String? chucVuId,
     String? nguoiQuanLy,
+    String? quanLyId,
     String? tenQuanLy,
     bool? laQuanLy,
     String? avatar,
@@ -137,13 +141,14 @@ class NhanVien extends Equatable {
       emailCongViec: emailCongViec ?? this.emailCongViec,
       agreementUUId: agreementUUId ?? this.agreementUUId,
       pin: pin ?? this.pin,
-      chyKyNhay: chuKy ?? this.chyKyNhay,
-      chyKyThuong: chuKyThuong ?? this.chyKyThuong,
+      chuKyNhay: chuKyNhay ?? this.chuKyNhay,
+      chuKyThuong: chuKyThuong ?? this.chuKyThuong,
       boPhan: boPhan ?? this.boPhan,
       chucVu: chucVu ?? this.chucVu,
       tenChucVu: tenChucVu ?? this.tenChucVu,
       chucVuId: chucVuId ?? this.chucVuId,
       nguoiQuanLy: nguoiQuanLy ?? this.nguoiQuanLy,
+      quanLyId: quanLyId ?? this.quanLyId,
       tenQuanLy: tenQuanLy ?? this.tenQuanLy,
       laQuanLy: laQuanLy ?? this.laQuanLy,
       avatar: avatar ?? this.avatar,
@@ -171,8 +176,8 @@ class NhanVien extends Equatable {
       'emailCongViec': emailCongViec,
       'agreementUUId': agreementUUId,
       'pin': pin,
-      'chuKy': chyKyNhay,
-      'chuKyThuong': chyKyThuong,
+      'chuKyNhay': chuKyNhay,
+      'chuKyThuong': chuKyThuong,
       'boPhan': boPhan,
       'chucVu': chucVu,
       'nguoiQuanLy': nguoiQuanLy,
@@ -198,11 +203,12 @@ class NhanVien extends Equatable {
     emailCongViec,
     agreementUUId,
     pin,
-    chyKyNhay,
-    chyKyThuong,
+    chuKyNhay,
+    chuKyThuong,
     boPhan,
     chucVu,
     nguoiQuanLy,
+    quanLyId,
     tenQuanLy,
     laQuanLy,
     avatar,

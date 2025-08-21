@@ -22,6 +22,7 @@ class CommonContract extends StatefulWidget {
   final String idNguoiKy;
   final String tenNguoiKy;
   final bool isShowKy;
+  final Function()? eventSignature;
 
   const CommonContract({
     super.key,
@@ -31,6 +32,7 @@ class CommonContract extends StatefulWidget {
     required this.idNguoiKy,
     required this.tenNguoiKy,
     this.isShowKy = true,
+    this.eventSignature,
   });
 
   @override
@@ -318,6 +320,7 @@ class _CommonContractState extends State<CommonContract> {
       );
 
       if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        widget.eventSignature?.call();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Đã lưu chữ ký thành công')),

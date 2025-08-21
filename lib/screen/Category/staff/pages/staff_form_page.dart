@@ -11,25 +11,25 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/component/upload_file_signature.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/component/staff_save_service.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 
 class StaffFormPage extends StatefulWidget {
   final NhanVien? staff;
+  final List<NhanVien>? staffs;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
   const StaffFormPage({
     super.key,
     this.staff,
+    this.staffs,
     this.index,
     this.onCancel,
     this.onSaved,
@@ -57,16 +57,22 @@ class _StaffFormPageState extends State<StaffFormPage> {
   Uint8List? _chuKyNhayData;
   Uint8List? _chuKyThuongData;
 
+  String? _chuKyNhayPathExisting;
+  String? _chuKyThuongPathExisting;
+
   bool _isCanSave = true;
   bool _kyNhay = false;
   bool _kyThuong = false;
   bool _kySo = false;
+  bool _isActive = false;
   String? errorChuKyNhay;
   String? errorChuKyThuong;
 
   bool validateChuKyNhay() {
     if (_kyNhay) {
-      if (selectedFileChuKyNhay == null) {
+      final bool hasExisting =
+          widget.staff != null && (_chuKyNhayPathExisting?.isNotEmpty ?? false);
+      if (selectedFileChuKyNhay == null && !hasExisting) {
         setState(() {
           errorChuKyNhay = 'Vui lòng chọn file chữ ký nháy';
         });
@@ -81,7 +87,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
   bool validateChuKyThuong() {
     if (_kyThuong) {
-      if (selectedFileChuKyThuong == null) {
+      final bool hasExisting =
+          widget.staff != null &&
+          (_chuKyThuongPathExisting?.isNotEmpty ?? false);
+      if (selectedFileChuKyThuong == null && !hasExisting) {
         setState(() {
           errorChuKyThuong = 'Vui lòng chọn file chữ ký thường';
         });
@@ -106,8 +115,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
+    _isActive = widget.staff?.isActive ?? false;
     _activityController = TextEditingController(
-      text: widget.staff?.isActive ?? false ? 'Có' : 'Không',
+      text: _isActive ? 'Có' : 'Không',
     );
     _positionController = TextEditingController(
       text: widget.staff?.chucVu ?? '',
@@ -124,9 +134,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
       _phongBan = null;
     }
     try {
-      _staffDTO = context.read<StaffBloc>().staffs.firstWhere(
-        (staff) => staff.id == widget.staff?.id,
-      );
+      if (widget.staff?.quanLyId != null) {
+        _staffDTO = getStaffById(widget.staff?.quanLyId ?? '');
+        log('message _staffDTO: ${_staffDTO?.toJson()}');
+      }
+      log('message _staffDTO: ${widget.staff?.quanLyId}');
     } catch (e) {
       _staffDTO = null;
     }
@@ -140,11 +152,22 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _agreementUUIdController = TextEditingController(
       text: widget.staff?.agreementUUId ?? '',
     );
-    _pinController = TextEditingController(text: widget.staff?.pin ?? '');
     _laQuanLy = widget.staff?.laQuanLy ?? false;
     _kyNhay = widget.staff?.kyNhay ?? false;
     _kyThuong = widget.staff?.kyThuong ?? false;
     _kySo = widget.staff?.kySo ?? false;
+    _pinController = TextEditingController(text: widget.staff?.pin ?? '');
+
+    selectedFileChuKyNhay =
+        widget.staff?.chuKyNhay != null ? File(widget.staff!.chuKyNhay!) : null;
+    selectedFileChuKyThuong =
+        widget.staff?.chuKyThuong != null
+            ? File(widget.staff!.chuKyThuong!)
+            : null;
+
+    // Đặt sẵn đường dẫn chữ ký hiện có (nếu có) để hiển thị và validate khi cập nhật
+    _chuKyNhayPathExisting = widget.staff?.chuKyNhay;
+    _chuKyThuongPathExisting = widget.staff?.chuKyThuong;
   }
 
   @override
@@ -157,6 +180,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
         _initData();
       }
     }
+  }
+
+  NhanVien? getStaffById(String id) {
+    return widget.staffs?.firstWhere((staff) => staff.id == id);
   }
 
   @override
@@ -174,129 +201,43 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _save() async {
-    UserInfoDTO? userInfoDTO = AccountHelper.instance.getUserInfo();
+    AccountHelper.instance.getUserInfo();
 
-    if (_formKey.currentState!.validate()) {
-      if (validateChuKyNhay()) {
-        return;
-      }
-      if (validateChuKyThuong()) {
-        return;
-      }
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-      // Tạo đối tượng nhân viên từ dữ liệu form
-      final NhanVien staff;
-      if (widget.staff != null) {
-        log('cập nhật nhân viên hiện có');
-        staff = widget.staff!.copyWith(
-          hoTen: _nameController.text.trim(),
-          diDong: _telController.text.trim(),
-          emailCongViec: _emailController.text.trim(),
-          isActive: true,
-          chucVu: _chucVuDTO?.id,
-          chucVuId: _chucVuDTO?.id,
-          id: _staffIdController.text.trim(),
-          nguoiQuanLy: _staffDTO?.id ?? '',
-          agreementUUId: _agreementUUIdController.text.trim(),
-          pin: _pinController.text.trim(),
-          laQuanLy: _laQuanLy,
-          boPhan: _phongBan?.id,
-          phongBanId: _phongBan?.id,
-          ngayCapNhat: DateTime.now().toIso8601String(),
-          nguoiCapNhat: userInfoDTO?.id ?? '',
-          kyNhay: _kyNhay,
-          kyThuong: _kyThuong,
-          kySo: _kySo,
-        );
-      } else {
-        log('thêm mới nhân viên');
-        staff = NhanVien(
-          id: _staffIdController.text.trim(),
-          hoTen: _nameController.text.trim(),
-          diDong: _telController.text.trim(),
-          emailCongViec: _emailController.text.trim(),
-          isActive: true,
-          chucVu: _chucVuDTO?.id,
-          chucVuId: _chucVuDTO?.id,
-          nguoiQuanLy: _staffDTO?.id ?? '',
-          agreementUUId: _agreementUUIdController.text.trim(),
-          pin: _pinController.text.trim(),
-          laQuanLy: _laQuanLy,
-          boPhan: _phongBan?.id,
-          phongBanId: _phongBan?.id,
-          ngayTao: DateTime.now(),
-          nguoiTao: userInfoDTO?.id ?? '',
-          kyNhay: _kyNhay,
-          kyThuong: _kyThuong,
-          kySo: _kySo,
-        );
-      }
+    if (validateChuKyNhay() || validateChuKyThuong()) {
+      return;
+    }
 
-      // Thêm hoặc cập nhật nhân viên
-      if (widget.staff == null) {
-        bool isSuccess = true;
-        if (_kyNhay) {
-          Map<String, dynamic>? result = await uploadFileSignature(
-            context,
-            fileNameChuKyNhay ?? '',
-            selectedFileChuKyNhay?.path ?? '',
-            _chuKyNhayData ?? Uint8List(0),
-          );
-          if (result == null) {
-            AppUtility.showSnackBar(
-              context,
-              'Upload file chữ ký nháy thất bại',
-              isError: true,
-            );
-            isSuccess = false;
-            return;
-          }
-          staff.copyWith(chuKy: result['filePath']);
-        }
-        if (_kyThuong) {
-          Map<String, dynamic>? result = await uploadFileSignature(
-            context,
-            fileNameChuKyThuong ?? '',
-            selectedFileChuKyThuong?.path ?? '',
-            _chuKyThuongData ?? Uint8List(0),
-          );
-          if (result == null) {
-            AppUtility.showSnackBar(
-              context,
-              'Upload file chữ ký thường thất bại',
-              isError: true,
-            );
-            isSuccess = false;
-            return;
-          }
-          staff.copyWith(chuKyThuong: result['filePath']);
-        }
+    final bool ok = await StaffSaveService.save(
+      context: context,
+      existingStaff: widget.staff,
+      nameController: _nameController,
+      telController: _telController,
+      emailController: _emailController,
+      staffIdController: _staffIdController,
+      agreementUUIdController: _agreementUUIdController,
+      pinController: _pinController,
+      laQuanLy: _laQuanLy,
+      kyNhay: _kyNhay,
+      kyThuong: _kyThuong,
+      kySo: _kySo,
+      phongBan: _phongBan,
+      staffDTO: _staffDTO,
+      chucVuDTO: _chucVuDTO,
+      selectedFileChuKyNhay: selectedFileChuKyNhay,
+      selectedFileChuKyThuong: selectedFileChuKyThuong,
+      fileNameChuKyNhay: fileNameChuKyNhay,
+      fileNameChuKyThuong: fileNameChuKyThuong,
+      chuKyNhayData: _chuKyNhayData,
+      chuKyThuongData: _chuKyThuongData,
+      isActive: _isActive,
+    );
 
-        if (isSuccess) {
-          // context.read<StaffBloc>().stream.listen((state) {
-          //   if (state is AddStaffSuccess) {
-          //     AppUtility.showSnackBar(context, 'Thêm nhân viên thành công!');
-          //     if (widget.onSaved != null) {
-          //       widget.onSaved!();
-          //     }
-          //   } else if (state is AddStaffFailure) {
-          //     AppUtility.showSnackBar(
-          //       context,
-          //       'Thêm nhân viên thất bại: ${state.message}',
-          //       isError: true,
-          //     );
-          //   }
-          // });
-          context.read<StaffBloc>().add(AddStaff(staff));
-        }
-      } else {
-        context.read<StaffBloc>().add(UpdateStaff(staff));
-      }
-
-      // Gọi callback nếu có
-      if (widget.onSaved != null) {
-        widget.onSaved!();
-      }
+    if (ok && widget.onSaved != null) {
+      widget.onSaved!();
     }
   }
 
@@ -483,6 +424,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                               onChanged: (value) {
                                 setState(() {
                                   _activityController.text = value ?? '';
+                                  _isActive = value == 'Có';
                                 });
                               },
                               validator:
@@ -538,6 +480,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                   TextFormField(
                                     controller: _pinController,
                                     decoration: inputDecoration('PIN'),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        // _pinController.text = value;
+                                        log('message: $_pinController.text');
+                                      });
+                                    },
                                   ),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
@@ -667,6 +615,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                         overflow: TextOverflow.ellipsis,
                       );
                     }
+                    log('message chuky: $chuky');
                     if (chuky.isNotEmpty) {
                       return Row(
                         children: [
@@ -742,7 +691,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   if (_kyNhay)
                     Expanded(
                       child: _buildUploadFileChuKy(
-                        widget.staff?.chyKyNhay ?? '',
+                        _chuKyNhayPathExisting ?? '',
                         selectedFileChuKyNhay,
                         1,
                       ),
@@ -767,13 +716,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
                     onChanged:
                         (value) => setState(() {
                           _kyThuong = value;
-                          // _kieuKyController.text = _kyThuong ? '2' : '0';
                         }),
                   ),
                   if (_kyThuong)
                     Expanded(
                       child: _buildUploadFileChuKy(
-                        widget.staff?.chyKyThuong ?? '',
+                        _chuKyThuongPathExisting ?? '',
                         selectedFileChuKyThuong,
                         2,
                       ),
@@ -797,8 +745,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                     (value) => setState(() {
                       _kySo = value;
                       _isCanSave = !value;
-                      log('message: $_isCanSave');
-                      // _kieuKyController.text = _kySo ? '3' : '0';
                     }),
               ),
             ],

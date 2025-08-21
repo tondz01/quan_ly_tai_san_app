@@ -67,9 +67,12 @@ previewDocumentHandover({
   UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
   log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVien(idNhanVien: userInfo.tenDangNhap);
-  String tenFile = path.basename(nhanVien.chyKyNhay.toString());
-  log('nhanVien.chuKy: ${nhanVien.chyKyNhay}');
-  String url = '${Config.baseUrl}/api/upload/download/$tenFile';
+  String tenFileChuKyNhay = path.basename(nhanVien.chuKyNhay.toString());
+  String tenFileChuKyThuong = path.basename(nhanVien.chuKyThuong.toString());
+  String urlChuKyNhay =
+      '${Config.baseUrl}/api/upload/download/$tenFileChuKyNhay';
+  String urlChuKyThuong =
+      '${Config.baseUrl}/api/upload/download/$tenFileChuKyThuong';
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -83,7 +86,7 @@ previewDocumentHandover({
           ),
           child: CommonContract(
             contractType: ContractPage.assetHandoverPage(item, itemsDetail),
-            signatureList: [url],
+            signatureList: [urlChuKyNhay, urlChuKyThuong],
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,

@@ -4,10 +4,13 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
@@ -69,8 +72,8 @@ previewDocument({
   UserInfoDTO userInfo = provider.userInfo!;
   log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
-  String tenFile = path.basename(nhanVien.chyKyNhay.toString());
-  log('nhanVien.chuKy: ${nhanVien.chyKyNhay}');
+  String tenFile = path.basename(nhanVien.chuKyNhay.toString());
+  log('nhanVien.chuKy: ${nhanVien.chuKyNhay}');
   String url = '${Config.baseUrl}/api/upload/download/$tenFile';
   return showDialog(
     context: context,
@@ -90,6 +93,14 @@ previewDocument({
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
             isShowKy: isShowKy,
+            eventSignature: () {
+              final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(
+                context,
+              );
+              assetHandoverBloc.add(
+                UpdateSigningStatusEvent(context, item.id.toString()),
+              );
+            },
           ),
         ),
   );
