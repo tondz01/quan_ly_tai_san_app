@@ -5,24 +5,22 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class ToolAndMaterialTransferList extends StatefulWidget {
@@ -38,13 +36,16 @@ class ToolAndMaterialTransferList extends StatefulWidget {
   });
 
   @override
-  State<ToolAndMaterialTransferList> createState() => _ToolAndMaterialTransferListState();
+  State<ToolAndMaterialTransferList> createState() =>
+      _ToolAndMaterialTransferListState();
 }
 
-class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferList> {
+class _ToolAndMaterialTransferListState
+    extends State<ToolAndMaterialTransferList> {
   bool isUploading = false;
 
   final List<ToolAndMaterialTransferDto> listAssetHandover = [];
+  List<ToolAndMaterialTransferDto> listItemSelected = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -238,7 +239,8 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns = _buildColumns();
+    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns =
+        _buildColumns();
     log('message widget.provider.data: ${MediaQuery.of(context).size.width}');
 
     return MultiBlocListener(
@@ -288,6 +290,10 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
                 onRowTap: (item) {
                   widget.provider.onChangeDetailToolAndMaterialTransfer(item);
                 },
+                onSelectionChanged: (items) {
+                  listItemSelected.clear();
+                  listItemSelected = items;
+                },
               ),
             ),
           ],
@@ -305,8 +311,6 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
           children: [
             Row(
               spacing: 8,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
                 Padding(
@@ -320,7 +324,7 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
                     ),
                   ),
                 ),
-
+                _buildActionKy(),
                 GestureDetector(
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
@@ -333,6 +337,7 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
         )
         : Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -351,29 +356,50 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
+                SizedBox(width: 8),
+                _buildActionKy(),
               ],
             ),
-            RowFindByStatusCcdc(provider: widget.provider),
+            Expanded(child: RowFindByStatusCcdc(provider: widget.provider)),
           ],
         );
   }
 
+  Visibility _buildActionKy() {
+    return Visibility(
+      visible: listItemSelected.isNotEmpty && listItemSelected.length < 2,
+      child: GestureDetector(
+        onTap: () {
+          if (listItemSelected.isNotEmpty) {
+            ToolAndMaterialTransferDto? item = listItemSelected.first;
+            previewDocumentToolAndMaterial(
+              context: context,
+              item: item,
+              provider: widget.provider,
+            );
+          }
+        },
+        child: Row(
+          spacing: 8,
+          children: [
+            Tooltip(
+              message: 'Ký biên bản',
+              child: Icon(Icons.edit, color: Colors.green, size: 18),
+            ),
+            SGText(
+              text: 'Số lượng biên bản đã chọn: ${listItemSelected.length}',
+              color: Colors.blue,
+              size: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget viewAction(ToolAndMaterialTransferDto item) {
     return viewActionButtons([
-      // ActionButtonConfig(
-      //   icon: Icons.book_outlined,
-      //   tooltip: 'Biên bản bản giao',
-      //   iconColor: ColorValue.lightAmber,
-      //   backgroundColor: Colors.red.shade50,
-      //   borderColor: Colors.red.shade200,
-      //   onPressed:
-      //       () => PropertyHandoverMinutes.showPopup(
-      //         context,
-      //         listAssetHandover
-      //             .where((itemAH) => itemAH.id == item.id)
-      //             .toList(),
-      //       ),
-      // ),
       ActionButtonConfig(
         icon: Icons.visibility,
         tooltip: 'Xem',
@@ -381,28 +407,10 @@ class _ToolAndMaterialTransferListState extends State<ToolAndMaterialTransferLis
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () {
-          UserInfoDTO userInfo = widget.provider.userInfo!;
-          String url =
-              '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
-          showDialog(
+          previewDocumentToolAndMaterial(
             context: context,
-            barrierDismissible: true,
-            builder:
-                (context) => Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: 16.0,
-                    bottom: 16.0,
-                  ),
-                  child: CommonContract(
-                    contractType: ContractPage.toolAndMaterialTransferPage(item),
-                    signatureList: <String>[url],
-                    idTaiLieu: item.id.toString(),
-                    idNguoiKy: userInfo.tenDangNhap,
-                    tenNguoiKy: userInfo.hoTen,
-                  ),
-                ),
+            item: item,
+            provider: widget.provider,
           );
         },
       ),

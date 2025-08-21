@@ -6,7 +6,6 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/models/departmen
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 
 class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {

@@ -170,45 +170,45 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           );
         }
         if (state is GetListAssetFailedState) {
-          log('GetListAssetFailedState');
+          AppUtility.showSnackBar(context, 'Lấy dữ liệu "Tài sản" thất bại!', isError: true);
         }
         if (state is GetDataDropdownSuccessState) {
-          log('GetDataDropdownSuccessState');
           context.read<DieuDongTaiSanProvider>().getDataDropdownSuccess(
             context,
             state,
           );
         }
         if (state is GetDataDropdownFailedState) {
-          log('GetDataDropdownFailedState');
+          AppUtility.showSnackBar(context, 'Lấy dữ liệu "Nhân viên" và "Phòng ban" thất bại!', isError: true);
         }
         if (state is CreateDieuDongSuccessState) {
-          log('CreateDieuDongSuccessState');
           context.read<DieuDongTaiSanProvider>().createDieuDongSuccess(
             context,
             state,
           );
         }
         if (state is CreateDieuDongFailedState) {
-          log('CreateDieuDongFailedState');
           AppUtility.showSnackBar(context, state.message);
         }
         if (state is UpdateDieuDongSuccessState) {
-          log('UpdateDieuDongSuccessState');
           context.read<DieuDongTaiSanProvider>().updateDieuDongSuccess(
             context,
             state,
           );
         }
         if (state is DeleteDieuDongSuccessState) {
-          log('DeleteDieuDongSuccessState');
           context.read<DieuDongTaiSanProvider>().deleteDieuDongSuccess(
             context,
             state,
           );
         }
+        if (state is UpdateSigningStatusSuccessState) {
+          AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+        }
+        if (state is UpdateSigningStatusFailedState) {
+          AppUtility.showSnackBar(context, state.message, isError: true);
+        }
         if (state is PutPostDeleteFailedState) {
-          log('PutPostDeleteFailedState');
           context.read<DieuDongTaiSanProvider>().putPostDeleteFailed(
             context,
             state,

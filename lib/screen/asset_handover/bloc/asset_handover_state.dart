@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
@@ -51,6 +50,13 @@ class UpdateAssetHandoverSuccessState extends AssetHandoverState {
 
   @override
   List<Object> get props => [data];
+}
+
+class UpdateSigningStatusSuccessState extends AssetHandoverState {
+  const UpdateSigningStatusSuccessState();
+
+  @override
+  List<Object> get props => [];
 }
 
 class DeleteAssetHandoverSuccessState extends AssetHandoverState {

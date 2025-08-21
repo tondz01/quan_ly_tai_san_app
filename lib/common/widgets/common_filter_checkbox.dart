@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -80,8 +78,6 @@ class _CommonFilterCheckboxState extends State<CommonFilterCheckbox>
 
           // Nếu không truyền showCount thì tự quyết định dựa theo width
           final shouldShowCount = widget.showCount ?? (availableWidth >= 400);
-
-          log('shouldShowCount: $shouldShowCount');
 
           return Wrap(
             spacing: 10,

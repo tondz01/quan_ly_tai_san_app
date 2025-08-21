@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
@@ -18,7 +21,7 @@ class AssetHandoverRepository extends ApiBase {
     };
     try {
       final response = await get(
-        "${EndPointAPI.ASSET_TRANSFER}/getbyuserid/${userInfo.id}",
+        "${EndPointAPI.ASSET_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}",
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -172,4 +175,51 @@ class AssetHandoverRepository extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> updateStateUserSignature(
+    String userId,
+    String docId,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    Map<String, dynamic> request = {'userId': userId, 'docId': docId};
+
+    try {
+      final resp1 = await post(
+        '${EndPointAPI.ASSET_TRANSFER}/capnhatky/',
+        data: {'userId': userId, 'docId': docId},
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+      if (resp1.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = resp1.statusCode;
+        return result;
+      }
+
+      final resp2 = await post(
+        '${EndPointAPI.ASSET_TRANSFER}/capnhattrangthai/$docId',
+      );
+      if (resp2.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = resp2.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = {
+        'capnhatky': resp1.data,
+        'capnhattrangthai': resp2.data,
+      };
+    } catch (e) {
+      log('updateState error: $e');
+    }
+
+    return result;
+  }
 }
+// curl bàn giao ccdc-vt
+// curl -X POST "http://localhost:8080/api/bangiaoccdcvattu/capnhatky/" \
+//      -H "Content-Type: application/x-www-form-urlencoded" \
+//      -d "userId=12345" \
+//      -d "docId=67890"

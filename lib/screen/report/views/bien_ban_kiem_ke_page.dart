@@ -170,8 +170,8 @@ class BienBanKiemKePage extends StatelessWidget {
                     ),
                     children: [
                       tableCell(index.toString()),
-                      tableCell(item.tenTaiSan ?? ''),
-                      tableCell(item.donViTinh ?? ''),
+                      tableCell(item.tenTaiSan),
+                      tableCell(item.donViTinh),
                       tableCell(item.soLuong.toString()),
                       tableCell(item.hienTrang == 1 ? "Tốt" : "Hỏng"),
                       tableCell(item.ghiChu), // Ghi chú

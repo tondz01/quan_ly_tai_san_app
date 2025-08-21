@@ -45,9 +45,6 @@ class _DetailToolAndMaterialTransferTableState
   void didUpdateWidget(DetailToolAndMaterialTransferTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     movementDetails = List.from(widget.initialDetails);
-    log(
-      'message didUpdateWidget initialDetails: ${jsonEncode(movementDetails)}',
-    );
   }
 
   List<ToolsAndSuppliesDto> getAssetsByChildAssets(
@@ -58,7 +55,6 @@ class _DetailToolAndMaterialTransferTableState
     final Map<String, ToolsAndSuppliesDto> idToAsset = {
       for (final a in allAssets) a.id: a,
     };
-    log('message idToAsset: ${jsonEncode(idToAsset)}');
 
     // Duyệt theo thứ tự child, loại trùng idTaiSan
     final result = <ToolsAndSuppliesDto>[];
@@ -71,13 +67,11 @@ class _DetailToolAndMaterialTransferTableState
         if (asset != null) result.add(asset);
       }
     }
-    log('result getAssetsByChildAssets: ${jsonEncode(result)}');
     return result;
   }
 
   @override
   Widget build(BuildContext context) {
-    log('movementDetails: ${movementDetails.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

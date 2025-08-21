@@ -44,3 +44,14 @@ class DeleteAssetHandoverEvent extends AssetHandoverEvent {
   @override
   List<Object?> get props => [context, id];
 }
+
+class UpdateSigningStatusEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final String userId;
+  final String docId;
+
+  const UpdateSigningStatusEvent(this.context, this.userId, this.docId);
+
+  @override
+  List<Object?> get props => [context, userId, docId];
+}

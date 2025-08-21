@@ -5,8 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
@@ -128,6 +128,36 @@ class AssetTransferRepository extends ApiBase {
         "AssetTransferRepository",
         "Error at uploadFile - AssetTransferRepository: $e",
       );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateState(String idDieuDong) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai/$idDieuDong',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+        response.data,
+        DieuDongTaiSanDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
 
     return result;

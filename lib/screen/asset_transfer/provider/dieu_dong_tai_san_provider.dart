@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -40,9 +41,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isLoading => _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  bool get isShowPreview => _isShowPreview;
   get userInfo => _userInfo;
   List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
+  get itemPreview => _itemPreview;
   get data => _data;
   get dataAsset => _dataAsset;
   get dataPhongBan => _dataPhongBan;
@@ -122,6 +125,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   String? _subScreen;
   String mainScreen = '';
 
+  bool _isShowPreview = false;
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   List<DieuDongTaiSanDto>? _data;
@@ -131,6 +135,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   List<DieuDongTaiSanDto>? _dataPage;
   List<DieuDongTaiSanDto> _filteredData = [];
   DieuDongTaiSanDto? _item;
+  DieuDongTaiSanDto? _itemPreview;
   UserInfoDTO? _userInfo;
 
   String idCongTy = 'CT001';
@@ -153,6 +158,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   set dataPage(List<DieuDongTaiSanDto>? value) {
     _dataPage = value;
     notifyListeners();
+  }
+
+  void changeIsShowPreview(bool value, DieuDongTaiSanDto? itemPreview) {
+    log('itemPreview1: ${itemPreview?.toJson()}');
+    if (_isShowPreview != value) {
+      _isShowPreview = value;
+      _itemPreview = itemPreview;
+      log('itemPreview2: ${itemPreview?.toJson()}');
+      notifyListeners();
+    }
   }
 
   void setFilterStatus(FilterStatus status, bool? value) {
@@ -271,7 +286,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   };
 
   void onInit(BuildContext context, int typeDieuDongTaiSan) {
-    onDispose();
+    log('onInit: Starting initialization for type: $typeDieuDongTaiSan');
+
+    // Không gọi onDispose() ở đây để tránh mất dữ liệu
+    // onDispose();
+
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
     _userInfo = AccountHelper.instance.getUserInfo();
 
@@ -281,8 +300,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     startIndex = 0;
     endIndex = 0;
     currentPage = 1;
-
-    log('message onInit: ${_data?.length} -- ${_dataAsset?.length}');
     controllerDropdownPage = TextEditingController(text: '10');
 
     getDataAll(context);
@@ -313,6 +330,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   void getDataAll(BuildContext context) {
     try {
+      onCloseDetail(context);
       final bloc = context.read<DieuDongTaiSanBloc>();
       bloc.add(
         GetListDieuDongTaiSanEvent(
@@ -323,6 +341,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       );
       bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
       bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
+      
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -403,14 +422,34 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     GetListDieuDongTaiSanSuccessState state,
   ) {
     _error = null;
+    log('message state.data: ${jsonEncode(state.data)}');
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
     } else {
+      _filteredData.clear();
+      _data?.clear();
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
+              .where((item) {
+                final idSignatureGroup1 =
+                    [item.nguoiTao].whereType<String>().toList();
+                final idSignatureGroup2 =
+                    [
+                      item.idTrinhDuyetCapPhong,
+                      item.idTrinhDuyetGiamDoc,
+                    ].whereType<String>().toList();
+
+                final inGroup1 = idSignatureGroup1.contains(userInfo.tenDangNhap);
+                final inGroup2 = idSignatureGroup2.contains(userInfo.tenDangNhap);
+
+                return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
+              })
               .toList();
+      log(
+        'message _data typeDieuDongTaiSan: $typeDieuDongTaiSan} -- ${jsonEncode(state.data)}',
+      );
       _filteredData = List.from(_data!);
     }
     _updatePagination();
@@ -625,7 +664,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
       _filteredData = List.from(_data!);
       _updatePagination();
-
       notifyListeners();
     }
   }

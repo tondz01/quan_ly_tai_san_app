@@ -366,6 +366,8 @@ class AssetHandoverProvider with ChangeNotifier {
       _filteredData = [];
       _item = null;
     } else {
+      _filteredData.clear();
+      _data?.clear();
       _data = state.data;
 
       _filteredData = List.from(_data!);
@@ -423,5 +425,14 @@ class AssetHandoverProvider with ChangeNotifier {
     _dataDetailAssetMobilization = result['data'];
     _isLoading = false;
     notifyListeners();
+  }
+
+  NhanVien getNhanVien({required String idNhanVien}) {
+    if (dataStaff == null) return NhanVien();
+    final found = dataStaff?.firstWhere((item) => item.id == idNhanVien);
+    if (found == null) {
+      return NhanVien();
+    }
+    return found;
   }
 }

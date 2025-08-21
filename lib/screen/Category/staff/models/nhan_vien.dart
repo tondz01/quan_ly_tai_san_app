@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:equatable/equatable.dart';
 
 class NhanVien extends Equatable {
@@ -8,15 +6,16 @@ class NhanVien extends Equatable {
   final String? diDong;
   final String? emailCongViec;
 
-  final int? kieuKy;
   final String? agreementUUId;
   final String? pin;
-  final String? chuKy;
+  final String? chuKyNhay;
+  final String? chuKyThuong;
   final String? boPhan;
   final String? chucVu;
   final String? tenChucVu;
   final String? chucVuId;
   final String? nguoiQuanLy;
+  final String? quanLyId;
   final String? tenQuanLy;
   final bool? laQuanLy;
   final String? avatar;
@@ -32,7 +31,6 @@ class NhanVien extends Equatable {
   final bool? isActive;
   final DateTime? ngayTao;
   final DateTime? ngayCapNhat;
-  final Uint8List? chuKyData;
 
   //kiểu ký
   final bool? kyNhay;
@@ -44,15 +42,16 @@ class NhanVien extends Equatable {
     this.hoTen,
     this.diDong,
     this.emailCongViec,
-    this.kieuKy,
     this.agreementUUId,
     this.pin,
-    this.chuKy,
+    this.chuKyNhay,
+    this.chuKyThuong,
     this.boPhan,
     this.chucVu,
     this.tenChucVu,
     this.chucVuId,
     this.nguoiQuanLy,
+    this.quanLyId,
     this.tenQuanLy,
     this.laQuanLy,
     this.avatar,
@@ -68,7 +67,6 @@ class NhanVien extends Equatable {
     this.ngayCapNhat,
     this.phongBanId,
     this.tenPhongBan,
-    this.chuKyData,
     this.kyNhay,
     this.kyThuong,
     this.kySo,
@@ -80,15 +78,16 @@ class NhanVien extends Equatable {
       hoTen: json['hoTen'],
       diDong: json['diDong'],
       emailCongViec: json['emailCongViec'],
-      kieuKy: int.parse(json['kieuKy']?.toString() ?? '0'),
       agreementUUId: json['agreementUUId'],
       pin: json['pin'],
-      chuKy: json['chuKy'],
+      chuKyNhay: json['chuKyNhay'],
+      chuKyThuong: json['chuKyThuong'],
       boPhan: json['boPhan'],
       chucVu: json['chucVu'],
       tenChucVu: json['tenChucVu'],
       chucVuId: json['chucVuId'],
       nguoiQuanLy: json['nguoiQuanLy'],
+      quanLyId: json['quanLyId'],
       tenQuanLy: json['tenQuanLy'],
       phongBanId: json['phongBanId'],
       tenPhongBan: json['tenPhongBan'],
@@ -106,15 +105,16 @@ class NhanVien extends Equatable {
     String? hoTen,
     String? diDong,
     String? emailCongViec,
-    int? kieuKy,
     String? agreementUUId,
     String? pin,
-    String? chuKy,
+    String? chuKyNhay,
+    String? chuKyThuong,
     String? boPhan,
     String? chucVu,
     String? tenChucVu,
     String? chucVuId,
     String? nguoiQuanLy,
+    String? quanLyId,
     String? tenQuanLy,
     bool? laQuanLy,
     String? avatar,
@@ -130,7 +130,6 @@ class NhanVien extends Equatable {
     String? ngayCapNhat,
     String? phongBanId,
     String? tenPhongBan,
-    Uint8List? chuKyData,
     bool? kyNhay,
     bool? kyThuong,
     bool? kySo,
@@ -140,15 +139,16 @@ class NhanVien extends Equatable {
       hoTen: hoTen ?? this.hoTen,
       diDong: diDong ?? this.diDong,
       emailCongViec: emailCongViec ?? this.emailCongViec,
-      kieuKy: kieuKy ?? this.kieuKy,
       agreementUUId: agreementUUId ?? this.agreementUUId,
       pin: pin ?? this.pin,
-      chuKy: chuKy ?? this.chuKy,
+      chuKyNhay: chuKyNhay ?? this.chuKyNhay,
+      chuKyThuong: chuKyThuong ?? this.chuKyThuong,
       boPhan: boPhan ?? this.boPhan,
       chucVu: chucVu ?? this.chucVu,
       tenChucVu: tenChucVu ?? this.tenChucVu,
       chucVuId: chucVuId ?? this.chucVuId,
       nguoiQuanLy: nguoiQuanLy ?? this.nguoiQuanLy,
+      quanLyId: quanLyId ?? this.quanLyId,
       tenQuanLy: tenQuanLy ?? this.tenQuanLy,
       laQuanLy: laQuanLy ?? this.laQuanLy,
       avatar: avatar ?? this.avatar,
@@ -162,13 +162,11 @@ class NhanVien extends Equatable {
       isActive: isActive ?? this.isActive,
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
-      chuKyData: chuKyData ?? this.chuKyData,
       kyNhay: kyNhay ?? this.kyNhay,
       kyThuong: kyThuong ?? this.kyThuong,
       kySo: kySo ?? this.kySo,
     );
   }
-
 
   Map<String, dynamic> toJson() {
     return {
@@ -176,10 +174,10 @@ class NhanVien extends Equatable {
       'hoTen': hoTen,
       'diDong': diDong,
       'emailCongViec': emailCongViec,
-      'kieuKy': kieuKy,
       'agreementUUId': agreementUUId,
       'pin': pin,
-      'chuKy': chuKy,
+      'chuKyNhay': chuKyNhay,
+      'chuKyThuong': chuKyThuong,
       'boPhan': boPhan,
       'chucVu': chucVu,
       'nguoiQuanLy': nguoiQuanLy,
@@ -199,33 +197,34 @@ class NhanVien extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        hoTen,
-        diDong,
-        emailCongViec,
-        kieuKy,
-        agreementUUId,
-        pin,
-        chuKy,
-        boPhan,
-        chucVu,
-        nguoiQuanLy,
-        tenQuanLy,
-        laQuanLy,
-        avatar,
-        phongBanId,
-        idCongTy,
-        diaChiLamViec,
-        hinhThucLamViec,
-        gioLamViec,
-        muiGio,
-        nguoiTao,
-        nguoiCapNhat,
-        isActive,
-        ngayTao,
-        ngayCapNhat,
-        kyNhay,
-        kyThuong,
-        kySo,
-      ];
+    id,
+    hoTen,
+    diDong,
+    emailCongViec,
+    agreementUUId,
+    pin,
+    chuKyNhay,
+    chuKyThuong,
+    boPhan,
+    chucVu,
+    nguoiQuanLy,
+    quanLyId,
+    tenQuanLy,
+    laQuanLy,
+    avatar,
+    phongBanId,
+    idCongTy,
+    diaChiLamViec,
+    hinhThucLamViec,
+    gioLamViec,
+    muiGio,
+    nguoiTao,
+    nguoiCapNhat,
+    isActive,
+    ngayTao,
+    ngayCapNhat,
+    kyNhay,
+    kyThuong,
+    kySo,
+  ];
 }

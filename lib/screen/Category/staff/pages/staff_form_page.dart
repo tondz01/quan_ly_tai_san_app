@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -5,26 +8,29 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/component/staff_save_service.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 
 class StaffFormPage extends StatefulWidget {
   final NhanVien? staff;
+  final List<NhanVien>? staffs;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
   const StaffFormPage({
     super.key,
     this.staff,
+    this.staffs,
     this.index,
     this.onCancel,
     this.onSaved,
@@ -43,18 +49,60 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _positionController;
   late TextEditingController _staffIdController;
   late TextEditingController _staffOwnerController;
-  late TextEditingController _kieuKyController;
   late TextEditingController _agreementUUIdController;
   late TextEditingController _pinController;
   bool _laQuanLy = false;
   PhongBan? _phongBan;
   NhanVien? _staffDTO;
   ChucVu? _chucVuDTO;
-  Uint8List? _chuKyData;
+  Uint8List? _chuKyNhayData;
+  Uint8List? _chuKyThuongData;
 
+  String? _chuKyNhayPathExisting;
+  String? _chuKyThuongPathExisting;
+
+  bool _isCanSave = true;
   bool _kyNhay = false;
   bool _kyThuong = false;
   bool _kySo = false;
+  bool _isActive = false;
+  String? errorChuKyNhay;
+  String? errorChuKyThuong;
+
+  bool validateChuKyNhay() {
+    if (_kyNhay) {
+      final bool hasExisting =
+          widget.staff != null && (_chuKyNhayPathExisting?.isNotEmpty ?? false);
+      if (selectedFileChuKyNhay == null && !hasExisting) {
+        setState(() {
+          errorChuKyNhay = 'Vui lòng chọn file chữ ký nháy';
+        });
+        return true;
+      }
+    }
+    setState(() {
+      errorChuKyNhay = null;
+    });
+    return false;
+  }
+
+  bool validateChuKyThuong() {
+    if (_kyThuong) {
+      final bool hasExisting =
+          widget.staff != null &&
+          (_chuKyThuongPathExisting?.isNotEmpty ?? false);
+      if (selectedFileChuKyThuong == null && !hasExisting) {
+        setState(() {
+          errorChuKyThuong = 'Vui lòng chọn file chữ ký thường';
+        });
+        return true;
+      }
+    }
+    setState(() {
+      errorChuKyThuong = null;
+    });
+    return false;
+  }
 
   @override
   void initState() {
@@ -65,14 +113,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
   void _initData() {
     _nameController = TextEditingController(text: widget.staff?.hoTen ?? '');
     _telController = TextEditingController(text: widget.staff?.diDong ?? '');
-    _kieuKyController = TextEditingController(
-      text: widget.staff?.kieuKy?.toString() ?? '',
-    );
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
+    _isActive = widget.staff?.isActive ?? false;
     _activityController = TextEditingController(
-      text: widget.staff?.isActive ?? false ? 'Có' : 'Không',
+      text: _isActive ? 'Có' : 'Không',
     );
     _positionController = TextEditingController(
       text: widget.staff?.chucVu ?? '',
@@ -89,9 +135,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
       _phongBan = null;
     }
     try {
-      _staffDTO = context.read<StaffBloc>().staffs.firstWhere(
-        (staff) => staff.id == widget.staff?.id,
-      );
+      if (widget.staff?.quanLyId != null) {
+        _staffDTO = getStaffById(widget.staff?.quanLyId ?? '');
+        log('message _staffDTO: ${_staffDTO?.toJson()}');
+      }
+      log('message _staffDTO: ${widget.staff?.quanLyId}');
     } catch (e) {
       _staffDTO = null;
     }
@@ -102,14 +150,27 @@ class _StaffFormPageState extends State<StaffFormPage> {
     } catch (e) {
       _chucVuDTO = null;
     }
+    log('message widget.staff?.agreementUUId: ${jsonEncode(widget.staff)}');
     _agreementUUIdController = TextEditingController(
       text: widget.staff?.agreementUUId ?? '',
     );
-    _pinController = TextEditingController(text: widget.staff?.pin ?? '');
     _laQuanLy = widget.staff?.laQuanLy ?? false;
     _kyNhay = widget.staff?.kyNhay ?? false;
-    _kyThuong = widget.staff?.kieuKy == 2;
-    _kySo = widget.staff?.kieuKy == 3;
+    _kyThuong = widget.staff?.kyThuong ?? false;
+    _kySo = widget.staff?.kySo ?? false;
+    _pinController = TextEditingController(text: widget.staff?.pin ?? '');
+
+    selectedFileChuKyNhay =
+        widget.staff?.chuKyNhay != null ? File(widget.staff!.chuKyNhay!) : null;
+    log('message selectedFileChuKyNhay: ${widget.staff?.chuKyNhay}');
+    selectedFileChuKyThuong =
+        widget.staff?.chuKyThuong != null
+            ? File(widget.staff!.chuKyThuong!)
+            : null;
+
+    // Đặt sẵn đường dẫn chữ ký hiện có (nếu có) để hiển thị và validate khi cập nhật
+    _chuKyNhayPathExisting = widget.staff?.chuKyNhay;
+    _chuKyThuongPathExisting = widget.staff?.chuKyThuong;
   }
 
   @override
@@ -124,6 +185,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
     }
   }
 
+  NhanVien? getStaffById(String id) {
+    return widget.staffs?.firstWhere((staff) => staff.id == id);
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -133,95 +198,81 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _positionController.dispose();
     _staffIdController.dispose();
     _staffOwnerController.dispose();
-    _kieuKyController.dispose();
     _agreementUUIdController.dispose();
     _pinController.dispose();
     super.dispose();
   }
 
-  void _save() {
-    log('check save nhân viên');
-    UserInfoDTO? userInfoDTO = AccountHelper.instance.getUserInfo();
+  void _save() async {
+    AccountHelper.instance.getUserInfo();
 
-    if (_formKey.currentState!.validate()) {
-      log('check validate');
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-      // Tạo đối tượng nhân viên từ dữ liệu form
-      final NhanVien staff;
-      if (widget.staff != null) {
-        log('cập nhật nhân viên hiện có');
-        staff = widget.staff!.copyWith(
-          hoTen: _nameController.text.trim(),
-          diDong: _telController.text.trim(),
-          emailCongViec: _emailController.text.trim(),
-          isActive: true,
-          chucVu: _chucVuDTO?.id,
-          chucVuId: _chucVuDTO?.id,
-          id: _staffIdController.text.trim(),
-          nguoiQuanLy: _staffDTO?.id ?? '',
-          kieuKy: int.tryParse(_kieuKyController.text),
-          agreementUUId: _agreementUUIdController.text.trim(),
-          pin: _pinController.text.trim(),
-          laQuanLy: _laQuanLy,
-          boPhan: _phongBan?.id,
-          phongBanId: _phongBan?.id,
-          chuKyData: _chuKyData,
-          ngayCapNhat: DateTime.now().toIso8601String(),
-          nguoiCapNhat: userInfoDTO?.id ?? '',
-          kyNhay: _kyNhay,
-          kyThuong: _kyThuong,
-          kySo: _kySo,
-        );
-      } else {
-        log('thêm mới nhân viên');
-        staff = NhanVien(
-          id: _staffIdController.text.trim(),
-          hoTen: _nameController.text.trim(),
-          diDong: _telController.text.trim(),
-          emailCongViec: _emailController.text.trim(),
-          isActive: true,
-          chucVu: _chucVuDTO?.id,
-          chucVuId: _chucVuDTO?.id,
-          nguoiQuanLy: _staffDTO?.id ?? '',
-          kieuKy: int.tryParse(_kieuKyController.text),
-          agreementUUId: _agreementUUIdController.text.trim(),
-          pin: _pinController.text.trim(),
-          laQuanLy: _laQuanLy,
-          boPhan: _phongBan?.id,
-          phongBanId: _phongBan?.id,
-          chuKyData: _chuKyData,
-          ngayTao: DateTime.now(),
-          nguoiTao: userInfoDTO?.id ?? '',
-          kyNhay: _kyNhay,
-          kyThuong: _kyThuong,
-          kySo: _kySo,
-        );
-      }
+    if (validateChuKyNhay() || validateChuKyThuong()) {
+      return;
+    }
 
-      // Thêm hoặc cập nhật nhân viên
-      if (widget.staff == null) {
-        context.read<StaffBloc>().add(AddStaff(staff));
-      } else {
-        context.read<StaffBloc>().add(UpdateStaff(staff));
-      }
+    final bool ok = await StaffSaveService.save(
+      context: context,
+      existingStaff: widget.staff,
+      nameController: _nameController,
+      telController: _telController,
+      emailController: _emailController,
+      staffIdController: _staffIdController,
+      agreementUUIdController: _agreementUUIdController,
+      pinController: _pinController,
+      laQuanLy: _laQuanLy,
+      kyNhay: _kyNhay,
+      kyThuong: _kyThuong,
+      kySo: _kySo,
+      phongBan: _phongBan,
+      staffDTO: _staffDTO,
+      chucVuDTO: _chucVuDTO,
+      selectedFileChuKyNhay: selectedFileChuKyNhay,
+      selectedFileChuKyThuong: selectedFileChuKyThuong,
+      fileNameChuKyNhay: fileNameChuKyNhay,
+      fileNameChuKyThuong: fileNameChuKyThuong,
+      chuKyNhayData: _chuKyNhayData,
+      chuKyThuongData: _chuKyThuongData,
+      isActive: _isActive,
+    );
 
-      // Gọi callback nếu có
-      if (widget.onSaved != null) {
-        widget.onSaved!();
-      }
+    if (ok && widget.onSaved != null) {
+      widget.onSaved!();
     }
   }
 
-  File? selectedFile;
-  Future<void> _pickFile() async {
+  File? selectedFileChuKyNhay; //type 1
+  File? selectedFileChuKyThuong; // type 2
+  String? fileNameChuKyNhay;
+  String? fileNameChuKyThuong;
+  Future<void> _pickFile(File? selectedFile, int typeKy) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.image,
     );
-
     if (result != null && result.files.single.path != null) {
       setState(() {
         selectedFile = File(result.files.single.path!);
-        _chuKyData = result.files.single.bytes;
+        if (typeKy == 1) {
+          selectedFileChuKyNhay = selectedFile;
+          fileNameChuKyNhay = result.files.single.name;
+          if (selectedFileChuKyNhay != null) {
+            validateChuKyNhay();
+          }
+        } else if (typeKy == 2) {
+          selectedFileChuKyThuong = selectedFile;
+          if (selectedFileChuKyThuong != null) {
+            validateChuKyThuong();
+          }
+          fileNameChuKyThuong = result.files.single.name;
+        }
+        if (typeKy == 1) {
+          _chuKyNhayData = result.files.single.bytes;
+        } else if (typeKy == 2) {
+          _chuKyThuongData = result.files.single.bytes;
+        }
       });
     }
   }
@@ -333,7 +384,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
                             DropdownButtonFormField<NhanVien>(
                               value: _staffDTO,
-                              decoration: inputDecoration('Quản lý'),
+                              decoration: inputDecoration('Người quản lý'),
                               items:
                                   context
                                       .read<StaffBloc>()
@@ -352,26 +403,31 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       .toList(),
                               onChanged: (v) => setState(() => _staffDTO = v),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          children: [
+                            const SizedBox(height: 16),
+
                             DropdownButtonFormField<String>(
-                              value: _activityController.text.isNotEmpty ? _activityController.text : null,
+                              value:
+                                  _activityController.text.isNotEmpty
+                                      ? _activityController.text
+                                      : null,
                               decoration: inputDecoration(
                                 'Hoạt động',
                                 required: true,
                               ),
                               items: [
-                                DropdownMenuItem(value: 'Có', child: Text('Có')),
-                                DropdownMenuItem(value: 'Không', child: Text('Không')),
+                                DropdownMenuItem(
+                                  value: 'Có',
+                                  child: Text('Có'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Không',
+                                  child: Text('Không'),
+                                ),
                               ],
                               onChanged: (value) {
                                 setState(() {
                                   _activityController.text = value ?? '';
+                                  _isActive = value == 'Có';
                                 });
                               },
                               validator:
@@ -381,11 +437,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                           : null,
                             ),
                             const SizedBox(height: 16),
-                            // TextFormField(
-                            //   controller: _kieuKyController,
-                            //   decoration: inputDecoration('Kiểu ký'),
-                            //   keyboardType: TextInputType.number,
-                            // ),
                             DropdownButtonFormField<PhongBan>(
                               value: _phongBan,
                               decoration: inputDecoration('Phòng/Ban cấp trên'),
@@ -402,26 +453,69 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       .toList(),
                               onChanged: (v) => setState(() => _phongBan = v),
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             _buildKieuKy(),
                             if (_kySo)
                               Column(
+                                spacing: 16,
                                 children: [
-                                  const SizedBox(height: 16),
+                                  SGText(
+                                    textAlign: TextAlign.left,
+                                    text:
+                                        'Hãy nhập mã PIN sau đó click button "Lấy Agreement UUID" để lấy Agreement UUID',
+                                    color: Colors.blue,
+                                  ),
                                   TextFormField(
+                                    readOnly: true,
+                                    enabled: false,
                                     controller: _agreementUUIdController,
                                     decoration: inputDecoration(
                                       'Agreement UUID',
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
                                   TextFormField(
                                     controller: _pinController,
                                     decoration: inputDecoration('PIN'),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        // _pinController.text = value;
+                                        log('message: $_pinController.text');
+                                      });
+                                    },
                                   ),
-                                  const SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () => _onGetAgreementUUID(),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFF2264E5,
+                                          ),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 32,
+                                            vertical: 16,
+                                          ),
+                                        ),
+                                        child: Text('Lấy Agreement UUID'),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
-                            if (_kyNhay || _kyThuong) _buildUploadFileChuKy(),
                           ],
                         ),
                       ),
@@ -447,7 +541,25 @@ class _StaffFormPageState extends State<StaffFormPage> {
                       ),
                       const Spacer(),
                       ElevatedButton(
-                        onPressed: _save,
+                        onPressed: () {
+                          if (_isCanSave) {
+                            _save();
+                          } else {
+                            if (_pinController.text.isEmpty) {
+                              AppUtility.showSnackBar(
+                                context,
+                                'Vui lòng nhập mã PIN để lấy Agreement UUID',
+                                isError: true,
+                              );
+                            } else if (_agreementUUIdController.text.isEmpty) {
+                              AppUtility.showSnackBar(
+                                context,
+                                'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
+                                isError: true,
+                              );
+                            }
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2264E5),
                           foregroundColor: Colors.white,
@@ -472,39 +584,42 @@ class _StaffFormPageState extends State<StaffFormPage> {
     );
   }
 
-  Container _buildUploadFileChuKy() {
+  Container _buildUploadFileChuKy(
+    String chuky,
+    File? selectedFile,
+    int typeKy,
+  ) {
     return Container(
       alignment: Alignment.centerLeft,
       child: InkWell(
-        onTap: _pickFile,
+        onTap: () => _pickFile(selectedFile, typeKy),
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             color: Colors.grey.shade100,
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Icon(Icons.upload_file, color: Colors.blue),
               const SizedBox(width: 12),
               Expanded(
                 child: Builder(
                   builder: (_) {
+                    if (selectedFile == selectedFileChuKyNhay) {
+                    } else if (selectedFile == selectedFileChuKyThuong) {}
                     if (selectedFile != null) {
                       return Text(
-                        "Chữ ký: ${selectedFile!.path.split('/').last}",
+                        "Chữ ký: ${selectedFile.path.split('/').last}",
                         style: const TextStyle(color: Colors.black),
                         overflow: TextOverflow.ellipsis,
                       );
                     }
-                    final currentSignature = widget.staff?.chuKy;
-                    if (currentSignature != null &&
-                        currentSignature.isNotEmpty) {
-                      print(
-                        "${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}",
-                      );
+                    log('message chuky: $chuky');
+                    if (chuky.isNotEmpty) {
                       return Row(
                         children: [
                           ClipRRect(
@@ -512,7 +627,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             child: SizedBox(
                               height: 32,
                               child: Image.network(
-                                '${ApiConfig.getBaseURL()}/api/upload/download/${currentSignature.split("/").last}',
+                                '${ApiConfig.getBaseURL()}/api/upload/download/${chuky.split("/").last}',
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return SizedBox();
@@ -540,7 +655,15 @@ class _StaffFormPageState extends State<StaffFormPage> {
               if (selectedFile != null)
                 IconButton(
                   icon: const Icon(Icons.close, size: 20, color: Colors.red),
-                  onPressed: () => setState(() => selectedFile = null),
+                  padding: EdgeInsets.zero,
+                  onPressed:
+                      () => setState(() {
+                        if (typeKy == 1) {
+                          selectedFileChuKyNhay = null;
+                        } else if (typeKy == 2) {
+                          selectedFileChuKyThuong = null;
+                        }
+                      }),
                 ),
             ],
           ),
@@ -550,57 +673,145 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   Widget _buildKieuKy() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        spacing: 16,
-        children: [
-          const SGText(text: "Kiểu ký:"),
-          Row(
-            spacing: 8,
-            children: [
-              const SGText(text: "Ký nháy"),
-              SgCheckbox(
-                value: _kyNhay,
-                onChanged:
-                    (value) => setState(() {
-                      _kyNhay = value;
-                      _kieuKyController.text = _kyNhay ? '1' : '0';
-                    }),
+    return Column(
+      spacing: 16,
+      children: [
+        Column(
+          children: [
+            SizedBox(
+              height: 48,
+              child: Row(
+                spacing: 8,
+                children: [
+                  SizedBox(width: 100, child: const SGText(text: "Ký nháy:")),
+                  SgCheckbox(
+                    value: _kyNhay,
+                    onChanged:
+                        (value) => setState(() {
+                          _kyNhay = value;
+                        }),
+                  ),
+                  if (_kyNhay)
+                    Expanded(
+                      child: _buildUploadFileChuKy(
+                        _chuKyNhayPathExisting ?? '',
+                        selectedFileChuKyNhay,
+                        1,
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
-          Row(
-            spacing: 8,
-            children: [
-              const SGText(text: "Ký thường"),
-              SgCheckbox(
-                value: _kyThuong,
-                onChanged:
-                    (value) => setState(() {
-                      _kyThuong = value;
-                      _kieuKyController.text = _kyThuong ? '2' : '0';
-                    }),
+            ),
+            if (errorChuKyNhay != null)
+              SGText(text: errorChuKyNhay ?? '', color: Colors.red),
+          ],
+        ),
+        Column(
+          children: [
+            SizedBox(
+              height: 48,
+              child: Row(
+                spacing: 8,
+                children: [
+                  SizedBox(width: 100, child: const SGText(text: "Ký thường:")),
+                  SgCheckbox(
+                    value: _kyThuong,
+                    onChanged:
+                        (value) => setState(() {
+                          _kyThuong = value;
+                        }),
+                  ),
+                  if (_kyThuong)
+                    Expanded(
+                      child: _buildUploadFileChuKy(
+                        _chuKyThuongPathExisting ?? '',
+                        selectedFileChuKyThuong,
+                        2,
+                      ),
+                    ),
+                ],
               ),
-            ],
-          ),
-          Row(
+            ),
+            if (errorChuKyThuong != null)
+              SGText(text: errorChuKyThuong ?? '', color: Colors.red),
+          ],
+        ),
+        SizedBox(
+          height: 48,
+          child: Row(
             spacing: 8,
             children: [
-              const SGText(text: "Ký số"),
+              SizedBox(width: 100, child: const SGText(text: "Ký số:")),
               SgCheckbox(
                 value: _kySo,
                 onChanged:
                     (value) => setState(() {
                       _kySo = value;
-                      _kieuKyController.text = _kySo ? '3' : '0';
+                      _isCanSave = !value;
                     }),
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  Future<void> _onGetAgreementUUID() async {
+    final idNhanVien =
+        _staffIdController.text.isNotEmpty
+            ? _staffIdController.text
+            : (_staffDTO?.id ?? '');
+    final pin = _pinController.text.trim();
+
+    if (idNhanVien.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Vui lòng nhập/chọn Mã nhân viên',
+        isError: true,
+      );
+      return;
+    }
+    if (pin.isEmpty) {
+      AppUtility.showSnackBar(context, 'Vui lòng nhập mã PIN', isError: true);
+      return;
+    }
+
+    try {
+      final result = await NhanVienProvider().getAgreementUUID(
+        idNhanVien: idNhanVien,
+        pin: pin,
+      );
+      if (!mounted) return;
+
+      final status = result['status_code'] as int? ?? 0;
+      if (status >= 200 && status < 300) {
+        final data = (result['data'] ?? '').toString();
+        if (data.isNotEmpty) {
+          setState(() {
+            _agreementUUIdController.text = data;
+            _isCanSave = _agreementUUIdController.text.isNotEmpty;
+          });
+          AppUtility.showSnackBar(context, 'Lấy Agreement UUID thành công');
+        } else {
+          AppUtility.showSnackBar(
+            context,
+            'Không nhận được Agreement UUID từ máy chủ',
+            isError: true,
+          );
+        }
+      } else {
+        final message = (result['message'] ?? 'Lỗi khi gọi API').toString();
+        AppUtility.showSnackBar(context, message, isError: true);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      AppUtility.showSnackBar(
+        context,
+        'Lỗi khi gọi API: ${e.toString()}',
+        isError: true,
+      );
+    }
   }
 
   // void _changeTypeKy(int type) {

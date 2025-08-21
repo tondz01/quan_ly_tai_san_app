@@ -5,24 +5,25 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
@@ -43,6 +44,8 @@ class DieuDongTaiSanList extends StatefulWidget {
 
 class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isUploading = false;
+  List<DieuDongTaiSanDto> selectedItems = [];
+  UserInfoDTO? userInfo;
 
   final List<DieuDongTaiSanDto> listAssetHandover = [];
 
@@ -62,6 +65,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   @override
   void initState() {
     super.initState();
+    userInfo = AccountHelper.instance.getUserInfo();
     _initializeColumnOptions();
     _callGetListAssetHandover();
   }
@@ -288,6 +292,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 onRowTap: (item) {
                   widget.provider.onChangeDetailDieuDongTaiSan(item);
                 },
+                onSelectionChanged: (items) {
+                  setState(() {
+                    selectedItems = items;
+                  });
+                },
               ),
             ),
           ],
@@ -325,6 +334,73 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
+                SizedBox(width: 8),
+                Visibility(
+                  visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (selectedItems.isNotEmpty) {
+                        DieuDongTaiSanDto? item = selectedItems.first;
+                        final idSignatureGroup1 =
+                            [item.nguoiTao].whereType<String>().toList();
+                        final idSignatureGroup2 =
+                            [
+                              item.idTrinhDuyetCapPhong,
+                              item.idTrinhDuyetGiamDoc,
+                            ].whereType<String>().toList();
+                        final allIdSignature = [
+                          ...idSignatureGroup1,
+                          ...idSignatureGroup2,
+                        ];
+                        // idSignatureGroup2.contains(userInfo?.tenDangNhap);
+                        if (idSignatureGroup2.contains(userInfo?.tenDangNhap) &&
+                            item.trangThai! < 3) {
+                          AppUtility.showSnackBar(
+                            context,
+                            'Bạn chứa thể ký phần này do các đơn vị trước chưa ký. \nVui lòng đợi các đơn vị trước ký xong mới ký tiếp',
+                            isError: true,
+                            textAlign: TextAlign.center,
+                          );
+                          return;
+                        }
+                        if (!allIdSignature.contains(userInfo?.tenDangNhap)) {
+                          AppUtility.showSnackBar(
+                            context,
+                            'Bạn không có quyền ký văn bản này',
+                            isError: true,
+                          );
+                          return;
+                        }
+
+                        previewDocument(
+                          context: context,
+                          item: item,
+                          provider: widget.provider,
+                        );
+                      }
+                    },
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        Tooltip(
+                          message: 'Ký biên bản',
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                            size: 18,
+                          ),
+                        ),
+                        SGText(
+                          text:
+                              'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                          color: Colors.blue,
+                          size: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 20),
@@ -333,6 +409,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         )
         : Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -346,14 +423,52 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     color: Colors.grey.shade700,
                   ),
                 ),
+
                 // Spacer(),
                 GestureDetector(
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
+                SizedBox(width: 8),
+                Visibility(
+                  visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (selectedItems.isNotEmpty) {
+                        DieuDongTaiSanDto? item = selectedItems.first;
+
+                        previewDocument(
+                          context: context,
+                          item: item,
+                          provider: widget.provider,
+                        );
+                      }
+                    },
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        Tooltip(
+                          message: 'Ký biên bản',
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.green,
+                            size: 18,
+                          ),
+                        ),
+                        SGText(
+                          text:
+                              'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                          color: Colors.blue,
+                          size: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
-            RowFindByStatus(provider: widget.provider),
+            Expanded(child: RowFindByStatus(provider: widget.provider)),
           ],
         );
   }
@@ -381,28 +496,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () {
-          UserInfoDTO userInfo = widget.provider.userInfo!;
-          String url =
-              '${Config.baseUrl}/api/v1/document/download/${item.tenFile}';
-          showDialog(
+          previewDocument(
             context: context,
-            barrierDismissible: true,
-            builder:
-                (context) => Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24.0,
-                    right: 24.0,
-                    top: 16.0,
-                    bottom: 16.0,
-                  ),
-                  child: CommonContract(
-                    contractType: ContractPage.assetMovePage(item),
-                    signatureList: <String>[url],
-                    idTaiLieu: item.id.toString(),
-                    idNguoiKy: userInfo.tenDangNhap,
-                    tenNguoiKy: userInfo.hoTen,
-                  ),
-                ),
+            item: item,
+            provider: widget.provider,
+            isShowKy: false,
           );
         },
       ),

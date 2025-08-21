@@ -31,18 +31,21 @@ class AssetTransferMovementTable extends StatefulWidget {
 class _AssetTransferMovementTableState
     extends State<AssetTransferMovementTable> {
   late List<ChiTietDieuDongTaiSan> movementDetails;
+  late List<AssetManagementDto> listAsset;
   final repo = ChiTietDieuDongTaiSanRepository();
 
   @override
   void initState() {
     super.initState();
     movementDetails = List.from(widget.initialDetails);
+    listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
   }
 
   @override
   void didUpdateWidget(AssetTransferMovementTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     movementDetails = List.from(widget.initialDetails);
+    listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
   }
 
   List<AssetManagementDto> getAssetsByChildAssets(
@@ -86,10 +89,7 @@ class _AssetTransferMovementTableState
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
           child: SgEditableTable<AssetManagementDto>(
-            initialData: getAssetsByChildAssets(
-              widget.allAssets,
-              movementDetails,
-            ),
+            initialData: listAsset,
             createEmptyItem: AssetManagementDto.empty,
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
@@ -100,7 +100,33 @@ class _AssetTransferMovementTableState
             addRowText: 'Thêm một dòng',
             isEditing: widget.isEditing, // Pass the editing state
             omittedSize: 130,
-            onDataChanged: widget.onDataChanged,
+            onDataChanged: (data) {
+              // setState(() {
+              //   movementDetails =
+              //       data
+              //           .map(
+              //             (e) => ChiTietDieuDongTaiSan(
+              //               id: '',
+              //               idDieuDongTaiSan: '',
+              //               soQuyetDinh: '',
+              //               tenPhieu: '',
+              //               idTaiSan: e.id ?? '',
+              //               tenTaiSan: e.tenTaiSan ?? '',
+              //               donViTinh: e.donViTinh ?? '',
+              //               hienTrang: e.hienTrang ?? 0,
+              //               soLuong: e.soLuong ?? 0,
+              //               ghiChu: e.ghiChu ?? '',
+              //               ngayTao: e.ngayTao ?? '',
+              //               ngayCapNhat: e.ngayCapNhat ?? '',
+              //               nguoiTao: '',
+              //               nguoiCapNhat: '',
+              //               isActive: true,
+              //             ),
+              //           )
+              //           .toList();
+              // });
+              widget.onDataChanged?.call(data);
+            },
             columns: [
               SgEditableColumn<AssetManagementDto>(
                 field: 'asset',

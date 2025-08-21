@@ -59,11 +59,11 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       emit(StaffLoaded(filtered));
     });
     on<AddStaff>((event, emit) async {
-      await _provider.addNhanVien(event.staff, event.staff.chuKyData);
+      await _provider.addNhanVien(event.staff, event.staff.avatar,);
       add(LoadStaffs());
     });
     on<UpdateStaff>((event, emit) async {
-      await _provider.updateNhanVien(event.staff, event.staff.chuKyData);
+      await _provider.updateNhanVien(event.staff);
       add(LoadStaffs());
     });
     on<DeleteStaff>((event, emit) async {

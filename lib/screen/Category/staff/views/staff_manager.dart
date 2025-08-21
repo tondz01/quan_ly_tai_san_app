@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/pages/staff_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/Category/staff/widget/staff_list.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/pages/staff_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_state.dart';
@@ -29,7 +29,6 @@ class _StaffManagerState extends State<StaffManager> {
       editingStaff = staff;
     });
   }
-
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
@@ -65,6 +64,7 @@ class _StaffManagerState extends State<StaffManager> {
   void _searchStaff(String value) {
     context.read<StaffBloc>().add(SearchStaff(value));
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StaffBloc, StaffState>(
@@ -101,14 +101,16 @@ class _StaffManagerState extends State<StaffManager> {
                     child: CommonPageView(
                       childInput: StaffFormPage(
                         staff: editingStaff,
-                         onCancel: (){
+                        staffs: staffs,
+                        onCancel: () {
                           setState(() {
                             isShowInput = false;
                           });
-                         },
-                         onSaved: () => setState(() {
-                           isShowInput = false;
-                         }),
+                        },
+                        onSaved:
+                            () => setState(() {
+                              isShowInput = false;
+                            }),
                       ),
                       childTableView: StaffList(
                         data: _filteredData,

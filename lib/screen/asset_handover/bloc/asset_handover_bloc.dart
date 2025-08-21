@@ -18,6 +18,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     on<CreateAssetHandoverEvent>(_createAssetHandover);
     on<UpdateAssetHandoverEvent>(_updateAssetHandover);
     on<DeleteAssetHandoverEvent>(_deleteAssetHandover);
+    on<UpdateSigningStatusEvent>(_updateSigningStatus);
   }
 
   Future<void> _getListAssetHandover(GetListAssetHandoverEvent event, Emitter emit) async {
@@ -81,5 +82,30 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
       emit(ErrorState(title: 'Xóa biên bản bàn giao', code: statusCode, message: 'Thất bại khi xóa biên bản bàn giao'));
     }
     emit(AssetHandoverLoadingDismissState());
+  }
+
+  Future<void> _updateSigningStatus(
+    UpdateSigningStatusEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetHandoverInitialState());
+    emit(AssetHandoverLoadingState());
+    Map<String, dynamic> result = await AssetHandoverRepository().updateStateUserSignature(
+      event.userId,
+      event.docId,
+    );
+    emit(AssetHandoverLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateSigningStatusSuccessState());
+    } else {
+      String msg = "Lỗi khi cập nhập trạng thái bàn giao ${result['message']}";
+      emit(
+        ErrorState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
   }
 }
