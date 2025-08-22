@@ -268,15 +268,6 @@ class AppRouteConf {
                 ),
           ),
           GoRoute(
-            path: AppRoute.bienBanKiemKe.path,
-            name: AppRoute.bienBanKiemKe.name,
-            pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: BienBanKiemKeScreen(idCongty: 'CT001'),
-                ),
-          ),
-          GoRoute(
             path: AppRoute.bienBanDoiChieu.path,
             name: AppRoute.bienBanDoiChieu.name,
             pageBuilder:

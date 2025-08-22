@@ -1,139 +1,142 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import '../../asset_transfer/component/config_view_asset_transfer.dart';
-import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import '../views/bien_ban_doi_chieu_page.dart';
+import 'package:flutter/rendering.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class BienBanKiemKeScreen extends StatefulWidget {
-  final String idCongty;
+  final String idDonVi;
+  final String tenDonVi;
+  final String denNgay;
+  final Function()? onExportPdf;
 
-  const BienBanKiemKeScreen({super.key, required this.idCongty});
+  const BienBanKiemKeScreen({
+    super.key,
+    required this.idDonVi,
+    required this.tenDonVi,
+    required this.denNgay,
+    this.onExportPdf,
+  });
 
   @override
   State<BienBanKiemKeScreen> createState() => _BienBanKiemKeScreenState();
 }
 
 class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
-  final AssetHandoverRepository _repo = AssetHandoverRepository();
-  List<AssetHandoverDto> _list = [];
-  bool _isLoading = true;
-
+  final ReportRepository _repo = ReportRepository();
+  List<InventoryMinutes> _list = [];
+  final GlobalKey _contractKey = GlobalKey();
   @override
   void initState() {
     super.initState();
     _loadData();
   }
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    final result = await _repo.getListAssetHandover();
-    setState(() {
-      _list = (result['data'] as List).cast<AssetHandoverDto>();
-      _isLoading = false;
-    });
+  Future<void> _exportToPdf() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final pdf = pw.Document();
+      final boundary =
+          _contractKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary != null && boundary.debugNeedsPaint == false) {
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        final image = await boundary.toImage(pixelRatio: 2.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        final pngBytes = byteData!.buffer.asUint8List();
+
+        // Kiểm tra kích thước ảnh
+        final imageWidth = image.width.toDouble();
+        final imageHeight = image.height.toDouble();
+
+        if (imageWidth.isNaN ||
+            imageHeight.isNaN ||
+            imageWidth <= 0 ||
+            imageHeight <= 0) {
+          throw Exception(
+            'Kích thước ảnh không hợp lệ: ${imageWidth}x$imageHeight',
+          );
+        }
+
+        final imageProvider = pw.MemoryImage(pngBytes);
+        pdf.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4.portrait,
+            margin: pw.EdgeInsets.zero,
+            build:
+                (context) => pw.SizedBox.expand(
+                  child: pw.FittedBox(
+                    fit: pw.BoxFit.fill,
+                    child: pw.Image(imageProvider),
+                  ),
+                ),
+          ),
+        );
+
+        await Printing.sharePdf(
+          bytes: await pdf.save(),
+          filename: 'document.pdf',
+        );
+      }
+    } catch (e) {
+      SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
+      }
+    } finally {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 
-  String _formatDate(String? date) {
-    if (date == null || date.isEmpty) return '';
-    try {
-      final parsed = DateTime.parse(date);
-      return DateFormat('dd/MM/yyyy').format(parsed);
-    } catch (_) {
-      return date;
-    }
+  Future<void> _loadData() async {
+    final result = await _repo.getInventoryMinutes(
+      widget.idDonVi,
+      widget.denNgay,
+    );
+
+    setState(() {
+      _list = (result['data'] as List).cast<InventoryMinutes>();
+    });
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    await _exportToPdf();
+
+    widget.onExportPdf?.call();
   }
 
   @override
   Widget build(BuildContext context) {
-    final columns = [
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Phiếu bàn giao', getValue: (item) => item.quyetDinhDieuDongSo ?? '', width: 0),
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị giao', getValue: (item) => item.tenDonViGiao ?? '', width: 0),
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị nhận', getValue: (item) => item.tenDonViNhan ?? '', width: 0),
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Ngày hiệu lực', getValue: (item) => _formatDate(item.ngayBanGiao), width: 0),
-      TableBaseConfig.columnWidgetBase<AssetHandoverDto>(title: 'Trạng thái', cellBuilder: (item) => ConfigViewAT.showStatus(item.trangThai ?? 0), width: 120, searchable: true),
-    ];
-
-    return Scaffold(
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: MediaQuery.of(context).size.height,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: Offset(0, 2))],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                                  SizedBox(width: 8),
-                                  Text('Biên bản kiểm kê (${_list.length})', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700)),
-                                ],
-                              ),
-                              // FindByStateAssetHandover(provider: widget.provider),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: TableBaseView<AssetHandoverDto>(
-                            searchTerm: '',
-                            columns: columns,
-                            data: _list,
-                            horizontalController: ScrollController(),
-                            onRowTap: (item) async {
-                              DieuDongTaiSanDto dieuDongTaiSanDto = await DieuDongTaiSanRepository().getById(item.quyetDinhDieuDongSo.toString());
-                              List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans = dieuDongTaiSanDto.chiTietDieuDongTaiSans;
-                              if (chiTietDieuDongTaiSans != null) {
-                                if (mounted) {
-                                  UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
-                                  showDialog(
-                                    context: this.context,
-                                    barrierDismissible: true,
-                                    builder:
-                                        (context) => Padding(
-                                          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
-                                          child: CommonContract(
-                                            contractType: BienBanDoiChieuKiemKePage(),
-                                            signatureList: <String>['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
-                                            idTaiLieu: item.id.toString(),
-                                            idNguoiKy: userInfo.tenDangNhap,
-                                            tenNguoiKy: userInfo.hoTen,
-                                          ),
-                                        ),
-                                  );
-                                }
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+    return RepaintBoundary(
+      key: _contractKey,
+      child: A4Canvas(
+        marginsMm: EdgeInsets.all(20),
+        scale: 1.2,
+        maxWidth: 800,
+        maxHeight: 800 * (297 / 210),
+        child: BienBanKiemKePage(
+          inventoryMinutes: _list,
+          denNgay: widget.denNgay,
+          tenDonVi: widget.tenDonVi,
+        ),
+      ),
     );
   }
 }

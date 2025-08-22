@@ -19,19 +19,23 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 class CommonContract extends StatefulWidget {
   final Widget contractType;
   final List<String> signatureList;
-  final String idTaiLieu;
-  final String idNguoiKy;
-  final String tenNguoiKy;
+  final String? idTaiLieu;
+  final String? idNguoiKy;
+  final String? tenNguoiKy;
   final bool isShowKy;
+  final String? showTitle;
+  final EdgeInsets? edgeInsets;
   final Function()? eventSignature;
 
   const CommonContract({
     super.key,
     required this.contractType,
     required this.signatureList,
-    required this.idTaiLieu,
-    required this.idNguoiKy,
-    required this.tenNguoiKy,
+    this.idTaiLieu,
+    this.showTitle,
+    this.idNguoiKy,
+    this.tenNguoiKy,
+    this.edgeInsets,
     this.isShowKy = true,
     this.eventSignature,
   });
@@ -420,7 +424,10 @@ class _CommonContractState extends State<CommonContract> {
 
   // ===== Ký hash =====
   Future<void> signing({double top = 500, double left = 500}) async {
-    String value = widget.idNguoiKy + widget.idTaiLieu;
+    if (widget.idNguoiKy == null || widget.idTaiLieu == null) {
+      return;
+    }
+    String value = widget.idNguoiKy! + widget.idTaiLieu!;
     String hash = generateSha256(value);
     SGLog.info('Chu ky', 'Chu ky SHA-256: $hash');
 
@@ -538,9 +545,9 @@ class _CommonContractState extends State<CommonContract> {
                       children: [
                         const Icon(Icons.description, color: Colors.blueAccent),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Soạn & Ký Tài Liệu',
-                          style: TextStyle(
+                        Text(
+                          widget.showTitle ?? 'Soạn & Ký Tài Liệu',
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
@@ -589,7 +596,8 @@ class _CommonContractState extends State<CommonContract> {
                                 children: [
                                   // Nội dung hợp đồng
                                   A4Canvas(
-                                    marginsMm: const EdgeInsets.all(20),
+                                    marginsMm:
+                                        widget.edgeInsets ?? EdgeInsets.all(20),
                                     scale: 1.2,
                                     maxWidth: 800,
                                     maxHeight: 800 * (297 / 210),
@@ -717,7 +725,7 @@ class _CommonContractState extends State<CommonContract> {
   }
 }
 
-Widget buildSignatureValidContainer(String name, String date) {
+Widget buildSignatureValidContainer(String? name, String date) {
   return Container(
     padding: const EdgeInsets.all(6),
     decoration: BoxDecoration(
@@ -738,7 +746,7 @@ Widget buildSignatureValidContainer(String name, String date) {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              "Ký bởi: $name",
+              "Ký bởi: ${name ?? ''}",
               style: const TextStyle(
                 color: Colors.red,
                 fontSize: 14,
