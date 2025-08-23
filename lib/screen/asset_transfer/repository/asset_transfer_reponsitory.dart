@@ -133,7 +133,7 @@ class AssetTransferRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> updateState(String idDieuDong) async {
+  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -141,7 +141,7 @@ class AssetTransferRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai/$idDieuDong',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai?id=$id&userId=$idNhanVien',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

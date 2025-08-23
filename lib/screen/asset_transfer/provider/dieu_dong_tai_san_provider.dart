@@ -26,9 +26,8 @@ enum FilterStatus {
   draft('Nháp', ColorValue.silverGray),
   waitingForConfirmation('Chờ xác nhận', ColorValue.lightAmber),
   confirmed('Xác nhận', ColorValue.mediumGreen),
-  browser('Trình duyệt', ColorValue.lightBlue),
+  browser('Chờ duyệt', ColorValue.lightBlue),
   approve('Duyệt', ColorValue.cyan),
-  reject('Từ chối', ColorValue.brightRed),
   cancel('Hủy', ColorValue.coral),
   complete('Hoàn thành', ColorValue.forestGreen);
 
@@ -41,7 +40,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isLoading => _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
-  bool get isShowPreview => _isShowPreview;
   get userInfo => _userInfo;
   List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
@@ -62,7 +60,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
-  bool get isShowReject => _filterStatus[FilterStatus.reject] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
 
@@ -125,7 +122,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   String? _subScreen;
   String mainScreen = '';
 
-  bool _isShowPreview = false;
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   List<DieuDongTaiSanDto>? _data;
@@ -160,14 +156,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void changeIsShowPreview(bool value, DieuDongTaiSanDto? itemPreview) {
-    log('itemPreview1: ${itemPreview?.toJson()}');
-    if (_isShowPreview != value) {
-      _isShowPreview = value;
+  void changeIsShowPreview(DieuDongTaiSanDto? itemPreview) {
       _itemPreview = itemPreview;
-      log('itemPreview2: ${itemPreview?.toJson()}');
       notifyListeners();
-    }
   }
 
   void setFilterStatus(FilterStatus status, bool? value) {
@@ -225,19 +216,13 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                 (itemStatus == 4)) {
               return true;
             }
-
-            if (_filterStatus[FilterStatus.reject] == true &&
+            if (_filterStatus[FilterStatus.cancel] == true &&
                 (itemStatus == 5)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 6)) {
-              return true;
-            }
-
             if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 7)) {
+                (itemStatus == 6)) {
               return true;
             }
 
@@ -280,7 +265,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     FilterStatus.confirmed: false,
     FilterStatus.browser: false,
     FilterStatus.approve: false,
-    FilterStatus.reject: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
   };
@@ -387,6 +371,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   void onChangeDetailDieuDongTaiSan(DieuDongTaiSanDto? item) {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
+    _itemPreview = null;
     _item = item;
     log('message onChangeDetailDieuDongTaiSan: $_item');
     isShowInput = true;
@@ -422,7 +407,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     GetListDieuDongTaiSanSuccessState state,
   ) {
     _error = null;
-    log('message state.data: ${jsonEncode(state.data)}');
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
@@ -434,7 +418,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
               .where((element) => element.loai == typeDieuDongTaiSan)
               .where((item) {
                 final idSignatureGroup1 =
-                    [item.nguoiTao].whereType<String>().toList();
+                    [item.nguoiTao,
+                    item.idPhoPhongDonViGiao,
+                    item.idTruongPhongDonViGiao,
+                    ].whereType<String>().toList();
                 final idSignatureGroup2 =
                     [
                       item.idTrinhDuyetCapPhong,
@@ -539,6 +526,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     getDataAll(context);
     notifyListeners();
   }
+  void updateSignatureSuccess(
+    BuildContext context,
+    UpdateSigningStatusSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+    getDataAll(context);
+    notifyListeners();
+  }
 
   void deleteDieuDongSuccess(
     BuildContext context,
@@ -577,8 +573,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       return;
     }
     request = request.copyWith(
-      duongDanFile: result['filePath'] ?? '',
-      tenFile: result['fileName'] ?? '',
+      // duongDanFile: result['filePath'] ?? '',
+      // tenFile: result['fileName'] ?? '',
     );
 
     SGLog.debug(

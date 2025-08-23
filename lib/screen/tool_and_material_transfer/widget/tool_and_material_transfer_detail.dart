@@ -321,9 +321,7 @@ class _ToolAndMaterialTransferDetailState
     if (donViGiao != null) {
       listStaffByDepartment =
           widget.provider.dataNhanVien
-              .where(
-                (element) => element.phongBanId == donViGiao!.id,
-              )
+              .where((element) => element.phongBanId == donViGiao!.id)
               .toList();
     }
   }
@@ -762,7 +760,6 @@ class _ToolAndMaterialTransferDetailState
                             fieldName: 'pPDonViNhan',
                             validationErrors: _validationErrors,
                             onChanged: (value) {
-                              log('pPDonViNhan selected: $value');
                               setState(() {
                                 pPDonViNhan = value;
                               });
@@ -826,14 +823,6 @@ class _ToolAndMaterialTransferDetailState
                                   )
                                   : DateTime.now(),
                         ),
-                        // CommonFormInput(
-                        //   label: 'at.effective_date_to'.tr,
-                        //   controller: controllerEffectiveDateTo,
-                        //   isEditing: isEditing,
-                        //   textContent: item?.tggnDenNgay ?? '',
-                        //   fieldName: 'effectiveDateTo',
-                        //   validationErrors: _validationErrors,
-                        // ),
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.approver'.tr,
                           controller: controllerApprover,
@@ -889,33 +878,38 @@ class _ToolAndMaterialTransferDetailState
                 initialDetails: item?.detailToolAndMaterialTransfers ?? [],
                 allAssets: widget.provider.dataAsset ?? [],
                 onDataChanged: (data) {
-                  listNewDetails =
-                      data
-                          .map(
-                            (e) => DetailToolAndMaterialTransferDto(
-                              id: UUIDGenerator.generateWithFormat('CTDD-****'),
-                              idDieuDongCCDCVatTu: controllerSoChungTu.text,
-                              soQuyetDinh: item?.soQuyetDinh ?? '',
-                              tenPhieu: controllerDocumentName.text,
-                              tenCCDCVatTu: e.ten,
-                              congSuat: e.congSuat,
-                              nuocSanXuat: e.nuocSanXuat,
-                              soKyHieu: e.soKyHieu,
-                              kyHieu: e.kyHieu,
-                              namSanXuat: e.namSanXuat,
-                              idCCDCVatTu: e.id,
-                              donViTinh: e.donViTinh,
-                              soLuong: e.soLuong,
-                              ghiChu: e.ghiChu,
-                              ngayTao: e.ngayTao.toIso8601String(),
-                              ngayCapNhat: e.ngayCapNhat.toIso8601String(),
-                              nguoiTao: widget.provider.userInfo?.id ?? '',
-                              nguoiCapNhat: widget.provider.userInfo?.id ?? '',
-                              isActive: true,
-                              soLuongXuat: e.soLuongXuat,
-                            ),
-                          )
-                          .toList();
+                  setState(() {
+                    listNewDetails =
+                        data
+                            .map(
+                              (e) => DetailToolAndMaterialTransferDto(
+                                id: UUIDGenerator.generateWithFormat(
+                                  'CTDD-****',
+                                ),
+                                idDieuDongCCDCVatTu: controllerSoChungTu.text,
+                                soQuyetDinh: item?.soQuyetDinh ?? '',
+                                tenPhieu: controllerDocumentName.text,
+                                tenCCDCVatTu: e.ten,
+                                congSuat: e.congSuat,
+                                nuocSanXuat: e.nuocSanXuat,
+                                soKyHieu: e.soKyHieu,
+                                kyHieu: e.kyHieu,
+                                namSanXuat: e.namSanXuat,
+                                idCCDCVatTu: e.id,
+                                donViTinh: e.donViTinh,
+                                soLuong: e.soLuong,
+                                ghiChu: e.ghiChu,
+                                ngayTao: e.ngayTao.toIso8601String(),
+                                ngayCapNhat: e.ngayCapNhat.toIso8601String(),
+                                nguoiTao: widget.provider.userInfo?.id ?? '',
+                                nguoiCapNhat:
+                                    widget.provider.userInfo?.id ?? '',
+                                isActive: true,
+                                soLuongXuat: e.soLuongXuat,
+                              ),
+                            )
+                            .toList();
+                  });
                 },
               ),
 
@@ -924,6 +918,7 @@ class _ToolAndMaterialTransferDetailState
                 context: context,
                 item: item,
                 provider: widget.provider,
+                isDisabled: listNewDetails.isEmpty,
               ),
             ],
           ),
@@ -1056,7 +1051,7 @@ class _ToolAndMaterialTransferDetailState
     UserInfoDTO userInfo = widget.provider.userInfo!;
     // final bloc = context.read<DieuDongTaiSanBloc>();
     if (item == null) {
-      final request = _createToolAndMaterialTransRequest(widget.type, 1);
+      final request = _createToolAndMaterialTransRequest(widget.type, getState());
       final requestDetail = _createDieuDongRequestDetail();
       request.copyWith(ngayTao: userInfo.tenDangNhap);
 
@@ -1085,5 +1080,17 @@ class _ToolAndMaterialTransferDetailState
         );
       }
     }
+  }
+
+  int getState() {
+    int state = 0;
+    if (!isNguoiLapPhieuKyNhay && !isQuanTrongCanXacNhan) {
+      state = 3;
+    } else if (!isNguoiLapPhieuKyNhay) {
+      state = 1;
+    } else if (isNguoiLapPhieuKyNhay) {
+      state = 0;
+    }
+    return state;
   }
 }

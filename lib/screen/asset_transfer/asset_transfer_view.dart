@@ -163,7 +163,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           log('GetListDieuDongTaiSanFailedState');
         }
         if (state is GetListAssetSuccessState) {
-          log('GetListAssetSuccessState');
           context.read<DieuDongTaiSanProvider>().getLisTaiSanSuccess(
             context,
             state,
@@ -203,7 +202,10 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           );
         }
         if (state is UpdateSigningStatusSuccessState) {
-          AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+          context.read<DieuDongTaiSanProvider>().updateSignatureSuccess(
+            context,
+            state,
+          );
         }
         if (state is UpdateSigningStatusFailedState) {
           AppUtility.showSnackBar(context, state.message, isError: true);

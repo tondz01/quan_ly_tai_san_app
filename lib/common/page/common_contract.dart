@@ -23,6 +23,9 @@ class CommonContract extends StatefulWidget {
   final String idNguoiKy;
   final String tenNguoiKy;
   final bool isShowKy;
+  final bool isKyNhay;
+  final bool isKyThuong;
+  final bool isKySo;
   final Function()? eventSignature;
 
   const CommonContract({
@@ -33,6 +36,9 @@ class CommonContract extends StatefulWidget {
     required this.idNguoiKy,
     required this.tenNguoiKy,
     this.isShowKy = true,
+    this.isKyNhay = true,
+    this.isKyThuong = true,
+    this.isKySo = true,
     this.eventSignature,
   });
 
@@ -617,33 +623,43 @@ class _CommonContractState extends State<CommonContract> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              _buildFab(
-                                Icons.edit,
-                                'Ký nháy',
-                                Colors.orange,
-                                () => _addFirstSignatureFromList(
-                                  1,
-                                  top: screenHeight / 2,
-                                  left: (screenWidth - 200) / 4,
+                              //adas
+                              Visibility(
+                                visible: widget.isKyNhay,
+                                child: _buildFab(
+                                  Icons.edit,
+                                  'Ký nháy',
+                                  Colors.orange,
+                                  () => _addFirstSignatureFromList(
+                                    1,
+                                    top: screenHeight / 2,
+                                    left: (screenWidth - 200) / 4,
+                                  ),
                                 ),
                               ),
-                              _buildFab(
-                                Icons.brush,
-                                'Ký',
-                                Colors.green,
-                                () => _addFirstSignatureFromList(
-                                  2,
-                                  top: screenHeight / 2,
-                                  left: (screenWidth - 200) / 4,
+                              Visibility(
+                                visible: widget.isKyThuong,
+                                child: _buildFab(
+                                  Icons.brush,
+                                  'Ký',
+                                  Colors.green,
+                                  () => _addFirstSignatureFromList(
+                                    2,
+                                    top: screenHeight / 2,
+                                    left: (screenWidth - 200) / 4,
+                                  ),
                                 ),
                               ),
-                              _buildFab(
-                                Icons.vpn_key,
-                                'Ký số',
-                                Colors.blue,
-                                () async => await signing(
-                                  top: screenHeight / 2,
-                                  left: (screenWidth - 200) / 4,
+                              Visibility(
+                                visible: widget.isKySo,
+                                child: _buildFab(
+                                  Icons.vpn_key,
+                                  'Ký số',
+                                  Colors.blue,
+                                  () async => await signing(
+                                    top: screenHeight / 2,
+                                    left: (screenWidth - 200) / 4,
+                                  ),
                                 ),
                               ),
                             ],

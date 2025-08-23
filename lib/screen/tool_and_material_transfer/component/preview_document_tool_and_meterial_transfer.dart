@@ -18,6 +18,7 @@ Widget previewDocumentToolAndMaterialTransfer({
   required BuildContext context,
   required ToolAndMaterialTransferDto? item,
   required ToolAndMaterialTransferProvider provider,
+  bool isDisabled = false,
   bool isShowKy = true,
 }) {
   log('isShowKy: $isShowKy');
@@ -25,6 +26,7 @@ Widget previewDocumentToolAndMaterialTransfer({
     onTap: () {
       log('item: $item');
       if (item == null) return;
+      if (isDisabled) return;
       previewDocumentToolAndMaterial(
         context: context,
         item: item,
@@ -44,12 +46,16 @@ Widget previewDocumentToolAndMaterialTransfer({
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: ColorValue.link,
+              color: isDisabled ? Colors.grey : ColorValue.link,
             ),
           ),
         ),
         SizedBox(width: 8),
-        Icon(Icons.visibility, color: ColorValue.link, size: 18),
+        Icon(
+          Icons.visibility,
+          color: isDisabled ? Colors.grey : ColorValue.link,
+          size: 18,
+        ),
       ],
     ),
   );
@@ -68,6 +74,10 @@ previewDocumentToolAndMaterial({
   String tenFileKyThuong = path.basename(nhanVien.chuKyThuong.toString());
   String urlKyNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
   String urlKyThuong = '${Config.baseUrl}/api/upload/download/$tenFileKyThuong';
+ 
+  log('nhanVien.kyNhay11: ${nhanVien.kyNhay}');
+  log('nhanVien.kyThuong11: ${nhanVien.kyThuong ?? false}');
+  log('nhanVien.kySo11: ${nhanVien.kySo ?? false}');
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -85,6 +95,9 @@ previewDocumentToolAndMaterial({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            isKyNhay: nhanVien.kyNhay ?? false,
+            isKyThuong: nhanVien.kyThuong ?? false,
+            isKySo: nhanVien.kySo ?? false,
             isShowKy: isShowKy,
           ),
         ),

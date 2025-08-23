@@ -222,7 +222,7 @@ class FilterOptionBuilder {
       ),
       FilterOptionBuilder.create(
         id: 'browser',
-        label: 'Trình duyệt',
+        label: 'Chờ duyệt',
         isChecked: filterStates['browser'] ?? false,
         count: filterCounts['browser'] ?? 0,
         activeColor: filterColors['browser'] ?? Colors.grey,
@@ -235,14 +235,6 @@ class FilterOptionBuilder {
         count: filterCounts['approve'] ?? 0,
         activeColor: filterColors['approve'] ?? Colors.grey,
         onChanged: (value) => onFilterChanged('approve', value),
-      ),
-      FilterOptionBuilder.create(
-        id: 'reject',
-        label: 'Từ chối',
-        isChecked: filterStates['reject'] ?? false,
-        count: filterCounts['reject'] ?? 0,
-        activeColor: filterColors['reject'] ?? Colors.grey,
-        onChanged: (value) => onFilterChanged('reject', value),
       ),
       FilterOptionBuilder.create(
         id: 'cancel',

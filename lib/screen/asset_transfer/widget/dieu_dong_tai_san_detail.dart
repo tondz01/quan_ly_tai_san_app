@@ -18,6 +18,9 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/controllers/asset_transfer_controllers.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/state/asset_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/validation/asset_transfer_validation.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
@@ -57,131 +60,39 @@ final GlobalKey<_DieuDongTaiSanDetailState> dieuDongTaiSanDetailKey =
     GlobalKey<_DieuDongTaiSanDetailState>();
 
 class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
-  late TextEditingController controllerSoChungTu = TextEditingController();
-  late TextEditingController controllerSubject = TextEditingController();
-  late TextEditingController controllerDocumentName = TextEditingController();
-  late TextEditingController controllerDeliveringUnit = TextEditingController();
-  late TextEditingController controllerReceivingUnit = TextEditingController();
-  late TextEditingController controllerRequester = TextEditingController();
-  late TextEditingController controllerProposingUnit = TextEditingController();
-  late TextEditingController controllerQuantity = TextEditingController();
-  late TextEditingController controllerDepartmentApproval =
-      TextEditingController();
-  late TextEditingController controllerEffectiveDate = TextEditingController();
-  late TextEditingController controllerEffectiveDateTo =
-      TextEditingController();
-  late TextEditingController controllerApprover = TextEditingController();
-  late TextEditingController controllerDeliveryLocation =
-      TextEditingController();
-  late TextEditingController controllerViewerDepartments =
-      TextEditingController();
-  late TextEditingController controllerViewerUsers = TextEditingController();
-  late TextEditingController controllerReason = TextEditingController();
-  late TextEditingController controllerBase = TextEditingController();
-  late TextEditingController controllerArticle1 = TextEditingController();
-  late TextEditingController controllerArticle2 = TextEditingController();
-  late TextEditingController controllerArticle3 = TextEditingController();
-  late TextEditingController controllerDestination = TextEditingController();
-  late TextEditingController controllerTPDonViGiao = TextEditingController();
-  late TextEditingController controllerPPDonViNhan = TextEditingController();
+  // Sử dụng các class mới
+  late AssetTransferControllers controllers = AssetTransferControllers();
+  late AssetTransferState state = AssetTransferState();
+  late AssetTransferValidation validation = AssetTransferValidation();
 
-  bool isEditing = false;
-  bool isNguoiLapPhieuKyNhay = false;
-  bool isQuanTrongCanXacNhan = false;
-  bool isPhoPhongXacNhan = false;
-  bool _isUploading = false;
-  bool isRefreshing = false;
-  bool isNew = false;
-
-  String? proposingUnit;
-  bool _controllersInitialized = false;
-  String? _selectedFileName;
-  String? _selectedFilePath;
   Uint8List? _selectedFileBytes;
-  String idCongTy = 'CT001';
-  int typeTransfer = 1;
-  List<ChiTietDieuDongTaiSan> listNewDetails = [];
-  List<ChiTietDieuDongTaiSan> _initialDetails = [];
-  List<NhanVien> listStaffByDepartment = [];
-
-  PhongBan? donViGiao;
-  PhongBan? donViNhan;
-  PhongBan? donViDeNghi;
-  NhanVien? nguoiDeNghi;
-  NhanVien? tPDonViGiao;
-  NhanVien? pPDonViNhan;
-  UserInfoDTO? nguoiLapPhieu;
-  NhanVien? nguoiKyCapPhong;
-  NhanVien? nguoiKyGiamDoc;
-
-  late DieuDongTaiSanDto? item;
-  DieuDongTaiSanDto? itemPreview;
-
   final Map<String, TextEditingController> contractTermsControllers = {};
-
   final List<DieuDongTaiSanDto> listAssetHandover = [];
 
-  Map<String, bool> _validationErrors = {};
-
   bool _validateForm() {
-    Map<String, bool> newValidationErrors = {};
-
-    if (controllerDocumentName.text.isEmpty) {
-      newValidationErrors['documentName'] = true;
-    }
-
-    if (controllerSubject.text.isEmpty) {
-      newValidationErrors['subject'] = true;
-    }
-
-    if (controllerDeliveringUnit.text.isEmpty) {
-      newValidationErrors['deliveringUnit'] = true;
-    }
-
-    if (controllerReceivingUnit.text.isEmpty) {
-      newValidationErrors['receivingUnit'] = true;
-    }
-
-    if (controllerEffectiveDate.text.isEmpty) {
-      newValidationErrors['effectiveDate'] = true;
-    }
-
-    if (controllerEffectiveDateTo.text.isEmpty) {
-      newValidationErrors['effectiveDateTo'] = true;
-    }
-
-    if (controllerRequester.text.isEmpty) {
-      newValidationErrors['requester'] = true;
-    }
-
-    // If it's a new item, document is required
-    if (item == null && _selectedFileName == null) {
-      newValidationErrors['document'] = true;
-    }
-
-    // Only update state if validation errors have changed
-    bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
-    if (hasChanges) {
-      setState(() {
-        _validationErrors = newValidationErrors;
-      });
-    }
-
-    return newValidationErrors.isEmpty;
+    return validation.validateForm(
+      documentNameController: controllers.controllerDocumentName,
+      subjectController: controllers.controllerSubject,
+      deliveringUnitController: controllers.controllerDeliveringUnit,
+      receivingUnitController: controllers.controllerReceivingUnit,
+      effectiveDateController: controllers.controllerEffectiveDate,
+      effectiveDateToController: controllers.controllerEffectiveDateTo,
+      requesterController: controllers.controllerRequester,
+      item: state.item,
+      selectedFileName: state.selectedFileName,
+    );
   }
-
-  // late NhanVienProvider nhanVienProvider;
 
   @override
   void initState() {
     super.initState();
-    item = widget.provider.item;
+    state.item = widget.provider.item;
     _callGetListAssetHandover();
-    isEditing = widget.isEditing;
+    state.isEditing = widget.isEditing;
     _refreshWidget();
 
-    if (item != null && item!.trangThai == 0) {
-      isEditing = true;
+    if (state.item != null && state.item!.trangThai == 0) {
+      state.isEditing = true;
     }
     if (widget.isNew == true) {
       onReload();
@@ -208,146 +119,19 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
   }
 
-  // Method để làm mới widget
-  void _refreshWidget() {
-    setState(() {
-      listNewDetails.clear();
-      nguoiLapPhieu = widget.provider.userInfo;
-      // Reset item từ provider
-      item = widget.provider.item;
-      log('message item: $item');
-      isNew = item == null;
-
-      // Reset editing state
-      isEditing = widget.isEditing;
-      if (item != null && item!.trangThai == 0) {
-        isEditing = true;
-      }
-
-      if (item != null) {
-        controllerSoChungTu.text = item?.id ?? '';
-        controllerSubject.text = item?.trichYeu ?? '';
-        controllerDocumentName.text = item?.tenPhieu ?? '';
-        controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
-        controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
-        controllerRequester.text = item?.tenNguoiDeNghi ?? '';
-        controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
-        controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
-        controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
-        controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
-        controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
-
-        //load date value dropdown
-        donViGiao = widget.provider.getPhongBanByID(item?.idDonViGiao ?? '');
-        donViNhan = widget.provider.getPhongBanByID(item?.idDonViNhan ?? '');
-        donViDeNghi = widget.provider.getPhongBanByID(
-          item?.idDonViDeNghi ?? '',
-        );
-        nguoiDeNghi = widget.provider.getNhanVienByID(
-          item?.idNguoiDeNghi ?? '',
-        );
-        tPDonViGiao = widget.provider.getNhanVienByID(
-          item?.idTPDonViGiao ?? '',
-        );
-        pPDonViNhan = widget.provider.getNhanVienByID(
-          item?.idPPDonViNhan ?? '',
-        );
-
-        // Initialize selected file if available
-        _selectedFileName = item?.tenFile;
-        _selectedFilePath = item?.duongDanFile;
-        isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
-        isQuanTrongCanXacNhan = item?.quanTrongCanXacNhan ?? false;
-        isPhoPhongXacNhan = item?.phoPhongXacNhan ?? false;
-        proposingUnit = item?.tenDonViDeNghi;
-
-        // Lưu snapshot chi tiết ban đầu để so sánh
-        _initialDetails = List<ChiTietDieuDongTaiSan>.from(
-          item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
-        );
-        _controllersInitialized = true;
-      } else {
-        controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
-          'SCT-************',
-        );
-        controllerSubject.text = '';
-        controllerDocumentName.text = '';
-        controllerDeliveringUnit.text = '';
-        controllerReceivingUnit.text = '';
-        controllerRequester.text = '';
-        controllerDepartmentApproval.text = '';
-        controllerEffectiveDate.text = '';
-        controllerEffectiveDateTo.text = '';
-        controllerApprover.text = '';
-        controllerDeliveryLocation.text = '';
-        controllerProposingUnit.text = '';
-
-        _controllersInitialized = false;
-        _selectedFileName = null;
-        _selectedFilePath = null;
-        isNguoiLapPhieuKyNhay = false;
-        isQuanTrongCanXacNhan = false;
-        isPhoPhongXacNhan = false;
-        donViGiao = null;
-        donViNhan = null;
-        donViDeNghi = null;
-        nguoiDeNghi = null;
-        tPDonViGiao = null;
-        pPDonViNhan = null;
-        log('controllerEffectiveDateTo: ${controllerSoChungTu.text}');
-      }
-
-      if (proposingUnit != null &&
-          proposingUnit!.isNotEmpty &&
-          !_controllersInitialized) {
-        controllerProposingUnit.text = proposingUnit!;
-      }
-
-      // Reset các biến trạng thái
-      isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
-      isQuanTrongCanXacNhan = item?.quanTrongCanXacNhan ?? false;
-      isPhoPhongXacNhan = item?.phoPhongXacNhan ?? false;
-      proposingUnit = item?.tenDonViDeNghi;
-
-      // Reset file upload
-      _selectedFileName = item?.tenFile;
-      _selectedFilePath = item?.duongDanFile;
-
-      _validationErrors.clear();
-
-      _controllersInitialized = false;
-
-      _isUploading = false;
-      isRefreshing = false;
-    });
-  }
-
   late List<DropdownMenuItem<String>> itemsRequester = [];
 
   @override
   void dispose() {
     // Giải phóng các controller
-    controllerSubject.dispose();
-    controllerDocumentName.dispose();
-    controllerDeliveringUnit.dispose();
-    controllerReceivingUnit.dispose();
-    controllerRequester.dispose();
-    controllerProposingUnit.dispose();
-    controllerQuantity.dispose();
-    controllerDepartmentApproval.dispose();
-    controllerEffectiveDate.dispose();
-    controllerEffectiveDateTo.dispose();
-    controllerApprover.dispose();
-    controllerDeliveryLocation.dispose();
-    controllerViewerDepartments.dispose();
-    controllerViewerUsers.dispose();
+    controllers.dispose();
 
     for (final controller in contractTermsControllers.values) {
       controller.dispose();
     }
 
     // Reset initialization flag
-    _controllersInitialized = false;
+    state.controllersInitialized = false;
 
     super.dispose();
   }
@@ -377,21 +161,21 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   bool _detailsChanged() {
-    if (item == null) return listNewDetails.isNotEmpty;
-    final beforeJson = jsonEncode(_normalizeDetails(_initialDetails));
-    final afterJson = jsonEncode(_normalizeDetails(listNewDetails));
+    if (state.item == null) return state.listNewDetails.isNotEmpty;
+    final beforeJson = jsonEncode(_normalizeDetails(state.initialDetails));
+    final afterJson = jsonEncode(_normalizeDetails(state.listNewDetails));
     return beforeJson != afterJson;
   }
 
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = ChiTietDieuDongTaiSanRepository();
-      for (final d in _initialDetails) {
+      for (final d in state.initialDetails) {
         if (d.id.isNotEmpty) {
           await repo.delete(d.id);
         }
       }
-      for (final d in listNewDetails) {
+      for (final d in state.listNewDetails) {
         await repo.create(
           ChiTietDieuDongTaiSan(
             id: d.id,
@@ -424,11 +208,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
     _checkAndRefreshWidget();
 
-    if (item == null && !isRefreshing) {
+    if (state.item == null && !state.isRefreshing) {
       log('item == null');
       onReload();
-      isEditing = true;
-      isRefreshing = true;
+      state.isEditing = true;
+      state.isRefreshing = true;
     }
 
     return MultiBlocListener(
@@ -445,12 +229,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             } else if (state is DieuDongTaiSanLoadingState) {
               // Show loading indicator
               setState(() {
-                _isUploading = true;
+                this.state.isUploading = true;
               });
             } else if (state is DieuDongTaiSanLoadingDismissState) {
               // Hide loading indicator
               setState(() {
-                _isUploading = false;
+                this.state.isUploading = false;
               });
             }
           },
@@ -473,7 +257,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (isEditing)
+            if (state.isEditing)
               Row(
                 children: [
                   MaterialTextButton(
@@ -534,7 +318,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 'Hoàn thành',
               ],
               fontSize: 10,
-              currentStep: item?.trangThai ?? 0,
+              currentStep: state.item?.trangThai ?? 0,
             ),
           ],
         ),
@@ -559,51 +343,56 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                       children: [
                         CommonFormInput(
                           label: 'Số chứng từ',
-                          controller: controllerSoChungTu,
+                          controller: controllers.controllerSoChungTu,
                           isEditing: false,
-                          textContent: controllerSoChungTu.text,
+                          textContent: controllers.controllerSoChungTu.text,
                           fieldName: 'soChungTu',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                         ),
                         CommonFormInput(
                           label: 'at.document_name'.tr,
-                          controller: controllerDocumentName,
-                          isEditing: isEditing,
-                          textContent: item?.tenPhieu ?? '',
+                          controller: controllers.controllerDocumentName,
+                          isEditing: state.isEditing,
+                          textContent: state.item?.tenPhieu ?? '',
                           fieldName: 'documentName',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                         ),
                         CommonFormInput(
                           label: 'Trích yêu',
-                          controller: controllerSubject,
-                          isEditing: isEditing,
-                          textContent: item?.trichYeu ?? '',
+                          controller: controllers.controllerSubject,
+                          isEditing: state.isEditing,
+                          textContent: state.item?.trichYeu ?? '',
                           fieldName: 'subject',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                         ),
 
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.delivering_unit'.tr,
-                          controller: controllerDeliveringUnit,
-                          isEditing: isEditing,
+                          controller: controllers.controllerDeliveringUnit,
+                          isEditing: state.isEditing,
+                          value: state.donViGiao,
                           items: widget.provider.itemsDDPhongBan,
                           defaultValue:
-                              controllerDeliveringUnit.text.isNotEmpty
+                              controllers
+                                      .controllerDeliveringUnit
+                                      .text
+                                      .isNotEmpty
                                   ? widget.provider.getPhongBanByID(
-                                    controllerDeliveringUnit.text,
+                                    controllers.controllerDeliveringUnit.text,
                                   )
                                   : null,
                           fieldName: 'delivering_unit',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             log('delivering_unit selected: $value');
                             setState(() {
-                              donViGiao = value;
-                              listStaffByDepartment =
+                              state.donViGiao = value;
+                              state.listStaffByDepartment =
                                   widget.provider.dataNhanVien
                                       .where(
                                         (element) =>
-                                            element.phongBanId == donViGiao!.id,
+                                            element.phongBanId ==
+                                            state.donViGiao!.id,
                                       )
                                       .toList();
                             });
@@ -611,69 +400,71 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         ),
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.receiving_unit'.tr,
-                          controller: controllerReceivingUnit,
-                          isEditing: isEditing,
+                          controller: controllers.controllerReceivingUnit,
+                          isEditing: state.isEditing,
 
                           items: widget.provider.itemsDDPhongBan,
                           defaultValue:
-                              controllerReceivingUnit.text.isNotEmpty
+                              controllers
+                                      .controllerReceivingUnit
+                                      .text
+                                      .isNotEmpty
                                   ? widget.provider.getPhongBanByID(
-                                    controllerReceivingUnit.text,
+                                    controllers.controllerReceivingUnit.text,
                                   )
                                   : null,
                           fieldName: 'receivingUnit',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             log('receivingUnit selected: $value');
-                            donViNhan = value;
+                            state.donViNhan = value;
                           },
                         ),
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.requester'.tr,
-                          controller: controllerRequester,
-                          isEditing: isEditing,
+                          controller: controllers.controllerRequester,
+                          isEditing: state.isEditing,
 
                           items: widget.provider.itemsDDNhanVien,
                           defaultValue:
-                              controllerRequester.text.isNotEmpty
+                              controllers.controllerRequester.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
-                                    controllerRequester.text,
+                                    controllers.controllerRequester.text,
                                   )
                                   : null,
                           fieldName: 'requester',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             log('requester selected: $value');
                             setState(() {
-                              donViDeNghi = widget.provider.getPhongBanByID(
-                                value.phongBanId ?? '',
-                              );
-                              controllerProposingUnit.text =
-                                  donViDeNghi?.tenPhongBan ?? '';
-                              nguoiDeNghi = value;
+                              state.donViDeNghi = widget.provider
+                                  .getPhongBanByID(value.phongBanId ?? '');
+                              controllers.controllerProposingUnit.text =
+                                  state.donViDeNghi?.tenPhongBan ?? '';
+                              state.nguoiDeNghi = value;
                             });
                           },
                         ),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
-                          value: isNguoiLapPhieuKyNhay,
-                          isEditing: isEditing,
-                          isDisabled: !isEditing,
+                          value: state.isNguoiLapPhieuKyNhay,
+                          isEditing: state.isEditing,
+                          isDisabled: !state.isEditing,
                           onChanged: (newValue) {
                             setState(() {
-                              isNguoiLapPhieuKyNhay = newValue;
+                              state.isNguoiLapPhieuKyNhay = newValue;
                             });
                           },
                         ),
                         CommonCheckboxInput(
                           label: 'at.require_manager_approval'.tr,
-                          value: isQuanTrongCanXacNhan,
-                          isEditing: isEditing,
-                          isDisabled: !isEditing,
+                          value: state.isQuanTrongCanXacNhan,
+                          isEditing: state.isEditing,
+                          isDisabled: !state.isEditing,
                           onChanged: (newValue) {
                             setState(() {
-                              log('donViGiao: $donViGiao');
-                              if (donViGiao == null) {
+                              log('donViGiao: ${state.donViGiao}');
+                              if (state.donViGiao == null) {
                                 AppUtility.showSnackBar(
                                   context,
                                   'Vui lòng chọn đơn vị giao trước.',
@@ -681,22 +472,22 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 );
                                 return;
                               }
-                              isQuanTrongCanXacNhan = newValue;
-                              if (!isQuanTrongCanXacNhan) {
-                                isPhoPhongXacNhan = false;
+                              state.isQuanTrongCanXacNhan = newValue;
+                              if (!state.isQuanTrongCanXacNhan) {
+                                state.isPhoPhongXacNhan = false;
                               }
                             });
                           },
                         ),
                         Visibility(
-                          visible: isQuanTrongCanXacNhan,
+                          visible: state.isQuanTrongCanXacNhan,
                           child: CmFormDropdownObject<NhanVien>(
                             label: 'Trưởng phòng xác nhận',
-                            controller: controllerTPDonViGiao,
-                            isEditing: isEditing,
+                            controller: controllers.controllerTPDonViGiao,
+                            isEditing: state.isEditing,
 
                             items: [
-                              ...listStaffByDepartment.map(
+                              ...state.listStaffByDepartment.map(
                                 (e) => DropdownMenuItem(
                                   value: e,
                                   child: Text(e.hoTen ?? ''),
@@ -704,43 +495,45 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ],
                             defaultValue:
-                                controllerTPDonViGiao.text.isNotEmpty
+                                controllers
+                                        .controllerTPDonViGiao
+                                        .text
+                                        .isNotEmpty
                                     ? widget.provider.getNhanVienByID(
-                                      controllerTPDonViGiao.text,
+                                      controllers.controllerTPDonViGiao.text,
                                     )
                                     : null,
                             fieldName: 'tPDonViGiao',
-                            validationErrors: _validationErrors,
-                            value: tPDonViGiao,
+                            validationErrors: validation.validationErrors,
+                            value: state.tPDonViGiao,
                             onChanged: (value) {
-                              log('tPDonViGiao selected: $value');
                               setState(() {
-                                tPDonViGiao = value;
+                                state.tPDonViGiao = value;
                               });
                             },
                           ),
                         ),
-                        if (isQuanTrongCanXacNhan)
+                        if (state.isQuanTrongCanXacNhan)
                           CommonCheckboxInput(
                             label: 'at.deputy_confirmed'.tr,
-                            value: isPhoPhongXacNhan,
-                            isEditing: isEditing,
-                            isDisabled: !isEditing,
+                            value: state.isPhoPhongXacNhan,
+                            isEditing: state.isEditing,
+                            isDisabled: !state.isEditing,
                             onChanged: (newValue) {
                               setState(() {
-                                isPhoPhongXacNhan = newValue;
+                                state.isPhoPhongXacNhan = newValue;
                               });
                             },
                           ),
                         Visibility(
-                          visible: isPhoPhongXacNhan,
+                          visible: state.isPhoPhongXacNhan,
                           child: CmFormDropdownObject<NhanVien>(
                             label: 'Phó phòng xác nhận',
-                            controller: controllerPPDonViNhan,
-                            isEditing: isEditing,
+                            controller: controllers.controllerPPDonViNhan,
+                            isEditing: state.isEditing,
 
                             items: [
-                              ...listStaffByDepartment.map(
+                              ...state.listStaffByDepartment.map(
                                 (e) => DropdownMenuItem(
                                   value: e,
                                   child: Text(e.hoTen ?? ''),
@@ -748,28 +541,31 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ],
                             defaultValue:
-                                controllerPPDonViNhan.text.isNotEmpty
+                                controllers
+                                        .controllerPPDonViNhan
+                                        .text
+                                        .isNotEmpty
                                     ? widget.provider.getNhanVienByID(
-                                      controllerPPDonViNhan.text,
+                                      controllers.controllerPPDonViNhan.text,
                                     )
                                     : null,
                             fieldName: 'pPDonViNhan',
-                            validationErrors: _validationErrors,
+                            validationErrors: validation.validationErrors,
                             onChanged: (value) {
                               log('pPDonViNhan selected: $value');
                               setState(() {
-                                pPDonViNhan = value;
+                                state.pPDonViGiao = value;
                               });
                             },
                           ),
                         ),
                         CommonFormInput(
                           label: 'at.proposing_unit'.tr,
-                          controller: controllerProposingUnit,
+                          controller: controllers.controllerProposingUnit,
                           isEditing: false,
-                          textContent: proposingUnit ?? '',
+                          textContent: state.proposingUnit ?? '',
                           inputType: TextInputType.number,
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                         ),
                       ],
                     ),
@@ -780,76 +576,78 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                       children: [
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.department_approval'.tr,
-                          controller: controllerDepartmentApproval,
-                          isEditing: isEditing,
-
+                          controller: controllers.controllerDepartmentApproval,
+                          isEditing: state.isEditing,
+                          value: state.nguoiKyCapPhong,
                           items: widget.provider.itemsDDNhanVien,
                           defaultValue:
-                              controllerDepartmentApproval.text.isNotEmpty
+                              controllers
+                                      .controllerDepartmentApproval
+                                      .text
+                                      .isNotEmpty
                                   ? widget.provider.getNhanVienByID(
-                                    controllerDepartmentApproval.text,
+                                    controllers
+                                        .controllerDepartmentApproval
+                                        .text,
                                   )
                                   : null,
                           fieldName: 'departmentApproval',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             log('department_approval selected: $value');
-                            nguoiKyCapPhong = value;
+                            state.nguoiKyCapPhong = value;
                           },
                         ),
                         CmFormDate(
                           label: 'at.effective_date'.tr,
-                          controller: controllerEffectiveDate,
-                          isEditing: isEditing,
+                          controller: controllers.controllerEffectiveDate,
+                          isEditing: state.isEditing,
                           onChanged: (value) {
                             log('Effective date selected: $value');
                           },
                           value:
-                              controllerEffectiveDate.text.isNotEmpty
+                              controllers
+                                      .controllerEffectiveDate
+                                      .text
+                                      .isNotEmpty
                                   ? AppUtility.parseFlexibleDateTime(
-                                    controllerEffectiveDate.text,
+                                    controllers.controllerEffectiveDate.text,
                                   )
                                   : DateTime.now(),
                         ),
                         CmFormDate(
                           label: 'at.effective_date_to'.tr,
-                          controller: controllerEffectiveDateTo,
-                          isEditing: isEditing,
+                          controller: controllers.controllerEffectiveDateTo,
+                          isEditing: state.isEditing,
                           onChanged: (value) {
                             log('Effective date selected: $value');
                           },
                           value:
-                              controllerEffectiveDateTo.text.isNotEmpty
+                              controllers
+                                      .controllerEffectiveDateTo
+                                      .text
+                                      .isNotEmpty
                                   ? AppUtility.parseFlexibleDateTime(
-                                    controllerEffectiveDateTo.text,
+                                    controllers.controllerEffectiveDateTo.text,
                                   )
                                   : DateTime.now(),
                         ),
-                        // CommonFormInput(
-                        //   label: 'at.effective_date_to'.tr,
-                        //   controller: controllerEffectiveDateTo,
-                        //   isEditing: isEditing,
-                        //   textContent: item?.tggnDenNgay ?? '',
-                        //   fieldName: 'effectiveDateTo',
-                        //   validationErrors: _validationErrors,
-                        // ),
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.approver'.tr,
-                          controller: controllerApprover,
-                          isEditing: isEditing,
-
+                          controller: controllers.controllerApprover,
+                          isEditing: state.isEditing,
+                          value: state.nguoiKyGiamDoc,
                           items: widget.provider.itemsDDNhanVien,
                           defaultValue:
-                              controllerApprover.text.isNotEmpty
+                              controllers.controllerApprover.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
-                                    controllerApprover.text,
+                                    controllers.controllerApprover.text,
                                   )
                                   : null,
                           fieldName: 'approver',
-                          validationErrors: _validationErrors,
+                          validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('Approver selected: $value');
-                            nguoiKyGiamDoc = value;
+                            state.nguoiKyGiamDoc = value;
                           },
                         ),
                       ],
@@ -858,80 +656,81 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 ],
               ),
               DocumentUploadWidget(
-                isEditing: isEditing,
-                selectedFileName: _selectedFileName,
-                selectedFilePath: _selectedFilePath,
-                validationErrors: _validationErrors,
+                isEditing: state.isEditing,
+                selectedFileName: state.selectedFileName,
+                selectedFilePath: state.selectedFilePath,
+                validationErrors: validation.validationErrors,
                 onFileSelected: (fileName, filePath, fileBytes) {
                   setState(() {
-                    _selectedFileName = fileName;
-                    _selectedFilePath = filePath;
+                    state.selectedFileName = fileName;
+                    state.selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
 
-                    if (_validationErrors.containsKey('document')) {
-                      _validationErrors.remove('document');
+                    if (validation.hasValidationError('document')) {
+                      validation.removeValidationError('document');
                     }
                   });
                 },
-                // onUpload: _uploadWordDocument,
-                isUploading: _isUploading,
+                isUploading: state.isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
                 hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
                 allowedExtensions: ['pdf', 'docx'],
               ),
 
-              // const SizedBox(height: 20),
               AssetTransferMovementTable(
                 context,
-                isEditing: isEditing,
-                initialDetails: item?.chiTietDieuDongTaiSans ?? [],
+                isEditing: state.isEditing,
+                initialDetails: state.item?.chiTietDieuDongTaiSans ?? [],
                 allAssets: widget.provider.dataAsset ?? [],
                 onDataChanged: (data) {
-                  listNewDetails =
-                      data
-                          .map(
-                            (e) => ChiTietDieuDongTaiSan(
-                              id: UUIDGenerator.generateWithFormat('CTDD-****'),
-                              idDieuDongTaiSan: controllerSoChungTu.text,
-                              soQuyetDinh: item?.soQuyetDinh ?? '',
-                              tenPhieu: controllerDocumentName.text,
-                              idTaiSan: e.id ?? '',
-                              tenTaiSan: e.tenTaiSan ?? '',
-                              donViTinh: e.donViTinh ?? '',
-                              hienTrang: e.hienTrang ?? 0,
-                              soLuong: e.soLuong ?? 0,
-                              ghiChu: e.ghiChu ?? '',
-                              ngayTao: e.ngayTao ?? '',
-                              ngayCapNhat: e.ngayCapNhat ?? '',
-                              nguoiTao: widget.provider.userInfo?.id ?? '',
-                              nguoiCapNhat: widget.provider.userInfo?.id ?? '',
-                              isActive: true,
-                            ),
-                          )
-                          .toList();
-                  // widget.provider.changeIsShowPreview(
-                  //   listNewDetails.isNotEmpty && _selectedFilePath != null,
-                  //   _createDieuDong(widget.type, listNewDetails),
-                  // );
-                  log('itemPreview: ${widget.provider.itemPreview?.toJson()}');
+                  setState(() {
+                    state.listNewDetails =
+                        data
+                            .map(
+                              (e) => ChiTietDieuDongTaiSan(
+                                id: UUIDGenerator.generateWithFormat(
+                                  'CTDD-****',
+                                ),
+                                idDieuDongTaiSan:
+                                    controllers.controllerSoChungTu.text,
+                                soQuyetDinh: state.item?.soQuyetDinh ?? '',
+                                tenPhieu:
+                                    controllers.controllerDocumentName.text,
+                                idTaiSan: e.id ?? '',
+                                tenTaiSan: e.tenTaiSan ?? '',
+                                donViTinh: e.donViTinh ?? '',
+                                hienTrang: e.hienTrang ?? 0,
+                                soLuong: e.soLuong ?? 0,
+                                ghiChu: e.ghiChu ?? '',
+                                ngayTao: e.ngayTao ?? '',
+                                ngayCapNhat: e.ngayCapNhat ?? '',
+                                nguoiTao: widget.provider.userInfo?.id ?? '',
+                                nguoiCapNhat:
+                                    widget.provider.userInfo?.id ?? '',
+                                isActive: true,
+                              ),
+                            )
+                            .toList();
+                    widget.provider.changeIsShowPreview(
+                      _createDieuDong(widget.type, state.listNewDetails),
+                    );
+                  });
                 },
               ),
 
               SizedBox(height: 10),
               previewDocumentAssetTransfer(
                 context: context,
-                item: item ?? itemPreview,
+                item: state.item ?? widget.provider.itemPreview,
                 provider: widget.provider,
                 isShowKy: false,
                 callBack: () {
                   setState(() {
-                    _createDieuDong(widget.type, listNewDetails);
-                    itemPreview = _createDieuDong(widget.type, listNewDetails);
-                    log('_createDieuDong: ${itemPreview?.toJson()}');
+                    _createDieuDong(widget.type, state.listNewDetails);
                   });
                 },
-                isDisabled: !widget.provider.isShowPreview,
+                isDisabled: state.listNewDetails.isEmpty,
               ),
             ],
           ),
@@ -949,11 +748,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   void _checkAndRefreshWidget() {
-    if (widget.provider.item != item) {
+    if (widget.provider.item != state.item) {
       _refreshWidget();
     }
 
-    if (widget.isNew == true && item != null) {
+    if (widget.isNew == true && state.item != null) {
       _refreshWidget();
     }
   }
@@ -962,7 +761,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     try {
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
       assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(context, typeTransfer, idCongTy),
+        GetListDieuDongTaiSanEvent(context, state.typeTransfer, state.idCongTy),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -976,36 +775,30 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
   LenhDieuDongRequest _createDieuDongRequest(int type, int state) {
     return LenhDieuDongRequest(
-      id: controllerSoChungTu.text,
-      soQuyetDinh: controllerSoChungTu.text,
-      tenPhieu: controllerDocumentName.text,
-      idDonViGiao: donViGiao?.id ?? '',
-      idDonViNhan: donViNhan?.id ?? '',
-      idNguoiDeNghi: nguoiDeNghi?.id ?? '',
-      nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: isQuanTrongCanXacNhan,
-      phoPhongXacNhan: isPhoPhongXacNhan,
-      idDonViDeNghi: donViDeNghi?.id ?? '',
-      idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
+      id: controllers.controllerSoChungTu.text,
+      soQuyetDinh: controllers.controllerSoChungTu.text,
+      tenPhieu: controllers.controllerDocumentName.text,
+      idDonViGiao: this.state.donViGiao?.id ?? '',
+      idDonViNhan: this.state.donViNhan?.id ?? '',
+      idNguoiDeNghi: this.state.nguoiDeNghi?.id ?? '',
+      nguoiLapPhieuKyNhay: this.state.isNguoiLapPhieuKyNhay,
+      quanTrongCanXacNhan: this.state.isQuanTrongCanXacNhan,
+      phoPhongXacNhan: this.state.isPhoPhongXacNhan,
+      idDonViDeNghi: this.state.donViDeNghi?.id ?? '',
+      idTrinhDuyetCapPhong: this.state.nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
           AppUtility.parseDateTimeOrNow(
-            controllerEffectiveDate.text,
+            controllers.controllerEffectiveDate.text,
           ).toIso8601String(),
       tggnDenNgay:
           AppUtility.parseDateTimeOrNow(
-            controllerEffectiveDateTo.text,
+            controllers.controllerEffectiveDateTo.text,
           ).toIso8601String(),
-      idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
-      diaDiemGiaoNhan: controllerDeliveryLocation.text,
-      idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
-      idNhanSuXemPhieu: nguoiKyGiamDoc?.id ?? '',
-      veViec: '',
-      canCu: '',
-      dieu1: '',
-      dieu2: '',
-      dieu3: '',
+      idTrinhDuyetGiamDoc: this.state.nguoiKyGiamDoc?.id ?? '',
+      diaDiemGiaoNhan: controllers.controllerDeliveryLocation.text,
+      idPhongBanXemPhieu: this.state.nguoiKyCapPhong?.id ?? '',
+      idNhanSuXemPhieu: this.state.nguoiKyGiamDoc?.id ?? '',
       noiNhan: '',
-      themDongTrong: '',
       trangThai: state,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
       ngayTao: DateTime.now().toIso8601String(),
@@ -1015,9 +808,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       coHieuLuc: true,
       loai: type,
       isActive: true,
-      trichYeu: controllerSubject.text,
-      duongDanFile: _selectedFilePath ?? '',
-      tenFile: _selectedFileName ?? '',
+      idTruongPhongDonViGiao: this.state.tPDonViGiao?.id ?? '',
+      idPhoPhongDonViGiao: this.state.pPDonViGiao?.id ?? '',
+      truongPhongDonViGiaoXacNhan: false,
+      phoPhongDonViGiaoXacNhan: false,
+      trinhDuyetCapPhongXacNhan: false,
+      trinhDuyetGiamDocXacNhan: false,
+      trichYeu: controllers.controllerSubject.text,
+      duongDanFile: this.state.selectedFilePath ?? '',
+      tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
     );
   }
@@ -1027,36 +826,30 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     List<ChiTietDieuDongTaiSan> listNewDetails,
   ) {
     return DieuDongTaiSanDto(
-      id: controllerSoChungTu.text,
-      soQuyetDinh: controllerSoChungTu.text,
-      tenPhieu: controllerDocumentName.text,
-      idDonViGiao: donViGiao?.id ?? '',
-      idDonViNhan: donViNhan?.id ?? '',
-      idNguoiDeNghi: nguoiDeNghi?.id ?? '',
-      nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: isQuanTrongCanXacNhan,
-      phoPhongXacNhan: isPhoPhongXacNhan,
-      idDonViDeNghi: donViDeNghi?.id ?? '',
-      idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
+      id: controllers.controllerSoChungTu.text,
+      soQuyetDinh: controllers.controllerSoChungTu.text,
+      tenPhieu: controllers.controllerDocumentName.text,
+      idDonViGiao: state.donViGiao?.id ?? '',
+      idDonViNhan: state.donViNhan?.id ?? '',
+      idNguoiDeNghi: state.nguoiDeNghi?.id ?? '',
+      nguoiLapPhieuKyNhay: state.isNguoiLapPhieuKyNhay,
+      quanTrongCanXacNhan: state.isQuanTrongCanXacNhan,
+      phoPhongXacNhan: state.isPhoPhongXacNhan,
+      idDonViDeNghi: state.donViDeNghi?.id ?? '',
+      idTrinhDuyetCapPhong: state.nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
           AppUtility.parseDateTimeOrNow(
-            controllerEffectiveDate.text,
+            controllers.controllerEffectiveDate.text,
           ).toIso8601String(),
       tggnDenNgay:
           AppUtility.parseDateTimeOrNow(
-            controllerEffectiveDateTo.text,
+            controllers.controllerEffectiveDateTo.text,
           ).toIso8601String(),
-      idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
-      diaDiemGiaoNhan: controllerDeliveryLocation.text,
-      idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
-      idNhanSuXemPhieu: nguoiKyGiamDoc?.id ?? '',
-      veViec: '',
-      canCu: '',
-      dieu1: '',
-      dieu2: '',
-      dieu3: '',
+      idTrinhDuyetGiamDoc: state.nguoiKyGiamDoc?.id ?? '',
+      diaDiemGiaoNhan: controllers.controllerDeliveryLocation.text,
+      idPhongBanXemPhieu: state.nguoiKyCapPhong?.id ?? '',
+      idNhanSuXemPhieu: state.nguoiKyGiamDoc?.id ?? '',
       noiNhan: '',
-      themDongTrong: '',
       trangThai: 0,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
       ngayTao: DateTime.now().toIso8601String(),
@@ -1066,16 +859,16 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       coHieuLuc: true,
       loai: type,
       isActive: true,
-      trichYeu: controllerSubject.text,
-      duongDanFile: _selectedFilePath ?? '',
-      tenFile: _selectedFileName ?? '',
+      trichYeu: controllers.controllerSubject.text,
+      duongDanFile: state.selectedFilePath ?? '',
+      tenFile: state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       chiTietDieuDongTaiSans: listNewDetails,
     );
   }
 
   List<ChiTietDieuDongRequest> _createDieuDongRequestDetail() {
-    return listNewDetails
+    return state.listNewDetails
         .map(
           (e) => ChiTietDieuDongRequest(
             id: e.id,
@@ -1094,7 +887,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   Future<void> _handleSave() async {
-    if (!isEditing) return;
+    if (!state.isEditing) return;
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1105,7 +898,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       return;
     }
     // final bloc = context.read<DieuDongTaiSanBloc>();
-    if (item == null) {
+    if (state.item == null) {
       final request = _createDieuDongRequest(widget.type, getState());
       final requestDetail = _createDieuDongRequestDetail();
       // bloc.add(CreateDieuDongEvent(context, request));
@@ -1113,22 +906,32 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         context,
         request,
         requestDetail,
-        _selectedFileName ?? '',
-        _selectedFilePath ?? '',
+        state.selectedFileName ?? '',
+        state.selectedFilePath ?? '',
         _selectedFileBytes ?? Uint8List(0),
       );
-    } else if (item != null && isEditing) {
-      final request = _createDieuDongRequest(widget.type, item!.trangThai ?? 0);
+    } else if (state.item != null && state.isEditing) {
+      final request = _createDieuDongRequest(
+        widget.type,
+        state.item!.trangThai ?? 0,
+      );
       request.copyWith(
+        truongPhongDonViGiaoXacNhan:
+            state.item!.truongPhongDonViGiaoXacNhan ?? false,
+        phoPhongDonViGiaoXacNhan: state.item!.phoPhongDonViGiaoXacNhan ?? false,
+        trinhDuyetCapPhongXacNhan:
+            state.item!.trinhDuyetCapPhongXacNhan ?? false,
+        trinhDuyetGiamDocXacNhan: state.item!.trinhDuyetGiamDocXacNhan ?? false,
+        ngayKy: state.item!.ngayKy ?? DateTime.now().toIso8601String(),
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
       );
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {
-        await _syncDetails(item!.id!);
+        await _syncDetails(state.item!.id!);
       }
       if (mounted) {
         context.read<DieuDongTaiSanBloc>().add(
-          UpdateDieuDongEvent(context, request, item!.id!),
+          UpdateDieuDongEvent(context, request, state.item!.id!),
         );
       }
     }
@@ -1136,13 +939,162 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
   int getState() {
     int state = 0;
-    if (!isNguoiLapPhieuKyNhay && !isQuanTrongCanXacNhan) {
+    if (!this.state.isNguoiLapPhieuKyNhay &&
+        !this.state.isQuanTrongCanXacNhan) {
       state = 3;
-    } else if (!isNguoiLapPhieuKyNhay) {
+    } else if (!this.state.isNguoiLapPhieuKyNhay) {
       state = 1;
-    } else if (isNguoiLapPhieuKyNhay) {
+    } else if (this.state.isNguoiLapPhieuKyNhay) {
       state = 0;
     }
     return state;
+  }
+
+  // Method để làm mới widget
+  void _refreshWidget() {
+    setState(() {
+      state.listNewDetails.clear();
+      state.nguoiLapPhieu = widget.provider.userInfo;
+      // Reset item từ provider
+      state.item = widget.provider.item;
+      log('message item: ${state.item}');
+      state.isNew = state.item == null;
+
+      // Reset editing state
+      state.isEditing = widget.isEditing;
+      if (state.item != null && state.item!.trangThai == 0) {
+        state.isEditing = true;
+      }
+
+      if (state.item != null) {
+        controllers.controllerSoChungTu.text = state.item?.id ?? '';
+        controllers.controllerSubject.text = state.item?.trichYeu ?? '';
+        controllers.controllerDocumentName.text = state.item?.tenPhieu ?? '';
+        controllers.controllerDeliveringUnit.text =
+            state.item?.tenDonViGiao ?? '';
+        controllers.controllerReceivingUnit.text =
+            state.item?.tenDonViNhan ?? '';
+        controllers.controllerRequester.text = state.item?.tenNguoiDeNghi ?? '';
+        controllers.controllerDepartmentApproval.text =
+            state.item?.tenTrinhDuyetCapPhong ?? '';
+        controllers.controllerEffectiveDate.text = state.item?.tggnTuNgay ?? '';
+        controllers.controllerEffectiveDateTo.text =
+            state.item?.tggnDenNgay ?? '';
+        controllers.controllerApprover.text =
+            state.item?.tenTrinhDuyetGiamDoc ?? '';
+        controllers.controllerDeliveryLocation.text =
+            state.item?.diaDiemGiaoNhan ?? '';
+        controllers.controllerTPDonViGiao.text =
+            state.item?.tenTruongPhongDonViGiao ?? '';
+        controllers.controllerPPDonViNhan.text =
+            state.item?.tenPhoPhongDonViGiao ?? '';
+
+        //load date value dropdown
+        state.donViGiao = widget.provider.getPhongBanByID(
+          state.item?.idDonViGiao ?? '',
+        );
+
+        //load list staff by department
+        state.listStaffByDepartment =
+            widget.provider.dataNhanVien
+                .where((element) => element.phongBanId == state.donViGiao!.id)
+                .toList();
+
+        state.donViNhan = widget.provider.getPhongBanByID(
+          state.item?.idDonViNhan ?? '',
+        );
+        state.pPDonViGiao = widget.provider.getNhanVienByID(
+          state.item?.idPhoPhongDonViGiao ?? '',
+        );
+        state.tPDonViGiao = widget.provider.getNhanVienByID(
+          state.item?.idTruongPhongDonViGiao ?? '',
+        );
+        state.nguoiKyCapPhong = widget.provider.getNhanVienByID(
+          state.item?.idTrinhDuyetCapPhong ?? '',
+        );
+        state.nguoiKyGiamDoc = widget.provider.getNhanVienByID(
+          state.item?.idTrinhDuyetGiamDoc ?? '',
+        );
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          state.item?.idDonViDeNghi ?? '',
+        );
+        state.nguoiDeNghi = widget.provider.getNhanVienByID(
+          state.item?.idNguoiDeNghi ?? '',
+        );
+
+        // Initialize selected file if available
+        state.selectedFileName = state.item?.tenFile;
+        state.selectedFilePath = state.item?.duongDanFile;
+        state.isNguoiLapPhieuKyNhay = state.item?.nguoiLapPhieuKyNhay ?? false;
+        state.isQuanTrongCanXacNhan = state.item?.quanTrongCanXacNhan ?? false;
+        state.isPhoPhongXacNhan = state.item?.phoPhongXacNhan ?? false;
+        state.proposingUnit = state.item?.tenDonViDeNghi;
+
+        // Lưu snapshot chi tiết ban đầu để so sánh
+        state.initialDetails = List<ChiTietDieuDongTaiSan>.from(
+          state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
+        );
+
+        state.listNewDetails = List<ChiTietDieuDongTaiSan>.from(
+          state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
+        );
+        state.controllersInitialized = true;
+      } else {
+        controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
+          'SCT-************',
+        );
+        controllers.controllerSubject.text = '';
+        controllers.controllerDocumentName.text = '';
+        controllers.controllerDeliveringUnit.text = '';
+        controllers.controllerReceivingUnit.text = '';
+        controllers.controllerRequester.text = '';
+        controllers.controllerDepartmentApproval.text = '';
+        controllers.controllerEffectiveDate.text = '';
+        controllers.controllerEffectiveDateTo.text = '';
+        controllers.controllerApprover.text = '';
+        controllers.controllerDeliveryLocation.text = '';
+        controllers.controllerProposingUnit.text = '';
+
+        state.controllersInitialized = false;
+        state.selectedFileName = null;
+        state.selectedFilePath = null;
+        state.isNguoiLapPhieuKyNhay = false;
+        state.isQuanTrongCanXacNhan = false;
+        state.isPhoPhongXacNhan = false;
+        state.donViGiao = null;
+        state.donViNhan = null;
+        state.donViDeNghi = null;
+        state.nguoiDeNghi = widget.provider.getNhanVienByID(
+          widget.provider.userInfo?.tenDangNhap ?? '',
+        );
+        state.tPDonViGiao = null;
+        state.pPDonViGiao = null;
+        state.nguoiKyCapPhong = null;
+        state.nguoiKyGiamDoc = null;
+      }
+
+      if (state.proposingUnit != null &&
+          state.proposingUnit!.isNotEmpty &&
+          !state.controllersInitialized) {
+        controllers.controllerProposingUnit.text = state.proposingUnit!;
+      }
+
+      // Reset các biến trạng thái
+      state.isNguoiLapPhieuKyNhay = state.item?.nguoiLapPhieuKyNhay ?? false;
+      state.isQuanTrongCanXacNhan = state.item?.quanTrongCanXacNhan ?? false;
+      state.isPhoPhongXacNhan = state.item?.phoPhongXacNhan ?? false;
+      state.proposingUnit = state.item?.tenDonViDeNghi;
+
+      // Reset file upload
+      state.selectedFileName = state.item?.tenFile;
+      state.selectedFilePath = state.item?.duongDanFile;
+
+      validation.clearValidationErrors();
+
+      state.controllersInitialized = false;
+
+      state.isUploading = false;
+      state.isRefreshing = false;
+    });
   }
 }

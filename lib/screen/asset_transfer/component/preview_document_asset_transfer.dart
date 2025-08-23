@@ -57,7 +57,7 @@ Widget previewDocumentAssetTransfer({
           ),
         ),
         SizedBox(width: 8),
-        Icon(Icons.visibility, color: ColorValue.link, size: 18),
+        Icon(Icons.visibility, color: isDisabled ? Colors.grey : ColorValue.link, size: 18),
       ],
     ),
   );
@@ -70,12 +70,9 @@ previewDocument({
   bool isShowKy = true,
 }) {
   UserInfoDTO userInfo = provider.userInfo!;
-  log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
   String tenFile = path.basename(nhanVien.chuKyNhay.toString());
   String tenFileThuong = path.basename(nhanVien.chuKyThuong.toString());
-  log('nhanVien.chuKy: ${nhanVien.chuKyNhay}');
-  log('nhanVien.chukythuong: ${nhanVien.chuKyThuong}');
   String urlNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
   String urlThuong = '${Config.baseUrl}/api/upload/download/$tenFileThuong';
   return showDialog(
@@ -96,12 +93,15 @@ previewDocument({
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
             isShowKy: isShowKy,
+            isKyNhay: nhanVien.kyNhay ?? false,
+            isKyThuong: nhanVien.kyThuong ?? false,
+            isKySo: nhanVien.kySo ?? false,
             eventSignature: () {
               final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(
                 context,
               );
               assetHandoverBloc.add(
-                UpdateSigningStatusEvent(context, item.id.toString()),
+                UpdateSigningStatusEvent(context, item.id.toString(), userInfo.tenDangNhap),
               );
             },
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 import '../../model/chi_tiet_dieu_dong_tai_san.dart';
@@ -79,7 +80,7 @@ abstract class AssetHandoverColumns {
     );
   }
 
-  static Widget buildActions(BuildContext context, DieuDongTaiSanDto item) {
+  static Widget buildActions(BuildContext context, AssetHandoverDto item) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -151,7 +152,7 @@ abstract class AssetHandoverColumns {
     );
   }
 
-  static void showDocument(BuildContext context, DieuDongTaiSanDto item) {
+  static void showDocument(BuildContext context, AssetHandoverDto item) {
     // Tạo data với thông tin menu selection
     Map<String, dynamic> navigationData = {
       'AssetHandoverDto': item,

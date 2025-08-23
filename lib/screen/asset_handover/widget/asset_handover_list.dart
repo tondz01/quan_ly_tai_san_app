@@ -444,31 +444,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               provider: widget.provider,
               isShowKy: false,
             );
-            // showDialog(
-            //   context: context,
-            //   barrierDismissible: true,
-            //   builder:
-            //       (context) => Padding(
-            //         padding: const EdgeInsets.only(
-            //           left: 24.0,
-            //           right: 24.0,
-            //           top: 16.0,
-            //           bottom: 16.0,
-            //         ),
-            //         child: CommonContract(
-            //           contractType: ContractPage.assetHandoverPage(
-            //             item,
-            //             widget.provider.dataDetailAssetMobilization,
-            //           ),
-            //           signatureList: [
-            //             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
-            //           ],
-            //           idTaiLieu: item.id.toString(),
-            //           idNguoiKy: userInfo.tenDangNhap,
-            //           tenNguoiKy: userInfo.hoTen,
-            //         ),
-            //       ),
-            // );
           }
         },
       ),
@@ -571,13 +546,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       case 1:
         return ColorValue.lightAmber;
       case 2:
-        return ColorValue.mediumGreen;
-      case 3:
         return ColorValue.lightBlue;
+      case 3:
+        return ColorValue.coral;
       case 4:
         return ColorValue.forestGreen;
-      case 5:
-        return ColorValue.coral;
       default:
         return ColorValue.darkGrey;
     }
@@ -595,15 +568,13 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       case 0:
         return 'Nháp';
       case 1:
-        return 'Sẵn sàng';
+        return 'Chờ xác nhận';
       case 2:
-        return 'Xác nhận';
+        return 'Chờ duyệt';
       case 3:
-        return 'Trình Duyệt';
+        return 'Hủy';
       case 4:
         return 'Hoàn thành';
-      case 5:
-        return 'Hủy';
       default:
         return '';
     }
