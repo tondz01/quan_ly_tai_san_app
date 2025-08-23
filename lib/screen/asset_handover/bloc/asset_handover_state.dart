@@ -52,12 +52,6 @@ class UpdateAssetHandoverSuccessState extends AssetHandoverState {
   List<Object> get props => [data];
 }
 
-class UpdateSigningStatusSuccessState extends AssetHandoverState {
-  const UpdateSigningStatusSuccessState();
-
-  @override
-  List<Object> get props => [];
-}
 
 class DeleteAssetHandoverSuccessState extends AssetHandoverState {
   final String data;
@@ -66,6 +60,21 @@ class DeleteAssetHandoverSuccessState extends AssetHandoverState {
 
   @override
   List<Object> get props => [data];
+}
+
+//Cập nhập trạng thái phiếu ký nội sinh success
+class UpdateSigningStatusSuccessState extends AssetHandoverState {
+  const UpdateSigningStatusSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class CancelAssetHandoverSuccessState extends AssetHandoverState {
+  const CancelAssetHandoverSuccessState();
+
+  @override
+  List<Object> get props => [];
 }
 
 class ErrorState extends AssetHandoverState {

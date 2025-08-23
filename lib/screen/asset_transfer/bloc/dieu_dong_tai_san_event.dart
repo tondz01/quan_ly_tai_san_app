@@ -75,6 +75,7 @@ class DeleteDieuDongEvent extends DieuDongTaiSanEvent {
   List<Object?> get props => [context, id];
 }
 
+//Cập nhập trạng thái phiếu ký nội sinh
 class UpdateSigningStatusEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
   final String id;
@@ -85,6 +86,8 @@ class UpdateSigningStatusEvent extends DieuDongTaiSanEvent {
   @override
   List<Object?> get props => [context, id, userId];
 }
+
+//Hủy phiếu ký nội sinh
 class CancelDieuDongTaiSanEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
   final String id;

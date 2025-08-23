@@ -19,6 +19,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     on<UpdateAssetHandoverEvent>(_updateAssetHandover);
     on<DeleteAssetHandoverEvent>(_deleteAssetHandover);
     on<UpdateSigningStatusEvent>(_updateSigningStatus);
+    on<CancelAssetHandoverEvent>(_cancelAssetHandover);
   }
 
   Future<void> _getListAssetHandover(GetListAssetHandoverEvent event, Emitter emit) async {
@@ -90,15 +91,39 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
   ) async {
     emit(AssetHandoverInitialState());
     emit(AssetHandoverLoadingState());
-    Map<String, dynamic> result = await AssetHandoverRepository().updateStateUserSignature(
+    Map<String, dynamic> result = await AssetHandoverRepository().updateState(
+      event.id,
       event.userId,
-      event.docId,
     );
     emit(AssetHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(UpdateSigningStatusSuccessState());
     } else {
       String msg = "Lỗi khi cập nhập trạng thái bàn giao ${result['message']}";
+      emit(
+        ErrorState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  // Bloc hủy phiếu ký nội sinh
+  Future<void> _cancelAssetHandover(
+    CancelAssetHandoverEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetHandoverInitialState());
+    emit(AssetHandoverLoadingState());
+    Map<String, dynamic> result = await AssetHandoverRepository().cancelAssetHandover(event.id);
+    emit(AssetHandoverLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CancelAssetHandoverSuccessState());
+    } else {
+      String msg =
+          "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
       emit(
         ErrorState(
           title: "notice",

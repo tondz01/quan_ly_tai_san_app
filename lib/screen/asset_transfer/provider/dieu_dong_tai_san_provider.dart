@@ -75,12 +75,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
   int get approveCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
-  int get rejectCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 7).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {

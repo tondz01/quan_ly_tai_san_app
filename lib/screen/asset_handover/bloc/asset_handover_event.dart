@@ -45,13 +45,25 @@ class DeleteAssetHandoverEvent extends AssetHandoverEvent {
   List<Object?> get props => [context, id];
 }
 
+//Cập nhập trạng thái phiếu ký nội sinh
 class UpdateSigningStatusEvent extends AssetHandoverEvent {
   final BuildContext context;
+  final String id;
   final String userId;
-  final String docId;
 
-  const UpdateSigningStatusEvent(this.context, this.userId, this.docId);
+  const UpdateSigningStatusEvent(this.context, this.id, this.userId);
 
   @override
-  List<Object?> get props => [context, userId, docId];
+  List<Object?> get props => [context, id, userId];
+}
+
+//Hủy phiếu ký nội sinh
+class CancelAssetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final String id;
+
+  const CancelAssetHandoverEvent(this.context, this.id);
+
+  @override
+  List<Object?> get props => [context, id];
 }

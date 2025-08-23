@@ -26,7 +26,6 @@ enum FilterStatus {
   confirmed('Xác nhận', ColorValue.mediumGreen),
   browser('Trình duyệt', ColorValue.lightBlue),
   approve('Duyệt', ColorValue.cyan),
-  reject('Từ chối', ColorValue.brightRed),
   cancel('Hủy', ColorValue.coral),
   complete('Hoàn thành', ColorValue.forestGreen);
 
@@ -58,7 +57,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
-  bool get isShowReject => _filterStatus[FilterStatus.reject] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
 
@@ -74,12 +72,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
   int get approveCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
-  int get rejectCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 7).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -210,18 +206,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.reject] == true &&
+            if (_filterStatus[FilterStatus.cancel] == true &&
                 (itemStatus == 5)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 6)) {
-              return true;
-            }
-
             if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 7)) {
+                (itemStatus == 6)) {
               return true;
             }
 
@@ -267,7 +258,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     FilterStatus.confirmed: false,
     FilterStatus.browser: false,
     FilterStatus.approve: false,
-    FilterStatus.reject: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
   };

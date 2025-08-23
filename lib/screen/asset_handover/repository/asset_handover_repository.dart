@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
@@ -34,6 +33,7 @@ class AssetHandoverRepository extends ApiBase {
         response.data,
         AssetHandoverDto.fromJson,
       );
+      log('message filteredData  result ${result}');
     } catch (e) {
       SGLog.error(
         "AssetHandoverRepository",
@@ -176,43 +176,63 @@ class AssetHandoverRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> updateStateUserSignature(
-    String userId,
-    String docId,
-  ) async {
+  //Cập nhập trạng thái phiếu ký nội sinh
+  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
-    // Map<String, dynamic> request = {'userId': userId, 'docId': docId};
-
     try {
-      final resp1 = await post(
-        '${EndPointAPI.ASSET_TRANSFER}/capnhatky/',
-        data: {'userId': userId, 'docId': docId},
-        options: Options(contentType: Headers.formUrlEncodedContentType),
+      final response = await post(
+        '${EndPointAPI.ASSET_TRANSFER}/capnhattrangthai?id=$id&userId=$idNhanVien',
       );
-      if (resp1.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-        result['status_code'] = resp1.statusCode;
-        return result;
-      }
-
-      final resp2 = await post(
-        '${EndPointAPI.ASSET_TRANSFER}/capnhattrangthai/$docId',
-      );
-      if (resp2.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-        result['status_code'] = resp2.statusCode;
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
         return result;
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] = {
-        'capnhatky': resp1.data,
-        'capnhattrangthai': resp2.data,
-      };
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
+        response.data,
+        AssetHandoverDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
     } catch (e) {
-      log('updateState error: $e');
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  //Hủy phiếu ký nội sinh
+  Future<Map<String, dynamic>> cancelAssetHandover(String id) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.ASSET_TRANSFER}/huytrangthai?id=$id',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
+        response.data,
+        AssetHandoverDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
 
     return result;

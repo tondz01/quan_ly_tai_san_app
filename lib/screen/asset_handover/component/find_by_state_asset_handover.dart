@@ -26,7 +26,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'all': provider.isShowAll,
       'draft': provider.isShowDraft,
       'ready': provider.isShowReady,
-      'confirm': provider.isShowConfirm,
       'browser': provider.isShowBrowser,
       'complete': provider.isShowComplete,
       'cancel': provider.isShowCancel,
@@ -37,10 +36,9 @@ class _FilterCheckboxes extends StatelessWidget {
       'all': provider.allCount,
       'draft': provider.draftCount,
       'ready': provider.readyCount,
-      'confirm': provider.confirmCount,
       'browser': provider.browserCount,
-      'complete': provider.completeCount,
       'cancel': provider.cancelCount,
+      'complete': provider.completeCount,
     };
 
     // Tạo map filter colors từ FilterStatus enum
@@ -48,10 +46,9 @@ class _FilterCheckboxes extends StatelessWidget {
       'all': FilterStatus.all.activeColor,
       'draft': FilterStatus.draft.activeColor,
       'ready': FilterStatus.ready.activeColor,
-      'confirm': FilterStatus.confirm.activeColor,
       'browser': FilterStatus.browser.activeColor,
-      'complete': FilterStatus.complete.activeColor,
       'cancel': FilterStatus.cancel.activeColor,
+      'complete': FilterStatus.complete.activeColor,
     };
 
     // Tạo options sử dụng FilterOptionBuilder
@@ -59,11 +56,10 @@ class _FilterCheckboxes extends StatelessWidget {
       options: [
         {'id': 'all', 'label': 'Tất cả'},
         {'id': 'draft', 'label': 'Nháp'},
-        {'id': 'ready', 'label': 'Sẵn sàng'},
-        {'id': 'confirm', 'label': 'Xác nhận'},
-        {'id': 'browser', 'label': 'Trình duyệt'},
-        {'id': 'complete', 'label': 'Hoàn thành'},
+        {'id': 'ready', 'label': 'Chờ xác nhận'},
+        {'id': 'browser', 'label': 'Chờ duyệt'},
         {'id': 'cancel', 'label': 'Hủy'},
+        {'id': 'complete', 'label': 'Hoàn thành'},
       ],
       filterStates: filterStates,
       filterCounts: filterCounts,
@@ -81,17 +77,14 @@ class _FilterCheckboxes extends StatelessWidget {
           case 'ready':
             status = FilterStatus.ready;
             break;
-          case 'confirm':
-            status = FilterStatus.confirm;
-            break;
           case 'browser':
             status = FilterStatus.browser;
             break;
-          case 'complete':
-            status = FilterStatus.complete;
-            break;
           case 'cancel':
             status = FilterStatus.cancel;
+            break;
+          case 'complete':
+            status = FilterStatus.complete;
             break;
         }
         

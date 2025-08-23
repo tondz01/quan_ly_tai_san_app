@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
@@ -258,7 +260,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
-
+    log('message filteredData ${widget.provider.dataPage}');
     return Row(
       children: [
         // if (url.isNotEmpty && isShowPreview) displayPreview(),

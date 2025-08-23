@@ -32,7 +32,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 
 import '../bloc/dieu_dong_tai_san_bloc.dart';
 import '../bloc/dieu_dong_tai_san_event.dart';
@@ -926,7 +925,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
         trangThai: trangThai,
       );
-      log('state.item!.trangThai 11: ${newRequest.trangThai}');
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {
         await _syncDetails(state.item!.id!);
@@ -978,7 +976,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         // }
         state.isEditing = false;
       }
-
+      log('message state.isEditing ${state.isEditing}');
       if (state.item != null) {
         controllers.controllerSoChungTu.text = state.item?.id ?? '';
         controllers.controllerSubject.text = state.item?.trichYeu ?? '';

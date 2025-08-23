@@ -25,6 +25,7 @@ Widget previewDocumentAssetHandover({
   required AssetHandoverProvider provider,
   required List<ChiTietDieuDongTaiSan> itemsDetail,
   bool isShowKy = true,
+  bool isDisabled = false,
 }) {
   return InkWell(
     onTap: () {
@@ -49,12 +50,12 @@ Widget previewDocumentAssetHandover({
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: ColorValue.link,
+              color: isDisabled ? Colors.grey : ColorValue.link,
             ),
           ),
         ),
         SizedBox(width: 8),
-        Icon(Icons.visibility, color: ColorValue.link, size: 18),
+        Icon(Icons.visibility, color:  isDisabled ? Colors.grey : ColorValue.link, size: 18),
       ],
     ),
   );
@@ -94,6 +95,9 @@ previewDocumentHandover({
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
             isShowKy: isShowKy,
+            isKyNhay: nhanVien.kyNhay ?? false,
+            isKyThuong: nhanVien.kyThuong ?? false,
+            isKySo: nhanVien.kySo ?? false,
             eventSignature: () {
               final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
                 context,
@@ -101,8 +105,8 @@ previewDocumentHandover({
               assetHandoverBloc.add(
                 UpdateSigningStatusEvent(
                   context,
-                  userInfo.tenDangNhap,
                   item.id.toString(),
+                  userInfo.tenDangNhap,
                 ),
               );
             },
