@@ -12,12 +12,13 @@ class AssetTransferState {
   bool _isUploading = false;
   bool isRefreshing = false;
   bool isNew = false;
+  bool _controllersInitialized = false;
 
   String? proposingUnit;
-  bool _controllersInitialized = false;
   String? _selectedFileName;
   String? _selectedFilePath;
-  String idCongTy = 'CT001';
+  String? messageEditing;
+
   int typeTransfer = 1;
   List<ChiTietDieuDongTaiSan> listNewDetails = [];
   List<ChiTietDieuDongTaiSan> _initialDetails = [];
@@ -50,7 +51,8 @@ class AssetTransferState {
   set selectedFilePath(String? value) => _selectedFilePath = value;
   set initialDetails(List<ChiTietDieuDongTaiSan> value) => _initialDetails = value;
 
-  void reset() {
+
+    void reset() {
     isEditing = false;
     isNguoiLapPhieuKyNhay = false;
     isQuanTrongCanXacNhan = false;

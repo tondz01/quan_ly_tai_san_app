@@ -409,7 +409,11 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               .where((element) => element.loai == typeToolAndMaterialTransfer)
               .where((item) {
                 final idSignatureGroup1 =
-                    [item.nguoiTao].whereType<String>().toList();
+                    [
+                      item.nguoiTao,
+                      item.idPhoPhongDonViGiao,
+                      item.idTruongPhongDonViGiao,
+                    ].whereType<String>().toList();
                 final idSignatureGroup2 =
                     [
                       item.idTrinhDuyetCapPhong,
@@ -522,6 +526,16 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
+    getDataAll(context);
+    notifyListeners();
+  }
+
+  void updateSigningTAMTStatusSuccess(
+    BuildContext context,
+    UpdateSigningTAMTStatusSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
     getDataAll(context);
     notifyListeners();
   }
@@ -642,6 +656,19 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _updatePagination();
 
       notifyListeners();
+    }
+  }
+
+  String getScreenTitle() {
+    switch (typeToolAndMaterialTransfer) {
+      case 1:
+        return 'Cấp phát tài sản';
+      case 2:
+        return 'Thu hồi tài sản';
+      case 3:
+        return 'Điều chuyển tài sản';
+      default:
+        return 'Quản lý tài sản';
     }
   }
 }

@@ -4,14 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
 import 'tool_and_material_transfer_event.dart'
-    show
-        CreateToolAndMaterialTransferEvent,
-        DeleteToolAndMaterialTransferEvent,
-        GetDataDropdownEvent,
-        GetListAssetEvent,
-        GetListToolAndMaterialTransferEvent,
-        ToolAndMaterialTransferEvent,
-        UpdateToolAndMaterialTransferEvent;
+    show CancelToolAndMaterialTransferEvent, CreateToolAndMaterialTransferEvent, DeleteToolAndMaterialTransferEvent, GetDataDropdownEvent, GetListAssetEvent, GetListToolAndMaterialTransferEvent, ToolAndMaterialTransferEvent, UpdateSigningStatusEvent, UpdateSigningTAMTStatusEvent, UpdateToolAndMaterialTransferEvent;
 import 'tool_and_material_transfer_state.dart';
 
 class ToolAndMaterialTransferBloc
@@ -23,6 +16,8 @@ class ToolAndMaterialTransferBloc
     on<CreateToolAndMaterialTransferEvent>(_createLenhDieuDong);
     on<UpdateToolAndMaterialTransferEvent>(_updateToolAndMaterialTransfer);
     on<DeleteToolAndMaterialTransferEvent>(_deleteToolAndMaterialTransfer);
+    on<UpdateSigningTAMTStatusEvent>(_updateSigningStatus);
+    on<CancelToolAndMaterialTransferEvent>(_cancelDieuDongTaiSan);
   }
 
   Future<void> _getListToolAndMaterialTransfer(
@@ -151,6 +146,55 @@ class ToolAndMaterialTransferBloc
       String msg = "Lỗi khi xóa lệnh điều động";
       emit(
         PutPostDeleteFailedState(title: "notice", code: result, message: msg),
+      );
+    }
+  }
+
+  //Update trạng thái biên bản
+  Future<void> _updateSigningStatus(
+    UpdateSigningTAMTStatusEvent event,
+    Emitter emit,
+  ) async {
+    emit(ToolAndMaterialTransferInitialState());
+    emit(ToolAndMaterialTransferLoadingState());
+    Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+        .updateState(event.id, event.userId);
+    emit(ToolAndMaterialTransferLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateSigningTAMTStatusSuccessState());
+    } else {
+      String msg =
+          "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
+      emit(
+        UpdateSigningTAMTStatusFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _cancelDieuDongTaiSan(
+    CancelToolAndMaterialTransferEvent event,
+    Emitter emit,
+  ) async {
+    emit(ToolAndMaterialTransferInitialState());
+    emit(ToolAndMaterialTransferLoadingState());
+    Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+        .cancelToolAndMaterialTransfer(event.id);
+    emit(ToolAndMaterialTransferLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CancelToolAndMaterialTransferSuccessState());
+    } else {
+      String msg =
+          "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
+      emit(
+        UpdateSigningTAMTStatusFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
       );
     }
   }

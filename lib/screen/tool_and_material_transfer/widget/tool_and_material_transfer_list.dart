@@ -11,9 +11,11 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
@@ -291,8 +293,11 @@ class _ToolAndMaterialTransferListState
                   widget.provider.onChangeDetailToolAndMaterialTransfer(item);
                 },
                 onSelectionChanged: (items) {
-                  listItemSelected.clear();
-                  listItemSelected = items;
+                  setState(() {
+                    listItemSelected.clear();
+                    listItemSelected = items;
+                  });
+                  log('message listItemSelected: ${listItemSelected.length}');
                 },
               ),
             ),
@@ -324,11 +329,11 @@ class _ToolAndMaterialTransferListState
                     ),
                   ),
                 ),
-                _buildActionKy(),
                 GestureDetector(
                   onTap: _showColumnDisplayPopup,
                   child: Icon(Icons.settings, color: ColorValue.link, size: 18),
                 ),
+                _buildActionKy(),
               ],
             ),
             SizedBox(height: 20),
@@ -372,10 +377,10 @@ class _ToolAndMaterialTransferListState
         onTap: () {
           if (listItemSelected.isNotEmpty) {
             ToolAndMaterialTransferDto? item = listItemSelected.first;
-            previewDocumentToolAndMaterial(
-              context: context,
-              item: item,
-              provider: widget.provider,
+            _handleSignDocument(
+              item,
+              widget.provider.userInfo!,
+              widget.provider,
             );
           }
         },
@@ -474,5 +479,96 @@ class _ToolAndMaterialTransferListState
         ),
       );
     }
+  }
+
+  void _handleSignDocument(
+    ToolAndMaterialTransferDto item,
+    UserInfoDTO userInfo,
+    ToolAndMaterialTransferProvider provider,
+  ) {
+    // Định nghĩa luồng ký theo thứ tự
+    final signatureFlow =
+        [
+              {
+                "id": item.nguoiTao,
+                "signed": true,
+                "label": "Người tạo",
+              },
+              {
+                "id": item.idTruongPhongDonViGiao,
+                "signed": item.truongPhongDonViGiaoXacNhan == true,
+                "label": "Trưởng phòng",
+              },
+              {
+                "id": item.idPhoPhongDonViGiao,
+                "signed": item.phoPhongDonViGiaoXacNhan == true,
+                "label": "Phó phòng Đơn vị giao",
+              },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trangThai != null && item.trangThai! >= 3,
+                "label": "Trình duyệt cấp phòng",
+              },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trangThai != null && item.trangThai! >= 3,
+                "label": "Giám đốc",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+
+    // Kiểm tra hoàn thành
+    if (item.trangThai == 6) {
+      AppUtility.showSnackBar(
+        context,
+        'Phiếu ký nội sinh này đã "Hoàn thành", không thể ký.',
+        isError: true,
+        textAlign: TextAlign.center,
+      );
+      return;
+    }
+
+    // Kiểm tra user có trong flow không
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    if (currentIndex == -1) {
+      AppUtility.showSnackBar(
+        context,
+        'Bạn không có quyền ký văn bản này',
+        isError: true,
+      );
+      return;
+    }
+    log('signatureFlow: ${signatureFlow.toString()}');
+    // Nếu đã ký rồi thì chặn
+    if (signatureFlow[currentIndex]["signed"] == true) {
+      AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
+      return;
+    }
+
+    // Kiểm tra tất cả các bước trước đã ký chưa
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+    if (previousNotSigned.isNotEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Nếu vượt qua tất cả check → mở preview để ký
+    previewDocumentToolAndMaterial(
+      context: context,
+      item: item,
+      provider: provider,
+    );
   }
 }

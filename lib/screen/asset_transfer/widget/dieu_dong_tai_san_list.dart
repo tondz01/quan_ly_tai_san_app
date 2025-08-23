@@ -17,7 +17,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_st
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
@@ -540,46 +539,53 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     UserInfoDTO userInfo,
     DieuDongTaiSanProvider provider,
   ) {
-    final idSignatureGroup1 =
+    // Định nghĩa luồng ký theo thứ tự
+    final signatureFlow =
         [
-          item.nguoiTao,
-          item.idPhoPhongDonViGiao,
-          item.idTruongPhongDonViGiao,
-        ].whereType<String>().toList();
-
-    final idSignatureGroup2 =
-        [
-          item.idTrinhDuyetCapPhong,
-          item.idTrinhDuyetGiamDoc,
-        ].whereType<String>().toList();
-
-    final allIdSignature = [...idSignatureGroup1, ...idSignatureGroup2];
-
-    // Kiểm tra trạng thái hoàn thành
-    if (item.trangThai == 6) {
+              {"id": item.nguoiTao, "signed": true, "label": "Người tạo"},
+              {
+                "id": item.idTruongPhongDonViGiao,
+                "signed": item.truongPhongDonViGiaoXacNhan == true,
+                "label": "Trưởng phòng Đơn vị giao",
+              },
+              {
+                "id": item.idPhoPhongDonViGiao,
+                "signed": item.phoPhongDonViGiaoXacNhan == true,
+                "label": "Phó phòng Đơn vị giao",
+              },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trangThai != null && item.trangThai! >= 3,
+                "label": "Trình duyệt cấp phòng",
+              },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trangThai != null && item.trangThai! >= 3,
+                "label": "Giám đốc",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    // Kiểm tra hoàn thành
+    if (item.trangThai == 6 || item.trangThai == 5) {
+      String title = widget.provider.getScreenTitle();
+      String message = item.trangThai == 5 ? 'Đã bị hủy' : 'Đã hoàn thành';
       AppUtility.showSnackBar(
         context,
-        'Biên bản này đã "Hoàn thành" không thể ký.',
+        'Phiếu $title này "$message", không thể ký.',
         isError: true,
         textAlign: TextAlign.center,
       );
       return;
     }
 
-    // Kiểm tra quyền ký theo thứ tự
-    if (idSignatureGroup2.contains(userInfo.tenDangNhap) &&
-        item.trangThai! < 3) {
-      AppUtility.showSnackBar(
-        context,
-        'Bạn chứa thể ký phần này do các đơn vị trước chưa ký. \nVui lòng đợi các đơn vị trước ký xong mới ký tiếp',
-        isError: true,
-        textAlign: TextAlign.center,
-      );
-      return;
-    }
-
-    // Kiểm tra quyền ký chung
-    if (!allIdSignature.contains(userInfo.tenDangNhap)) {
+    // Kiểm tra user có trong flow không
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    if (currentIndex == -1) {
       AppUtility.showSnackBar(
         context,
         'Bạn không có quyền ký văn bản này',
@@ -588,7 +594,28 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       return;
     }
 
-    // Mở preview document để ký
+    // Nếu đã ký rồi thì chặn
+    if (signatureFlow[currentIndex]["signed"] == true) {
+      log('signatureFlow: ${signatureFlow.toString()}');
+      AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
+      return;
+    }
+
+    // Kiểm tra tất cả các bước trước đã ký chưa
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+    if (previousNotSigned.isNotEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Nếu vượt qua tất cả check → mở preview để ký
     previewDocument(context: context, item: item, provider: provider);
   }
 }

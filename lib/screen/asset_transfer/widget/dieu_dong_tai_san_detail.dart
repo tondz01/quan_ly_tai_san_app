@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -30,8 +31,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 import '../bloc/dieu_dong_tai_san_bloc.dart';
 import '../bloc/dieu_dong_tai_san_event.dart';
@@ -87,13 +88,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   void initState() {
     super.initState();
     state.item = widget.provider.item;
-    _callGetListAssetHandover();
     state.isEditing = widget.isEditing;
     _refreshWidget();
 
-    if (state.item != null && state.item!.trangThai == 0) {
-      state.isEditing = true;
-    }
+    // if (state.item != null && state.item!.trangThai == 0) {
+    //   state.isEditing = true;
+    // }
     if (widget.isNew == true) {
       onReload();
     }
@@ -123,21 +123,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
   @override
   void dispose() {
-    // Giải phóng các controller
     controllers.dispose();
-
     for (final controller in contractTermsControllers.values) {
       controller.dispose();
     }
-
-    // Reset initialization flag
     state.controllersInitialized = false;
-
     super.dispose();
-  }
-
-  void findPhongBan(String? value) {
-    log('message');
   }
 
   List<Map<String, dynamic>> _normalizeDetails(
@@ -203,13 +194,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    log('screenWidth: $screenWidth');
-
     _checkAndRefreshWidget();
-
     if (state.item == null && !state.isRefreshing) {
-      log('item == null');
       onReload();
       state.isEditing = true;
       state.isRefreshing = true;
@@ -257,10 +243,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (state.isEditing)
-              Row(
-                children: [
-                  MaterialTextButton(
+            Row(
+              children: [
+                Visibility(
+                  visible: state.isEditing,
+                  child: MaterialTextButton(
                     text: 'Lưu',
                     icon: Icons.save,
                     backgroundColor: ColorValue.success,
@@ -269,43 +256,72 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                       _handleSave();
                     },
                   ),
-                  const SizedBox(width: 8),
-                  MaterialTextButton(
+                ),
+                const SizedBox(width: 8),
+                Visibility(
+                  visible: state.isEditing,
+                  child: MaterialTextButton(
                     text: 'Hủy',
                     icon: Icons.cancel,
                     backgroundColor: ColorValue.error,
                     foregroundColor: Colors.white,
                     onPressed: () {
-                      // Confirm before canceling if there are changes
-                      showDialog(
-                        context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              title: Text('Xác nhận hủy'),
-                              content: Text(
-                                'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed:
-                                      () => Navigator.pop(
-                                        context,
-                                      ), // Close dialog
-                                  child: Text('Không'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context); // Close dialog
-                                  },
-                                  child: Text('Có'),
-                                ),
-                              ],
-                            ),
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title:
+                            'Xác nhận hủy tạo phiếu ${widget.provider.getScreenTitle()}',
+                        cancelText: 'Không',
+                        confirmText: 'Có',
+                        message:
+                            'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
+                        onCancel: () {
+                          // Navigator.pop(context); // Close dialog
+                        },
+                        onConfirm: () {
+                          widget.provider.onCloseDetail(context);
+                          // Navigator.pop(context); // Close dialog
+                        },
                       );
                     },
                   ),
-                ],
-              ),
+                ),
+                Visibility(
+                  visible: state.item != null && ![0, 5, 6].contains(state.item!.trangThai),
+                  child: MaterialTextButton(
+                    text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
+                    icon: Icons.cancel,
+                    backgroundColor: ColorValue.error,
+                    foregroundColor: Colors.white,
+                    onPressed: () {
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xác nhận hủy phiếu',
+                        cancelText: 'Không',
+                        confirmText: 'Có, hủy phiếu',
+                        message:
+                            'Bạn có chắc chắn muốn hủy phiếu ${widget.provider.getScreenTitle()} này không?',
+                        onCancel: () {},
+                        onConfirm: () {
+                          widget.provider.onCloseDetail(context);
+                          final assetHandoverBloc =
+                              BlocProvider.of<DieuDongTaiSanBloc>(context);
+                          assetHandoverBloc.add(
+                            CancelDieuDongTaiSanEvent(
+                              context,
+                              state.item!.id.toString(),
+                            ),
+                          );
+                          // Navigator.pop(context); // Close dialog
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
             const SizedBox(width: 5),
             SgIndicator(
               steps: [
@@ -552,7 +568,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             fieldName: 'pPDonViNhan',
                             validationErrors: validation.validationErrors,
                             onChanged: (value) {
-                              log('pPDonViNhan selected: $value');
                               setState(() {
                                 state.pPDonViGiao = value;
                               });
@@ -757,22 +772,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
   }
 
-  void _callGetListAssetHandover() {
-    try {
-      final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
-      assetHandoverBloc.add(
-        GetListDieuDongTaiSanEvent(context, state.typeTransfer, state.idCongTy),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   LenhDieuDongRequest _createDieuDongRequest(int type, int state) {
     return LenhDieuDongRequest(
       id: controllers.controllerSoChungTu.text,
@@ -915,7 +914,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         widget.type,
         state.item!.trangThai ?? 0,
       );
-      request.copyWith(
+      int trangThai = state.item!.trangThai == 5 ? 1 : state.item!.trangThai!;
+      LenhDieuDongRequest newRequest = request.copyWith(
         truongPhongDonViGiaoXacNhan:
             state.item!.truongPhongDonViGiaoXacNhan ?? false,
         phoPhongDonViGiaoXacNhan: state.item!.phoPhongDonViGiaoXacNhan ?? false,
@@ -924,14 +924,16 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         trinhDuyetGiamDocXacNhan: state.item!.trinhDuyetGiamDocXacNhan ?? false,
         ngayKy: state.item!.ngayKy ?? DateTime.now().toIso8601String(),
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
+        trangThai: trangThai,
       );
+      log('state.item!.trangThai 11: ${newRequest.trangThai}');
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {
         await _syncDetails(state.item!.id!);
       }
       if (mounted) {
         context.read<DieuDongTaiSanBloc>().add(
-          UpdateDieuDongEvent(context, request, state.item!.id!),
+          UpdateDieuDongEvent(context, newRequest, state.item!.id!),
         );
       }
     }
@@ -950,6 +952,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     return state;
   }
 
+  bool editable() {
+    return (state.item != null &&
+        (state.item!.trangThai == 0 || state.item!.trangThai == 5) &&
+        state.item!.nguoiTao == widget.provider.userInfo?.tenDangNhap);
+  }
+
   // Method để làm mới widget
   void _refreshWidget() {
     setState(() {
@@ -957,13 +965,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       state.nguoiLapPhieu = widget.provider.userInfo;
       // Reset item từ provider
       state.item = widget.provider.item;
-      log('message item: ${state.item}');
       state.isNew = state.item == null;
+      state.messageEditing = null;
 
       // Reset editing state
       state.isEditing = widget.isEditing;
-      if (state.item != null && state.item!.trangThai == 0) {
+      if (editable()) {
         state.isEditing = true;
+      } else {
+        // if (state.item!.nguoiTao != widget.provider.userInfo?.tenDangNhap) {
+        //   state.messageEditing = 'Bạn không có quyền chỉnh sửa phiếu này';
+        // }
+        state.isEditing = false;
       }
 
       if (state.item != null) {

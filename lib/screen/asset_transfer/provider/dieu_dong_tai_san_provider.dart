@@ -663,4 +663,17 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  String getScreenTitle() {
+    switch (typeDieuDongTaiSan) {
+      case 1:
+        return 'Cấp phát tài sản';
+      case 2:
+        return 'Thu hồi tài sản';
+      case 3:
+        return 'Điều chuyển tài sản';
+      default:
+        return 'Quản lý tài sản';
+    }
+  }
 }

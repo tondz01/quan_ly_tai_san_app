@@ -3,12 +3,15 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -68,16 +71,12 @@ previewDocumentToolAndMaterial({
   bool isShowKy = true,
 }) {
   UserInfoDTO userInfo = provider.userInfo!;
-  log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
   String tenFile = path.basename(nhanVien.chuKyNhay.toString());
   String tenFileKyThuong = path.basename(nhanVien.chuKyThuong.toString());
   String urlKyNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
   String urlKyThuong = '${Config.baseUrl}/api/upload/download/$tenFileKyThuong';
- 
-  log('nhanVien.kyNhay11: ${nhanVien.kyNhay}');
-  log('nhanVien.kyThuong11: ${nhanVien.kyThuong ?? false}');
-  log('nhanVien.kySo11: ${nhanVien.kySo ?? false}');
+
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -99,6 +98,17 @@ previewDocumentToolAndMaterial({
             isKyThuong: nhanVien.kyThuong ?? false,
             isKySo: nhanVien.kySo ?? false,
             isShowKy: isShowKy,
+            eventSignature: () {
+              final toolAndMaterialTransferBloc =
+                  BlocProvider.of<ToolAndMaterialTransferBloc>(context);
+              toolAndMaterialTransferBloc.add(
+                UpdateSigningTAMTStatusEvent(
+                  context,
+                  item.id.toString(),
+                  userInfo.tenDangNhap,
+                ),
+              );
+            },
           ),
         ),
   );

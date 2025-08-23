@@ -85,3 +85,12 @@ class UpdateSigningStatusEvent extends DieuDongTaiSanEvent {
   @override
   List<Object?> get props => [context, id, userId];
 }
+class CancelDieuDongTaiSanEvent extends DieuDongTaiSanEvent {
+  final BuildContext context;
+  final String id;
+
+  const CancelDieuDongTaiSanEvent(this.context, this.id);
+
+  @override
+  List<Object?> get props => [context, id];
+}

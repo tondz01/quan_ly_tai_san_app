@@ -74,3 +74,25 @@ class DeleteToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
   @override
   List<Object?> get props => [context, id];
 }
+
+class UpdateSigningTAMTStatusEvent extends ToolAndMaterialTransferEvent {
+  final BuildContext context;
+  final String id;
+  final String userId;
+
+  const UpdateSigningTAMTStatusEvent(this.context, this.id, this.userId);
+
+  @override
+  List<Object?> get props => [context, id, userId];
+}
+
+class CancelToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
+  final BuildContext context;
+  final String id;
+
+  const CancelToolAndMaterialTransferEvent(this.context, this.id);
+
+  @override
+  List<Object?> get props => [context, id];
+}
+

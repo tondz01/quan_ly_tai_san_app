@@ -5,7 +5,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:se_gay_components/common/sg_text.dart';
 
 import '../../model/chi_tiet_dieu_dong_tai_san.dart';
-import '../../model/dieu_dong_tai_san_dto.dart';
 
 abstract class AssetHandoverColumns {
   static Color getStatusColor(int status) {
