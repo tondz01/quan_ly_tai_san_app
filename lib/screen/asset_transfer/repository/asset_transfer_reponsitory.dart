@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -175,6 +176,8 @@ class AssetTransferRepository extends ApiBase {
       final response = await post(
         '${EndPointAPI.DIEU_DONG_TAI_SAN}/huy?id=$id',
       );
+      unawaited(delete('/api/chuky/$id'));
+
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

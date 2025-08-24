@@ -1,88 +1,96 @@
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
 class AssetDepreciationDto {
-  final String? id;
+  final String? soThe;
   final String? tenTaiSan;
+  final String? nguonVon;
+  final String? maTk;
+  final DateTime? ngayTinhKhao;
+  final int? thangKh;
   final double? nguyenGia;
-  final int? soKyKhauHao;
-  final int? soThangSuDung;
-  final int? soKyKhauHaoConLai;
-  final double? giaTriKhauHao;
-  final double? giaTriThanhLy;
-  final double? giaTriKhauHaoBanDau;
-  final int? kyKhauHaoBanDau;
-  final double? giaTriThanhLyCu; // Trùng tên GiaTriThanhLy trong DB
-  final String? idDuDan;
-  final String? tenDuAn;
-  final String? phuongPhapKhauHao; // as String per request
-  final int? taiKhoanTaiSan;
-  final int? taiKhoanKhauHao;
-  final int? taiKhoanChiPhi;
-  final DateTime? ngayVaoSo;
-  final DateTime? ngaySuDung;
-  final bool? isActive;
+  final double? khauHaoBanDau;
+  final double? khauHaoPsdk;
+  final double? gtclBanDau;
+  final double? khauHaoPsck;
+  final double? gtclHienTai;
+  final double? khauHaoBinhQuan;
+  final double? soTien;
+  final double? chenhLech;
+  final double? khKyTruoc;
+  final double? clKyTruoc;
+  final double? hsdCkh;
+  final String? tkNo;
+  final String? tkCo;
+  final String? dtgt;
+  final String? dtth;
+  final String? kmcp;
+  final String? ghiChuKhao;
+  final String? userId;
+  final DateTime? userTime;
   final List<ChildAssetDto>? childAssets;
 
   const AssetDepreciationDto({
-    this.id,
+    this.soThe,
     this.tenTaiSan,
+    this.nguonVon,
+    this.maTk,
+    this.ngayTinhKhao,
+    this.thangKh,
     this.nguyenGia,
-    this.soKyKhauHao,
-    this.soThangSuDung,
-    this.soKyKhauHaoConLai,
-    this.giaTriKhauHao,
-    this.giaTriThanhLy,
-    this.giaTriKhauHaoBanDau,
-    this.kyKhauHaoBanDau,
-    this.giaTriThanhLyCu,
-    this.idDuDan,
-    this.tenDuAn,
-    this.phuongPhapKhauHao,
-    this.taiKhoanTaiSan,
-    this.taiKhoanKhauHao,
-    this.taiKhoanChiPhi,
-    this.ngayVaoSo,
-    this.ngaySuDung,
-    this.isActive,
+    this.khauHaoBanDau,
+    this.khauHaoPsdk,
+    this.gtclBanDau,
+    this.khauHaoPsck,
+    this.gtclHienTai,
+    this.khauHaoBinhQuan,
+    this.soTien,
+    this.chenhLech,
+    this.khKyTruoc,
+    this.clKyTruoc,
+    this.hsdCkh,
+    this.tkNo,
+    this.tkCo,
+    this.dtgt,
+    this.dtth,
+    this.kmcp,
+    this.ghiChuKhao,
+    this.userId,
+    this.userTime,
     this.childAssets,
   });
 
   factory AssetDepreciationDto.fromJson(Map<String, dynamic> json) {
-    bool? parseIsActive(dynamic value) {
-      if (value == null) return null;
-      if (value is bool) return value;
-      if (value is num) return value != 0;
-      final str = value.toString().toLowerCase();
-      if (str == 'true') return true;
-      if (str == 'false') return false;
-      return null;
-    }
-
     int? asInt(dynamic v) => (v is num) ? v.toInt() : int.tryParse(v?.toString() ?? '');
     double? asDouble(dynamic v) => (v is num) ? v.toDouble() : double.tryParse(v?.toString() ?? '');
     DateTime? asDate(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
 
     return AssetDepreciationDto(
-      id: json['id']?.toString(),
+      soThe: json['soThe']?.toString(),
       tenTaiSan: json['tenTaiSan']?.toString(),
+      nguonVon: json['nguonVon']?.toString(),
+      maTk: json['maTk']?.toString(),
+      ngayTinhKhao: asDate(json['ngayTinhKhao']),
+      thangKh: asInt(json['thangKh']),
       nguyenGia: asDouble(json['nguyenGia']),
-      soKyKhauHao: asInt(json['soKyKhauHao']),
-      soThangSuDung: asInt(json['soThangSuDung']),
-      soKyKhauHaoConLai: asInt(json['soKyKhauHaoConLai']),
-      giaTriKhauHao: asDouble(json['giaTriKhauHao']),
-      giaTriThanhLy: asDouble(json['giaTriThanhLy']),
-      giaTriKhauHaoBanDau: asDouble(json['giaTriKhauHaoBanDau']),
-      kyKhauHaoBanDau: asInt(json['kyKhauHaoBanDau']),
-      giaTriThanhLyCu: asDouble(json['giaTriThanhLyCu']),
-      idDuDan: json['idDuDan']?.toString(),
-      tenDuAn: json['tenDuAn']?.toString(),
-      phuongPhapKhauHao: json['phuongPhapKhauHao']?.toString(),
-      taiKhoanTaiSan: asInt(json['taiKhoanTaiSan']),
-      taiKhoanKhauHao: asInt(json['taiKhoanKhauHao']),
-      taiKhoanChiPhi: asInt(json['taiKhoanChiPhi']),
-      ngayVaoSo: asDate(json['ngayVaoSo']),
-      ngaySuDung: asDate(json['ngaySuDung']),
-      isActive: parseIsActive(json['isActive']),
+      khauHaoBanDau: asDouble(json['khauHaoBanDau']),
+      khauHaoPsdk: asDouble(json['khauHaoPsdk']),
+      gtclBanDau: asDouble(json['gtclBanDau']),
+      khauHaoPsck: asDouble(json['khauHaoPsck']),
+      gtclHienTai: asDouble(json['gtclHienTai']),
+      khauHaoBinhQuan: asDouble(json['khauHaoBinhQuan']),
+      soTien: asDouble(json['soTien']),
+      chenhLech: asDouble(json['chenhLech']),
+      khKyTruoc: asDouble(json['khKyTruoc']),
+      clKyTruoc: asDouble(json['clKyTruoc']),
+      hsdCkh: asDouble(json['hsdCkh']),
+      tkNo: json['tkNo']?.toString(),
+      tkCo: json['tkCo']?.toString(),
+      dtgt: json['dtgt']?.toString(),
+      dtth: json['dtth']?.toString(),
+      kmcp: json['kmcp']?.toString(),
+      ghiChuKhao: json['ghiChuKhao']?.toString(),
+      userId: json['userId']?.toString(),
+      userTime: asDate(json['userTime']),
       childAssets: json['childAssets'] != null
           ? (json['childAssets'] as List)
               .map((e) => ChildAssetDto.fromJson(e))
@@ -93,26 +101,32 @@ class AssetDepreciationDto {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'soThe': soThe,
       'tenTaiSan': tenTaiSan,
+      'nguonVon': nguonVon,
+      'maTk': maTk,
+      'ngayTinhKhao': ngayTinhKhao?.toIso8601String(),
+      'thangKh': thangKh,
       'nguyenGia': nguyenGia,
-      'soKyKhauHao': soKyKhauHao,
-      'soThangSuDung': soThangSuDung,
-      'soKyKhauHaoConLai': soKyKhauHaoConLai,
-      'giaTriKhauHao': giaTriKhauHao,
-      'giaTriThanhLy': giaTriThanhLy,
-      'giaTriKhauHaoBanDau': giaTriKhauHaoBanDau,
-      'kyKhauHaoBanDau': kyKhauHaoBanDau,
-      'giaTriThanhLyCu': giaTriThanhLyCu,
-      'idDuDan': idDuDan,
-      'tenDuAn': tenDuAn,
-      'phuongPhapKhauHao': phuongPhapKhauHao,
-      'taiKhoanTaiSan': taiKhoanTaiSan,
-      'taiKhoanKhauHao': taiKhoanKhauHao,
-      'taiKhoanChiPhi': taiKhoanChiPhi,
-      'ngayVaoSo': ngayVaoSo?.toIso8601String(),
-      'ngaySuDung': ngaySuDung?.toIso8601String(),
-      'isActive': isActive,
+      'khauHaoBanDau': khauHaoBanDau,
+      'khauHaoPsdk': khauHaoPsdk,
+      'gtclBanDau': gtclBanDau,
+      'khauHaoPsck': khauHaoPsck,
+      'gtclHienTai': gtclHienTai,
+      'khauHaoBinhQuan': khauHaoBinhQuan,
+      'soTien': soTien,
+      'chenhLech': chenhLech,
+      'khKyTruoc': khKyTruoc,
+      'clKyTruoc': clKyTruoc,
+      'hsdCkh': hsdCkh,
+      'tkNo': tkNo,
+      'tkCo': tkCo,
+      'dtgt': dtgt,
+      'dtth': dtth,
+      'kmcp': kmcp,
+      'ghiChuKhao': ghiChuKhao,
+      'userId': userId,
+      'userTime': userTime?.toIso8601String(),
       'childAssets': childAssets?.map((e) => e.toJson()).toList(),
     };
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -218,6 +219,8 @@ class AssetHandoverRepository extends ApiBase {
       final response = await post(
         '${EndPointAPI.ASSET_TRANSFER}/huytrangthai?id=$id',
       );
+      unawaited(delete('/api/chuky/$id'));
+
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;

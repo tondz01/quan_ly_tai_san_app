@@ -15,7 +15,6 @@ import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category/role/provider/role_provide.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 

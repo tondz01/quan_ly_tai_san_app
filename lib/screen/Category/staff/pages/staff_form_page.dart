@@ -8,7 +8,6 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -54,7 +53,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _staffOwnerController;
   late TextEditingController _agreementUUIdController;
   late TextEditingController _pinController;
-  late TextEditingController _chucVuDTOController;
   bool _laQuanLy = false;
   bool isEditing = false;
   PhongBan? _phongBan;

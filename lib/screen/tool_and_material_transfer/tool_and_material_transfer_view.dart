@@ -246,7 +246,7 @@ class _ToolAndMaterialTransferViewState
         }
         if (state is CancelToolAndMaterialTransferSuccessState) {
           context.read<ToolAndMaterialTransferProvider>().onCloseDetail(context);
-          AppUtility.showSnackBar(context, 'Đa hủy phiếu thành cồng!');
+          AppUtility.showSnackBar(context, 'Đã hủy phiếu thành cồng!');
           context.read<ToolAndMaterialTransferProvider>().getDataAll(context);
         }
         if (state is UpdateSigningTAMTStatusFailedState) {
