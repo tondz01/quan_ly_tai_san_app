@@ -49,6 +49,7 @@ enum AppRoute {
   account(path: "/account", name: "account"),
   bienBanKiemKe(path: "/kiem-ke", name: 'kiem-ke'),
   role(path: "/role", name: 'role'),
+  bienBanKiemKeCcdc(path: "/kiem-ke-ccdc", name: 'kiem-ke-ccdc'),
   bienBanDoiChieu(path: "/doi-cheiu-kiem-ke", name: 'doi-cheiu-kiem-ke');
 
   final String path;

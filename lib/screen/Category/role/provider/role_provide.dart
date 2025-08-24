@@ -207,13 +207,11 @@ class RoleProvider with ChangeNotifier {
 
   void deleteRolesSuccess(BuildContext context, DeleteRoleSuccessState state) {
     _isLoading = false;
-    if (state.data == '1') {
-      onCloseDetail(context);
-      getListRoles(context);
+    onCloseDetail(context);
+    getListRoles(context);
 
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
-    }
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
   }
 
   void onChangeDetail(BuildContext context, ChucVu? item) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/sg_sidebar_horizontal.dart';
 
 /// Class đại diện cho một mục trong menu
@@ -20,7 +22,7 @@ class MenuItem {
     this.icon,
     this.reportSubItems = const [],
     this.projectGroups = const [],
-    this.route = '/',
+    this.route = '',
   });
 
   // Factory constructor tự động tạo index
@@ -53,8 +55,14 @@ class SubMenuItem {
   final IconData? icon;
   final String route;
   final String? extra;
-
-  const SubMenuItem({required this.label, this.icon, this.route = '/', this.extra});
+  final Function(BuildContext context)? callback;
+  const SubMenuItem({
+    required this.label,
+    this.icon,
+    this.route = '',
+    this.extra,
+    this.callback,
+  });
 }
 
 /// Class đại diện cho một nhóm các mục trong submenu
@@ -97,36 +105,79 @@ class AppMenuData {
       //   SubMenuGroup(title: 'Khấu hao tài sản', items: [SubMenuItem(label: 'Khấu hao tài sản', route: AppRoute.assetDepreciation.path)]),
       // ],
     ),
-    MenuItem(label: 'Quản lý CCDC - Vật tư', route: AppRoute.toolsAndSupplies.path),
+    MenuItem(
+      label: 'Quản lý CCDC - Vật tư',
+      route: AppRoute.toolsAndSupplies.path,
+    ),
     MenuItem(
       label: 'Điều động tài sản ',
       reportSubItems: [
-        SubMenuItem(label: 'Cấp phát tài sản', route: AppRoute.assetTransfer.path, extra: "1"),
-        SubMenuItem(label: 'Điều chuyển tài sản', route: AppRoute.assetTransfer.path, extra: "3"),
-        SubMenuItem(label: 'Thu hồi tài sản', route: AppRoute.assetTransfer.path, extra: "2"),
+        SubMenuItem(
+          label: 'Cấp phát tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "1",
+        ),
+        SubMenuItem(
+          label: 'Điều chuyển tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "3",
+        ),
+        SubMenuItem(
+          label: 'Thu hồi tài sản',
+          route: AppRoute.assetTransfer.path,
+          extra: "2",
+        ),
       ],
     ),
     MenuItem(
       label: 'Điều động CCDC - Vật tư',
       route: AppRoute.toolAndMaterialTransfer.path,
       reportSubItems: [
-        SubMenuItem(label: 'Cấp phát CCDC - vật tư', route: AppRoute.toolAndMaterialTransfer.path, extra: "1"),
-        SubMenuItem(label: 'Điều chuyển CCDC - vật tư', route: AppRoute.toolAndMaterialTransfer.path, extra: "3"),
-        SubMenuItem(label: 'Thu hồi CCDC - vật tư', route: AppRoute.toolAndMaterialTransfer.path, extra: "2"),
+        SubMenuItem(
+          label: 'Cấp phát CCDC - vật tư',
+          route: AppRoute.toolAndMaterialTransfer.path,
+          extra: "1",
+        ),
+        SubMenuItem(
+          label: 'Điều chuyển CCDC - vật tư',
+          route: AppRoute.toolAndMaterialTransfer.path,
+          extra: "3",
+        ),
+        SubMenuItem(
+          label: 'Thu hồi CCDC - vật tư',
+          route: AppRoute.toolAndMaterialTransfer.path,
+          extra: "2",
+        ),
       ],
     ),
     MenuItem(label: 'Bàn giao tài sản', route: AppRoute.assetHandover.path),
     MenuItem(
       label: 'Báo cáo',
       reportSubItems: [
-        SubMenuItem(label: "Báo cáo Cấp phát tài sản trong kỳ", route: AppRoute.allocationReport.path),
-        SubMenuItem(label: "Báo cáo Điều chuyển tài sản trong kỳ", route: AppRoute.transferReport.path),
-        SubMenuItem(label: "Báo cáo Thu hồi tài sản trong kỳ", route: AppRoute.recoveryReport.path),
-        SubMenuItem(label: 'Biên bản kiểm kê', route: AppRoute.bienBanKiemKe.path),
-        SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.bienBanDoiChieu.path),
-        SubMenuItem(label: 'Sổ tài sản cố định', route: AppRoute.fixedAssetRegister.path),
-        SubMenuItem(label: 'Sổ tài sản cố định thông tư 200', route: AppRoute.fixedAssetRegisterCircular200.path),
-        SubMenuItem(label: 'Sổ theo dõi', route: AppRoute.trackingRecord.path),
+        SubMenuItem(
+          label: "Báo cáo Cấp phát tài sản trong kỳ",
+          route: AppRoute.allocationReport.path,
+        ),
+        SubMenuItem(
+          label: "Báo cáo Điều chuyển tài sản trong kỳ",
+          route: AppRoute.transferReport.path,
+        ),
+        SubMenuItem(
+          label: "Báo cáo Thu hồi tài sản trong kỳ",
+          route: AppRoute.recoveryReport.path,
+        ),
+        SubMenuItem(
+          label: 'Biên bản kiểm kê',
+          route: AppRoute.bienBanKiemKe.path,
+        ),
+        SubMenuItem(
+          label: 'Biên bản kiểm kê CCDC',
+          route: AppRoute.bienBanKiemKeCcdc.path,
+        ),
+        // SubMenuItem(label: 'Biên bản đối chiếu kiểm kê', route: AppRoute.bienBanDoiChieu.path),
+        // SubMenuItem(label: 'Sổ tài sản cố định', route: AppRoute.fixedAssetRegister.path),
+        // SubMenuItem(label: 'Sổ tài sản cố định thông tư 200', route: AppRoute.fixedAssetRegisterCircular200.path),
+        // SubMenuItem(label: 'Sổ theo dõi', route: AppRoute.trackingRecord.path),
       ],
     ),
   ];
@@ -139,7 +190,12 @@ class AppMenuData {
     bool isActive,
     VoidCallback onTap,
   ) {
-    return SGSidebarSubItem(label: item.label, icon: item.icon, isActive: isActive, onTap: onTap);
+    return SGSidebarSubItem(
+      label: item.label,
+      icon: item.icon,
+      isActive: isActive,
+      onTap: onTap,
+    );
   }
 
   // Chuyển đổi SubMenuGroup thành SGSubItemGroup
@@ -158,7 +214,8 @@ class AppMenuData {
         return SGSidebarSubItem(
           label: group.items[itemIndex].label,
           icon: group.items[itemIndex].icon,
-          isActive: selectedIndex == parentIndex && selectedSubIndex == subIndex,
+          isActive:
+              selectedIndex == parentIndex && selectedSubIndex == subIndex,
           onTap: () => onTapCallback(parentIndex, subIndex),
         );
       }),

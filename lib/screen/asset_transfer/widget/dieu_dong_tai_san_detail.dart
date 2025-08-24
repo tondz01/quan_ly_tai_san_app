@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -32,6 +33,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart' show SGLog;
 
 import '../bloc/dieu_dong_tai_san_bloc.dart';
 import '../bloc/dieu_dong_tai_san_event.dart';
@@ -68,6 +70,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Uint8List? _selectedFileBytes;
   final Map<String, TextEditingController> contractTermsControllers = {};
   final List<DieuDongTaiSanDto> listAssetHandover = [];
+  PdfDocument? _document;
 
   bool _validateForm() {
     return validation.validateForm(
@@ -95,6 +98,27 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     // }
     if (widget.isNew == true) {
       onReload();
+    }
+  }
+
+  Future<void> _loadPdf(String path) async {
+    final document = await PdfDocument.openFile(path);
+    setState(() {
+      _document = document;
+    });
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
     }
   }
 
@@ -286,7 +310,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                   ),
                 ),
                 Visibility(
-                  visible: state.item != null && ![0, 5, 6].contains(state.item!.trangThai),
+                  visible:
+                      state.item != null &&
+                      ![0, 5, 6].contains(state.item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -680,6 +706,10 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     state.selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
 
+                    if (fileName != null) {
+                      _loadPdf(filePath!);
+                    }
+
                     if (validation.hasValidationError('document')) {
                       validation.removeValidationError('document');
                     }
@@ -688,8 +718,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 isUploading: state.isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
-                hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
-                allowedExtensions: ['pdf', 'docx'],
+                hintText: 'Định dạng hỗ trợ: .pdf',
+                allowedExtensions: ['pdf'],
               ),
 
               AssetTransferMovementTable(
@@ -739,6 +769,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 item: state.item ?? widget.provider.itemPreview,
                 provider: widget.provider,
                 isShowKy: false,
+                document: _document,
                 callBack: () {
                   setState(() {
                     _createDieuDong(widget.type, state.listNewDetails);
@@ -1050,6 +1081,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
         state.controllersInitialized = true;
+
+        _loadPdfNetwork(state.item?.duongDanFile ?? '');
       } else {
         controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
           'SCT-************',

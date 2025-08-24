@@ -134,6 +134,7 @@ class _HomeState extends State<Home> {
               () => setState(() {
                 _updateSelectedIndex(parentIndex, subIndex);
                 _popupManager.closeAllPopups();
+                subItem.callback?.call(context);
                 if (subItem.route.isNotEmpty) {
                   isItemOne = false;
                   context.go(subItem.route, extra: subItem.extra);

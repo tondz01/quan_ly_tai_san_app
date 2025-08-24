@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
@@ -18,10 +19,12 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_docu
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
@@ -52,11 +55,35 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'status',
     'actions',
   ];
+  List<DieuDongTaiSanDto> listAssetTransfer = [];
+
+  PdfDocument? _document;
+  DieuDongTaiSanDto? _selectedAssetTransfer;
 
   @override
   void initState() {
     super.initState();
     _initializeColumnOptions();
+
+    listAssetTransfer =
+        widget.provider.dataAssetTransfer
+            ?.where((element) => element.trangThai == 6)
+            .toList() ??
+        [];
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   void _initializeColumnOptions() {
@@ -380,21 +407,85 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
             AssetHandoverDto? item =
                 selectedItems.isNotEmpty ? selectedItems.first : null;
-            final idSignature =
+            final signatureFlow =
                 [
-                  item?.idDaiDiendonviBanHanhQD,
-                  item?.idDaiDienBenGiao,
-                  item?.idDaiDienBenNhan,
-                  item?.idDonViDaiDien,
-                ].whereType<String>().toList();
+                  {
+                    "id": item?.idDaiDiendonviBanHanhQD,
+                    "signed": item?.daXacNhan == true,
+                    "label": "Người tạo",
+                  },
+                  {
+                    "id": item?.idDaiDienBenGiao,
+                    "signed": item?.daiDienBenGiaoXacNhan == true,
+                    "label": "Trưởng phòng",
+                  },
+                  {
+                    "id": item?.idDaiDienBenNhan,
+                    "signed": item?.daiDienBenNhanXacNhan == true,
+                    "label": "Phó phòng Đơn vị giao",
+                  },
+                  {
+                    "id": item?.idDonViDaiDien,
+                    "signed": item?.donViDaiDienXacNhan == "0" ? false : true,
+                    "label": "Trình duyệt cấp phòng",
+                  },
+                ].toList();
 
-            if (idSignature.contains(userInfo?.tenDangNhap)) {
-              previewDocumentHandover(
-                context: context,
-                item: item!,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-                provider: widget.provider,
+            if (signatureFlow.isNotEmpty) {
+              // Kiểm tra user có trong flow không
+              final currentIndex = signatureFlow.indexWhere(
+                (s) => s["id"] == userInfo?.tenDangNhap,
               );
+              log('currentIndex: $currentIndex');
+              if (currentIndex == -1) {
+                AppUtility.showSnackBar(
+                  context,
+                  'Bạn không có quyền ký văn bản này',
+                  isError: true,
+                );
+                return;
+              }
+              if (signatureFlow[currentIndex]["signed"] == true) {
+                AppUtility.showSnackBar(
+                  context,
+                  'Bạn đã ký rồi.',
+                  isError: true,
+                );
+                return;
+              }
+              log('signatureFlow: ${signatureFlow.toString()}');
+              final matchingTransfers = listAssetTransfer.where(
+                (x) => x.soQuyetDinh == item!.quyetDinhDieuDongSo,
+              );
+
+              _selectedAssetTransfer =
+                  matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
+
+              if (_selectedAssetTransfer == null ||
+                  _selectedAssetTransfer!.tenFile!.isEmpty) {
+                if (mounted) {
+                  previewDocumentHandover(
+                    context: context,
+                    item: item!,
+                    itemsDetail:
+                        widget.provider.dataDetailAssetMobilization ?? [],
+                    provider: widget.provider,
+                  );
+                }
+                return;
+              }
+              _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+                if (mounted) {
+                  previewDocumentHandover(
+                    context: context,
+                    item: item!,
+                    itemsDetail:
+                        widget.provider.dataDetailAssetMobilization ?? [],
+                    provider: widget.provider,
+                    document: _document,
+                  );
+                }
+              });
             } else {
               AppUtility.showSnackBar(
                 context,
@@ -434,19 +525,45 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         onPressed: () async {
           isShowPreview = true;
           await widget.provider.getListDetailAssetMobilization(
-            item.lenhDieuDong ?? '',
+            item.quyetDinhDieuDongSo ?? '',
           );
 
-          if (mounted) {
-            // UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
-            previewDocumentHandover(
-              context: context,
-              item: item,
-              itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-              provider: widget.provider,
-              isShowKy: false,
-            );
+          final matchingTransfers = listAssetTransfer.where(
+            (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
+          );
+
+          _selectedAssetTransfer =
+              matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
+
+          if (_selectedAssetTransfer == null ||
+              _selectedAssetTransfer!.tenFile!.isEmpty) {
+            if (mounted) {
+              SGLog.debug(
+                "AssetHandoverList",
+                "No document found for item: ${item.id}",
+              );
+              previewDocumentHandover(
+                context: context,
+                item: item,
+                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                provider: widget.provider,
+                isShowKy: false,
+              );
+            }
+            return;
           }
+          _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+            if (mounted) {
+              previewDocumentHandover(
+                context: context,
+                item: item,
+                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                provider: widget.provider,
+                isShowKy: false,
+                document: _document,
+              );
+            }
+          });
         },
       ),
       ActionButtonConfig(

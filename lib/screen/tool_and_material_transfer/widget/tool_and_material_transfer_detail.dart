@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -27,6 +28,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../bloc/tool_and_material_transfer_bloc.dart';
 import '../bloc/tool_and_material_transfer_event.dart';
@@ -121,6 +123,7 @@ class _ToolAndMaterialTransferDetailState
   final List<ToolAndMaterialTransferDto> listAssetHandover = [];
 
   Map<String, bool> _validationErrors = {};
+  PdfDocument? _document;
 
   bool _validateForm() {
     Map<String, bool> newValidationErrors = {};
@@ -182,6 +185,27 @@ class _ToolAndMaterialTransferDetailState
       isEditing = true;
     }
     onReload();
+  }
+
+  Future<void> _loadPdf(String path) async {
+    final document = await PdfDocument.openFile(path);
+    setState(() {
+      _document = document;
+    });
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   @override
@@ -283,6 +307,8 @@ class _ToolAndMaterialTransferDetailState
         );
 
         _controllersInitialized = true;
+
+        _loadPdfNetwork(item?.duongDanFile ?? '');
       } else {
         controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
           'SCT-************',
@@ -904,7 +930,9 @@ class _ToolAndMaterialTransferDetailState
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
-
+                    if (fileName != null) {
+                      _loadPdf(filePath!);
+                    }
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');
                     }
@@ -914,8 +942,8 @@ class _ToolAndMaterialTransferDetailState
                 isUploading: _isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
-                hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
-                allowedExtensions: ['pdf', 'docx'],
+                hintText: 'Định dạng hỗ trợ: .pdf',
+                allowedExtensions: ['pdf'],
               ),
 
               // const SizedBox(height: 20),
@@ -969,6 +997,7 @@ class _ToolAndMaterialTransferDetailState
                 item: item ?? itemPreview,
                 provider: widget.provider,
                 isDisabled: listNewDetails.isEmpty,
+                document: _document,
               ),
             ],
           ),

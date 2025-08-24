@@ -1,9 +1,6 @@
-// ignore_for_file: deprecated_member_use
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
@@ -27,6 +24,7 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
@@ -50,7 +48,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   UserInfoDTO? userInfo;
 
   final List<AssetHandoverDto> listAssetHandover = [];
-
+  PdfDocument? _document;
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
@@ -70,6 +68,20 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     userInfo = AccountHelper.instance.getUserInfo();
     _initializeColumnOptions();
     _callGetListAssetHandover();
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   void _initializeColumnOptions() {
@@ -462,13 +474,27 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         iconColor: ColorValue.cyan,
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
-        onPressed: () {
-          previewDocument(
-            context: context,
-            item: item,
-            provider: widget.provider,
-            isShowKy: false,
-          );
+        onPressed: () async {
+          if (item.tenFile == null || item.tenFile!.isEmpty) {
+            previewDocument(
+              context: context,
+              item: item,
+              provider: widget.provider,
+              isShowKy: false,
+              document: _document,
+            );
+          } else {
+            await _loadPdfNetwork(item.tenFile!);
+            if (mounted) {
+              previewDocument(
+                context: context,
+                item: item,
+                provider: widget.provider,
+                isShowKy: false,
+                document: _document,
+              );
+            }
+          }
         },
       ),
       ActionButtonConfig(
@@ -538,7 +564,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     DieuDongTaiSanDto item,
     UserInfoDTO userInfo,
     DieuDongTaiSanProvider provider,
-  ) {
+  ) async {
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
@@ -596,7 +622,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
 
     // Nếu đã ký rồi thì chặn
     if (signatureFlow[currentIndex]["signed"] == true) {
-      log('signatureFlow: ${signatureFlow.toString()}');
       AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
       return;
     }
@@ -616,6 +641,25 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     }
 
     // Nếu vượt qua tất cả check → mở preview để ký
-    previewDocument(context: context, item: item, provider: provider);
+    if (item.tenFile == null || item.tenFile!.isEmpty) {
+      previewDocument(
+        context: context,
+        item: item,
+        provider: widget.provider,
+        isShowKy: false,
+        document: _document,
+      );
+    } else {
+      await _loadPdfNetwork(item.tenFile!);
+      if (mounted) {
+        previewDocument(
+          context: context,
+          item: item,
+          provider: widget.provider,
+          isShowKy: false,
+          document: _document,
+        );
+      }
+    }
   }
 }

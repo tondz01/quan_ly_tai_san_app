@@ -10,21 +10,22 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dar
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/providers/departments_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-class BienBanKiemKeScreen extends StatefulWidget {
-  const BienBanKiemKeScreen({super.key});
+class BienBanKiemKeCcdcScreen extends StatefulWidget {
+  const BienBanKiemKeCcdcScreen({super.key});
 
   @override
-  State<BienBanKiemKeScreen> createState() => _BienBanKiemKeScreenState();
+  State<BienBanKiemKeCcdcScreen> createState() =>
+      _BienBanKiemKeCcdcScreenState();
 }
 
-class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
-  List<InventoryMinutes> _list = [];
+class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
+  List<CCDCInventoryReport> _list = [];
   final ReportRepository _repo = ReportRepository();
   final GlobalKey _contractKey = GlobalKey();
 
@@ -159,13 +160,13 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
       }
     }
 
-    final result = await _repo.getInventoryMinutes(
+    final result = await _repo.getInventoryReportToolsSupplies(
       donVi!.id!,
       formattedDate,
     );
 
     setState(() {
-      _list = (result['data'] as List).cast<InventoryMinutes>();
+      _list = (result['data'] as List).cast<CCDCInventoryReport>();
       _isLoading = false;
     });
   }
@@ -221,7 +222,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                     child: Column(
                       children: [
                         SGText(
-                          text: 'Biên bản kiểm kê',
+                          text: 'Biên bản kiểm kê CCDC',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -311,8 +312,8 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                               scale: 1.2,
                               maxWidth: 800,
                               maxHeight: 800 * (297 / 210),
-                              child: BienBanKiemKePage(
-                                inventoryMinutes: _list,
+                              child: BienBanKiemKeCcdcPage(
+                                ccdcInventory: _list,
                                 denNgay: formatDate(controllerImportDate.text),
                                 tenDonVi: donVi?.tenPhongBan ?? '',
                               ),

@@ -207,39 +207,33 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     BuildContext context,
     CreateToolsAndSuppliesSuccessState state,
   ) {
-    if (state.data == '1') {
       onCloseDetail(context);
       getListToolsAndSupplies(context);
 
       // Close input panel if open
       AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
-    }
   }
 
   void updateToolsAndSuppliesSuccess(
     BuildContext context,
     UpdateToolsAndSuppliesSuccessState state,
   ) {
-    if (state.data == '1') {
       onCloseDetail(context);
       getListToolsAndSupplies(context);
 
       // Close input panel if open
       AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
-    }
   }
 
   void deleteToolsAndSuppliesSuccess(
     BuildContext context,
     DeleteToolsAndSuppliesSuccessState state,
   ) {
-    if (state.data == '1') {
       onCloseDetail(context);
       getListToolsAndSupplies(context);
 
       // Close input panel if open
       AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
-    }
   }
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {
