@@ -17,7 +17,7 @@ import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class CommonContract extends StatefulWidget {
-  final Widget contractType;
+  final List<Widget> contractPages; // Danh sách trang động
   final List<String> signatureList;
   final String idTaiLieu;
   final String idNguoiKy;
@@ -30,7 +30,7 @@ class CommonContract extends StatefulWidget {
 
   const CommonContract({
     super.key,
-    required this.contractType,
+    required this.contractPages,
     required this.signatureList,
     required this.idTaiLieu,
     required this.idNguoiKy,
@@ -50,7 +50,10 @@ class _CommonContractState extends State<CommonContract> {
   final GlobalKey _contractKey = GlobalKey();
   final List<DraggableImage> images = [];
   bool _submitting = false;
-
+  
+  // Danh sách dynamic keys cho các trang
+  late List<GlobalKey> _pageKeys;
+  
   bool _isDigital = false;
 
   // ===== Helpers UI =====
@@ -140,6 +143,8 @@ class _CommonContractState extends State<CommonContract> {
   @override
   void initState() {
     super.initState();
+    // Khởi tạo keys cho từng trang
+    _pageKeys = List.generate(widget.contractPages.length, (index) => GlobalKey());
     _loadSignatures();
   }
 
@@ -199,79 +204,114 @@ class _CommonContractState extends State<CommonContract> {
 
     try {
       final pdf = pw.Document();
-      final boundary =
-          _contractKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary != null && boundary.debugNeedsPaint == false) {
-        // Ẩn viền chọn trước khi chụp (bỏ chọn tất cả)
-        final selectedStates =
-            images.map((img) {
-              final state =
-                  (img.key as GlobalKey).currentState as _DraggableImageState?;
-              return state?.isSelected ?? false;
-            }).toList();
-        for (var img in images) {
-          final state =
-              (img.key as GlobalKey).currentState as _DraggableImageState?;
-          if (state != null && state.isSelected) {
-            state.setState(() => state.isSelected = false);
-          }
+      
+      // Ẩn viền chọn trước khi chụp (bỏ chọn tất cả)
+      final selectedStates = images.map((img) {
+        final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
+        return state?.isSelected ?? false;
+      }).toList();
+      
+      for (var img in images) {
+        final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
+        if (state != null && state.isSelected) {
+          state.setState(() => state.isSelected = false);
         }
-        await Future.delayed(const Duration(milliseconds: 50));
+      }
+      await Future.delayed(const Duration(milliseconds: 50));
 
-        final image = await boundary.toImage(pixelRatio: 2.0);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        final pngBytes = byteData!.buffer.asUint8List();
+      // Xuất từng trang thành PDF page riêng biệt
+      for (int i = 0; i < _pageKeys.length; i++) {
+        final pageKey = _pageKeys[i];
+        final boundary = pageKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+        
+        if (boundary != null && boundary.debugNeedsPaint == false) {
+          final image = await boundary.toImage(pixelRatio: 2.0);
+          final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+          final pngBytes = byteData!.buffer.asUint8List();
 
-        // Kiểm tra kích thước ảnh
-        final imageWidth = image.width.toDouble();
-        final imageHeight = image.height.toDouble();
+          // Kiểm tra kích thước ảnh
+          final imageWidth = image.width.toDouble();
+          final imageHeight = image.height.toDouble();
 
-        if (imageWidth.isNaN ||
-            imageHeight.isNaN ||
-            imageWidth <= 0 ||
-            imageHeight <= 0) {
-          throw Exception(
-            'Kích thước ảnh không hợp lệ: ${imageWidth}x$imageHeight',
+          if (imageWidth.isNaN || imageHeight.isNaN || imageWidth <= 0 || imageHeight <= 0) {
+            throw Exception('Kích thước ảnh không hợp lệ trang ${i + 1}: ${imageWidth}x$imageHeight');
+          }
+
+          final imageProvider = pw.MemoryImage(pngBytes);
+          
+          // Lọc chữ ký thuộc trang này (dựa trên vị trí Y)
+          final pageHeight = 800 * (297 / 210); // Chiều cao A4Canvas
+          final pageSignatures = <DraggableImage>[];
+          
+          for (var img in images) {
+            final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
+            if (state != null) {
+              final signatureY = state.top;
+              final startY = i * pageHeight;
+              final endY = (i + 1) * pageHeight;
+              
+              // Kiểm tra chữ ký thuộc trang nào
+              if (signatureY >= startY && signatureY < endY) {
+                pageSignatures.add(img);
+              }
+            }
+          }
+          
+          pdf.addPage(
+            pw.Page(
+              pageFormat: PdfPageFormat.a4.portrait,
+              margin: pw.EdgeInsets.zero,
+              build: (context) => pw.Stack(
+                children: [
+                  // Nội dung trang
+                  pw.SizedBox.expand(
+                    child: pw.FittedBox(
+                      fit: pw.BoxFit.fill,
+                      child: pw.Image(imageProvider),
+                    ),
+                  ),
+                  // Thêm chữ ký vào đúng vị trí (nếu có)
+                  ...pageSignatures.map((img) {
+                    final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
+                    if (state != null) {
+                      // Tính toán vị trí tương đối cho từng trang
+                      double relativeY = state.top - (i * pageHeight);
+                      
+                      return pw.Positioned(
+                        left: state.left * (PdfPageFormat.a4.width / 800),
+                        top: relativeY * (PdfPageFormat.a4.height / pageHeight),
+                        child: pw.Container(
+                          width: 100 * state.scale,
+                          height: 60 * state.scale,
+                          child: pw.Image(pw.MemoryImage(img.bytes)),
+                        ),
+                      );
+                    }
+                    return pw.Container();
+                  }).toList(),
+                ],
+              ),
+            ),
           );
         }
+      }
 
-        final imageProvider = pw.MemoryImage(pngBytes);
-        pdf.addPage(
-          pw.Page(
-            pageFormat: PdfPageFormat.a4.portrait,
-            margin: pw.EdgeInsets.zero,
-            build:
-                (context) => pw.SizedBox.expand(
-                  child: pw.FittedBox(
-                    fit: pw.BoxFit.fill,
-                    child: pw.Image(imageProvider),
-                  ),
-                ),
-          ),
-        );
+      await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename: 'document.pdf',
+      );
 
-        await Printing.sharePdf(
-          bytes: await pdf.save(),
-          filename: 'document.pdf',
-        );
-
-        // Khôi phục trạng thái chọn
-        for (int i = 0; i < images.length; i++) {
-          final state =
-              (images[i].key as GlobalKey).currentState
-                  as _DraggableImageState?;
-          if (state != null && selectedStates[i]) {
-            state.setState(() => state.isSelected = true);
-          }
+      // Khôi phục trạng thái chọn
+      for (int i = 0; i < images.length; i++) {
+        final state = (images[i].key as GlobalKey).currentState as _DraggableImageState?;
+        if (state != null && selectedStates[i]) {
+          state.setState(() => state.isSelected = true);
         }
       }
     } catch (e) {
       SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
       }
     } finally {
       if (mounted) {
@@ -551,6 +591,13 @@ class _CommonContractState extends State<CommonContract> {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                        const SizedBox(width: 16),
+                        Text(
+                          '${widget.contractPages.length} trang',
+                          style: const TextStyle(
+                            fontSize: 14,
+                          ),
+                        ),
                         const Spacer(),
                         TextButton.icon(
                           onPressed: _exportToPdf,
@@ -594,12 +641,19 @@ class _CommonContractState extends State<CommonContract> {
                               child: Stack(
                                 children: [
                                   // Nội dung hợp đồng
-                                  A4Canvas(
-                                    marginsMm: const EdgeInsets.all(20),
-                                    scale: 1.2,
-                                    maxWidth: 800,
-                                    maxHeight: 800 * (297 / 210),
-                                    child: widget.contractType,
+                                  Column(
+                                    children: [
+                                      // Tạo các trang động từ contractPages
+                                      ...widget.contractPages.asMap().entries.map((entry) {
+                                        final int index = entry.key;
+                                        final Widget pageContent = entry.value;
+                                        
+                                        return RepaintBoundary(
+                                          key: _pageKeys[index],
+                                          child: pageContent
+                                        );
+                                      }),
+                                    ],
                                   ),
                                   // Các chữ ký kéo thả
                                   ...images,

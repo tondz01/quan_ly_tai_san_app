@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -68,6 +69,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Uint8List? _selectedFileBytes;
   final Map<String, TextEditingController> contractTermsControllers = {};
   final List<DieuDongTaiSanDto> listAssetHandover = [];
+  PdfDocument? _document;
 
   bool _validateForm() {
     return validation.validateForm(
@@ -86,6 +88,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   @override
   void initState() {
     super.initState();
+    _loadPdf();
     state.item = widget.provider.item;
     state.isEditing = widget.isEditing;
     _refreshWidget();
@@ -96,6 +99,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     if (widget.isNew == true) {
       onReload();
     }
+  }
+
+  Future<void> _loadPdf() async {
+    final document = await PdfDocument.openAsset('assets/test_01.pdf');
+    setState(() {
+      _document = document;
+    });
   }
 
   @override
@@ -286,7 +296,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                   ),
                 ),
                 Visibility(
-                  visible: state.item != null && ![0, 5, 6].contains(state.item!.trangThai),
+                  visible:
+                      state.item != null &&
+                      ![0, 5, 6].contains(state.item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -739,6 +751,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 item: state.item ?? widget.provider.itemPreview,
                 provider: widget.provider,
                 isShowKy: false,
+                document: _document,
                 callBack: () {
                   setState(() {
                     _createDieuDong(widget.type, state.listNewDetails);

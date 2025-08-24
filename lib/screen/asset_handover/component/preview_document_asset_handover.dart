@@ -89,7 +89,7 @@ previewDocumentHandover({
             bottom: 16.0,
           ),
           child: CommonContract(
-            contractType: ContractPage.assetHandoverPage(item, itemsDetail),
+            contractPages: [ContractPage.assetHandoverPage(item, itemsDetail)],
             signatureList: [urlChuKyNhay, urlChuKyThuong],
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,

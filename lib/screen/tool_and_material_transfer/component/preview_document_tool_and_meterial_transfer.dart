@@ -89,7 +89,7 @@ previewDocumentToolAndMaterial({
             bottom: 16.0,
           ),
           child: CommonContract(
-            contractType: ContractPage.toolAndMaterialTransferPage(item),
+            contractPages: [ContractPage.toolAndMaterialTransferPage(item)],
             signatureList: [urlKyNhay, urlKyThuong],
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
