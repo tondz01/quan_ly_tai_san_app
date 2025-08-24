@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -27,6 +26,7 @@ class CommonContract extends StatefulWidget {
   final bool isKyThuong;
   final bool isKySo;
   final Function()? eventSignature;
+  final String? showTitle;
 
   const CommonContract({
     super.key,
@@ -36,7 +36,6 @@ class CommonContract extends StatefulWidget {
     this.showTitle,
     this.idNguoiKy,
     this.tenNguoiKy,
-    this.edgeInsets,
     this.isShowKy = true,
     this.isKyNhay = true,
     this.isKyThuong = true,
@@ -290,7 +289,7 @@ class _CommonContractState extends State<CommonContract> {
                       );
                     }
                     return pw.Container();
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
