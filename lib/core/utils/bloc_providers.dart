@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
@@ -42,5 +43,6 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<AssetCategoryBloc>(create: (_) => AssetCategoryBloc()),
     BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
     BlocProvider<LoginBloc>(create: (_) => LoginBloc()),
+    BlocProvider<RoleBloc>(create: (_) => RoleBloc()),
   ];
 }

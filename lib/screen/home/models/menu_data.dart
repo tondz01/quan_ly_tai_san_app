@@ -79,6 +79,7 @@ class AppMenuData {
       reportSubItems: [
         SubMenuItem(label: 'Quản lý nhân viên', route: AppRoute.staffManager.path),
         SubMenuItem(label: 'Quản lý phòng ban', route: AppRoute.departmentManager.path),
+        SubMenuItem(label: 'Quản lý chức vụ', route: AppRoute.role.path),
         SubMenuItem(label: 'Quản lý dự án', route: AppRoute.projectManager.path),
         SubMenuItem(label: 'Quản lý nguồn vốn', route: AppRoute.capitalSource.path),
         SubMenuItem(label: 'Mô hình tài sản', route: AppRoute.assetCategory.path),

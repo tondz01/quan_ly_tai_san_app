@@ -34,7 +34,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
     'code_asset_group',
     'name_asset_group',
     'is_active',
-    'actions'
+    'actions',
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -331,7 +331,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                 type: ConfirmType.delete,
                 title: 'Xóa nhóm tài sản',
                 message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom!,
+                highlight: item.tenNhom ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {

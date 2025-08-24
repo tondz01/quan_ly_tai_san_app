@@ -48,6 +48,7 @@ enum AppRoute {
   transferReport(path: '/transfer-report', name: "transfer-report"),
   account(path: "/account", name: "account"),
   bienBanKiemKe(path: "/kiem-ke", name: 'kiem-ke'),
+  role(path: "/role", name: 'role'),
   bienBanDoiChieu(path: "/doi-cheiu-kiem-ke", name: 'doi-cheiu-kiem-ke');
 
   final String path;
