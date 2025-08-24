@@ -121,6 +121,7 @@ class _ReportScreenState extends State<ReportScreen> {
                                           idTaiLieu: item.id.toString(),
                                           idNguoiKy: userInfo.tenDangNhap,
                                           tenNguoiKy: userInfo.hoTen,
+                                          isShowKy: false,
                                         ),
                                       ),
                                 );

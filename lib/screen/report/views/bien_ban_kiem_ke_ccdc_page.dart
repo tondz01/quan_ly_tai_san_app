@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
-import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class BienBanKiemKePage extends StatelessWidget {
-  final List<InventoryMinutes> inventoryMinutes;
+class BienBanKiemKeCcdcPage extends StatelessWidget {
+  final List<CCDCInventoryReport> ccdcInventory;
   final String denNgay;
   final String tenDonVi;
 
-  const BienBanKiemKePage({
+  const BienBanKiemKeCcdcPage({
     super.key,
-    required this.inventoryMinutes,
+    required this.ccdcInventory,
     required this.denNgay,
     required this.tenDonVi,
   });
@@ -297,11 +297,6 @@ class BienBanKiemKePage extends StatelessWidget {
                   SettingPage.textStyle,
                 ),
                 ContractPage.tableHeader(
-                  "Hiện trạng",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
                   "Ghi chú",
                   SettingPage.scale,
                   SettingPage.textStyle,
@@ -310,7 +305,7 @@ class BienBanKiemKePage extends StatelessWidget {
             ),
     
             // Dữ liệu chi tiết chưa được cung cấp trong AssetHandoverDto
-            for (int i = 0; i < (inventoryMinutes.length); i++)
+            for (int i = 0; i < (ccdcInventory.length); i++)
               TableRow(
                 children: [
                   ContractPage.tableCell(
@@ -319,22 +314,17 @@ class BienBanKiemKePage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].tenTaiSan,
+                    ccdcInventory[i].tenTaiSan,
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].donViTinh,
+                    ccdcInventory[i].donViTinh,
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].nuocSanXuat,
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    "",
+                    ccdcInventory[i].nuocSanXuat,
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -344,12 +334,12 @@ class BienBanKiemKePage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].hienTrang.toString(),
+                    "",
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].ghiChu,
+                    ccdcInventory[i].ghiChu,
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),

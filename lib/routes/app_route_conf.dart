@@ -19,12 +19,13 @@ import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh.dart'
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_200.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_theo_doi.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_doi_chieu_screen.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_ccdc_screen.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/report_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 
 import '../screen/asset_handover/asset_handover_view.dart';
-import '../screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'routes.dart';
 
 class AppRouteConf {
@@ -273,7 +274,16 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: BienBanKiemKeScreen(idCongty: 'CT001'),
+                  child: BienBanKiemKeScreen(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.bienBanKiemKeCcdc.path,
+            name: AppRoute.bienBanKiemKeCcdc.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: BienBanKiemKeCcdcScreen(),
                 ),
           ),
           GoRoute(
