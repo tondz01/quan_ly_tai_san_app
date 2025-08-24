@@ -12,13 +12,17 @@ abstract class ToolAndMaterialTransferState extends Equatable {
   List<Object?> get props => [];
 }
 
-class ToolAndMaterialTransferInitialState extends ToolAndMaterialTransferState {}
+class ToolAndMaterialTransferInitialState
+    extends ToolAndMaterialTransferState {}
 
-class ToolAndMaterialTransferLoadingState extends ToolAndMaterialTransferState {}
+class ToolAndMaterialTransferLoadingState
+    extends ToolAndMaterialTransferState {}
 
-class ToolAndMaterialTransferLoadingDismissState extends ToolAndMaterialTransferState {}
+class ToolAndMaterialTransferLoadingDismissState
+    extends ToolAndMaterialTransferState {}
 
-class GetListToolAndMaterialTransferSuccessState extends ToolAndMaterialTransferState {
+class GetListToolAndMaterialTransferSuccessState
+    extends ToolAndMaterialTransferState {
   final List<ToolAndMaterialTransferDto> data;
 
   const GetListToolAndMaterialTransferSuccessState({required this.data});
@@ -27,7 +31,8 @@ class GetListToolAndMaterialTransferSuccessState extends ToolAndMaterialTransfer
   List<Object> get props => [data];
 }
 
-class GetListToolAndMaterialTransferFailedState extends ToolAndMaterialTransferState {
+class GetListToolAndMaterialTransferFailedState
+    extends ToolAndMaterialTransferState {
   final String title;
   final int? code;
   final String message;
@@ -137,6 +142,37 @@ class PutPostDeleteFailedState extends ToolAndMaterialTransferState {
   final String message;
 
   const PutPostDeleteFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+
+// cập nhập trạng thái
+class UpdateSigningTAMTStatusSuccessState extends ToolAndMaterialTransferState {
+  const UpdateSigningTAMTStatusSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+class CancelToolAndMaterialTransferSuccessState extends ToolAndMaterialTransferState {
+  const CancelToolAndMaterialTransferSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+
+
+class UpdateSigningTAMTStatusFailedState extends ToolAndMaterialTransferState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const UpdateSigningTAMTStatusFailedState({
     required this.title,
     this.code,
     required this.message,

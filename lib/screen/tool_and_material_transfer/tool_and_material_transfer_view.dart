@@ -12,18 +12,23 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_comp
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
-import 'package:flutter/widgets.dart';
 
 class ToolAndMaterialTransferView extends StatefulWidget {
   final int typeAssetTransfer;
 
-  const ToolAndMaterialTransferView({super.key, required this.typeAssetTransfer});
+  const ToolAndMaterialTransferView({
+    super.key,
+    required this.typeAssetTransfer,
+  });
 
   @override
-  State<ToolAndMaterialTransferView> createState() => _ToolAndMaterialTransferViewState();
+  State<ToolAndMaterialTransferView> createState() =>
+      _ToolAndMaterialTransferViewState();
 }
 
-class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferView> with AutomaticKeepAliveClientMixin {
+class _ToolAndMaterialTransferViewState
+    extends State<ToolAndMaterialTransferView>
+    with AutomaticKeepAliveClientMixin {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late int currentType;
@@ -75,10 +80,10 @@ class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferVie
   void _reloadData() {
     log('Reloading data for type: $currentType');
     final provider = Provider.of<ToolAndMaterialTransferProvider>(
-      context, 
+      context,
       listen: false,
     );
-    
+
     // Chỉ tải lại dữ liệu nếu đã khởi tạo trước đó
     if (_isInitialized) {
       provider.refreshData(context, currentType);
@@ -91,24 +96,14 @@ class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferVie
     super.dispose();
   }
 
-  String _getScreenTitle() {
-    switch (currentType) {
-      case 1:
-        return 'Cấp phát tài sản';
-      case 2:
-        return 'Thu hồi tài sản';
-      case 3:
-        return 'Điều chuyển tài sản';
-      default:
-        return 'Quản lý tài sản';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context); // Cần thiết cho AutomaticKeepAliveClientMixin
-    
-    return BlocConsumer<ToolAndMaterialTransferBloc, ToolAndMaterialTransferState>(
+
+    return BlocConsumer<
+      ToolAndMaterialTransferBloc,
+      ToolAndMaterialTransferState
+    >(
       builder: (context, state) {
         return ChangeNotifierProvider.value(
           value: context.read<ToolAndMaterialTransferProvider>(),
@@ -136,7 +131,7 @@ class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferVie
                       // provider.onChangeDetailAssetTransfer(null);
                       provider.onChangeDetailToolAndMaterialTransfer(null);
                     },
-                    mainScreen: _getScreenTitle(),
+                    mainScreen: provider.getScreenTitle(),
                     subScreen: provider.subScreen,
                   ),
                 ),
@@ -187,17 +182,14 @@ class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferVie
       listener: (context, state) {
         if (state is ToolAndMaterialTransferLoadingState) {}
         if (state is GetListToolAndMaterialTransferSuccessState) {
-          log('GetListAssetTransferSuccessState');
-          context.read<ToolAndMaterialTransferProvider>().getListToolAndMaterialTransferSuccess(
-            context,
-            state,
-          );
+          context
+              .read<ToolAndMaterialTransferProvider>()
+              .getListToolAndMaterialTransferSuccess(context, state);
         }
         if (state is GetListToolAndMaterialTransferFailedState) {
           log('GetListToolAndMaterialTransferFailedState');
         }
         if (state is GetListAssetSuccessState) {
-          log('GetListAssetSuccessState');
           context.read<ToolAndMaterialTransferProvider>().getLisTaiSanSuccess(
             context,
             state,
@@ -207,11 +199,9 @@ class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferVie
           log('GetListAssetFailedState');
         }
         if (state is GetDataDropdownSuccessState) {
-          log('GetDataDropdownSuccessState');
-          context.read<ToolAndMaterialTransferProvider>().getDataDropdownSuccess(
-            context,
-            state,
-          );
+          context
+              .read<ToolAndMaterialTransferProvider>()
+              .getDataDropdownSuccess(context, state);
         }
         if (state is GetDataDropdownFailedState) {
           log('GetDataDropdownFailedState');
@@ -247,6 +237,21 @@ class _ToolAndMaterialTransferViewState extends State<ToolAndMaterialTransferVie
             context,
             state,
           );
+        }
+        if (state is UpdateSigningTAMTStatusSuccessState) {
+          log('UpdateSigningTAMTStatusSuccessState');
+          context
+              .read<ToolAndMaterialTransferProvider>()
+              .updateSigningTAMTStatusSuccess(context, state);
+        }
+        if (state is CancelToolAndMaterialTransferSuccessState) {
+          context.read<ToolAndMaterialTransferProvider>().onCloseDetail(context);
+          AppUtility.showSnackBar(context, 'Đa hủy phiếu thành cồng!');
+          context.read<ToolAndMaterialTransferProvider>().getDataAll(context);
+        }
+        if (state is UpdateSigningTAMTStatusFailedState) {
+          log('UpdateSigningTAMTStatusFailedState');
+          AppUtility.showSnackBar(context, state.message, isError: true);
         }
       },
     );

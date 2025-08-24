@@ -59,19 +59,6 @@ class _AssetTransferViewState extends State<AssetTransferView> {
     super.dispose();
   }
 
-  String _getScreenTitle() {
-    switch (currentType) {
-      case 1:
-        return 'Cấp phát tài sản';
-      case 2:
-        return 'Thu hồi tài sản';
-      case 3:
-        return 'Điều chuyển tài sản';
-      default:
-        return 'Quản lý tài sản';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DieuDongTaiSanBloc, DieuDongTaiSanState>(
@@ -102,7 +89,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                       // provider.onChangeDetailAssetTransfer(null);
                       provider.onChangeDetailDieuDongTaiSan(null);
                     },
-                    mainScreen: _getScreenTitle(),
+                    mainScreen: provider.getScreenTitle(),
                     subScreen: provider.subScreen,
                   ),
                 ),
@@ -163,14 +150,17 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           log('GetListDieuDongTaiSanFailedState');
         }
         if (state is GetListAssetSuccessState) {
-          log('GetListAssetSuccessState');
           context.read<DieuDongTaiSanProvider>().getLisTaiSanSuccess(
             context,
             state,
           );
         }
         if (state is GetListAssetFailedState) {
-          AppUtility.showSnackBar(context, 'Lấy dữ liệu "Tài sản" thất bại!', isError: true);
+          AppUtility.showSnackBar(
+            context,
+            'Lấy dữ liệu "Tài sản" thất bại!',
+            isError: true,
+          );
         }
         if (state is GetDataDropdownSuccessState) {
           context.read<DieuDongTaiSanProvider>().getDataDropdownSuccess(
@@ -179,7 +169,11 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           );
         }
         if (state is GetDataDropdownFailedState) {
-          AppUtility.showSnackBar(context, 'Lấy dữ liệu "Nhân viên" và "Phòng ban" thất bại!', isError: true);
+          AppUtility.showSnackBar(
+            context,
+            'Lấy dữ liệu "Nhân viên" và "Phòng ban" thất bại!',
+            isError: true,
+          );
         }
         if (state is CreateDieuDongSuccessState) {
           context.read<DieuDongTaiSanProvider>().createDieuDongSuccess(
@@ -203,7 +197,15 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           );
         }
         if (state is UpdateSigningStatusSuccessState) {
+          context.read<DieuDongTaiSanProvider>().updateSignatureSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CancelDieuDongTaiSanSuccessState) {
+          context.read<DieuDongTaiSanProvider>().onCloseDetail(context);
           AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+          context.read<DieuDongTaiSanProvider>().getDataAll(context);
         }
         if (state is UpdateSigningStatusFailedState) {
           AppUtility.showSnackBar(context, state.message, isError: true);

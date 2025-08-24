@@ -38,10 +38,12 @@ class AssetHandoverProvider with ChangeNotifier {
   List<DieuDongTaiSanDto>? get dataAssetTransfer => _dataAssetTransfer;
   List<PhongBan>? get dataDepartment => _dataDepartment;
   List<NhanVien>? get dataStaff => _dataStaff;
-  List<ChiTietDieuDongTaiSan>? get dataDetailAssetMobilization => _dataDetailAssetMobilization;
+  List<ChiTietDieuDongTaiSan>? get dataDetailAssetMobilization =>
+      _dataDetailAssetMobilization;
 
   AssetHandoverDto? get item => _item;
   get data => _data;
+  get filteredData => _filteredData;
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
 
@@ -49,19 +51,22 @@ class AssetHandoverProvider with ChangeNotifier {
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
   bool get isShowReady => _filterStatus[FilterStatus.ready] ?? false;
-  bool get isShowConfirm => _filterStatus[FilterStatus.confirm] ?? false;
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
 
   // Getter để lấy count cho mỗi status
   int get allCount => _data?.length ?? 0;
-  int get draftCount => _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
-  int get readyCount => _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
-  int get confirmCount => _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
-  int get browserCount => _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
-  int get completeCount => _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
-  int get cancelCount => _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
+  int get draftCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
+  int get readyCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
+  int get browserCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
+  int get completeCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
+  int get cancelCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
 
   set isLoading(bool value) {
     _isLoading = value;
@@ -192,7 +197,9 @@ class AssetHandoverProvider with ChangeNotifier {
   void _applyFilters() {
     if (_data == null) return;
 
-    bool hasActiveFilter = _filterStatus.entries.where((entry) => entry.key != FilterStatus.all).any((entry) => entry.value == true);
+    bool hasActiveFilter = _filterStatus.entries
+        .where((entry) => entry.key != FilterStatus.all)
+        .any((entry) => entry.value == true);
 
     // Lọc theo trạng thái
     List<AssetHandoverDto> statusFiltered;
@@ -203,27 +210,28 @@ class AssetHandoverProvider with ChangeNotifier {
           _data!.where((item) {
             int itemStatus = item.trangThai ?? -1;
 
-            if (_filterStatus[FilterStatus.draft] == true && (itemStatus == 0)) {
+            if (_filterStatus[FilterStatus.draft] == true &&
+                (itemStatus == 0)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.ready] == true && (itemStatus == 1)) {
+            if (_filterStatus[FilterStatus.ready] == true &&
+                (itemStatus == 1)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.confirm] == true && (itemStatus == 2)) {
+            if (_filterStatus[FilterStatus.browser] == true &&
+                (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true && (itemStatus == 3)) {
+            if (_filterStatus[FilterStatus.cancel] == true &&
+                (itemStatus == 3)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.complete] == true && (itemStatus == 4)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.cancel] == true && (itemStatus == 5)) {
+            if (_filterStatus[FilterStatus.complete] == true &&
+                (itemStatus == 4)) {
               return true;
             }
 
@@ -236,13 +244,21 @@ class AssetHandoverProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           statusFiltered.where((item) {
-            return (item.banGiaoTaiSan?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.quyetDinhDieuDongSo?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.tenDonViDaiDien?.toLowerCase().contains(searchLower) ?? false) ||
+            return (item.banGiaoTaiSan?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.quyetDinhDieuDongSo?.toLowerCase().contains(
+                      searchLower,
+                    ) ??
+                    false) ||
+                (item.tenDonViDaiDien?.toLowerCase().contains(searchLower) ??
+                    false) ||
                 (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.tenLanhDao?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ?? false);
+                (item.tenLanhDao?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
+                    false);
           }).toList();
     } else {
       _filteredData = statusFiltered;
@@ -257,10 +273,9 @@ class AssetHandoverProvider with ChangeNotifier {
     FilterStatus.all: false,
     FilterStatus.draft: false,
     FilterStatus.ready: false,
-    FilterStatus.confirm: false,
     FilterStatus.browser: false,
-    FilterStatus.complete: false,
     FilterStatus.cancel: false,
+    FilterStatus.complete: false,
   };
 
   // Nội dung tìm kiếm
@@ -291,6 +306,8 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onTapNewHeader() {
+    _item = null;
+    _dataDetailAssetMobilization = null;
     notifyListeners();
   }
 
@@ -298,6 +315,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
   void getListAssetHandover(BuildContext context) {
     _isLoading = true;
+    log('message filteredData  getListAssetHandover');
     Future.microtask(() {
       context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
     });
@@ -315,8 +333,14 @@ class AssetHandoverProvider with ChangeNotifier {
       startIndex = 0;
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
-
-    dataPage = _filteredData.isNotEmpty ? _filteredData.sublist(startIndex < totalEntries ? startIndex : 0, endIndex < totalEntries ? endIndex : totalEntries) : [];
+    log('message _filteredData ${_filteredData}');
+    dataPage =
+        _filteredData.isNotEmpty
+            ? _filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
   }
 
   void onPageChanged(int page) {
@@ -354,7 +378,10 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {}
   }
 
-  getListAssetHandoverSuccess(BuildContext context, GetListAssetHandoverSuccessState state) {
+  getListAssetHandoverSuccess(
+    BuildContext context,
+    GetListAssetHandoverSuccessState state,
+  ) {
     _error = null;
 
     _dataDepartment = state.dataDepartment;
@@ -365,28 +392,38 @@ class AssetHandoverProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
       _item = null;
+      log('message _filteredData state.data.isEmpt ${_filteredData}');
     } else {
       _filteredData.clear();
       _data?.clear();
       _data = state.data;
 
       _filteredData = List.from(_data!);
+      log('message _filteredData ${_filteredData}');
       _updatePagination();
     }
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<bool> _showUnsavedChangesDialog(BuildContext context, AssetHandoverDto? item) async {
+  Future<bool> _showUnsavedChangesDialog(
+    BuildContext context,
+    AssetHandoverDto? item,
+  ) async {
     return await showDialog<bool>(
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Thay đổi chưa lưu'),
-              content: const Text('Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?'),
+              content: const Text(
+                'Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn rời khỏi trang này?',
+              ),
               actions: [
-                TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Hủy')),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Hủy'),
+                ),
                 TextButton(
                   onPressed: () {
                     _item = item;
@@ -407,7 +444,10 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
-  Future<bool> _confirmBeforeLeaving(BuildContext context, AssetHandoverDto? item) async {
+  Future<bool> _confirmBeforeLeaving(
+    BuildContext context,
+    AssetHandoverDto? item,
+  ) async {
     if (hasUnsavedChanges) {
       return await _showUnsavedChangesDialog(context, item);
     } else {
@@ -421,7 +461,8 @@ class AssetHandoverProvider with ChangeNotifier {
   Future<void> getListDetailAssetMobilization(String id) async {
     if (id.isEmpty) return;
     _isLoading = true;
-    final Map<String, dynamic> result = await AssetHandoverRepository().getListDetailAssetMobilization(id);
+    final Map<String, dynamic> result = await AssetHandoverRepository()
+        .getListDetailAssetMobilization(id);
     _dataDetailAssetMobilization = result['data'];
     _isLoading = false;
     notifyListeners();
@@ -429,10 +470,10 @@ class AssetHandoverProvider with ChangeNotifier {
 
   NhanVien getNhanVien({required String idNhanVien}) {
     if (dataStaff == null) return NhanVien();
-    final found = dataStaff?.firstWhere((item) => item.id == idNhanVien);
-    if (found == null) {
-      return NhanVien();
-    }
+    final found = dataStaff!.firstWhere(
+      (item) => item.id == idNhanVien,
+      orElse: () => NhanVien(),
+    );
     return found;
   }
 }

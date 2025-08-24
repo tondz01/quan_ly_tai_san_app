@@ -25,6 +25,14 @@ class DieuDongTaiSanDto {
   String? idNguoiDeNghi;
   String? tenNguoiDeNghi;
 
+  // ID + tên trưởng phòng đơn vị giao
+  String? idTruongPhongDonViGiao;
+  String? tenTruongPhongDonViGiao;
+
+  // ID + tên phó phòng đơn vị giao
+  String? idPhoPhongDonViGiao;
+  String? tenPhoPhongDonViGiao;
+
   // ID + tên trình duyệt cấp phòng
   String? idTrinhDuyetCapPhong;
   String? tenTrinhDuyetCapPhong;
@@ -37,23 +45,24 @@ class DieuDongTaiSanDto {
   String? idNhanSuXemPhieu;
   String? tenNhanSuXemPhieu;
 
-  //Id nhân viên xác nhận của đơn vị giao
-  String? idTPDonViGiao;
-  String? idPPDonViNhan;
-
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
   bool? phoPhongXacNhan;
+  
+  // Các trường xác nhận
+  bool? truongPhongDonViGiaoXacNhan;
+  bool? phoPhongDonViGiaoXacNhan;
+  bool? trinhDuyetCapPhongXacNhan;
+  bool? trinhDuyetGiamDocXacNhan;
+  
   String? tggnTuNgay;
   String? tggnDenNgay;
   String? diaDiemGiaoNhan;
-  String? veViec;
-  String? canCu;
-  String? dieu1;
-  String? dieu2;
-  String? dieu3;
   String? noiNhan;
-  String? themDongTrong;
+  String? trichYeu;
+  String? duongDanFile;
+  String? tenFile;
+  String? ngayKy;
   int? trangThai;
   String? idCongTy;
   String? ngayTao;
@@ -63,10 +72,6 @@ class DieuDongTaiSanDto {
   bool? coHieuLuc;
   int? loai;
   bool? isActive;
-  String? trichYeu;
-  String? duongDanFile;
-  String? tenFile;
-  String? ngayKy;
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
 
   DieuDongTaiSanDto({
@@ -83,6 +88,10 @@ class DieuDongTaiSanDto {
     this.tenPhongBanXemPhieu,
     this.idNguoiDeNghi,
     this.tenNguoiDeNghi,
+    this.idTruongPhongDonViGiao,
+    this.tenTruongPhongDonViGiao,
+    this.idPhoPhongDonViGiao,
+    this.tenPhoPhongDonViGiao,
     this.idTrinhDuyetCapPhong,
     this.tenTrinhDuyetCapPhong,
     this.idTrinhDuyetGiamDoc,
@@ -92,16 +101,18 @@ class DieuDongTaiSanDto {
     this.nguoiLapPhieuKyNhay,
     this.quanTrongCanXacNhan,
     this.phoPhongXacNhan,
+    this.truongPhongDonViGiaoXacNhan,
+    this.phoPhongDonViGiaoXacNhan,
+    this.trinhDuyetCapPhongXacNhan,
+    this.trinhDuyetGiamDocXacNhan,
     this.tggnTuNgay,
     this.tggnDenNgay,
     this.diaDiemGiaoNhan,
-    this.veViec,
-    this.canCu,
-    this.dieu1,
-    this.dieu2,
-    this.dieu3,
     this.noiNhan,
-    this.themDongTrong,
+    this.trichYeu,
+    this.duongDanFile,
+    this.tenFile,
+    this.ngayKy,
     this.trangThai,
     this.idCongTy,
     this.ngayTao,
@@ -111,13 +122,7 @@ class DieuDongTaiSanDto {
     this.coHieuLuc,
     this.loai,
     this.isActive,
-    this.trichYeu,
-    this.duongDanFile,
-    this.tenFile,
-    this.ngayKy,
     this.chiTietDieuDongTaiSans,
-    this.idTPDonViGiao,
-    this.idPPDonViNhan,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -135,6 +140,10 @@ class DieuDongTaiSanDto {
       tenPhongBanXemPhieu: json['tenPhongBanXemPhieu'],
       idNguoiDeNghi: json['idNguoiDeNghi'],
       tenNguoiDeNghi: json['tenNguoiDeNghi'],
+      idTruongPhongDonViGiao: json['idTruongPhongDonViGiao'],
+      tenTruongPhongDonViGiao: json['tenTruongPhongDonViGiao'],
+      idPhoPhongDonViGiao: json['idPhoPhongDonViGiao'],
+      tenPhoPhongDonViGiao: json['tenPhoPhongDonViGiao'],
       idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'],
       tenTrinhDuyetCapPhong: json['tenTrinhDuyetCapPhong'],
       idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'],
@@ -144,16 +153,18 @@ class DieuDongTaiSanDto {
       nguoiLapPhieuKyNhay: json['nguoiLapPhieuKyNhay'],
       quanTrongCanXacNhan: json['quanTrongCanXacNhan'],
       phoPhongXacNhan: json['phoPhongXacNhan'],
+      truongPhongDonViGiaoXacNhan: json['truongPhongDonViGiaoXacNhan'],
+      phoPhongDonViGiaoXacNhan: json['phoPhongDonViGiaoXacNhan'],
+      trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
+      trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
       tggnTuNgay: json['tggnTuNgay'],
       tggnDenNgay: json['tggnDenNgay'],
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
-      veViec: json['veViec'],
-      canCu: json['canCu'],
-      dieu1: json['dieu1'],
-      dieu2: json['dieu2'],
-      dieu3: json['dieu3'],
       noiNhan: json['noiNhan'],
-      themDongTrong: json['themDongTrong'],
+      trichYeu: json['trichYeu'],
+      duongDanFile: json['duongDanFile'],
+      tenFile: json['tenFile'],
+      ngayKy: json['ngayKy'],
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
       ngayTao: json['ngayTao'],
@@ -163,13 +174,7 @@ class DieuDongTaiSanDto {
       coHieuLuc: json['coHieuLuc'],
       loai: json['loai'],
       isActive: json['isActive'],
-      trichYeu: json['trichYeu'],
-      duongDanFile: json['duongDanFile'],
-      tenFile: json['tenFile'],
-      ngayKy: json['ngayKy'],
       chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
-      idTPDonViGiao: json['idTPDonViGiao'],
-      idPPDonViNhan: json['idPPDonViNhan'],
     );
   }
 
@@ -188,6 +193,10 @@ class DieuDongTaiSanDto {
       "tenPhongBanXemPhieu": tenPhongBanXemPhieu,
       "idNguoiDeNghi": idNguoiDeNghi,
       "tenNguoiDeNghi": tenNguoiDeNghi,
+      "idTruongPhongDonViGiao": idTruongPhongDonViGiao,
+      "tenTruongPhongDonViGiao": tenTruongPhongDonViGiao,
+      "idPhoPhongDonViGiao": idPhoPhongDonViGiao,
+      "tenPhoPhongDonViGiao": tenPhoPhongDonViGiao,
       "idTrinhDuyetCapPhong": idTrinhDuyetCapPhong,
       "tenTrinhDuyetCapPhong": tenTrinhDuyetCapPhong,
       "idTrinhDuyetGiamDoc": idTrinhDuyetGiamDoc,
@@ -197,16 +206,18 @@ class DieuDongTaiSanDto {
       "nguoiLapPhieuKyNhay": nguoiLapPhieuKyNhay,
       "quanTrongCanXacNhan": quanTrongCanXacNhan,
       "phoPhongXacNhan": phoPhongXacNhan,
+      "truongPhongDonViGiaoXacNhan": truongPhongDonViGiaoXacNhan,
+      "phoPhongDonViGiaoXacNhan": phoPhongDonViGiaoXacNhan,
+      "trinhDuyetCapPhongXacNhan": trinhDuyetCapPhongXacNhan,
+      "trinhDuyetGiamDocXacNhan": trinhDuyetGiamDocXacNhan,
       "tggnTuNgay": tggnTuNgay,
       "tggnDenNgay": tggnDenNgay,
       "diaDiemGiaoNhan": diaDiemGiaoNhan,
-      "veViec": veViec,
-      "canCu": canCu,
-      "dieu1": dieu1,
-      "dieu2": dieu2,
-      "dieu3": dieu3,
       "noiNhan": noiNhan,
-      "themDongTrong": themDongTrong,
+      "trichYeu": trichYeu,
+      "duongDanFile": duongDanFile,
+      "tenFile": tenFile,
+      "ngayKy": ngayKy,
       "trangThai": trangThai,
       "idCongTy": idCongTy,
       "ngayTao": ngayTao,
@@ -216,13 +227,7 @@ class DieuDongTaiSanDto {
       "coHieuLuc": coHieuLuc,
       "loai": loai,
       "isActive": isActive,
-      "trichYeu": trichYeu,
-      "duongDanFile": duongDanFile,
-      "tenFile": tenFile,
-      "ngayKy": ngayKy,
       "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
-      "idTPDonViGiao": idTPDonViGiao,
-      "idPPDonViNhan": idPPDonViNhan,
     };
   }
 }

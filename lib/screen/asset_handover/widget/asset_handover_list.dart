@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
@@ -16,10 +19,12 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_docu
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
@@ -50,11 +55,35 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'status',
     'actions',
   ];
+  List<DieuDongTaiSanDto> listAssetTransfer = [];
+
+  PdfDocument? _document;
+  DieuDongTaiSanDto? _selectedAssetTransfer;
 
   @override
   void initState() {
     super.initState();
     _initializeColumnOptions();
+
+    listAssetTransfer =
+        widget.provider.dataAssetTransfer
+            ?.where((element) => element.trangThai == 6)
+            .toList() ??
+        [];
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   void _initializeColumnOptions() {
@@ -258,7 +287,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
-
+    log('message filteredData ${widget.provider.dataPage}');
     return Row(
       children: [
         // if (url.isNotEmpty && isShowPreview) displayPreview(),
@@ -387,12 +416,39 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                 ].whereType<String>().toList();
 
             if (idSignature.contains(userInfo?.tenDangNhap)) {
-              previewDocumentHandover(
-                context: context,
-                item: item!,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-                provider: widget.provider,
-              );
+              
+              final matchingTransfers = listAssetTransfer
+                  .where((x) => x.soQuyetDinh == item!.quyetDinhDieuDongSo);
+              
+              _selectedAssetTransfer = matchingTransfers.isNotEmpty 
+                  ? matchingTransfers.first
+                  : null;
+
+              if (_selectedAssetTransfer == null ||
+                  _selectedAssetTransfer!.tenFile!.isEmpty) {
+                if (mounted) {
+                  previewDocumentHandover(
+                    context: context,
+                    item: item!,
+                    itemsDetail:
+                        widget.provider.dataDetailAssetMobilization ?? [],
+                    provider: widget.provider,
+                  );
+                }
+                return;
+              }
+              _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+                if (mounted) {
+                  previewDocumentHandover(
+                    context: context,
+                    item: item!,
+                    itemsDetail:
+                        widget.provider.dataDetailAssetMobilization ?? [],
+                    provider: widget.provider,
+                    document: _document,
+                  );
+                }
+              });
             } else {
               AppUtility.showSnackBar(
                 context,
@@ -432,44 +488,45 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         onPressed: () async {
           isShowPreview = true;
           await widget.provider.getListDetailAssetMobilization(
-            item.lenhDieuDong ?? '',
+            item.quyetDinhDieuDongSo ?? '',
           );
 
-          if (mounted) {
-            // UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
-            previewDocumentHandover(
-              context: context,
-              item: item,
-              itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-              provider: widget.provider,
-              isShowKy: false,
-            );
-            // showDialog(
-            //   context: context,
-            //   barrierDismissible: true,
-            //   builder:
-            //       (context) => Padding(
-            //         padding: const EdgeInsets.only(
-            //           left: 24.0,
-            //           right: 24.0,
-            //           top: 16.0,
-            //           bottom: 16.0,
-            //         ),
-            //         child: CommonContract(
-            //           contractType: ContractPage.assetHandoverPage(
-            //             item,
-            //             widget.provider.dataDetailAssetMobilization,
-            //           ),
-            //           signatureList: [
-            //             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
-            //           ],
-            //           idTaiLieu: item.id.toString(),
-            //           idNguoiKy: userInfo.tenDangNhap,
-            //           tenNguoiKy: userInfo.hoTen,
-            //         ),
-            //       ),
-            // );
+          final matchingTransfers = listAssetTransfer
+              .where((x) => x.soQuyetDinh == item.quyetDinhDieuDongSo);
+          
+          _selectedAssetTransfer = matchingTransfers.isNotEmpty 
+              ? matchingTransfers.first
+              : null;
+
+          if (_selectedAssetTransfer == null ||
+              _selectedAssetTransfer!.tenFile!.isEmpty) {
+            if (mounted) {
+              SGLog.debug(
+                "AssetHandoverList",
+                "No document found for item: ${item.id}",
+              );
+              previewDocumentHandover(
+                context: context,
+                item: item,
+                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                provider: widget.provider,
+                isShowKy: false,
+              );
+            }
+            return;
           }
+          _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+            if (mounted) {
+              previewDocumentHandover(
+                context: context,
+                item: item,
+                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                provider: widget.provider,
+                isShowKy: false,
+                document: _document,
+              );
+            }
+          });
         },
       ),
       ActionButtonConfig(
@@ -571,13 +628,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       case 1:
         return ColorValue.lightAmber;
       case 2:
-        return ColorValue.mediumGreen;
-      case 3:
         return ColorValue.lightBlue;
+      case 3:
+        return ColorValue.coral;
       case 4:
         return ColorValue.forestGreen;
-      case 5:
-        return ColorValue.coral;
       default:
         return ColorValue.darkGrey;
     }
@@ -595,15 +650,13 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       case 0:
         return 'Nháp';
       case 1:
-        return 'Sẵn sàng';
+        return 'Chờ xác nhận';
       case 2:
-        return 'Xác nhận';
+        return 'Chờ duyệt';
       case 3:
-        return 'Trình Duyệt';
+        return 'Hủy';
       case 4:
         return 'Hoàn thành';
-      case 5:
-        return 'Hủy';
       default:
         return '';
     }

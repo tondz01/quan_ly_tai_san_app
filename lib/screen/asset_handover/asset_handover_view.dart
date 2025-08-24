@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -64,7 +66,10 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
       final selectedSubIndex = menuSelectionData!['selectedSubIndex'] as int?;
 
       if (selectedIndex != null && selectedSubIndex != null) {
-        SGLog.debug('AssetHandoverView', 'Updating menu selection: index=$selectedIndex, subIndex=$selectedSubIndex');
+        SGLog.debug(
+          'AssetHandoverView',
+          'Updating menu selection: index=$selectedIndex, subIndex=$selectedSubIndex',
+        );
         // Có thể thêm logic để cập nhật menu selection ở đây nếu cần
       }
     }
@@ -85,7 +90,10 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
 
   void _initData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = Provider.of<AssetHandoverProvider>(context, listen: false);
+      final provider = Provider.of<AssetHandoverProvider>(
+        context,
+        listen: false,
+      );
 
       // Chỉ khởi tạo nếu không có data từ router
       if (assetHandoverData == null) {
@@ -106,36 +114,75 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
       listener: (context, state) {
         if (state is AssetHandoverLoadingState) {
         } else if (state is GetListAssetHandoverSuccessState) {
-          context.read<AssetHandoverProvider>().getListAssetHandoverSuccess(context, state);
-        } else if (state is CreateAssetHandoverSuccessState) {
-          ScaffoldMessenger.of(
+          log('message filteredData  state ${state.data}');
+          context.read<AssetHandoverProvider>().getListAssetHandoverSuccess(
             context,
-          ).showSnackBar(SnackBar(content: Text('Tạo biên bản bàn giao thành công'), backgroundColor: Colors.green));
-          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+            state,
+          );
+        } else if (state is CreateAssetHandoverSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tạo biên bản bàn giao thành công'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.read<AssetHandoverBloc>().add(
+            GetListAssetHandoverEvent(context),
+          );
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is UpdateAssetHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cập nhật biên bản bàn giao thành công'), backgroundColor: Colors.green),
+            SnackBar(
+              content: Text('Cập nhật biên bản bàn giao thành công'),
+              backgroundColor: Colors.green,
+            ),
           );
-          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+          context.read<AssetHandoverBloc>().add(
+            GetListAssetHandoverEvent(context),
+          );
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is DeleteAssetHandoverSuccessState) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Xóa biên bản bàn giao thành công'), backgroundColor: Colors.green));
-        
-          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa biên bản bàn giao thành công'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          context.read<AssetHandoverBloc>().add(
+            GetListAssetHandoverEvent(context),
+          );
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is ErrorState) {
           context.read<AssetHandoverProvider>().isLoading = false;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${state.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         } else if (state is UpdateSigningStatusSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cập nhật trạng thái ký biên bản thành công'), backgroundColor: Colors.green),
+            SnackBar(
+              content: Text('Cập nhật trạng thái ký biên bản thành công'),
+              backgroundColor: Colors.green,
+            ),
           );
-          context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
+          context.read<AssetHandoverBloc>().add(
+            GetListAssetHandoverEvent(context),
+          );
+          context.read<AssetHandoverProvider>().isShowInput = false;
+        } else if (state is CancelAssetHandoverSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Hủy biên bản bàn giao thành công'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          context.read<AssetHandoverBloc>().add(
+            GetListAssetHandoverEvent(context),
+          );
+          context.read<AssetHandoverProvider>().isShowInput = false;
         }
       },
       builder: (context, state) {
@@ -160,6 +207,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                     onTap: provider.onTapBackHeader,
                     onNew: () {
                       provider.onChangeDetail(context, null);
+                      provider.onTapNewHeader();
                     },
                     mainScreen: 'Biên bản bàn giao tài sản',
                     subScreen: provider.subScreen,
@@ -188,7 +236,8 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                         totalPages: provider.totalPages,
                         currentPage: provider.currentPage,
                         rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage: provider.controllerDropdownPage!,
+                        controllerDropdownPage:
+                            provider.controllerDropdownPage!,
                         items: provider.items,
                         onPageChanged: provider.onPageChanged,
                         onRowsPerPageChanged: provider.onRowsPerPageChanged,

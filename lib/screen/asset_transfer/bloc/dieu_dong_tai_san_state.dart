@@ -130,13 +130,6 @@ class DeleteDieuDongSuccessState extends DieuDongTaiSanState {
   List<Object> get props => [data];
 }
 
-class UpdateSigningStatusSuccessState extends DieuDongTaiSanState {
-  const UpdateSigningStatusSuccessState();
-
-  @override
-  List<Object> get props => [];
-}
-
 class PutPostDeleteFailedState extends DieuDongTaiSanState {
   final String title;
   final int? code;
@@ -151,6 +144,23 @@ class PutPostDeleteFailedState extends DieuDongTaiSanState {
   @override
   List<Object> get props => [title, code!, message];
 }
+
+//Cập nhập trạng thái phiếu ký nội sinh success
+class UpdateSigningStatusSuccessState extends DieuDongTaiSanState {
+  const UpdateSigningStatusSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class CancelDieuDongTaiSanSuccessState extends DieuDongTaiSanState {
+  const CancelDieuDongTaiSanSuccessState();
+
+  @override
+  List<Object> get props => [];
+}
+
+//Cập nhập trạng thái phiếu ký nội sinh failed
 class UpdateSigningStatusFailedState extends DieuDongTaiSanState {
   final String title;
   final int? code;

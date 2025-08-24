@@ -133,7 +133,8 @@ class AssetTransferRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> updateState(String idDieuDong) async {
+  //Cập nhập trạng thái phiếu ký nội sinh
+  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -141,7 +142,38 @@ class AssetTransferRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai/$idDieuDong',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/capnhattrangthai?id=$id&userId=$idNhanVien',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+        response.data,
+        DieuDongTaiSanDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  //Hủy phiếu ký nội sinh
+  Future<Map<String, dynamic>> cancelDieuDongTaiSan(String id) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/huy?id=$id',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

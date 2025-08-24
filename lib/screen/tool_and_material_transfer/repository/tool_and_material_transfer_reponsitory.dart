@@ -117,6 +117,70 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     return result;
   }
 
+  //Update trạng thái biên bản
+  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/capnhattrangthai?id=$id&userId=$idNhanVien',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+        response.data,
+        ToolAndMaterialTransferDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  //Hủy phiếu ký nội sinh
+  Future<Map<String, dynamic>> cancelToolAndMaterialTransfer(String id) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/huy?id=$id',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+        response.data,
+        ToolAndMaterialTransferDto.fromJson,
+      );
+      log('response.data điều động: ${result['data']}');
+    } catch (e) {
+      log(
+        "Error at cancelToolAndMaterialTransfer - ToolAndMaterialTransferRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> uploadFile(String filePath) async {
     Map<String, dynamic> result = {
       'data': '',
@@ -271,12 +335,26 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   Future<int> update(String id, ToolAndMaterialTransferDto obj) async {
     String url = '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/$id';
     final res = await put(url, data: obj.toJson());
-    return res.data;
+    final data = res.data;
+    if (data is int) return data;
+    if (data is Map<String, dynamic>) {
+      final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
+      if (code is int) return code;
+      if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
+    }
+    return res.statusCode ?? 0;
   }
 
   Future<int> deleteToolAndMaterialTransfer(String id) async {
     String url = '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/$id';
     final res = await delete(url);
-    return res.data;
+    final data = res.data;
+    if (data is int) return data;
+    if (data is Map<String, dynamic>) {
+      final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
+      if (code is int) return code;
+      if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
+    }
+    return res.statusCode ?? 0;
   }
 }

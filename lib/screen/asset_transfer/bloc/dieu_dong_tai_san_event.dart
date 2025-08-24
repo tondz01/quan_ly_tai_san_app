@@ -75,11 +75,24 @@ class DeleteDieuDongEvent extends DieuDongTaiSanEvent {
   List<Object?> get props => [context, id];
 }
 
+//Cập nhập trạng thái phiếu ký nội sinh
 class UpdateSigningStatusEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
   final String id;
+  final String userId;
 
-  const UpdateSigningStatusEvent(this.context, this.id);
+  const UpdateSigningStatusEvent(this.context, this.id, this.userId);
+
+  @override
+  List<Object?> get props => [context, id, userId];
+}
+
+//Hủy phiếu ký nội sinh
+class CancelDieuDongTaiSanEvent extends DieuDongTaiSanEvent {
+  final BuildContext context;
+  final String id;
+
+  const CancelDieuDongTaiSanEvent(this.context, this.id);
 
   @override
   List<Object?> get props => [context, id];

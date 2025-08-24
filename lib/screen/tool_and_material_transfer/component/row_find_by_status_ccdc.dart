@@ -30,7 +30,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'confirmed': provider.isShowConfirmed,
       'browser': provider.isShowBrowser,
       'approve': provider.isShowApprove,
-      'reject': provider.isShowReject,
       'cancel': provider.isShowCancel,
       'complete': provider.isShowComplete,
     };
@@ -43,7 +42,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'confirmed': provider.confirmedCount,
       'browser': provider.browserCount,
       'approve': provider.approveCount,
-      'reject': provider.rejectCount,
       'cancel': provider.cancelCount,
       'complete': provider.completeCount,
     };
@@ -56,7 +54,6 @@ class _FilterCheckboxes extends StatelessWidget {
       'confirmed': FilterStatus.confirmed.activeColor,
       'browser': FilterStatus.browser.activeColor,
       'approve': FilterStatus.approve.activeColor,
-      'reject': FilterStatus.reject.activeColor,
       'cancel': FilterStatus.cancel.activeColor,
       'complete': FilterStatus.complete.activeColor,
     };
@@ -87,9 +84,6 @@ class _FilterCheckboxes extends StatelessWidget {
             break;
           case 'approve':
             status = FilterStatus.approve;
-            break;
-          case 'reject':
-            status = FilterStatus.reject;
             break;
           case 'cancel':
             status = FilterStatus.cancel;

@@ -3,11 +3,15 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -91,11 +95,29 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   NhanVien? nguoiDaiDienDonViDaiDien;
   DieuDongTaiSanDto? dieuDongTaiSan;
 
+  PdfDocument? _document;
+
   @override
   void initState() {
-    _initData();
-    _updateControllers();
+    setState(() {
+      _initData();
+      _updateControllers();
+    });
     super.initState();
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   @override
@@ -106,10 +128,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         oldWidget.isEditing != widget.isEditing) {
       // Cập nhật lại trạng thái editing
       if (mounted) {
-        _initData();
-        setState(() {});
+        setState(() {
+          _initData();
+        });
       }
     }
+  }
+
+  bool editable() {
+    return (item != null &&
+        (item!.trangThai == 0 || item!.trangThai == 3) &&
+        item!.nguoiTao == currentUser?.tenDangNhap);
   }
 
   void _initData() {
@@ -117,30 +146,34 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
-    if (item != null) {
-      if (item!.trangThai == 0 && currentUser!.tenDangNhap != item!.nguoiTao) {
-        isEditing = true;
-      }
-      if (currentUser!.tenDangNhap != item!.nguoiTao) {
-        isEditing = false;
-      }
-    } else {
-      isEditing = true;
-    }
 
-    isUnitConfirm = item?.daXacNhan ?? false;
-    isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
-    isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
-    isRepresentativeUnitConfirm =
-        item?.donViDaiDienXacNhan == "0" ? false : true;
+    if (editable()) {
+      log('message item ${item?.trangThai}');
+      isEditing = true;
+    } else {
+      isEditing = false;
+    }
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
-    listAssetTransfer = widget.provider.dataAssetTransfer ?? [];
+    listAssetTransfer =
+        widget.provider.dataAssetTransfer
+            ?.where((element) => element.trangThai == 6)
+            .toList() ??
+        [];
 
     if (item != null) {
-      log(' errorr ------------------------------------------------');
+      isUnitConfirm = item?.daXacNhan ?? false;
+      isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
+      isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+      isRepresentativeUnitConfirm =
+          item?.donViDaiDienXacNhan == "0" ? false : true;
       getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
+    } else {
+      isUnitConfirm = false;
+      isDelivererConfirm = false;
+      isReceiverConfirm = false;
+      isRepresentativeUnitConfirm = false;
     }
     itemsNhanVien =
         listNhanVien.isNotEmpty
@@ -178,14 +211,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             : <DropdownMenuItem<DieuDongTaiSanDto>>[];
 
     // Cập nhật controllers với dữ liệu mới
-    _updateControllers();
+    setState(() {
+      _updateControllers();
+    });
 
     // Lưu giá trị ban đầu để so sánh
     // _saveOriginalValues();
   }
 
   void getStaffDonViGiaoAndNhan(String idDonViNhan, String idDonViGiao) {
-    log('message getStaffDonViGiaoAndNhan ${idDonViNhan} -- ${idDonViGiao}');
     listNhanVienDonViNhan =
         widget.provider.dataStaff
             ?.where((element) => element.phongBanId == idDonViNhan)
@@ -196,9 +230,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             ?.where((element) => element.phongBanId == idDonViGiao)
             .toList() ??
         [];
-
-    log('message getStaffDonViGiaoAndNhan ${listNhanVienDonViNhan.length}');
-    log('message getStaffDonViGiaoAndNhan listNhanVienDonViGiao ${listNhanVienDonViGiao.length}');
   }
 
   Map<String, bool> _validationErrors = {};
@@ -253,18 +284,24 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   void _updateControllers() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
-
-    controllerHandoverNumber.text = item?.id ?? '';
-    controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
-    controllerOrder.text = item?.lenhDieuDong ?? '';
-    controllerSenderUnit.text = item?.tenDonViGiao ?? '';
-    controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-    controllerTransferDate.text = item?.ngayBanGiao ?? '';
-    controllerLeader.text = item?.tenLanhDao ?? '';
-    controllerIssuingUnitRepresentative.text = item?.tenDaiDienBanHanhQD ?? '';
-    controllerDelivererRepresentative.text = item?.tenDaiDienBenGiao ?? '';
-    controllerReceiverRepresentative.text = item?.tenDaiDienBenNhan ?? '';
-    controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
+    if (item != null) {
+      controllerHandoverNumber.text = item?.id ?? '';
+      controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
+      controllerOrder.text = item?.lenhDieuDong ?? '';
+      controllerSenderUnit.text = item?.tenDonViGiao ?? '';
+      controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
+      controllerTransferDate.text = item?.ngayBanGiao ?? '';
+      controllerLeader.text = item?.tenLanhDao ?? '';
+      controllerIssuingUnitRepresentative.text =
+          item?.tenDaiDienBanHanhQD ?? '';
+      controllerDelivererRepresentative.text = item?.tenDaiDienBenGiao ?? '';
+      controllerReceiverRepresentative.text = item?.tenDaiDienBenNhan ?? '';
+      controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
+    } else {
+      isEditing = true;
+      controllerHandoverNumber.text = '';
+      controllerDocumentName.text = '';
+    }
   }
 
   void _saveAssetHandover() {
@@ -291,7 +328,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenNhanXacNhan": isReceiverConfirm,
       "idDonViDaiDien": nguoiDaiDienDonViDaiDien?.id ?? '',
       "donViDaiDienXacNhan": isRepresentativeUnitConfirm,
-      "trangThai": 0,
+      "trangThai": 1,
       "note": "",
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
@@ -304,7 +341,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       context.read<AssetHandoverBloc>().add(
         CreateAssetHandoverEvent(context, request),
       );
-    } else if (item!.trangThai == 0) {
+    }
+    {
+      int trangThai = item!.trangThai == 3 ? 1 : item!.trangThai!;
+      request['trangThai'] = trangThai;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
       context.read<AssetHandoverBloc>().add(
         UpdateAssetHandoverEvent(context, request, item!.id!),
@@ -419,6 +459,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget _buildTableDetail() {
     final screenWidth = MediaQuery.of(context).size.width;
     bool isWideScreen = screenWidth > 800;
+    log('message isEditing ${item?.trangThai}');
     return Column(
       children: [
         Row(
@@ -426,26 +467,27 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             // Hiển thị indicator unsaved changes và nút Save/Cancel
-            if (isEditing)
-              Row(
-                children: [
-                  if (widget.provider.hasUnsavedChanges)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'Có thay đổi chưa lưu',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                    ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
+            Row(
+              children: [
+                // if (widget.provider.hasUnsavedChanges)
+                //   Container(
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 8,
+                //       vertical: 4,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       color: Colors.orange,
+                //       borderRadius: BorderRadius.circular(4),
+                //     ),
+                //     child: const Text(
+                //       'Có thay đổi chưa lưu',
+                //       style: TextStyle(color: Colors.white, fontSize: 12),
+                //     ),
+                //   ),
+                // const SizedBox(width: 10),
+                Visibility(
+                  visible: isEditing,
+                  child: ElevatedButton(
                     onPressed: _saveChanges,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -453,8 +495,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     ),
                     child: const Text('Lưu'),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
+                ),
+                const SizedBox(width: 8),
+                Visibility(
+                  visible: isEditing,
+                  child: ElevatedButton(
                     onPressed: _cancelChanges,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
@@ -462,17 +507,43 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     ),
                     child: const Text('Hủy'),
                   ),
-                ],
-              ),
-            SgIndicator(
-              steps: [
-                'Nháp',
-                'Chờ xác nhận',
-                'Xác nhận',
-                'Chờ duyệt',
-                'Hủy',
-                'Hoàn thành',
+                ),
+                Visibility(
+                  visible: item != null && ![0, 3, 4].contains(item!.trangThai),
+                  child: MaterialTextButton(
+                    text: 'Hủy phiếu bàn giao',
+                    icon: Icons.cancel,
+                    backgroundColor: ColorValue.error,
+                    foregroundColor: Colors.white,
+                    onPressed: () {
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xác nhận hủy phiếu',
+                        cancelText: 'Không',
+                        confirmText: 'Có, hủy phiếu',
+                        message:
+                            'Bạn có chắc chắn muốn hủy phiếu bàn giao này không?',
+                        onCancel: () {},
+                        onConfirm: () {
+                          widget.provider.isShowInput = false;
+                          final assetHandoverBloc =
+                              BlocProvider.of<AssetHandoverBloc>(context);
+                          assetHandoverBloc.add(
+                            CancelAssetHandoverEvent(
+                              context,
+                              item!.id.toString(),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
               ],
+            ),
+            SgIndicator(
+              steps: ['Nháp', 'Chờ xác nhận', 'Chờ duyệt', 'Hủy', 'Hoàn thành'],
               currentStep: item?.trangThai ?? 0,
               fontSize: 10,
             ),
@@ -503,8 +574,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   isUploading: false,
                   label: 'Tài liệu Quyết định',
                   errorMessage: 'Tài liệu quyết định là bắt buộc',
-                  hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
-                  allowedExtensions: ['pdf', 'docx'],
+                  hintText: 'Định dạng hỗ trợ: .pdf',
+                  allowedExtensions: ['pdf'],
                 ),
               ),
               const SizedBox(height: 20),
@@ -517,10 +588,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               ),
               previewDocumentAssetHandover(
                 context: context,
-                item: item,
+                item: item ?? getAssetHandoverPreview(),
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
                 isShowKy: false,
+                document: _document,
               ),
             ],
           ),
@@ -571,11 +643,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Lệnh điều động',
           controller: controllerOrder,
           isEditing: isEditing,
+          value: dieuDongTaiSan,
           defaultValue:
               item?.lenhDieuDong != null
                   ? getAssetTransfer(
                     listAssetTransfer: listAssetTransfer,
-                    idAssetTransfer: item!.lenhDieuDong!,
+                    idAssetTransfer: item!.quyetDinhDieuDongSo!,
                   )
                   : null,
           fieldName: 'order',
@@ -586,25 +659,29 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               _selectedFileName = dieuDongTaiSan?.tenFile;
               _selectedFilePath = dieuDongTaiSan?.duongDanFile;
 
+              if (dieuDongTaiSan?.tenFile!.isNotEmpty ?? true) {
+                _loadPdfNetwork(dieuDongTaiSan?.tenFile ?? '');
+              }
+
               //change Đơn vị giao
               donViGiao = getPhongBan(
                 listPhongBan: listPhongBan,
                 idPhongBan: dieuDongTaiSan?.idDonViGiao ?? '',
               );
-              controllerSenderUnit.text = donViGiao?.tenPhongBan ?? '';
+              // controllerSenderUnit.text = donViGiao?.tenPhongBan ?? '';
 
               //change Đơn vị nhận
               donViNhan = getPhongBan(
                 listPhongBan: listPhongBan,
                 idPhongBan: dieuDongTaiSan?.idDonViNhan ?? '',
               );
-              controllerReceiverUnit.text = donViNhan?.tenPhongBan ?? '';
+              // controllerReceiverUnit.text = donViNhan?.tenPhongBan ?? '';
               getStaffDonViGiaoAndNhan(
                 dieuDongTaiSan?.idDonViNhan ?? '',
                 dieuDongTaiSan?.idDonViGiao ?? '',
               );
+              widget.provider.getListDetailAssetMobilization(value.id ?? '');
             });
-            widget.provider.getListDetailAssetMobilization(value.id ?? '');
           },
           validationErrors: _validationErrors,
         ),
@@ -612,6 +689,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đơn vị giao',
           controller: controllerSenderUnit,
           isEditing: false,
+          value: donViGiao,
           defaultValue:
               item?.idDonViGiao != null
                   ? getPhongBan(
@@ -630,6 +708,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           label: 'Đơn vị nhận',
           controller: controllerReceiverUnit,
           isEditing: false,
+          value: donViNhan,
           defaultValue:
               item?.idDonViNhan != null
                   ? getPhongBan(
@@ -802,6 +881,42 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
       ],
+    );
+  }
+
+  AssetHandoverDto? getAssetHandoverPreview() {
+    return AssetHandoverDto(
+      id: controllerHandoverNumber.text,
+      idCongTy: currentUser?.idCongTy ?? '',
+      banGiaoTaiSan: controllerDocumentName.text,
+      quyetDinhDieuDongSo: dieuDongTaiSan?.soQuyetDinh ?? '',
+      lenhDieuDong: dieuDongTaiSan?.id ?? '',
+      idDonViGiao: donViGiao?.id ?? '',
+      tenDonViGiao: donViGiao?.tenPhongBan ?? '',
+      idDonViNhan: donViNhan?.id ?? '',
+      tenDonViNhan: donViNhan?.tenPhongBan ?? '',
+      idDonViDaiDien: nguoiDaiDienBanHanhQD?.id ?? '',
+      tenDonViDaiDien: nguoiDaiDienBanHanhQD?.hoTen ?? '',
+      ngayBanGiao: _formatDate(controllerTransferDate.text),
+      idLanhDao: nguoiLanhDao?.id ?? '',
+      tenLanhDao: nguoiLanhDao?.hoTen ?? '',
+      idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
+      tenDaiDienBanHanhQD: nguoiDaiDienBanHanhQD?.hoTen ?? '',
+      daXacNhan: isUnitConfirm,
+      idDaiDienBenGiao: nguoiDaiDienBenGiao?.id ?? '',
+      tenDaiDienBenGiao: nguoiDaiDienBenGiao?.hoTen ?? '',
+      daiDienBenGiaoXacNhan: isDelivererConfirm,
+      idDaiDienBenNhan: nguoiDaiDienBenNhan?.id ?? '',
+      tenDaiDienBenNhan: nguoiDaiDienBenNhan?.hoTen ?? '',
+      daiDienBenNhanXacNhan: isReceiverConfirm,
+      donViDaiDienXacNhan: nguoiDaiDienDonViDaiDien?.id ?? '',
+      trangThai: 1,
+      note: '',
+      ngayTao: DateTime.now().toString(),
+      ngayCapNhat: DateTime.now().toString(),
+      nguoiTao: currentUser?.tenDangNhap ?? '',
+      nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+      isActive: true,
     );
   }
 }

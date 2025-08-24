@@ -6,6 +6,7 @@ import '../model/dieu_dong_tai_san_dto.dart';
 import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
     show
+        CancelDieuDongTaiSanEvent,
         CreateDieuDongEvent,
         DeleteDieuDongEvent,
         DieuDongTaiSanEvent,
@@ -26,6 +27,7 @@ class DieuDongTaiSanBloc
     on<UpdateDieuDongEvent>(_updateDieuDong);
     on<DeleteDieuDongEvent>(_deleteDieuDong);
     on<UpdateSigningStatusEvent>(_updateSigningStatus);
+    on<CancelDieuDongTaiSanEvent>(_cancelDieuDongTaiSan);
   }
 
   Future<void> _getListDieuDongTaiSan(
@@ -145,6 +147,7 @@ class DieuDongTaiSanBloc
     }
   }
 
+  // Bloc cập nhập trạng thái phiếu ký nội sinh
   Future<void> _updateSigningStatus(
     UpdateSigningStatusEvent event,
     Emitter emit,
@@ -153,12 +156,39 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetTransferRepository().updateState(
       event.id,
+      event.userId,
     );
     emit(DieuDongTaiSanLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(UpdateSigningStatusSuccessState());
     } else {
-      String msg = "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
+      String msg =
+          "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
+      emit(
+        UpdateSigningStatusFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  // Bloc hủy phiếu ký nội sinh
+  Future<void> _cancelDieuDongTaiSan(
+    CancelDieuDongTaiSanEvent event,
+    Emitter emit,
+  ) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    Map<String, dynamic> result = await AssetTransferRepository()
+        .cancelDieuDongTaiSan(event.id);
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CancelDieuDongTaiSanSuccessState());
+    } else {
+      String msg =
+          "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
       emit(
         UpdateSigningStatusFailedState(
           title: "notice",

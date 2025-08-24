@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -6,8 +5,6 @@ import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-
-import '../repository/detail_tool_and_material_transfer_repository.dart';
 
 class DetailToolAndMaterialTransferTable extends StatefulWidget {
   final bool isEditing;
@@ -32,19 +29,39 @@ class DetailToolAndMaterialTransferTable extends StatefulWidget {
 class _DetailToolAndMaterialTransferTableState
     extends State<DetailToolAndMaterialTransferTable> {
   late List<DetailToolAndMaterialTransferDto> movementDetails;
-  final repo = DetailToolAndMaterialTransferRepository();
+  late List<ToolsAndSuppliesDto> listAsset;
+  final GlobalKey<SgEditableTableState<ToolsAndSuppliesDto>> _tableKey =
+      GlobalKey();
+
+  void _forceNotifyDataChanged() {
+    widget.onDataChanged?.call(List.from(listAsset));
+  }
 
   @override
   void initState() {
     super.initState();
+    if (widget.initialDetails.isNotEmpty) {
+      listAsset = getAssetsByChildAssets(
+        widget.allAssets,
+        widget.initialDetails,
+      );
+    } else {
+      listAsset = [];
+    }
     movementDetails = List.from(widget.initialDetails);
-    log('message initialDetails: ${jsonEncode(movementDetails)}');
   }
 
   @override
   void didUpdateWidget(DetailToolAndMaterialTransferTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    movementDetails = List.from(widget.initialDetails);
+    if (oldWidget.initialDetails != widget.initialDetails &&
+        widget.initialDetails.isNotEmpty) {
+      movementDetails = List.from(widget.initialDetails);
+      listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
+    }
+    if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
+      listAsset = [];
+    }
   }
 
   List<ToolsAndSuppliesDto> getAssetsByChildAssets(
@@ -58,13 +75,12 @@ class _DetailToolAndMaterialTransferTableState
 
     // Duyệt theo thứ tự child, loại trùng idTaiSan
     final result = <ToolsAndSuppliesDto>[];
-    final seen = <String>{};
+
     for (final c in chiTietDieuDong) {
       final id = c.idCCDCVatTu;
-      if (seen.add(id)) {
-        final asset = idToAsset[id];
-        asset?.copyWith(soLuongXuat: c.soLuongXuat);
-        if (asset != null) result.add(asset);
+      final asset = idToAsset[id];
+      if (asset != null) {
+        result.add(asset);
       }
     }
     return result;
@@ -87,10 +103,8 @@ class _DetailToolAndMaterialTransferTableState
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
           child: SgEditableTable<ToolsAndSuppliesDto>(
-            initialData: getAssetsByChildAssets(
-              widget.allAssets,
-              movementDetails,
-            ),
+            key: _tableKey,
+            initialData: listAsset,
             createEmptyItem: ToolsAndSuppliesDto.empty,
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
@@ -101,7 +115,12 @@ class _DetailToolAndMaterialTransferTableState
             addRowText: 'Thêm một dòng',
             isEditing: widget.isEditing, // Pass the editing state
             omittedSize: 130,
-            onDataChanged: widget.onDataChanged,
+            onDataChanged: (data) {
+              setState(() {
+                listAsset = List.from(data);
+              });
+              widget.onDataChanged?.call(data);
+            },
             columns: [
               SgEditableColumn<ToolsAndSuppliesDto>(
                 field: 'asset',
@@ -114,7 +133,7 @@ class _DetailToolAndMaterialTransferTableState
                   item.ten = '${value.id} - ${value.ten}';
                   item.idDonVi = value.idDonVi;
                 },
-                sortValueGetter: (item) => item.toJson(),
+                sortValueGetter: (item) => item,
                 isCellEditableDecider: (item, rowIndex) => true,
                 editor: EditableCellEditor.dropdown,
                 dropdownItems: [
@@ -128,6 +147,8 @@ class _DetailToolAndMaterialTransferTableState
                   updateRow('don_vi_tinh', newValue.donViTinh);
                   updateRow('so_luong', newValue.soLuong);
                   updateRow('ghi_chu', newValue.ghiChu);
+
+                  Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),
               SgEditableColumn<ToolsAndSuppliesDto>(

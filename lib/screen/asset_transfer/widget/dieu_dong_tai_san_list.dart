@@ -1,9 +1,6 @@
-// ignore_for_file: deprecated_member_use
-
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
@@ -12,9 +9,11 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
@@ -25,6 +24,7 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
@@ -47,8 +47,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   List<DieuDongTaiSanDto> selectedItems = [];
   UserInfoDTO? userInfo;
 
-  final List<DieuDongTaiSanDto> listAssetHandover = [];
-
+  final List<AssetHandoverDto> listAssetHandover = [];
+  PdfDocument? _document;
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
@@ -68,6 +68,20 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     userInfo = AccountHelper.instance.getUserInfo();
     _initializeColumnOptions();
     _callGetListAssetHandover();
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   void _initializeColumnOptions() {
@@ -243,16 +257,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<DieuDongTaiSanDto>> columns = _buildColumns();
-    log('message widget.provider.data: ${MediaQuery.of(context).size.width}');
-
     return MultiBlocListener(
       listeners: [
-        BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
+        BlocListener<AssetHandoverBloc, AssetHandoverState>(
           listener: (context, state) {
-            if (state is GetListDieuDongTaiSanSuccessState) {
+            if (state is GetListAssetHandoverSuccessState) {
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-            } else if (state is GetListDieuDongTaiSanFailedState) {}
+            } else if (state is ErrorState) {}
           },
         ),
       ],
@@ -341,42 +353,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     onTap: () {
                       if (selectedItems.isNotEmpty) {
                         DieuDongTaiSanDto? item = selectedItems.first;
-                        final idSignatureGroup1 =
-                            [item.nguoiTao].whereType<String>().toList();
-                        final idSignatureGroup2 =
-                            [
-                              item.idTrinhDuyetCapPhong,
-                              item.idTrinhDuyetGiamDoc,
-                            ].whereType<String>().toList();
-                        final allIdSignature = [
-                          ...idSignatureGroup1,
-                          ...idSignatureGroup2,
-                        ];
-                        // idSignatureGroup2.contains(userInfo?.tenDangNhap);
-                        if (idSignatureGroup2.contains(userInfo?.tenDangNhap) &&
-                            item.trangThai! < 3) {
-                          AppUtility.showSnackBar(
-                            context,
-                            'Bạn chứa thể ký phần này do các đơn vị trước chưa ký. \nVui lòng đợi các đơn vị trước ký xong mới ký tiếp',
-                            isError: true,
-                            textAlign: TextAlign.center,
-                          );
-                          return;
-                        }
-                        if (!allIdSignature.contains(userInfo?.tenDangNhap)) {
-                          AppUtility.showSnackBar(
-                            context,
-                            'Bạn không có quyền ký văn bản này',
-                            isError: true,
-                          );
-                          return;
-                        }
-
-                        previewDocument(
-                          context: context,
-                          item: item,
-                          provider: widget.provider,
-                        );
+                        _handleSignDocument(item, userInfo!, widget.provider);
                       }
                     },
                     child: Row(
@@ -436,12 +413,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     onTap: () {
                       if (selectedItems.isNotEmpty) {
                         DieuDongTaiSanDto? item = selectedItems.first;
-
-                        previewDocument(
-                          context: context,
-                          item: item,
-                          provider: widget.provider,
-                        );
+                        _handleSignDocument(item, userInfo!, widget.provider);
                       }
                     },
                     child: Row(
@@ -481,13 +453,20 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         iconColor: ColorValue.lightAmber,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
-        onPressed:
-            () => PropertyHandoverMinutes.showPopup(
+        onPressed: () {
+          if (listAssetHandover.isEmpty) {
+            AppUtility.showSnackBar(
               context,
-              listAssetHandover
-                  .where((itemAH) => itemAH.id == item.id)
-                  .toList(),
-            ),
+              'Không có biên bản bàn giao tài sản nào cho phiếu này',
+              isError: true,
+            );
+            return;
+          }
+          PropertyHandoverMinutes.showPopup(
+            context,
+            listAssetHandover.where((itemAH) => itemAH.id == item.id).toList(),
+          );
+        },
       ),
       ActionButtonConfig(
         icon: Icons.visibility,
@@ -495,13 +474,27 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         iconColor: ColorValue.cyan,
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
-        onPressed: () {
-          previewDocument(
-            context: context,
-            item: item,
-            provider: widget.provider,
-            isShowKy: false,
-          );
+        onPressed: () async {
+          if (item.tenFile == null || item.tenFile!.isEmpty) {
+            previewDocument(
+              context: context,
+              item: item,
+              provider: widget.provider,
+              isShowKy: false,
+              document: _document,
+            );
+          } else {
+            await _loadPdfNetwork(item.tenFile!);
+            if (mounted) {
+              previewDocument(
+                context: context,
+                item: item,
+                provider: widget.provider,
+                isShowKy: false,
+                document: _document,
+              );
+            }
+          }
         },
       ),
       ActionButtonConfig(
@@ -563,6 +556,110 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  // Check show popup sign document
+  void _handleSignDocument(
+    DieuDongTaiSanDto item,
+    UserInfoDTO userInfo,
+    DieuDongTaiSanProvider provider,
+  ) async {
+    // Định nghĩa luồng ký theo thứ tự
+    final signatureFlow =
+        [
+              {"id": item.nguoiTao, "signed": true, "label": "Người tạo"},
+              {
+                "id": item.idTruongPhongDonViGiao,
+                "signed": item.truongPhongDonViGiaoXacNhan == true,
+                "label": "Trưởng phòng Đơn vị giao",
+              },
+              {
+                "id": item.idPhoPhongDonViGiao,
+                "signed": item.phoPhongDonViGiaoXacNhan == true,
+                "label": "Phó phòng Đơn vị giao",
+              },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trangThai != null && item.trangThai! >= 3,
+                "label": "Trình duyệt cấp phòng",
+              },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trangThai != null && item.trangThai! >= 3,
+                "label": "Giám đốc",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    // Kiểm tra hoàn thành
+    if (item.trangThai == 6 || item.trangThai == 5) {
+      String title = widget.provider.getScreenTitle();
+      String message = item.trangThai == 5 ? 'Đã bị hủy' : 'Đã hoàn thành';
+      AppUtility.showSnackBar(
+        context,
+        'Phiếu $title này "$message", không thể ký.',
+        isError: true,
+        textAlign: TextAlign.center,
+      );
+      return;
+    }
+
+    // Kiểm tra user có trong flow không
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    if (currentIndex == -1) {
+      AppUtility.showSnackBar(
+        context,
+        'Bạn không có quyền ký văn bản này',
+        isError: true,
+      );
+      return;
+    }
+
+    // Nếu đã ký rồi thì chặn
+    if (signatureFlow[currentIndex]["signed"] == true) {
+      AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
+      return;
+    }
+
+    // Kiểm tra tất cả các bước trước đã ký chưa
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+    if (previousNotSigned.isNotEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+        isError: true,
+      );
+      return;
+    }
+
+    // Nếu vượt qua tất cả check → mở preview để ký
+    if (item.tenFile == null || item.tenFile!.isEmpty) {
+      previewDocument(
+        context: context,
+        item: item,
+        provider: widget.provider,
+        isShowKy: false,
+        document: _document,
+      );
+    } else {
+      await _loadPdfNetwork(item.tenFile!);
+      if (mounted) {
+        previewDocument(
+          context: context,
+          item: item,
+          provider: widget.provider,
+          isShowKy: false,
+          document: _document,
+        );
+      }
     }
   }
 }

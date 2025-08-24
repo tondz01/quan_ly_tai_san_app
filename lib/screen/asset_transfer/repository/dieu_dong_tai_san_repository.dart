@@ -6,7 +6,6 @@ import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';
-import '../model/dieu_dong_tai_san.dart';
 import '../model/dieu_dong_tai_san_dto.dart';
 import 'chi_tiet_dieu_dong_tai_san_repository.dart';
 
@@ -76,18 +75,6 @@ class DieuDongTaiSanRepository {
 				);
 		dieuDongTaiSan.chiTietDieuDongTaiSans = chiTietDieuDongTS;
 		return dieuDongTaiSan;
-	}
-
-	Future<int> create(DieuDongTaiSan obj) async {
-		final res = await _dio.post('', data: obj.toJson());
-		final data = res.data;
-		if (data is int) return data;
-		if (data is Map<String, dynamic>) {
-			final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
-			if (code is int) return code;
-			if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
-		}
-		return res.statusCode ?? 0;
 	}
 
 	Future<int> update(String id, LenhDieuDongRequest obj) async {

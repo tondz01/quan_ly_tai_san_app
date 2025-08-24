@@ -33,19 +33,39 @@ class _AssetTransferMovementTableState
   late List<ChiTietDieuDongTaiSan> movementDetails;
   late List<AssetManagementDto> listAsset;
   final repo = ChiTietDieuDongTaiSanRepository();
+  final GlobalKey<SgEditableTableState<AssetManagementDto>> _tableKey =
+      GlobalKey();
+
+  void _forceNotifyDataChanged() {
+    widget.onDataChanged?.call(List.from(listAsset));
+  }
 
   @override
   void initState() {
     super.initState();
+    if (widget.initialDetails.isNotEmpty) {
+      listAsset = getAssetsByChildAssets(
+        widget.allAssets,
+        widget.initialDetails,
+      );
+    } else {
+      listAsset = [];
+    }
     movementDetails = List.from(widget.initialDetails);
-    listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
   }
 
   @override
   void didUpdateWidget(AssetTransferMovementTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    movementDetails = List.from(widget.initialDetails);
-    listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
+    // Chỉ cập nhật khi initialDetails thực sự thay đổi và khác với dữ liệu hiện tại
+    if (oldWidget.initialDetails != widget.initialDetails &&
+        widget.initialDetails.isNotEmpty) {
+      movementDetails = List.from(widget.initialDetails);
+      listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
+    }
+    if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
+      listAsset = [];
+    }
   }
 
   List<AssetManagementDto> getAssetsByChildAssets(
@@ -58,14 +78,14 @@ class _AssetTransferMovementTableState
         if (a.id != null) a.id!: a,
     };
 
-    // Duyệt theo thứ tự child, loại trùng idTaiSan
+    // Duyệt theo thứ tự child, cho phép trùng lặp để có thể thêm nhiều dòng
     final result = <AssetManagementDto>[];
-    final seen = <String>{};
     for (final c in chiTietDieuDong) {
       final id = c.idTaiSan;
-      if (seen.add(id)) {
-        final asset = idToAsset[id];
-        if (asset != null) result.add(asset);
+      final asset = idToAsset[id];
+      if (asset != null) {
+        // Tạo bản sao để tránh tham chiếu chung
+        result.add(asset);
       }
     }
     return result;
@@ -73,7 +93,7 @@ class _AssetTransferMovementTableState
 
   @override
   Widget build(BuildContext context) {
-    log('movementDetails: ${movementDetails.length}');
+    log('listAsset length: ${listAsset.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -89,6 +109,7 @@ class _AssetTransferMovementTableState
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
           child: SgEditableTable<AssetManagementDto>(
+            key: _tableKey,
             initialData: listAsset,
             createEmptyItem: AssetManagementDto.empty,
             rowHeight: 40.0,
@@ -101,30 +122,12 @@ class _AssetTransferMovementTableState
             isEditing: widget.isEditing, // Pass the editing state
             omittedSize: 130,
             onDataChanged: (data) {
-              // setState(() {
-              //   movementDetails =
-              //       data
-              //           .map(
-              //             (e) => ChiTietDieuDongTaiSan(
-              //               id: '',
-              //               idDieuDongTaiSan: '',
-              //               soQuyetDinh: '',
-              //               tenPhieu: '',
-              //               idTaiSan: e.id ?? '',
-              //               tenTaiSan: e.tenTaiSan ?? '',
-              //               donViTinh: e.donViTinh ?? '',
-              //               hienTrang: e.hienTrang ?? 0,
-              //               soLuong: e.soLuong ?? 0,
-              //               ghiChu: e.ghiChu ?? '',
-              //               ngayTao: e.ngayTao ?? '',
-              //               ngayCapNhat: e.ngayCapNhat ?? '',
-              //               nguoiTao: '',
-              //               nguoiCapNhat: '',
-              //               isActive: true,
-              //             ),
-              //           )
-              //           .toList();
-              // });
+              // Cập nhật local state
+              setState(() {
+                listAsset = List.from(data);
+              });
+
+              // Thông báo thay đổi lên parent
               widget.onDataChanged?.call(data);
             },
             columns: [
@@ -137,9 +140,14 @@ class _AssetTransferMovementTableState
                 setValue: (item, value) {
                   if (value is AssetManagementDto) {
                     item.id = value.id;
-                    item.tenTaiSan = '${value.id} - ${value.tenTaiSan}';
+                    item.tenTaiSan = value.tenTaiSan;
+                    item.donViTinh = value.donViTinh;
+                    item.soLuong = value.soLuong;
+                    item.hienTrang = value.hienTrang;
+                    item.ghiChu = value.ghiChu ?? '';
                     item.idDonViHienThoi = value.idDonViHienThoi;
                   }
+                  log('setValue: ${item.tenTaiSan}');
                 },
                 sortValueGetter: (item) => item.tenTaiSan,
                 isCellEditableDecider: (item, rowIndex) => true,
@@ -148,16 +156,38 @@ class _AssetTransferMovementTableState
                   for (var element in widget.allAssets)
                     DropdownMenuItem<AssetManagementDto>(
                       value: element,
-                      child: Text('${element.id} - ${element.tenTaiSan}'),
+                      child: Text(element.tenTaiSan ?? ''),
                     ),
                 ],
-                // displayStringForOption: (item) => item.tenTaiSan ?? '',
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
                   if (newValue is AssetManagementDto) {
+                    log('onValueChanged: ${newValue.tenTaiSan}, rowIndex: $rowIndex');
+                    
+                    // Cập nhật đầy đủ thông tin của item trong listAsset
+                    if (rowIndex < listAsset.length) {
+                      final updatedItem = listAsset[rowIndex];
+                      updatedItem.id = newValue.id;
+                      updatedItem.tenTaiSan = '${newValue.id} - ${newValue.tenTaiSan}';
+                      updatedItem.donViTinh = newValue.donViTinh;
+                      updatedItem.soLuong = newValue.soLuong;
+                      updatedItem.hienTrang = newValue.hienTrang;
+                      updatedItem.ghiChu = newValue.ghiChu ?? '';
+                      updatedItem.idDonViHienThoi = newValue.idDonViHienThoi;
+                      
+                      log('Updated item in listAsset: ${updatedItem.id} - ${updatedItem.tenTaiSan}');
+                    }
+                    
+                    // Cập nhật các cột khác
                     updateRow('don_vi_tinh', newValue.donViTinh);
                     updateRow('so_luong', newValue.soLuong);
                     updateRow('tinh_trang', newValue.hienTrang);
                     updateRow('ghi_chu', newValue.ghiChu ?? '');
+                    
+                    // Force rebuild để hiển thị đúng item đã chọn
+                    setState(() {});
+                    
+                    // Force trigger onDataChanged để parent nhận được thay đổi
+                    Future.microtask(() => _forceNotifyDataChanged());
                   }
                 },
               ),

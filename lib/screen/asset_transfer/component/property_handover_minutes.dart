@@ -3,16 +3,22 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
+import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-import '../model/dieu_dong_tai_san_dto.dart';
 import 'popup/columns_asset_handover.dart';
 
 class PropertyHandoverMinutes {
-  static void showPopup(BuildContext context, List<DieuDongTaiSanDto> data) {
+  static void showPopup(BuildContext context, List<AssetHandoverDto> data) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -88,7 +94,7 @@ class PropertyHandoverMinutes {
 }
 
 class _PropertyHandoverMinutesContent extends StatefulWidget {
-  final List<DieuDongTaiSanDto> data;
+  final List<AssetHandoverDto> data;
   const _PropertyHandoverMinutesContent({required this.data});
 
   @override
@@ -98,326 +104,355 @@ class _PropertyHandoverMinutesContent extends StatefulWidget {
 
 class _PropertyHandoverMinutesContentState
     extends State<_PropertyHandoverMinutesContent> {
-  final verticalScrollController = ScrollController();
-  final horizontalScrollController = ScrollController();
+  late List<ColumnDisplayOption> columnOptions;
 
-  static const Map<String, Color> _statusColors = {
-    'Nháp': ColorValue.silverGray,
-    'Sẵn sàng': ColorValue.lightAmber,
-    'Xác nhận': ColorValue.mediumGreen,
-    'Trình Duyệt': ColorValue.lightBlue,
-    'Hoàn thành': ColorValue.forestGreen,
-    'Hủy': ColorValue.brightRed,
-  };
+  @override
+  void initState() {
+    super.initState();
+    _initializeColumnOptions();
+  }
 
-  static const Map<String, int> _statusValues = {
-    'Nháp': 0,
-    'Sẵn sàng': 1,
-    'Xác nhận': 2,
-    'Trình Duyệt': 3,
-    'Hoàn thành': 4,
-    'Hủy': 5,
-  };
+  List<String> visibleColumnIds = [
+    'name',
+    'decision_number',
+    'transfer_order',
+    'transfer_date',
+    'movement_details',
+    'sender_unit',
+    'receiver_unit',
+    'created_by',
+    'status',
+    'actions',
+  ];
 
-  bool get _isSmallScreen => MediaQuery.of(context).size.width < 1100;
+  void _initializeColumnOptions() {
+    columnOptions = [
+      ColumnDisplayOption(
+        id: 'name',
+        label: 'Bàn giao tài sản',
+        isChecked: visibleColumnIds.contains('name'),
+      ),
+      ColumnDisplayOption(
+        id: 'decision_number',
+        label: 'Quyết định điều động',
+        isChecked: visibleColumnIds.contains('decision_number'),
+      ),
+      ColumnDisplayOption(
+        id: 'transfer_order',
+        label: 'Lệnh điều động',
+        isChecked: visibleColumnIds.contains('transfer_order'),
+      ),
+      ColumnDisplayOption(
+        id: 'transfer_date',
+        label: 'Ngày bàn giao',
+        isChecked: visibleColumnIds.contains('transfer_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'sender_unit',
+        label: 'Đơn vị giao',
+        isChecked: visibleColumnIds.contains('sender_unit'),
+      ),
+      ColumnDisplayOption(
+        id: 'receiver_unit',
+        label: 'Đơn vị nhận',
+        isChecked: visibleColumnIds.contains('receiver_unit'),
+      ),
+      ColumnDisplayOption(
+        id: 'created_by',
+        label: 'Người lập phiếu',
+        isChecked: visibleColumnIds.contains('created_by'),
+      ),
+      ColumnDisplayOption(
+        id: 'status',
+        label: 'Trạng thái',
+        isChecked: visibleColumnIds.contains('status'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('status'),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     log(MediaQuery.of(context).size.width.toString());
-    return Container(
-      decoration: _buildContainerDecoration(),
-      child: Column(
-        children: [
-          _buildTableHeader(),
-          if (_isSmallScreen) _buildScrollIndicator(),
-          Expanded(child: _buildTable()),
-        ],
-      ),
-    );
-  }
-
-  BoxDecoration _buildContainerDecoration() {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: Colors.grey.shade300),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 4,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTableHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(8),
-          topRight: Radius.circular(8),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [_buildTitleSection(), _buildStatusSummary()],
-      ),
-    );
-  }
-
-  Widget _buildTitleSection() {
+    final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
     return Row(
       children: [
-        Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-        const SizedBox(width: 8),
-        Text(
-          'Danh sách biên bản bàn giao (${widget.data.length})',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade700,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusSummary() {
-    return Wrap(
-      spacing: 16,
-      runSpacing: 8,
-      children: _statusColors.entries.map(_buildStatusItem).toList(),
-    );
-  }
-
-  Widget _buildStatusItem(MapEntry<String, Color> entry) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: entry.value,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          '${entry.key} (${_getCountByState(entry.key)})',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade700,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScrollIndicator() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.swap_horiz, size: 16, color: Colors.blue.shade700),
-          const SizedBox(width: 8),
-          Text(
-            'Có thể scroll ngang để xem thêm cột',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.blue.shade700,
-              fontStyle: FontStyle.italic,
+        // if (url.isNotEmpty && isShowPreview) displayPreview(),
+        Expanded(
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        spacing: 8,
+                        children: [
+                          Icon(
+                            Icons.table_chart,
+                            color: Colors.grey.shade600,
+                            size: 18,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2.5),
+                            child: Text(
+                              'Biên bản bàn giao tài sản (${widget.data.length})',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _showColumnDisplayPopup,
+                            child: Icon(
+                              Icons.settings,
+                              color: ColorValue.link,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                      FindByStateAssetHandover(
+                        provider: context.read<AssetHandoverProvider>(),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: TableBaseView<AssetHandoverDto>(
+                    searchTerm: '',
+                    columns: columns,
+                    data: widget.data,
+                    horizontalController: ScrollController(),
+                    onRowTap: (item) {
+                      // isShowPreview = true;
+                      // widget.provider.onChangeDetail(context, item);
+                    },
+                    onSelectionChanged: (items) {},
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTable() {
-    return Scrollbar(
-      thumbVisibility: true,
-      controller: verticalScrollController,
-      child: SingleChildScrollView(
-        controller: verticalScrollController,
-        scrollDirection: Axis.vertical,
-        child: Scrollbar(
-          thumbVisibility: true,
-          controller: horizontalScrollController,
-          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
-          child: SingleChildScrollView(
-            controller: horizontalScrollController,
-            scrollDirection: Axis.horizontal,
-            child: _buildTableWidget(),
-          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildTableWidget() {
-    final columns = _buildColumns();
-    final table = SgTable<DieuDongTaiSanDto>(
-      rowHeight: 45.0,
-      data: widget.data,
-      titleStyleHeader: const TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 13,
-        color: Colors.black87,
-      ),
-      headerBackgroundColor: Colors.grey.shade100,
-      oddRowBackgroundColor: Colors.white,
-      evenRowBackgroundColor: Colors.grey.shade50,
-      showVerticalLines: false,
-      showHorizontalLines: true,
-      columns: columns,
-    );
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+  void _showColumnDisplayPopup() async {
+    await showColumnDisplayPopup(
+      context: context,
+      columns: columnOptions,
+      onSave: (selectedColumns) {
+        setState(() {
+          visibleColumnIds = selectedColumns;
+          _updateColumnOptions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã cập nhật hiển thị cột'),
+            backgroundColor: Colors.green,
           ),
-        ],
-      ),
-      child:
-          _isSmallScreen
-              ? SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: columns.fold<double>(
-                    0,
-                    (sum, column) => sum + (column.width ?? 0),
-                  ),
-                  child: table,
-                ),
-              )
-              : table,
+        );
+      },
+      onCancel: () {
+        // Reset về trạng thái ban đầu
+        _updateColumnOptions();
+      },
     );
   }
 
-  List<SgTableColumn<DieuDongTaiSanDto>> _buildColumns() {
-    if (_isSmallScreen) {
-      return _buildSmallScreenColumns();
-    } else {
-      return _buildLargeScreenColumns();
+  void _updateColumnOptions() {
+    for (var option in columnOptions) {
+      option.isChecked = visibleColumnIds.contains(option.id);
     }
   }
 
-  List<SgTableColumn<DieuDongTaiSanDto>> _buildSmallScreenColumns() {
-    const columnWidths = {
-      'Quyết định điều động': 150.0,
-      'Lệnh điều động': 200.0,
-      'Ngày bàn giao': 120.0,
-      'Chi tiết bàn giao': 200.0,
-      'Đơn vị giao': 150.0,
-      'Đơn vị nhận': 150.0,
-      'Trạng thái': 120.0,
-      'Actions': 100.0,
-    };
+  List<SgTableColumn<AssetHandoverDto>> _buildColumns() {
+    final List<SgTableColumn<AssetHandoverDto>> columns = [];
 
-    return _createColumns(context, columnWidths);
+    // Thêm cột dựa trên visibleColumnIds
+    for (String columnId in visibleColumnIds) {
+      switch (columnId) {
+        case 'name':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Bàn giao tài sản',
+              getValue: (item) => item.banGiaoTaiSan ?? '',
+              width: 170,
+            ),
+          );
+          break;
+        case 'decision_number':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Quyết định điều động',
+              getValue: (item) => item.quyetDinhDieuDongSo ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'transfer_order':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Lệnh điều động',
+              getValue: (item) => item.lenhDieuDong ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'transfer_date':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Ngày bàn giao',
+              getValue:
+                  (item) =>
+                      item.ngayBanGiao != null
+                          ? AppUtility.formatDateDdMmYyyy(
+                            AppUtility.parseDate(item.ngayBanGiao) ??
+                                DateTime.now(),
+                          )
+                          : '',
+              width: 150,
+            ),
+          );
+          break;
+        case 'sender_unit':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Đơn vị giao',
+              getValue: (item) => item.tenDonViGiao ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'receiver_unit':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Đơn vị nhận',
+              getValue: (item) => item.tenDonViNhan ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'created_by':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Người lập phiếu',
+              getValue: (item) => item.nguoiTao ?? '',
+              width: 120,
+            ),
+          );
+          break;
+        case 'status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Trạng thái',
+              cellBuilder: (item) => showStatus(item.trangThai ?? 0),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: '',
+              cellBuilder:
+                  (item) => AssetHandoverColumns.buildActions(context, item),
+              width: 120,
+              searchable: true,
+            ),
+          );
+          break;
+      }
+    }
+
+    return columns;
   }
 
-  List<SgTableColumn<DieuDongTaiSanDto>> _buildLargeScreenColumns() {
-    final screenWidth = MediaQuery.of(context).size.width * 0.9;
-    final availableWidth = screenWidth - 40;
-
-    final columnWidths = {
-      'Quyết định điều động': availableWidth * 0.12,
-      'Lệnh điều động': availableWidth * 0.17,
-      'Ngày bàn giao': availableWidth * 0.1,
-      'Chi tiết bàn giao': availableWidth * 0.17,
-      'Đơn vị giao': availableWidth * 0.11,
-      'Đơn vị nhận': availableWidth * 0.11,
-      'Trạng thái': availableWidth * 0.12,
-      'Actions': availableWidth * 0.1,
-    };
-
-    return _createColumns(context, columnWidths);
+  Widget showStatus(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color: getColorStatus(status),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text: getStatus(status),
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
   }
 
-  int _getCountByState(String key) {
-    final status = _statusValues[key] ?? 0;
-    return widget.data.where((item) => item.trangThai == status).length;
+  Color getColorStatus(int status) {
+    switch (status) {
+      case 0:
+        return ColorValue.silverGray;
+      case 1:
+        return ColorValue.lightAmber;
+      case 2:
+        return ColorValue.mediumGreen;
+      case 3:
+        return ColorValue.forestGreen;
+      case 4:
+        return ColorValue.coral;
+      default:
+        return ColorValue.darkGrey;
+    }
   }
 
-  List<SgTableColumn<DieuDongTaiSanDto>> _createColumns(
-    BuildContext context,
-    Map<String, double> columnWidths,
-  ) {
-    return [
-      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
-        title: 'Quyết định điều động',
-        textColor: Colors.black87,
-        getValue: (item) => item.soQuyetDinh ?? '',
-        fontSize: 12,
-        width: columnWidths['Quyết định điều động']!,
-      ),
-      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
-        title: 'Lệnh điều động',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.tenPhieu ?? '',
-        width: columnWidths['Lệnh điều động']!,
-      ),
-      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
-        title: 'Ngày bàn giao',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.ngayCapNhat ?? '',
-        width: columnWidths['Ngày bàn giao']!,
-      ),
-      SgTableColumn<DieuDongTaiSanDto>(
-        title: 'Chi tiết bàn giao',
-        cellBuilder:
-            (item) => AssetHandoverColumns.buildMovementDetails(item.chiTietDieuDongTaiSans ?? []),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: columnWidths['Chi tiết bàn giao']!,
-      ),
-      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
-        title: 'Đơn vị giao',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.tenDonViGiao ?? '',
-        width: columnWidths['Đơn vị giao']!,
-      ),
-      TableColumnBuilder.createTextColumn<DieuDongTaiSanDto>(
-        title: 'Đơn vị nhận',
-        textColor: Colors.black87,
-        fontSize: 12,
-        getValue: (item) => item.tenDonViNhan ?? '',
-        width: columnWidths['Đơn vị nhận']!,
-      ),
-      SgTableColumn<DieuDongTaiSanDto>(
-        title: 'Trạng thái',
-        cellBuilder: (item) => AssetHandoverColumns.buildStatus(item.trangThai ?? 0),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: columnWidths['Trạng thái']!,
-      ),
-      SgTableColumn<DieuDongTaiSanDto>(
-        title: '',
-        cellBuilder: (item) => AssetHandoverColumns.buildActions(context, item),
-        cellAlignment: TextAlign.center,
-        titleAlignment: TextAlign.center,
-        width: columnWidths['Actions']!,
-        searchable: true,
-      ),
-    ];
+  String getStatus(int status) {
+    switch (status) {
+      case 0:
+        return 'Nháp';
+      case 1:
+        return 'Chờ xác nhận';
+      case 2:
+        return 'Chờ duyệt';
+      case 3:
+        return 'Hoàn thành';
+      case 4:
+        return 'Hủy';
+      default:
+        return '';
+    }
   }
 }
