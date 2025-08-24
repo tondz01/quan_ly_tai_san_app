@@ -520,7 +520,6 @@ class _CommonContractState extends State<CommonContract> {
           return Center(
             child: SizedBox(
               width: 960,
-
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
