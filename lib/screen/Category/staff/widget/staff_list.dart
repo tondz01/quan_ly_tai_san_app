@@ -1,6 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
@@ -54,7 +56,9 @@ class _StaffListState extends State<StaffList> {
       ),
       TableBaseConfig.columnTable<NhanVien>(
         title: 'Hoạt động',
-        getValue: (item) => item.isActive == true ? 'Đang hoạt động' : 'Ngừng hoạt động'  ,
+        getValue:
+            (item) =>
+                item.isActive == true ? 'Đang hoạt động' : 'Ngừng hoạt động',
         titleAlignment: TextAlign.start,
         width: 150,
       ),
@@ -84,16 +88,7 @@ class _StaffListState extends State<StaffList> {
       ),
       TableBaseConfig.columnWidgetBase<NhanVien>(
         title: '',
-        cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<NhanVien>(
-              item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
-              onDelete: (item) {
-                widget.onDelete?.call(item);
-              },
-            ),
+        cellBuilder: (item) => viewAction(item),
         width: 120,
         searchable: true,
       ),
@@ -188,5 +183,32 @@ class _StaffListState extends State<StaffList> {
         ],
       ),
     );
+  }
+
+  Widget viewAction(NhanVien item) {
+    return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.delete,
+        tooltip: 'Xóa',
+        iconColor: Colors.red.shade700,
+        backgroundColor: Colors.red.shade50,
+        borderColor: Colors.red.shade200,
+        onPressed:
+            () => {
+              showConfirmDialog(
+                context,
+                type: ConfirmType.delete,
+                title: 'Xóa chức vụ',
+                message: 'Bạn có chắc muốn xóa ${item.hoTen}',
+                highlight: item.hoTen ?? '',
+                cancelText: 'Không',
+                confirmText: 'Xóa',
+                onConfirm: () {
+                  widget.onDelete?.call(item);
+                },
+              ),
+            },
+      ),
+    ]);
   }
 }

@@ -313,7 +313,6 @@ class _ToolAndMaterialTransferListState
                     listItemSelected.clear();
                     listItemSelected = items;
                   });
-                  log('message listItemSelected: ${listItemSelected.length}');
                 },
               ),
             ),

@@ -5,8 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 
@@ -20,7 +23,21 @@ class ToolsAndSuppliesList extends StatefulWidget {
 
 class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   final ScrollController horizontalController = ScrollController();
+
+  ToolsAndSuppliesDto? selectedItem;
+
   String searchTerm = "";
+  String titleDetailDepartmentTree = "";
+  bool isShowDetailDepartmentTree = false;
+
+  void _showDetailDepartmentTree(ToolsAndSuppliesDto item) {
+    setState(() {
+      selectedItem = item;
+      titleDetailDepartmentTree = item.ten;
+      isShowDetailDepartmentTree = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final columns = [
@@ -125,51 +142,91 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Expanded(
+            child: Column(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.table_chart,
-                      color: Colors.grey.shade600,
-                      size: 18,
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Quản lý CCDC - Vật tư (${widget.provider.data.length})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.table_chart,
+                            color: Colors.grey.shade600,
+                            size: 18,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Quản lý CCDC - Vật tư (${widget.provider.data.length})',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      Visibility(
+                        visible: isShowDetailDepartmentTree,
+                        child: MaterialTextButton(
+                          text: 'Đóng chi tiết sở hữu',
+                          icon: Icons.visibility_off,
+                          backgroundColor: ColorValue.success,
+                          foregroundColor: Colors.white,
+                          onPressed: () {
+                            setState(() {
+                              isShowDetailDepartmentTree = false;
+                            });
+                          },
+                        ),
+                      ),
+                      // FindByStateAssetHandover(provider: widget.provider),
+                    ],
+                  ),
                 ),
-                // FindByStateAssetHandover(provider: widget.provider),
+                Expanded(
+                  child: TableBaseView<ToolsAndSuppliesDto>(
+                    searchTerm: '',
+                    columns: columns,
+                    data: widget.provider.filteredData,
+                    horizontalController: ScrollController(),
+                    onRowTap: (item) {
+                      widget.provider.onChangeDetail(context, item);
+                      setState(() {
+                        _showDetailDepartmentTree(item);
+                      });
+                    },
+                  ),
+                ),
               ],
             ),
           ),
-          Expanded(
-            child: TableBaseView<ToolsAndSuppliesDto>(
-              searchTerm: '',
-              columns: columns,
-              data: widget.provider.filteredData,
-              horizontalController: ScrollController(),
-              onRowTap: (item) {
-                widget.provider.onChangeDetail(context, item);
-              },
+
+          // Department tree sidebar
+          Visibility(
+            visible: isShowDetailDepartmentTree,
+            child: Container(
+              width: 300,
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: Colors.grey.shade600, width: 1),
+                ),
+              ),
+              child: DepartmentTreeDemo(
+                title: titleDetailDepartmentTree,
+                data: selectedItem,
+              ),
             ),
           ),
         ],

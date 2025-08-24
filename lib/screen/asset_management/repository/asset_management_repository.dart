@@ -115,7 +115,9 @@ class AssetManagementRepository extends ApiBase {
     };
 
     try {
-      String url = '${EndPointAPI.ASSET_MANAGEMENT}/khauhaotaisan/$idCongTy';
+      DateTime now = DateTime.now();
+      String url =
+          '${EndPointAPI.ASSET_MANAGEMENT}/khauhaotaisan?idcongty=$idCongTy&thang=${now.month}&nam=${now.year}';
       final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

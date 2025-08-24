@@ -6,6 +6,7 @@ import 'package:quan_ly_tai_san_app/screen/category/asset/views/asset_manager.da
 import 'package:quan_ly_tai_san_app/screen/category/capital_source/views/capital_source_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/views/department_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category/project_manager/views/project_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/role_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/views/staff_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/home/exemple/exemple_screen_1.dart';
@@ -294,6 +295,12 @@ class AppRouteConf {
                   key: state.pageKey,
                   child: BienBanDoiChieuScreen(idCongty: "CT001"),
                 ),
+          ),
+          GoRoute(
+            path: AppRoute.role.path,
+            name: AppRoute.role.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(key: state.pageKey, child: RoleView()),
           ),
         ],
       ),

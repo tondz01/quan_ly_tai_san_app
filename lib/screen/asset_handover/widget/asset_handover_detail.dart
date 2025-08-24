@@ -487,25 +487,42 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 // const SizedBox(width: 10),
                 Visibility(
                   visible: isEditing,
-                  child: ElevatedButton(
-                    onPressed: _saveChanges,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Lưu'),
+                  child: MaterialTextButton(
+                    text: 'Lưu',
+                    icon: Icons.save,
+                    backgroundColor: ColorValue.success,
+                    foregroundColor: Colors.white,
+                    onPressed: () {
+                      _saveChanges();
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
                 Visibility(
                   visible: isEditing,
-                  child: ElevatedButton(
-                    onPressed: _cancelChanges,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Hủy'),
+                  child: MaterialTextButton(
+                    text: 'Hủy',
+                    icon: Icons.cancel,
+                    backgroundColor: ColorValue.error,
+                    foregroundColor: Colors.white,
+                    onPressed: () {
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xác nhận hủy tạo phiếu Bàn giao}',
+                        cancelText: 'Không',
+                        confirmText: 'Có',
+                        message:
+                            'Bạn có chắc chắn muốn hủy? Các thay đổi chưa được lưu sẽ bị mất.',
+                        onCancel: () {
+                          // Navigator.pop(context); // Close dialog
+                        },
+                        onConfirm: () {
+                          widget.provider.isShowInput = false;
+                          // Navigator.pop(context); // Close dialog
+                        },
+                      );
+                    },
                   ),
                 ),
                 Visibility(

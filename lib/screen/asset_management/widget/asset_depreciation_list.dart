@@ -105,7 +105,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Ngày cuối kỳ Kh',
-              getValue: (item) => item.ngayVaoSo.toString(),
+              getValue: (item) => item.ngayTinhKhao.toString(),
               width: 120,
             ),
           );
@@ -114,7 +114,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Năm của kỳ',
-              getValue: (item) => item.ngayVaoSo?.year.toString() ?? '',
+              getValue: (item) => item.ngayTinhKhao?.year.toString() ?? '',
               width: 80,
             ),
           );
@@ -123,7 +123,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Tháng của kỳ',
-              getValue: (item) => item.ngayVaoSo?.month.toString() ?? '',
+              getValue: (item) => item.thangKh.toString(),
               width: 80,
             ),
           );
@@ -134,7 +134,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               title: 'Mã tài sản',
               getValue:
                   (item) =>
-                      'Khấu hao ${item.id} - ${item.tenTaiSan} ${item.soKyKhauHao}',
+                      'Khấu hao ${item.soThe} - ${item.tenTaiSan}',
               width: 120,
             ),
           );
@@ -143,7 +143,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Tên tài sản',
-              getValue: (item) => '${item.id} - ${item.tenTaiSan}',
+              getValue: (item) => '${item.soThe} - ${item.tenTaiSan}',
               width: 200,
             ),
           );
@@ -151,8 +151,8 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
         case 'boPhanSuDung':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Bộ phận sử dụng',
-              getValue: (item) => getBoPhanSuDung(item.id.toString()),
+              title: 'Khấu hao Psdk',
+              getValue: (item) => item.khauHaoPsdk.toString(),
               width: 120,
             ),
           );
@@ -161,7 +161,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Tài sản khấu hao',
-              getValue: (item) => item.taiKhoanKhauHao?.toString() ?? '',
+              getValue: (item) => item.maTk.toString(),
               width: 120,
             ),
           );
@@ -169,8 +169,8 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
         case 'taiSanChiPhi':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tài sản chi phí',
-              getValue: (item) => item.taiKhoanChiPhi?.toString() ?? '',
+              title: 'Nguyên giá',
+              getValue: (item) => item.khauHaoBanDau?.toString() ?? '',
               width: 150,
             ),
           );
@@ -178,8 +178,8 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
         case 'giaTriKhauHao':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Ngày cập nhật',
-              getValue: (item) => item.giaTriKhauHao?.toString() ?? '',
+              title: 'Khấu hao ban đầu',
+              getValue: (item) => item.khauHaoBanDau?.toString() ?? '',
               width: 120,
             ),
           );
@@ -187,8 +187,8 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
         case 'kyKhauHao':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Kỳ khấu hao',
-              getValue: (item) => item.soKyKhauHao?.toString() ?? '',
+              title: 'Khấu hao kỳ trước',
+              getValue: (item) => item.khKyTruoc.toString(),
               width: 120,
             ),
           );
