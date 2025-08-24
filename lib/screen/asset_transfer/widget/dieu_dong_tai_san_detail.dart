@@ -33,6 +33,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart' show SGLog;
 
 import '../bloc/dieu_dong_tai_san_bloc.dart';
 import '../bloc/dieu_dong_tai_san_event.dart';
@@ -88,7 +89,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   @override
   void initState() {
     super.initState();
-    _loadPdf();
     state.item = widget.provider.item;
     state.isEditing = widget.isEditing;
     _refreshWidget();
@@ -101,11 +101,25 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
   }
 
-  Future<void> _loadPdf() async {
-    final document = await PdfDocument.openAsset('assets/test_01.pdf');
+  Future<void> _loadPdf(String path) async {
+    final document = await PdfDocument.openFile(path);
     setState(() {
       _document = document;
     });
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   @override
@@ -692,6 +706,10 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     state.selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
 
+                    if (fileName != null) {
+                      _loadPdf(filePath!);
+                    }
+
                     if (validation.hasValidationError('document')) {
                       validation.removeValidationError('document');
                     }
@@ -700,8 +718,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 isUploading: state.isUploading,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
-                hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
-                allowedExtensions: ['pdf', 'docx'],
+                hintText: 'Định dạng hỗ trợ: .pdf',
+                allowedExtensions: ['pdf'],
               ),
 
               AssetTransferMovementTable(
@@ -1063,6 +1081,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
         state.controllersInitialized = true;
+
+        _loadPdfNetwork(state.item?.duongDanFile ?? '');
       } else {
         controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
           'SCT-************',

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -94,6 +95,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   NhanVien? nguoiDaiDienDonViDaiDien;
   DieuDongTaiSanDto? dieuDongTaiSan;
 
+  PdfDocument? _document;
+
   @override
   void initState() {
     setState(() {
@@ -101,6 +104,20 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       _updateControllers();
     });
     super.initState();
+  }
+
+  Future<void> _loadPdfNetwork(String url) async {
+    try {
+      final document = await PdfDocument.openUri(Uri.parse(url));
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   @override
@@ -557,8 +574,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   isUploading: false,
                   label: 'Tài liệu Quyết định',
                   errorMessage: 'Tài liệu quyết định là bắt buộc',
-                  hintText: 'Định dạng hỗ trợ: .pdf, .docx (Microsoft Word)',
-                  allowedExtensions: ['pdf', 'docx'],
+                  hintText: 'Định dạng hỗ trợ: .pdf',
+                  allowedExtensions: ['pdf'],
                 ),
               ),
               const SizedBox(height: 20),
@@ -575,7 +592,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
                 isShowKy: false,
-                // isDisabled: !_validateForm(),
+                document: _document,
               ),
             ],
           ),
@@ -631,7 +648,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               item?.lenhDieuDong != null
                   ? getAssetTransfer(
                     listAssetTransfer: listAssetTransfer,
-                    idAssetTransfer: item!.lenhDieuDong!,
+                    idAssetTransfer: item!.quyetDinhDieuDongSo!,
                   )
                   : null,
           fieldName: 'order',
@@ -641,6 +658,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             setState(() {
               _selectedFileName = dieuDongTaiSan?.tenFile;
               _selectedFilePath = dieuDongTaiSan?.duongDanFile;
+
+              if (dieuDongTaiSan?.tenFile!.isNotEmpty ?? true) {
+                _loadPdfNetwork(dieuDongTaiSan?.tenFile ?? '');
+              }
+
               //change Đơn vị giao
               donViGiao = getPhongBan(
                 listPhongBan: listPhongBan,

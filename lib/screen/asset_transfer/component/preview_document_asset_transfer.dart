@@ -98,6 +98,13 @@ previewDocument({
           ),
           child: CommonContract(
             contractPages: [
+              if (document != null)
+                for (var index = 0; index < document.pages.length; index++)
+                  pdfrx.PdfPageView(
+                    document: document,
+                    pageNumber: index + 1,
+                    alignment: Alignment.center,
+                  ),
               A4Canvas(
                 marginsMm: const EdgeInsets.all(20),
                 scale: 1.2,
@@ -105,12 +112,6 @@ previewDocument({
                 maxHeight: 800 * (297 / 210),
                 child: ContractPage.assetMovePage(item),
               ),
-              for (var index = 0; index < document!.pages.length; index++)
-                pdfrx.PdfPageView(
-                  document: document,
-                  pageNumber: index + 1,
-                  alignment: Alignment.center,
-                ),
             ],
             signatureList: [urlNhay, urlThuong],
             idTaiLieu: item.id.toString(),
