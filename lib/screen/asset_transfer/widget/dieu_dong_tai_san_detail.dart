@@ -110,6 +110,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
+    SGLog.info("LoadPdfNetwork","Loading PDF from network: $nameFile");
     try {
       final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
       setState(() {
@@ -1083,7 +1084,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         );
         state.controllersInitialized = true;
 
-        _loadPdfNetwork(state.item?.duongDanFile ?? '');
+        _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
         controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
           'SCT-************',

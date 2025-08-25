@@ -311,7 +311,7 @@ class _ToolAndMaterialTransferDetailState
 
         _controllersInitialized = true;
 
-        _loadPdfNetwork(item?.duongDanFile ?? '');
+        _loadPdfNetwork(item?.tenFile ?? '');
       } else {
         controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
           'SCT-************',
