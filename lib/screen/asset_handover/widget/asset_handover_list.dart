@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/columns_asset_handover_component.dart';
@@ -72,9 +73,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         [];
   }
 
-  Future<void> _loadPdfNetwork(String url) async {
+  Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-      final document = await PdfDocument.openUri(Uri.parse(url));
+       final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
       setState(() {
         _document = document;
       });

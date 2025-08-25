@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -194,9 +195,11 @@ class _ToolAndMaterialTransferDetailState
     });
   }
 
-  Future<void> _loadPdfNetwork(String url) async {
+  Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-      final document = await PdfDocument.openUri(Uri.parse(url));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });

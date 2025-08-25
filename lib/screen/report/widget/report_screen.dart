@@ -40,9 +40,11 @@ class _ReportScreenState extends State<ReportScreen> {
     _loadData();
   }
 
-  Future<void> _loadPdfNetwork(String url) async {
+  Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-      final document = await PdfDocument.openUri(Uri.parse(url));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });
