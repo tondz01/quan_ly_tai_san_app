@@ -19,6 +19,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/controllers/asset_transfer_controllers.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/state/asset_transfer_state.dart';
@@ -108,9 +109,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     });
   }
 
-  Future<void> _loadPdfNetwork(String url) async {
+  Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-      final document = await PdfDocument.openUri(Uri.parse(url));
+      final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
       setState(() {
         _document = document;
       });
