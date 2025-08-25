@@ -333,7 +333,7 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
                 type: ConfirmType.delete,
                 title: 'Xóa nhóm tài sản',
                 message: 'Bạn có chắc muốn xóa ${item.tenMoHinh}',
-                highlight: item.tenMoHinh!,
+                highlight: item.tenMoHinh ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {

@@ -2,42 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/widget/role_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/widget/role_list.dart';
 
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
-import 'bloc/tools_and_supplies_state.dart';
-import 'provider/tools_and_supplies_provide.dart';
+import 'bloc/role_state.dart';
+import 'provider/role_provide.dart';
 
-class ToolsAndSuppliesView extends StatefulWidget {
-  const ToolsAndSuppliesView({super.key});
+class RoleView extends StatefulWidget {
+  const RoleView({super.key});
 
   @override
-  State<ToolsAndSuppliesView> createState() => _ToolsAndSuppliesViewState();
+  State<RoleView> createState() => _RoleViewState();
 }
 
-class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
+class _RoleViewState extends State<RoleView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
 
   @override
   void initState() {
     super.initState();
-    Provider.of<ToolsAndSuppliesProvider>(
-      context,
-      listen: false,
-    ).onInit(context);
+    Provider.of<RoleProvider>(context, listen: false).onInit(context);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<ToolsAndSuppliesProvider>(
-      context,
-      listen: false,
-    ).onInit(context);
+    Provider.of<RoleProvider>(context, listen: false).onInit(context);
   }
 
   @override
@@ -48,16 +42,16 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ToolsAndSuppliesBloc, ToolsAndSuppliesState>(
+    return BlocConsumer<RoleBloc, RoleState>(
       builder: (context, state) {
-        return Consumer<ToolsAndSuppliesProvider>(
+        return Consumer<RoleProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (provider.data == null) {
-              return const Center(child: Text('Không có dữ liệu'));
-            }
+            // if (provider.data == null) {
+            //   return const Center(child: Text('Không có dữ liệu'));
+            // }
             provider.controllerDropdownPage ??= TextEditingController(
               text: provider.rowsPerPage.toString(),
             );
@@ -67,7 +61,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                 title: HeaderComponent(
                   controller: _searchController,
                   onSearchChanged: (value) {
-                    provider.onSearchToolsAndSupplies(value);
+                    provider.onSearchRoles(value);
                   },
                   onTap: () {
                     // provider.onChangeDetailAssetTransfer(null);
@@ -75,7 +69,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                   onNew: () {
                     provider.onChangeDetail(context, null);
                   },
-                  mainScreen: 'Quản lý CCDC - Vật tư',
+                  mainScreen: 'Quản lý chức vụ',
                   subScreen: provider.subScreen,
                 ),
               ),
@@ -86,10 +80,8 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: CommonPageView(
-                        childInput: ToolsAndSuppliesDetail(provider: provider),
-                        childTableView: ToolsAndSuppliesList(
-                          provider: provider,
-                        ),
+                        childInput: RoleDetail(provider: provider),
+                        childTableView: RoleList(provider: provider),
                         isShowInput: provider.isShowInput,
                         isShowCollapse: provider.isShowCollapse,
                         onExpandedChanged: (isExpanded) {
@@ -117,37 +109,18 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
         );
       },
       listener: (context, state) {
-        if (state is ToolsAndSuppliesInitialState) {}
-        if (state is ToolsAndSuppliesLoadingState) {}
-        if (state is ToolsAndSuppliesLoadingDismissState) {}
-        if (state is GetListToolsAndSuppliesSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .getListToolsAndSuppliesSuccess(context, state);
+        if (state is RolesInitialState) {}
+        if (state is RolesLoadingState) {}
+        if (state is RolesLoadingDismissState) {}
+        if (state is GetListRoleSuccessState) {
+          context.read<RoleProvider>().getListRolesSuccess(context, state);
         }
-        if (state is GetListPhongBanSuccessState) {
-          context.read<ToolsAndSuppliesProvider>().getListPhongBanSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListToolsAndSuppliesFailedState) {}
-        if (state is GetListPhongBanFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        if (state is CreateToolsAndSuppliesSuccessState) {
+        if (state is GetListRoleFailedState) {}
+        if (state is CreateRoleSuccessState) {
           // Refresh list
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .createToolsAndSuppliesSuccess(context, state);
+          context.read<RoleProvider>().createRolesSuccess(context, state);
         }
-        if (state is CreateToolsAndSuppliesFailedState) {
+        if (state is CreateRoleFailedState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -156,15 +129,11 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
             ),
           );
         }
-        if (state is UpdateToolsAndSuppliesSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .updateToolsAndSuppliesSuccess(context, state);
+        if (state is UpdateRoleSuccessState) {
+          context.read<RoleProvider>().updateRolesSuccess(context, state);
         }
-        if (state is DeleteToolsAndSuppliesSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .deleteToolsAndSuppliesSuccess(context, state);
+        if (state is DeleteRoleSuccessState) {
+          context.read<RoleProvider>().deleteRolesSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
           ScaffoldMessenger.of(context).showSnackBar(

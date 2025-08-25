@@ -408,22 +408,59 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
             AssetHandoverDto? item =
                 selectedItems.isNotEmpty ? selectedItems.first : null;
-            final idSignature =
+            final signatureFlow =
                 [
-                  item?.idDaiDiendonviBanHanhQD,
-                  item?.idDaiDienBenGiao,
-                  item?.idDaiDienBenNhan,
-                  item?.idDonViDaiDien,
-                ].whereType<String>().toList();
+                  {
+                    "id": item?.idDaiDiendonviBanHanhQD,
+                    "signed": item?.daXacNhan == true,
+                    "label": "Người tạo",
+                  },
+                  {
+                    "id": item?.idDaiDienBenGiao,
+                    "signed": item?.daiDienBenGiaoXacNhan == true,
+                    "label": "Trưởng phòng",
+                  },
+                  {
+                    "id": item?.idDaiDienBenNhan,
+                    "signed": item?.daiDienBenNhanXacNhan == true,
+                    "label": "Phó phòng Đơn vị giao",
+                  },
+                  {
+                    "id": item?.idDonViDaiDien,
+                    "signed": item?.donViDaiDienXacNhan == "0" ? false : true,
+                    "label": "Trình duyệt cấp phòng",
+                  },
+                ].toList();
 
-            if (idSignature.contains(userInfo?.tenDangNhap)) {
-              
-              final matchingTransfers = listAssetTransfer
-                  .where((x) => x.soQuyetDinh == item!.quyetDinhDieuDongSo);
-              
-              _selectedAssetTransfer = matchingTransfers.isNotEmpty 
-                  ? matchingTransfers.first
-                  : null;
+            if (signatureFlow.isNotEmpty) {
+              // Kiểm tra user có trong flow không
+              final currentIndex = signatureFlow.indexWhere(
+                (s) => s["id"] == userInfo?.tenDangNhap,
+              );
+              log('currentIndex: $currentIndex');
+              if (currentIndex == -1) {
+                AppUtility.showSnackBar(
+                  context,
+                  'Bạn không có quyền ký văn bản này',
+                  isError: true,
+                );
+                return;
+              }
+              if (signatureFlow[currentIndex]["signed"] == true) {
+                AppUtility.showSnackBar(
+                  context,
+                  'Bạn đã ký rồi.',
+                  isError: true,
+                );
+                return;
+              }
+              log('signatureFlow: ${signatureFlow.toString()}');
+              final matchingTransfers = listAssetTransfer.where(
+                (x) => x.soQuyetDinh == item!.quyetDinhDieuDongSo,
+              );
+
+              _selectedAssetTransfer =
+                  matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
               if (_selectedAssetTransfer == null ||
                   _selectedAssetTransfer!.tenFile!.isEmpty) {
@@ -492,12 +529,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             item.quyetDinhDieuDongSo ?? '',
           );
 
-          final matchingTransfers = listAssetTransfer
-              .where((x) => x.soQuyetDinh == item.quyetDinhDieuDongSo);
-          
-          _selectedAssetTransfer = matchingTransfers.isNotEmpty 
-              ? matchingTransfers.first
-              : null;
+          final matchingTransfers = listAssetTransfer.where(
+            (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
+          );
+
+          _selectedAssetTransfer =
+              matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
           if (_selectedAssetTransfer == null ||
               _selectedAssetTransfer!.tenFile!.isEmpty) {

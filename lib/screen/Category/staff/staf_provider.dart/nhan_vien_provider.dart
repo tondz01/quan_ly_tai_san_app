@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/chuc_vu.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -19,7 +19,21 @@ class NhanVienProvider extends ApiBase {
       queryParameters: {'idcongty': userInfo?.idCongTy ?? 'ct001'},
     );
     if (response.statusCode == 200) {
-      final List<dynamic> data = response.data;
+      // Kiểm tra cấu trúc response và lấy data phù hợp
+      final responseData = response.data;
+      List<dynamic> data;
+      
+      if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+        // Nếu response có cấu trúc {success: true, data: [...], ...}
+        data = responseData['data'] ?? [];
+      } else if (responseData is List) {
+        // Nếu response trực tiếp là array
+        data = responseData;
+      } else {
+        // Fallback
+        data = [];
+      }
+      
       return data.map((item) => NhanVien.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load nhân viên');
@@ -28,11 +42,24 @@ class NhanVienProvider extends ApiBase {
 
   Future<List<ChucVu>> fetchChucVus() async {
     final response = await get(
-      EndPointAPI.CHUC_VU,
-      queryParameters: {'idcongty': "ct001"},
+      '${EndPointAPI.CHUC_VU}/congty/${userInfo?.idCongTy}',
     );
     if (response.statusCode == 200) {
-      final List<dynamic> data = response.data;
+      // Kiểm tra cấu trúc response và lấy data phù hợp
+      final responseData = response.data;
+      List<dynamic> data;
+      
+      if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+        // Nếu response có cấu trúc {success: true, data: [...], ...}
+        data = responseData['data'] ?? [];
+      } else if (responseData is List) {
+        // Nếu response trực tiếp là array
+        data = responseData;
+      } else {
+        // Fallback
+        data = [];
+      }
+      
       return data.map((item) => ChucVu.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load chức vụ');

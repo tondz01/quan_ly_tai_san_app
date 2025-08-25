@@ -83,12 +83,12 @@ class _AssetDepreciationDetailState extends State<AssetDepreciationDetail> {
       ctrlKyKhauHao.text = '';
       ctrlTrangThaiButToan.text = '';
     } else {
-      ctrlButToanKhauHao.text =  'Khấu hao ${data!.id} - ${data!.tenTaiSan} ${data!.soKyKhauHao}';
-      ctrlTaiSan.text = '${data!.id} - ${data!.tenTaiSan}';
-      ctrlTaiSanKhauHao.text = data!.taiKhoanKhauHao.toString();
-      ctrlTaiSanChiPhi.text = data!.taiKhoanChiPhi.toString();
-      ctrlGiaTriKhauHao.text = data!.giaTriKhauHao.toString();
-      ctrlKyKhauHao.text = data!.soKyKhauHao.toString();
+      ctrlButToanKhauHao.text =  'Khấu hao ${data!.soThe} - ${data!.tenTaiSan}';
+      ctrlTaiSan.text = '${data!.soThe} - ${data!.tenTaiSan}';
+      ctrlTaiSanKhauHao.text = data!.maTk.toString();
+      ctrlTaiSanChiPhi.text = data!.maTk.toString();
+      ctrlGiaTriKhauHao.text = data!.khKyTruoc.toString();
+      ctrlKyKhauHao.text = data!.clKyTruoc.toString();
       ctrlTrangThaiButToan.text = "Hoàn thành";
       // If data is not null, set controllers with data values
     }

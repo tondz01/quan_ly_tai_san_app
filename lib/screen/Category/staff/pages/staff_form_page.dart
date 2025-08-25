@@ -8,12 +8,14 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/component/staff_save_service.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/chuc_vu.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -52,6 +54,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _agreementUUIdController;
   late TextEditingController _pinController;
   bool _laQuanLy = false;
+  bool isEditing = false;
   PhongBan? _phongBan;
   NhanVien? _staffDTO;
   ChucVu? _chucVuDTO;
@@ -111,6 +114,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
+    if (widget.staff != null) {
+      isEditing = false;
+    } else {
+      isEditing = true;
+    }
     _nameController = TextEditingController(text: widget.staff?.hoTen ?? '');
     _telController = TextEditingController(text: widget.staff?.diDong ?? '');
     _emailController = TextEditingController(
@@ -286,12 +294,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          sectionTitle(
-            Icons.person,
-            isEdit ? 'Cập nhật thông tin nhân viên' : 'Thêm mới nhân viên',
-            'Nhập thông tin nhân viên.',
-          ),
+          const SizedBox(height: 16),
+          _buildHeaderDetail(),
           sectionCard(
             child: Form(
               key: _formKey,
@@ -308,6 +314,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                           children: [
                             TextFormField(
                               controller: _staffIdController,
+                              readOnly: !isEditing,
                               decoration: inputDecoration(
                                 'Mã nhân viên',
                                 required: true,
@@ -322,10 +329,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _nameController,
+                              readOnly: !isEditing,
                               decoration: inputDecoration(
                                 'Tên nhân viên',
                                 required: true,
                               ),
+                              enabled: isEditing,
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
@@ -335,10 +344,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _emailController,
+                              readOnly: !isEditing,
                               decoration: inputDecoration(
                                 'Email',
                                 required: true,
                               ),
+                              enabled: isEditing,
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
@@ -348,10 +359,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _telController,
+                              readOnly: !isEditing,
                               decoration: inputDecoration(
                                 'Số điện thoại',
                                 required: true,
                               ),
+                              enabled: isEditing,
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
@@ -378,7 +391,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                         ),
                                       )
                                       .toList(),
-                              onChanged: (v) => setState(() => _chucVuDTO = v),
+                              onChanged:
+                                  isEditing
+                                      ? (v) => setState(() => _chucVuDTO = v)
+                                      : null, // Disable dropdown
+                              isExpanded: true,
                             ),
                             const SizedBox(height: 16),
 
@@ -401,7 +418,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                         ),
                                       )
                                       .toList(),
-                              onChanged: (v) => setState(() => _staffDTO = v),
+                              onChanged:
+                                  isEditing
+                                      ? (v) => setState(() => _staffDTO = v)
+                                      : null,
+                              isExpanded: true,
                             ),
                             const SizedBox(height: 16),
 
@@ -424,17 +445,22 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                   child: Text('Không'),
                                 ),
                               ],
-                              onChanged: (value) {
-                                setState(() {
-                                  _activityController.text = value ?? '';
-                                  _isActive = value == 'Có';
-                                });
-                              },
+                              onChanged:
+                                  isEditing
+                                      ? (value) {
+                                        setState(() {
+                                          _activityController.text =
+                                              value ?? '';
+                                          _isActive = value == 'Có';
+                                        });
+                                      }
+                                      : null,
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
                                           ? 'Chọn hoạt động'
                                           : null,
+                              isExpanded: true,
                             ),
                             const SizedBox(height: 16),
                             DropdownButtonFormField<PhongBan>(
@@ -451,7 +477,11 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                         ),
                                       )
                                       .toList(),
-                              onChanged: (v) => setState(() => _phongBan = v),
+                              onChanged:
+                                  isEditing
+                                      ? (v) => setState(() => _phongBan = v)
+                                      : null,
+                              isExpanded: true,
                             ),
                           ],
                         ),
@@ -483,6 +513,8 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                   TextFormField(
                                     controller: _pinController,
                                     decoration: inputDecoration('PIN'),
+                                    readOnly: !isEditing,
+                                    enabled: isEditing,
                                     onChanged: (value) {
                                       setState(() {
                                         // _pinController.text = value;
@@ -490,29 +522,32 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       });
                                     },
                                   ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () => _onGetAgreementUUID(),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF2264E5,
-                                          ),
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
+                                  Visibility(
+                                    visible: isEditing,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed:
+                                              () => _onGetAgreementUUID(),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFF2264E5,
+                                            ),
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 32,
+                                              vertical: 16,
                                             ),
                                           ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 32,
-                                            vertical: 16,
-                                          ),
+                                          child: Text('Lấy Agreement UUID'),
                                         ),
-                                        child: Text('Lấy Agreement UUID'),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -592,7 +627,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     return Container(
       alignment: Alignment.centerLeft,
       child: InkWell(
-        onTap: () => _pickFile(selectedFile, typeKy),
+        onTap: isEditing ? () => _pickFile(selectedFile, typeKy) : null,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -657,13 +692,15 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   icon: const Icon(Icons.close, size: 20, color: Colors.red),
                   padding: EdgeInsets.zero,
                   onPressed:
-                      () => setState(() {
-                        if (typeKy == 1) {
-                          selectedFileChuKyNhay = null;
-                        } else if (typeKy == 2) {
-                          selectedFileChuKyThuong = null;
-                        }
-                      }),
+                      isEditing
+                          ? () => setState(() {
+                            if (typeKy == 1) {
+                              selectedFileChuKyNhay = null;
+                            } else if (typeKy == 2) {
+                              selectedFileChuKyThuong = null;
+                            }
+                          })
+                          : null,
                 ),
             ],
           ),
@@ -686,6 +723,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   SizedBox(width: 100, child: const SGText(text: "Ký nháy:")),
                   SgCheckbox(
                     value: _kyNhay,
+                    isDisabled: !isEditing,
                     onChanged:
                         (value) => setState(() {
                           _kyNhay = value;
@@ -716,6 +754,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   SizedBox(width: 100, child: const SGText(text: "Ký thường:")),
                   SgCheckbox(
                     value: _kyThuong,
+                    isDisabled: !isEditing,
                     onChanged:
                         (value) => setState(() {
                           _kyThuong = value;
@@ -744,6 +783,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
               SizedBox(width: 100, child: const SGText(text: "Ký số:")),
               SgCheckbox(
                 value: _kySo,
+                isDisabled: !isEditing,
                 onChanged:
                     (value) => setState(() {
                       _kySo = value;
@@ -812,6 +852,45 @@ class _StaffFormPageState extends State<StaffFormPage> {
         isError: true,
       );
     }
+  }
+
+  Widget _buildHeaderDetail() {
+    return isEditing
+        ? Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            MaterialTextButton(
+              text: 'Lưu',
+              icon: Icons.save,
+              backgroundColor: ColorValue.success,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                widget.onSaved?.call();
+              },
+            ),
+            const SizedBox(width: 8),
+            MaterialTextButton(
+              text: 'Hủy',
+              icon: Icons.cancel,
+              backgroundColor: ColorValue.error,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                widget.onCancel?.call();
+              },
+            ),
+          ],
+        )
+        : MaterialTextButton(
+          text: 'Chỉnh sửa nhóm tài sản',
+          icon: Icons.save,
+          backgroundColor: ColorValue.success,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            setState(() {
+              isEditing = true;
+            });
+          },
+        );
   }
 
   // void _changeTypeKy(int type) {

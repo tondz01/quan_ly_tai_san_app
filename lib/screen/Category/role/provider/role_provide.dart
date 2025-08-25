@@ -3,20 +3,20 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category/role/model/chuc_vu.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
-class ToolsAndSuppliesProvider with ChangeNotifier {
-  bool get isLoading => _data == null || _dataPhongBan == null;
+class RoleProvider with ChangeNotifier {
+  bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   get data => _data;
-  get dataPhongBan => _dataPhongBan;
+  get userInfo => _userInfo;
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
@@ -42,7 +42,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 1;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
@@ -63,18 +63,21 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   bool _hasUnsavedChanges = false;
+  bool _isLoading = false;
+  List<ChucVu>? _data;
+  List<ChucVu>? _dataPage;
+  ChucVu? _dataDetail;
+  List<ChucVu>? _filteredData;
 
-  List<ToolsAndSuppliesDto>? _data;
-  List<ToolsAndSuppliesDto>? _dataPage;
-  ToolsAndSuppliesDto? _dataDetail;
-  List<ToolsAndSuppliesDto>? _filteredData;
-  List<PhongBan>? _dataPhongBan;
+  UserInfoDTO? _userInfo;
+
   void onInit(BuildContext context) {
+    _userInfo = AccountHelper.instance.getUserInfo();
     controllerDropdownPage = TextEditingController(text: '10');
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
-    getListToolsAndSupplies(context);
+    getListRoles(context);
   }
 
   void onDispose() {
@@ -87,22 +90,22 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
   }
 
-  void getListToolsAndSupplies(BuildContext context) {
+  void getListRoles(BuildContext context) {
     try {
-      final bloc = context.read<ToolsAndSuppliesBloc>();
-      bloc.add(GetListToolsAndSuppliesEvent(context, 'CT001'));
-      bloc.add(GetListPhongBanEvent(context, 'CT001'));
+      _isLoading = true;
+      final bloc = context.read<RoleBloc>();
+      bloc.add(GetListRoleEvent(context, userInfo?.idCongTy ?? ''));
+      log('userInfo?.idCongTy: ${userInfo?.idCongTy}');
     } catch (e) {
-      log('Error adding AssetManagement events: $e');
+      log('Error adding Role events: $e');
     }
   }
 
-  void onSearchToolsAndSupplies(String value) {
+  void onSearchRoles(String value) {
     if (value.isEmpty) {
       _filteredData = data;
       return;
     }
-    log('message onSearchToolsAndSupplies: $value');
 
     String searchLower = value.toLowerCase().trim();
     _filteredData =
@@ -120,7 +123,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
           return name || importUnit || departmentGroup || unit || value;
         }).toList();
-    log('message _filteredData: $_filteredData');
     notifyListeners();
   }
 
@@ -143,7 +145,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
-    log('message pageProducts: ${dataPage!.length}');
   }
 
   void onCloseDetail(BuildContext context) {
@@ -164,7 +165,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void onRowsPerPageChanged(int? value) {
-    log('message onRowsPerPageChanged: $value');
     if (value == null) return;
     rowsPerPage = value;
     currentPage = 1;
@@ -172,103 +172,52 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  getListToolsAndSuppliesSuccess(
-    BuildContext context,
-    GetListToolsAndSuppliesSuccessState state,
-  ) {
+  getListRolesSuccess(BuildContext context, GetListRoleSuccessState state) {
     _error = null;
+    _isLoading = false;
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
     } else {
       _data = state.data;
       _filteredData = state.data;
-      log('message _data: $_data');
+      log('message getListRolesSuccess _data: $_data');
       _updatePagination();
     }
     notifyListeners();
   }
 
-  getListPhongBanSuccess(
-    BuildContext context,
-    GetListPhongBanSuccessState state,
-  ) {
-    _error = null;
-    if (state.data.isEmpty) {
-      _dataPhongBan = [];
-    } else {
-      _dataPhongBan = state.data;
-      log('message _dataPhongBan: $_dataPhongBan');
-    }
+  void createRolesSuccess(BuildContext context, CreateRoleSuccessState state) {
+    _isLoading = false;
+    onCloseDetail(context);
+    getListRoles(context);
+
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
+  }
+
+  void updateRolesSuccess(BuildContext context, UpdateRoleSuccessState state) {
+    _isLoading = false;
+    onCloseDetail(context);
+    getListRoles(context);
+
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
+  }
+
+  void deleteRolesSuccess(BuildContext context, DeleteRoleSuccessState state) {
+    _isLoading = false;
+    onCloseDetail(context);
+    getListRoles(context);
+
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
+  }
+
+  void onChangeDetail(BuildContext context, ChucVu? item) {
+    _dataDetail = item;
+    _isShowInput = true;
+    _isShowCollapse = true;
     notifyListeners();
-  }
-
-  void createToolsAndSuppliesSuccess(
-    BuildContext context,
-    CreateToolsAndSuppliesSuccessState state,
-  ) {
-      onCloseDetail(context);
-      getListToolsAndSupplies(context);
-
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
-  }
-
-  void updateToolsAndSuppliesSuccess(
-    BuildContext context,
-    UpdateToolsAndSuppliesSuccessState state,
-  ) {
-      onCloseDetail(context);
-      getListToolsAndSupplies(context);
-
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
-  }
-
-  void deleteToolsAndSuppliesSuccess(
-    BuildContext context,
-    DeleteToolsAndSuppliesSuccessState state,
-  ) {
-      onCloseDetail(context);
-      getListToolsAndSupplies(context);
-
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
-  }
-
-  void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {
-    _confirmBeforeLeaving(context, item);
-
-    notifyListeners();
-  }
-
-  Future<bool> _showUnsavedChangesDialog(
-    BuildContext context,
-    ToolsAndSuppliesDto? item,
-  ) async {
-    return showUnsavedChangesDialog(context, item, () {
-      _dataDetail = item;
-      log('message onChangeDetail: $_dataDetail');
-      _isShowInput = true;
-      _isShowCollapse = true;
-      log('message _item: $_dataDetail');
-      hasUnsavedChanges = false;
-      Navigator.of(context).pop();
-    });
-  }
-
-  // Phương thức để kiểm tra và xác nhận trước khi rời khỏi
-  Future<bool> _confirmBeforeLeaving(
-    BuildContext context,
-    ToolsAndSuppliesDto? item,
-  ) async {
-    if (hasUnsavedChanges) {
-      return await _showUnsavedChangesDialog(context, item);
-    } else {
-      _dataDetail = item;
-      _isShowInput = true;
-      _isShowCollapse = true;
-    }
-    return true;
   }
 }
