@@ -403,14 +403,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     _saveAssetHandover();
   }
 
-  void _cancelChanges() {
-    _updateControllers();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        widget.provider.hasUnsavedChanges = false;
-      }
-    });
-  }
+  // void _cancelChanges() {
+  //   _updateControllers();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (mounted) {
+  //       widget.provider.hasUnsavedChanges = false;
+  //     }
+  //   });
+  // }
 
   DieuDongTaiSanDto getAssetTransfer({
     required List<DieuDongTaiSanDto> listAssetTransfer,
