@@ -58,7 +58,7 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   SizedBox(
-                    width: 320,
+                    width: 400,
                     child: TabBar(
                       indicatorColor: ColorValue.link,
                       labelColor: ColorValue.link,
@@ -70,7 +70,7 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
                         ),
                         Tab(
                           icon: Icon(Icons.table_chart, size: 18),
-                          text: 'Biên bản điều động',
+                          text: 'Quyết định điều động',
                         ),
                       ],
                     ),

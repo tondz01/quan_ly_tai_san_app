@@ -8,7 +8,6 @@ import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/tab_bar_table_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -221,7 +220,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
                           title: "Chi tiết biên bản bàn giao tài sản",
-                          childInput: AssetHandoverDetail(provider: provider),
+                          childInput: AssetHandoverDetail(provider: provider,isFindNew: provider.isFindNew,),
                           childTableView: TabBarTableAsset(provider: provider),
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,

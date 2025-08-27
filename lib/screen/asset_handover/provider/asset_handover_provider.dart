@@ -36,6 +36,7 @@ class AssetHandoverProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  bool get isFindNew => _isFindNew;
   List<AssetHandoverDto>? get dataPage => _dataPage;
   List<DieuDongTaiSanDto>? get dataAssetTransfer => _dataAssetTransfer;
   List<PhongBan>? get dataDepartment => _dataDepartment;
@@ -87,7 +88,7 @@ class AssetHandoverProvider with ChangeNotifier {
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   bool _hasUnsavedChanges = false;
-
+  bool _isFindNew = false;
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
@@ -339,7 +340,6 @@ class AssetHandoverProvider with ChangeNotifier {
       startIndex = 0;
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
-    log('message _filteredData ${_filteredData}');
     dataPage =
         _filteredData.isNotEmpty
             ? _filteredData.sublist(
@@ -356,7 +356,6 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onRowsPerPageChanged(int? value) {
-    log('message onRowsPerPageChanged: $value');
     if (value == null) return;
     rowsPerPage = value;
     currentPage = 1;
@@ -364,12 +363,13 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetail(BuildContext context, AssetHandoverDto? item) {
+  void onChangeDetail(BuildContext context, AssetHandoverDto? item, {bool isFindNew = false}) {
     if (item != null) {
       getListDetailAssetMobilization(item.lenhDieuDong ?? '');
     }
     _confirmBeforeLeaving(context, item);
 
+    _isFindNew = isFindNew;
     notifyListeners();
   }
 
@@ -398,14 +398,12 @@ class AssetHandoverProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
       _item = null;
-      log('message _filteredData state.data.isEmpt ${_filteredData}');
     } else {
       _filteredData.clear();
       _data?.clear();
       _data = state.data;
 
       _filteredData = List.from(_data!);
-      log('message _filteredData ${_filteredData}');
       _updatePagination();
     }
     _isLoading = false;
@@ -433,10 +431,8 @@ class AssetHandoverProvider with ChangeNotifier {
                 TextButton(
                   onPressed: () {
                     _item = item;
-                    log('message onChangeDetail: $_item');
                     isShowInput = true;
                     isShowCollapse = true;
-                    log('message _item: $_item');
                     hasUnsavedChanges = false;
                     Navigator.of(context).pop();
                   },

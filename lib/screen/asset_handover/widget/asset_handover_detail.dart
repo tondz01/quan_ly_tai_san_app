@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -26,17 +27,18 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
 
 class AssetHandoverDetail extends StatefulWidget {
   final AssetHandoverProvider provider;
+  final bool isFindNew;
   final bool isEditing;
-  final bool isNew;
 
   const AssetHandoverDetail({
     super.key,
-    this.isEditing = false,
-    this.isNew = false,
     required this.provider,
+    this.isEditing = false,
+    this.isFindNew = false,
   });
 
   @override
@@ -97,6 +99,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   DieuDongTaiSanDto? dieuDongTaiSan;
 
   PdfDocument? _document;
+  // Danh sách người ký bổ sung và controller tương ứng
+  final List<NhanVien?> _additionalSigners = [];
+  final List<TextEditingController> _additionalSignerControllers = [];
+  List<AdditionalSignerData> _additionalSignersDetailed = [];
 
   @override
   void initState() {
@@ -109,7 +115,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-      final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });
@@ -164,6 +172,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         [];
 
     if (item != null) {
+      log('message item ${widget.isFindNew}');
+      if (widget.isFindNew) {
+        isEditing = widget.isFindNew;
+      }
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
@@ -436,13 +448,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   @override
   void dispose() {
+    for (final c in _additionalSignerControllers) {
+      c.dispose();
+    }
     // Giải phóng các controller
     controllerHandoverNumber.dispose();
     controllerDocumentName.dispose();
     controllerOrder.dispose();
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
-
+    controllerTransferDate.dispose();
+    controllerLeader.dispose();
+    controllerIssuingUnitRepresentative.dispose();
+    controllerDelivererRepresentative.dispose();
+    controllerReceiverRepresentative.dispose();
+    controllerRepresentativeUnit.dispose();
     super.dispose();
   }
 
@@ -527,7 +547,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   ),
                 ),
                 Visibility(
-                  visible: item != null && ![0, 3, 4].contains(item!.trangThai),
+                  visible:
+                      item != null &&
+                      ![0, 3, 4].contains(item!.trangThai) &&
+                      !widget.isFindNew,
                   child: MaterialTextButton(
                     text: 'Hủy phiếu bàn giao',
                     icon: Icons.cancel,
@@ -750,21 +773,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
         ),
-        CmFormDropdownObject<NhanVien>(
-          label: 'Lãnh đạo',
-          controller: controllerLeader,
-          isEditing: isEditing,
-          defaultValue:
-              item?.idLanhDao != null
-                  ? widget.provider.getNhanVien(idNhanVien: item!.idLanhDao!)
-                  : null,
-          fieldName: 'leader',
-          items: itemsNhanVien,
-          validationErrors: _validationErrors,
-          onChanged: (value) {
-            nguoiLanhDao = value;
-          },
-        ),
       ],
     );
   }
@@ -773,7 +781,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     return Column(
       children: [
         CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện Đơn vị ban hành QĐ',
+          label: 'Đại diện đơn vị đề nghị',
           controller: controllerIssuingUnitRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -801,7 +809,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện bên giao',
+          label: 'Đơn vị giao',
           controller: controllerDelivererRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -836,7 +844,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện bên nhận',
+          label: 'Đơn vị bên nhận',
           controller: controllerReceiverRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -870,31 +878,28 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             });
           },
         ),
-        CmFormDropdownObject<NhanVien>(
-          label: 'Đơn vị Đại diện',
-          controller: controllerRepresentativeUnit,
+        // Component chọn người ký bổ sung dùng chung
+        AdditionalSignersSelector(
+          addButtonText: "Thêm đơn bị đại diện",
+          labelDepartment: "Đơn vị đại diện",
           isEditing: isEditing,
-          defaultValue:
-              item?.idDonViDaiDien != null
-                  ? widget.provider.getNhanVien(
-                    idNhanVien: item!.idDonViDaiDien!,
-                  )
-                  : null,
-          fieldName: 'representativeUnit',
-          items: itemsNhanVien,
-          onChanged: (value) {
-            nguoiDaiDienDonViDaiDien = value;
-          },
-          validationErrors: _validationErrors,
-        ),
-        CommonCheckboxInput(
-          label: 'Đơn vị Đại diện đã xác nhận',
-          value: isRepresentativeUnitConfirm,
-          isEditing: isEditing,
-          isDisabled: true,
-          onChanged: (newValue) {
+          itemsNhanVien: itemsNhanVien,
+          phongBan: widget.provider.dataDepartment,
+          listNhanVien: listNhanVien,
+          initialSigners: _additionalSigners,
+          onChanged: (list) {
             setState(() {
-              isRepresentativeUnitConfirm = newValue;
+              _additionalSigners
+                ..clear()
+                ..addAll(list);
+
+                 log('message _additionalSigners: ${jsonEncode(_additionalSigners)}');
+            });
+          },
+          onChangedDetailed: (list) {
+            setState(() {
+              _additionalSignersDetailed = list;
+              log('message _additionalSignersDetailed: ${jsonEncode(_additionalSignersDetailed)}');
             });
           },
         ),

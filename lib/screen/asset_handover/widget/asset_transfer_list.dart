@@ -1,10 +1,6 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
-import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -14,8 +10,6 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -430,7 +424,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                 AssetHandoverDto(
                   id: item.id,
                   idCongTy: item.idCongTy,
-                  banGiaoTaiSan: '',
+                  banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
                   quyetDinhDieuDongSo: '',
                   lenhDieuDong: item.id,
                   idDonViGiao: item.idDonViGiao,
@@ -449,6 +443,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
                   daiDienBenNhanXacNhan: false,
                   donViDaiDienXacNhan: '0',
                 ),
+                isFindNew: true,
               ),
             },
       ),
