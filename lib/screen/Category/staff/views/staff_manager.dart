@@ -119,7 +119,10 @@ class _StaffManagerState extends State<StaffManager> {
                           isShowInput = true;
                         },
                         onDelete: (item) {
-                          _showDeleteDialog(context, item);
+                          setState(() {
+                            isShowInput = false;
+                            context.read<StaffBloc>().add(DeleteStaff(item));
+                          });
                         },
                         onEdit: (item) {
                           _showForm(item);

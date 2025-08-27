@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';
 
@@ -25,15 +27,52 @@ class ChiTietDieuDongTaiSanRepository {
   }
 
   Future<List<ChiTietDieuDongTaiSan>> getAll(String idDieuDongTaiSan) async {
-    final res = await _dio.get(
-      '',
-      queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
-    );
-    List<ChiTietDieuDongTaiSan> chiTietDieuDongs =
-        (res.data as List)
-            .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
-            .toList();
-    return chiTietDieuDongs;
+    try {
+      final res = await _dio.get(
+        '',
+        queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
+      );
+      List<ChiTietDieuDongTaiSan> chiTietDieuDongs = (res.data as List)
+          .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
+          .toList();
+      return chiTietDieuDongs;
+    } on DioException catch (e) {
+      // Thử fallback key tham số khác trong trường hợp API yêu cầu tên khác
+      if (e.response?.statusCode == Numeral.STATUS_CODE_DELETE) {
+        SGLog.error(
+          'ChiTietDieuDongTaiSanRepository.getAll',
+          '400 Bad Request với key iddieudongtaisan, thử lại với idDieuDongTaiSan',
+        );
+        try {
+          final resRetry = await _dio.get(
+            '',
+            queryParameters: {"idDieuDongTaiSan": idDieuDongTaiSan},
+          );
+          List<ChiTietDieuDongTaiSan> chiTietDieuDongs =
+              (resRetry.data as List)
+                  .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
+                  .toList();
+          return chiTietDieuDongs;
+        } catch (e2) {
+          SGLog.error(
+            'ChiTietDieuDongTaiSanRepository.getAll',
+            'Fallback thất bại: $e2',
+          );
+          return [];
+        }
+      }
+      SGLog.error(
+        'ChiTietDieuDongTaiSanRepository.getAll',
+        'Lỗi khi gọi API: ${e.message}',
+      );
+      return [];
+    } catch (e) {
+      SGLog.error(
+        'ChiTietDieuDongTaiSanRepository.getAll',
+        'Lỗi không xác định: $e',
+      );
+      return [];
+    }
   }
 
   Future<ChiTietDieuDongTaiSan> getById(String id) async {

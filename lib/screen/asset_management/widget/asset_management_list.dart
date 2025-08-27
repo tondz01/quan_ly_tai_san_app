@@ -346,11 +346,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           item.id,
                         ),
                         onChange: (value) {
-                          log('message ItemAssetGroup: $value');
                           widget.provider.updateCheckBoxStatus(item.id, value);
-                          log(
-                            'widget.provider.getCheckBoxStatus: ${widget.provider.getCheckBoxStatus(item.id)}',
-                          );
+                        
                         },
                       ),
                     ),
@@ -511,7 +508,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 type: ConfirmType.delete,
                 title: 'Xóa nhóm tài sản',
                 message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom!,
+                highlight: item.tenNhom ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {

@@ -557,59 +557,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      OutlinedButton(
-                        onPressed: () {
-                          if (widget.onCancel != null) {
-                            widget.onCancel!();
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF7B8EC8),
-                          side: const BorderSide(color: Color(0xFFE6EAF3)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Hủy'),
-                      ),
-                      const Spacer(),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_isCanSave) {
-                            _save();
-                          } else {
-                            if (_pinController.text.isEmpty) {
-                              AppUtility.showSnackBar(
-                                context,
-                                'Vui lòng nhập mã PIN để lấy Agreement UUID',
-                                isError: true,
-                              );
-                            } else if (_agreementUUIdController.text.isEmpty) {
-                              AppUtility.showSnackBar(
-                                context,
-                                'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
-                                isError: true,
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2264E5),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                        ),
-                        child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -865,7 +812,23 @@ class _StaffFormPageState extends State<StaffFormPage> {
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
               onPressed: () {
-                widget.onSaved?.call();
+                if (_isCanSave) {
+                  _save();
+                } else {
+                  if (_pinController.text.isEmpty) {
+                    AppUtility.showSnackBar(
+                      context,
+                      'Vui lòng nhập mã PIN để lấy Agreement UUID',
+                      isError: true,
+                    );
+                  } else if (_agreementUUIdController.text.isEmpty) {
+                    AppUtility.showSnackBar(
+                      context,
+                      'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
+                      isError: true,
+                    );
+                  }
+                }
               },
             ),
             const SizedBox(width: 8),
@@ -875,7 +838,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
               onPressed: () {
-                widget.onCancel?.call();
+                if (widget.onCancel != null) {
+                  widget.onCancel!();
+                }
               },
             ),
           ],

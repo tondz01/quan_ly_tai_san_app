@@ -647,7 +647,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         context: context,
         item: item,
         provider: widget.provider,
-        isShowKy: false,
+        isShowKy: true,
         document: _document,
       );
     } else {
@@ -657,7 +657,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           context: context,
           item: item,
           provider: widget.provider,
-          isShowKy: false,
+          isShowKy: true,
           document: _document,
         );
       }

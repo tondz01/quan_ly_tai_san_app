@@ -221,7 +221,6 @@ class AssetManagementProvider with ChangeNotifier {
         list.add(element);
       }
     }
-    log('getListChildAssetsByIdAsset: ${list.length}');
     return list;
   }
 
@@ -357,6 +356,7 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
+    log('getListCapitalSourceSuccess: ${_itemsNguonKinhPhi?.length}');
     notifyListeners();
   }
 
@@ -373,6 +373,7 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
+    log('getListDepartmentSuccess: ${_itemsPhongBan?.length}');
     notifyListeners();
   }
 
