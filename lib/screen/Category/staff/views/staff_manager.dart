@@ -37,30 +37,6 @@ class _StaffManagerState extends State<StaffManager> {
   bool isFirstLoad = false;
 
   bool isShowInput = false;
-  void _showDeleteDialog(BuildContext context, NhanVien staff) {
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Xác nhận xóa'),
-            content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Hủy'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<StaffBloc>().add(DeleteStaff(staff));
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text('Xóa'),
-              ),
-            ],
-          ),
-    );
-  }
-
   void _searchStaff(String value) {
     context.read<StaffBloc>().add(SearchStaff(value));
   }

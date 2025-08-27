@@ -42,7 +42,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 1;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;

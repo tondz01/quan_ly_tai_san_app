@@ -9,7 +9,6 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
@@ -20,12 +19,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_stat
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_transfer_controll.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -34,7 +29,8 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
-  const AssetHandoverList({super.key, required this.provider});
+  final List<DieuDongTaiSanDto> listAssetTransfer;
+  const AssetHandoverList({super.key, required this.provider, required this.listAssetTransfer});
 
   @override
   State<AssetHandoverList> createState() => _AssetHandoverListState();
@@ -44,8 +40,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
   String urlPreview = '';
-
-  bool isTabTableAssetTransfer = false;
 
   bool isShowPreview = false;
   // Column display options
@@ -63,7 +57,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'status',
     'actions',
   ];
-  List<DieuDongTaiSanDto> listAssetTransfer = [];
 
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
@@ -72,12 +65,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   void initState() {
     super.initState();
     _initializeColumnOptions();
-    AssetTransferControl().initializeColumnOptions();
-    listAssetTransfer =
-        widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
-            .toList() ??
-        [];
+
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -288,29 +276,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-  void _showColumnAssetTransferDisplayPopup(BuildContext context) async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          AssetTransferControl().visibleColumnIds = selectedColumns;
-          AssetTransferControl().updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        AssetTransferControl().updateColumnOptions();
-      },
-    );
-  }
-
   void _updateColumnOptions() {
     for (var option in columnOptions) {
       option.isChecked = visibleColumnIds.contains(option.id);
@@ -320,177 +285,100 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
-    final List<SgTableColumn<DieuDongTaiSanDto>> columnsAssetTransfer =
-        AssetTransferControl().buildColumns(
-          (item) => viewActionAssetTransfer(item),
-        );
-    log('message filteredData ${widget.provider.dataPage}');
-    return DefaultTabController(
-      length: 2,
-      child: Row(
-        children: [
-          // if (url.isNotEmpty && isShowPreview) displayPreview(),
-          Expanded(
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: .05),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+    return Row(
+      children: [
+        // if (url.isNotEmpty && isShowPreview) displayPreview(),
+        Expanded(
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(0),
+                topRight: Radius.circular(0),
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        topRight: Radius.circular(8),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .05),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        spacing: 8,
+                        children: [
+                          Icon(
+                            Icons.table_chart,
+                            color: Colors.grey.shade600,
+                            size: 18,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2.5),
+                            child: Text(
+                              'Biên bản bàn giao tài sản (${widget.provider.data?.length ?? 0})',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _showColumnDisplayPopup,
+                            child: Icon(
+                              Icons.settings,
+                              color: ColorValue.link,
+                              size: 18,
+                            ),
+                          ),
+                          _buildActionKy(),
+                        ],
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            spacing: 8,
-                            children: [
-                              Icon(
-                                Icons.table_chart,
-                                color: Colors.grey.shade600,
-                                size: 18,
-                              ),
-                              Builder(
-                                builder: (ctx) {
-                                  final controller = DefaultTabController.of(ctx);
-                                  return AnimatedBuilder(
-                                    animation: controller!,
-                                    builder: (context, _) {
-                                      final isAssetTransferTab = controller.index == 1;
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 2.5),
-                                        child: Text(
-                                          isAssetTransferTab
-                                              ? 'Biên bản điều động tài sản (${listAssetTransfer.length})'
-                                              : 'Biên bản bàn giao tài sản (${widget.provider.data?.length ?? 0})',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                              Builder(
-                                builder: (ctx) {
-                                  final controller = DefaultTabController.of(ctx);
-                                  return AnimatedBuilder(
-                                    animation: controller!,
-                                    builder: (context, _) {
-                                      final isAssetTransferTab = controller.index == 1;
-                                      return GestureDetector(
-                                        onTap: isAssetTransferTab
-                                            ? () => _showColumnAssetTransferDisplayPopup(context)
-                                            : _showColumnDisplayPopup,
-                                        child: Icon(
-                                          Icons.settings,
-                                          color: ColorValue.link,
-                                          size: 18,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                              _buildActionKy(),
-                            ],
-                          ),
-                        ),
-                        Builder(
-                          builder: (ctx) {
-                            final controller = DefaultTabController.of(ctx);
-                            return AnimatedBuilder(
-                              animation: controller!,
-                              builder: (context, _) {
-                                final isAssetTransferTab = controller.index == 1;
-                                return Visibility(
-                                  visible: !isAssetTransferTab,
-                                  child: FindByStateAssetHandover(provider: widget.provider),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 16),
-                        SizedBox(
-                          width: 320,
-                          child: TabBar(
-                            indicatorColor: ColorValue.link,
-                            labelColor: ColorValue.link,
-                            unselectedLabelColor: Colors.grey.shade600,
-                            tabs: [
-                              Tab(icon: Icon(Icons.book_outlined, size: 18), text: 'Biên bản bàn giao'),
-                              Tab(icon: Icon(Icons.table_chart, size: 18), text: 'Biên bản điều động'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+
+                      FindByStateAssetHandover(provider: widget.provider),
+                    ],
                   ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        // Tab 1: Bàn giao tài sản
-                        TableBaseView<AssetHandoverDto>(
-                          searchTerm: '',
-                          columns: columns,
-                          data: widget.provider.dataPage ?? [],
-                          horizontalController: ScrollController(),
-                          onRowTap: (item) {
-                            isShowPreview = true;
-                            widget.provider.onChangeDetail(context, item);
-                          },
-                          onSelectionChanged: (items) {
-                            setState(() {
-                              selectedItems = items;
-                            });
-                          },
-                        ),
-                        // Tab 2: Biên bản điều động
-                        TableBaseView<DieuDongTaiSanDto>(
-                          searchTerm: '',
-                          columns: columnsAssetTransfer,
-                          data: listAssetTransfer,
-                          horizontalController: ScrollController(),
-                          onRowTap: (item) {
-                            // widget.data.onChangeDetailDieuDongTaiSan(item);
-                          },
-                          onSelectionChanged: (items) {
-                            setState(() {
-                              // selectedItems = items;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
+                ),
+                Expanded(
+                  child: TableBaseView<AssetHandoverDto>(
+                    searchTerm: '',
+                    columns: columns,
+                    data: widget.provider.dataPage ?? [],
+                    horizontalController: ScrollController(),
+                    onRowTap: (item) {
+                      isShowPreview = true;
+                      widget.provider.onChangeDetail(context, item);
+                    },
+                    onSelectionChanged: (items) {
+                      setState(() {
+                        selectedItems = items;
+                      });
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -568,7 +456,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                 return;
               }
               log('signatureFlow: ${signatureFlow.toString()}');
-              final matchingTransfers = listAssetTransfer.where(
+              final matchingTransfers = widget.listAssetTransfer.where(
                 (x) => x.soQuyetDinh == item!.quyetDinhDieuDongSo,
               );
 
@@ -642,7 +530,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             item.quyetDinhDieuDongSo ?? '',
           );
 
-          final matchingTransfers = listAssetTransfer.where(
+          final matchingTransfers = widget.listAssetTransfer.where(
             (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
           );
 
@@ -770,57 +658,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         ),
       ),
     );
-  }
-
-  Widget viewActionAssetTransfer(DieuDongTaiSanDto item) {
-    return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.visibility,
-        tooltip: 'Xem',
-        iconColor: ColorValue.cyan,
-        backgroundColor: Colors.green.shade50,
-        borderColor: Colors.green.shade200,
-        onPressed: () async {
-          NhanVien nhanVien =
-              widget.provider.dataStaff
-                  ?.where(
-                    (item) => item.id == widget.provider.userInfo?.tenDangNhap,
-                  )
-                  .first ??
-              NhanVien();
-          if (item.tenFile == null || item.tenFile!.isEmpty) {
-            previewDocumentView(
-              context: context,
-              item: item,
-              isShowKy: false,
-              document: _document,
-              userInfo: widget.provider.userInfo!,
-              nhanVien: nhanVien,
-            );
-          } else {
-            await _loadPdfNetwork(item.tenFile!);
-            if (mounted) {
-              previewDocumentView(
-                context: context,
-                item: item,
-                isShowKy: false,
-                document: _document,
-                userInfo: widget.provider.userInfo!,
-                nhanVien: nhanVien,
-              );
-            }
-          }
-        },
-      ),
-      ActionButtonConfig(
-        icon: Icons.navigate_next,
-        tooltip: 'Tạo biên bản bàn giao',
-        iconColor: ColorValue.lightAmber,
-        backgroundColor: Colors.amber.shade50,
-        borderColor: Colors.amber.shade200,
-        onPressed: () => {},
-      ),
-    ]);
   }
 
   Color getColorStatus(int status) {

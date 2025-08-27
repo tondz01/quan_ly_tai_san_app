@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -12,12 +14,10 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_transfer_controll.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -26,13 +26,13 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferList extends StatefulWidget {
-  final AssetHandoverProvider provider;
   final List<DieuDongTaiSanDto> data;
+  final AssetHandoverProvider provider;
 
   const AssetTransferList({
     super.key,
-    required this.provider,
     required this.data,
+    required this.provider,
   });
 
   @override
@@ -44,7 +44,6 @@ class _AssetTransferListState extends State<AssetTransferList> {
   List<DieuDongTaiSanDto> selectedItems = [];
   UserInfoDTO? userInfo;
 
-  final List<AssetHandoverDto> listAssetHandover = [];
   PdfDocument? _document;
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -64,7 +63,6 @@ class _AssetTransferListState extends State<AssetTransferList> {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
     _initializeColumnOptions();
-    AssetTransferControl().initializeColumnOptions();
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -130,6 +128,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
 
   List<SgTableColumn<DieuDongTaiSanDto>> _buildColumns() {
     final List<SgTableColumn<DieuDongTaiSanDto>> columns = [];
+
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
@@ -138,7 +137,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
             TableBaseConfig.columnTable<DieuDongTaiSanDto>(
               title: 'Phiếu ký nội sinh',
               width: 150,
-              getValue: (item) => item.tenPhieu ?? '',
+              getValue: (item) => getName(item.loai ?? 0),
             ),
           );
           break;
@@ -210,7 +209,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -255,51 +254,122 @@ class _AssetTransferListState extends State<AssetTransferList> {
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<DieuDongTaiSanDto>> columns = _buildColumns();
-    return Expanded(
-      child: TableBaseView<DieuDongTaiSanDto>(
-        searchTerm: '',
-        columns: columns,
-        data:
-            widget.provider.dataAssetTransfer
-                ?.where((item) => item.trangThai == 6)
-                .toList() ??
-            [],
-        horizontalController: ScrollController(),
-        onRowTap: (item) {
-          // widget.data.onChangeDetailDieuDongTaiSan(item);
-        },
-        onSelectionChanged: (items) {
-          setState(() {
-            selectedItems = items;
-          });
-        },
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(0),
+          topRight: Radius.circular(0),
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+        ),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: headerList(),
+          ),
+          Expanded(
+            child: TableBaseView<DieuDongTaiSanDto>(
+              searchTerm: '',
+              columns: columns,
+              data: widget.data,
+              horizontalController: ScrollController(),
+              onRowTap: (item) {
+                // widget.provider.onChangeDetailDieuDongTaiSan(item);
+              },
+              onSelectionChanged: (items) {
+                setState(() {
+                  // selectedItems = items;
+                });
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
+  Widget headerList() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    bool isColumn = screenWidth < 1360;
+    return isColumn
+        ? Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Row(
+              spacing: 8,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2.5),
+                  child: Text(
+                    'Biên bản điều động',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+
+                GestureDetector(
+                  onTap: _showColumnDisplayPopup,
+                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
+                ),
+              ],
+            ),
+          ],
+        )
+        : Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+                SizedBox(width: 8),
+                Text(
+                  'Biên bản điều động',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+
+                // Spacer(),
+                GestureDetector(
+                  onTap: _showColumnDisplayPopup,
+                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
+                ),
+              ],
+            ),
+          ],
+        );
+  }
+
   Widget viewAction(DieuDongTaiSanDto item) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.book_outlined,
-        tooltip: 'Biên bản bản giao',
-        iconColor: ColorValue.lightAmber,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed: () {
-          if (listAssetHandover.isEmpty) {
-            AppUtility.showSnackBar(
-              context,
-              'Không có biên bản bàn giao tài sản nào cho phiếu này',
-              isError: true,
-            );
-            return;
-          }
-          PropertyHandoverMinutes.showPopup(
-            context,
-            listAssetHandover.where((itemAH) => itemAH.id == item.id).toList(),
-          );
-        },
-      ),
       ActionButtonConfig(
         icon: Icons.visibility,
         tooltip: 'Xem',
@@ -308,18 +378,29 @@ class _AssetTransferListState extends State<AssetTransferList> {
         borderColor: Colors.green.shade200,
         onPressed: () async {
           NhanVien nhanVien =
-              widget.provider.dataStaff
-                  ?.where((item) => item.id == userInfo?.tenDangNhap)
-                  .first ??
+              widget.provider.dataStaff?.firstWhere(
+                (element) =>
+                    element.id == widget.provider.userInfo?.tenDangNhap,
+                orElse: () => NhanVien(),
+              ) ??
               NhanVien();
+          if (nhanVien.id == null) {
+            AppUtility.showSnackBar(
+              context,
+              'Bạn không có quyền xem tài liệu',
+              isError: true,
+            );
+            return;
+          }
+
           if (item.tenFile == null || item.tenFile!.isEmpty) {
             previewDocumentView(
               context: context,
               item: item,
+              userInfo: userInfo!,
+              nhanVien: nhanVien,
               isShowKy: false,
               document: _document,
-              userInfo: widget.provider.userInfo!,
-              nhanVien: nhanVien,
             );
           } else {
             await _loadPdfNetwork(item.tenFile!);
@@ -327,42 +408,62 @@ class _AssetTransferListState extends State<AssetTransferList> {
               previewDocumentView(
                 context: context,
                 item: item,
+                userInfo: userInfo!,
+                nhanVien: nhanVien,
                 isShowKy: false,
                 document: _document,
-                userInfo: widget.provider.userInfo!,
-                nhanVien: nhanVien,
               );
             }
           }
         },
       ),
       ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        icon: Icons.navigate_next_outlined,
+        tooltip:'Tạo biên bản bàn giao tài sản',
+        iconColor: Colors.grey ,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai == 0)
-                {
-                  showConfirmDialog(
-                    context,
-                    type: ConfirmType.delete,
-                    title: 'Xóa nhóm tài sản',
-                    message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                    highlight: item.tenPhieu!,
-                    cancelText: 'Không',
-                    confirmText: 'Xóa',
-                    onConfirm: () {
-                      context.read<DieuDongTaiSanBloc>().add(
-                        DeleteDieuDongEvent(context, item.id!),
-                      );
-                    },
-                  ),
-                },
+              widget.provider.onChangeDetail(
+                context,
+                AssetHandoverDto(
+                  id: item.id,
+                  idCongTy: item.idCongTy,
+                  banGiaoTaiSan: '',
+                  quyetDinhDieuDongSo: '',
+                  lenhDieuDong: item.id,
+                  idDonViGiao: item.idDonViGiao,
+                  tenDonViGiao: item.tenDonViGiao,
+                  idDonViNhan: item.idDonViNhan,
+                  tenDonViNhan: item.tenDonViNhan,
+                  ngayBanGiao: '',
+                  idLanhDao: '',
+                  tenLanhDao: '',
+                  tenDaiDienBanHanhQD: '',
+                  tenDaiDienBenGiao: '',
+                  tenDaiDienBenNhan: '',
+                  tenDonViDaiDien: '',
+                  daXacNhan: false,
+                  daiDienBenGiaoXacNhan: false,
+                  daiDienBenNhanXacNhan: false,
+                  donViDaiDienXacNhan: '0',
+                ),
+              ),
             },
       ),
     ]);
+  }
+
+  String getName(int type) {
+    switch (type) {
+      case 1:
+        return 'Phiếu duyệt cấp phát tài sản';
+      case 2:
+        return 'Phiếu duyệt chuyển tài sản';
+      case 3:
+        return 'Phiếu duyệt thu hồi tài sản';
+    }
+    return '';
   }
 }
