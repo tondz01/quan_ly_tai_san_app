@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -128,6 +129,18 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         searchable: true,
       ),
     ];
+
+    final List<ThreadNode> sample = const [
+      ThreadNode(header: 'Phòng Tổng công ty', depth: 0),
+      ThreadNode(header: 'Phòng Kế toán', depth: 1),
+      ThreadNode(header: 'Tổ Ngân quỹ', depth: 2),
+      ThreadNode(header: 'Phòng Nhân sự', depth: 1),
+      ThreadNode(header: 'Tổ Tuyển dụng', depth: 2),
+      ThreadNode(header: 'Tổ Đào tạo', depth: 2),
+      ThreadNode(header: 'Phòng IT', depth: 1),
+      ThreadNode(header: 'Tổ Hạ tầng', depth: 2),
+      ThreadNode(header: 'Tổ Phần mềm', depth: 2),
+    ];
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
@@ -225,7 +238,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
               ),
               child: DepartmentTreeDemo(
                 title: titleDetailDepartmentTree,
-                data: selectedItem,
+                sample: sample,
               ),
             ),
           ),

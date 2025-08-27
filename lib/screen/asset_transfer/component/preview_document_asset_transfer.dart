@@ -137,3 +137,69 @@ previewDocument({
         ),
   );
 }
+
+previewDocumentView({
+  required BuildContext context,
+  required DieuDongTaiSanDto item,
+  required UserInfoDTO userInfo,
+  required NhanVien nhanVien,
+  bool isShowKy = true,
+  pdfrx.PdfDocument? document,
+}) {
+  String tenFile = path.basename(nhanVien.chuKyNhay.toString());
+  String tenFileThuong = path.basename(nhanVien.chuKyThuong.toString());
+  String urlNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
+  String urlThuong = '${Config.baseUrl}/api/upload/download/$tenFileThuong';
+
+  return showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder:
+        (context) => Padding(
+          padding: const EdgeInsets.only(
+            left: 24.0,
+            right: 24.0,
+            top: 16.0,
+            bottom: 16.0,
+          ),
+          child: CommonContract(
+            contractPages: [
+              if (document != null)
+                for (var index = 0; index < document.pages.length; index++)
+                  pdfrx.PdfPageView(
+                    document: document,
+                    pageNumber: index + 1,
+                    alignment: Alignment.center,
+                  ),
+              A4Canvas(
+                marginsMm: const EdgeInsets.all(20),
+                scale: 1.2,
+                maxWidth: 800,
+                maxHeight: 800 * (297 / 210),
+                child: ContractPage.assetMovePage(item),
+              ),
+            ],
+            signatureList: [urlNhay, urlThuong],
+            idTaiLieu: item.id.toString(),
+            idNguoiKy: userInfo.tenDangNhap,
+            tenNguoiKy: userInfo.hoTen,
+            isShowKy: isShowKy,
+            isKyNhay: nhanVien.kyNhay ?? false,
+            isKyThuong: nhanVien.kyThuong ?? false,
+            isKySo: nhanVien.kySo ?? false,
+            eventSignature: () {
+              final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(
+                context,
+              );
+              assetHandoverBloc.add(
+                UpdateSigningStatusEvent(
+                  context,
+                  item.id.toString(),
+                  userInfo.tenDangNhap,
+                ),
+              );
+            },
+          ),
+        ),
+  );
+}

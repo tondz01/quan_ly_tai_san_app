@@ -1,31 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/common/diagram/department_tree.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class DepartmentTreeDemo extends StatelessWidget {
   final String title;
-  final ToolsAndSuppliesDto? data;
+  final List<ThreadNode> sample;
   const DepartmentTreeDemo({
     super.key,
     required this.title,
-    required this.data,
+    required this.sample,
   });
 
   @override
   Widget build(BuildContext context) {
-    final rootComments = [
-      TreeNode(
-        name: data?.ten ?? "Công cụ ...",
-        message: "Số lượng: ${data?.soLuong ?? 0}",
-        children: [
-          TreeNode(name: "Kho công ty", message: "Số lượng: 3"),
-          TreeNode(name: "Ban giam đốc", message: "Số lượng: 2"),
-          TreeNode(name: "Phòng kế toán", message: "Số lượng: 5"),
-        ],
-      ),
-    ];
-
     return Column(
       children: [
         Container(
@@ -51,19 +38,10 @@ class DepartmentTreeDemo extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < rootComments.length; i++)
-                  DepartmentTree(
-                    node: rootComments[i],
-                    isLast: i == rootComments.length - 1,
-                    isFirst: i == 0,
-                  ),
-              ],
-            ),
+          child: ThreadList(
+            nodes: sample,
+            indentWidth: 28,
+            lineColor: const Color(0xFF9E9E9E),
           ),
         ),
       ],

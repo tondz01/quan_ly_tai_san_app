@@ -14,6 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_do
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
@@ -43,6 +45,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
   AssetHandoverDto? get item => _item;
   get data => _data;
+  get userInfo => _userInfo;
   get filteredData => _filteredData;
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
@@ -125,6 +128,8 @@ class AssetHandoverProvider with ChangeNotifier {
   List<AssetHandoverDto> _filteredData = [];
   final List<SgTableColumn<AssetHandoverDto>> _columns = [];
   AssetHandoverDto? _item;
+
+  UserInfoDTO? _userInfo;
 
   // Method để refresh data và filter
   void refreshData(BuildContext context) {
@@ -281,6 +286,7 @@ class AssetHandoverProvider with ChangeNotifier {
   // Nội dung tìm kiếm
 
   void onInit(BuildContext context) {
+    _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
 
