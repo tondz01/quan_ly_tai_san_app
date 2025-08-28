@@ -3,11 +3,6 @@ enum AppRoute {
   dashboard(path: "/dashboard", name: "dashboard"),
   category(path: "/category", name: "category"),
   projectManager(path: "/project-manager", name: "project-manager"),
-  exemple(path: "/exemple", name: "exemple"),
-  exemple1(path: "/exemple/1", name: "exemple-1"),
-  exemple2(path: "/exemple/2", name: "exemple-2"),
-  exemple3(path: "/exemple/3", name: "exemple-3"),
-  exemple4(path: "/exemple/4", name: "exemple-4"),
   toolsAndSupplies(path: "/tools-and-supplies", name: "tools-and-supplies"),
   toolAndMaterialTransfer(
     path: "/tool-and-material-transfer",
@@ -50,7 +45,8 @@ enum AppRoute {
   bienBanKiemKe(path: "/kiem-ke", name: 'kiem-ke'),
   role(path: "/role", name: 'role'),
   bienBanKiemKeCcdc(path: "/kiem-ke-ccdc", name: 'kiem-ke-ccdc'),
-  bienBanDoiChieu(path: "/doi-cheiu-kiem-ke", name: 'doi-cheiu-kiem-ke');
+  bienBanDoiChieu(path: "/doi-cheiu-kiem-ke", name: 'doi-cheiu-kiem-ke'),
+  ccdcGroup(path: "/ccdc-group", name: 'ccdc-group');
 
   final String path;
   final String? name;

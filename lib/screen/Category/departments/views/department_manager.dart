@@ -127,7 +127,6 @@ class _DepartmentManagerState extends State<DepartmentManager> {
                         },
                       ),
 
-                      // Container(height: 200,color: Colors.limeAccent,),
                       isShowInput: isShowInput,
                       onExpandedChanged: (isExpanded) {
                         isShowInput = isExpanded;
@@ -161,22 +160,4 @@ class _DepartmentManagerState extends State<DepartmentManager> {
       },
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   if (showForm) {
-  //     return DepartmentFormPage(
-  //       department: editingDepartment,
-  //       // Khi bấm Hủy hoặc Lưu sẽ quay lại danh sách
-  //       key: ValueKey(editingDepartment?.departmentId ?? 'new'),
-  //       onCancel: _showList,
-  //       onSaved: _showList,
-  //     );
-  //   } else {
-  //     return DepartmentListPage(
-  //       onAdd: () => _showForm(),
-  //       onEdit: (department) => _showForm(department),
-  //     );
-  //   }
-  // }
 }

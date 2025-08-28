@@ -37,40 +37,8 @@ class _DepartmentListState extends State<DepartmentList> {
         width: 80,
       ),
       TableBaseConfig.columnTable<PhongBan>(
-        title: 'Nhóm đơn vị',
-        getValue: (item) {
-          try {
-            return context
-                    .read<DepartmentBloc>()
-                    .departmentGroups
-                    .firstWhere((group) => group.id == item.idNhomDonVi)
-                    .tenNhom ??
-                '';
-          } catch (e) {
-            return '';
-          }
-        },
-        width: 150,
-      ),
-      TableBaseConfig.columnTable<PhongBan>(
         title: 'Tên phòng/ban',
         getValue: (item) => item.tenPhongBan ?? "",
-        width: 150,
-      ),
-      TableBaseConfig.columnTable<PhongBan>(
-        title: 'Quản lý',
-        getValue: (item) {
-          try {
-            return context
-                    .read<DepartmentBloc>()
-                    .staffs
-                    .firstWhere((staff) => staff?.id == item.idQuanLy)
-                    ?.hoTen ??
-                '';
-          } catch (e) {
-            return '';
-          }
-        },
         width: 150,
       ),
       TableBaseConfig.columnTable<PhongBan>(
@@ -160,7 +128,6 @@ class _DepartmentListState extends State<DepartmentList> {
                     SizedBox(width: 16),
                     IconButton(
                       onPressed: () {
-                        // TODO: Xóa nhân viên đã chọn
                       },
                       icon: Icon(Icons.delete, color: Colors.grey.shade700),
                     ),
