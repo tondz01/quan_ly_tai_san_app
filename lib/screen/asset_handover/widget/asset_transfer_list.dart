@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
@@ -10,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/controller/find_by_type.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -18,6 +21,17 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+
+enum FilterType {
+  all('Tất cả', ColorValue.darkGrey),
+  capPhat('Cấp phát', ColorValue.mediumGreen),
+  dieuChuyen('Điều chuyển', ColorValue.lightBlue),
+  thuHoi('Thu hồi', ColorValue.coral);
+
+  final String label;
+  final Color activeColor;
+  const FilterType(this.label, this.activeColor);
+}
 
 class AssetTransferList extends StatefulWidget {
   final List<DieuDongTaiSanDto> data;
@@ -35,8 +49,28 @@ class AssetTransferList extends StatefulWidget {
 
 class _AssetTransferListState extends State<AssetTransferList> {
   bool isUploading = false;
+  List<DieuDongTaiSanDto> dataAssetTransfer = [];
+  List<DieuDongTaiSanDto> dataAssetTransferFilter = [];
   List<DieuDongTaiSanDto> selectedItems = [];
   UserInfoDTO? userInfo;
+
+  final Map<FilterType, bool> _filterStatus = {
+    FilterType.capPhat: false,
+    FilterType.dieuChuyen: false,
+    FilterType.thuHoi: false,
+  };
+
+  bool get isCapPhat => _filterStatus[FilterType.capPhat] ?? false;
+  bool get isDieuChuyen => _filterStatus[FilterType.dieuChuyen] ?? false;
+  bool get isThuHoi => _filterStatus[FilterType.thuHoi] ?? false;
+
+  int get allCount => dataAssetTransfer.length;
+  int get capPhatCount =>
+      dataAssetTransfer.where((item) => (item.loai) == 1).length;
+  int get dieuChuyenCount =>
+      dataAssetTransfer.where((item) => (item.loai) == 2).length;
+  int get thuHoiCount =>
+      dataAssetTransfer.where((item) => (item.loai) == 3).length;
 
   PdfDocument? _document;
   // Column display options
@@ -56,6 +90,9 @@ class _AssetTransferListState extends State<AssetTransferList> {
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    dataAssetTransfer = widget.data;
+    dataAssetTransferFilter = dataAssetTransfer;
+    log('message dataAssetTransfer: ${dataAssetTransfer.length}');
     _initializeColumnOptions();
   }
 
@@ -284,7 +321,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
             child: TableBaseView<DieuDongTaiSanDto>(
               searchTerm: '',
               columns: columns,
-              data: widget.data,
+              data: dataAssetTransferFilter,
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 // widget.provider.onChangeDetailDieuDongTaiSan(item);
@@ -302,64 +339,46 @@ class _AssetTransferListState extends State<AssetTransferList> {
   }
 
   Widget headerList() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    bool isColumn = screenWidth < 1360;
-    return isColumn
-        ? Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              spacing: 8,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2.5),
-                  child: Text(
-                    'Biên bản điều động',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ),
+            Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+            SizedBox(width: 8),
+            Text(
+              'Biên bản điều động',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
+            ),
 
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-              ],
+            // Spacer(),
+            GestureDetector(
+              onTap: _showColumnDisplayPopup,
+              child: Icon(Icons.settings, color: ColorValue.link, size: 18),
             ),
           ],
-        )
-        : Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Biên bản điều động',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-
-                // Spacer(),
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-              ],
-            ),
-          ],
-        );
+        ),
+        FindByType(
+          isCapPhat: isCapPhat,
+          isDieuChuyen: isDieuChuyen,
+          isThuHoi: isThuHoi,
+          allCount: allCount,
+          capPhatCount: capPhatCount,
+          dieuChuyenCount: dieuChuyenCount,
+          thuHoiCount: thuHoiCount,
+          onFilterChanged: (status, value) {
+            setState(() {
+              setFilterStatus(status, value);
+            });
+          },
+        ),
+      ],
+    );
   }
 
   Widget viewAction(DieuDongTaiSanDto item) {
@@ -413,8 +432,8 @@ class _AssetTransferListState extends State<AssetTransferList> {
       ),
       ActionButtonConfig(
         icon: Icons.navigate_next_outlined,
-        tooltip:'Tạo biên bản bàn giao tài sản',
-        iconColor: Colors.grey ,
+        tooltip: 'Tạo biên bản bàn giao tài sản',
+        iconColor: Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
@@ -460,5 +479,61 @@ class _AssetTransferListState extends State<AssetTransferList> {
         return 'Phiếu duyệt thu hồi tài sản';
     }
     return '';
+  }
+
+  void setFilterStatus(FilterType status, bool? value) {
+    log('message setFilterStatus: $status, $value');
+
+    _filterStatus[status] = value ?? false;
+
+    if (status == FilterType.all && value == true) {
+      for (var key in _filterStatus.keys) {
+        if (key != FilterType.all) {
+          _filterStatus[key] = false;
+        }
+      }
+    } else if (status != FilterType.all && value == true) {
+      _filterStatus[FilterType.all] = false;
+    }
+
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    bool hasActiveFilter = _filterStatus.entries
+        .where((entry) => entry.key != FilterType.capPhat)
+        .any((entry) => entry.value == true);
+
+    // Lọc theo trạng thái
+    List<DieuDongTaiSanDto> statusFiltered;
+    if (_filterStatus[FilterType.all] == true || !hasActiveFilter) {
+      statusFiltered = List.from(dataAssetTransfer);
+    } else {
+      statusFiltered =
+          dataAssetTransfer.where((item) {
+            int itemStatus = item.loai ?? -1;
+
+            if (_filterStatus[FilterType.capPhat] == true &&
+                (itemStatus == 1)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterType.dieuChuyen] == true &&
+                (itemStatus == 2)) {
+              return true;
+            }
+
+            if (_filterStatus[FilterType.thuHoi] == true && (itemStatus == 3)) {
+              
+              return true;
+            }
+
+            return false;
+          }).toList();
+    }
+
+    setState(() {
+      dataAssetTransferFilter = statusFiltered;
+    });
   }
 }

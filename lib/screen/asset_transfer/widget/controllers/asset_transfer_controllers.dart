@@ -24,6 +24,7 @@ class AssetTransferControllers {
   late TextEditingController controllerDestination = TextEditingController();
   late TextEditingController controllerTPDonViGiao = TextEditingController();
   late TextEditingController controllerPPDonViNhan = TextEditingController();
+  late TextEditingController controllerNguoiKyNhay = TextEditingController();
 
   void dispose() {
     controllerSoChungTu.dispose();
@@ -49,6 +50,7 @@ class AssetTransferControllers {
     controllerDestination.dispose();
     controllerTPDonViGiao.dispose();
     controllerPPDonViNhan.dispose();
+    controllerNguoiKyNhay.dispose();
   }
 
   void clearAll() {
@@ -75,5 +77,6 @@ class AssetTransferControllers {
     controllerDestination.clear();
     controllerTPDonViGiao.clear();
     controllerPPDonViNhan.clear();
+    controllerNguoiKyNhay.clear();
   }
 } 

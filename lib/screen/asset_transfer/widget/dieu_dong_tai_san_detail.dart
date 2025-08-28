@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -110,9 +111,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
-    SGLog.info("LoadPdfNetwork","Loading PDF from network: $nameFile");
+    SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
     try {
-      final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });
@@ -445,7 +448,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           label: 'at.receiving_unit'.tr,
                           controller: controllers.controllerReceivingUnit,
                           isEditing: state.isEditing,
-
+                          value: state.donViNhan,
                           items: widget.provider.itemsDDPhongBan,
                           defaultValue:
                               controllers
@@ -463,11 +466,52 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             state.donViNhan = value;
                           },
                         ),
+                        CmFormDate(
+                          label: 'at.effective_date'.tr,
+                          controller: controllers.controllerEffectiveDate,
+                          isEditing: state.isEditing,
+                          onChanged: (value) {
+                            log('Effective date selected: $value');
+                          },
+                          value:
+                              controllers
+                                      .controllerEffectiveDate
+                                      .text
+                                      .isNotEmpty
+                                  ? AppUtility.parseFlexibleDateTime(
+                                    controllers.controllerEffectiveDate.text,
+                                  )
+                                  : DateTime.now(),
+                        ),
+                        CmFormDate(
+                          label: 'at.effective_date_to'.tr,
+                          controller: controllers.controllerEffectiveDateTo,
+                          isEditing: state.isEditing,
+                          onChanged: (value) {
+                            log('Effective date selected: $value');
+                          },
+                          value:
+                              controllers
+                                      .controllerEffectiveDateTo
+                                      .text
+                                      .isNotEmpty
+                                  ? AppUtility.parseFlexibleDateTime(
+                                    controllers.controllerEffectiveDateTo.text,
+                                  )
+                                  : DateTime.now(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Column(
+                      children: [
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.requester'.tr,
                           controller: controllers.controllerRequester,
                           isEditing: state.isEditing,
-
+                          value: state.nguoiDeNghi,
                           items: widget.provider.itemsDDNhanVien,
                           defaultValue:
                               controllers.controllerRequester.text.isNotEmpty
@@ -480,11 +524,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             log('requester selected: $value');
                             setState(() {
+                              state.nguoiDeNghi = value;
                               state.donViDeNghi = widget.provider
                                   .getPhongBanByID(value.phongBanId ?? '');
-                              controllers.controllerProposingUnit.text =
-                                  state.donViDeNghi?.tenPhongBan ?? '';
-                              state.nguoiDeNghi = value;
+                              // controllers.controllerProposingUnit.text =
+                              //     state.donViDeNghi?.tenPhongBan ?? '';
+                              state.donThamMuu = widget.provider
+                                  .getPhongBanByID(value.phongBanId ?? '');
                             });
                           },
                         ),
@@ -498,6 +544,39 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.isNguoiLapPhieuKyNhay = newValue;
                             });
                           },
+                        ),
+                        Visibility(
+                          visible: state.isNguoiLapPhieuKyNhay,
+                          child: CmFormDropdownObject<NhanVien>(
+                            label: 'Chọn người ký nháy',
+                            controller: controllers.controllerNguoiKyNhay,
+                            isEditing: state.isEditing,
+                            value: state.nguoiKyNhay,
+                            items: [
+                              ...state.listStaffByDepartment.map(
+                                (e) => DropdownMenuItem(
+                                  value: e,
+                                  child: Text(e.hoTen ?? ''),
+                                ),
+                              ),
+                            ],
+                            defaultValue:
+                                controllers
+                                        .controllerNguoiKyNhay
+                                        .text
+                                        .isNotEmpty
+                                    ? widget.provider.getNhanVienByID(
+                                      controllers.controllerNguoiKyNhay.text,
+                                    )
+                                    : null,
+                            fieldName: 'nguoiKyNhay',
+                            validationErrors: validation.validationErrors,
+                            onChanged: (value) {
+                              setState(() {
+                                state.nguoiKyNhay = value;
+                              });
+                            },
+                          ),
                         ),
                         CommonCheckboxInput(
                           label: 'at.require_manager_approval'.tr,
@@ -601,21 +680,32 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             },
                           ),
                         ),
-                        CommonFormInput(
-                          label: 'at.proposing_unit'.tr,
-                          controller: controllers.controllerProposingUnit,
-                          isEditing: false,
-                          textContent: state.proposingUnit ?? '',
-                          inputType: TextInputType.number,
-                          validationErrors: validation.validationErrors,
-                        ),
-                      ],
-                    ),
-                  ),
 
-                  Expanded(
-                    child: Column(
-                      children: [
+                        CmFormDropdownObject<PhongBan>(
+                          label: 'Đơn vị tham mưu'.tr,
+                          controller: controllers.controllerProposingUnit,
+                          isEditing: state.isEditing,
+                          value: state.donThamMuu,
+                          items: widget.provider.itemsDDPhongBan,
+                          defaultValue:
+                              controllers
+                                      .controllerProposingUnit
+                                      .text
+                                      .isNotEmpty
+                                  ? widget.provider.getPhongBanByID(
+                                    controllers.controllerProposingUnit.text,
+                                  )
+                                  : null,
+                          fieldName: 'receivingUnit',
+                          validationErrors: validation.validationErrors,
+                          onChanged: (value) {
+                            log('receivingUnit selected: $value');
+                            setState(() {
+                              state.donThamMuu = value;
+                            });
+                          },
+                        ),
+
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.department_approval'.tr,
                           controller: controllers.controllerDepartmentApproval,
@@ -640,40 +730,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             state.nguoiKyCapPhong = value;
                           },
                         ),
-                        CmFormDate(
-                          label: 'at.effective_date'.tr,
-                          controller: controllers.controllerEffectiveDate,
-                          isEditing: state.isEditing,
-                          onChanged: (value) {
-                            log('Effective date selected: $value');
-                          },
-                          value:
-                              controllers
-                                      .controllerEffectiveDate
-                                      .text
-                                      .isNotEmpty
-                                  ? AppUtility.parseFlexibleDateTime(
-                                    controllers.controllerEffectiveDate.text,
-                                  )
-                                  : DateTime.now(),
-                        ),
-                        CmFormDate(
-                          label: 'at.effective_date_to'.tr,
-                          controller: controllers.controllerEffectiveDateTo,
-                          isEditing: state.isEditing,
-                          onChanged: (value) {
-                            log('Effective date selected: $value');
-                          },
-                          value:
-                              controllers
-                                      .controllerEffectiveDateTo
-                                      .text
-                                      .isNotEmpty
-                                  ? AppUtility.parseFlexibleDateTime(
-                                    controllers.controllerEffectiveDateTo.text,
-                                  )
-                                  : DateTime.now(),
-                        ),
+
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.approver'.tr,
                           controller: controllers.controllerApprover,
@@ -690,6 +747,35 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             state.nguoiKyGiamDoc = value;
+                          },
+                        ),
+                        AdditionalSignersSelector(
+                          addButtonText: "Thêm đơn bị đại diện",
+                          labelDepartment: "Đơn vị đại diện",
+                          labelSigned: 'Người đại diện',
+                          isEditing: state.isEditing,
+                          itemsNhanVien: [
+                            ...state.listStaffByDepartment.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          phongBan: widget.provider.dataPhongBan,
+                          listNhanVien: state.listStaffByDepartment,
+                          initialSigners: state.additionalSigners,
+                          onChanged: (list) {
+                            setState(() {
+                              state.additionalSigners
+                                ..clear()
+                                ..addAll(list);
+                            });
+                          },
+                          onChangedDetailed: (list) {
+                            setState(() {
+                              state.additionalSignersDetailed = list;
+                            });
                           },
                         ),
                       ],
@@ -1122,7 +1208,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       if (state.proposingUnit != null &&
           state.proposingUnit!.isNotEmpty &&
           !state.controllersInitialized) {
-        controllers.controllerProposingUnit.text = state.proposingUnit!;
+        // controllers.controllerProposingUnit.text = state.proposingUnit!;
       }
 
       // Reset các biến trạng thái

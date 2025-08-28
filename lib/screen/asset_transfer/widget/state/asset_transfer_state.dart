@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
@@ -25,6 +27,7 @@ class AssetTransferState {
   List<NhanVien> listStaffByDepartment = [];
 
   UserInfoDTO? nguoiLapPhieu;
+  PhongBan? donThamMuu;
   PhongBan? donViGiao;
   PhongBan? donViNhan;
   PhongBan? donViDeNghi;
@@ -33,9 +36,14 @@ class AssetTransferState {
   NhanVien? pPDonViGiao;
   NhanVien? nguoiKyCapPhong;
   NhanVien? nguoiKyGiamDoc;
+  NhanVien? nguoiKyNhay;
 
   DieuDongTaiSanDto? item;
   DieuDongTaiSanDto? itemPreview;
+
+  final List<NhanVien?> additionalSigners = [];
+  final List<TextEditingController> additionalSignerControllers = [];
+  List<AdditionalSignerData> additionalSignersDetailed = [];
 
   // Getters
   bool get isUploading => _isUploading;
@@ -49,10 +57,10 @@ class AssetTransferState {
   set controllersInitialized(bool value) => _controllersInitialized = value;
   set selectedFileName(String? value) => _selectedFileName = value;
   set selectedFilePath(String? value) => _selectedFilePath = value;
-  set initialDetails(List<ChiTietDieuDongTaiSan> value) => _initialDetails = value;
+  set initialDetails(List<ChiTietDieuDongTaiSan> value) =>
+      _initialDetails = value;
 
-
-    void reset() {
+  void reset() {
     isEditing = false;
     isNguoiLapPhieuKyNhay = false;
     isQuanTrongCanXacNhan = false;
@@ -60,16 +68,16 @@ class AssetTransferState {
     _isUploading = false;
     isRefreshing = false;
     isNew = false;
-    
+
     proposingUnit = null;
     _controllersInitialized = false;
     _selectedFileName = null;
     _selectedFilePath = null;
-    
+
     listNewDetails.clear();
     _initialDetails.clear();
     listStaffByDepartment.clear();
-    
+
     nguoiLapPhieu = null;
     donViGiao = null;
     donViNhan = null;
@@ -79,8 +87,13 @@ class AssetTransferState {
     pPDonViGiao = null;
     nguoiKyCapPhong = null;
     nguoiKyGiamDoc = null;
-    
+    donThamMuu = null;
+    nguoiKyNhay = null;
+    additionalSigners.clear();
+    additionalSignerControllers.clear();
+    additionalSignersDetailed.clear();
+
     item = null;
     itemPreview = null;
   }
-} 
+}

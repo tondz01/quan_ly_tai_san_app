@@ -48,7 +48,7 @@ class AdditionalSignersSelector extends StatefulWidget {
     required this.initialSigners,
     required this.onChanged,
     this.addButtonText = 'Thêm người ký mới',
-    this.labelSigned = 'Đã ký',
+    this.labelSigned = 'Người đại diện',
     this.labelDepartment = 'Phòng ban',
     this.phongBan,
     this.listNhanVien,
