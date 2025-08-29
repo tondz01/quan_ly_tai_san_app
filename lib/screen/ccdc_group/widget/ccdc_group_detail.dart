@@ -6,16 +6,15 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 class CcdcGroupDetail extends StatefulWidget {
-  final AssetGroupProvider provider;
+  final CcdcGroupProvider provider;
   const CcdcGroupDetail({super.key, required this.provider});
 
   @override
@@ -23,16 +22,16 @@ class CcdcGroupDetail extends StatefulWidget {
 }
 
 class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
-  AssetGroupDto? data;
+  CcdcGroup? data;
   bool isEditing = false;
   bool isActive = false;
-  String? nameAssetGroup;
+  String? nameCcdcGroup;
   String idCongTy = 'ct001';
   DateTime? createdAt;
 
-  TextEditingController controllerIdAssetGroup = TextEditingController();
-  TextEditingController controllerNameAssetGroup = TextEditingController();
-  TextEditingController controllerIdAndNameAssetGroup = TextEditingController();
+  TextEditingController controllerIdCcdcGroup = TextEditingController();
+  TextEditingController controllerNameCcdcGroup = TextEditingController();
+  TextEditingController controllerIdAndNameCcdcGroup = TextEditingController();
 
   @override
   void initState() {
@@ -44,15 +43,14 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
   void didUpdateWidget(covariant CcdcGroupDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.provider.dataDetail != data) {
-      log('message didUpdateWidget: ${widget.provider.dataDetail?.toJson()}');
       _initData();
     }
   }
 
   @override
   void dispose() {
-    controllerIdAssetGroup.dispose();
-    controllerNameAssetGroup.dispose();
+    controllerIdCcdcGroup.dispose();
+    controllerNameCcdcGroup.dispose();
     super.dispose();
   }
 
@@ -77,8 +75,8 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
         isEditing = false;
       });
       data = widget.provider.dataDetail;
-      controllerIdAssetGroup.text = data!.id ?? '';
-      controllerNameAssetGroup.text = data!.tenNhom ?? '';
+      controllerIdCcdcGroup.text = data!.id ?? '';
+      controllerNameCcdcGroup.text = data!.ten ?? '';
       isActive = data!.hieuLuc ?? false;
     } else {
       data = null;
@@ -111,16 +109,16 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
             children: [
               CommonFormInput(
                 label: 'mã nhóm ccdc',
-                controller: controllerIdAssetGroup,
-                isEditing: isEditing,
-                textContent: controllerIdAssetGroup.text,
+                controller: controllerIdCcdcGroup,
+                isEditing: data == null ? isEditing : false,
+                textContent: controllerIdCcdcGroup.text,
                 width: double.infinity,
               ),
               CommonFormInput(
                 label: 'tên nhóm ccdc',
-                controller: controllerNameAssetGroup,
+                controller: controllerNameCcdcGroup,
                 isEditing: isEditing,
-                textContent: controllerNameAssetGroup.text,
+                textContent: controllerNameCcdcGroup.text,
                 width: double.infinity,
               ),
               CommonCheckboxInput(
@@ -134,7 +132,7 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
                   });
                 },
               ),
-              // _buildInfoAssetHandoverMobile(isWideScreen),
+              // _buildInfoCcdcHandoverMobile(isWideScreen),
             ],
           ),
         ),
@@ -187,10 +185,9 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
     UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
     log('message: _saveChanges');
     if (data == null) {
-      AssetGroupRequest request = AssetGroupRequest(
-        id: controllerIdAssetGroup.text,
-        tenNhom: controllerNameAssetGroup.text,
-        isActive: isActive,
+      CcdcGroup request = CcdcGroup(
+        id: controllerIdCcdcGroup.text,
+        ten: controllerNameCcdcGroup.text,
         hieuLuc: isActive,
         idCongTy: 'CT001',
         ngayTao: DateTime.parse(getDateNow()),
@@ -198,14 +195,11 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
         nguoiTao: userInfo?.id ?? '',
       );
 
-      context.read<AssetGroupBloc>().add(
-        CreateAssetGroupEvent(context, request),
-      );
+      context.read<CcdcGroupBloc>().add(CreateCcdcGroupEvent(context, request));
     } else {
-      AssetGroupRequest request = AssetGroupRequest(
-        id: controllerIdAssetGroup.text,
-        tenNhom: controllerNameAssetGroup.text,
-        isActive: isActive,
+      CcdcGroup request = CcdcGroup(
+        id: controllerIdCcdcGroup.text,
+        ten: controllerNameCcdcGroup.text,
         hieuLuc: isActive,
         idCongTy: 'CT001',
         ngayTao: DateTime.parse(getDateNow()),
@@ -213,8 +207,8 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
         nguoiCapNhat: userInfo?.id ?? '',
       );
 
-      context.read<AssetGroupBloc>().add(
-        UpdateAssetGroupEvent(context, request, data!.id!),
+      context.read<CcdcGroupBloc>().add(
+        UpdateCcdcGroupEvent(context, request, data!.id!),
       );
     }
   }

@@ -1,46 +1,46 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 
 abstract class CcdcGroupEvent extends Equatable {
   const CcdcGroupEvent();
 }
 
-class GetListAssetGroupEvent extends CcdcGroupEvent {
+class GetListCcdcGroupEvent extends CcdcGroupEvent {
   final BuildContext context;
 
-  const GetListAssetGroupEvent(this.context);
+  const GetListCcdcGroupEvent(this.context);
 
   @override
   List<Object?> get props => [context];
 }
 
-class CreateAssetGroupEvent extends CcdcGroupEvent {
+class CreateCcdcGroupEvent extends CcdcGroupEvent {
   final BuildContext context;
-  final AssetGroupRequest params;
+  final CcdcGroup params;
 
-  const CreateAssetGroupEvent(this.context, this.params);
+  const CreateCcdcGroupEvent(this.context, this.params);
 
   @override
   List<Object?> get props => [context, params];
 }
 
-class UpdateAssetGroupEvent extends CcdcGroupEvent {
+class UpdateCcdcGroupEvent extends CcdcGroupEvent {
   final BuildContext context;
-  final AssetGroupRequest params;
+  final CcdcGroup params;
   final String id;
 
-  const UpdateAssetGroupEvent(this.context, this.params, this.id);
+  const UpdateCcdcGroupEvent(this.context, this.params, this.id);
 
   @override
   List<Object?> get props => [context, params, id];
 }
 
-class DeleteAssetGroupEvent extends CcdcGroupEvent {
+class DeleteCcdcGroupEvent extends CcdcGroupEvent {
   final BuildContext context;
   final String id;
 
-  const DeleteAssetGroupEvent(this.context, this.id);
+  const DeleteCcdcGroupEvent(this.context, this.id);
 
   @override
   List<Object?> get props => [context, id];

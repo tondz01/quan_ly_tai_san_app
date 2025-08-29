@@ -1,32 +1,33 @@
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
-import 'ccdc_group_event.dart';
-import 'ccdc_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/repository/ccdc_group_repository.dart';
 
 class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
-  CcdcGroupBloc() : super(AssetGroupInitialState()) {
-    on<GetListAssetGroupEvent>(_getListAssetTransfer);
-    on<CreateAssetGroupEvent>(_createAssetGroup);
-    on<UpdateAssetGroupEvent>(_updateAssetGroup);
-    on<DeleteAssetGroupEvent>(_deleteAssetGroup);
+  CcdcGroupBloc() : super(CcdcGroupInitialState()) {
+    on<GetListCcdcGroupEvent>(_getListCcdcTransfer);
+    on<CreateCcdcGroupEvent>(_createCcdcGroup);
+    on<UpdateCcdcGroupEvent>(_updateCcdcGroup);
+    on<DeleteCcdcGroupEvent>(_deleteCcdcGroup);
   }
 
-  Future<void> _getListAssetTransfer(
-    GetListAssetGroupEvent event,
+  Future<void> _getListCcdcTransfer(
+    GetListCcdcGroupEvent event,
     Emitter emit,
   ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
+    emit(CcdcGroupInitialState());
+    emit(CcdcGroupLoadingState());
     Map<String, dynamic> result =
-        await AssetGroupRepository().getListAssetGroup();
-    emit(AssetGroupLoadingDismissState());
+        await CcdcGroupRepository().getListCcdcGroupRepository();
+    emit(CcdcGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(GetListAssetGroupSuccessState(data: result['data']));
+      emit(GetListCcdcGroupSuccessState(data: result['data']));
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
       emit(
-        GetListAssetGroupFailedState(
+        GetListCcdcGroupFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,
@@ -35,22 +36,22 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
     }
   }
 
-  Future<void> _createAssetGroup(
-    CreateAssetGroupEvent event,
+  Future<void> _createCcdcGroup(
+    CreateCcdcGroupEvent event,
     Emitter emit,
   ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    Map<String, dynamic> result = await AssetGroupRepository().createAssetGroup(
+    emit(CcdcGroupInitialState());
+    emit(CcdcGroupLoadingState());
+    Map<String, dynamic> result = await CcdcGroupRepository().createCcdcGroupRepository(
       event.params,
     );
-    emit(AssetGroupLoadingDismissState());
+    emit(CcdcGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(CreateAssetGroupSuccessState(data: result['data'].toString()));
+      emit(CreateCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       String msg = "Lỗi khi tạo nhóm tài sản";
       emit(
-        CreateAssetGroupFailedState(
+        CreateCcdcGroupFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,
@@ -60,19 +61,19 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   }
 
   //CALL API UPDATE
-  Future<void> _updateAssetGroup(
-    UpdateAssetGroupEvent event,
+  Future<void> _updateCcdcGroup(
+    UpdateCcdcGroupEvent event,
     Emitter emit,
   ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().updateAssetGroup(
+    emit(CcdcGroupInitialState());
+    emit(CcdcGroupLoadingState());
+    final result = await CcdcGroupRepository().updateCcdcGroupRepository(
       event.params,
       event.id,
     );
-    emit(AssetGroupLoadingDismissState());
+    emit(CcdcGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(UpdateAssetGroupSuccessState(data: result['data'].toString()));
+      emit(UpdateCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       emit(
         PutPostDeleteFailedState(
@@ -85,16 +86,16 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   }
 
   //CALL API UPDATE
-  Future<void> _deleteAssetGroup(
-    DeleteAssetGroupEvent event,
+  Future<void> _deleteCcdcGroup(
+    DeleteCcdcGroupEvent event,
     Emitter emit,
   ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().deleteAssetGroup(event.id);
-    emit(AssetGroupLoadingDismissState());
+    emit(CcdcGroupInitialState());
+    emit(CcdcGroupLoadingState());
+    final result = await CcdcGroupRepository().deleteCcdcGroupRepository(event.id);
+    emit(CcdcGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(DeleteAssetGroupSuccessState(data: result['data'].toString()));
+      emit(DeleteCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       emit(
         PutPostDeleteFailedState(

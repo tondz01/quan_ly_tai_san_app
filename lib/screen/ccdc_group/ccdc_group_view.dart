@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
@@ -25,54 +25,54 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetGroupProvider>(context, listen: false).onInit(context);
+      Provider.of<CcdcGroupProvider>(context, listen: false).onInit(context);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetGroupBloc, AssetGroupState>(
+    return BlocConsumer<CcdcGroupBloc, CcdcGroupState>(
       listener: (context, state) {
-        if (state is AssetGroupLoadingState) {
+        if (state is CcdcGroupLoadingState) {
         }
-        if (state is GetListAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().getListAssetGroupSuccess(
+        if (state is GetListCcdcGroupSuccessState) {
+          context.read<CcdcGroupProvider>().getListCcdcGroupSuccess(
             context,
             state,
           );
         }
-        if (state is CreateAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().createAssetGroupSuccess(
+        if (state is CreateCcdcGroupSuccessState) {
+          context.read<CcdcGroupProvider>().createCcdcGroupSuccess(
             context,
             state,
           );
         }
-        if (state is CreateAssetGroupFailedState) {
-          context.read<AssetGroupProvider>().createAssetGroupFailed(
+        if (state is CreateCcdcGroupFailedState) {
+          context.read<CcdcGroupProvider>().createCcdcGroupFailed(
             context,
             state,
           );
         }
-        if (state is GetListAssetGroupFailedState) {
-          context.read<AssetGroupProvider>().getListAssetGroupFailed(
+        if (state is GetListCcdcGroupFailedState) {
+          context.read<CcdcGroupProvider>().getListCcdcGroupFailed(
             context,
             state,
           );
         }
-        if (state is UpdateAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().updateAssetGroupSuccess(
+        if (state is UpdateCcdcGroupSuccessState) {
+          context.read<CcdcGroupProvider>().updateCcdcGroupSuccess(
             context,
             state,
           );
         }
-        if (state is DeleteAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().deleteAssetGroupSuccess(
+        if (state is DeleteCcdcGroupSuccessState) {
+          context.read<CcdcGroupProvider>().deleteCcdcGroupSuccess(
             context,
             state,
           );
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<AssetGroupProvider>().putPostDeleteFailed(
+          context.read<CcdcGroupProvider>().putPostDeleteFailed(
             context,
             state,
           );
@@ -80,8 +80,8 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
       },
       builder: (context, state) {
         return ChangeNotifierProvider.value(
-          value: context.read<AssetGroupProvider>(),
-          child: Consumer<AssetGroupProvider>(
+          value: context.read<CcdcGroupProvider>(),
+          child: Consumer<CcdcGroupProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());

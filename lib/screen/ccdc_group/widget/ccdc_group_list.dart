@@ -8,15 +8,15 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class CcdcGroupList extends StatefulWidget {
-  final AssetGroupProvider provider;
+  final CcdcGroupProvider provider;
   const CcdcGroupList({super.key, required this.provider});
 
   @override
@@ -30,15 +30,10 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'asset_group',
-    'code_asset_group',
-    'name_asset_group',
+    'code_ccdc_group',
+    'name_ccdc_group',
     'is_active',
     'actions',
-    // 'created_at',
-    // 'updated_at',
-    // 'created_by',
-    // 'updated_by',
   ];
 
   @override
@@ -50,19 +45,14 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'asset_group',
-        label: 'Nhóm tài sản',
-        isChecked: visibleColumnIds.contains('asset_group'),
+        id: 'code_ccdc_group',
+        label: 'Mã nhóm ccdc',
+        isChecked: visibleColumnIds.contains('code_ccdc_group'),
       ),
       ColumnDisplayOption(
-        id: 'code_asset_group',
-        label: 'Mã nhóm tài sản',
-        isChecked: visibleColumnIds.contains('code_asset_group'),
-      ),
-      ColumnDisplayOption(
-        id: 'name_asset_group',
-        label: 'Tên nhóm tài sản',
-        isChecked: visibleColumnIds.contains('name_asset_group'),
+        id: 'name_ccdc_group',
+        label: 'Tên nhóm ccdc',
+        isChecked: visibleColumnIds.contains('name_ccdc_group'),
       ),
       ColumnDisplayOption(
         id: 'is_active',
@@ -97,37 +87,26 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
     ];
   }
 
-  List<SgTableColumn<AssetGroupDto>> _buildColumns() {
-    final List<SgTableColumn<AssetGroupDto>> columns = [];
+  List<SgTableColumn<CcdcGroup>> _buildColumns() {
+    final List<SgTableColumn<CcdcGroup>> columns = [];
 
-    // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
-        case 'asset_group':
+        case 'code_ccdc_group':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Nhóm tài sản',
-              getValue: (item) => "${item.id} - ${item.tenNhom}",
-              width: 170,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'code_asset_group':
-          columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Mã nhóm tài sản',
+            TableBaseConfig.columnTable<CcdcGroup>(
+              title: 'Mã nhóm ccdc',
               getValue: (item) => item.id ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
             ),
           );
           break;
-        case 'name_asset_group':
+        case 'name_ccdc_group':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Tên nhóm tài sản',
-              getValue: (item) => item.tenNhom ?? '',
+            TableBaseConfig.columnTable<CcdcGroup>(
+              title: 'Tên nhóm ccdc',
+              getValue: (item) => item.ten ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
             ),
@@ -135,17 +114,17 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
           break;
         case 'is_active':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
+            TableBaseConfig.columnWidgetBase<CcdcGroup>(
               title: 'Có hiệu lực',
               width: 100,
-              cellBuilder: (item) => SgCheckbox(value: item.isActive ?? false),
+              cellBuilder: (item) => SgCheckbox(value: item.hieuLuc ?? false),
               titleAlignment: TextAlign.center,
             ),
           );
           break;
         case 'created_at':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
+            TableBaseConfig.columnTable<CcdcGroup>(
               title: 'Ngày tạo',
               getValue: (item) => item.ngayTao.toString(),
               width: 120,
@@ -155,7 +134,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
           break;
         case 'updated_at':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
+            TableBaseConfig.columnTable<CcdcGroup>(
               title: 'Ngày cập nhật',
               getValue: (item) => item.ngayCapNhat.toString(),
               width: 120,
@@ -165,7 +144,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
           break;
         case 'created_by':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
+            TableBaseConfig.columnTable<CcdcGroup>(
               title: 'Người tạo',
               getValue: (item) => item.nguoiTao.toString(),
               width: 120,
@@ -175,7 +154,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
           break;
         case 'updated_by':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
+            TableBaseConfig.columnTable<CcdcGroup>(
               title: 'Người cập nhật',
               getValue: (item) => item.nguoiCapNhat.toString(),
               width: 120,
@@ -185,10 +164,10 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
           break;
         case 'actions':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
-              title: '',
+            TableBaseConfig.columnWidgetBase<CcdcGroup>(
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
-              width: 120,
+              width: 60,
               searchable: true,
             ),
           );
@@ -216,7 +195,6 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
         );
       },
       onCancel: () {
-        // Reset về trạng thái ban đầu
         _updateColumnOptions();
       },
     );
@@ -230,7 +208,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetGroupDto>> columns = _buildColumns();
+    final List<SgTableColumn<CcdcGroup>> columns = _buildColumns();
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -293,7 +271,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<AssetGroupDto>(
+            child: TableBaseView<CcdcGroup>(
               searchTerm: '',
               columns: columns,
               data: widget.provider.dataPage ?? [],
@@ -312,11 +290,11 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
     return SgCheckbox(value: isActive);
   }
 
-  String getNameColumnAssetGroup(AssetGroupDto item) {
-    return "${item.id} - ${item.tenNhom}";
+  String getNameColumnAssetGroup(CcdcGroup item) {
+    return "${item.id} - ${item.ten}";
   }
 
-  Widget viewAction(AssetGroupDto item) {
+  Widget viewAction(CcdcGroup item) {
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.delete,
@@ -330,13 +308,13 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                 context,
                 type: ConfirmType.delete,
                 title: 'Xóa nhóm tài sản',
-                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom ?? '',
+                message: 'Bạn có chắc muốn xóa ${item.ten}',
+                highlight: item.ten ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {
-                  context.read<AssetGroupBloc>().add(
-                    DeleteAssetGroupEvent(context, item.id!),
+                  context.read<CcdcGroupBloc>().add(
+                    DeleteCcdcGroupEvent(context, item.id!),
                   );
                 },
               ),

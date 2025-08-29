@@ -5,10 +5,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 
 class CcdcGroupProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -18,7 +18,7 @@ class CcdcGroupProvider with ChangeNotifier {
   get data => _data;
   get filteredData => _filteredData;
   get dataPage => _dataPage;
-  AssetGroupDto? get dataDetail => _dataDetail;
+  CcdcGroup? get dataDetail => _dataDetail;
 
   get isCreate => _isCreate;
   bool get isShowCollapse => _isShowCollapse ?? false;
@@ -31,7 +31,7 @@ class CcdcGroupProvider with ChangeNotifier {
 
   set searchTerm(String value) {
     _searchTerm = value;
-    _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
+    _applyFilters();
     notifyListeners();
   }
 
@@ -48,17 +48,17 @@ class CcdcGroupProvider with ChangeNotifier {
   String _searchTerm = '';
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 0;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
 
-  List<AssetGroupDto>? _data;
-  List<AssetGroupDto>? _filteredData;
-  List<AssetGroupDto>? _dataPage;
-  AssetGroupDto? _dataDetail;
+  List<CcdcGroup>? _data;
+  List<CcdcGroup>? _filteredData;
+  List<CcdcGroup>? _dataPage;
+  CcdcGroup? _dataDetail;
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -73,21 +73,13 @@ class CcdcGroupProvider with ChangeNotifier {
 
   void _applyFilters() {
     if (_data == null) return;
-    // Lọc tiếp theo nội dung tìm kiếm
     if (_searchTerm.isNotEmpty) {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           _data!.where((item) {
-            return
-            // Tên phiếu
-            (item.id?.toLowerCase().contains(searchLower) ?? false) ||
-                // Số quyết định
-                (item.tenNhom?.toLowerCase().contains(searchLower) ?? false) ||
-                // công ty
+            return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.ten?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.idCongTy?.toLowerCase().contains(searchLower) ?? false) ||
-                // ngày tạo
-                // ngày cập nhật
-                // người tạo
                 (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false);
           }).toList();
     } else {
@@ -108,32 +100,31 @@ class CcdcGroupProvider with ChangeNotifier {
     _isCreate = false;
     _isShowCollapse = false;
     _isShowInput = false;
-    getListAssetGroup(context);
+    getListCcdcGroup(context);
     notifyListeners();
   }
 
-  void getListAssetGroup(BuildContext context) {
+  void getListCcdcGroup(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<AssetGroupBloc>().add(GetListAssetGroupEvent(context));
+      context.read<CcdcGroupBloc>().add(GetListCcdcGroupEvent(context));
     });
   }
 
-  getListAssetGroupSuccess(
+  getListCcdcGroupSuccess(
     BuildContext context,
-    GetListAssetGroupSuccessState state,
+    GetListCcdcGroupSuccessState state,
   ) {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
     } else {
-      log('message getListAssetGroupSuccess: ${state.data.length}');
       _data = state.data;
       _filteredData = List.from(_data!);
-      _isLoading = false;
       _updatePagination();
     }
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -180,7 +171,7 @@ class CcdcGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetail(AssetGroupDto? item) {
+  void onChangeDetail(CcdcGroup? item) {
     // log('message onChangeDetail: ${item?.toJson()}');
     if (item != null) {
       _dataDetail = item;
@@ -196,9 +187,9 @@ class CcdcGroupProvider with ChangeNotifier {
     log('message onChangeDetail: $_isShowInput');
   }
 
-  void createAssetGroupSuccess(
+  void createCcdcGroupSuccess(
     BuildContext context,
-    CreateAssetGroupSuccessState state,
+    CreateCcdcGroupSuccessState state,
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
@@ -206,9 +197,9 @@ class CcdcGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateAssetGroupSuccess(
+  void updateCcdcGroupSuccess(
     BuildContext context,
-    UpdateAssetGroupSuccessState state,
+    UpdateCcdcGroupSuccessState state,
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
@@ -216,9 +207,9 @@ class CcdcGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteAssetGroupSuccess(
+  void deleteCcdcGroupSuccess(
     BuildContext context,
-    DeleteAssetGroupSuccessState state,
+    DeleteCcdcGroupSuccessState state,
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
@@ -226,18 +217,18 @@ class CcdcGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void getListAssetGroupFailed(
+  void getListCcdcGroupFailed(
     BuildContext context,
-    GetListAssetGroupFailedState state,
+    GetListCcdcGroupFailedState state,
   ) {
     _error = state.message;
     _isLoading = false;
     notifyListeners();
   }
 
-  void createAssetGroupFailed(
+  void createCcdcGroupFailed(
     BuildContext context,
-    CreateAssetGroupFailedState state,
+    CreateCcdcGroupFailedState state,
   ) {
     _error = state.message;
     AppUtility.showSnackBar(context, state.message);
