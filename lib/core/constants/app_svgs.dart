@@ -10,4 +10,5 @@ class AppSvgs {
   static const String iconTime = '${path}icon_time.svg';
   static const String iconSetting = '${path}icon_setting.svg';
   static const String iconPlus = '${path}icon_plus.svg';
+  static const String iconFilterHorizontal = '${path}icon_filter_horizontal.svg';
 }

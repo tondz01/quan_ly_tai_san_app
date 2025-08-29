@@ -29,6 +29,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   String searchTerm = "";
   String titleDetailDepartmentTree = "";
   bool isShowDetailDepartmentTree = false;
+  List<Map<String, DateTime Function(ToolsAndSuppliesDto)>> getters =[
+      {'Ngày tạo': (item) => item.ngayTao},
+      {'Ngày cập nhật': (item) => item.ngayCapNhat},
+      {'Ngày nhập': (item) => item.ngayNhap},
+    ];
 
   void _showDetailDepartmentTree(ToolsAndSuppliesDto item) {
     setState(() {
@@ -201,6 +206,10 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                     columns: columns,
                     data: widget.provider.filteredData,
                     horizontalController: ScrollController(),
+                    getters: getters,
+                    startDate: DateTime.tryParse(
+                      widget.provider.filteredData?.first.ngayTao.toString() ?? '',
+                    ),
                     onRowTap: (item) {
                       widget.provider.onChangeDetail(context, item);
                       setState(() {

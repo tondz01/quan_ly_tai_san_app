@@ -71,7 +71,6 @@ class _HomeState extends State<Home> {
   }
 
   List<SGSidebarHorizontalItem> _getItems() {
-    SGLog.debug("Home", "Check: ${_menuData.menuItems.length}");
     // Tạo danh sách items từ model
     return List.generate(_menuData.menuItems.length, (index) {
       final item = _menuData.menuItems[index];
@@ -330,12 +329,4 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Widget _buildTimeOption(String title) {
-  //   return InkWell(
-  //     onTap: () {
-  //       SGLog.debug('Header', '$title selected');
-  //     },
-  //     child: Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text(title)),
-  //   );
-  // }
 }

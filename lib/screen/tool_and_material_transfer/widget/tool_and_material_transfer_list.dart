@@ -64,6 +64,33 @@ class _ToolAndMaterialTransferListState
     'status',
     'actions',
   ];
+  
+  List<Map<String, DateTime Function(ToolAndMaterialTransferDto)>> getters = [
+    {
+      'Ngày tạo':
+          (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày cập nhật':
+          (item) => DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày ký':
+          (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày ký':
+          (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
+    },
+    {
+      'Thời gian giao nhận từ ngày':
+          (item) => DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
+    },
+    {
+      'Thời gian giao nhận đến ngày':
+          (item) => DateTime.tryParse(item.tggnDenNgay ?? '') ?? DateTime.now(),
+    },
+  ];
 
   @override
   void initState() {
@@ -308,6 +335,10 @@ class _ToolAndMaterialTransferListState
                 columns: columns,
                 data: widget.provider.dataPage ?? [],
                 horizontalController: ScrollController(),
+                getters: getters,
+                startDate: DateTime.tryParse(
+                  widget.provider.dataPage?.first.ngayTao ?? '',
+                ),
                 onRowTap: (item) {
                   widget.provider.onChangeDetailToolAndMaterialTransfer(item);
                 },
