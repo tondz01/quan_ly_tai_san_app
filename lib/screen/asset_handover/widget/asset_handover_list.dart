@@ -60,11 +60,29 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
-
+  List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [];
+  
   @override
   void initState() {
     super.initState();
     _initializeColumnOptions();
+
+    getters = [
+      {
+        'Ngày tạo':
+            (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
+      },
+      {
+        'Ngày cập nhật':
+            (item) =>
+                DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
+      },
+      {
+        'Ngày bàn giao':
+            (item) =>
+                DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
+      },
+    ];
 
     listAssetTransfer =
         widget.provider.dataAssetTransfer
@@ -75,7 +93,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-       final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });
@@ -351,7 +371,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           _buildActionKy(),
                         ],
                       ),
-
                       FindByStateAssetHandover(provider: widget.provider),
                     ],
                   ),
@@ -362,6 +381,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     columns: columns,
                     data: widget.provider.dataPage ?? [],
                     horizontalController: ScrollController(),
+                    getters: getters,
+                    startDate: DateTime.tryParse(
+                      widget.provider.dataPage?.first.ngayTao ?? '',
+                    ),
                     onRowTap: (item) {
                       isShowPreview = true;
                       widget.provider.onChangeDetail(context, item);
