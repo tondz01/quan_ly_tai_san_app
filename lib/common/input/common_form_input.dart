@@ -118,7 +118,6 @@ class _CommonFormInputState extends State<CommonFormInput> {
         }
       });
     }
-    log('message _updateControllerText: ${widget.controller.text}');
   }
 
   @override

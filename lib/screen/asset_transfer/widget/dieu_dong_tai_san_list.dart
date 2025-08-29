@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
@@ -23,6 +25,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -45,7 +48,12 @@ class DieuDongTaiSanList extends StatefulWidget {
 
 class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isUploading = false;
+  bool isShowDetailDepartmentTree = false;
+
+  String nameBenBan = "";
+
   List<DieuDongTaiSanDto> selectedItems = [];
+  List<ThreadNode> listSignatory = [];
   UserInfoDTO? userInfo;
 
   final List<AssetHandoverDto> listAssetHandover = [];
@@ -73,7 +81,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
 
   Future<void> _loadPdfNetwork(String nameFile) async {
     try {
-      final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });
@@ -213,9 +223,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
-              width: 120,
+              width: 180,
               searchable: true,
             ),
           );
@@ -283,33 +293,57 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             ),
           ],
         ),
-        child: Column(
+        child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: headerList(),
-            ),
             Expanded(
-              child: TableBaseView<DieuDongTaiSanDto>(
-                searchTerm: '',
-                columns: columns,
-                data: widget.provider.dataPage ?? [],
-                horizontalController: ScrollController(),
-                onRowTap: (item) {
-                  widget.provider.onChangeDetailDieuDongTaiSan(item);
-                },
-                onSelectionChanged: (items) {
-                  setState(() {
-                    selectedItems = items;
-                  });
-                },
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: headerList(),
+                  ),
+                  Expanded(
+                    child: TableBaseView<DieuDongTaiSanDto>(
+                      searchTerm: '',
+                      columns: columns,
+                      data: widget.provider.dataPage ?? [],
+                      horizontalController: ScrollController(),
+                      onRowTap: (item) {
+                        nameBenBan = item.id ?? "";
+                        isShowDetailDepartmentTree = true;
+                        widget.provider.onChangeDetailDieuDongTaiSan(item);
+                      },
+                      onSelectionChanged: (items) {
+                        setState(() {
+                          selectedItems = items;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Department tree sidebar
+            Visibility(
+              visible: isShowDetailDepartmentTree,
+              child: Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.grey.shade600, width: 1),
+                  ),
+                ),
+                child: DepartmentTreeDemo(
+                  title: "Biên ban $nameBenBan",
+                  sample: listSignatory,
+                ),
               ),
             ),
           ],
@@ -383,6 +417,21 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             ),
             SizedBox(height: 20),
             RowFindByStatus(provider: widget.provider),
+            SizedBox(height: 20),
+            Visibility(
+              visible: isShowDetailDepartmentTree,
+              child: MaterialTextButton(
+                text: 'Danh sách người ký',
+                icon: Icons.visibility_off,
+                backgroundColor: ColorValue.success,
+                foregroundColor: Colors.white,
+                onPressed: () {
+                  setState(() {
+                    isShowDetailDepartmentTree = false;
+                  });
+                },
+              ),
+            ),
           ],
         )
         : Row(
@@ -442,12 +491,56 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               ],
             ),
             Expanded(child: RowFindByStatus(provider: widget.provider)),
+
+            Expanded(
+              child: Visibility(
+                visible: isShowDetailDepartmentTree,
+                child: MaterialTextButton(
+                  text: 'Danh sách người ký',
+                  icon: Icons.visibility_off,
+                  backgroundColor: ColorValue.success,
+                  foregroundColor: Colors.white,
+                  onPressed: () {
+                    setState(() {
+                      isShowDetailDepartmentTree = false;
+                    });
+                  },
+                ),
+              ),
+            ),
           ],
         );
   }
 
   Widget viewAction(DieuDongTaiSanDto item) {
     return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.share_outlined,
+        tooltip: 'Chia sẻ với người ký',
+        iconColor: ColorValue.cyan,
+        backgroundColor: Colors.cyan.shade50,
+        borderColor: Colors.cyan.shade200,
+        onPressed: () {
+          showConfirmDialog(
+            context,
+            type: ConfirmType.delete,
+            title: 'Chia sẻ',
+            message: 'Bạn có chắc muốn chia sẻ ${item.tenPhieu} với người ký?',
+            highlight: item.tenPhieu!,
+            cancelText: 'Không',
+            confirmText: 'Chia sẻ',
+            onConfirm: () {
+              // context.read<DieuDongTaiSanBloc>().add(
+              //   DeleteDieuDongEvent(context, item.id!),
+              // );
+            },
+          );
+          // PropertyHandoverMinutes.showPopup(
+          //   context,
+          //   listAssetHandover.where((itemAH) => itemAH.id == item.id).toList(),
+          // );
+        },
+      ),
       ActionButtonConfig(
         icon: Icons.book_outlined,
         tooltip: 'Biên bản bản giao',
@@ -590,6 +683,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 "signed": item.trangThai != null && item.trangThai! >= 3,
                 "label": "Giám đốc",
               },
+              ...item.listSignatory!.map(
+                (e) => {
+                  "id": e.idNguoiKy,
+                  "signed": e.trangThai == 1,
+                  "label": e.tenNguoiKy,
+                },
+              ),
             ]
             .where(
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
@@ -556,6 +557,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     BuildContext context,
     LenhDieuDongRequest request,
     List<ChiTietDieuDongRequest> requestDetail,
+    List<SignatoryDto> listSignatory,
     String fileName,
     String filePath,
     Uint8List fileBytes,
@@ -581,7 +583,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     );
     if (context.mounted) {
       final bloc = context.read<DieuDongTaiSanBloc>();
-      bloc.add(CreateDieuDongEvent(context, request, requestDetail));
+      bloc.add(CreateDieuDongEvent(context, request, requestDetail, listSignatory));
     }
 
     notifyListeners();

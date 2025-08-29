@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -12,6 +14,7 @@ import 'chi_tiet_dieu_dong_tai_san_repository.dart';
 class DieuDongTaiSanRepository {
 	late final Dio _dio;
 	late final ChiTietDieuDongTaiSanRepository _chiTietDieuDongTaiSanRepository;
+	late final SignatoryRepository _signatoryRepository;
 
 	DieuDongTaiSanRepository() {
 		_dio = Dio(
@@ -22,7 +25,7 @@ class DieuDongTaiSanRepository {
 			),
 		);
 		_chiTietDieuDongTaiSanRepository = ChiTietDieuDongTaiSanRepository();
-
+		_signatoryRepository = SignatoryRepository();
 		// Bỏ qua chứng chỉ SSL
 		// if (!kIsWeb) {
 		//   (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
@@ -73,7 +76,12 @@ class DieuDongTaiSanRepository {
 				await _chiTietDieuDongTaiSanRepository.getAll(
 					dieuDongTaiSan.id.toString(),
 				);
+		List<SignatoryDto> listSignatory =
+				await _signatoryRepository.getAll(
+					dieuDongTaiSan.id.toString(),
+				);
 		dieuDongTaiSan.chiTietDieuDongTaiSans = chiTietDieuDongTS;
+		dieuDongTaiSan.listSignatory = listSignatory;
 		return dieuDongTaiSan;
 	}
 

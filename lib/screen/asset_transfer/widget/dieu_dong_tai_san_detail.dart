@@ -22,6 +22,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/controllers/asset_transfer_controllers.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/state/asset_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/validation/asset_transfer_validation.dart';
@@ -1003,6 +1004,19 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         .toList();
   }
 
+  List<SignatoryDto> _createListSignatory() {
+    return state.additionalSigners.map((e) => SignatoryDto(
+        id: UUIDGenerator.generateWithFormat(
+          'NK-************',
+        ),
+        idTaiLieu: state.item?.id ?? '',
+        idNguoiKy: e?.id ?? '',
+        tenNguoiKy: e?.hoTen ?? '',
+        trangThai: 0,
+      ),
+    ).toList();
+  }
+
   Future<void> _handleSave() async {
     if (!state.isEditing) return;
     if (!_validateForm()) {
@@ -1018,11 +1032,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     if (state.item == null) {
       final request = _createDieuDongRequest(widget.type, getState());
       final requestDetail = _createDieuDongRequestDetail();
+      final listSignatory = _createListSignatory();
       // bloc.add(CreateDieuDongEvent(context, request));
       widget.provider.saveAssetTransfer(
         context,
         request,
         requestDetail,
+        listSignatory,
         state.selectedFileName ?? '',
         state.selectedFilePath ?? '',
         _selectedFileBytes ?? Uint8List(0),

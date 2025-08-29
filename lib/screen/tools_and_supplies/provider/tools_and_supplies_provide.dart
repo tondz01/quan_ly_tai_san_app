@@ -183,7 +183,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = state.data;
-      log('message _data: $_data');
       _updatePagination();
     }
     notifyListeners();
@@ -198,7 +197,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _dataPhongBan = [];
     } else {
       _dataPhongBan = state.data;
-      log('message _dataPhongBan: $_dataPhongBan');
     }
     notifyListeners();
   }

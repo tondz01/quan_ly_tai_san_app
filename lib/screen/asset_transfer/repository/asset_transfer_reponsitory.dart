@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -51,6 +52,7 @@ class AssetTransferRepository extends ApiBase {
   Future<Map<String, dynamic>> createAssetTransfer(
     LenhDieuDongRequest request,
     List<ChiTietDieuDongRequest> requestDetail,
+    List<SignatoryDto> listSignatory,
   ) async {
     DieuDongTaiSanDto? data;
     Map<String, dynamic> result = {
@@ -88,6 +90,21 @@ class AssetTransferRepository extends ApiBase {
             statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
         if (!isOkDetail) {
           result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
+          return result;
+        }
+      }
+      for (var signatory in listSignatory) {
+        final responseSignatory = await post(
+          EndPointAPI.SIGNATORY,
+          data: signatory.toJson(),
+        );
+        final int? statusSignatory = responseSignatory.statusCode;
+        final bool isOkSignatory =
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+        if (!isOkSignatory) {
+          result['status_code'] = statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
           return result;
         }
       }

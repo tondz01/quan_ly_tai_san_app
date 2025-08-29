@@ -98,7 +98,7 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetTransferRepository()
-        .createAssetTransfer(event.request, event.requestDetail);
+        .createAssetTransfer(event.request, event.requestDetail, event.listSignatory);
     emit(DieuDongTaiSanLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(CreateDieuDongSuccessState());

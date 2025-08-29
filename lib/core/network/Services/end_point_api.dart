@@ -24,4 +24,5 @@ class EndPointAPI {
   static String SIGNING_STATUS = "/api/bangiaotaisan/capnhatky/";
   static String SIGNING_STATUS_CCDCVATTU = "/api/bangiaoccdcvattu/capnhatky/";
   static String BAO_CAO = "/api/baocao";
+  static String SIGNATORY = "/api/chuky/nguoi-ky";
 }

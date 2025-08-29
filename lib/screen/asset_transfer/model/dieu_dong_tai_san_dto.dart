@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+
 import 'chi_tiet_dieu_dong_tai_san.dart';
 
 class DieuDongTaiSanDto {
@@ -73,6 +75,7 @@ class DieuDongTaiSanDto {
   int? loai;
   bool? isActive;
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
+  List<SignatoryDto>? listSignatory;
 
   DieuDongTaiSanDto({
     this.id,
@@ -123,6 +126,7 @@ class DieuDongTaiSanDto {
     this.loai,
     this.isActive,
     this.chiTietDieuDongTaiSans,
+    this.listSignatory,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -175,6 +179,7 @@ class DieuDongTaiSanDto {
       loai: json['loai'],
       isActive: json['isActive'],
       chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
+      listSignatory: json['listSignatory'],
     );
   }
 
@@ -228,6 +233,7 @@ class DieuDongTaiSanDto {
       "loai": loai,
       "isActive": isActive,
       "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
+      "listSignatory": listSignatory,
     };
   }
 }
