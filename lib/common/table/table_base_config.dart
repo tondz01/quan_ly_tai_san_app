@@ -104,7 +104,7 @@ abstract class TableBaseConfig {
       fontSize: fontSize,
       width: width,
       searchable: searchable,
-      align: titleAlignment ?? TextAlign.left
+      align: titleAlignment ?? TextAlign.left,
     );
   }
 

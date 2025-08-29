@@ -32,16 +32,6 @@ class _AssetGroupViewState extends State<AssetGroupView> {
   }
 
   @override
-  void didUpdateWidget(AssetGroupView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    log('AssetGroupView message didUpdateWidget');
-    // if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
-    //   currentType = widget.typeAssetTransfer;
-    //   _initData();
-    // }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocConsumer<AssetGroupBloc, AssetGroupState>(
       builder: (context, state) {

@@ -4,7 +4,6 @@ import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_
 import 'package:quan_ly_tai_san_app/screen/category/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/nhom_don_vi.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 
 class DepartmentFormPage extends StatefulWidget {
   final PhongBan? department;
@@ -27,7 +26,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _departmentIdController;
   late TextEditingController _departmentNameController;
-  NhanVien? _staffDTO;
   NhomDonVi? _group;
   PhongBan? _parentDepartment;
 
@@ -49,16 +47,11 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
     _departmentIdController = TextEditingController(
       text: widget.department?.id ?? '',
     );
+    
     _departmentNameController = TextEditingController(
       text: widget.department?.tenPhongBan ?? '',
     );
-    try {
-      _staffDTO = context.read<DepartmentBloc>().staffs.firstWhere(
-        (staff) => staff?.id == widget.department?.idQuanLy,
-      ) ?? null;
-    } catch (e) {
-      _staffDTO = null;
-    }
+    
     try {
       _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
         (group) => group.id == widget.department?.idNhomDonVi,
@@ -66,11 +59,13 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
     } catch (e) {
       _group = null;
     }
+
     _parentDepartment = null;
 
     try {
       _parentDepartment = context.read<DepartmentBloc>().departments.firstWhere(
-        (parentDepartment) => parentDepartment.id == widget.department?.phongCapTren,
+        (parentDepartment) =>
+            parentDepartment.id == widget.department?.phongCapTren,
       );
     } catch (e) {
       _parentDepartment = null;
@@ -90,7 +85,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         id: _departmentIdController.text.trim(),
         idNhomDonVi: _group?.id ?? '',
         tenPhongBan: _departmentNameController.text.trim(),
-        idQuanLy: _staffDTO?.id ?? '',
+        idQuanLy: '',
         phongCapTren: _parentDepartment?.id ?? '',
       );
       if (widget.department == null) {
@@ -107,12 +102,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.department != null;
-    final List<NhanVien?> staffs = context.read<DepartmentBloc>().staffs;
     return Container(
-      // constraints: BoxConstraints(
-      //   maxWidth: MediaQuery.of(context).size.width * 0.8,
-      // ),
-      // padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
         borderRadius: BorderRadius.circular(16),
@@ -155,87 +145,37 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: DropdownButtonFormField<NhomDonVi>(
-                          value: _group,
-                          decoration: inputDecoration('Nhóm đơn vị'),
-                          items: context
-                              .read<DepartmentBloc>()
-                              .departmentGroups
-                                  .map(
-                                    (g) => DropdownMenuItem(
-                                      value: g,
-                                      child: Text(g.tenNhom ?? ''),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: (v) => setState(() => _group = v),
+                        child: TextFormField(
+                          controller: _departmentNameController,
+                          decoration: inputDecoration(
+                            'Tên phòng/ban',
+                            required: true,
+                          ),
+                          validator:
+                              (v) =>
+                                  v == null || v.isEmpty
+                                      ? 'Nhập tên phòng/ban'
+                                      : null,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _departmentNameController,
-                    decoration: inputDecoration(
-                      'Tên phòng/ban',
-                      required: true,
-                    ),
-                    validator:
-                        (v) =>
-                            v == null || v.isEmpty
-                                ? 'Nhập tên phòng/ban'
-                                : null,
-                  ),
-                ],
-              ),
-            ),
-            sectionCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  sectionTitle(Icons.group, 'Thông tin bổ sung'),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<NhanVien>(
-                    value: _staffDTO,
-                    decoration: inputDecoration('Quản lý'),
+                  const SizedBox(height: 24),
+                  DropdownButtonFormField<PhongBan>(
+                    value: _parentDepartment,
+                    decoration: inputDecoration('Phòng/Ban cấp trên'),
                     items:
-                        staffs
+                        context
+                            .read<DepartmentBloc>()
+                            .departments
                             .map(
-                              (staff) => DropdownMenuItem(
-                                value: staff,
-                                child: Row(
-                                  children: [
-                                    const SizedBox(width: 8),
-                                    Text(staff?.hoTen ?? ''),
-                                  ],
-                                ),
+                              (p) => DropdownMenuItem(
+                                value: p,
+                                child: Text(p.tenPhongBan ?? ''),
                               ),
                             )
                             .toList(),
-                    onChanged: (v) => setState(() => _staffDTO = v),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<PhongBan>(
-                          value: _parentDepartment,
-                          decoration: inputDecoration('Phòng/Ban cấp trên'),
-                          items: context
-                              .read<DepartmentBloc>()
-                              .departments
-                              .map(
-                                (p) => DropdownMenuItem(
-                                      value: p,
-                                      child: Text(p.tenPhongBan ?? ''),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged:
-                              (v) => setState(() => _parentDepartment = v),
-                        ),
-                      ),
-                    ],
+                    onChanged: (v) => setState(() => _parentDepartment = v),
                   ),
                 ],
               ),

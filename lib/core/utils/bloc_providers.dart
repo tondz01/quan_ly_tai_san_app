@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/category/project_manager/bloc/project
 import 'package:quan_ly_tai_san_app/screen/category/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/bloc/staff_event.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
@@ -39,6 +40,7 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<AssetBloc>(create: (_) => AssetBloc()..add(LoadAssets(sampleAssetDTOs()))),
     BlocProvider<ToolAndMaterialTransferBloc>(create: (_) => ToolAndMaterialTransferBloc()),
     BlocProvider<AssetGroupBloc>(create: (_) => AssetGroupBloc()),
+    BlocProvider<CcdcGroupBloc>(create: (_) => CcdcGroupBloc()),
     BlocProvider<AssetManagementBloc>(create: (_) => AssetManagementBloc()),
     BlocProvider<AssetCategoryBloc>(create: (_) => AssetCategoryBloc()),
     BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
