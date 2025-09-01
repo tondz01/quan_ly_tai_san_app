@@ -275,8 +275,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         existingData: data,
       );
 
-      SGLog.debug('_saveItem', 'Request data: ${request.toJson()}');
-
       // Gọi API thông qua Bloc
       if (data == null) {
         context.read<ToolsAndSuppliesBloc>().add(
