@@ -7,7 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/dep
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class DepartmentManager extends StatefulWidget {

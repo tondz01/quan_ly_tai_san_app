@@ -30,10 +30,12 @@ class GetListPhongBanEvent extends ToolsAndSuppliesEvent {
 class CreateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final ToolsAndSuppliesRequest params;
 
-  const CreateToolsAndSuppliesEvent(this.params);
+  final String listAssetDetail;
+
+  const CreateToolsAndSuppliesEvent(this.params, this.listAssetDetail);
 
   @override
-  List<Object?> get props => [params];
+  List<Object?> get props => [params, listAssetDetail];
 }
 
 class UpdateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
@@ -44,11 +46,13 @@ class UpdateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   @override
   List<Object?> get props => [params];
 }
+
 class DeleteToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final String id;
+  final String listIdAssetDetail;
 
-  const DeleteToolsAndSuppliesEvent(this.id);
+  const DeleteToolsAndSuppliesEvent(this.id, this.listIdAssetDetail);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [id, listIdAssetDetail];
 }

@@ -9,7 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_blo
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class StaffManager extends StatefulWidget {

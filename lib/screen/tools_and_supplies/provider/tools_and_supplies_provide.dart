@@ -238,7 +238,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {
     _confirmBeforeLeaving(context, item);
-
     notifyListeners();
   }
 
@@ -248,10 +247,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   ) async {
     return showUnsavedChangesDialog(context, item, () {
       _dataDetail = item;
-      log('message onChangeDetail: $_dataDetail');
       _isShowInput = true;
       _isShowCollapse = true;
-      log('message _item: $_dataDetail');
       hasUnsavedChanges = false;
       Navigator.of(context).pop();
     });

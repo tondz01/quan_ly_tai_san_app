@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
@@ -29,11 +31,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   String searchTerm = "";
   String titleDetailDepartmentTree = "";
   bool isShowDetailDepartmentTree = false;
-  List<Map<String, DateTime Function(ToolsAndSuppliesDto)>> getters =[
-      {'Ngày tạo': (item) => item.ngayTao},
-      {'Ngày cập nhật': (item) => item.ngayCapNhat},
-      {'Ngày nhập': (item) => item.ngayNhap},
-    ];
+  List<Map<String, DateTime Function(ToolsAndSuppliesDto)>> getters = [
+    {'Ngày tạo': (item) => item.ngayTao},
+    {'Ngày cập nhật': (item) => item.ngayCapNhat},
+    {'Ngày nhập': (item) => item.ngayNhap},
+  ];
 
   void _showDetailDepartmentTree(ToolsAndSuppliesDto item) {
     setState(() {
@@ -58,7 +60,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Mã công cụ dụng cụ',
-        getValue: (item) => item.soKyHieu,
+        getValue: (item) => item.id,
         width: 170,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
@@ -82,28 +84,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Số ký hiệu',
-        getValue: (item) => item.soKyHieu,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Ký hiệu',
         getValue: (item) => item.kyHieu,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Công suất',
-        getValue: (item) => item.congSuat,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Nước sản xuất',
-        getValue: (item) => item.nuocSanXuat,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Năm sản xuất',
-        getValue: (item) => item.namSanXuat.toString(),
         width: 120,
       ),
       TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
@@ -122,8 +104,19 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                   cancelText: 'Không',
                   confirmText: 'Xóa',
                   onConfirm: () {
+                    List<String> listIdAssetDetail =
+                        item.chiTietTaiSanList
+                            .where(
+                              (detail) =>
+                                  detail.id != null && detail.id!.isNotEmpty,
+                            )
+                            .map((detail) => detail.id!)
+                            .toList();
+
+                    final jsonIdAssetDetail = jsonEncode(listIdAssetDetail);
+
                     context.read<ToolsAndSuppliesBloc>().add(
-                      DeleteToolsAndSuppliesEvent(item.id),
+                      DeleteToolsAndSuppliesEvent(item.id, jsonIdAssetDetail),
                     );
                   },
                 );
@@ -208,7 +201,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                     horizontalController: ScrollController(),
                     getters: getters,
                     startDate: DateTime.tryParse(
-                      widget.provider.filteredData?.first.ngayTao.toString() ?? '',
+                      widget.provider.filteredData?.first.ngayTao.toString() ??
+                          '',
                     ),
                     onRowTap: (item) {
                       widget.provider.onChangeDetail(context, item);

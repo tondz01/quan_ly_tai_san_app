@@ -9,7 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetGroupView extends StatefulWidget {

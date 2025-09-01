@@ -139,7 +139,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   bool editable() {
     return (item != null &&
         (item!.trangThai == 0 || item!.trangThai == 3) &&
-        item!.nguoiTao == currentUser?.tenDangNhap);
+        item!.nguoiTao == currentUser?.id);
   }
 
   void _initData() {
@@ -333,7 +333,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "note": "",
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
-      "nguoiTao": currentUser?.tenDangNhap ?? '',
+      "nguoiTao": currentUser?.id ?? '',
       "nguoiCapNhat": '',
       "isActive": true,
     };
@@ -346,7 +346,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     {
       int trangThai = item!.trangThai == 3 ? 1 : item!.trangThai!;
       request['trangThai'] = trangThai;
-      request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
+      request['nguoiCapNhat'] = currentUser?.id ?? '';
       context.read<AssetHandoverBloc>().add(
         UpdateAssetHandoverEvent(context, request, item!.id!),
       );
@@ -932,8 +932,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       note: '',
       ngayTao: DateTime.now().toString(),
       ngayCapNhat: DateTime.now().toString(),
-      nguoiTao: currentUser?.tenDangNhap ?? '',
-      nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+      nguoiTao: currentUser?.id ?? '',
+      nguoiCapNhat: currentUser?.id ?? '',
       isActive: true,
     );
   }

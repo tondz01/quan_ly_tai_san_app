@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+
 class ToolsAndSuppliesDto {
   String id;
   String idDonVi;
@@ -20,6 +22,7 @@ class ToolsAndSuppliesDto {
   String nguoiTao;
   String nguoiCapNhat;
   int soLuongXuat;
+  List<DetailAssetDto> chiTietTaiSanList;
   bool isActive;
 
   ToolsAndSuppliesDto({
@@ -42,6 +45,7 @@ class ToolsAndSuppliesDto {
     required this.nguoiTao,
     required this.nguoiCapNhat,
     required this.isActive,
+    this.chiTietTaiSanList = const [],
     this.soLuongXuat = 0,
   });
 
@@ -75,6 +79,12 @@ class ToolsAndSuppliesDto {
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
+      chiTietTaiSanList:
+          json['chiTietTaiSanList'] != null
+              ? (json['chiTietTaiSanList'] as List)
+                  .map((item) => DetailAssetDto.fromJson(item))
+                  .toList()
+              : [],
       soLuongXuat: json['soLuongXuat'] ?? 0,
     );
   }
@@ -125,6 +135,7 @@ class ToolsAndSuppliesDto {
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,
+      chiTietTaiSanList: [],
       soLuongXuat: 0,
     );
   }

@@ -7,7 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class CcdcGroupView extends StatefulWidget {

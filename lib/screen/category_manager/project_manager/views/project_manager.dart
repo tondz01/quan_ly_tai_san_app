@@ -9,7 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/pages/project_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class ProjectManager extends StatefulWidget {

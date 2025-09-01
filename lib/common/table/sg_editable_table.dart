@@ -98,7 +98,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     for (var column in widget.columns) {
       if (column.isEditable) {
-        final value = column.getValue(item);
+        final value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
         final controller = TextEditingController(text: value?.toString() ?? '');
         _controllers[rowIndex]![column.field] = controller;
       }
@@ -488,14 +488,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
     if (column.editor == EditableCellEditor.dropdown) {
-      final currentValue = column.getValue(item);
-      // final List<DropdownMenuItem<dynamic>> items =
-      //     (column.dropdownItems ?? const <DropdownMenuItem<dynamic>>[])
-      //         .map(
-      //           (e) =>
-      //               DropdownMenuItem<dynamic>(value: e.value, child: e.child),
-      //         )
-      //         .toList();
+      final currentValue = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: SGDropdownInputButton<T>(
@@ -538,42 +531,56 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         ),
       );
     }
-    return SGInputText(
-      controller: controller,
-      height: 32,
-      // width: size.width * 0.2,
-      inputFormatters:
-          column.inputType == TextInputType.number
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : null,
-      borderRadius: 10,
-      enabled: widget.isEditing,
-      onlyLine: true,
-      showBorder: false,
-      hintText: 'Nhập thông tin',
-      onChanged: (value) {
-        setState(() {
-          controller.text = value;
-          log('message onChanged: $value');
-          _updateCellValue(rowIndex, column.field, value);
-          // cascade updates
-          final updater = column.onValueChanged;
-          if (updater != null) {
-            updater(item, rowIndex, value, (
-              String targetField,
-              dynamic targetValue,
-            ) {
-              if (targetField == column.field) return; // avoid recursion
-              _setCellValue(rowIndex, targetField, targetValue);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SGInputText(
+          controller: controller,
+          height: 32,
+          inputFormatters:
+              column.inputType == TextInputType.number
+                  ? [FilteringTextInputFormatter.digitsOnly]
+                  : null,
+          borderRadius: 10,
+          enabled: widget.isEditing,
+          onlyLine: true,
+          showBorder: false,
+          hintText: 'Nhập thông tin',
+          onChanged: (value) {
+            setState(() {
+              controller.text = value;
+              log('message onChanged: $value');
+              _updateCellValue(rowIndex, column.field, value);
+              // cascade updates
+              final updater = column.onValueChanged;
+              if (updater != null) {
+                updater(item, rowIndex, value, (
+                  String targetField,
+                  dynamic targetValue,
+                ) {
+                  if (targetField == column.field) return; // avoid recursion
+                  _setCellValue(rowIndex, targetField, targetValue);
+                });
+              }
             });
-          }
-        });
-      },
+          },
+        ),
+        if (column.errorText.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(4),
+            child: Text(
+              "*${column.errorText}",
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildDisplayCell(T item, SgEditableColumn<T> column) {
-    final value = column.getValue(item);
+    // Try to get rowIndex for display cell
+    final rowIndex = _tableData.indexOf(item);
+    final value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
 
     return Tooltip(
       message: column.tooltip ?? 'Không thể nhập',
@@ -620,11 +627,6 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
               ),
             ),
           ),
-          // Text(
-          //   value?.toString() ?? '',
-          //   textAlign: column.titleAlignment,
-          //   style: const TextStyle(fontSize: 14),
-          // ),
         ),
       ),
     );
@@ -682,10 +684,12 @@ class SgEditableColumn<T> {
   final TextAlign cellAlignment;
   final bool isEditable;
   final dynamic Function(T) getValue;
+  final dynamic Function(T, int)? getValueWithIndex; // NEW: getValue with rowIndex
   final void Function(T, dynamic) setValue;
   final dynamic Function(T)? sortValueGetter;
   final bool Function(T item, int rowIndex)? isCellEditableDecider;
   final TextInputType? inputType;
+  final String errorText;
   // NEW: editor type and dropdown config
   final EditableCellEditor editor;
   final List<DropdownMenuItem<T>>? dropdownItems;
@@ -707,6 +711,7 @@ class SgEditableColumn<T> {
     this.cellAlignment = TextAlign.left,
     this.isEditable = true,
     required this.getValue,
+    this.getValueWithIndex, // NEW: optional parameter
     required this.setValue,
     this.sortValueGetter,
     this.isCellEditableDecider,
@@ -714,5 +719,6 @@ class SgEditableColumn<T> {
     this.dropdownItems,
     this.onValueChanged,
     this.inputType,
+    this.errorText = '',
   });
 }

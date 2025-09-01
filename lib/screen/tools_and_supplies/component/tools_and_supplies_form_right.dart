@@ -5,27 +5,24 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_su
 
 class ToolsAndSuppliesFormRight extends StatelessWidget {
   final bool isEditing;
-  final bool isYearOfManufactureValid;
   final ToolsAndSuppliesDto? item;
-  final TextEditingController controllerReferenceNumber;
   final TextEditingController controllerSymbol;
-  final TextEditingController controllerCapacity;
-  final TextEditingController controllerCountryOfOrigin;
-  final TextEditingController controllerYearOfManufacture;
   final TextEditingController controllerNote;
-
+  final TextEditingController controllerQuantity;
+  final TextEditingController controllerValue;
+  final bool isQuantityValid;
+  final bool isValueValid;
 
   const ToolsAndSuppliesFormRight({
     super.key,
     required this.isEditing,
     required this.item,
-    required this.controllerReferenceNumber,
     required this.controllerSymbol,
-    required this.controllerCapacity,
-    required this.controllerCountryOfOrigin,
-    required this.controllerYearOfManufacture,
     required this.controllerNote,
-    required this.isYearOfManufactureValid,
+    required this.controllerQuantity,
+    required this.controllerValue,
+    required this.isQuantityValid,
+    required this.isValueValid,
   });
 
   @override
@@ -34,39 +31,26 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CommonFormInput(
-          label: 'tas.reference_number'.tr,
-          controller: controllerReferenceNumber,
+          label: 'tas.quantity'.tr,
+          controller: controllerQuantity,
+          isEditing: false,
+          textContent: item?.soLuong.toString() ?? '0',
+          inputType: TextInputType.number,
+          validationErrors: {'quantity': !isQuantityValid && isEditing},
+        ),
+        CommonFormInput(
+          label: 'tas.value'.tr,
+          controller: controllerValue,
           isEditing: isEditing,
-          textContent: item?.soKyHieu ?? '',
+          textContent: item?.giaTri.toString() ?? '0.0',
+          inputType: TextInputType.number,
+          validationErrors: {'value': !isValueValid && isEditing},
         ),
         CommonFormInput(
           label: 'tas.symbol'.tr,
           controller: controllerSymbol,
           isEditing: isEditing,
           textContent: item?.kyHieu ?? '',
-        ),
-        CommonFormInput(
-          label: 'tas.capacity'.tr,
-          controller: controllerCapacity,
-          isEditing: isEditing,
-          textContent: item?.congSuat ?? '',
-        ),
-        CommonFormInput(
-          label: 'tas.country_of_origin'.tr,
-          controller: controllerCountryOfOrigin,
-          isEditing: isEditing,
-          textContent: item?.nuocSanXuat ?? '',
-        ),
-        CommonFormInput(
-          label: 'tas.year_of_manufacture'.tr,
-          controller: controllerYearOfManufacture,
-          isEditing: isEditing,
-          textContent:
-              item?.namSanXuat.toString() ?? DateTime.now().year.toString(),
-          // inputType: TextInputType.number,
-          validationErrors: {
-            'yearOfManufacture': !isYearOfManufactureValid && isEditing,
-          },
         ),
         CommonFormInput(
           label: 'tas.note'.tr,

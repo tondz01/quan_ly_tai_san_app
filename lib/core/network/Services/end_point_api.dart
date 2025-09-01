@@ -10,7 +10,8 @@ class EndPointAPI {
   static String NHAN_VIEN = "/api/nhanvien";
   static String ASSET_CATEGORY = "/api/mohinhtaisan";
   static String TOOL_AND_MATERIAL_TRANSFER = "/api/dieudongccdcvattu";
-  static String DETAIL_TOOL_AND_MATERIAL_TRANSFER = "/api/chitietdieudongccdcvattu";
+  static String DETAIL_TOOL_AND_MATERIAL_TRANSFER =
+      "/api/chitietdieudongccdcvattu";
   static String ASSET_GROUP = "/api/nhomtaisan";
   static String CCDC_GROUP = "/api/nhomccdc";
   static String ASSET_GROUP_V2 = "/api/loaitaisan";
@@ -25,4 +26,5 @@ class EndPointAPI {
   static String SIGNING_STATUS = "/api/bangiaotaisan/capnhatky/";
   static String SIGNING_STATUS_CCDCVATTU = "/api/bangiaoccdcvattu/capnhatky/";
   static String BAO_CAO = "/api/baocao";
+  static String CHI_TIET_TAI_SAN = "/api/chitiettaisan/batch";
 }
