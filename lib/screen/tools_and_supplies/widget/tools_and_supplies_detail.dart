@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/header_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/table_child_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form_right.dart';
@@ -31,6 +32,7 @@ class ToolsAndSuppliesDetail extends StatefulWidget {
 class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   // Các controller để quản lý dữ liệu nhập liệu
   late TextEditingController controllerImportUnit = TextEditingController();
+  late TextEditingController controllerGroupCCDC = TextEditingController();
   late TextEditingController controllerName = TextEditingController();
   late TextEditingController controllerCode = TextEditingController();
   late TextEditingController controllerImportDate = TextEditingController();
@@ -52,20 +54,22 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   // Data
   ToolsAndSuppliesDto? data;
   PhongBan? selectedPhongBan;
+  CcdcGroup? selectedGroupCCDC;
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
+  List<DropdownMenuItem<CcdcGroup>> itemsGroupCCDC = [];
   List<DetailAssetDto> newDetailAssetDto = [];
 
   @override
   void initState() {
     isEditing = widget.isEditing ?? false;
-    
+
     // Khởi tạo controller với callbacks
     _controller = ToolsAndSuppliesController(
       onStateChanged: () => setState(() {}),
       onShowValidationErrors: _showValidationErrors,
       onShowErrorMessage: _showErrorSnackBar,
     );
-    
+
     initData();
     super.initState();
   }
@@ -96,11 +100,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             isEditing: isEditing,
             onSave: _saveItem,
             onCancel: _cancelEdit,
-            onEdit: () {
-              setState(() {
-                isEditing = true;
-              });
-            },
+            onEdit: _handleEdit,
           ),
           const SizedBox(height: 5),
           Container(
@@ -144,12 +144,21 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                   child: ToolsAndSuppliesFormRight(
                     isEditing: isEditing,
                     item: data,
+                    controllerGroupCCDC: controllerGroupCCDC,
                     controllerSymbol: controllerSymbol,
                     controllerNote: controllerNote,
                     controllerQuantity: controllerQuantity,
                     controllerValue: controllerValue,
                     isQuantityValid: _validationStates.isQuantityValid,
                     isValueValid: _validationStates.isValueValid,
+                    isCCDCGroupValid: _validationStates.isGroupCCDCValid,
+                    onGroupCCDCChanged: (value) {
+                      setState(() {
+                        selectedGroupCCDC = value;
+                      });
+                    },
+                    itemsGroupCCDC: itemsGroupCCDC,
+                    listGroupCCDC: widget.provider.dataGroupCCDC,
                   ),
                 ),
               ],
@@ -161,36 +170,29 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
             initialDetails: newDetailAssetDto,
             onDataChanged: (dataChange) {
               setState(() {
+                // Đảm bảo dữ liệu được copy đúng cách và validate
                 newDetailAssetDto =
-                    dataChange
-                        .map(
-                          (e) => DetailAssetDto(
-                            id: e.id,
-                            idTaiSan: e.idTaiSan,
-                            ngayVaoSo: e.ngayVaoSo,
-                            ngaySuDung: e.ngaySuDung,
-                            soKyHieu: e.soKyHieu,
-                            congSuat: e.congSuat,
-                            soLuong: e.soLuong,
-                            nuocSanXuat: e.nuocSanXuat,
-                            namSanXuat: e.namSanXuat,
-                          ),
-                        )
-                        .toList();
+                    dataChange.map((e) {
+                      // Validate và fix null values
+                      return DetailAssetDto(
+                        id: e.id,
+                        idTaiSan: e.idTaiSan,
+                        ngayVaoSo: e.ngayVaoSo,
+                        ngaySuDung: e.ngaySuDung,
+                        soKyHieu: e.soKyHieu ?? '',
+                        congSuat: e.congSuat ?? '',
+                        soLuong: e.soLuong ?? 0,
+                        nuocSanXuat: e.nuocSanXuat ?? '',
+                        namSanXuat: e.namSanXuat ?? 0,
+                      );
+                    }).toList();
 
-                controllerQuantity.text =
-                    newDetailAssetDto
-                        .map(
-                          (e) =>
-                              int.tryParse(e.soLuong?.toString() ?? '0') ?? 0,
-                        )
-                        .fold(0, (sum, quantity) => sum + quantity)
-                        .toString();
+                // Cập nhật tổng số lượng
+                final totalQuantity = newDetailAssetDto
+                    .map((e) => e.soLuong ?? 0)
+                    .fold(0, (sum, quantity) => sum + quantity);
 
-                SGLog.debug(
-                  'TableChildCcdc',
-                  'message newDetailAssetDto: ${jsonEncode(dataChange)}',
-                );
+                controllerQuantity.text = totalQuantity.toString();
               });
             },
           ),
@@ -213,18 +215,30 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     );
 
     // Cập nhật validation states
-    _validationStates.isNameValid = validationResult.validationStates.isNameValid;
-    _validationStates.isImportUnitValid = validationResult.validationStates.isImportUnitValid;
-    _validationStates.isCodeValid = validationResult.validationStates.isCodeValid;
-    _validationStates.isImportDateValid = validationResult.validationStates.isImportDateValid;
-    _validationStates.isUnitValid = validationResult.validationStates.isUnitValid;
-    _validationStates.isQuantityValid = validationResult.validationStates.isQuantityValid;
-    _validationStates.isValueValid = validationResult.validationStates.isValueValid;
+    _validationStates.isNameValid =
+        validationResult.validationStates.isNameValid;
+    _validationStates.isImportUnitValid =
+        validationResult.validationStates.isImportUnitValid;
+    _validationStates.isGroupCCDCValid =
+        validationResult.validationStates.isGroupCCDCValid;
+    _validationStates.isCodeValid =
+        validationResult.validationStates.isCodeValid;
+    _validationStates.isImportDateValid =
+        validationResult.validationStates.isImportDateValid;
+    _validationStates.isUnitValid =
+        validationResult.validationStates.isUnitValid;
+    _validationStates.isQuantityValid =
+        validationResult.validationStates.isQuantityValid;
+    _validationStates.isValueValid =
+        validationResult.validationStates.isValueValid;
 
     setState(() {});
 
     if (!validationResult.isValid) {
-      _showValidationErrors('Vui lòng sửa các lỗi sau:', validationResult.errors);
+      _showValidationErrors(
+        'Vui lòng sửa các lỗi sau:',
+        validationResult.errors,
+      );
       return;
     }
 
@@ -247,9 +261,9 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         quantityText: controllerQuantity.text,
         valueText: controllerValue.text,
         selectedPhongBan: selectedPhongBan,
-        importUnitText: controllerImportUnit.text,
+        selectedGroupCCDC: selectedGroupCCDC,
       );
-      
+
       // Tạo request object thông qua controller
       final request = _controller.buildToolsAndSuppliesRequest(
         processedData: processedData,
@@ -260,7 +274,9 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         noteText: controllerNote.text,
         existingData: data,
       );
-      
+
+      SGLog.debug('_saveItem', 'Request data: ${request.toJson()}');
+
       // Gọi API thông qua Bloc
       if (data == null) {
         context.read<ToolsAndSuppliesBloc>().add(
@@ -268,7 +284,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         );
       } else {
         context.read<ToolsAndSuppliesBloc>().add(
-          UpdateToolsAndSuppliesEvent(request),
+          UpdateToolsAndSuppliesEvent(request, jsonEncode(newDetailAssetDto)),
         );
       }
     } catch (e) {
@@ -279,7 +295,13 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   void initData() {
     // Khởi tạo dropdown items cho phòng ban thông qua controller
-    itemsPhongBan = _controller.buildPhongBanDropdownItems(widget.provider.dataPhongBan);
+    itemsPhongBan = _controller.buildPhongBanDropdownItems(
+      widget.provider.dataPhongBan,
+    );
+
+    itemsGroupCCDC = _controller.buildGroupCcdcDropdownItems(
+      widget.provider.dataGroupCCDC,
+    );
 
     if (widget.provider.dataDetail != null) {
       isEditing = false;
@@ -290,22 +312,48 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerCode.text = _controller.formatDisplayValue(data?.id);
       controllerImportDate.text = _controller.formatDateDisplay(data?.ngayNhap);
       controllerUnit.text = _controller.formatDisplayValue(data?.donViTinh);
-      controllerQuantity.text = _controller.formatDisplayValue(data?.soLuong, defaultValue: '0');
-      controllerValue.text = _controller.formatDisplayValue(data?.giaTri, defaultValue: '0.0');
+      controllerQuantity.text = _controller.formatDisplayValue(
+        data?.soLuong,
+        defaultValue: '0',
+      );
+      controllerValue.text = _controller.formatDisplayValue(
+        data?.giaTri,
+        defaultValue: '0.0',
+      );
       controllerSymbol.text = _controller.formatDisplayValue(data?.kyHieu);
       controllerNote.text = _controller.formatDisplayValue(data?.ghiChu);
 
-      // Tìm và set selectedPhongBan một cách an toàn thông qua controller
-      selectedPhongBan = _controller.findPhongBanById(
-        widget.provider.dataPhongBan,
-        data?.idDonVi,
-      );
-      controllerImportUnit.text = selectedPhongBan?.tenPhongBan ?? '';
+      controllerImportUnit.text = data?.tenDonVi ?? '';
 
-      // Copy danh sách chi tiết tài sản
-      newDetailAssetDto = data?.chiTietTaiSanList != null
-          ? List<DetailAssetDto>.from(data!.chiTietTaiSanList)
-          : [];
+      controllerGroupCCDC.text = data?.tenNhomCCDC ?? '';
+
+      // Copy danh sách chi tiết tài sản với null safety
+      if (data?.chiTietTaiSanList != null &&
+          data!.chiTietTaiSanList.isNotEmpty) {
+        newDetailAssetDto =
+            data!.chiTietTaiSanList
+                .map(
+                  (e) => DetailAssetDto(
+                    id: e.id,
+                    idTaiSan: e.idTaiSan,
+                    ngayVaoSo: e.ngayVaoSo,
+                    ngaySuDung: e.ngaySuDung,
+                    soKyHieu: e.soKyHieu ?? '',
+                    congSuat: e.congSuat ?? '',
+                    soLuong: e.soLuong ?? 0,
+                    nuocSanXuat: e.nuocSanXuat ?? '',
+                    namSanXuat: e.namSanXuat ?? 0,
+                  ),
+                )
+                .toList();
+      } else {
+        newDetailAssetDto = [];
+      }
+
+      SGLog.debug(
+        'initData',
+        'Initialized newDetailAssetDto with ${newDetailAssetDto.length} items from existing data',
+      );
     } else {
       // Reset tất cả dữ liệu cho item mới
       data = null;
@@ -349,10 +397,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             ...errors.map((error) => Text('• $error')),
           ],
@@ -396,22 +441,25 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerCode.text = _controller.formatDisplayValue(data?.id);
       controllerImportDate.text = _controller.formatDateDisplay(data?.ngayNhap);
       controllerUnit.text = _controller.formatDisplayValue(data?.donViTinh);
-      controllerQuantity.text = _controller.formatDisplayValue(data?.soLuong, defaultValue: '0');
-      controllerValue.text = _controller.formatDisplayValue(data?.giaTri, defaultValue: '0.0');
+      controllerQuantity.text = _controller.formatDisplayValue(
+        data?.soLuong,
+        defaultValue: '0',
+      );
+      controllerValue.text = _controller.formatDisplayValue(
+        data?.giaTri,
+        defaultValue: '0.0',
+      );
       controllerSymbol.text = _controller.formatDisplayValue(data?.kyHieu);
       controllerNote.text = _controller.formatDisplayValue(data?.ghiChu);
 
-      // Reset selectedPhongBan thông qua controller
-      selectedPhongBan = _controller.findPhongBanById(
-        widget.provider.dataPhongBan,
-        data?.idDonVi,
-      );
-      controllerImportUnit.text = selectedPhongBan?.tenPhongBan ?? '';
+      controllerImportUnit.text = data?.tenDonVi ?? '';
+      controllerGroupCCDC.text = data?.tenNhomCCDC ?? '';
 
       // Reset danh sách chi tiết
-      newDetailAssetDto = data?.chiTietTaiSanList != null
-          ? List<DetailAssetDto>.from(data!.chiTietTaiSanList)
-          : [];
+      newDetailAssetDto =
+          data?.chiTietTaiSanList != null
+              ? List<DetailAssetDto>.from(data!.chiTietTaiSanList)
+              : [];
     } else {
       // Nếu là item mới, clear tất cả form
       newDetailAssetDto = [];
@@ -425,6 +473,25 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     // Thoát khỏi chế độ edit
     setState(() {
       isEditing = false;
+    });
+  }
+
+  /// Xử lý khi nhấn Edit - đảm bảo dữ liệu được preserve
+  void _handleEdit() {
+    // Đảm bảo dữ liệu được khởi tạo đúng nếu chưa có
+    if (newDetailAssetDto.isEmpty &&
+        data?.chiTietTaiSanList != null &&
+        data!.chiTietTaiSanList.isNotEmpty) {
+      newDetailAssetDto = _controller.safeCopyDetailAssets(
+        data!.chiTietTaiSanList,
+      );
+    }
+
+    // Validate và fix null values thông qua controller
+    newDetailAssetDto = _controller.safeCopyDetailAssets(newDetailAssetDto);
+
+    setState(() {
+      isEditing = true;
     });
   }
 }

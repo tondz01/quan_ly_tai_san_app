@@ -40,11 +40,12 @@ class CreateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
 
 class UpdateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final ToolsAndSuppliesRequest params;
+  final String listAssetDetail;
 
-  const UpdateToolsAndSuppliesEvent(this.params);
+  const UpdateToolsAndSuppliesEvent(this.params, this.listAssetDetail);
 
   @override
-  List<Object?> get props => [params];
+  List<Object?> get props => [params, listAssetDetail];
 }
 
 class DeleteToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {

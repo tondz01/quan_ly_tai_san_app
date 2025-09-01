@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
@@ -26,39 +27,50 @@ class ToolsAndSuppliesController {
     String assetCode,
   ) {
     List<String> errors = [];
-    
+
     for (int i = 0; i < detailAssets.length; i++) {
       final detail = detailAssets[i];
       final stt = i + 1;
-      
+
       // Gán ID và idTaiSan trước khi validate
-      detail.id = "${DateTime.now().millisecondsSinceEpoch}-${assetCode.trim()}-$i";
+      detail.id =
+          "${DateTime.now().millisecondsSinceEpoch}-${assetCode.trim()}-$i";
       detail.idTaiSan = assetCode.trim();
-      
-      // Validate các trường bắt buộc
-      if (detail.soKyHieu?.trim().isEmpty ?? true) {
+
+      // Validate các trường bắt buộc với null safety
+      if ((detail.soKyHieu?.trim().isEmpty ?? true)) {
         errors.add('STT $stt: Số ký hiệu không được để trống');
       }
-      
-      if (detail.congSuat?.trim().isEmpty ?? true) {
+
+      if ((detail.congSuat?.trim().isEmpty ?? true)) {
         errors.add('STT $stt: Công suất không được để trống');
       }
-      
-      if (detail.nuocSanXuat?.trim().isEmpty ?? true) {
+
+      if ((detail.nuocSanXuat?.trim().isEmpty ?? true)) {
         errors.add('STT $stt: Nước sản xuất không được để trống');
       }
-      
-      // Validate năm sản xuất nếu có
-      if (detail.namSanXuat != null && detail.namSanXuat! > DateTime.now().year) {
-        errors.add('STT $stt: Năm sản xuất không được lớn hơn năm hiện tại');
+
+      // Validate số lượng
+      if ((detail.soLuong ?? 0) <= 0) {
+        errors.add('STT $stt: Số lượng phải lớn hơn 0');
       }
-      
+
+      // Validate năm sản xuất nếu có
+      final currentYear = DateTime.now().year;
+      if (detail.namSanXuat != null && detail.namSanXuat! > currentYear) {
+        errors.add(
+          'STT $stt: Năm sản xuất không được lớn hơn năm hiện tại ($currentYear)',
+        );
+      }
+
       // Validate năm sản xuất không quá cũ
-      if (detail.namSanXuat != null && detail.namSanXuat! < 1900) {
-        errors.add('STT $stt: Năm sản xuất không hợp lệ');
+      if (detail.namSanXuat != null &&
+          detail.namSanXuat! > 0 &&
+          detail.namSanXuat! < 1900) {
+        errors.add('STT $stt: Năm sản xuất không hợp lệ (phải >= 1900)');
       }
     }
-    
+
     return errors;
   }
 
@@ -68,13 +80,15 @@ class ToolsAndSuppliesController {
     required String quantityText,
     required String valueText,
     PhongBan? selectedPhongBan,
-    required String importUnitText,
+    CcdcGroup? selectedGroupCCDC,
   }) {
     // Parse ngày nhập
     DateTime importDate = DateTime.now();
     try {
       if (importDateText.trim().isNotEmpty) {
-        importDate = DateFormat('dd/MM/yyyy').parseStrict(importDateText.trim());
+        importDate = DateFormat(
+          'dd/MM/yyyy',
+        ).parseStrict(importDateText.trim());
       }
     } catch (e) {
       SGLog.warning('processFormData', 'Invalid date format: $importDateText');
@@ -83,20 +97,23 @@ class ToolsAndSuppliesController {
     // Parse số lượng
     final sanitizedQuantity = quantityText.replaceAll(RegExp(r'[^0-9]'), '');
     final quantity = int.tryParse(sanitizedQuantity) ?? 0;
-
+    SGLog.debug('processFormData', 'Parsed quantity: $quantity');
     // Parse giá trị
     final rawValue = valueText.trim();
     final sanitizedValue = rawValue.replaceAll('.', '').replaceAll(',', '.');
     final value = double.tryParse(sanitizedValue) ?? 0.0;
 
     // Lấy ID đơn vị
-    final idDonVi = (selectedPhongBan?.id ?? importUnitText).trim();
+    final idDonVi = (selectedPhongBan?.id ?? '').trim();
+    // Lấy ID nhóm CCDC
+    final idGroupCCDC = (selectedGroupCCDC?.id ?? '').trim();
 
     return {
       'importDate': importDate,
       'quantity': quantity,
       'value': value,
       'idDonVi': idDonVi,
+      'idGroupCCDC': idGroupCCDC,
     };
   }
 
@@ -112,10 +129,11 @@ class ToolsAndSuppliesController {
   }) {
     final currentUser = AccountHelper.instance.getUserInfo();
     final now = DateTime.now();
-    
+
     return ToolsAndSuppliesRequest(
       id: existingData?.id ?? codeText.trim(),
       idDonVi: processedData['idDonVi'],
+      idNhomCCDC: processedData['idGroupCCDC'],
       ten: nameText.trim(),
       ngayNhap: processedData['importDate'],
       donViTinh: unitText.trim(),
@@ -148,7 +166,7 @@ class ToolsAndSuppliesController {
     required String importUnitText,
   }) {
     List<String> errors = [];
-    
+
     final validationStates = FormValidationStates();
 
     // Validate tên công cụ dụng cụ
@@ -162,6 +180,13 @@ class ToolsAndSuppliesController {
     validationStates.isImportUnitValid = idDonVi.isNotEmpty;
     if (!validationStates.isImportUnitValid) {
       errors.add('Đơn vị nhập không được để trống');
+    }
+
+    // Validate nhóm CCDC
+    final String idGroupCCDC = (selectedPhongBan?.id ?? importUnitText).trim();
+    validationStates.isGroupCCDCValid = idGroupCCDC.isNotEmpty;
+    if (!validationStates.isGroupCCDCValid) {
+      errors.add('Nhóm CCDC không được để trống');
     }
 
     // Validate mã công cụ dụng cụ
@@ -188,13 +213,17 @@ class ToolsAndSuppliesController {
     // Validate số lượng
     validationStates.isQuantityValid = _validateQuantity(quantityText);
     if (!validationStates.isQuantityValid) {
-      errors.add('Số lượng phải là số nguyên dương (tối đa 999,999)');
+      errors.add(
+        'Số lượng phải là số nguyên dương và lớn hơn 0 (tối đa 999,999)',
+      );
     }
 
     // Validate giá trị
     validationStates.isValueValid = _validateValue(valueText);
     if (!validationStates.isValueValid) {
-      errors.add('Giá trị phải là số không âm (tối đa 999,999,999,999)');
+      errors.add(
+        'Giá trị phải là số nguyên dương và lớn hơn 0 (tối đa 999,999,999,999)',
+      );
     }
 
     return FormValidationResult(
@@ -273,18 +302,20 @@ class ToolsAndSuppliesController {
     return [];
   }
 
-  /// Tìm phòng ban theo ID
-  PhongBan? findPhongBanById(List<PhongBan>? dataPhongBan, String? idDonVi) {
-    if (idDonVi != null && 
-        dataPhongBan != null && 
-        dataPhongBan.isNotEmpty) {
-      try {
-        return dataPhongBan.firstWhere((e) => e.id == idDonVi);
-      } catch (_) {
-        return null;
-      }
+  /// Khởi tạo dropdown items cho phòng ban
+  List<DropdownMenuItem<CcdcGroup>> buildGroupCcdcDropdownItems(
+    List<CcdcGroup>? dataGroupCCDC,
+  ) {
+    if (dataGroupCCDC != null && dataGroupCCDC.isNotEmpty) {
+      return [
+        for (var element in dataGroupCCDC)
+          DropdownMenuItem<CcdcGroup>(
+            value: element,
+            child: Text(element.ten ?? ''),
+          ),
+      ];
     }
-    return null;
+    return [];
   }
 
   /// Format dữ liệu hiển thị
@@ -324,20 +355,27 @@ class ToolsAndSuppliesController {
     }
 
     // So sánh số lượng
-    final quantity = int.tryParse(quantityText.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    final quantity =
+        int.tryParse(quantityText.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     if (originalData.soLuong != quantity) {
       return true;
     }
 
     // So sánh giá trị
-    final value = double.tryParse(valueText.trim().replaceAll('.', '').replaceAll(',', '.')) ?? 0.0;
+    final value =
+        double.tryParse(
+          valueText.trim().replaceAll('.', '').replaceAll(',', '.'),
+        ) ??
+        0.0;
     if (originalData.giaTri != value) {
       return true;
     }
 
     // So sánh ngày nhập
     try {
-      final inputDate = DateFormat('dd/MM/yyyy').parseStrict(importDateText.trim());
+      final inputDate = DateFormat(
+        'dd/MM/yyyy',
+      ).parseStrict(importDateText.trim());
       if (originalData.ngayNhap.day != inputDate.day ||
           originalData.ngayNhap.month != inputDate.month ||
           originalData.ngayNhap.year != inputDate.year) {
@@ -356,7 +394,7 @@ class ToolsAndSuppliesController {
     for (int i = 0; i < originalDetails.length; i++) {
       final original = originalDetails[i];
       final current = detailAssets[i];
-      
+
       if (original.soKyHieu != current.soKyHieu ||
           original.congSuat != current.congSuat ||
           original.nuocSanXuat != current.nuocSanXuat ||
@@ -366,6 +404,50 @@ class ToolsAndSuppliesController {
     }
 
     return false;
+  }
+
+  /// Tạo một DetailAssetDto với default values an toàn
+  DetailAssetDto createSafeDetailAsset({
+    String? id,
+    String? idTaiSan,
+    String? ngayVaoSo,
+    String? ngaySuDung,
+    String? soKyHieu,
+    String? congSuat,
+    int? soLuong,
+    String? nuocSanXuat,
+    int? namSanXuat,
+  }) {
+    return DetailAssetDto(
+      id: id ?? '',
+      idTaiSan: idTaiSan ?? '',
+      ngayVaoSo: ngayVaoSo,
+      ngaySuDung: ngaySuDung,
+      soKyHieu: soKyHieu ?? '',
+      congSuat: congSuat ?? '',
+      soLuong: soLuong ?? 0,
+      nuocSanXuat: nuocSanXuat ?? '',
+      namSanXuat: namSanXuat ?? 0,
+    );
+  }
+
+  /// Copy DetailAssetDto với null safety
+  List<DetailAssetDto> safeCopyDetailAssets(List<DetailAssetDto> source) {
+    return source
+        .map(
+          (e) => createSafeDetailAsset(
+            id: e.id,
+            idTaiSan: e.idTaiSan,
+            ngayVaoSo: e.ngayVaoSo,
+            ngaySuDung: e.ngaySuDung,
+            soKyHieu: e.soKyHieu,
+            congSuat: e.congSuat,
+            soLuong: e.soLuong,
+            nuocSanXuat: e.nuocSanXuat,
+            namSanXuat: e.namSanXuat,
+          ),
+        )
+        .toList();
   }
 }
 
@@ -386,6 +468,7 @@ class FormValidationResult {
 class FormValidationStates {
   bool isNameValid = true;
   bool isImportUnitValid = true;
+  bool isGroupCCDCValid = true;
   bool isCodeValid = true;
   bool isImportDateValid = true;
   bool isUnitValid = true;
@@ -396,6 +479,7 @@ class FormValidationStates {
   void resetAll() {
     isNameValid = true;
     isImportUnitValid = true;
+    isGroupCCDCValid = true;
     isCodeValid = true;
     isImportDateValid = true;
     isUnitValid = true;

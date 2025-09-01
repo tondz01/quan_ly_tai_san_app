@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AssetManagementRepository extends ApiBase {
@@ -14,9 +14,7 @@ class AssetManagementRepository extends ApiBase {
     try {
       final response = await post(EndPointAPI.CHI_TIET_TAI_SAN, data: params);
 
-      if (result['status_code'] != Numeral.STATUS_CODE_SUCCESS &&
-          result['status_code'] != Numeral.STATUS_CODE_SUCCESS_CREATE &&
-          result['status_code'] != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         result['message'] = response.data?['message'] ?? 'Unknown error';
         return result;
@@ -32,7 +30,7 @@ class AssetManagementRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> updateAssetDetail(DetailAssetDto params) async {
+  Future<Map<String, dynamic>> updateAssetDetail(String params) async {
     Map<String, dynamic>? data;
     Map<String, dynamic> result = {
       'data': data,
@@ -40,14 +38,9 @@ class AssetManagementRepository extends ApiBase {
     };
 
     try {
-      final response = await put(
-        '${EndPointAPI.CHI_TIET_TAI_SAN}/${params.id}',
-        data: params.toJson(),
-      );
+      final response = await put(EndPointAPI.CHI_TIET_TAI_SAN, data: params);
 
-      if (result['status_code'] != Numeral.STATUS_CODE_SUCCESS &&
-          result['status_code'] != Numeral.STATUS_CODE_SUCCESS_CREATE &&
-          result['status_code'] != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         result['message'] = response.data?['message'] ?? 'Unknown error';
         return result;
@@ -72,9 +65,7 @@ class AssetManagementRepository extends ApiBase {
     try {
       final response = await delete(EndPointAPI.CHI_TIET_TAI_SAN, data: params);
 
-      if (result['status_code'] != Numeral.STATUS_CODE_SUCCESS &&
-          result['status_code'] != Numeral.STATUS_CODE_SUCCESS_CREATE &&
-          result['status_code'] != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         result['message'] = response.data?['message'] ?? 'Unknown error';
         return result;

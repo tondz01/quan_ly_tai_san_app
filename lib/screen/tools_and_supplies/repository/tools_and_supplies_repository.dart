@@ -5,30 +5,28 @@ import 'dart:async';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesRepository extends ApiBase {
-  // Path to the local JSON file for mock data
-  // static const String _mockDataPath =
-  //     'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
-
   Future<Map<String, dynamic>> getListToolsAndSupplies(String idCongTy) async {
     List<ToolsAndSuppliesDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-  
+
     try {
       final response = await get(
         EndPointAPI.TOOLS_AND_SUPPLIES,
         queryParameters: {'idcongty': idCongTy},
       );
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -59,7 +57,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
         EndPointAPI.PHONG_BAN,
         queryParameters: {'idcongty': idCongTy},
       );
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -86,14 +84,17 @@ class ToolsAndSuppliesRepository extends ApiBase {
       'data': data,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-
+    SGLog.debug(
+      'ToolsAndSuppliesRequest 2',
+      'Request payload: ${params.toJson()}',
+    );
     try {
       final response = await post(
         EndPointAPI.TOOLS_AND_SUPPLIES,
         data: params.toJson(),
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -122,7 +123,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
         data: params.toJson(),
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -136,9 +137,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> deleteToolsAndSupplies(
-    String id,
-  ) async {
+  Future<Map<String, dynamic>> deleteToolsAndSupplies(String id) async {
     Map<String, dynamic>? data;
     Map<String, dynamic> result = {
       'data': data,
@@ -146,11 +145,9 @@ class ToolsAndSuppliesRepository extends ApiBase {
     };
 
     try {
-      final response = await delete(
-        '${EndPointAPI.TOOLS_AND_SUPPLIES}/$id',
-      );
+      final response = await delete('${EndPointAPI.TOOLS_AND_SUPPLIES}/$id');
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -163,6 +160,4 @@ class ToolsAndSuppliesRepository extends ApiBase {
 
     return result;
   }
-
-  
 }
