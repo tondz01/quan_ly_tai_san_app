@@ -93,7 +93,6 @@ class _AssetTransferMovementTableState
 
   @override
   Widget build(BuildContext context) {
-    log('listAsset length: ${listAsset.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

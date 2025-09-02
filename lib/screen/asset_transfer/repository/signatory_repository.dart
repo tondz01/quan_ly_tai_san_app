@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
-
+import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 
 class SignatoryRepository {
   late final Dio _dio;
@@ -31,15 +34,20 @@ class SignatoryRepository {
       final res = await _dio.get(
         '/tailieu/$idDieuDongTaiSan',
       );
-      List<SignatoryDto> listSignatory = (res.data as List)
-          .map((e) => SignatoryDto.fromJson(e))
-          .toList();
-      return listSignatory;
+      log('message check signatories22: ${res.data["data"]}');
+      // Sử dụng ResponseParser để parse an toàn
+      final signatories = ResponseParser.parseToList<SignatoryDto>(
+        res.data["data"],
+        SignatoryDto.fromJson,
+      );
+      log('message check signatories33: ${jsonEncode(signatories)}');
+      return signatories;
+      
     } on DioException catch (e) {
       // Thử fallback key tham số khác trong trường hợp API yêu cầu tên khác
       if (e.response?.statusCode == Numeral.STATUS_CODE_DELETE) {
         SGLog.error(
-          'ChiTietDieuDongTaiSanRepository.getAll',
+          'Signatory Requesst.getAll',
           '400 Bad Request với key iddieudongtaisan, thử lại với idDieuDongTaiSan',
         );
         try {
@@ -47,27 +55,35 @@ class SignatoryRepository {
             '',
             queryParameters: {"idDieuDongTaiSan": idDieuDongTaiSan},
           );
-          List<SignatoryDto> listSignatory =
-              (resRetry.data as List)
+          
+          // Xử lý tương tự cho retry
+          if (resRetry.data is Map<String, dynamic>) {
+            final responseData = resRetry.data as Map<String, dynamic>;
+            if (responseData['data'] is List) {
+              List<SignatoryDto> listSignatory = (responseData['data'] as List)
                   .map((e) => SignatoryDto.fromJson(e))
                   .toList();
-          return listSignatory;
+              return listSignatory;
+            }
+          }
+          
+          return [];
         } catch (e2) {
           SGLog.error(
-            'ChiTietDieuDongTaiSanRepository.getAll',
+            'Signatory Requesst.getAll',
             'Fallback thất bại: $e2',
           );
           return [];
         }
       }
       SGLog.error(
-        'ChiTietDieuDongTaiSanRepository.getAll',
+        'Signatory Requesst.getAll',
         'Lỗi khi gọi API: ${e.message}',
       );
       return [];
     } catch (e) {
       SGLog.error(
-        'ChiTietDieuDongTaiSanRepository.getAll',
+        'Signatory Requesst.getAll',
         'Lỗi không xác định: $e',
       );
       return [];

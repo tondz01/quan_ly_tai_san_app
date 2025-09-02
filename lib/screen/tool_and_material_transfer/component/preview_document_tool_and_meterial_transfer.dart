@@ -27,7 +27,6 @@ Widget previewDocumentToolAndMaterialTransfer({
   bool isShowKy = true,
   PdfDocument? document,
 }) {
-  log('isShowKy: $isShowKy');
   return InkWell(
     onTap: () {
       log('item: $item');

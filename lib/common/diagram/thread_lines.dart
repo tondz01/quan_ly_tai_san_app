@@ -98,7 +98,7 @@ class _ContentBubble extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 5,
+        spacing: 2,
         children: [
           Text(text, style: Theme.of(context).textTheme.labelLarge),
           if (child != null) child!,

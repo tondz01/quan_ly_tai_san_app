@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -22,9 +23,6 @@ import '../model/tool_and_material_transfer_dto.dart';
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
   draft('Nháp', ColorValue.silverGray),
-  waitingForConfirmation('Chờ xác nhận', ColorValue.lightAmber),
-  confirmed('Xác nhận', ColorValue.mediumGreen),
-  browser('Trình duyệt', ColorValue.lightBlue),
   approve('Duyệt', ColorValue.cyan),
   cancel('Hủy', ColorValue.coral),
   complete('Hoàn thành', ColorValue.forestGreen);
@@ -52,10 +50,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
-  bool get isShowWaitingForConfirmation =>
-      _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
-  bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
-  bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
@@ -64,18 +58,12 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
-  int get waitingForConfirmationCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
-  int get confirmedCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
-  int get browserCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
   int get approveCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -186,33 +174,18 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                 (itemStatus == 0)) {
               return true;
             }
-
-            if (_filterStatus[FilterStatus.waitingForConfirmation] == true &&
-                itemStatus == 1) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.confirmed] == true &&
-                (itemStatus == 2)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.browser] == true &&
-                (itemStatus == 3)) {
-              return true;
-            }
             if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 4)) {
+                (itemStatus == 1)) {
               return true;
             }
 
             if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 5)) {
+                (itemStatus == 2)) {
               return true;
             }
 
             if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 6)) {
+                (itemStatus == 3)) {
               return true;
             }
 
@@ -254,9 +227,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
     FilterStatus.draft: false,
-    FilterStatus.waitingForConfirmation: false,
-    FilterStatus.confirmed: false,
-    FilterStatus.browser: false,
     FilterStatus.approve: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
@@ -400,24 +370,18 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               .where((item) {
                 final idSignatureGroup1 =
                     [
-                      item.nguoiTao,
+                      item.ngayTao,
+                      item.idNguoiDeNghi,
                       item.idPhoPhongDonViGiao,
                       item.idTruongPhongDonViGiao,
-                    ].whereType<String>().toList();
-                final idSignatureGroup2 =
-                    [
-                      item.idTrinhDuyetCapPhong,
-                      item.idTrinhDuyetGiamDoc,
+                      ...item.listSignatory!.map((e) => e.idNguoiKy),
                     ].whereType<String>().toList();
 
                 final inGroup1 = idSignatureGroup1.contains(
                   userInfo.tenDangNhap,
                 );
-                final inGroup2 = idSignatureGroup2.contains(
-                  userInfo.tenDangNhap,
-                );
 
-                return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
+                return inGroup1;
               })
               .toList();
       _filteredData = List.from(_data!);
@@ -542,6 +506,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     BuildContext context,
     ToolAndMaterialTransferDto request,
     List<DetailToolAndMaterialTransferDto> requestDetail,
+    List<SignatoryDto> requestSignatory,
     String fileName,
     String filePath,
     Uint8List fileBytes,
@@ -565,7 +530,12 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     );
     final bloc = context.read<ToolAndMaterialTransferBloc>();
     bloc.add(
-      CreateToolAndMaterialTransferEvent(context, request, requestDetail),
+      CreateToolAndMaterialTransferEvent(
+        context,
+        request,
+        requestDetail,
+        requestSignatory,
+      ),
     );
 
     notifyListeners();
@@ -660,5 +630,56 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       default:
         return 'Quản lý tài sản';
     }
+  }
+
+  int isCheckSigningStatus(ToolAndMaterialTransferDto item) {
+    final signatureFlow =
+        [
+          {
+            "id": item.idNguoiKyNhay,
+            "signed": item.trangThaiKyNhay,
+            "label": "Người ký nháy",
+          },
+          {
+            "id": item.idTruongPhongDonViGiao,
+            "signed": item.truongPhongDonViGiaoXacNhan == true,
+            "label": "Trưởng phòng Đơn vị giao",
+          },
+          {
+            "id": item.idPhoPhongDonViGiao,
+            "signed": item.phoPhongDonViGiaoXacNhan == true,
+            "label": "Phó phòng Đơn vị giao",
+          },
+          {
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
+            "label": "Trình duyệt cấp phòng",
+          },
+          {
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+            "label": "Giám đốc",
+          },
+          if (item.listSignatory != null)
+            ...item.listSignatory!.map(
+              (e) => {
+                "id": e.idNguoiKy,
+                "signed": e.trangThai == 1,
+                "label": e.tenNguoiKy,
+              },
+            ),
+        ].toList();
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+
+    // Kiểm tra currentIndex trước khi truy cập
+    if (currentIndex == -1) {
+      // Người dùng hiện tại không có trong danh sách ký
+      return -1;
+    }
+
+    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
   }
 }

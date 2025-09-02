@@ -29,7 +29,6 @@ Widget previewDocumentAssetTransfer({
   bool isDisabled = false,
   pdfrx.PdfDocument? document,
 }) {
-  log('isShowKy: $isShowKy');
   return InkWell(
     onTap: () {
       if (isDisabled) return;

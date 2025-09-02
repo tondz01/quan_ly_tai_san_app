@@ -355,15 +355,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
             const SizedBox(width: 5),
             SgIndicator(
-              steps: [
-                'Nháp',
-                'Chờ xác nhận',
-                'Xác nhận',
-                'Chờ duyệt',
-                'Duyệt',
-                'Hủy',
-                'Hoàn thành',
-              ],
+              steps: ['Nháp', 'Duyệt', 'Hủy', 'Hoàn thành'],
               fontSize: 10,
               currentStep: state.item?.trangThai ?? 0,
             ),
@@ -508,30 +500,68 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                   Expanded(
                     child: Column(
                       children: [
+                        CmFormDropdownObject<PhongBan>(
+                          label: 'Đơn vị đề nghị'.tr,
+                          controller: controllers.controllerProposingUnit,
+                          isEditing: state.isEditing,
+                          value: state.donViDeNghi,
+                          items: widget.provider.itemsDDPhongBan,
+                          defaultValue:
+                              controllers
+                                      .controllerProposingUnit
+                                      .text
+                                      .isNotEmpty
+                                  ? widget.provider.getPhongBanByID(
+                                    controllers.controllerProposingUnit.text,
+                                  )
+                                  : null,
+                          fieldName: 'receivingUnit',
+                          validationErrors: validation.validationErrors,
+                          onChanged: (value) {
+                            setState(() {
+                              state.donViDeNghi = value;
+                              state.listNhanVienThamMuu =
+                                  widget.provider.dataNhanVien
+                                      .where(
+                                        (e) =>
+                                            e.phongBanId ==
+                                            state.donViDeNghi?.id,
+                                      )
+                                      .toList();
+                            });
+                          },
+                        ),
+
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.requester'.tr,
                           controller: controllers.controllerRequester,
                           isEditing: state.isEditing,
                           value: state.nguoiDeNghi,
-                          items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllers.controllerRequester.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllers.controllerRequester.text,
-                                  )
-                                  : null,
+                          items: [
+                            ...state.listStaffByDepartment.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          // defaultValue:
+                          //     controllers.controllerRequester.text.isNotEmpty
+                          //         ? widget.provider.getNhanVienByID(
+                          //           controllers.controllerRequester.text,
+                          //         )
+                          //         : null,
                           fieldName: 'requester',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('requester selected: $value');
                             setState(() {
                               state.nguoiDeNghi = value;
                               state.donViDeNghi = widget.provider
                                   .getPhongBanByID(value.phongBanId ?? '');
                               // controllers.controllerProposingUnit.text =
                               //     state.donViDeNghi?.tenPhongBan ?? '';
-                              state.donThamMuu = widget.provider
-                                  .getPhongBanByID(value.phongBanId ?? '');
+                              // state.donThamMuu = widget.provider
+                              //     .getPhongBanByID(value.phongBanId ?? '');
                             });
                           },
                         ),
@@ -546,188 +576,35 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             });
                           },
                         ),
-                        Visibility(
-                          visible: state.isNguoiLapPhieuKyNhay,
-                          child: CmFormDropdownObject<NhanVien>(
-                            label: 'Chọn người ký nháy',
-                            controller: controllers.controllerNguoiKyNhay,
-                            isEditing: state.isEditing,
-                            value: state.nguoiKyNhay,
-                            items: [
-                              ...state.listStaffByDepartment.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.hoTen ?? ''),
-                                ),
-                              ),
-                            ],
-                            defaultValue:
-                                controllers
-                                        .controllerNguoiKyNhay
-                                        .text
-                                        .isNotEmpty
-                                    ? widget.provider.getNhanVienByID(
-                                      controllers.controllerNguoiKyNhay.text,
-                                    )
-                                    : null,
-                            fieldName: 'nguoiKyNhay',
-                            validationErrors: validation.validationErrors,
-                            onChanged: (value) {
-                              setState(() {
-                                state.nguoiKyNhay = value;
-                              });
-                            },
-                          ),
-                        ),
-                        CommonCheckboxInput(
-                          label: 'at.require_manager_approval'.tr,
-                          value: state.isQuanTrongCanXacNhan,
-                          isEditing: state.isEditing,
-                          isDisabled: !state.isEditing,
-                          onChanged: (newValue) {
-                            setState(() {
-                              log('donViGiao: ${state.donViGiao}');
-                              if (state.donViGiao == null) {
-                                AppUtility.showSnackBar(
-                                  context,
-                                  'Vui lòng chọn đơn vị giao trước.',
-                                  isError: true,
-                                );
-                                return;
-                              }
-                              state.isQuanTrongCanXacNhan = newValue;
-                              if (!state.isQuanTrongCanXacNhan) {
-                                state.isPhoPhongXacNhan = false;
-                              }
-                            });
-                          },
-                        ),
-                        Visibility(
-                          visible: state.isQuanTrongCanXacNhan,
-                          child: CmFormDropdownObject<NhanVien>(
-                            label: 'Trưởng phòng xác nhận',
-                            controller: controllers.controllerTPDonViGiao,
-                            isEditing: state.isEditing,
-
-                            items: [
-                              ...state.listStaffByDepartment.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.hoTen ?? ''),
-                                ),
-                              ),
-                            ],
-                            defaultValue:
-                                controllers
-                                        .controllerTPDonViGiao
-                                        .text
-                                        .isNotEmpty
-                                    ? widget.provider.getNhanVienByID(
-                                      controllers.controllerTPDonViGiao.text,
-                                    )
-                                    : null,
-                            fieldName: 'tPDonViGiao',
-                            validationErrors: validation.validationErrors,
-                            value: state.tPDonViGiao,
-                            onChanged: (value) {
-                              setState(() {
-                                state.tPDonViGiao = value;
-                              });
-                            },
-                          ),
-                        ),
-                        if (state.isQuanTrongCanXacNhan)
-                          CommonCheckboxInput(
-                            label: 'at.deputy_confirmed'.tr,
-                            value: state.isPhoPhongXacNhan,
-                            isEditing: state.isEditing,
-                            isDisabled: !state.isEditing,
-                            onChanged: (newValue) {
-                              setState(() {
-                                state.isPhoPhongXacNhan = newValue;
-                              });
-                            },
-                          ),
-                        Visibility(
-                          visible: state.isPhoPhongXacNhan,
-                          child: CmFormDropdownObject<NhanVien>(
-                            label: 'Phó phòng xác nhận',
-                            controller: controllers.controllerPPDonViNhan,
-                            isEditing: state.isEditing,
-
-                            items: [
-                              ...state.listStaffByDepartment.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.hoTen ?? ''),
-                                ),
-                              ),
-                            ],
-                            defaultValue:
-                                controllers
-                                        .controllerPPDonViNhan
-                                        .text
-                                        .isNotEmpty
-                                    ? widget.provider.getNhanVienByID(
-                                      controllers.controllerPPDonViNhan.text,
-                                    )
-                                    : null,
-                            fieldName: 'pPDonViNhan',
-                            validationErrors: validation.validationErrors,
-                            onChanged: (value) {
-                              setState(() {
-                                state.pPDonViGiao = value;
-                              });
-                            },
-                          ),
-                        ),
-
-                        CmFormDropdownObject<PhongBan>(
-                          label: 'Đơn vị tham mưu'.tr,
-                          controller: controllers.controllerProposingUnit,
-                          isEditing: state.isEditing,
-                          value: state.donThamMuu,
-                          items: widget.provider.itemsDDPhongBan,
-                          defaultValue:
-                              controllers
-                                      .controllerProposingUnit
-                                      .text
-                                      .isNotEmpty
-                                  ? widget.provider.getPhongBanByID(
-                                    controllers.controllerProposingUnit.text,
-                                  )
-                                  : null,
-                          fieldName: 'receivingUnit',
-                          validationErrors: validation.validationErrors,
-                          onChanged: (value) {
-                            log('receivingUnit selected: $value');
-                            setState(() {
-                              state.donThamMuu = value;
-                            });
-                          },
-                        ),
 
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.department_approval'.tr,
                           controller: controllers.controllerDepartmentApproval,
-                          isEditing: state.isEditing,
+                          isEditing:
+                              state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyCapPhong,
-                          items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllers
-                                      .controllerDepartmentApproval
-                                      .text
-                                      .isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllers
-                                        .controllerDepartmentApproval
-                                        .text,
-                                  )
-                                  : null,
+                          items: [
+                            ...state.listNhanVienThamMuu.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          // defaultValue:
+                          //     controllers
+                          //             .controllerDepartmentApproval
+                          //             .text
+                          //             .isNotEmpty
+                          //         ? widget.provider.getNhanVienByID(
+                          //           controllers
+                          //               .controllerDepartmentApproval
+                          //               .text,
+                          //         )
+                          //         : null,
                           fieldName: 'departmentApproval',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('department_approval selected: $value');
                             state.nguoiKyCapPhong = value;
                           },
                         ),
@@ -735,15 +612,23 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         CmFormDropdownObject<NhanVien>(
                           label: 'at.approver'.tr,
                           controller: controllers.controllerApprover,
-                          isEditing: state.isEditing,
+                          isEditing:
+                              state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyGiamDoc,
-                          items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllers.controllerApprover.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllers.controllerApprover.text,
-                                  )
-                                  : null,
+                          items: [
+                            ...state.listNhanVienThamMuu.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          // defaultValue:
+                          //     controllers.controllerApprover.text.isNotEmpty
+                          //         ? widget.provider.getNhanVienByID(
+                          //           controllers.controllerApprover.text,
+                          //         )
+                          //         : null,
                           fieldName: 'approver',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
@@ -773,6 +658,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 ..addAll(list);
                             });
                           },
+                          initialSignerData: state.additionalSignersDetailed,
                           onChangedDetailed: (list) {
                             setState(() {
                               state.additionalSignersDetailed = list;
@@ -900,8 +786,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       idDonViNhan: this.state.donViNhan?.id ?? '',
       idNguoiDeNghi: this.state.nguoiDeNghi?.id ?? '',
       nguoiLapPhieuKyNhay: this.state.isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: this.state.isQuanTrongCanXacNhan,
-      phoPhongXacNhan: this.state.isPhoPhongXacNhan,
+      quanTrongCanXacNhan: false,
+      phoPhongXacNhan: false,
       idDonViDeNghi: this.state.donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: this.state.nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
@@ -926,8 +812,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       coHieuLuc: true,
       loai: type,
       isActive: true,
-      idTruongPhongDonViGiao: this.state.tPDonViGiao?.id ?? '',
-      idPhoPhongDonViGiao: this.state.pPDonViGiao?.id ?? '',
+      idTruongPhongDonViGiao: '',
+      idPhoPhongDonViGiao: '',
       truongPhongDonViGiaoXacNhan: false,
       phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
@@ -936,6 +822,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       duongDanFile: this.state.selectedFilePath ?? '',
       tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
+      share: false,
+      idNguoiKyNhay: '',
+      trangThaiKyNhay: false,
     );
   }
 
@@ -951,8 +840,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       idDonViNhan: state.donViNhan?.id ?? '',
       idNguoiDeNghi: state.nguoiDeNghi?.id ?? '',
       nguoiLapPhieuKyNhay: state.isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: state.isQuanTrongCanXacNhan,
-      phoPhongXacNhan: state.isPhoPhongXacNhan,
+      quanTrongCanXacNhan: false,
+      phoPhongXacNhan: false,
       idDonViDeNghi: state.donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: state.nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
@@ -1005,16 +894,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   List<SignatoryDto> _createListSignatory() {
-    return state.additionalSigners.map((e) => SignatoryDto(
-        id: UUIDGenerator.generateWithFormat(
-          'NK-************',
-        ),
-        idTaiLieu: state.item?.id ?? '',
-        idNguoiKy: e?.id ?? '',
-        tenNguoiKy: e?.hoTen ?? '',
-        trangThai: 0,
-      ),
-    ).toList();
+    return state.additionalSigners
+        .map(
+          (e) => SignatoryDto(
+            id: UUIDGenerator.generateWithFormat('NK-************'),
+            idTaiLieu: state.item?.id ?? '',
+            idNguoiKy: e?.id ?? '',
+            tenNguoiKy: e?.hoTen ?? '',
+            trangThai: 0,
+          ),
+        )
+        .toList();
   }
 
   Future<void> _handleSave() async {
@@ -1028,12 +918,10 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       );
       return;
     }
-    // final bloc = context.read<DieuDongTaiSanBloc>();
     if (state.item == null) {
-      final request = _createDieuDongRequest(widget.type, getState());
+      final request = _createDieuDongRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
       final listSignatory = _createListSignatory();
-      // bloc.add(CreateDieuDongEvent(context, request));
       widget.provider.saveAssetTransfer(
         context,
         request,
@@ -1048,7 +936,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         widget.type,
         state.item!.trangThai ?? 0,
       );
-      int trangThai = state.item!.trangThai == 5 ? 1 : state.item!.trangThai!;
+      int trangThai = state.item!.trangThai == 2 ? 1 : state.item!.trangThai!;
       LenhDieuDongRequest newRequest = request.copyWith(
         truongPhongDonViGiaoXacNhan:
             state.item!.truongPhongDonViGiaoXacNhan ?? false,
@@ -1072,22 +960,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
   }
 
-  int getState() {
-    int state = 0;
-    if (!this.state.isNguoiLapPhieuKyNhay &&
-        !this.state.isQuanTrongCanXacNhan) {
-      state = 3;
-    } else if (!this.state.isNguoiLapPhieuKyNhay) {
-      state = 1;
-    } else if (this.state.isNguoiLapPhieuKyNhay) {
-      state = 0;
-    }
-    return state;
-  }
-
   bool editable() {
     return (state.item != null &&
-        (state.item!.trangThai == 0 || state.item!.trangThai == 5) &&
+        (state.item!.trangThai == 0 || state.item!.trangThai == 2) &&
         state.item!.nguoiTao == widget.provider.userInfo?.tenDangNhap);
   }
 
@@ -1145,15 +1020,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == state.donViGiao!.id)
                 .toList();
-
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          state.item?.idDonViDeNghi ?? '',
+        );
+        state.listNhanVienThamMuu =
+            widget.provider.dataNhanVien
+                .where((e) => e.phongBanId == state.donViDeNghi?.id)
+                .toList();
+        state.nguoiDeNghi = widget.provider.getNhanVienByID(
+          state.item?.idNguoiDeNghi ?? '',
+        );
         state.donViNhan = widget.provider.getPhongBanByID(
           state.item?.idDonViNhan ?? '',
-        );
-        state.pPDonViGiao = widget.provider.getNhanVienByID(
-          state.item?.idPhoPhongDonViGiao ?? '',
-        );
-        state.tPDonViGiao = widget.provider.getNhanVienByID(
-          state.item?.idTruongPhongDonViGiao ?? '',
         );
         state.nguoiKyCapPhong = widget.provider.getNhanVienByID(
           state.item?.idTrinhDuyetCapPhong ?? '',
@@ -1161,19 +1039,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.nguoiKyGiamDoc = widget.provider.getNhanVienByID(
           state.item?.idTrinhDuyetGiamDoc ?? '',
         );
-        state.donViDeNghi = widget.provider.getPhongBanByID(
-          state.item?.idDonViDeNghi ?? '',
-        );
-        state.nguoiDeNghi = widget.provider.getNhanVienByID(
-          state.item?.idNguoiDeNghi ?? '',
-        );
 
         // Initialize selected file if available
         state.selectedFileName = state.item?.tenFile;
         state.selectedFilePath = state.item?.duongDanFile;
         state.isNguoiLapPhieuKyNhay = state.item?.nguoiLapPhieuKyNhay ?? false;
-        state.isQuanTrongCanXacNhan = state.item?.quanTrongCanXacNhan ?? false;
-        state.isPhoPhongXacNhan = state.item?.phoPhongXacNhan ?? false;
         state.proposingUnit = state.item?.tenDonViDeNghi;
 
         // Lưu snapshot chi tiết ban đầu để so sánh
@@ -1185,6 +1055,20 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
         state.controllersInitialized = true;
+        state.additionalSignersDetailed =
+            state.item?.listSignatory
+                ?.map(
+                  (e) => AdditionalSignerData(
+                    employee: widget.provider.getNhanVienByID(
+                      e.idNguoiKy ?? '',
+                    ),
+                  ),
+                )
+                .toList() ??
+            [];
+        log(
+          'message test additionalSignersDetailed: ${jsonEncode(state.additionalSignersDetailed)}',
+        );
 
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
@@ -1207,16 +1091,21 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.selectedFileName = null;
         state.selectedFilePath = null;
         state.isNguoiLapPhieuKyNhay = false;
-        state.isQuanTrongCanXacNhan = false;
-        state.isPhoPhongXacNhan = false;
         state.donViGiao = null;
         state.donViNhan = null;
-        state.donViDeNghi = null;
-        state.nguoiDeNghi = widget.provider.getNhanVienByID(
-          widget.provider.userInfo?.tenDangNhap ?? '',
+        NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(
+          (e) => e.id == widget.provider.userInfo?.tenDangNhap,
         );
-        state.tPDonViGiao = null;
-        state.pPDonViGiao = null;
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          nhanVienLogin.phongBanId ?? '',
+        );
+        state.listNhanVienThamMuu =
+            widget.provider.dataNhanVien
+                .where((e) => e.phongBanId == state.donViDeNghi?.id)
+                .toList();
+
+        state.nguoiDeNghi = nhanVienLogin;
+        controllers.controllerRequester.text = state.nguoiDeNghi?.hoTen ?? '';
         state.nguoiKyCapPhong = null;
         state.nguoiKyGiamDoc = null;
       }
@@ -1229,8 +1118,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
       // Reset các biến trạng thái
       state.isNguoiLapPhieuKyNhay = state.item?.nguoiLapPhieuKyNhay ?? false;
-      state.isQuanTrongCanXacNhan = state.item?.quanTrongCanXacNhan ?? false;
-      state.isPhoPhongXacNhan = state.item?.phoPhongXacNhan ?? false;
       state.proposingUnit = state.item?.tenDonViDeNghi;
 
       // Reset file upload

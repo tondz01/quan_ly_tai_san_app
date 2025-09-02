@@ -236,7 +236,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                   left: BorderSide(color: Colors.grey.shade600, width: 1),
                 ),
               ),
-              child: DepartmentTreeDemo(
+              child: DetailedDiagram(
                 title: titleDetailDepartmentTree,
                 sample: sample,
               ),

@@ -5,16 +5,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_trans
 import '../model/dieu_dong_tai_san_dto.dart';
 import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
-    show
-        CancelDieuDongTaiSanEvent,
-        CreateDieuDongEvent,
-        DeleteDieuDongEvent,
-        DieuDongTaiSanEvent,
-        GetDataDropdownEvent,
-        GetListAssetEvent,
-        GetListDieuDongTaiSanEvent,
-        UpdateDieuDongEvent,
-        UpdateSigningStatusEvent;
+    show CancelDieuDongTaiSanEvent, CreateDieuDongEvent, DeleteDieuDongEvent, DieuDongTaiSanEvent, GetDataDropdownEvent, GetListAssetEvent, GetListDieuDongTaiSanEvent, SendToSignerEvent, UpdateDieuDongEvent, UpdateSigningStatusEvent;
 import 'dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanBloc
@@ -28,6 +19,7 @@ class DieuDongTaiSanBloc
     on<DeleteDieuDongEvent>(_deleteDieuDong);
     on<UpdateSigningStatusEvent>(_updateSigningStatus);
     on<CancelDieuDongTaiSanEvent>(_cancelDieuDongTaiSan);
+    on<SendToSignerEvent>(_sendToSigner);
   }
 
   Future<void> _getListDieuDongTaiSan(
@@ -128,6 +120,27 @@ class DieuDongTaiSanBloc
       String msg = "Lỗi khi cập nhật lệnh điều động";
       emit(
         PutPostDeleteFailedState(title: "notice", code: result, message: msg),
+      );
+    }
+  }
+  
+  Future<void> _sendToSigner(SendToSignerEvent event, Emitter emit) async {
+    emit(DieuDongTaiSanInitialState());
+    emit(DieuDongTaiSanLoadingState());
+    Map<String, dynamic> result = await AssetTransferRepository().sendToSigner(
+      event.params,
+    );
+    emit(DieuDongTaiSanLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateDieuDongSuccessState(data: result['data'].toString()));
+    } else {
+      String msg = "Lỗi khi gửi lệnh điều động";
+      emit(
+        PutPostDeleteFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
       );
     }
   }

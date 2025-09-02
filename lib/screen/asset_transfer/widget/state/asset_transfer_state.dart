@@ -9,8 +9,6 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 class AssetTransferState {
   bool isEditing = false;
   bool isNguoiLapPhieuKyNhay = false;
-  bool isQuanTrongCanXacNhan = false;
-  bool isPhoPhongXacNhan = false;
   bool _isUploading = false;
   bool isRefreshing = false;
   bool isNew = false;
@@ -27,16 +25,12 @@ class AssetTransferState {
   List<NhanVien> listStaffByDepartment = [];
 
   UserInfoDTO? nguoiLapPhieu;
-  PhongBan? donThamMuu;
   PhongBan? donViGiao;
   PhongBan? donViNhan;
   PhongBan? donViDeNghi;
   NhanVien? nguoiDeNghi;
-  NhanVien? tPDonViGiao;
-  NhanVien? pPDonViGiao;
   NhanVien? nguoiKyCapPhong;
   NhanVien? nguoiKyGiamDoc;
-  NhanVien? nguoiKyNhay;
 
   DieuDongTaiSanDto? item;
   DieuDongTaiSanDto? itemPreview;
@@ -44,6 +38,7 @@ class AssetTransferState {
   final List<NhanVien?> additionalSigners = [];
   final List<TextEditingController> additionalSignerControllers = [];
   List<AdditionalSignerData> additionalSignersDetailed = [];
+  List<NhanVien> listNhanVienThamMuu = [];
 
   // Getters
   bool get isUploading => _isUploading;
@@ -63,8 +58,6 @@ class AssetTransferState {
   void reset() {
     isEditing = false;
     isNguoiLapPhieuKyNhay = false;
-    isQuanTrongCanXacNhan = false;
-    isPhoPhongXacNhan = false;
     _isUploading = false;
     isRefreshing = false;
     isNew = false;
@@ -83,15 +76,12 @@ class AssetTransferState {
     donViNhan = null;
     donViDeNghi = null;
     nguoiDeNghi = null;
-    tPDonViGiao = null;
-    pPDonViGiao = null;
     nguoiKyCapPhong = null;
     nguoiKyGiamDoc = null;
-    donThamMuu = null;
-    nguoiKyNhay = null;
     additionalSigners.clear();
     additionalSignerControllers.clear();
     additionalSignersDetailed.clear();
+    listNhanVienThamMuu.clear();
 
     item = null;
     itemPreview = null;

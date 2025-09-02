@@ -40,6 +40,8 @@ class AdditionalSignersSelector extends StatefulWidget {
   final List<PhongBan>? phongBan;
   final List<NhanVien>? listNhanVien;
   final ValueChanged<List<AdditionalSignerData>>? onChangedDetailed;
+  // Thêm prop mới để truyền vào danh sách AdditionalSignerData ban đầu
+  final List<AdditionalSignerData>? initialSignerData;
 
   const AdditionalSignersSelector({
     super.key,
@@ -53,6 +55,7 @@ class AdditionalSignersSelector extends StatefulWidget {
     this.phongBan,
     this.listNhanVien,
     this.onChangedDetailed,
+    this.initialSignerData, // Thêm parameter mới
   });
 
   @override
@@ -61,31 +64,33 @@ class AdditionalSignersSelector extends StatefulWidget {
 }
 
 class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
-  late List<NhanVien?> _signers;
+  // Single source of truth
+  late List<AdditionalSignerData> _signersData;
   final List<TextEditingController> _controllers = [];
   // Controllers cho dropdown phòng ban
   final List<TextEditingController> _deptControllers = [];
   // Enhanced per-row state
   late bool _hasDepartment;
-  late List<PhongBan?> _departments;
-  late List<bool> _signedStatuses;
 
   @override
   void initState() {
     super.initState();
     _hasDepartment = widget.phongBan != null && widget.listNhanVien != null;
-    _signers = List<NhanVien?>.from(widget.initialSigners);
+
+    // Khởi tạo từ initialSignerData nếu có, nếu không thì từ initialSigners
+    if (widget.initialSignerData != null && widget.initialSignerData!.isNotEmpty) {
+      _signersData = List<AdditionalSignerData>.from(widget.initialSignerData!);
+    } else {
+      _signersData = widget.initialSigners
+          .map((e) => AdditionalSignerData(employee: e))
+          .toList();
+    }
+
     _controllers.addAll(
-      List.generate(_signers.length, (_) => TextEditingController()),
+      List.generate(_signersData.length, (_) => TextEditingController()),
     );
-    _departments = List<PhongBan?>.filled(
-      _signers.length,
-      null,
-      growable: true,
-    );
-    _signedStatuses = List<bool>.filled(_signers.length, false, growable: true);
     _deptControllers.addAll(
-      List.generate(_signers.length, (_) => TextEditingController()),
+      List.generate(_signersData.length, (_) => TextEditingController()),
     );
   }
 
@@ -93,36 +98,49 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
   void didUpdateWidget(covariant AdditionalSignersSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
     _hasDepartment = widget.phongBan != null && widget.listNhanVien != null;
-    // Đồng bộ khi initialSigners thay đổi từ bên ngoài
-    if (oldWidget.initialSigners != widget.initialSigners) {
-      _signers = List<NhanVien?>.from(widget.initialSigners);
+
+    // Đồng bộ khi initialSignerData hoặc initialSigners thay đổi từ bên ngoài
+    if (oldWidget.initialSignerData != widget.initialSignerData ||
+        oldWidget.initialSigners != widget.initialSigners) {
+      if (widget.initialSignerData != null && widget.initialSignerData!.isNotEmpty) {
+        _signersData = List<AdditionalSignerData>.from(widget.initialSignerData!);
+      } else {
+        _signersData = widget.initialSigners
+            .map((e) => AdditionalSignerData(employee: e))
+            .toList();
+      }
+
       // Cập nhật controllers theo số lượng mới
-      if (_controllers.length < _signers.length) {
-        final need = _signers.length - _controllers.length;
-        _controllers.addAll(
-          List.generate(need, (_) => TextEditingController()),
-        );
-      } else if (_controllers.length > _signers.length) {
-        final remove = _controllers.length - _signers.length;
-        for (int i = 0; i < remove; i++) {
-          _controllers.removeLast().dispose();
-        }
-      }
-      // Cập nhật controllers phòng ban
-      if (_deptControllers.length < _signers.length) {
-        final need = _signers.length - _deptControllers.length;
-        _deptControllers.addAll(
-          List.generate(need, (_) => TextEditingController()),
-        );
-      } else if (_deptControllers.length > _signers.length) {
-        final remove = _deptControllers.length - _signers.length;
-        for (int i = 0; i < remove; i++) {
-          _deptControllers.removeLast().dispose();
-        }
-      }
-      // Cập nhật các mảng phụ trợ
-      _ensureLengths();
+      _updateControllers();
       setState(() {});
+    }
+  }
+
+  void _updateControllers() {
+    // Cập nhật controllers cho nhân viên
+    if (_controllers.length < _signersData.length) {
+      final need = _signersData.length - _controllers.length;
+      _controllers.addAll(
+        List.generate(need, (_) => TextEditingController()),
+      );
+    } else if (_controllers.length > _signersData.length) {
+      final remove = _controllers.length - _signersData.length;
+      for (int i = 0; i < remove; i++) {
+        _controllers.removeLast().dispose();
+      }
+    }
+
+    // Cập nhật controllers phòng ban
+    if (_deptControllers.length < _signersData.length) {
+      final need = _signersData.length - _deptControllers.length;
+      _deptControllers.addAll(
+        List.generate(need, (_) => TextEditingController()),
+      );
+    } else if (_deptControllers.length > _signersData.length) {
+      final remove = _deptControllers.length - _signersData.length;
+      for (int i = 0; i < remove; i++) {
+        _deptControllers.removeLast().dispose();
+      }
     }
   }
 
@@ -139,27 +157,17 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
 
   void _emitChanges() {
     // Giữ tương thích cũ
-    widget.onChanged(_signers);
+    widget.onChanged(_signersData.map((e) => e.employee).toList());
     // Bản mở rộng nếu có
     if (widget.onChangedDetailed != null) {
-      final detailed = List<AdditionalSignerData>.generate(
-        _signers.length,
-        (i) => AdditionalSignerData(
-          department: _hasDepartment ? _departments[i] : null,
-          employee: _signers[i],
-          signed: _signedStatuses[i],
-        ),
-      );
-      widget.onChangedDetailed!(detailed);
+      widget.onChangedDetailed!(List<AdditionalSignerData>.from(_signersData));
     }
   }
 
   void _addSigner() {
     setState(() {
-      _signers.add(null);
+      _signersData.add(AdditionalSignerData());
       _controllers.add(TextEditingController());
-      _departments.add(null);
-      _signedStatuses.add(false);
       _deptControllers.add(TextEditingController());
     });
     _emitChanges();
@@ -167,10 +175,8 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
 
   void _removeSigner(int index) {
     setState(() {
-      _signers.removeAt(index);
+      _signersData.removeAt(index);
       _controllers.removeAt(index).dispose();
-      _departments.removeAt(index);
-      _signedStatuses.removeAt(index);
       _deptControllers.removeAt(index).dispose();
     });
     _emitChanges();
@@ -195,30 +201,29 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
   }
 
   void _ensureLengths() {
-    // đảm bảo độ dài các mảng phụ trợ khớp với _signers
-    if (_departments.length < _signers.length) {
-      _departments.addAll(
-        List<PhongBan?>.filled(_signers.length - _departments.length, null),
+    // đảm bảo độ dài các controllers khớp với _signersData
+    if (_controllers.length < _signersData.length) {
+      final need = _signersData.length - _controllers.length;
+      _controllers.addAll(
+        List.generate(need, (_) => TextEditingController()),
       );
-    } else if (_departments.length > _signers.length) {
-      _departments.removeRange(_signers.length, _departments.length);
+    } else if (_controllers.length > _signersData.length) {
+      final remove = _controllers.length - _signersData.length;
+      for (int i = 0; i < remove; i++) {
+        _controllers.removeLast().dispose();
+      }
     }
-    if (_signedStatuses.length < _signers.length) {
-      _signedStatuses.addAll(
-        List<bool>.filled(_signers.length - _signedStatuses.length, false),
-      );
-    } else if (_signedStatuses.length > _signers.length) {
-      _signedStatuses.removeRange(_signers.length, _signedStatuses.length);
-    }
-    if (_deptControllers.length < _signers.length) {
+
+    if (_deptControllers.length < _signersData.length) {
+      final need = _signersData.length - _deptControllers.length;
       _deptControllers.addAll(
         List.generate(
-          _signers.length - _deptControllers.length,
+          need,
           (_) => TextEditingController(),
         ),
       );
-    } else if (_deptControllers.length > _signers.length) {
-      final remove = _deptControllers.length - _signers.length;
+    } else if (_deptControllers.length > _signersData.length) {
+      final remove = _deptControllers.length - _signersData.length;
       for (int i = 0; i < remove; i++) {
         _deptControllers.removeLast().dispose();
       }
@@ -245,8 +250,8 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
           ),
         ),
         Column(
-          children: List.generate(_signers.length, (index) {
-            final dept = _hasDepartment ? _departments[index] : null;
+          children: List.generate(_signersData.length, (index) {
+            final dept = _hasDepartment ? _signersData[index].department : null;
             final staffItems =
                 _hasDepartment
                     ? _buildStaffItemsForDepartment(dept)
@@ -267,8 +272,8 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                                   label: widget.labelDepartment,
                                   controller: _deptControllers[index],
                                   isEditing: widget.isEditing,
-                                  value: _departments[index],
-                                  defaultValue: _departments[index],
+                                  value: _signersData[index].department,
+                                  defaultValue: _signersData[index].department,
                                   fieldName: 'additionalSigner_dept_$index',
                                   items: [
                                     ...widget.phongBan!.map(
@@ -280,28 +285,27 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                                   ],
                                   onChanged: (value) {
                                     setState(() {
-                                      _departments[index] = value;
-                                      // Reset nhân viên khi đổi phòng ban
-                                      _signers[index] = null;
+                                      _signersData[index] = _signersData[index]
+                                          .copyWith(department: value, employee: null);
                                     });
                                     _emitChanges();
                                   },
                                   validationErrors: const {},
                                 ),
                               ),
-                              // const SizedBox(height: 8),
                             ],
                             CmFormDropdownObject<NhanVien>(
                               label: '${widget.labelSigned} ${index + 1}',
                               controller: _controllers[index],
                               isEditing: widget.isEditing,
-                              value: _signers[index],
-                              defaultValue: _signers[index],
+                              value: _signersData[index].employee,
+                              defaultValue: _signersData[index].employee,
                               fieldName: 'additionalSigner_$index',
                               items: staffItems,
                               onChanged: (value) {
                                 setState(() {
-                                  _signers[index] = value;
+                                  _signersData[index] =
+                                      _signersData[index].copyWith(employee: value);
                                 });
                                 _emitChanges();
                               },
@@ -334,7 +338,7 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                       Expanded(
                         child: CommonCheckboxInput(
                           label: '${widget.labelSigned} ${index + 1} đã ký',
-                          value: _signedStatuses[index],
+                          value: _signersData[index].signed,
                           isEditing: widget.isEditing,
                           isDisabled: true,
                           onChanged: (newValue) {

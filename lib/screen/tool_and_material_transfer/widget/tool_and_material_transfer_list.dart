@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
@@ -19,11 +20,13 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -52,9 +55,16 @@ class _ToolAndMaterialTransferListState
   final List<ToolAndMaterialTransferDto> listAssetHandover = [];
   List<ToolAndMaterialTransferDto> listItemSelected = [];
   PdfDocument? _document;
+  List<ThreadNode> listSignatoryDetail = [];
+  ToolAndMaterialTransferDto? selected;
+
+  bool isShowDetailDepartmentTree = false;
+  String nameBenBan = "";
+
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
+    "signing_status",
     'type',
     'decision_date',
     'effective_date',
@@ -90,6 +100,11 @@ class _ToolAndMaterialTransferListState
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'signing_status',
+        label: 'Trạng thái ký',
+        isChecked: visibleColumnIds.contains('signing_status'),
+      ),
       ColumnDisplayOption(
         id: 'type',
         label: 'Phiếu ký nội sinh',
@@ -139,6 +154,16 @@ class _ToolAndMaterialTransferListState
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'signing_status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
+              title: 'Trạng thái ký',
+              cellBuilder: (item) => showSigningStatus(item),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
         case 'type':
           columns.add(
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
@@ -216,9 +241,9 @@ class _ToolAndMaterialTransferListState
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
-              width: 120,
+              width: 180,
               searchable: true,
             ),
           );
@@ -262,8 +287,6 @@ class _ToolAndMaterialTransferListState
   Widget build(BuildContext context) {
     final List<SgTableColumn<ToolAndMaterialTransferDto>> columns =
         _buildColumns();
-    log('message widget.provider.data: ${MediaQuery.of(context).size.width}');
-
     return MultiBlocListener(
       listeners: [
         BlocListener<ToolAndMaterialTransferBloc, ToolAndMaterialTransferState>(
@@ -289,34 +312,68 @@ class _ToolAndMaterialTransferListState
             ),
           ],
         ),
-        child: Column(
+        child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: headerList(),
-            ),
             Expanded(
-              child: TableBaseView<ToolAndMaterialTransferDto>(
-                searchTerm: '',
-                columns: columns,
-                data: widget.provider.dataPage ?? [],
-                horizontalController: ScrollController(),
-                onRowTap: (item) {
-                  widget.provider.onChangeDetailToolAndMaterialTransfer(item);
-                },
-                onSelectionChanged: (items) {
-                  setState(() {
-                    listItemSelected.clear();
-                    listItemSelected = items;
-                  });
-                },
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: headerList(),
+                  ),
+                  Expanded(
+                    child: TableBaseView<ToolAndMaterialTransferDto>(
+                      searchTerm: '',
+                      columns: columns,
+                      data: widget.provider.dataPage ?? [],
+                      horizontalController: ScrollController(),
+                      onRowTap: (item) {
+                        widget.provider.onChangeDetailToolAndMaterialTransfer(
+                          item,
+                        );
+                        setState(() {
+                          nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
+                          isShowDetailDepartmentTree = true;
+                          _buildDetailDepartmentTree(item);
+                        });
+                      },
+                      onSelectionChanged: (items) {
+                        setState(() {
+                          listItemSelected.clear();
+                          listItemSelected = items;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Visibility(
+              visible: isShowDetailDepartmentTree,
+              child: Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.grey.shade600, width: 1),
+                  ),
+                ),
+                child: DetailedDiagram(
+                  title: nameBenBan,
+                  sample: listSignatoryDetail,
+                  onHiden: () {
+                    setState(() {
+                      isShowDetailDepartmentTree = false;
+                      log('message');
+                    });
+                  },
+                ),
               ),
             ),
           ],
@@ -390,39 +447,77 @@ class _ToolAndMaterialTransferListState
 
   Visibility _buildActionKy() {
     return Visibility(
-      visible: listItemSelected.isNotEmpty && listItemSelected.length < 2,
-      child: GestureDetector(
-        onTap: () {
-          if (listItemSelected.isNotEmpty) {
-            ToolAndMaterialTransferDto? item = listItemSelected.first;
-            _handleSignDocument(
-              item,
-              widget.provider.userInfo!,
-              widget.provider,
-            );
-          }
-        },
-        child: Row(
-          spacing: 8,
-          children: [
-            Tooltip(
+      visible: listItemSelected.isNotEmpty,
+      child: Row(
+        spacing: 8,
+        children: [
+          Visibility(
+            visible: listItemSelected.isNotEmpty && listItemSelected.length < 2,
+            child: Tooltip(
               message: 'Ký biên bản',
-              child: Icon(Icons.edit, color: Colors.green, size: 18),
+              child: InkWell(
+                onTap: () {
+                  if (listItemSelected.isNotEmpty) {
+                    ToolAndMaterialTransferDto? item = listItemSelected.first;
+                    _handleSignDocument(
+                      item,
+                      widget.provider.userInfo!,
+                      widget.provider,
+                    );
+                  }
+                },
+                child: Icon(Icons.edit, color: Colors.green, size: 18),
+              ),
             ),
-            SGText(
-              text: 'Số lượng biên bản đã chọn: ${listItemSelected.length}',
-              color: Colors.blue,
-              size: 14,
-              fontWeight: FontWeight.w500,
+          ),
+          Tooltip(
+            message: 'Chia sẻ với người ký',
+            child: InkWell(
+              onTap: () {
+                if (listItemSelected.isNotEmpty) {
+                  _handleSendToSigner(listItemSelected);
+                }
+              },
+              child: Icon(Icons.send_sharp, color: Colors.blue, size: 18),
             ),
-          ],
-        ),
+          ),
+          SGText(
+            text: 'Số lượng biên bản đã chọn: ${listItemSelected.length}',
+            color: Colors.blue,
+            size: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ],
       ),
     );
   }
 
   Widget viewAction(ToolAndMaterialTransferDto item) {
     return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.share_outlined,
+        tooltip: 'Chia sẻ với người ký',
+        iconColor: ColorValue.cyan,
+        backgroundColor: Colors.cyan.shade50,
+        borderColor: Colors.cyan.shade200,
+        onPressed: () {
+          showConfirmDialog(
+            context,
+            type: ConfirmType.delete,
+            title: 'Chia sẻ',
+            message: 'Bạn có chắc muốn chia sẻ ${item.tenPhieu} với người ký?',
+            highlight: item.tenPhieu!,
+            cancelText: 'Không',
+            confirmText: 'Chia sẻ',
+            onConfirm: () {
+              final request = item.copyWith(share: true);
+              context.read<ToolAndMaterialTransferBloc>().add(
+                UpdateToolAndMaterialTransferEvent(context, request, item.id!),
+              );
+            },
+          );
+        },
+      ),
       ActionButtonConfig(
         icon: Icons.visibility,
         tooltip: 'Xem',
@@ -471,8 +566,8 @@ class _ToolAndMaterialTransferListState
                     cancelText: 'Không',
                     confirmText: 'Xóa',
                     onConfirm: () {
-                      context.read<DieuDongTaiSanBloc>().add(
-                        DeleteDieuDongEvent(context, item.id!),
+                      context.read<ToolAndMaterialTransferBloc>().add(
+                        DeleteToolAndMaterialTransferEvent(context, item.id!),
                       );
                     },
                   ),
@@ -522,38 +617,33 @@ class _ToolAndMaterialTransferListState
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
-              {"id": item.nguoiTao, "signed": true, "label": "Người tạo"},
-              {
-                "id": item.idTruongPhongDonViGiao,
-                "signed": item.truongPhongDonViGiaoXacNhan == true,
-                "label": "Trưởng phòng",
+          {
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
+            "label": "Trình duyệt cấp phòng",
+          },
+          {
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+            "label": "Giám đốc",
+          },
+          if (item.listSignatory != null)
+            ...item.listSignatory!.map(
+              (e) => {
+                "id": e.idNguoiKy,
+                "signed": e.trangThai == 1,
+                "label": e.tenNguoiKy,
               },
-              {
-                "id": item.idPhoPhongDonViGiao,
-                "signed": item.phoPhongDonViGiaoXacNhan == true,
-                "label": "Phó phòng Đơn vị giao",
-              },
-              {
-                "id": item.idTrinhDuyetCapPhong,
-                "signed": item.trangThai != null && item.trangThai! >= 3,
-                "label": "Trình duyệt cấp phòng",
-              },
-              {
-                "id": item.idTrinhDuyetGiamDoc,
-                "signed": item.trangThai != null && item.trangThai! >= 3,
-                "label": "Giám đốc",
-              },
-            ]
-            .where(
-              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
-            )
-            .toList();
+            ),
+        ].toList();
 
     // Kiểm tra hoàn thành
-    if (item.trangThai == 6) {
+    if (item.trangThai == 3 || item.trangThai == 2) {
+      String title = widget.provider.getScreenTitle();
+      String message = item.trangThai == 2 ? 'Đã bị hủy' : 'Đã hoàn thành';
       AppUtility.showSnackBar(
         context,
-        'Phiếu ký nội sinh này đã "Hoàn thành", không thể ký.',
+        'Phiếu $title này "$message", không thể ký.',
         isError: true,
         textAlign: TextAlign.center,
       );
@@ -572,7 +662,6 @@ class _ToolAndMaterialTransferListState
       );
       return;
     }
-    log('signatureFlow: ${signatureFlow.toString()}');
     // Nếu đã ký rồi thì chặn
     if (signatureFlow[currentIndex]["signed"] == true) {
       AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
@@ -612,5 +701,170 @@ class _ToolAndMaterialTransferListState
         );
       }
     });
+  }
+
+  Widget showSigningStatus(ToolAndMaterialTransferDto item) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? Colors.red
+                  : Colors.blue,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? 'Đã ký'
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? 'Chưa ký'
+                  : "Người tạo phiếu",
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _buildDetailDepartmentTree(ToolAndMaterialTransferDto item) {
+    listSignatoryDetail.clear();
+    selected = item;
+    listSignatoryDetail = [
+      ThreadNode(header: 'Trạng thái ký', depth: 0),
+      if (item.nguoiLapPhieuKyNhay == true)
+        ThreadNode(
+          header: 'Người ký nháy:',
+          depth: 1,
+          child: viewSignatoryStatus(
+            item.trangThaiKyNhay ?? false,
+            widget.provider
+                .getNhanVienByID(item.idNguoiKyNhay ?? '')
+                .hoTen
+                .toString(),
+          ),
+        ),
+      if (item.quanTrongCanXacNhan == true)
+        ThreadNode(
+          header: 'Trưởng phòng xác nhận:',
+          depth: 1,
+          child: viewSignatoryStatus(
+            item.truongPhongDonViGiaoXacNhan ?? false,
+            widget.provider
+                .getNhanVienByID(item.idTruongPhongDonViGiao ?? '')
+                .hoTen
+                .toString(),
+          ),
+        ),
+      if (item.phoPhongDonViGiaoXacNhan == true)
+        ThreadNode(
+          header: 'Phó phòng xác nhận:',
+          depth: 1,
+          child: viewSignatoryStatus(
+            item.phoPhongDonViGiaoXacNhan ?? false,
+            widget.provider
+                .getNhanVienByID(item.idPhoPhongDonViGiao ?? '')
+                .hoTen
+                .toString(),
+          ),
+        ),
+      ThreadNode(
+        header: 'Trình duyệt cấp phòng:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.trinhDuyetCapPhongXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idTrinhDuyetCapPhong ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+      ThreadNode(
+        header: 'Trình duyệt ban giám đốc:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.trinhDuyetGiamDocXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idTrinhDuyetGiamDoc ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
+    ];
+  }
+
+  Widget viewSignatoryStatus(bool isDone, String name) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Text(
+          name,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.green,
+          ),
+        ),
+        Visibility(
+          visible: isDone,
+          child: Tooltip(
+            message: 'Đã ký',
+            child: Icon(Icons.check_circle, color: Colors.green, size: 18),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleSendToSigner(List<ToolAndMaterialTransferDto> items) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return;
+    }
+    bool hasNonZero = items.any((item) => item.trangThai != 0);
+    if (hasNonZero) {
+      AppUtility.showSnackBar(
+        context,
+        'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
+        isError: true,
+      );
+      return;
+    }
+
+    showConfirmDialog(
+      context,
+      type: ConfirmType.delete,
+      title: 'Chia sẻ',
+      message: 'Bạn có chắc muốn chia sẻ với người ký?',
+      cancelText: 'Không',
+      confirmText: 'Chia sẻ',
+      onConfirm: () {
+        context.read<ToolAndMaterialTransferBloc>().add(
+          SendToSignerTAMTEvent(context, items),
+        );
+      },
+    );
   }
 }

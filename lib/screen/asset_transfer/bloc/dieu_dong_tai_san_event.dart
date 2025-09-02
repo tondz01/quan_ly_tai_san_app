@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
@@ -65,6 +66,16 @@ class UpdateDieuDongEvent extends DieuDongTaiSanEvent {
 
   @override
   List<Object?> get props => [context, params, id];
+}
+
+class SendToSignerEvent extends DieuDongTaiSanEvent {
+  final BuildContext context;
+  final List<DieuDongTaiSanDto> params;
+
+  const SendToSignerEvent(this.context, this.params);
+
+  @override
+  List<Object?> get props => [context, params];
 }
 
 class DeleteDieuDongEvent extends DieuDongTaiSanEvent {

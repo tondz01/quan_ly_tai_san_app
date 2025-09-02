@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class DepartmentTreeDemo extends StatelessWidget {
+class DetailedDiagram extends StatelessWidget {
   final String title;
   final List<ThreadNode> sample;
-  const DepartmentTreeDemo({
+  final Function()? onHiden;
+  const DetailedDiagram({
     super.key,
     required this.title,
     required this.sample,
+    this.onHiden,
   });
 
   @override
@@ -29,9 +32,17 @@ class DepartmentTreeDemo extends StatelessWidget {
               SizedBox(width: 8),
               Expanded(
                 child: SGText(
-                  text: 'Chi tiết đơn vị sở hữu "$title"',
+                  text: 'Chi tiết $title',
                   size: 14,
                   fontWeight: FontWeight.w500,
+                ),
+              ),
+              InkWell(
+                onTap: onHiden,
+                child: Icon(
+                  Icons.visibility_off,
+                  size: 16,
+                  color: ColorValue.cyan,
                 ),
               ),
             ],

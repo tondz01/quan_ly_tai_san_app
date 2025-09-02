@@ -47,6 +47,8 @@ class DieuDongTaiSanDto {
   String? idNhanSuXemPhieu;
   String? tenNhanSuXemPhieu;
 
+  String? idNguoiKyNhay;
+
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
   bool? phoPhongXacNhan;
@@ -56,6 +58,7 @@ class DieuDongTaiSanDto {
   bool? phoPhongDonViGiaoXacNhan;
   bool? trinhDuyetCapPhongXacNhan;
   bool? trinhDuyetGiamDocXacNhan;
+  bool? trangThaiKyNhay;
   
   String? tggnTuNgay;
   String? tggnDenNgay;
@@ -74,6 +77,7 @@ class DieuDongTaiSanDto {
   bool? coHieuLuc;
   int? loai;
   bool? isActive;
+  bool? share;
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
   List<SignatoryDto>? listSignatory;
 

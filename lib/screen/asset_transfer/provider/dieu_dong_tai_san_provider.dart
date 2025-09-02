@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -25,9 +24,6 @@ import '../model/dieu_dong_tai_san_dto.dart';
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
   draft('Nháp', ColorValue.silverGray),
-  waitingForConfirmation('Chờ xác nhận', ColorValue.lightAmber),
-  confirmed('Xác nhận', ColorValue.mediumGreen),
-  browser('Chờ duyệt', ColorValue.lightBlue),
   approve('Duyệt', ColorValue.cyan),
   cancel('Hủy', ColorValue.coral),
   complete('Hoàn thành', ColorValue.forestGreen);
@@ -56,10 +52,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
-  bool get isShowWaitingForConfirmation =>
-      _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
-  bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
-  bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
@@ -68,18 +60,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
-  int get waitingForConfirmationCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
-  int get confirmedCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
-  int get browserCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
   int get approveCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -156,8 +142,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   void changeIsShowPreview(DieuDongTaiSanDto? itemPreview) {
-      _itemPreview = itemPreview;
-      notifyListeners();
+    _itemPreview = itemPreview;
+    notifyListeners();
   }
 
   void setFilterStatus(FilterStatus status, bool? value) {
@@ -186,45 +172,27 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     List<DieuDongTaiSanDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(_data!);
-      log('Filtro por estado: todos los datos (${statusFiltered.length})');
     } else {
       statusFiltered =
           _data!.where((item) {
             int itemStatus = item.trangThai ?? 0;
-            log('itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true &&
                 (itemStatus == 0)) {
               return true;
             }
-
-            if (_filterStatus[FilterStatus.waitingForConfirmation] == true &&
-                itemStatus == 1) {
+            if (_filterStatus[FilterStatus.approve] == true &&
+                (itemStatus == 1)) {
               return true;
             }
-
-            if (_filterStatus[FilterStatus.confirmed] == true &&
+            if (_filterStatus[FilterStatus.cancel] == true &&
                 (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true &&
+            if (_filterStatus[FilterStatus.complete] == true &&
                 (itemStatus == 3)) {
               return true;
             }
-            if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 4)) {
-              return true;
-            }
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 5)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 6)) {
-              return true;
-            }
-
             return false;
           }).toList();
     }
@@ -260,17 +228,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
     FilterStatus.draft: false,
-    FilterStatus.waitingForConfirmation: false,
-    FilterStatus.confirmed: false,
-    FilterStatus.browser: false,
     FilterStatus.approve: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
   };
 
   void onInit(BuildContext context, int typeDieuDongTaiSan) {
-    log('onInit: Starting initialization for type: $typeDieuDongTaiSan');
-
     // Không gọi onDispose() ở đây để tránh mất dữ liệu
     // onDispose();
 
@@ -304,7 +267,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     endIndex = 0;
     currentPage = 1;
 
-    log('onDispose DieuDongTaiSanProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
@@ -324,7 +286,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       );
       bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
       bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
-      
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -417,9 +378,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
               .where((element) => element.loai == typeDieuDongTaiSan)
               .where((item) {
                 final idSignatureGroup1 =
-                    [item.nguoiTao,
-                    item.idPhoPhongDonViGiao,
-                    item.idTruongPhongDonViGiao,
+                    [
+                      item.nguoiTao,
+                      item.idPhoPhongDonViGiao,
+                      item.idTruongPhongDonViGiao,
                     ].whereType<String>().toList();
                 final idSignatureGroup2 =
                     [
@@ -427,15 +389,16 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                       item.idTrinhDuyetGiamDoc,
                     ].whereType<String>().toList();
 
-                final inGroup1 = idSignatureGroup1.contains(userInfo.tenDangNhap);
-                final inGroup2 = idSignatureGroup2.contains(userInfo.tenDangNhap);
+                final inGroup1 = idSignatureGroup1.contains(
+                  userInfo.tenDangNhap,
+                );
+                final inGroup2 = idSignatureGroup2.contains(
+                  userInfo.tenDangNhap,
+                );
 
                 return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
               })
               .toList();
-      log(
-        'message _data typeDieuDongTaiSan: $typeDieuDongTaiSan} -- ${jsonEncode(state.data)}',
-      );
       _filteredData = List.from(_data!);
     }
     _updatePagination();
@@ -525,6 +488,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     getDataAll(context);
     notifyListeners();
   }
+
   void updateSignatureSuccess(
     BuildContext context,
     UpdateSigningStatusSuccessState state,
@@ -583,7 +547,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     );
     if (context.mounted) {
       final bloc = context.read<DieuDongTaiSanBloc>();
-      bloc.add(CreateDieuDongEvent(context, request, requestDetail, listSignatory));
+      bloc.add(
+        CreateDieuDongEvent(context, request, requestDetail, listSignatory),
+      );
     }
 
     notifyListeners();
@@ -675,5 +641,55 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       default:
         return 'Quản lý tài sản';
     }
+  }
+
+  int isCheckSigningStatus(DieuDongTaiSanDto item) {
+    final signatureFlow =
+        [
+          {
+            "id": item.idNguoiKyNhay,
+            "signed": item.trangThaiKyNhay,
+            "label": "Người ký nháy",
+          },
+          {
+            "id": item.idTruongPhongDonViGiao,
+            "signed": item.truongPhongDonViGiaoXacNhan == true,
+            "label": "Trưởng phòng Đơn vị giao",
+          },
+          {
+            "id": item.idPhoPhongDonViGiao,
+            "signed": item.phoPhongDonViGiaoXacNhan == true,
+            "label": "Phó phòng Đơn vị giao",
+          },
+          {
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
+            "label": "Trình duyệt cấp phòng",
+          },
+          {
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+            "label": "Giám đốc",
+          },
+          if (item.listSignatory != null)
+            ...item.listSignatory!.map(
+              (e) => {
+                "id": e.idNguoiKy,
+                "signed": e.trangThai == 1,
+                "label": e.tenNguoiKy,
+              },
+            ),
+        ].toList();
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+
+    if (currentIndex == -1) {
+      // Người dùng hiện tại không có trong danh sách ký
+      return -1;
+    }
+
+    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
   }
 }

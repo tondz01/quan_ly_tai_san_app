@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 
@@ -47,11 +48,17 @@ class CreateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
   final BuildContext context;
   final ToolAndMaterialTransferDto request;
   final List<DetailToolAndMaterialTransferDto> requestDetail;
+  final List<SignatoryDto> requestSignatory;
 
-  const CreateToolAndMaterialTransferEvent(this.context, this.request, this.requestDetail);
+  const CreateToolAndMaterialTransferEvent(
+    this.context,
+    this.request,
+    this.requestDetail,
+    this.requestSignatory,
+  );
 
   @override
-  List<Object> get props => [context, request, requestDetail];
+  List<Object> get props => [context, request, requestDetail, requestSignatory];
 }
 
 class UpdateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
@@ -63,6 +70,16 @@ class UpdateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
 
   @override
   List<Object?> get props => [context, params, id];
+}
+
+class SendToSignerTAMTEvent extends ToolAndMaterialTransferEvent {
+  final BuildContext context;
+  final List<ToolAndMaterialTransferDto> params;
+
+  const SendToSignerTAMTEvent(this.context, this.params);
+
+  @override
+  List<Object?> get props => [context, params];
 }
 
 class DeleteToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
@@ -95,4 +112,3 @@ class CancelToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
   @override
   List<Object?> get props => [context, id];
 }
-

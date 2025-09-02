@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
@@ -98,9 +100,11 @@ class DieuDongTaiSanRepository {
 	}
 
 	Future<int> delete(String id) async {
+    log('message delete: $id');
 		final res = await _dio.delete('/$id');
 		final data = res.data;
 		if (data is int) return data;
+		log('message data: $data');
 		if (data is Map<String, dynamic>) {
 			final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
 			if (code is int) return code;

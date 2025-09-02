@@ -104,7 +104,8 @@ class AssetTransferRepository extends ApiBase {
             statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||
             statusSignatory == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
         if (!isOkSignatory) {
-          result['status_code'] = statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
+          result['status_code'] =
+              statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
           return result;
         }
       }
@@ -287,6 +288,76 @@ class AssetTransferRepository extends ApiBase {
                 ? responseNV.statusCode
                 : responsePB.statusCode;
       }
+    } catch (e) {
+      log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> sendToSigner(
+    List<DieuDongTaiSanDto> items,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      for (var item in items) {
+        LenhDieuDongRequest lenhDieuDongRequest = LenhDieuDongRequest(
+          soQuyetDinh: item.soQuyetDinh ?? '',
+          tenPhieu: item.tenPhieu ?? '',
+          idDonViGiao: item.idDonViGiao ?? '',
+          idDonViNhan: item.idDonViNhan ?? '',
+          idNguoiDeNghi: item.idNguoiDeNghi ?? '',
+          nguoiLapPhieuKyNhay: item.nguoiLapPhieuKyNhay ?? false,
+          quanTrongCanXacNhan: item.quanTrongCanXacNhan ?? false,
+          phoPhongXacNhan: item.phoPhongXacNhan ?? false,
+          idDonViDeNghi: item.idDonViDeNghi ?? '',
+          tggnTuNgay: item.tggnTuNgay ?? '',
+          tggnDenNgay: item.tggnDenNgay ?? '',
+          idTruongPhongDonViGiao: item.idTruongPhongDonViGiao ?? '',
+          truongPhongDonViGiaoXacNhan:
+              item.truongPhongDonViGiaoXacNhan ?? false,
+          idPhoPhongDonViGiao: item.idPhoPhongDonViGiao ?? '',
+          phoPhongDonViGiaoXacNhan: item.phoPhongDonViGiaoXacNhan ?? false,
+          idTrinhDuyetCapPhong: item.idTrinhDuyetCapPhong ?? '',
+          trinhDuyetCapPhongXacNhan: item.trinhDuyetCapPhongXacNhan ?? false,
+          idTrinhDuyetGiamDoc: item.idTrinhDuyetGiamDoc ?? '',
+          trinhDuyetGiamDocXacNhan: item.trinhDuyetGiamDocXacNhan ?? false,
+          diaDiemGiaoNhan: item.diaDiemGiaoNhan ?? '',
+          idPhongBanXemPhieu: item.idPhongBanXemPhieu ?? '',
+          idNhanSuXemPhieu: item.idNhanSuXemPhieu ?? '',
+          noiNhan: item.noiNhan ?? '',
+          trangThai: item.trangThai ?? 0,
+          idCongTy: item.idCongTy ?? '',
+          ngayTao: item.ngayTao ?? '',
+          ngayCapNhat: item.ngayCapNhat ?? '',
+          nguoiTao: item.nguoiTao ?? '',
+          nguoiCapNhat: item.nguoiCapNhat ?? '',
+          coHieuLuc: item.coHieuLuc ?? false,
+          loai: item.loai ?? 0,
+          isActive: item.isActive ?? false,
+          trichYeu: item.trichYeu ?? '',
+          duongDanFile: item.duongDanFile ?? '',
+          tenFile: item.tenFile ?? '',
+          ngayKy: item.ngayKy ?? '',
+          share: true,
+          idNguoiKyNhay: item.idNguoiKyNhay ?? '',
+          trangThaiKyNhay: item.trangThaiKyNhay ?? false,
+        );
+        final response = await put(
+          '${EndPointAPI.DIEU_DONG_TAI_SAN}/${item.id}',
+          data: lenhDieuDongRequest.toJson(),
+        );
+        if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+          result['data'] = response.data;
+        } else {
+          result['status_code'] = response.statusCode;
+        }
+      }
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");
     }

@@ -36,7 +36,9 @@ class LenhDieuDongRequest {
   final String duongDanFile;
   final String tenFile;
   final String ngayKy;
-
+  final bool share;
+  final String idNguoiKyNhay;
+  final bool trangThaiKyNhay;
   LenhDieuDongRequest({
     this.id = '',
     required this.soQuyetDinh,
@@ -75,6 +77,9 @@ class LenhDieuDongRequest {
     required this.duongDanFile,
     required this.tenFile,
     required this.ngayKy,
+    required this.share,
+    required this.idNguoiKyNhay,
+    required this.trangThaiKyNhay,
   });
 
   factory LenhDieuDongRequest.fromJson(Map<String, dynamic> json) {
@@ -128,6 +133,9 @@ class LenhDieuDongRequest {
       duongDanFile: json['duongDanFile'] ?? '',
       tenFile: json['tenFile'] ?? '',
       ngayKy: json['ngayKy']?.toString() ?? '',
+      share: parseBool(json['share']),
+      idNguoiKyNhay: json['idNguoiKyNhay'] ?? '',
+      trangThaiKyNhay: parseBool(json['trangThaiKyNhay']),
     );
   }
 
@@ -170,6 +178,9 @@ class LenhDieuDongRequest {
       'duongDanFile': duongDanFile,
       'tenFile': tenFile,
       'ngayKy': ngayKy,
+      'share': share,
+      'idNguoiKyNhay': idNguoiKyNhay,
+      'trangThaiKyNhay': trangThaiKyNhay,
     };
   }
 
@@ -211,6 +222,9 @@ class LenhDieuDongRequest {
     String? duongDanFile,
     String? tenFile,
     String? ngayKy,
+    bool? share,
+    String? idNguoiKyNhay,
+    bool? trangThaiKyNhay,
   }) {
     return LenhDieuDongRequest(
       id: id ?? this.id,
@@ -250,6 +264,9 @@ class LenhDieuDongRequest {
       duongDanFile: duongDanFile ?? this.duongDanFile,
       tenFile: tenFile ?? this.tenFile,
       ngayKy: ngayKy ?? this.ngayKy,
+      share: share ?? this.share,
+      idNguoiKyNhay: idNguoiKyNhay ?? this.idNguoiKyNhay,
+      trangThaiKyNhay: trangThaiKyNhay ?? this.trangThaiKyNhay,
     );
   }
 }
