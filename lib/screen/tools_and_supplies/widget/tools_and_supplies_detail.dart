@@ -246,6 +246,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     if (newDetailAssetDto.isNotEmpty) {
       final detailErrors = _controller.validateDetailAssets(
         newDetailAssetDto,
+        data?.chiTietTaiSanList ?? [], // Sử dụng safe navigation và fallback về empty list
         controllerCode.text.trim(),
       );
       if (detailErrors.isNotEmpty) {
@@ -275,6 +276,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         existingData: data,
       );
 
+      SGLog.debug('_saveItem', 'jsonEncode data: ${jsonEncode(newDetailAssetDto)}');
       // Gọi API thông qua Bloc
       if (data == null) {
         context.read<ToolsAndSuppliesBloc>().add(

@@ -24,18 +24,17 @@ class ToolsAndSuppliesController {
   /// Validate chi tiết tài sản và trả về danh sách lỗi
   List<String> validateDetailAssets(
     List<DetailAssetDto> detailAssets,
+    List<DetailAssetDto> listDetailAssets,
     String assetCode,
   ) {
     List<String> errors = [];
 
+    // Cập nhật ID cho tất cả các detail assets trước khi validate
+    updateDetailAssetIds(detailAssets, listDetailAssets, assetCode);
+
     for (int i = 0; i < detailAssets.length; i++) {
       final detail = detailAssets[i];
       final stt = i + 1;
-
-      // Gán ID và idTaiSan trước khi validate
-      detail.id =
-          "${DateTime.now().millisecondsSinceEpoch}-${assetCode.trim()}-$i";
-      detail.idTaiSan = assetCode.trim();
 
       // Validate các trường bắt buộc với null safety
       if ((detail.soKyHieu?.trim().isEmpty ?? true)) {
@@ -448,6 +447,54 @@ class ToolsAndSuppliesController {
           ),
         )
         .toList();
+  }
+
+  /// Xử lý và cập nhật ID cho DetailAssetDto
+  /// Giữ nguyên ID cũ nếu có, tạo mới nếu chưa có
+  void updateDetailAssetIds(
+    List<DetailAssetDto> currentDetails,
+    List<DetailAssetDto> originalDetails,
+    String assetCode,
+  ) {
+    for (int i = 0; i < currentDetails.length; i++) {
+      final currentDetail = currentDetails[i];
+
+      // Nếu có dữ liệu gốc và index còn trong phạm vi
+      if (originalDetails.isNotEmpty && i < originalDetails.length) {
+        final originalDetail = originalDetails[i];
+
+        // Giữ nguyên ID từ dữ liệu gốc nếu có
+        if (originalDetail.id?.isNotEmpty == true) {
+          currentDetail.id = originalDetail.id;
+          SGLog.debug(
+            'updateDetailAssetIds',
+            'Giữ nguyên ID cũ cho index $i: ${currentDetail.id}',
+          );
+        } else {
+          // Tạo ID mới nếu ID gốc null/empty
+          currentDetail.id = _generateDetailAssetId(assetCode, i);
+          SGLog.debug(
+            'updateDetailAssetIds',
+            'Tạo ID mới thay thế ID rỗng cho index $i: ${currentDetail.id}',
+          );
+        }
+      } else {
+        // Item mới thêm - tạo ID mới
+        currentDetail.id = _generateDetailAssetId(assetCode, i);
+        SGLog.debug(
+          'updateDetailAssetIds',
+          'Tạo ID mới cho item thêm index $i: ${currentDetail.id}',
+        );
+      }
+
+      // Luôn cập nhật idTaiSan
+      currentDetail.idTaiSan = assetCode.trim();
+    }
+  }
+
+  /// Tạo ID mới cho DetailAssetDto
+  String _generateDetailAssetId(String assetCode, int index) {
+    return "${assetCode.trim()}-$index";
   }
 }
 

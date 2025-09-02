@@ -128,9 +128,9 @@ class ToolsAndSuppliesBloc
     final result = await ToolsAndSuppliesRepository().updateToolsAndSupplies(
       event.params,
     );
-    
+
     Map<String, dynamic> resultAssetDetail = await AssetManagementRepository()
-        .updateAssetDetail(event.listAssetDetail);
+        .createAssetDetail(event.listAssetDetail);
 
     emit(ToolsAndSuppliesLoadingDismissState());
     if (checkStatusCodeDone(result)) {
@@ -141,6 +141,18 @@ class ToolsAndSuppliesBloc
           title: 'notice',
           code: result['status_code'],
           message: 'Lỗi khi cập nhật CCDC - Vật tư',
+        ),
+      );
+    }
+    
+    if (checkStatusCodeDone(resultAssetDetail)) {
+    } else {
+      String msg = "Lỗi khi update chi tiết ccdc - vật tư";
+      emit(
+        CreateToolsAndSuppliesFailedState(
+          title: "notice",
+          code: resultAssetDetail['status_code'],
+          message: msg,
         ),
       );
     }

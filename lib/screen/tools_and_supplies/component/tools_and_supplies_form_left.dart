@@ -77,7 +77,7 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
         CommonFormInput(
           label: 'tas.code'.tr,
           controller: controllerCode,
-          isEditing: isEditing,
+          isEditing: item != null ? false : isEditing,
           textContent: item?.id ?? '',
           validationErrors: {'code': !isCodeValid && isEditing},
         ),
