@@ -22,7 +22,9 @@ class CommonFormInput extends StatefulWidget {
     this.fieldName,
     this.isMoney = false,
     this.validationErrors,
+    this.width,
   });
+  final double? width;
   final String label;
   final String textContent;
   final TextEditingController controller;
@@ -53,7 +55,8 @@ class _CommonFormInputState extends State<CommonFormInput> {
       final formattedText = _numberFormat.format(int.parse(numericText));
       if (formattedText != currentText) {
         final baseOffset = widget.controller.selection.baseOffset;
-        final cursorPosition = formattedText.length - (currentText.length - baseOffset);
+        final cursorPosition =
+            formattedText.length - (currentText.length - baseOffset);
         widget.controller.value = TextEditingValue(
           text: formattedText,
           selection: TextSelection.collapsed(
@@ -152,83 +155,84 @@ class _CommonFormInputState extends State<CommonFormInput> {
               children: [
                 widget.isDropdown && widget.isEditing
                     ? SGDropdownInputButton<String>(
-                        height: 35,
-                        controller: widget.controller,
-                        textOverflow: TextOverflow.ellipsis,
-                        // Use value directly rather than setting controller.text
-                        value: widget.textContent,
-                        defaultValue: widget.textContent,
-                        items: widget.items ?? [],
-                        enable: widget.isEnable,
-                        colorBorder:
-                            (widget.validationErrors != null &&
-                                    widget.fieldName != null &&
-                                    widget.validationErrors![widget.fieldName] ==
-                                        true)
-                                ? Colors.red
-                                : SGAppColors.neutral400,
-                        showUnderlineBorderOnly: true,
-                        enableSearch: false,
-                        isClearController:false,
-                        fontSize: 16,
-                        inputType: widget.inputType,
-                        isShowSuffixIcon: true,
-                        hintText: 'Chọn ${widget.label.toLowerCase()}',
-                        textAlign: TextAlign.left,
-                        textAlignItem: TextAlign.left,
-                        sizeBorderCircular: 10,
-                        contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
-                        onChanged: (value) {
-                          if (value != null) {
-                            widget.onChanged?.call(value);
-                            if (hasError) {
-                              setState(() {
-                                widget.validationErrors?.remove(widget.fieldName);
-                              });
-                            }
-                          }
-                        },
-                      )
-                    : SGInputText(
-                        height: 40,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        // expandable: true,
-                        maxLines: 2,
-                        controller:
-                            widget
-                                .controller, // Remove the ..text = textContent assignment
-                        borderRadius: 10,
-                        enabled: widget.isEnable ? widget.isEditing : false,
-                        textAlign: TextAlign.left,
-                        readOnly: !widget.isEditing,
-                        inputFormatters:
-                            widget.inputType == TextInputType.number
-                                ? [
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(r'[0-9.,]'),
-                                    ),
-                                  ]
-                                : null,
-                        onlyLine: true,
-                        color: Colors.black,
-                        showBorder: widget.isEditing,
-                        borderColor: hasError ? Colors.red : null,
-                        hintText:
-                            !widget.isEditing
-                                ? ''
-                                : '${'common.hint'.tr} ${widget.label}  ${widget.inputType == TextInputType.number ? ' (nhập số)' : ''}',
-                        padding: const EdgeInsets.only(top: 8, bottom: 8),
-                        fontSize: 14,
-                        onChanged: (value) {
+                      height: 35,
+                      controller: widget.controller,
+                      textOverflow: TextOverflow.ellipsis,
+                      // Use value directly rather than setting controller.text
+                      value: widget.textContent,
+                      defaultValue: widget.textContent,
+                      items: widget.items ?? [],
+                      enable: widget.isEnable,
+                      colorBorder:
+                          (widget.validationErrors != null &&
+                                  widget.fieldName != null &&
+                                  widget.validationErrors![widget.fieldName] ==
+                                      true)
+                              ? Colors.red
+                              : SGAppColors.neutral400,
+                      showUnderlineBorderOnly: true,
+                      enableSearch: false,
+                      isClearController: false,
+                      fontSize: 16,
+                      inputType: widget.inputType,
+                      isShowSuffixIcon: true,
+                      hintText: 'Chọn ${widget.label.toLowerCase()}',
+                      textAlign: TextAlign.left,
+                      textAlignItem: TextAlign.left,
+                      sizeBorderCircular: 10,
+                      contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
+                      onChanged: (value) {
+                        if (value != null) {
                           widget.onChanged?.call(value);
-                          // Clear validation error when text changes
                           if (hasError) {
                             setState(() {
                               widget.validationErrors?.remove(widget.fieldName);
                             });
                           }
-                        },
-                      ),
+                        }
+                      },
+                    )
+                    : SGInputText(
+                      height: 40,
+                      width: widget.width,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      // expandable: true,
+                      maxLines: 2,
+                      controller:
+                          widget
+                              .controller, // Remove the ..text = textContent assignment
+                      borderRadius: 10,
+                      enabled: widget.isEnable ? widget.isEditing : false,
+                      textAlign: TextAlign.left,
+                      readOnly: !widget.isEditing,
+                      inputFormatters:
+                          widget.inputType == TextInputType.number
+                              ? [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9.,]'),
+                                ),
+                              ]
+                              : null,
+                      onlyLine: true,
+                      color: Colors.black,
+                      showBorder: widget.isEditing,
+                      borderColor: hasError ? Colors.red : null,
+                      hintText:
+                          !widget.isEditing
+                              ? ''
+                              : '${'common.hint'.tr} ${widget.label}  ${widget.inputType == TextInputType.number ? ' (nhập số)' : ''}',
+                      padding: const EdgeInsets.only(top: 8, bottom: 8),
+                      fontSize: 14,
+                      onChanged: (value) {
+                        widget.onChanged?.call(value);
+                        // Clear validation error when text changes
+                        if (hasError) {
+                          setState(() {
+                            widget.validationErrors?.remove(widget.fieldName);
+                          });
+                        }
+                      },
+                    ),
                 if (hasError)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),

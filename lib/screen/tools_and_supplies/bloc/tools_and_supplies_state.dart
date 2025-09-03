@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 
 abstract class ToolsAndSuppliesState extends Equatable {
@@ -17,8 +18,12 @@ class ToolsAndSuppliesLoadingDismissState extends ToolsAndSuppliesState {}
 
 class GetListToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
   final List<ToolsAndSuppliesDto> data;
+  final List<CcdcGroup> dataGroupCCDC;
 
-  const GetListToolsAndSuppliesSuccessState({required this.data});
+  const GetListToolsAndSuppliesSuccessState({
+    required this.data,
+    required this.dataGroupCCDC,
+  });
 
   @override
   List<Object> get props => [data];

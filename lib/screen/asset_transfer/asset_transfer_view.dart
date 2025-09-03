@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetTransferView extends StatefulWidget {

@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_list.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/staff_list_by_account.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({super.key});

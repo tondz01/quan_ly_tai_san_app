@@ -46,6 +46,20 @@ class _AssetManagementListState extends State<AssetManagementList> {
     // 'created_by',
     // 'updated_by',
   ];
+
+  List<Map<String, DateTime Function(AssetManagementDto)>> getters = [
+    {
+      'Ngày tạo':
+          (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày cập nhật':
+          (item) => DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
+    },
+    {'Ngày vào sổ': (item) => item.ngayVaoSo ?? DateTime.now()},
+    {'Ngày sử dụng': (item) => item.ngaySuDung ?? DateTime.now()},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -481,6 +495,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
               columns: columns,
               data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
+              getters: getters,
+              startDate: DateTime.tryParse(
+                widget.provider.filteredData?.first.ngayTao ?? '',
+              ),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
               },

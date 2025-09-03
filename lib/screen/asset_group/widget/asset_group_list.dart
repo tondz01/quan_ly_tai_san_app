@@ -50,11 +50,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'asset_group',
-        label: 'Nhóm tài sản',
-        isChecked: visibleColumnIds.contains('asset_group'),
-      ),
-      ColumnDisplayOption(
         id: 'code_asset_group',
         label: 'Mã nhóm tài sản',
         isChecked: visibleColumnIds.contains('code_asset_group'),
@@ -103,16 +98,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
-        case 'asset_group':
-          columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Nhóm tài sản',
-              getValue: (item) => "${item.id} - ${item.tenNhom}",
-              width: 170,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
         case 'code_asset_group':
           columns.add(
             TableBaseConfig.columnTable<AssetGroupDto>(

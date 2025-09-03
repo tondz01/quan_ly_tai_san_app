@@ -13,7 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreci
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 
 class AssetManagementView extends StatefulWidget {
   const AssetManagementView({super.key});

@@ -73,7 +73,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
-
+  List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [];
+  
   @override
   void initState() {
     super.initState();

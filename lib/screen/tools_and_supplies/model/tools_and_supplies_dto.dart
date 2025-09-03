@@ -1,9 +1,14 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+
 class ToolsAndSuppliesDto {
   String id;
-  String idDonVi;
   String ten;
+  String idDonVi;
+  String tenDonVi;
+  String idNhomCCDC;
+  String tenNhomCCDC;
   DateTime ngayNhap;
   String donViTinh;
   int soLuong;
@@ -19,13 +24,17 @@ class ToolsAndSuppliesDto {
   DateTime ngayCapNhat;
   String nguoiTao;
   String nguoiCapNhat;
+  List<DetailAssetDto> chiTietTaiSanList;
   int soLuongXuat;
   bool isActive;
 
   ToolsAndSuppliesDto({
     required this.id,
-    required this.idDonVi,
     required this.ten,
+    required this.idDonVi,
+    required this.tenDonVi,
+    required this.idNhomCCDC,
+    required this.tenNhomCCDC,
     required this.ngayNhap,
     required this.donViTinh,
     required this.soLuong,
@@ -42,14 +51,18 @@ class ToolsAndSuppliesDto {
     required this.nguoiTao,
     required this.nguoiCapNhat,
     required this.isActive,
+    this.chiTietTaiSanList = const [],
     this.soLuongXuat = 0,
   });
 
   factory ToolsAndSuppliesDto.fromJson(Map<String, dynamic> json) {
     return ToolsAndSuppliesDto(
       id: json['id'] ?? '',
-      idDonVi: json['idDonVi'] ?? '',
       ten: json['ten'] ?? '',
+      idDonVi: json['idDonVi'] ?? '',
+      tenDonVi: json['tenDonVi'] ?? '',
+      idNhomCCDC: json['idNhomCCDC'] ?? '',
+      tenNhomCCDC: json['tenNhomCCDC'] ?? '',
       ngayNhap:
           json['ngayNhap'] != null
               ? DateTime.parse(json['ngayNhap'].toString())
@@ -75,6 +88,12 @@ class ToolsAndSuppliesDto {
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
+      chiTietTaiSanList:
+          json['chiTietTaiSanList'] != null
+              ? (json['chiTietTaiSanList'] as List)
+                  .map((item) => DetailAssetDto.fromJson(item))
+                  .toList()
+              : [],
       soLuongXuat: json['soLuongXuat'] ?? 0,
     );
   }
@@ -107,8 +126,11 @@ class ToolsAndSuppliesDto {
   factory ToolsAndSuppliesDto.empty() {
     return ToolsAndSuppliesDto(
       id: '',
-      idDonVi: '',
       ten: '',
+      idDonVi: '',
+      tenDonVi: '',
+      idNhomCCDC: '',
+      tenNhomCCDC: '',
       ngayNhap: DateTime.now(),
       donViTinh: '',
       soLuong: 0,
@@ -125,6 +147,7 @@ class ToolsAndSuppliesDto {
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,
+      chiTietTaiSanList: [],
       soLuongXuat: 0,
     );
   }
@@ -172,8 +195,11 @@ class ToolsAndSuppliesDto {
   }) {
     return ToolsAndSuppliesDto(
       id: id ?? this.id,
-      idDonVi: idDonVi ?? this.idDonVi,
       ten: ten ?? this.ten,
+      idDonVi: idDonVi ?? this.idDonVi,
+      tenDonVi: idDonVi ?? this.idDonVi,
+      idNhomCCDC: idDonVi ?? this.idDonVi,
+      tenNhomCCDC: idDonVi ?? this.idDonVi,
       ngayNhap: ngayNhap ?? this.ngayNhap,
       donViTinh: donViTinh ?? this.donViTinh,
       soLuong: soLuong ?? this.soLuong,

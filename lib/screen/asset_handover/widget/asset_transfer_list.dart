@@ -16,7 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/controller/find
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';

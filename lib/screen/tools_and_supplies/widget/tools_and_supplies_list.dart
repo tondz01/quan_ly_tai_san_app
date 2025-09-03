@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
@@ -30,6 +32,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   String searchTerm = "";
   String titleDetailDepartmentTree = "";
   bool isShowDetailDepartmentTree = false;
+  List<Map<String, DateTime Function(ToolsAndSuppliesDto)>> getters = [
+    {'Ngày tạo': (item) => item.ngayTao},
+    {'Ngày cập nhật': (item) => item.ngayCapNhat},
+    {'Ngày nhập': (item) => item.ngayNhap},
+  ];
 
   void _showDetailDepartmentTree(ToolsAndSuppliesDto item) {
     setState(() {
@@ -54,7 +61,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Mã công cụ dụng cụ',
-        getValue: (item) => item.soKyHieu,
+        getValue: (item) => item.id,
         width: 170,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
@@ -78,28 +85,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Số ký hiệu',
-        getValue: (item) => item.soKyHieu,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Ký hiệu',
         getValue: (item) => item.kyHieu,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Công suất',
-        getValue: (item) => item.congSuat,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Nước sản xuất',
-        getValue: (item) => item.nuocSanXuat,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Năm sản xuất',
-        getValue: (item) => item.namSanXuat.toString(),
         width: 120,
       ),
       TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
@@ -118,8 +105,19 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                   cancelText: 'Không',
                   confirmText: 'Xóa',
                   onConfirm: () {
+                    List<String> listIdAssetDetail =
+                        item.chiTietTaiSanList
+                            .where(
+                              (detail) =>
+                                  detail.id != null && detail.id!.isNotEmpty,
+                            )
+                            .map((detail) => detail.id!)
+                            .toList();
+
+                    final jsonIdAssetDetail = jsonEncode(listIdAssetDetail);
+
                     context.read<ToolsAndSuppliesBloc>().add(
-                      DeleteToolsAndSuppliesEvent(item.id),
+                      DeleteToolsAndSuppliesEvent(item.id, jsonIdAssetDetail),
                     );
                   },
                 );
@@ -181,7 +179,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            'Quản lý CCDC - Vật tư (${widget.provider.data.length})',
+                            'Quản lý CCDC - Vật tư (${widget.provider.data?.length ?? 0})',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -209,18 +207,30 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                   ),
                 ),
                 Expanded(
-                  child: TableBaseView<ToolsAndSuppliesDto>(
-                    searchTerm: '',
-                    columns: columns,
-                    data: widget.provider.filteredData,
-                    horizontalController: ScrollController(),
-                    onRowTap: (item) {
-                      widget.provider.onChangeDetail(context, item);
-                      setState(() {
-                        _showDetailDepartmentTree(item);
-                      });
-                    },
-                  ),
+                  child:
+                      widget.provider.filteredData != null
+                          ? TableBaseView<ToolsAndSuppliesDto>(
+                            searchTerm: '',
+                            columns: columns,
+                            data: widget.provider.filteredData!,
+                            horizontalController: ScrollController(),
+                            getters: getters,
+                            startDate: DateTime.tryParse(
+                              widget.provider.filteredData!.isNotEmpty
+                                  ? widget.provider.filteredData!.first.ngayTao
+                                      .toString()
+                                  : '',
+                            ),
+                            onRowTap: (item) {
+                              widget.provider.onChangeDetail(context, item);
+                              setState(() {
+                                _showDetailDepartmentTree(item);
+                              });
+                            },
+                          )
+                          : const Center(
+                            child: Text('Không có dữ liệu để hiển thị'),
+                          ),
                 ),
               ],
             ),

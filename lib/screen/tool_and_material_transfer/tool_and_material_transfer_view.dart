@@ -8,7 +8,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';

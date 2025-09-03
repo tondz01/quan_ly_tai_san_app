@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 
 class AdditionalSignerData {
   final PhongBan? department;

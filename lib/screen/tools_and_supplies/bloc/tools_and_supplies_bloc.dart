@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_detail_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/repository/ccdc_group_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
 
 import 'tools_and_supplies_event.dart';
@@ -21,11 +23,22 @@ class ToolsAndSuppliesBloc
   ) async {
     emit(ToolsAndSuppliesInitialState());
     emit(ToolsAndSuppliesLoadingState());
-    Map<String, dynamic> result =
-        await ToolsAndSuppliesRepository().getListToolsAndSupplies(event.idCongTy);
+
+    Map<String, dynamic> result = await ToolsAndSuppliesRepository()
+        .getListToolsAndSupplies(event.idCongTy);
+
+    Map<String, dynamic> resultGroupCCDC = await CcdcGroupRepository()
+        .getListCcdcGroupRepository(event.idCongTy);
+
     emit(ToolsAndSuppliesLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(GetListToolsAndSuppliesSuccessState(data: result['data']));
+
+    if (checkStatusCodeDone(result) && checkStatusCodeDone(resultGroupCCDC)) {
+      emit(
+        GetListToolsAndSuppliesSuccessState(
+          data: result['data'],
+          dataGroupCCDC: resultGroupCCDC['data'],
+        ),
+      );
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
       emit(
@@ -45,10 +58,10 @@ class ToolsAndSuppliesBloc
   ) async {
     emit(ToolsAndSuppliesInitialState());
     emit(ToolsAndSuppliesLoadingState());
-    Map<String, dynamic> result =
-        await ToolsAndSuppliesRepository().getListPhongBan(event.idCongTy);
+    Map<String, dynamic> result = await ToolsAndSuppliesRepository()
+        .getListPhongBan(event.idCongTy);
     emit(ToolsAndSuppliesLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(GetListPhongBanSuccessState(data: result['data']));
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
@@ -69,11 +82,15 @@ class ToolsAndSuppliesBloc
   ) async {
     emit(ToolsAndSuppliesInitialState());
     emit(ToolsAndSuppliesLoadingState());
-    Map<String, dynamic> result = await ToolsAndSuppliesRepository().createToolsAndSupplies(
-      event.params,
-    );
+    Map<String, dynamic> result = await ToolsAndSuppliesRepository()
+        .createToolsAndSupplies(event.params);
+
+    Map<String, dynamic> resultAssetDetail = await AssetManagementRepository()
+        .createAssetDetail(event.listAssetDetail);
+
     emit(ToolsAndSuppliesLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+
+    if (checkStatusCodeDone(result)) {
       emit(CreateToolsAndSuppliesSuccessState(data: result['data'].toString()));
     } else {
       String msg = "Lỗi khi tạo CCDC - Vật tư";
@@ -81,6 +98,18 @@ class ToolsAndSuppliesBloc
         CreateToolsAndSuppliesFailedState(
           title: "notice",
           code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+
+    if (checkStatusCodeDone(resultAssetDetail)) {
+    } else {
+      String msg = "Lỗi khi tạo chi tiết ccdc - vật tư";
+      emit(
+        CreateToolsAndSuppliesFailedState(
+          title: "notice",
+          code: resultAssetDetail['status_code'],
           message: msg,
         ),
       );
@@ -97,17 +126,36 @@ class ToolsAndSuppliesBloc
     final result = await ToolsAndSuppliesRepository().updateToolsAndSupplies(
       event.params,
     );
+
+    Map<String, dynamic> resultAssetDetail = await AssetManagementRepository()
+        .createAssetDetail(event.listAssetDetail);
+
     emit(ToolsAndSuppliesLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(UpdateToolsAndSuppliesSuccessState(data: result['data'].toString()));
     } else {
-      emit(PutPostDeleteFailedState(
-        title: 'notice',
-        code: result['status_code'],
-        message: 'Lỗi khi cập nhật CCDC - Vật tư',
-      ));
+      emit(
+        PutPostDeleteFailedState(
+          title: 'notice',
+          code: result['status_code'],
+          message: 'Lỗi khi cập nhật CCDC - Vật tư',
+        ),
+      );
+    }
+    
+    if (checkStatusCodeDone(resultAssetDetail)) {
+    } else {
+      String msg = "Lỗi khi update chi tiết ccdc - vật tư";
+      emit(
+        CreateToolsAndSuppliesFailedState(
+          title: "notice",
+          code: resultAssetDetail['status_code'],
+          message: msg,
+        ),
+      );
     }
   }
+
   //CALL API UPDATE
   Future<void> _deleteToolsAndSupplies(
     DeleteToolsAndSuppliesEvent event,
@@ -118,15 +166,31 @@ class ToolsAndSuppliesBloc
     final result = await ToolsAndSuppliesRepository().deleteToolsAndSupplies(
       event.id,
     );
+    final resultAssetDetail = await AssetManagementRepository()
+        .deleteAssetDetail(event.listIdAssetDetail);
     emit(ToolsAndSuppliesLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(DeleteToolsAndSuppliesSuccessState(data: result['data'].toString()));
     } else {
-      emit(PutPostDeleteFailedState(
-        title: 'notice',
-        code: result['status_code'],
-        message: 'Lỗi khi xóa CCDC - Vật tư',
-      ));
+      emit(
+        PutPostDeleteFailedState(
+          title: 'notice',
+          code: result['status_code'],
+          message: 'Lỗi khi xóa CCDC - Vật tư',
+        ),
+      );
+    }
+
+    if (checkStatusCodeDone(resultAssetDetail)) {
+    } else {
+      String msg = "Lỗi khi xóa chi tiết ccdc - vật tư";
+      emit(
+        CreateToolsAndSuppliesFailedState(
+          title: "notice",
+          code: resultAssetDetail['status_code'],
+          message: msg,
+        ),
+      );
     }
   }
 }

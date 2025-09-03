@@ -7,11 +7,11 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 Widget buildOtherInformation(

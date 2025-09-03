@@ -13,9 +13,9 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 

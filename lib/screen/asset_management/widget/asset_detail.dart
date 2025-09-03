@@ -7,6 +7,8 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/original_asset_information.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/other_information.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_child_assets.dart';
@@ -20,8 +22,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 

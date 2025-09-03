@@ -71,7 +71,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     'status',
     'actions',
   ];
-
+  List<Map<String, DateTime Function(DieuDongTaiSanDto)>> getters = [];
   @override
   void initState() {
     super.initState();
@@ -143,6 +143,36 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         label: 'Thao tác',
         isChecked: visibleColumnIds.contains('actions'),
       ),
+    ];
+
+    getters = [
+      {
+        'Ngày tạo':
+            (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
+      },
+      {
+        'Ngày cập nhật':
+            (item) =>
+                DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
+      },
+      {
+        'Ngày ký':
+            (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
+      },
+      {
+        'Ngày ký':
+            (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
+      },
+      {
+        'Thời gian giao nhận từ ngày':
+            (item) =>
+                DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
+      },
+      {
+        'Thời gian giao nhận đến ngày':
+            (item) =>
+                DateTime.tryParse(item.tggnDenNgay ?? '') ?? DateTime.now(),
+      },
     ];
   }
 

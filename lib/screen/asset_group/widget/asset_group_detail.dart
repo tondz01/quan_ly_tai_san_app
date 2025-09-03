@@ -6,7 +6,6 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
@@ -33,7 +32,6 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
 
   TextEditingController controllerIdAssetGroup = TextEditingController();
   TextEditingController controllerNameAssetGroup = TextEditingController();
-  TextEditingController controllerIdAndNameAssetGroup = TextEditingController();
 
   @override
   void initState() {
@@ -82,16 +80,14 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
       controllerIdAssetGroup.text = data!.id ?? '';
       controllerNameAssetGroup.text = data!.tenNhom ?? '';
       isActive = data!.hieuLuc ?? false;
-      getNameAssetGroup();
     } else {
       log('message _initData: ${widget.provider.isCreate}');
       data = null;
       setState(() {
         isEditing = widget.provider.isCreate;
       });
-      controllerIdAssetGroup.text = UUIDGenerator.generateWithFormat('NTS****');
+      controllerIdAssetGroup.text = '';
       controllerNameAssetGroup.text = '';
-      getNameAssetGroup();
     }
   }
 
@@ -116,35 +112,17 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // detail
-              CommonFormInput(
-                label: 'Nhóm tài sản',
-                controller: controllerIdAndNameAssetGroup,
-                isEditing: false,
-                textContent: controllerIdAndNameAssetGroup.text,
-                onChanged: (value) {
-                  // _checkForChanges();
-                },
-              ),
               CommonFormInput(
                 label: 'Mã nhóm tài sản',
                 controller: controllerIdAssetGroup,
-                isEditing: false,
+                isEditing: data != null ? false : isEditing,
                 textContent: controllerIdAssetGroup.text,
-                onChanged: (value) {
-                  // _checkForChanges();
-                  getNameAssetGroup();
-                },
               ),
               CommonFormInput(
                 label: 'Tên nhóm tài sản',
                 controller: controllerNameAssetGroup,
                 isEditing: isEditing,
                 textContent: controllerNameAssetGroup.text,
-                onChanged: (value) {
-                  // _checkForChanges();
-                  getNameAssetGroup();
-                },
               ),
               CommonCheckboxInput(
                 label: 'Có hiệu lực',
@@ -154,11 +132,9 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
                 onChanged: (value) {
                   setState(() {
                     isActive = value;
-                    log('message isActive: $isActive');
                   });
                 },
               ),
-              // _buildInfoAssetHandoverMobile(isWideScreen),
             ],
           ),
         ),
@@ -241,14 +217,5 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
         UpdateAssetGroupEvent(context, request, data!.id!),
       );
     }
-  }
-  // void _cancelChanges() {
-  //   log('message: _cancelChanges');
-  // }
-
-  void getNameAssetGroup() {
-    controllerIdAndNameAssetGroup.text =
-        '${controllerIdAssetGroup.text} - ${controllerNameAssetGroup.text}';
-    // return;
   }
 }

@@ -9,7 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetGroupView extends StatefulWidget {
@@ -29,16 +29,6 @@ class _AssetGroupViewState extends State<AssetGroupView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AssetGroupProvider>(context, listen: false).onInit(context);
     });
-  }
-
-  @override
-  void didUpdateWidget(AssetGroupView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    log('AssetGroupView message didUpdateWidget');
-    // if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
-    //   currentType = widget.typeAssetTransfer;
-    //   _initData();
-    // }
   }
 
   @override
