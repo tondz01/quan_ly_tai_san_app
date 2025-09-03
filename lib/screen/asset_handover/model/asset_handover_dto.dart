@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+
 class AssetHandoverDto {
   final String? id;
   final String? idCongTy;
@@ -30,6 +32,9 @@ class AssetHandoverDto {
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
+  final String? tenFile;
+  final String? duongDanFile;
+  List<SignatoryDto>? listSignatory;
 
   AssetHandoverDto({
     this.id,
@@ -63,6 +68,9 @@ class AssetHandoverDto {
     this.nguoiTao,
     this.nguoiCapNhat,
     this.isActive,
+    this.tenFile,
+    this.duongDanFile,
+    this.listSignatory,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -98,6 +106,13 @@ class AssetHandoverDto {
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
+      tenFile: json['tenFile'],
+      duongDanFile: json['duongDanFile'],
+      listSignatory: json['listSignatory'] != null
+          ? List<SignatoryDto>.from(
+              json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
+            )
+          : null,
     );
   }
 
@@ -134,6 +149,9 @@ class AssetHandoverDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'tenFile': tenFile,
+      'duongDanFile': duongDanFile,
+      'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
     };
   }
 }

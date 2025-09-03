@@ -25,7 +25,6 @@ class _FilterCheckboxes extends StatelessWidget {
     final filterStates = {
       'all': provider.isShowAll,
       'draft': provider.isShowDraft,
-      'ready': provider.isShowReady,
       'browser': provider.isShowBrowser,
       'complete': provider.isShowComplete,
       'cancel': provider.isShowCancel,
@@ -35,7 +34,6 @@ class _FilterCheckboxes extends StatelessWidget {
     final filterCounts = {
       'all': provider.allCount,
       'draft': provider.draftCount,
-      'ready': provider.readyCount,
       'browser': provider.browserCount,
       'cancel': provider.cancelCount,
       'complete': provider.completeCount,
@@ -45,7 +43,6 @@ class _FilterCheckboxes extends StatelessWidget {
     final filterColors = {
       'all': FilterStatus.all.activeColor,
       'draft': FilterStatus.draft.activeColor,
-      'ready': FilterStatus.ready.activeColor,
       'browser': FilterStatus.browser.activeColor,
       'cancel': FilterStatus.cancel.activeColor,
       'complete': FilterStatus.complete.activeColor,
@@ -56,8 +53,7 @@ class _FilterCheckboxes extends StatelessWidget {
       options: [
         {'id': 'all', 'label': 'Tất cả'},
         {'id': 'draft', 'label': 'Nháp'},
-        {'id': 'ready', 'label': 'Chờ xác nhận'},
-        {'id': 'browser', 'label': 'Chờ duyệt'},
+        {'id': 'browser', 'label': 'Duyệt'},
         {'id': 'cancel', 'label': 'Hủy'},
         {'id': 'complete', 'label': 'Hoàn thành'},
       ],
@@ -74,9 +70,6 @@ class _FilterCheckboxes extends StatelessWidget {
           case 'draft':
             status = FilterStatus.draft;
             break;
-          case 'ready':
-            status = FilterStatus.ready;
-            break;
           case 'browser':
             status = FilterStatus.browser;
             break;
@@ -87,7 +80,6 @@ class _FilterCheckboxes extends StatelessWidget {
             status = FilterStatus.complete;
             break;
         }
-        
         if (status != null) {
           provider.setFilterStatus(status, value);
         }

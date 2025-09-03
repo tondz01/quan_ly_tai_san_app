@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -6,12 +7,20 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverRepository extends ApiBase {
+  late final SignatoryRepository _signatoryRepository;
+
+  AssetHandoverRepository() {
+    _signatoryRepository = SignatoryRepository();
+  }
+
   Future<Map<String, dynamic>> getListAssetHandover() async {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     List<AssetHandoverDto> list = [];
@@ -28,13 +37,28 @@ class AssetHandoverRepository extends ApiBase {
         return result;
       }
 
+      List<AssetHandoverDto> assetHandover =
+          ResponseParser.parseToList<AssetHandoverDto>(
+            response.data,
+            AssetHandoverDto.fromJson,
+          );
+      await Future.wait(
+        assetHandover.map((assetHandover) async {
+          try {
+            final signatories = await _signatoryRepository.getAll(
+              assetHandover.id.toString(),
+            );
+            assetHandover.listSignatory = signatories;
+          } catch (e) {
+            log("Error loading signatories for ${assetHandover.id}: $e");
+            assetHandover.listSignatory = [];
+          }
+        }),
+      );
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
-        response.data,
-        AssetHandoverDto.fromJson,
-      );
-      log('message filteredData  result ${result}');
+      result['data'] = assetHandover;
+      log('message test assetHandover: ${jsonEncode(result['data'])}');
     } catch (e) {
       SGLog.error(
         "AssetHandoverRepository",
@@ -80,6 +104,7 @@ class AssetHandoverRepository extends ApiBase {
 
   Future<Map<String, dynamic>> createAssetHandover(
     Map<String, dynamic> request,
+    List<SignatoryDto> listSignatory,
   ) async {
     Map<String, dynamic> result = {
       'data': "",
@@ -97,6 +122,27 @@ class AssetHandoverRepository extends ApiBase {
       if (!isOk) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
+      }
+      final id = response.data['id'];
+      log('message test id: $id');
+      for (var signatory in listSignatory) {
+        final signatoryCopy = signatory.copyWith(
+          idTaiLieu: id.toString(),
+        );
+        final responseSignatory = await post(
+          EndPointAPI.SIGNATORY,
+          data: signatoryCopy.toJson(),
+        );
+        final int? statusSignatory = responseSignatory.statusCode;
+        final bool isOkSignatory =
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+        if (!isOkSignatory) {
+          result['status_code'] =
+              statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
+          return result;
+        }
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;

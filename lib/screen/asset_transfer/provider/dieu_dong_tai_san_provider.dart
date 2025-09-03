@@ -647,19 +647,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     final signatureFlow =
         [
           {
-            "id": item.idNguoiKyNhay,
-            "signed": item.trangThaiKyNhay,
+            "id": item.idNguoiDeNghi,
+            "signed": item.trangThaiKyNhay == true,
             "label": "Người ký nháy",
-          },
-          {
-            "id": item.idTruongPhongDonViGiao,
-            "signed": item.truongPhongDonViGiaoXacNhan == true,
-            "label": "Trưởng phòng Đơn vị giao",
-          },
-          {
-            "id": item.idPhoPhongDonViGiao,
-            "signed": item.phoPhongDonViGiaoXacNhan == true,
-            "label": "Phó phòng Đơn vị giao",
           },
           {
             "id": item.idTrinhDuyetCapPhong,
@@ -684,7 +674,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     final currentIndex = signatureFlow.indexWhere(
       (s) => s["id"] == userInfo.tenDangNhap,
     );
-
     if (currentIndex == -1) {
       // Người dùng hiện tại không có trong danh sách ký
       return -1;

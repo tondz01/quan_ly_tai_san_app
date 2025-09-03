@@ -135,7 +135,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       ),
       ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái',
+        label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(
@@ -155,7 +155,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Trạng thái',
+              title: 'Trạng thái ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchable: true,
@@ -228,7 +228,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Trạng thái',
+              title: 'Trạng thái phiếu',
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,

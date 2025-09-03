@@ -30,7 +30,11 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
   final List<DieuDongTaiSanDto> listAssetTransfer;
-  const AssetHandoverList({super.key, required this.provider, required this.listAssetTransfer});
+  const AssetHandoverList({
+    super.key,
+    required this.provider,
+    required this.listAssetTransfer,
+  });
 
   @override
   State<AssetHandoverList> createState() => _AssetHandoverListState();
@@ -46,6 +50,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   late List<ColumnDisplayOption> columnOptions;
   List<AssetHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
+    'signing_status',
     'name',
     'decision_number',
     'transfer_order',
@@ -65,7 +70,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   void initState() {
     super.initState();
     _initializeColumnOptions();
-
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -86,6 +90,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'signing_status',
+        label: 'Trạng thái ký',
+        isChecked: visibleColumnIds.contains('signing_status'),
+      ),
       ColumnDisplayOption(
         id: 'name',
         label: 'Bàn giao tài sản',
@@ -128,7 +137,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái',
+        label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(
@@ -145,6 +154,16 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'signing_status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Trạng thái ký',
+              cellBuilder: (item) => showSigningStatus(item),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
         case 'name':
           columns.add(
             TableBaseConfig.columnTable<AssetHandoverDto>(
@@ -431,6 +450,17 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     "signed": item?.donViDaiDienXacNhan == "0" ? false : true,
                     "label": "Trình duyệt cấp phòng",
                   },
+                  if (item?.listSignatory?.isNotEmpty ?? false)
+                    ...(item?.listSignatory
+                            ?.map(
+                              (e) => {
+                                "id": e.idNguoiKy,
+                                "signed": e.trangThai == 1,
+                                "label": e.tenNguoiKy ?? '',
+                              },
+                            )
+                            .toList() ??
+                        []),
                 ].toList();
 
             if (signatureFlow.isNotEmpty) {
@@ -438,7 +468,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               final currentIndex = signatureFlow.indexWhere(
                 (s) => s["id"] == userInfo?.tenDangNhap,
               );
-              log('currentIndex: $currentIndex');
               if (currentIndex == -1) {
                 AppUtility.showSnackBar(
                   context,
@@ -675,6 +704,39 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       default:
         return ColorValue.darkGrey;
     }
+  }
+
+  Widget showSigningStatus(AssetHandoverDto item) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? Colors.red
+                  : Colors.blue,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? 'Đã ký'
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? 'Chưa ký'
+                  : "Người tạo phiếu",
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
   }
 
   //  all('Tất cả', ColorValue.darkGrey),

@@ -232,22 +232,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
     return MultiBlocListener(
       listeners: [
-        // Lắng nghe từ AssetHandoverBloc
         BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
           listener: (context, state) {
             if (state is GetListDieuDongTaiSanSuccessState) {
-              // Handle successful data loading
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-              log('Asset handover data loaded successfully');
             } else if (state is GetListDieuDongTaiSanFailedState) {
             } else if (state is DieuDongTaiSanLoadingState) {
-              // Show loading indicator
               setState(() {
                 this.state.isUploading = true;
               });
             } else if (state is DieuDongTaiSanLoadingDismissState) {
-              // Hide loading indicator
               setState(() {
                 this.state.isUploading = false;
               });
@@ -623,12 +618,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ),
                           ],
-                          // defaultValue:
-                          //     controllers.controllerApprover.text.isNotEmpty
-                          //         ? widget.provider.getNhanVienByID(
-                          //           controllers.controllerApprover.text,
-                          //         )
-                          //         : null,
+                          defaultValue:
+                              controllers.controllerApprover.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllers.controllerApprover.text,
+                                  )
+                                  : null,
                           fieldName: 'approver',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
@@ -986,7 +981,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         // }
         state.isEditing = false;
       }
-      log('message state.isEditing ${state.isEditing}');
       if (state.item != null) {
         controllers.controllerSoChungTu.text = state.item?.id ?? '';
         controllers.controllerSubject.text = state.item?.trichYeu ?? '';
@@ -1027,6 +1021,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             widget.provider.dataNhanVien
                 .where((e) => e.phongBanId == state.donViDeNghi?.id)
                 .toList();
+        log('message test state.listNhanVienThamMuu: ${state.listNhanVienThamMuu}');
         state.nguoiDeNghi = widget.provider.getNhanVienByID(
           state.item?.idNguoiDeNghi ?? '',
         );
@@ -1038,6 +1033,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         );
         state.nguoiKyGiamDoc = widget.provider.getNhanVienByID(
           state.item?.idTrinhDuyetGiamDoc ?? '',
+        );
+        controllers.controllerApprover.text = state.nguoiKyGiamDoc?.id ?? '';
+        controllers.controllerDepartmentApproval.text =
+            state.nguoiKyCapPhong?.id ?? '';
+        log(
+          'message test state.item?.idTrinhDuyetGiamDoc: ${state.nguoiKyGiamDoc}',
+        );
+        log(
+          'message test state.item?.idTrinhDuyetCapPhong: ${state.nguoiKyCapPhong}',
         );
 
         // Initialize selected file if available
@@ -1066,10 +1070,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 )
                 .toList() ??
             [];
-        log('message test listSignatory: ${state.item?.listSignatory}');
-        log(
-          'message test additionalSignersDetailed: ${jsonEncode(state.additionalSignersDetailed)}',
-        );
 
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
@@ -1096,6 +1096,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.donViNhan = null;
         NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(
           (e) => e.id == widget.provider.userInfo?.tenDangNhap,
+          orElse: () => NhanVien(),
         );
         state.donViDeNghi = widget.provider.getPhongBanByID(
           nhanVienLogin.phongBanId ?? '',

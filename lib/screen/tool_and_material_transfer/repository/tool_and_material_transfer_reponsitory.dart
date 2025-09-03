@@ -304,13 +304,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
           final signatories = await _signatoryRepository.getAll(
             toolAndMaterialTransfer.id.toString(),
           );
-          // Đảm bảo listSignatory được khởi tạo
           toolAndMaterialTransfer.listSignatory = signatories;
-          for (final signatory in signatories) {
-            log(
-              "  - ID: ${signatory.id}, NguoiKy: ${signatory.idNguoiKy}, TrangThai: ${signatory.trangThai}",
-            );
-          }
         } catch (e) {
           log(
             "Error loading signatories for ${toolAndMaterialTransfer.id}: $e",

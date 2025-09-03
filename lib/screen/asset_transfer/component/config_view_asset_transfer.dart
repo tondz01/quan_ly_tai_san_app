@@ -8,16 +8,10 @@ abstract class ConfigViewAT {
       case 0:
         return 'Nháp';
       case 1:
-        return 'Chờ xác nhận';
-      case 2:
-        return 'Xác nhận';
-      case 3:
-        return 'Chờ Duyệt';
-      case 4:
         return 'Duyệt';
-      case 5:
+      case 2:
         return 'Hủy';
-      case 6:
+      case 3:
         return 'Hoàn thành';
       default:
         return '';

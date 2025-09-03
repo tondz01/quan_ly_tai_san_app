@@ -21,9 +21,7 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
   draft('Nháp', ColorValue.silverGray),
-  ready('Sẵn sàng', ColorValue.lightAmber),
-  confirm('Xác nhận', ColorValue.mediumGreen),
-  browser('Trình duyệt', ColorValue.lightBlue),
+  browser('Duyệt', ColorValue.lightBlue),
   complete('Hoàn thành', ColorValue.forestGreen),
   cancel('Hủy', ColorValue.coral);
 
@@ -54,7 +52,6 @@ class AssetHandoverProvider with ChangeNotifier {
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
-  bool get isShowReady => _filterStatus[FilterStatus.ready] ?? false;
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
@@ -63,14 +60,12 @@ class AssetHandoverProvider with ChangeNotifier {
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
-  int get readyCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get browserCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
-  int get cancelCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
+  int get cancelCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
 
   set isLoading(bool value) {
     _isLoading = value;
@@ -221,23 +216,18 @@ class AssetHandoverProvider with ChangeNotifier {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.ready] == true &&
+            if (_filterStatus[FilterStatus.browser] == true &&
                 (itemStatus == 1)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true &&
+            if (_filterStatus[FilterStatus.cancel] == true &&
                 (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 3)) {
-              return true;
-            }
-
             if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 4)) {
+                (itemStatus == 3)) {
               return true;
             }
 
@@ -278,7 +268,6 @@ class AssetHandoverProvider with ChangeNotifier {
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
     FilterStatus.draft: false,
-    FilterStatus.ready: false,
     FilterStatus.browser: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
@@ -363,7 +352,11 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetail(BuildContext context, AssetHandoverDto? item, {bool isFindNew = false}) {
+  void onChangeDetail(
+    BuildContext context,
+    AssetHandoverDto? item, {
+    bool isFindNew = false,
+  }) {
     if (item != null) {
       getListDetailAssetMobilization(item.lenhDieuDong ?? '');
     }
@@ -477,5 +470,51 @@ class AssetHandoverProvider with ChangeNotifier {
       orElse: () => NhanVien(),
     );
     return found;
+  }
+
+  int isCheckSigningStatus(AssetHandoverDto item) {
+    final signatureFlow =
+        [
+          {
+            "id": item.idDaiDiendonviBanHanhQD,
+            "signed": item.daXacNhan == true,
+            "label": "Người tạo",
+          },
+          {
+            "id": item.idDaiDienBenGiao,
+            "signed": item.daiDienBenGiaoXacNhan == true,
+            "label": "Trưởng phòng",
+          },
+          {
+            "id": item.idDaiDienBenNhan,
+            "signed": item.daiDienBenNhanXacNhan == true,
+            "label": "Phó phòng Đơn vị giao",
+          },
+          {
+            "id": item.idDonViDaiDien,
+            "signed": item.donViDaiDienXacNhan == "0" ? false : true,
+            "label": "Trình duyệt cấp phòng",
+          },
+          if (item.listSignatory?.isNotEmpty ?? false)
+            ...(item.listSignatory
+                    ?.map(
+                      (e) => {
+                        "id": e.idNguoiKy,
+                        "signed": e.trangThai == 1,
+                        "label": e.tenNguoiKy ?? '',
+                      },
+                    )
+                    .toList() ??
+                []),
+        ].toList();
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    if (currentIndex == -1) {
+      return -1;
+    }
+
+    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
   }
 }

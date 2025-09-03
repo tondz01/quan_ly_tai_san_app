@@ -137,7 +137,7 @@ class _ToolAndMaterialTransferListState
       ),
       ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái',
+        label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(
@@ -230,7 +230,7 @@ class _ToolAndMaterialTransferListState
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Trạng thái',
+              title: 'Trạng thái phiếu',
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
