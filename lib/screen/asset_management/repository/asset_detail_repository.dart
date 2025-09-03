@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -13,6 +18,27 @@ class AssetManagementRepository extends ApiBase {
     };
     SGLog.debug("_saveItem 2", params);
     try {
+      UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
+      List<DetailAssetDto> newRequestDetailAsset = DetailAssetDto.decode(
+        params,
+      );
+      List<OwnershipUnitDetailDto> newRequestOwnershipUnit =
+          newRequestDetailAsset
+              .map(
+                (e) => OwnershipUnitDetailDto(
+                  id: e.id ?? '',
+                  idCCDCVT: e.idTaiSan ?? '',
+                  idTaiSanCon: e.id ?? '',
+                  idDonViSoHuu: newRequestDetailAsset.first.idDonVi ?? '',
+                  soLuong: e.soLuong ?? 0,
+                  thoiGianBanGiao: DateTime.now(),
+                  ngayTao: DateTime.now(),
+                  nguoiTao: userInfo?.tenDangNhap ?? '',
+                ),
+              )
+              .toList();
+
+      log("message test params: ${jsonEncode(newRequestDetailAsset)}");
       final response = await post(EndPointAPI.CHI_TIET_TAI_SAN, data: params);
 
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
@@ -20,6 +46,12 @@ class AssetManagementRepository extends ApiBase {
         result['message'] = response.data?['message'] ?? 'Unknown error';
         return result;
       }
+
+      final responseOwnershipUnit = await post(
+        EndPointAPI.OWNERSHIP_UNIT_DETAIL,
+        data: jsonEncode(newRequestOwnershipUnit),
+      );
+      log("message test responseOwnershipUnit: ${responseOwnershipUnit.data}");
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;

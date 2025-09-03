@@ -3,6 +3,7 @@ import 'dart:convert';
 class OwnershipUnitDetailDto {
   String id;
   String idCCDCVT;
+  String idTaiSanCon;
   String idDonViSoHuu;
   int soLuong;
   DateTime thoiGianBanGiao;
@@ -12,6 +13,7 @@ class OwnershipUnitDetailDto {
   OwnershipUnitDetailDto({
     required this.id,
     required this.idCCDCVT,
+    required this.idTaiSanCon,
     required this.idDonViSoHuu,
     required this.soLuong,
     required this.thoiGianBanGiao,
@@ -34,6 +36,7 @@ class OwnershipUnitDetailDto {
     return OwnershipUnitDetailDto(
       id: json['id']?.toString() ?? '',
       idCCDCVT: json['idCCDCVT']?.toString() ?? '',
+      idTaiSanCon: json['idTaiSanCon']?.toString() ?? '',
       idDonViSoHuu: json['idDonViSoHuu']?.toString() ?? '',
       soLuong:
           json['soLuong'] is int
@@ -67,6 +70,7 @@ class OwnershipUnitDetailDto {
     return OwnershipUnitDetailDto(
       id: '',
       idCCDCVT: '',
+      idTaiSanCon: '',
       idDonViSoHuu: '',
       soLuong: 0,
       thoiGianBanGiao: DateTime.now(),
@@ -102,6 +106,7 @@ class OwnershipUnitDetailDto {
   OwnershipUnitDetailDto copyWith({
     String? id,
     String? idCCDCVT,
+    String? idTaiSanCon,
     String? idDonViSoHuu,
     int? soLuong,
     DateTime? thoiGianBanGiao,
@@ -111,6 +116,7 @@ class OwnershipUnitDetailDto {
     return OwnershipUnitDetailDto(
       id: id ?? this.id,
       idCCDCVT: idCCDCVT ?? this.idCCDCVT,
+      idTaiSanCon: idTaiSanCon ?? this.idTaiSanCon,
       idDonViSoHuu: idDonViSoHuu ?? this.idDonViSoHuu,
       soLuong: soLuong ?? this.soLuong,
       thoiGianBanGiao: thoiGianBanGiao ?? this.thoiGianBanGiao,

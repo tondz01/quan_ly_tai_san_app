@@ -10,6 +10,7 @@ class DetailAssetDto {
   int? soLuong;
   String? nuocSanXuat;
   int? namSanXuat;
+  String? idDonVi;
 
   DetailAssetDto({
     this.id,
@@ -21,6 +22,7 @@ class DetailAssetDto {
     this.soLuong,
     this.nuocSanXuat,
     this.namSanXuat,
+    this.idDonVi,
   });
 
   factory DetailAssetDto.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class DetailAssetDto {
       soLuong: json['soLuong'] as int?,
       namSanXuat: json['namSanXuat'] as int?,
       nuocSanXuat: json['nuocSanXuat'] as String?,
+      idDonVi: json['idDonVi'] as String?,
     );
   }
 
@@ -56,6 +59,7 @@ class DetailAssetDto {
       'soLuong': soLuong,
       'namSanXuat': namSanXuat,
       'nuocSanXuat': nuocSanXuat,
+      'idDonVi': idDonVi,
     };
   }
 
@@ -69,6 +73,7 @@ class DetailAssetDto {
     int? soLuong,
     String? nuocSanXuat,
     int? namSanXuat,
+    String? idDonVi,
   }) {
     return DetailAssetDto(
       id: id ?? this.id,
@@ -80,6 +85,7 @@ class DetailAssetDto {
       soLuong: soLuong ?? this.soLuong,
       namSanXuat: namSanXuat ?? this.namSanXuat,
       nuocSanXuat: nuocSanXuat ?? this.nuocSanXuat,
+      idDonVi: idDonVi ?? this.idDonVi,
     );
   }
 
@@ -106,6 +112,7 @@ class DetailAssetDto {
       soLuong: 0,
       namSanXuat: 0,
       nuocSanXuat: '',
+      idDonVi: '',
     );
   }
 }

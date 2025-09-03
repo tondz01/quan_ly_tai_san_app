@@ -1021,7 +1021,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             widget.provider.dataNhanVien
                 .where((e) => e.phongBanId == state.donViDeNghi?.id)
                 .toList();
-        log('message test state.listNhanVienThamMuu: ${state.listNhanVienThamMuu}');
+        log('message test state.listNhanVienThamMuu: ${state.item?.idNguoiDeNghi}');
         state.nguoiDeNghi = widget.provider.getNhanVienByID(
           state.item?.idNguoiDeNghi ?? '',
         );
@@ -1037,12 +1037,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         controllers.controllerApprover.text = state.nguoiKyGiamDoc?.id ?? '';
         controllers.controllerDepartmentApproval.text =
             state.nguoiKyCapPhong?.id ?? '';
-        log(
-          'message test state.item?.idTrinhDuyetGiamDoc: ${state.nguoiKyGiamDoc}',
-        );
-        log(
-          'message test state.item?.idTrinhDuyetCapPhong: ${state.nguoiKyCapPhong}',
-        );
 
         // Initialize selected file if available
         state.selectedFileName = state.item?.tenFile;

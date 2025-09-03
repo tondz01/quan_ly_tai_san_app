@@ -377,13 +377,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                     [
                       item.ngayTao,
                       item.idNguoiDeNghi,
-                      item.idPhoPhongDonViGiao,
-                      item.idTruongPhongDonViGiao,
+                      item.idTrinhDuyetCapPhong,
+                      item.idTrinhDuyetGiamDoc,
                       if (item.listSignatory != null)
                         ...item.listSignatory!.map((e) => e.idNguoiKy),
                     ].whereType<String>().toList();
 
-                final inGroup = idSignatureGroup.contains(userInfo.tenDangNhap);
+                final inGroup = idSignatureGroup.map((e) => e.toLowerCase()).contains(userInfo.tenDangNhap.toLowerCase());
                 return inGroup;
               })
               .toList();

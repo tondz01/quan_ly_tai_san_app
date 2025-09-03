@@ -129,6 +129,7 @@ class DieuDongTaiSanDto {
     this.coHieuLuc,
     this.loai,
     this.isActive,
+    this.share,
     this.chiTietDieuDongTaiSans,
     this.listSignatory,
   });
@@ -182,6 +183,7 @@ class DieuDongTaiSanDto {
       coHieuLuc: json['coHieuLuc'],
       loai: json['loai'],
       isActive: json['isActive'],
+      share: json['share'],
       chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
       listSignatory: json['listSignatory'],
     );
@@ -236,6 +238,7 @@ class DieuDongTaiSanDto {
       "coHieuLuc": coHieuLuc,
       "loai": loai,
       "isActive": isActive,
+      "share": share,
       "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
       "listSignatory": listSignatory,
     };

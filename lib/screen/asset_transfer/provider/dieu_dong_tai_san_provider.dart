@@ -376,29 +376,24 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
-              .where(
-                (item) =>
-                    item.share ??
-                    false || item.ngayTao == userInfo?.tenDangNhap,
-              )
+              .where((item) {
+                return item.share == true ||
+                    item.nguoiTao == userInfo?.tenDangNhap;
+              })
               .where((item) {
                 final idSignatureGroup =
                     [
                       item.nguoiTao,
-                      item.idPhoPhongDonViGiao,
-                      item.idTruongPhongDonViGiao,
+                      item.idNguoiDeNghi,
+                      item.idTrinhDuyetCapPhong,
+                      item.idTrinhDuyetGiamDoc,
                       if (item.listSignatory != null)
-                        ...item.listSignatory!.map(
-                          (e) => {
-                            "id": e.idNguoiKy,
-                            "signed": e.trangThai == 1,
-                            "label": e.tenNguoiKy,
-                          },
-                        ),
+                        ...item.listSignatory!.map((e) => e.idNguoiKy),
                     ].whereType<String>().toList();
 
-                final inGroup = idSignatureGroup.contains(userInfo.tenDangNhap);
-
+                final inGroup = idSignatureGroup
+                    .map((e) => e.toLowerCase())
+                    .contains(userInfo.tenDangNhap.toLowerCase());
                 return inGroup;
               })
               .toList();

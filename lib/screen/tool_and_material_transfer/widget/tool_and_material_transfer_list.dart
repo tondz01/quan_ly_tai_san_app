@@ -719,7 +719,7 @@ class _ToolAndMaterialTransferListState
           child: viewSignatoryStatus(
             item.trangThaiKyNhay ?? false,
             widget.provider
-                .getNhanVienByID(item.idNguoiKyNhay ?? '')
+                .getNhanVienByID(item.idNguoiDeNghi ?? '')
                 .hoTen
                 .toString(),
           ),

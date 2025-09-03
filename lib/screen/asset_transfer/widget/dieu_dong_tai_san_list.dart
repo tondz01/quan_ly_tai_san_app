@@ -418,7 +418,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           child: viewSignatoryStatus(
             item.trangThaiKyNhay ?? false,
             widget.provider
-                .getNhanVienByID(item.idNguoiKyNhay ?? '')
+                .getNhanVienByID(item.idNguoiDeNghi ?? '')
                 .hoTen
                 .toString(),
           ),
@@ -707,14 +707,20 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
+          if (item.nguoiLapPhieuKyNhay == true)
+            {
+              "id": item.idNguoiDeNghi,
+              "signed": item.trangThaiKyNhay == true,
+              "label": "Người ký nháy",
+            },
           {
             "id": item.idTrinhDuyetCapPhong,
-            "signed": item.trangThai != null && item.trangThai! >= 3,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
             "label": "Trình duyệt cấp phòng",
           },
           {
             "id": item.idTrinhDuyetGiamDoc,
-            "signed": item.trangThai != null && item.trangThai! >= 3,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
             "label": "Giám đốc",
           },
           if (item.listSignatory != null)
@@ -755,20 +761,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Nếu đã ký rồi thì chặn
     if (signatureFlow[currentIndex]["signed"] == true) {
       AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
-      return;
-    }
-
-    // Kiểm tra tất cả các bước trước đã ký chưa
-    final previousNotSigned = signatureFlow
-        .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
-
-    if (previousNotSigned.isNotEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
-        isError: true,
-      );
       return;
     }
 

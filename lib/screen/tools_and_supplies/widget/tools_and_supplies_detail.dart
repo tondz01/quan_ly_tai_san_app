@@ -184,6 +184,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                         soLuong: e.soLuong ?? 0,
                         nuocSanXuat: e.nuocSanXuat ?? '',
                         namSanXuat: e.namSanXuat ?? 0,
+                        idDonVi: selectedPhongBan?.id ?? '',
                       );
                     }).toList();
 
