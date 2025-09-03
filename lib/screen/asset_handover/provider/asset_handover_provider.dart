@@ -311,7 +311,6 @@ class AssetHandoverProvider with ChangeNotifier {
 
   void getListAssetHandover(BuildContext context) {
     _isLoading = true;
-    log('message filteredData  getListAssetHandover');
     Future.microtask(() {
       context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
     });
@@ -394,7 +393,14 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
-      _data = state.data;
+      _data =
+          state.data
+              .where(
+                (item) =>
+                    item.share ??
+                    false || item.ngayTao == userInfo?.tenDangNhap,
+              )
+              .toList();
 
       _filteredData = List.from(_data!);
       _updatePagination();
@@ -516,5 +522,16 @@ class AssetHandoverProvider with ChangeNotifier {
     }
 
     return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+  }
+
+  NhanVien getNhanVienByID(String idNhanVien) {
+    if (_dataStaff != null && _dataStaff!.isNotEmpty) {
+      return _dataStaff!.firstWhere(
+        (item) => item.id == idNhanVien,
+        orElse: () => const NhanVien(),
+      );
+    } else {
+      return const NhanVien();
+    }
   }
 }

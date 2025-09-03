@@ -360,6 +360,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "nguoiTao": currentUser?.tenDangNhap ?? '',
       "nguoiCapNhat": '',
       "isActive": true,
+      "share": false,
       "tenFile": _selectedFileName ?? '',
     };
 
@@ -407,6 +408,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         request['tenFile'] = result['fileName'] ?? '';
       }
       request['trangThai'] = trangThai;
+      request['share'] = item!.share ?? false;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
       context.read<AssetHandoverBloc>().add(
         UpdateAssetHandoverEvent(context, request, item!.id!),

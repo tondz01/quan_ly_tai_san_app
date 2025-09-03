@@ -376,27 +376,30 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
+              .where(
+                (item) =>
+                    item.share ??
+                    false || item.ngayTao == userInfo?.tenDangNhap,
+              )
               .where((item) {
-                final idSignatureGroup1 =
+                final idSignatureGroup =
                     [
                       item.nguoiTao,
                       item.idPhoPhongDonViGiao,
                       item.idTruongPhongDonViGiao,
-                    ].whereType<String>().toList();
-                final idSignatureGroup2 =
-                    [
-                      item.idTrinhDuyetCapPhong,
-                      item.idTrinhDuyetGiamDoc,
+                      if (item.listSignatory != null)
+                        ...item.listSignatory!.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                            "label": e.tenNguoiKy,
+                          },
+                        ),
                     ].whereType<String>().toList();
 
-                final inGroup1 = idSignatureGroup1.contains(
-                  userInfo.tenDangNhap,
-                );
-                final inGroup2 = idSignatureGroup2.contains(
-                  userInfo.tenDangNhap,
-                );
+                final inGroup = idSignatureGroup.contains(userInfo.tenDangNhap);
 
-                return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
+                return inGroup;
               })
               .toList();
       _filteredData = List.from(_data!);

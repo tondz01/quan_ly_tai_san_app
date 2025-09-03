@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 abstract class AssetHandoverEvent extends Equatable {
@@ -15,12 +16,26 @@ class GetListAssetHandoverEvent extends AssetHandoverEvent {
   List<Object?> get props => [context];
 }
 
+class SendToSignerAsetHandoverEvent extends AssetHandoverEvent {
+  final BuildContext context;
+  final List<AssetHandoverDto> params;
+
+  const SendToSignerAsetHandoverEvent(this.context, this.params);
+
+  @override
+  List<Object?> get props => [context, params];
+}
+
 class CreateAssetHandoverEvent extends AssetHandoverEvent {
   final BuildContext context;
   final Map<String, dynamic> request;
   final List<SignatoryDto> listSignatory;
 
-  const CreateAssetHandoverEvent(this.context, this.request, this.listSignatory);
+  const CreateAssetHandoverEvent(
+    this.context,
+    this.request,
+    this.listSignatory,
+  );
 
   @override
   List<Object?> get props => [context, request, listSignatory];

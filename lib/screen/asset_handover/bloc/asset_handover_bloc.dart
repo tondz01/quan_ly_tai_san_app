@@ -20,6 +20,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     on<DeleteAssetHandoverEvent>(_deleteAssetHandover);
     on<UpdateSigningStatusEvent>(_updateSigningStatus);
     on<CancelAssetHandoverEvent>(_cancelAssetHandover);
+    on<SendToSignerAsetHandoverEvent>(_sendToSigner);
   }
 
   Future<void> _getListAssetHandover(
@@ -53,6 +54,27 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
         dataAssetTransfer: dataDieuDongTaiSanDto,
       ),
     );
+  }
+
+  Future<void> _sendToSigner(SendToSignerAsetHandoverEvent event, Emitter emit) async {
+    emit(AssetHandoverInitialState());
+    emit(AssetHandoverLoadingState());
+    Map<String, dynamic> result = await AssetHandoverRepository().sendToSigner(
+      event.params,
+    );
+    emit(AssetHandoverLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateAssetHandoverSuccessState(data: result['data'].toString()));
+    } else {
+      String msg = "Lỗi khi gửi lệnh điều động";
+      emit(
+        ErrorState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
   }
 
   Future<void> _createAssetHandover(

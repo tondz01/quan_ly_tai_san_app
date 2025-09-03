@@ -126,9 +126,7 @@ class AssetHandoverRepository extends ApiBase {
       final id = response.data['id'];
       log('message test id: $id');
       for (var signatory in listSignatory) {
-        final signatoryCopy = signatory.copyWith(
-          idTaiLieu: id.toString(),
-        );
+        final signatoryCopy = signatory.copyWith(idTaiLieu: id.toString());
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
@@ -282,6 +280,63 @@ class AssetHandoverRepository extends ApiBase {
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> sendToSigner(
+    List<AssetHandoverDto> items,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
+    try {
+      for (var item in items) {
+        final Map<String, dynamic> request = {
+          "id": item.id,
+          "idCongTy": item.idCongTy ?? '',
+          "banGiaoTaiSan": item.banGiaoTaiSan ?? '',
+          "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
+          "lenhDieuDong": item.lenhDieuDong ?? '',
+          "idDonViGiao": item.idDonViGiao ?? '',
+          "idDonViNhan": item.idDonViNhan ?? '',
+          "ngayBanGiao": item.ngayBanGiao ?? '',
+          "idLanhDao": item.idLanhDao ?? '',
+          "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
+          "daXacNhan": item.daXacNhan ?? '',
+          "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
+          "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan ?? '',
+          "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
+          "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan ?? '',
+          "idDonViDaiDien": item.idDonViDaiDien ?? '',
+          "donViDaiDienXacNhan": item.donViDaiDienXacNhan ?? '',
+          "trangThai": item.trangThai ?? '',
+          "note": item.note ?? '',
+          "ngayTao": item.ngayTao ?? '',
+          "ngayCapNhat": DateTime.now().toIso8601String(),
+          "nguoiTao": item.nguoiTao ?? '',
+          "nguoiCapNhat": currentUser.tenDangNhap,
+          "isActive": item.isActive ?? '',
+          "share": true,
+          "tenFile": item.tenFile ?? '',
+          "duongDanFile": item.duongDanFile ?? '',
+        };
+        final response = await put(
+          '${EndPointAPI.DIEU_DONG_TAI_SAN}/${item.id}',
+          data: request,
+        );
+        if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+          result['data'] = response.data;
+        } else {
+          result['status_code'] = response.statusCode;
+        }
+      }
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+    } catch (e) {
+      log("Error at getDataDropdown - DropdownItemReponsitory: $e");
     }
 
     return result;

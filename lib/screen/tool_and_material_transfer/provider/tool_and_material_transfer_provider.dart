@@ -367,21 +367,24 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data =
           state.data
               .where((element) => element.loai == typeToolAndMaterialTransfer)
+              .where(
+                (item) =>
+                    item.share ??
+                    false || item.ngayTao == userInfo?.tenDangNhap,
+              )
               .where((item) {
-                final idSignatureGroup1 =
+                final idSignatureGroup =
                     [
                       item.ngayTao,
                       item.idNguoiDeNghi,
                       item.idPhoPhongDonViGiao,
                       item.idTruongPhongDonViGiao,
-                      ...item.listSignatory!.map((e) => e.idNguoiKy),
+                      if (item.listSignatory != null)
+                        ...item.listSignatory!.map((e) => e.idNguoiKy),
                     ].whereType<String>().toList();
 
-                final inGroup1 = idSignatureGroup1.contains(
-                  userInfo.tenDangNhap,
-                );
-
-                return inGroup1;
+                final inGroup = idSignatureGroup.contains(userInfo.tenDangNhap);
+                return inGroup;
               })
               .toList();
       _filteredData = List.from(_data!);

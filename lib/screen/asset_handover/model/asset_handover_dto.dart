@@ -32,6 +32,7 @@ class AssetHandoverDto {
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
+  final bool? share;
   final String? tenFile;
   final String? duongDanFile;
   List<SignatoryDto>? listSignatory;
@@ -68,6 +69,7 @@ class AssetHandoverDto {
     this.nguoiTao,
     this.nguoiCapNhat,
     this.isActive,
+    this.share,
     this.tenFile,
     this.duongDanFile,
     this.listSignatory,
@@ -106,6 +108,7 @@ class AssetHandoverDto {
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
+      share: json['share'],
       tenFile: json['tenFile'],
       duongDanFile: json['duongDanFile'],
       listSignatory: json['listSignatory'] != null
@@ -149,6 +152,7 @@ class AssetHandoverDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'share': share,
       'tenFile': tenFile,
       'duongDanFile': duongDanFile,
       'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
