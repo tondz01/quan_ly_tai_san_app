@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -26,45 +25,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   ToolAndMaterialTransferRepository() {
     _detailCcdcVt = DetailToolAndMaterialTransferRepository();
     _signatoryRepository = SignatoryRepository();
-  }
-
-  // Get danh sách tài sản
-  Future<Map<String, dynamic>> getListToolAndMaterialTransfer(
-    String idCongTy,
-    int type,
-  ) async {
-    List<ToolAndMaterialTransferDto> list = [];
-    Map<String, dynamic> result = {
-      'data': list,
-      'status_code': Numeral.STATUS_CODE_DEFAULT,
-    };
-
-    try {
-      final response = await get(
-        EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
-        queryParameters: {'idcongty': idCongTy},
-      );
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-        result['status_code'] = response.statusCode;
-        return result;
-      }
-
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
-        response.data.where((e) => e['loai'] == type).toList(),
-        ToolAndMaterialTransferDto.fromJson,
-      );
-
-      log('response.data điều động: ${result['data']}');
-    } catch (e) {
-      log(
-        "Error at getListToolAndMaterialTransfer - AssetTransferRepository: $e",
-      );
-    }
-
-    return result;
   }
 
   Future<Map<String, dynamic>> createToolAndMaterialTransfer(

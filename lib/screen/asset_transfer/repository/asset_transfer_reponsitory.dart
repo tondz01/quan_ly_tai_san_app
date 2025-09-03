@@ -41,6 +41,7 @@ class AssetTransferRepository extends ApiBase {
         response.data,
         DieuDongTaiSanDto.fromJson,
       );
+      
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
@@ -94,9 +95,12 @@ class AssetTransferRepository extends ApiBase {
         }
       }
       for (var signatory in listSignatory) {
+        final signatoryCopy = signatory.copyWith(
+          idTaiLieu: request.id.toString(),
+        );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
-          data: signatory.toJson(),
+          data: signatoryCopy.toJson(),
         );
         final int? statusSignatory = responseSignatory.statusCode;
         final bool isOkSignatory =

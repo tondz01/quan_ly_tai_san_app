@@ -7,8 +7,6 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
@@ -16,7 +14,6 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 import '../../../common/page/contract_page.dart';
 import '../../asset_transfer/component/config_view_asset_transfer.dart';
 import '../../asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import 'package:path/path.dart' as path;
 
 class ReportScreen extends StatefulWidget {
   final String idCongty;

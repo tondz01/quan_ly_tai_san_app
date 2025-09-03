@@ -240,7 +240,6 @@ class _AssetTransferMovementTableState
   }
 
   String getHienTrang(int hienTrang) {
-    log('hienTrang: $hienTrang');
     switch (hienTrang) {
       case 0:
         return 'Đang sử dụng';

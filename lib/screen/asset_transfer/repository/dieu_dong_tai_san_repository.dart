@@ -14,102 +14,123 @@ import '../model/dieu_dong_tai_san_dto.dart';
 import 'chi_tiet_dieu_dong_tai_san_repository.dart';
 
 class DieuDongTaiSanRepository {
-	late final Dio _dio;
-	late final ChiTietDieuDongTaiSanRepository _chiTietDieuDongTaiSanRepository;
-	late final SignatoryRepository _signatoryRepository;
+  late final Dio _dio;
+  late final ChiTietDieuDongTaiSanRepository _chiTietDieuDongTaiSanRepository;
+  late final SignatoryRepository _signatoryRepository;
 
-	DieuDongTaiSanRepository() {
-		_dio = Dio(
-			BaseOptions(
-				baseUrl: "${ApiConfig.getBaseURL()}/api/dieudongtaisan",
-				connectTimeout: const Duration(seconds: 10),
-				receiveTimeout: const Duration(seconds: 10),
-			),
-		);
-		_chiTietDieuDongTaiSanRepository = ChiTietDieuDongTaiSanRepository();
-		_signatoryRepository = SignatoryRepository();
-		// Bỏ qua chứng chỉ SSL
-		// if (!kIsWeb) {
-		//   (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-		//     final client = HttpClient();
-		//     client.badCertificateCallback =
-		//         (X509Certificate cert, String host, int port) => true;
-		//     return client;
-		//   };
-		// }
-	}
+  DieuDongTaiSanRepository() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: "${ApiConfig.getBaseURL()}/api/dieudongtaisan",
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    _chiTietDieuDongTaiSanRepository = ChiTietDieuDongTaiSanRepository();
+    _signatoryRepository = SignatoryRepository();
+    // Bỏ qua chứng chỉ SSL
+    // if (!kIsWeb) {
+    //   (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+    //     final client = HttpClient();
+    //     client.badCertificateCallback =
+    //         (X509Certificate cert, String host, int port) => true;
+    //     return client;
+    //   };
+    // }
+  }
 
-	Future<List<DieuDongTaiSanDto>> getAll(int type) async {
-		UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
+  Future<List<DieuDongTaiSanDto>> getAll(int type) async {
+    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
-		final res = await _dio.get('/getbyuserid/${userInfo.tenDangNhap}');
-		List<DieuDongTaiSanDto> dieuDongTaiSans = [];
-		dieuDongTaiSans =
-			(res.data as List)
-				.map((e) => DieuDongTaiSanDto.fromJson(e))
-				.where((e) => e.loai == type)
-				.toList();
-		if (dieuDongTaiSans.isEmpty) {
-			SGLog.debug(
-				'getAll',
-				'No asset transfers found for user: ${userInfo.tenDangNhap}',
-			);
-			return [];
-		}
-		await Future.wait(
-			dieuDongTaiSans.map((dieuDongTaiSan) async {
-				dieuDongTaiSan
-						.chiTietDieuDongTaiSans = await _chiTietDieuDongTaiSanRepository
-						.getAll(dieuDongTaiSan.id.toString());
-			}),
-		);
+    final res = await _dio.get('/getbyuserid/${userInfo.tenDangNhap}');
+    List<DieuDongTaiSanDto> dieuDongTaiSans = [];
+    dieuDongTaiSans =
+        (res.data as List)
+            .map((e) => DieuDongTaiSanDto.fromJson(e))
+            .where((e) => e.loai == type)
+            .toList();
+    if (dieuDongTaiSans.isEmpty) {
+      SGLog.debug(
+        'getAll',
+        'No asset transfers found for user: ${userInfo.tenDangNhap}',
+      );
+      return [];
+    }
+    await Future.wait(
+      dieuDongTaiSans.map((dieuDongTaiSan) async {
+        dieuDongTaiSan
+            .chiTietDieuDongTaiSans = await _chiTietDieuDongTaiSanRepository
+            .getAll(dieuDongTaiSan.id.toString());
+      }),
+    );
 
-		SGLog.debug(
-			'getAll',
-			'Fetched all asset transfers: ${dieuDongTaiSans.length}',
-		);
-		return dieuDongTaiSans;
-	}
+    await Future.wait(
+      dieuDongTaiSans.map((dieuDongTaiSan) async {
+        try {
+          final signatories = await _signatoryRepository.getAll(
+            dieuDongTaiSan.id.toString(),
+          );
+          // Đảm bảo listSignatory được khởi tạo
+          dieuDongTaiSan.listSignatory = signatories;
+          for (final signatory in signatories) {
+            log(
+              "  - ID: ${signatory.id}, NguoiKy: ${signatory.idNguoiKy}, TrangThai: ${signatory.trangThai}",
+            );
+          }
+        } catch (e) {
+          log(
+            "Error loading signatories for ${dieuDongTaiSan.id}: $e",
+          );
+          dieuDongTaiSan.listSignatory = [];
+        }
+      }),
+    );
 
-	Future<DieuDongTaiSanDto> getById(String id) async {
-		final res = await _dio.get('/$id');
-		DieuDongTaiSanDto dieuDongTaiSan = DieuDongTaiSanDto.fromJson(res.data);
-		List<ChiTietDieuDongTaiSan> chiTietDieuDongTS =
-				await _chiTietDieuDongTaiSanRepository.getAll(
-					dieuDongTaiSan.id.toString(),
-				);
-		List<SignatoryDto> listSignatory =
-				await _signatoryRepository.getAll(
-					dieuDongTaiSan.id.toString(),
-				);
-		dieuDongTaiSan.chiTietDieuDongTaiSans = chiTietDieuDongTS;
-		dieuDongTaiSan.listSignatory = listSignatory;
-		return dieuDongTaiSan;
-	}
+    SGLog.debug(
+      'getAll',
+      'Fetched all asset transfers: ${dieuDongTaiSans.length}',
+    );
+    return dieuDongTaiSans;
+  }
 
-	Future<int> update(String id, LenhDieuDongRequest obj) async {
-		final res = await _dio.put('/$id', data: obj.toJson());
-		final data = res.data;
-		if (data is int) return data;
-		if (data is Map<String, dynamic>) {
-			final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
-			if (code is int) return code;
-			if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
-		}
-		return res.statusCode ?? 0;
-	}
+  Future<DieuDongTaiSanDto> getById(String id) async {
+    final res = await _dio.get('/$id');
+    DieuDongTaiSanDto dieuDongTaiSan = DieuDongTaiSanDto.fromJson(res.data);
+    List<ChiTietDieuDongTaiSan> chiTietDieuDongTS =
+        await _chiTietDieuDongTaiSanRepository.getAll(
+          dieuDongTaiSan.id.toString(),
+        );
+    List<SignatoryDto> listSignatory = await _signatoryRepository.getAll(
+      dieuDongTaiSan.id.toString(),
+    );
+    dieuDongTaiSan.chiTietDieuDongTaiSans = chiTietDieuDongTS;
+    dieuDongTaiSan.listSignatory = listSignatory;
+    return dieuDongTaiSan;
+  }
 
-	Future<int> delete(String id) async {
+  Future<int> update(String id, LenhDieuDongRequest obj) async {
+    final res = await _dio.put('/$id', data: obj.toJson());
+    final data = res.data;
+    if (data is int) return data;
+    if (data is Map<String, dynamic>) {
+      final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
+      if (code is int) return code;
+      if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
+    }
+    return res.statusCode ?? 0;
+  }
+
+  Future<int> delete(String id) async {
     log('message delete: $id');
-		final res = await _dio.delete('/$id');
-		final data = res.data;
-		if (data is int) return data;
-		log('message data: $data');
-		if (data is Map<String, dynamic>) {
-			final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
-			if (code is int) return code;
-			if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
-		}
-		return res.statusCode ?? 0;
-	}
+    final res = await _dio.delete('/$id');
+    final data = res.data;
+    if (data is int) return data;
+    log('message data: $data');
+    if (data is Map<String, dynamic>) {
+      final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
+      if (code is int) return code;
+      if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
+    }
+    return res.statusCode ?? 0;
+  }
 }

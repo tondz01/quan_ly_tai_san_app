@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -14,6 +12,13 @@ class AdditionalSignerData {
   final bool signed;
 
   AdditionalSignerData({this.department, this.employee, this.signed = false});
+  Map<String, dynamic> toJson() {
+    return {
+      'department': department?.toJson(),
+      'employee': employee?.toJson(),
+      'signed': signed,
+    };
+  }
 
   AdditionalSignerData copyWith({
     PhongBan? department,
@@ -78,12 +83,14 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     _hasDepartment = widget.phongBan != null && widget.listNhanVien != null;
 
     // Khởi tạo từ initialSignerData nếu có, nếu không thì từ initialSigners
-    if (widget.initialSignerData != null && widget.initialSignerData!.isNotEmpty) {
+    if (widget.initialSignerData != null &&
+        widget.initialSignerData!.isNotEmpty) {
       _signersData = List<AdditionalSignerData>.from(widget.initialSignerData!);
     } else {
-      _signersData = widget.initialSigners
-          .map((e) => AdditionalSignerData(employee: e))
-          .toList();
+      _signersData =
+          widget.initialSigners
+              .map((e) => AdditionalSignerData(employee: e))
+              .toList();
     }
 
     _controllers.addAll(
@@ -102,12 +109,16 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     // Đồng bộ khi initialSignerData hoặc initialSigners thay đổi từ bên ngoài
     if (oldWidget.initialSignerData != widget.initialSignerData ||
         oldWidget.initialSigners != widget.initialSigners) {
-      if (widget.initialSignerData != null && widget.initialSignerData!.isNotEmpty) {
-        _signersData = List<AdditionalSignerData>.from(widget.initialSignerData!);
+      if (widget.initialSignerData != null &&
+          widget.initialSignerData!.isNotEmpty) {
+        _signersData = List<AdditionalSignerData>.from(
+          widget.initialSignerData!,
+        );
       } else {
-        _signersData = widget.initialSigners
-            .map((e) => AdditionalSignerData(employee: e))
-            .toList();
+        _signersData =
+            widget.initialSigners
+                .map((e) => AdditionalSignerData(employee: e))
+                .toList();
       }
 
       // Cập nhật controllers theo số lượng mới
@@ -120,9 +131,7 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     // Cập nhật controllers cho nhân viên
     if (_controllers.length < _signersData.length) {
       final need = _signersData.length - _controllers.length;
-      _controllers.addAll(
-        List.generate(need, (_) => TextEditingController()),
-      );
+      _controllers.addAll(List.generate(need, (_) => TextEditingController()));
     } else if (_controllers.length > _signersData.length) {
       final remove = _controllers.length - _signersData.length;
       for (int i = 0; i < remove; i++) {
@@ -204,9 +213,7 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     // đảm bảo độ dài các controllers khớp với _signersData
     if (_controllers.length < _signersData.length) {
       final need = _signersData.length - _controllers.length;
-      _controllers.addAll(
-        List.generate(need, (_) => TextEditingController()),
-      );
+      _controllers.addAll(List.generate(need, (_) => TextEditingController()));
     } else if (_controllers.length > _signersData.length) {
       final remove = _controllers.length - _signersData.length;
       for (int i = 0; i < remove; i++) {
@@ -217,10 +224,7 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     if (_deptControllers.length < _signersData.length) {
       final need = _signersData.length - _deptControllers.length;
       _deptControllers.addAll(
-        List.generate(
-          need,
-          (_) => TextEditingController(),
-        ),
+        List.generate(need, (_) => TextEditingController()),
       );
     } else if (_deptControllers.length > _signersData.length) {
       final remove = _deptControllers.length - _signersData.length;
@@ -256,6 +260,9 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                 _hasDepartment
                     ? _buildStaffItemsForDepartment(dept)
                     : widget.itemsNhanVien;
+            NhanVien? nhanVien = _signersData[index].employee;
+            TextEditingController controller = _controllers[index];
+            controller.text = nhanVien?.hoTen ?? '';
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Column(
@@ -286,7 +293,10 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                                   onChanged: (value) {
                                     setState(() {
                                       _signersData[index] = _signersData[index]
-                                          .copyWith(department: value, employee: null);
+                                          .copyWith(
+                                            department: value,
+                                            employee: null,
+                                          );
                                     });
                                     _emitChanges();
                                   },
@@ -296,16 +306,16 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                             ],
                             CmFormDropdownObject<NhanVien>(
                               label: '${widget.labelSigned} ${index + 1}',
-                              controller: _controllers[index],
+                              controller: controller,
                               isEditing: widget.isEditing,
-                              value: _signersData[index].employee,
-                              defaultValue: _signersData[index].employee,
+                              value: nhanVien,
+                              defaultValue: nhanVien,
                               fieldName: 'additionalSigner_$index',
                               items: staffItems,
                               onChanged: (value) {
                                 setState(() {
-                                  _signersData[index] =
-                                      _signersData[index].copyWith(employee: value);
+                                  _signersData[index] = _signersData[index]
+                                      .copyWith(employee: value);
                                 });
                                 _emitChanges();
                               },

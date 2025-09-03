@@ -383,66 +383,34 @@ class _ToolAndMaterialTransferListState
   }
 
   Widget headerList() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    bool isColumn = screenWidth < 1360;
-    return isColumn
-        ? Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              spacing: 8,
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2.5),
-                  child: Text(
-                    '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-                _buildActionKy(),
-              ],
+            Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+            SizedBox(width: 8),
+            Text(
+              '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
             ),
-            SizedBox(height: 20),
-            RowFindByStatusCcdc(provider: widget.provider),
-          ],
-        )
-        : Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                // Spacer(),
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-                SizedBox(width: 8),
-                _buildActionKy(),
-              ],
+            // Spacer(),
+            GestureDetector(
+              onTap: _showColumnDisplayPopup,
+              child: Icon(Icons.settings, color: ColorValue.link, size: 18),
             ),
-            Expanded(child: RowFindByStatusCcdc(provider: widget.provider)),
+            SizedBox(width: 8),
+            _buildActionKy(),
           ],
-        );
+        ),
+        Expanded(child: RowFindByStatusCcdc(provider: widget.provider)),
+      ],
+    );
   }
 
   Visibility _buildActionKy() {
@@ -494,30 +462,6 @@ class _ToolAndMaterialTransferListState
 
   Widget viewAction(ToolAndMaterialTransferDto item) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.share_outlined,
-        tooltip: 'Chia sẻ với người ký',
-        iconColor: ColorValue.cyan,
-        backgroundColor: Colors.cyan.shade50,
-        borderColor: Colors.cyan.shade200,
-        onPressed: () {
-          showConfirmDialog(
-            context,
-            type: ConfirmType.delete,
-            title: 'Chia sẻ',
-            message: 'Bạn có chắc muốn chia sẻ ${item.tenPhieu} với người ký?',
-            highlight: item.tenPhieu!,
-            cancelText: 'Không',
-            confirmText: 'Chia sẻ',
-            onConfirm: () {
-              final request = item.copyWith(share: true);
-              context.read<ToolAndMaterialTransferBloc>().add(
-                UpdateToolAndMaterialTransferEvent(context, request, item.id!),
-              );
-            },
-          );
-        },
-      ),
       ActionButtonConfig(
         icon: Icons.visibility,
         tooltip: 'Xem',

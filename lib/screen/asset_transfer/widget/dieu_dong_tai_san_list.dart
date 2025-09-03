@@ -22,7 +22,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_han
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
@@ -476,211 +475,87 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   }
 
   Widget headerList() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    bool isColumn = screenWidth < 1360;
-    return isColumn
-        ? Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              spacing: 8,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2.5),
-                  child: Text(
-                    '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
+            Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+            SizedBox(width: 8),
+            Text(
+              '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
+            ),
+
+            // Spacer(),
+            GestureDetector(
+              onTap: _showColumnDisplayPopup,
+              child: Icon(Icons.settings, color: ColorValue.link, size: 18),
+            ),
+            SizedBox(width: 8),
+            Visibility(
+              visible: selectedItems.isNotEmpty,
+              child: Row(
+                spacing: 8,
+                children: [
+                  Visibility(
+                    visible:
+                        selectedItems.isNotEmpty && selectedItems.length < 2,
+                    child: Tooltip(
+                      message: 'Ký biên bản',
+                      child: InkWell(
+                        onTap: () {
+                          if (selectedItems.isNotEmpty) {
+                            DieuDongTaiSanDto? item = selectedItems.first;
+                            _handleSignDocument(
+                              item,
+                              userInfo!,
+                              widget.provider,
+                            );
+                          }
+                        },
+                        child: Icon(Icons.edit, color: Colors.green, size: 18),
+                      ),
                     ),
                   ),
-                ),
-
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-                SizedBox(width: 8),
-                Visibility(
-                  visible: selectedItems.isNotEmpty,
-                  child: Row(
-                    spacing: 8,
-                    children: [
-                      Visibility(
-                        visible:
-                            selectedItems.isNotEmpty &&
-                            selectedItems.length < 2,
-                        child: Tooltip(
-                          message: 'Ký biên bản',
-                          child: InkWell(
-                            onTap: () {
-                              if (selectedItems.isNotEmpty) {
-                                DieuDongTaiSanDto? item = selectedItems.first;
-                                _handleSignDocument(
-                                  item,
-                                  userInfo!,
-                                  widget.provider,
-                                );
-                              }
-                            },
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.green,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Tooltip(
-                        message: 'Chia sẻ với người ký',
-                        child: InkWell(
-                          onTap: () {
-                            if (selectedItems.isNotEmpty) {
-                              _handleSendToSigner(selectedItems);
-                            }
-                          },
-                          child: Icon(
-                            Icons.send_sharp,
-                            color: Colors.blue,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                      SGText(
-                        text:
-                            'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                  Tooltip(
+                    message: 'Chia sẻ với người ký',
+                    child: InkWell(
+                      onTap: () {
+                        if (selectedItems.isNotEmpty) {
+                          _handleSendToSigner(selectedItems);
+                        }
+                      },
+                      child: Icon(
+                        Icons.send_sharp,
                         color: Colors.blue,
-                        size: 14,
-                        fontWeight: FontWeight.w500,
+                        size: 18,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            RowFindByStatus(provider: widget.provider),
-            SizedBox(height: 20),
-          ],
-        )
-        : Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                  style: TextStyle(
-                    fontSize: 14,
+                  SGText(
+                    text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                    color: Colors.blue,
+                    size: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
                   ),
-                ),
-
-                // Spacer(),
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-                SizedBox(width: 8),
-                Visibility(
-                  visible: selectedItems.isNotEmpty,
-                  child: Row(
-                    spacing: 8,
-                    children: [
-                      Visibility(
-                        visible:
-                            selectedItems.isNotEmpty &&
-                            selectedItems.length < 2,
-                        child: Tooltip(
-                          message: 'Ký biên bản',
-                          child: InkWell(
-                            onTap: () {
-                              if (selectedItems.isNotEmpty) {
-                                DieuDongTaiSanDto? item = selectedItems.first;
-                                _handleSignDocument(
-                                  item,
-                                  userInfo!,
-                                  widget.provider,
-                                );
-                              }
-                            },
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.green,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Tooltip(
-                        message: 'Chia sẻ với người ký',
-                        child: InkWell(
-                          onTap: () {
-                            if (selectedItems.isNotEmpty) {
-                              _handleSendToSigner(selectedItems);
-                            }
-                          },
-                          child: Icon(
-                            Icons.send_sharp,
-                            color: Colors.blue,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                      SGText(
-                        text:
-                            'Số lượng biên bản đã chọn: ${selectedItems.length}',
-                        color: Colors.blue,
-                        size: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Expanded(child: RowFindByStatus(provider: widget.provider)),
           ],
-        );
+        ),
+        Expanded(child: RowFindByStatus(provider: widget.provider)),
+      ],
+    );
   }
 
   Widget viewAction(DieuDongTaiSanDto item) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.share_outlined,
-        tooltip: 'Chia sẻ với người ký',
-        iconColor: ColorValue.cyan,
-        backgroundColor: Colors.cyan.shade50,
-        borderColor: Colors.cyan.shade200,
-        onPressed: () {
-          showConfirmDialog(
-            context,
-            type: ConfirmType.delete,
-            title: 'Chia sẻ',
-            message: 'Bạn có chắc muốn chia sẻ ${item.tenPhieu} với người ký?',
-            highlight: item.tenPhieu!,
-            cancelText: 'Không',
-            confirmText: 'Chia sẻ',
-            onConfirm: () {
-              // context.read<DieuDongTaiSanBloc>().add(
-              //   DeleteDieuDongEvent(context, item.id!),
-              // );
-            },
-          );
-          // PropertyHandoverMinutes.showPopup(
-          //   context,
-          //   listAssetHandover.where((itemAH) => itemAH.id == item.id).toList(),
-          // );
-        },
-      ),
       ActionButtonConfig(
         icon: Icons.book_outlined,
         tooltip: 'Biên bản bản giao',

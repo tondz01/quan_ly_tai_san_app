@@ -545,12 +545,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ),
                           ],
-                          // defaultValue:
-                          //     controllers.controllerRequester.text.isNotEmpty
-                          //         ? widget.provider.getNhanVienByID(
-                          //           controllers.controllerRequester.text,
-                          //         )
-                          //         : null,
+                          defaultValue:
+                              controllers.controllerRequester.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllers.controllerRequester.text,
+                                  )
+                                  : null,
                           fieldName: 'requester',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
@@ -591,17 +591,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ),
                           ],
-                          // defaultValue:
-                          //     controllers
-                          //             .controllerDepartmentApproval
-                          //             .text
-                          //             .isNotEmpty
-                          //         ? widget.provider.getNhanVienByID(
-                          //           controllers
-                          //               .controllerDepartmentApproval
-                          //               .text,
-                          //         )
-                          //         : null,
+                          defaultValue:
+                              controllers
+                                      .controllerDepartmentApproval
+                                      .text
+                                      .isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllers
+                                        .controllerDepartmentApproval
+                                        .text,
+                                  )
+                                  : null,
                           fieldName: 'departmentApproval',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
@@ -1066,6 +1066,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 )
                 .toList() ??
             [];
+        log('message test listSignatory: ${state.item?.listSignatory}');
         log(
           'message test additionalSignersDetailed: ${jsonEncode(state.additionalSignersDetailed)}',
         );
