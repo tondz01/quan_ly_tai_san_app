@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -12,6 +13,8 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -52,15 +55,15 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
-  late TextEditingController controllerLeader = TextEditingController();
+  // late TextEditingController controllerLeader = TextEditingController();
   late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
       TextEditingController();
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
-  late TextEditingController controllerRepresentativeUnit =
-      TextEditingController();
+  // late TextEditingController controllerRepresentativeUnit =
+  //     TextEditingController();
 
   bool isEditing = false;
   UserInfoDTO? currentUser;
@@ -138,8 +141,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   bool editable() {
     return (item != null &&
-        (item!.trangThai == 0 || item!.trangThai == 3) &&
-        item!.nguoiTao == currentUser?.id);
+        (item!.trangThai == 0 || item!.trangThai == 2) &&
+        item!.nguoiTao == currentUser?.tenDangNhap);
   }
 
   void _initData() {
@@ -153,12 +156,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     } else {
       isEditing = false;
     }
+    log('message test item: ${editable()}');
+    log(
+      'message test bool: ${item != null && (item!.trangThai == 0 || item!.trangThai == 2)}',
+    );
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
     listAssetTransfer =
         widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
+            ?.where((element) => element.trangThai == 3)
             .toList() ??
         [];
 
@@ -234,8 +241,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             : <DropdownMenuItem<DieuDongTaiSanDto>>[];
     dieuDongTaiSan = null;
 
-    log('message test dieuDongTaiSan: $dieuDongTaiSan');
-    // Cập nhật controllers với dữ liệu mới
     setState(() {
       _updateControllers();
     });
@@ -280,9 +285,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (controllerTransferDate.text.isEmpty) {
       newValidationErrors['transferDate'] = true;
     }
-    if (controllerLeader.text.isEmpty) {
-      newValidationErrors['leader'] = true;
-    }
+    // if (controllerLeader.text.isEmpty) {
+    //   newValidationErrors['leader'] = true;
+    // }
     if (controllerIssuingUnitRepresentative.text.isEmpty) {
       newValidationErrors['issuingUnitRepresentative'] = true;
     }
@@ -292,9 +297,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (controllerReceiverRepresentative.text.isEmpty) {
       newValidationErrors['receiverRepresentative'] = true;
     }
-    if (controllerRepresentativeUnit.text.isEmpty) {
-      newValidationErrors['representativeUnit'] = true;
-    }
+    // if (controllerRepresentativeUnit.text.isEmpty) {
+    //   newValidationErrors['representativeUnit'] = true;
+    // }
 
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
@@ -316,12 +321,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
       controllerTransferDate.text = item?.ngayBanGiao ?? '';
-      controllerLeader.text = item?.tenLanhDao ?? '';
+      // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
       controllerDelivererRepresentative.text = item?.tenDaiDienBenGiao ?? '';
       controllerReceiverRepresentative.text = item?.tenDaiDienBenNhan ?? '';
-      controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
+      // controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
     } else {
       isEditing = true;
       controllerHandoverNumber.text = '';
@@ -330,7 +335,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   Future<void> _saveAssetHandover() async {
-    context.read<AssetHandoverProvider>().isLoading = true;
+    if (!mounted) return;
+    final assetHandoverProvider = context.read<AssetHandoverProvider>();
+    final dieuDongProvider = context.read<DieuDongTaiSanProvider>();
+    final assetHandoverBloc = context.read<AssetHandoverBloc>();
+
+    assetHandoverProvider.isLoading = true;
 
     String ngayBanGiao = "";
     ngayBanGiao = controllerTransferDate.text;
@@ -343,7 +353,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "lenhDieuDong": dieuDongTaiSan?.id ?? '',
       "idDonViGiao": donViGiao?.id ?? '',
       "idDonViNhan": donViNhan?.id ?? '',
-      "ngayBanGiao": ngayBanGiao,
       "idLanhDao": nguoiLanhDao?.id ?? '',
       "idDaiDiendonviBanHanhQD": nguoiDaiDienBanHanhQD?.id ?? '',
       "daXacNhan": isUnitConfirm,
@@ -351,23 +360,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
-      "idDonViDaiDien": nguoiDaiDienDonViDaiDien?.id ?? '',
-      "donViDaiDienXacNhan": isRepresentativeUnitConfirm,
-      "trangThai": 1,
+      "trangThai": 0,
       "note": "",
-      "ngayTao": DateTime.now().toIso8601String(),
-      "ngayCapNhat": DateTime.now().toIso8601String(),
-      "nguoiTao": currentUser?.id ?? '',
-      "nguoiCapNhat": '',
+      "nguoiTao": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
-      "tenFile": _selectedFileName ?? '',
     };
 
     final List<SignatoryDto> listSignatory =
         _additionalSignersDetailed
             .map(
               (e) => SignatoryDto(
+                id: UUIDGenerator.generateWithFormat("SIG-******"),
                 idTaiLieu: request['id'].toString(),
                 idPhongBan: e.department?.id ?? '',
                 idNguoiKy: e.employee?.id ?? '',
@@ -378,26 +382,24 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             .toList();
 
     if (item == null) {
-      Map<String, dynamic>? result = await context
-          .read<DieuDongTaiSanProvider>()
-          .uploadWordDocument(
-            context,
-            _selectedFileName ?? '',
-            _selectedFilePath ?? '',
-            _selectedFileBytes ?? Uint8List(0),
-          );
+      Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
+        context,
+        _selectedFileName ?? '',
+        _selectedFilePath ?? '',
+        _selectedFileBytes ?? Uint8List(0),
+      );
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
-      context.read<AssetHandoverBloc>().add(
-        CreateAssetHandoverEvent(context, newRequest, listSignatory),
+      log('message test newRequest: ${jsonEncode(newRequest)}');
+      assetHandoverBloc.add(
+        CreateAssetHandoverEvent(newRequest, listSignatory),
       );
     } else {
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
-        Map<String, dynamic>? result = await context
-            .read<DieuDongTaiSanProvider>()
+        Map<String, dynamic>? result = await dieuDongProvider
             .uploadWordDocument(
               context,
               _selectedFileName ?? '',
@@ -410,7 +412,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       request['trangThai'] = trangThai;
       request['share'] = item!.share ?? false;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
-      context.read<AssetHandoverBloc>().add(
+      assetHandoverBloc.add(
         UpdateAssetHandoverEvent(context, request, item!.id!),
       );
     }
@@ -463,6 +465,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       );
       return;
     }
+    if ((_selectedFileName ?? '').isEmpty ||
+        (_selectedFilePath ?? '').isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        "Vui lòng chon file trước khi lưu",
+        isError: true,
+      );
+      return;
+    }
+
     _saveAssetHandover();
   }
 
@@ -509,11 +521,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
     controllerTransferDate.dispose();
-    controllerLeader.dispose();
+    // controllerLeader.dispose();
     controllerIssuingUnitRepresentative.dispose();
     controllerDelivererRepresentative.dispose();
     controllerReceiverRepresentative.dispose();
-    controllerRepresentativeUnit.dispose();
+    // controllerRepresentativeUnit.dispose();
     super.dispose();
   }
 

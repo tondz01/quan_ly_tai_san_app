@@ -779,24 +779,22 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: this.state.donViGiao?.id ?? '',
       idDonViNhan: this.state.donViNhan?.id ?? '',
-      idNguoiDeNghi: this.state.nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: this.state.nguoiDeNghi?.id ?? '',
+      trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: this.state.isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: false,
-      phoPhongXacNhan: false,
       idDonViDeNghi: this.state.donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: this.state.nguoiKyCapPhong?.id ?? '',
-      tggnTuNgay:
+      tgGnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDate.text,
           ).toIso8601String(),
-      tggnDenNgay:
+      tgGnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDateTo.text,
           ).toIso8601String(),
       idTrinhDuyetGiamDoc: this.state.nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllers.controllerDeliveryLocation.text,
       idPhongBanXemPhieu: this.state.nguoiKyCapPhong?.id ?? '',
-      idNhanSuXemPhieu: this.state.nguoiKyGiamDoc?.id ?? '',
       noiNhan: '',
       trangThai: state,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
@@ -804,13 +802,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: type,
-      isActive: true,
-      idTruongPhongDonViGiao: '',
-      idPhoPhongDonViGiao: '',
-      truongPhongDonViGiaoXacNhan: false,
-      phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
       trichYeu: controllers.controllerSubject.text,
@@ -818,8 +811,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
-      idNguoiKyNhay: '',
-      trangThaiKyNhay: false,
     );
   }
 
@@ -833,7 +824,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: state.donViGiao?.id ?? '',
       idDonViNhan: state.donViNhan?.id ?? '',
-      idNguoiDeNghi: state.nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: state.nguoiDeNghi?.id ?? '',
+      tenNguoiKyNhay: state.nguoiDeNghi?.hoTen ?? '',
       nguoiLapPhieuKyNhay: state.isNguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: false,
       phoPhongXacNhan: false,
@@ -858,7 +850,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: type,
       isActive: true,
       trichYeu: controllers.controllerSubject.text,
@@ -933,9 +925,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       );
       int trangThai = state.item!.trangThai == 2 ? 1 : state.item!.trangThai!;
       LenhDieuDongRequest newRequest = request.copyWith(
-        truongPhongDonViGiaoXacNhan:
-            state.item!.truongPhongDonViGiaoXacNhan ?? false,
-        phoPhongDonViGiaoXacNhan: state.item!.phoPhongDonViGiaoXacNhan ?? false,
         trinhDuyetCapPhongXacNhan:
             state.item!.trinhDuyetCapPhongXacNhan ?? false,
         trinhDuyetGiamDocXacNhan: state.item!.trinhDuyetGiamDocXacNhan ?? false,
@@ -1021,9 +1010,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             widget.provider.dataNhanVien
                 .where((e) => e.phongBanId == state.donViDeNghi?.id)
                 .toList();
-        log('message test state.listNhanVienThamMuu: ${state.item?.idNguoiDeNghi}');
+        log(
+          'message test state.listNhanVienThamMuu: ${state.item?.idNguoiKyNhay}',
+        );
         state.nguoiDeNghi = widget.provider.getNhanVienByID(
-          state.item?.idNguoiDeNghi ?? '',
+          state.item?.idNguoiKyNhay ?? '',
         );
         state.donViNhan = widget.provider.getPhongBanByID(
           state.item?.idDonViNhan ?? '',

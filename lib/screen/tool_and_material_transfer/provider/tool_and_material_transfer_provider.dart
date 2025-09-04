@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -242,7 +243,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _data = null;
     _dataPage = null;
     _item = null;
-    log('message refreshData: ${_data?.length} -- ${_dataAsset?.length}');
     notifyListeners();
     _initData(context);
   }
@@ -251,7 +251,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _userInfo = AccountHelper.instance.getUserInfo();
     onCloseDetail(context);
 
-    log('message onInit: ${_data?.length} -- ${_dataAsset?.length}');
     controllerDropdownPage = TextEditingController(text: '10');
 
     getDataAll(context);
@@ -369,21 +368,23 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               .where((element) => element.loai == typeToolAndMaterialTransfer)
               .where(
                 (item) =>
-                    item.share ??
-                    false || item.ngayTao == userInfo?.tenDangNhap,
+                    item.share == true ||
+                    item.nguoiTao == userInfo?.tenDangNhap,
               )
               .where((item) {
                 final idSignatureGroup =
                     [
-                      item.ngayTao,
-                      item.idNguoiDeNghi,
+                      item.nguoiTao,
+                      item.idNguoiKyNhay,
                       item.idTrinhDuyetCapPhong,
                       item.idTrinhDuyetGiamDoc,
                       if (item.listSignatory != null)
                         ...item.listSignatory!.map((e) => e.idNguoiKy),
                     ].whereType<String>().toList();
 
-                final inGroup = idSignatureGroup.map((e) => e.toLowerCase()).contains(userInfo.tenDangNhap.toLowerCase());
+                final inGroup = idSignatureGroup
+                    .map((e) => e.toLowerCase())
+                    .contains(userInfo.tenDangNhap.toLowerCase());
                 return inGroup;
               })
               .toList();
@@ -638,21 +639,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   int isCheckSigningStatus(ToolAndMaterialTransferDto item) {
     final signatureFlow =
         [
-          {
-            "id": item.idNguoiKyNhay,
-            "signed": item.trangThaiKyNhay,
-            "label": "Người ký nháy",
-          },
-          {
-            "id": item.idTruongPhongDonViGiao,
-            "signed": item.truongPhongDonViGiaoXacNhan == true,
-            "label": "Trưởng phòng Đơn vị giao",
-          },
-          {
-            "id": item.idPhoPhongDonViGiao,
-            "signed": item.phoPhongDonViGiaoXacNhan == true,
-            "label": "Phó phòng Đơn vị giao",
-          },
+          {"id": item.nguoiTao, "signed": -1, "label": "Người tạo"},
+          if (item.nguoiLapPhieuKyNhay == true)
+            {
+              "id": item.idNguoiKyNhay,
+              "signed": item.trangThaiKyNhay,
+              "label": "Người ký nháy",
+            },
           {
             "id": item.idTrinhDuyetCapPhong,
             "signed": item.trinhDuyetCapPhongXacNhan == true,
@@ -677,12 +670,17 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       (s) => s["id"] == userInfo.tenDangNhap,
     );
 
-    // Kiểm tra currentIndex trước khi truy cập
-    if (currentIndex == -1) {
-      // Người dùng hiện tại không có trong danh sách ký
+    if (signatureFlow[currentIndex]["signed"] == -1) {
       return -1;
     }
 
     return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+  }
+
+  Future<List<OwnershipUnitDetailDto>> getListOwnership(String id) async {
+    if (id.isEmpty) return [];
+    final Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+        .getListOwnershipUnit(id);
+    return result['data'];
   }
 }

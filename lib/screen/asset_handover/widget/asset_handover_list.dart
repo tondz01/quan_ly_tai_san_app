@@ -749,11 +749,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             "signed": item.daiDienBenNhanXacNhan == true,
             "label": "Phó phòng Đơn vị giao",
           },
-          {
-            "id": item.idDonViDaiDien,
-            "signed": item.donViDaiDienXacNhan == "0" ? false : true,
-            "label": "Trình duyệt cấp phòng",
-          },
           if (item.listSignatory?.isNotEmpty ?? false)
             ...(item.listSignatory
                     ?.map(

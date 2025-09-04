@@ -27,6 +27,7 @@ class AssetManagementList extends StatefulWidget {
 
 class _AssetManagementListState extends State<AssetManagementList> {
   late List<ColumnDisplayOption> columnOptions;
+  ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
     'code_asset',
     'name_asset',
@@ -338,32 +339,46 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 ),
               ),
               Divider(),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  spacing: 16,
-                  children: [
-                    ...widget.provider.dataGroup!.map(
-                      (item) => ItemAssetGroup(
-                        titleName: item.tenNhom,
-                        numberAsset: getCountAssetByAssetManagement(
-                          widget.provider.data!,
-                          '${item.id}',
+              Scrollbar(
+                controller: horizontalController,
+                thumbVisibility: true,
+                thickness: 4,
+                notificationPredicate:
+                    (notification) =>
+                        notification.metrics.axis == Axis.horizontal,
+                child: SingleChildScrollView(
+                  controller: horizontalController,
+                  scrollDirection: Axis.horizontal,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 13.0),
+                    child: Row(
+                      spacing: 16,
+                      children: [
+                        ...widget.provider.dataGroup!.map(
+                          (item) => ItemAssetGroup(
+                            titleName: item.tenNhom,
+                            numberAsset: getCountAssetByAssetManagement(
+                              widget.provider.data!,
+                              '${item.id}',
+                            ),
+                            image: "assets/images/assets.png",
+                            onTap: () {
+                              context.go(AppRoute.staffManager.path);
+                            },
+                            valueCheckBox: widget.provider.getCheckBoxStatus(
+                              item.id,
+                            ),
+                            onChange: (value) {
+                              widget.provider.updateCheckBoxStatus(
+                                item.id,
+                                value,
+                              );
+                            },
+                          ),
                         ),
-                        image: "assets/images/assets.png",
-                        onTap: () {
-                          context.go(AppRoute.staffManager.path);
-                        },
-                        valueCheckBox: widget.provider.getCheckBoxStatus(
-                          item.id,
-                        ),
-                        onChange: (value) {
-                          widget.provider.updateCheckBoxStatus(item.id, value);
-                        
-                        },
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],

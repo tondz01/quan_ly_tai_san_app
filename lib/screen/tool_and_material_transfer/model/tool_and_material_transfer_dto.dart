@@ -60,8 +60,8 @@ class ToolAndMaterialTransferDto {
   bool? trinhDuyetGiamDocXacNhan;
   
   // Thời gian giao nhận
-  String? tggnTuNgay;
-  String? tggnDenNgay;
+  String? tgGnTuNgay;
+  String? tgGnDenNgay;
   
   String? diaDiemGiaoNhan;
   String? noiNhan;
@@ -79,7 +79,7 @@ class ToolAndMaterialTransferDto {
   String? nguoiTao;
   String? nguoiCapNhat;
   
-  bool? coHieuLuc;
+  int? coHieuLuc;
   int? loai;
   bool? share;
   bool? isActive;
@@ -120,8 +120,8 @@ class ToolAndMaterialTransferDto {
     this.phoPhongDonViGiaoXacNhan,
     this.trinhDuyetCapPhongXacNhan,
     this.trinhDuyetGiamDocXacNhan,
-    this.tggnTuNgay,
-    this.tggnDenNgay,
+    this.tgGnTuNgay,
+    this.tgGnDenNgay,
     this.diaDiemGiaoNhan,
     this.noiNhan,
     this.trichYeu,
@@ -197,8 +197,8 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: json['phoPhongDonViGiaoXacNhan'],
       trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
       trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
-      tggnTuNgay: json['tggnTuNgay'],
-      tggnDenNgay: json['tggnDenNgay'],
+      tgGnTuNgay: json['tgGnTuNgay'],
+      tgGnDenNgay: json['tgGnDenNgay'],
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       noiNhan: json['noiNhan'],
       trichYeu: json['trichYeu'],
@@ -254,8 +254,8 @@ class ToolAndMaterialTransferDto {
       "phoPhongDonViGiaoXacNhan": phoPhongDonViGiaoXacNhan,
       "trinhDuyetCapPhongXacNhan": trinhDuyetCapPhongXacNhan,
       "trinhDuyetGiamDocXacNhan": trinhDuyetGiamDocXacNhan,
-      "tggnTuNgay": tggnTuNgay,
-      "tggnDenNgay": tggnDenNgay,
+      "tgGnTuNgay": tgGnTuNgay,
+      "tgGnDenNgay": tgGnDenNgay,
       "diaDiemGiaoNhan": diaDiemGiaoNhan,
       "noiNhan": noiNhan,
       "trichYeu": trichYeu,
@@ -312,8 +312,8 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
-      tggnTuNgay: DateTime.now().toIso8601String(),
-      tggnDenNgay: DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+      tgGnTuNgay: DateTime.now().toIso8601String(),
+      tgGnDenNgay: DateTime.now().add(const Duration(days: 1)).toIso8601String(),
       diaDiemGiaoNhan: '',
       noiNhan: '',
       trichYeu: '',
@@ -326,7 +326,7 @@ class ToolAndMaterialTransferDto {
       ngayCapNhat: null,
       nguoiTao: '',
       nguoiCapNhat: '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: 0,
       isActive: true,
       detailToolAndMaterialTransfers: [],
@@ -368,8 +368,8 @@ class ToolAndMaterialTransferDto {
     bool? phoPhongDonViGiaoXacNhan,
     bool? trinhDuyetCapPhongXacNhan,
     bool? trinhDuyetGiamDocXacNhan,
-    String? tggnTuNgay,
-    String? tggnDenNgay,
+    String? tgGnTuNgay,
+    String? tgGnDenNgay,
     String? diaDiemGiaoNhan,
     String? noiNhan,
     String? trichYeu,
@@ -382,7 +382,7 @@ class ToolAndMaterialTransferDto {
     String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
-    bool? coHieuLuc,
+    int? coHieuLuc,
     int? loai,
     bool? share,
     bool? isActive,
@@ -422,8 +422,8 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: phoPhongDonViGiaoXacNhan ?? this.phoPhongDonViGiaoXacNhan,
       trinhDuyetCapPhongXacNhan: trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
       trinhDuyetGiamDocXacNhan: trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
-      tggnTuNgay: tggnTuNgay ?? this.tggnTuNgay,
-      tggnDenNgay: tggnDenNgay ?? this.tggnDenNgay,
+      tgGnTuNgay: tgGnTuNgay ?? this.tgGnTuNgay,
+      tgGnDenNgay: tgGnDenNgay ?? this.tgGnDenNgay,
       diaDiemGiaoNhan: diaDiemGiaoNhan ?? this.diaDiemGiaoNhan,
       noiNhan: noiNhan ?? this.noiNhan,
       trichYeu: trichYeu ?? this.trichYeu,

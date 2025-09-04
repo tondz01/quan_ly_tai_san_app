@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -94,15 +95,18 @@ class AssetTransferRepository extends ApiBase {
           return result;
         }
       }
+      log('message test listSignatory: ${jsonEncode(listSignatory)}');
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request.id.toString(),
         );
+        log('message test signatoryCopy: ${jsonEncode(signatoryCopy)}');
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
         );
         final int? statusSignatory = responseSignatory.statusCode;
+        log('message test statusSignatory: $statusSignatory');
         final bool isOkSignatory =
             statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
             statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||
@@ -314,25 +318,18 @@ class AssetTransferRepository extends ApiBase {
           tenPhieu: item.tenPhieu ?? '',
           idDonViGiao: item.idDonViGiao ?? '',
           idDonViNhan: item.idDonViNhan ?? '',
-          idNguoiDeNghi: item.idNguoiDeNghi ?? '',
+          idNguoiKyNhay: item.idNguoiKyNhay ?? '',
+          trangThaiKyNhay: item.trangThaiKyNhay ?? false,
           nguoiLapPhieuKyNhay: item.nguoiLapPhieuKyNhay ?? false,
-          quanTrongCanXacNhan: item.quanTrongCanXacNhan ?? false,
-          phoPhongXacNhan: item.phoPhongXacNhan ?? false,
           idDonViDeNghi: item.idDonViDeNghi ?? '',
-          tggnTuNgay: item.tggnTuNgay ?? '',
-          tggnDenNgay: item.tggnDenNgay ?? '',
-          idTruongPhongDonViGiao: item.idTruongPhongDonViGiao ?? '',
-          truongPhongDonViGiaoXacNhan:
-              item.truongPhongDonViGiaoXacNhan ?? false,
-          idPhoPhongDonViGiao: item.idPhoPhongDonViGiao ?? '',
-          phoPhongDonViGiaoXacNhan: item.phoPhongDonViGiaoXacNhan ?? false,
+          tgGnTuNgay: item.tggnTuNgay ?? '',
+          tgGnDenNgay: item.tggnDenNgay ?? '',
           idTrinhDuyetCapPhong: item.idTrinhDuyetCapPhong ?? '',
           trinhDuyetCapPhongXacNhan: item.trinhDuyetCapPhongXacNhan ?? false,
           idTrinhDuyetGiamDoc: item.idTrinhDuyetGiamDoc ?? '',
           trinhDuyetGiamDocXacNhan: item.trinhDuyetGiamDocXacNhan ?? false,
           diaDiemGiaoNhan: item.diaDiemGiaoNhan ?? '',
           idPhongBanXemPhieu: item.idPhongBanXemPhieu ?? '',
-          idNhanSuXemPhieu: item.idNhanSuXemPhieu ?? '',
           noiNhan: item.noiNhan ?? '',
           trangThai: item.trangThai ?? 0,
           idCongTy: item.idCongTy ?? '',
@@ -340,16 +337,13 @@ class AssetTransferRepository extends ApiBase {
           ngayCapNhat: item.ngayCapNhat ?? '',
           nguoiTao: item.nguoiTao ?? '',
           nguoiCapNhat: item.nguoiCapNhat ?? '',
-          coHieuLuc: item.coHieuLuc ?? false,
+          coHieuLuc: item.coHieuLuc ?? 1,
           loai: item.loai ?? 0,
-          isActive: item.isActive ?? false,
           trichYeu: item.trichYeu ?? '',
           duongDanFile: item.duongDanFile ?? '',
           tenFile: item.tenFile ?? '',
           ngayKy: item.ngayKy ?? '',
           share: true,
-          idNguoiKyNhay: item.idNguoiKyNhay ?? '',
-          trangThaiKyNhay: item.trangThaiKyNhay ?? false,
         );
         final response = await put(
           '${EndPointAPI.DIEU_DONG_TAI_SAN}/${item.id}',

@@ -2,7 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -30,11 +32,52 @@ class _DetailToolAndMaterialTransferTableState
     extends State<DetailToolAndMaterialTransferTable> {
   late List<DetailToolAndMaterialTransferDto> movementDetails;
   late List<ToolsAndSuppliesDto> listAsset;
+  late List<DetailAssetDto> listDetailAsset;
+  late List<OwnershipUnitDetailDto> listDetailOwnershipUnit;
+  late List<ItemDropdownDetailAsset> listItemDropdownDetailAsset;
   final GlobalKey<SgEditableTableState<ToolsAndSuppliesDto>> _tableKey =
       GlobalKey();
 
   void _forceNotifyDataChanged() {
     widget.onDataChanged?.call(List.from(listAsset));
+  }
+
+  ToolsAndSuppliesDto getAssetByID(String idAsset) {
+    if (widget.allAssets.isNotEmpty) {
+      return widget.allAssets!.firstWhere(
+        (item) => item.id == idAsset,
+        orElse: () => toolAndSuppliesNull(),
+      );
+    } else {
+      return toolAndSuppliesNull();
+    }
+  }
+
+  void _syncDetailAssets() {
+    listDetailAsset =
+        widget.allAssets
+            .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
+            .toList();
+    
+    // listItemDropdownDetailAsset =
+    //     listDetailAsset
+    //         .map<ItemDropdownDetailAsset>(
+    //           (e) => ItemDropdownDetailAsset(
+    //             id: e.id ?? '',
+    //             idCCDCVatTu: e.idTaiSan ?? '',
+    //             tenCCDCVatTu: getAssetByID(e.idTaiSan ?? '').ten,
+    //             idDetaiAsset: e.id ?? '',
+    //             tenDetailAsset: '${getAssetByID(e.idTaiSan ?? '').ten} - ${e.namSanXuat}',
+    //             idDonVi: idDonVi,
+    //             donViTinh: donViTinh,
+    //             soLuong: soLuong,
+    //             ghiChu: ghiChu,
+    //           ),
+    //         )
+    //         .toList();
+    // log(
+    //   'message test listItemDropdownDetailAsset: ${jsonEncode(listItemDropdownDetailAsset)}',
+    // );
   }
 
   @override
@@ -49,6 +92,7 @@ class _DetailToolAndMaterialTransferTableState
       listAsset = [];
     }
     movementDetails = List.from(widget.initialDetails);
+    _syncDetailAssets();
   }
 
   @override
@@ -58,9 +102,11 @@ class _DetailToolAndMaterialTransferTableState
         widget.initialDetails.isNotEmpty) {
       movementDetails = List.from(widget.initialDetails);
       listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
+      _syncDetailAssets();
     }
     if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
       listAsset = [];
+      _syncDetailAssets();
     }
   }
 
@@ -118,6 +164,7 @@ class _DetailToolAndMaterialTransferTableState
             onDataChanged: (data) {
               setState(() {
                 listAsset = List.from(data);
+                _syncDetailAssets();
               });
               widget.onDataChanged?.call(data);
             },
@@ -217,5 +264,80 @@ class _DetailToolAndMaterialTransferTableState
       default:
         return '';
     }
+  }
+
+  ToolsAndSuppliesDto toolAndSuppliesNull() {
+    return ToolsAndSuppliesDto(
+      id: '',
+      ten: '',
+      idDonVi: '',
+      tenDonVi: '',
+      idNhomCCDC: '',
+      tenNhomCCDC: '',
+      ngayNhap: DateTime.now(),
+      donViTinh: '',
+      soLuong: 0,
+      giaTri: 0,
+      nuocSanXuat: '',
+      namSanXuat: 0,
+      idCongTy: '',
+      ngayTao: DateTime.now(),
+      ngayCapNhat: DateTime.now(),
+      nguoiTao: '',
+      nguoiCapNhat: '',
+      isActive: false,
+    );
+  }
+}
+
+class ItemDropdownDetailAsset {
+  final String id;
+  final String idCCDCVatTu;
+  final String tenCCDCVatTu;
+  final String idDetaiAsset;
+  final String tenDetailAsset;
+  final String idDonVi;
+  final String donViTinh;
+  final int soLuong;
+  final String ghiChu;
+
+  ItemDropdownDetailAsset({
+    required this.id,
+    required this.idCCDCVatTu,
+    required this.tenCCDCVatTu,
+    required this.idDetaiAsset,
+    required this.tenDetailAsset,
+    required this.idDonVi,
+    required this.donViTinh,
+    required this.soLuong,
+    required this.ghiChu,
+  });
+
+  factory ItemDropdownDetailAsset.fromJson(Map<String, dynamic> json) {
+    return ItemDropdownDetailAsset(
+      id: json['id'] ?? '',
+      idCCDCVatTu: json['idCCDCVatTu'] ?? '',
+      tenCCDCVatTu: json['tenCCDCVatTu'] ?? '',
+      idDetaiAsset: json['idDetaiAsset'] ?? '',
+      tenDetailAsset: json['tenDetailAsset'] ?? '',
+      idDonVi: json['idDonVi'] ?? '',
+      donViTinh: json['donViTinh'] ?? '',
+      soLuong: json['soLuong'] ?? 0,
+      ghiChu: json['ghiChu'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'idCCDCVatTu': idCCDCVatTu,
+      'tenCCDCVatTu': tenCCDCVatTu,
+      'idDetaiAsset': idDetaiAsset,
+      'tenDetailAsset': tenDetailAsset,
+      'idDonVi': idDonVi,
+      'donViTinh': donViTinh,
+      'soLuong': soLuong,
+      'ghiChu': ghiChu,
+    };
   }
 }

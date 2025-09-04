@@ -129,7 +129,8 @@ class ToolsAndSuppliesDto {
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'soLuongXuat': soLuongXuat.toString(),
-      'detailOwnershipUnit': detailOwnershipUnit,
+      'chiTietTaiSanList': chiTietTaiSanList.map((e) => e.toJson()).toList(),
+      'detailOwnershipUnit': detailOwnershipUnit.map((e) => e.toJson()).toList(),
     };
   }
 

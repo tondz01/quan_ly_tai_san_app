@@ -4,41 +4,28 @@ class ToolAndMaterialTransferRequest {
   final String tenPhieu;
   final String idDonViGiao;
   final String idDonViNhan;
-  final String idNguoiDeNghi;
+  final String idNguoiKyNhay;
+  final bool trangThaiKyNhay;
   final bool nguoiLapPhieuKyNhay;
-  final bool quanTrongCanXacNhan;
-  final bool phoPhongXacNhan;
   final String idDonViDeNghi;
+  final DateTime tgGnTuNgay;
+  final DateTime tgGnDenNgay;
   final String idTrinhDuyetCapPhong;
-  
-  // Thời gian giao nhận
-  final DateTime tggnTuNgay;
-  final DateTime tggnDenNgay;
-  
+  final bool trinhDuyetCapPhongXacNhan;
   final String idTrinhDuyetGiamDoc;
+  final bool trinhDuyetGiamDocXacNhan;
   final String diaDiemGiaoNhan;
   final String idPhongBanXemPhieu;
-  final String idNhanSuXemPhieu;
   final String noiNhan;
   final int trangThai;
   final String idCongTy;
-  
   final DateTime ngayTao;
   final DateTime ngayCapNhat;
-  
   final String nguoiTao;
   final String nguoiCapNhat;
   final bool coHieuLuc;
   final int loai;
-  final bool isActive;
-  
-  // Các trường không có trong Java nhưng có trong model cũ
-  final String veViec;
-  final String canCu;
-  final String dieu1;
-  final String dieu2;
-  final String dieu3;
-  final String themDongTrong;
+  final bool share;
   final String trichYeu;
   final String duongDanFile;
   final String tenFile;
@@ -50,25 +37,19 @@ class ToolAndMaterialTransferRequest {
     required this.tenPhieu,
     required this.idDonViGiao,
     required this.idDonViNhan,
-    required this.idNguoiDeNghi,
+    required this.idNguoiKyNhay,
+    required this.trangThaiKyNhay,
     required this.nguoiLapPhieuKyNhay,
-    required this.quanTrongCanXacNhan,
-    required this.phoPhongXacNhan,
     required this.idDonViDeNghi,
+    required this.tgGnTuNgay,
+    required this.tgGnDenNgay,
     required this.idTrinhDuyetCapPhong,
-    required this.tggnTuNgay,
-    required this.tggnDenNgay,
+    required this.trinhDuyetCapPhongXacNhan,
     required this.idTrinhDuyetGiamDoc,
+    required this.trinhDuyetGiamDocXacNhan,
     required this.diaDiemGiaoNhan,
     required this.idPhongBanXemPhieu,
-    required this.idNhanSuXemPhieu,
-    required this.veViec,
-    required this.canCu,
-    required this.dieu1,
-    required this.dieu2,
-    required this.dieu3,
     required this.noiNhan,
-    required this.themDongTrong,
     required this.trangThai,
     required this.idCongTy,
     required this.ngayTao,
@@ -77,7 +58,7 @@ class ToolAndMaterialTransferRequest {
     required this.nguoiCapNhat,
     required this.coHieuLuc,
     required this.loai,
-    required this.isActive,
+    required this.share,
     required this.trichYeu,
     required this.duongDanFile,
     required this.tenFile,
@@ -96,12 +77,9 @@ class ToolAndMaterialTransferRequest {
       if (v is int) return v;
       return int.tryParse(v?.toString() ?? '0') ?? 0;
     }
-    
-    // Hàm hỗ trợ parse timestamp
+
     DateTime parseTimestamp(dynamic value) {
       if (value == null) return DateTime.now();
-      
-      // Xử lý trường hợp timestamp từ server
       if (value is Map && value.containsKey('seconds')) {
         final seconds = value['seconds'] as int;
         final nanoseconds = value['nanoseconds'] as int? ?? 0;
@@ -109,8 +87,6 @@ class ToolAndMaterialTransferRequest {
           seconds * 1000 + (nanoseconds / 1000000).round(),
         );
       }
-      
-      // Xử lý trường hợp ISO string
       if (value is String) {
         try {
           return DateTime.parse(value);
@@ -118,11 +94,9 @@ class ToolAndMaterialTransferRequest {
           return DateTime.now();
         }
       }
-      
       if (value is DateTime) {
         return value;
       }
-      
       return DateTime.now();
     }
 
@@ -132,25 +106,19 @@ class ToolAndMaterialTransferRequest {
       tenPhieu: json['tenPhieu'] ?? '',
       idDonViGiao: json['idDonViGiao'] ?? '',
       idDonViNhan: json['idDonViNhan'] ?? '',
-      idNguoiDeNghi: json['idNguoiDeNghi'] ?? '',
+      idNguoiKyNhay: json['idNguoiKyNhay'] ?? '',
+      trangThaiKyNhay: parseBool(json['trangThaiKyNhay']),
       nguoiLapPhieuKyNhay: parseBool(json['nguoiLapPhieuKyNhay']),
-      quanTrongCanXacNhan: parseBool(json['quanTrongCanXacNhan']),
-      phoPhongXacNhan: parseBool(json['phoPhongXacNhan']),
       idDonViDeNghi: json['idDonViDeNghi'] ?? '',
+      tgGnTuNgay: parseTimestamp(json['tgGnTuNgay']),
+      tgGnDenNgay: parseTimestamp(json['tgGnDenNgay']),
       idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'] ?? '',
-      tggnTuNgay: parseTimestamp(json['tggnTuNgay']),
-      tggnDenNgay: parseTimestamp(json['tggnDenNgay']),
+      trinhDuyetCapPhongXacNhan: parseBool(json['trinhDuyetCapPhongXacNhan']),
       idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'] ?? '',
+      trinhDuyetGiamDocXacNhan: parseBool(json['trinhDuyetGiamDocXacNhan']),
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'] ?? '',
       idPhongBanXemPhieu: json['idPhongBanXemPhieu'] ?? '',
-      idNhanSuXemPhieu: json['idNhanSuXemPhieu'] ?? '',
-      veViec: json['veViec'] ?? '',
-      canCu: json['canCu'] ?? '',
-      dieu1: json['dieu1'] ?? '',
-      dieu2: json['dieu2'] ?? '',
-      dieu3: json['dieu3'] ?? '',
       noiNhan: json['noiNhan'] ?? '',
-      themDongTrong: json['themDongTrong'] ?? '',
       trangThai: parseInt(json['trangThai']),
       idCongTy: json['idCongTy'] ?? '',
       ngayTao: parseTimestamp(json['ngayTao']),
@@ -159,7 +127,7 @@ class ToolAndMaterialTransferRequest {
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       coHieuLuc: parseBool(json['coHieuLuc']),
       loai: parseInt(json['loai']),
-      isActive: parseBool(json['isActive']),
+      share: parseBool(json['share']),
       trichYeu: json['trichYeu'] ?? '',
       duongDanFile: json['duongDanFile'] ?? '',
       tenFile: json['tenFile'] ?? '',
@@ -171,41 +139,35 @@ class ToolAndMaterialTransferRequest {
     String formatDateTime(DateTime dateTime) {
       return dateTime.toIso8601String();
     }
-    
+
     return {
       'id': id,
       'soQuyetDinh': soQuyetDinh,
       'tenPhieu': tenPhieu,
       'idDonViGiao': idDonViGiao,
       'idDonViNhan': idDonViNhan,
-      'idNguoiDeNghi': idNguoiDeNghi,
+      'idNguoiKyNhay': idNguoiKyNhay,
+      'trangThaiKyNhay': trangThaiKyNhay,
       'nguoiLapPhieuKyNhay': nguoiLapPhieuKyNhay,
-      'quanTrongCanXacNhan': quanTrongCanXacNhan,
-      'phoPhongXacNhan': phoPhongXacNhan,
       'idDonViDeNghi': idDonViDeNghi,
+      'tgGnTuNgay': formatDateTime(tgGnTuNgay),
+      'tgGnDenNgay': formatDateTime(tgGnDenNgay),
       'idTrinhDuyetCapPhong': idTrinhDuyetCapPhong,
-      'tggnTuNgay': formatDateTime(tggnTuNgay),
-      'tggnDenNgay': formatDateTime(tggnDenNgay),
+      'trinhDuyetCapPhongXacNhan': trinhDuyetCapPhongXacNhan,
       'idTrinhDuyetGiamDoc': idTrinhDuyetGiamDoc,
+      'trinhDuyetGiamDocXacNhan': trinhDuyetGiamDocXacNhan,
       'diaDiemGiaoNhan': diaDiemGiaoNhan,
       'idPhongBanXemPhieu': idPhongBanXemPhieu,
-      'idNhanSuXemPhieu': idNhanSuXemPhieu,
-      'veViec': veViec,
-      'canCu': canCu,
-      'dieu1': dieu1,
-      'dieu2': dieu2,
-      'dieu3': dieu3,
       'noiNhan': noiNhan,
-      'themDongTrong': themDongTrong,
       'trangThai': trangThai,
       'idCongTy': idCongTy,
       'ngayTao': formatDateTime(ngayTao),
       'ngayCapNhat': formatDateTime(ngayCapNhat),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'coHieuLuc': coHieuLuc,
+      'coHieuLuc': coHieuLuc ? 1 : 0,
       'loai': loai,
-      'isActive': isActive,
+      'share': share,
       'trichYeu': trichYeu,
       'duongDanFile': duongDanFile,
       'tenFile': tenFile,
@@ -219,25 +181,19 @@ class ToolAndMaterialTransferRequest {
     String? tenPhieu,
     String? idDonViGiao,
     String? idDonViNhan,
-    String? idNguoiDeNghi,
+    String? idNguoiKyNhay,
+    bool? trangThaiKyNhay,
     bool? nguoiLapPhieuKyNhay,
-    bool? quanTrongCanXacNhan,
-    bool? phoPhongXacNhan,
     String? idDonViDeNghi,
+    DateTime? tgGnTuNgay,
+    DateTime? tgGnDenNgay,
     String? idTrinhDuyetCapPhong,
-    DateTime? tggnTuNgay,
-    DateTime? tggnDenNgay,
+    bool? trinhDuyetCapPhongXacNhan,
     String? idTrinhDuyetGiamDoc,
+    bool? trinhDuyetGiamDocXacNhan,
     String? diaDiemGiaoNhan,
     String? idPhongBanXemPhieu,
-    String? idNhanSuXemPhieu,
-    String? veViec,
-    String? canCu,
-    String? dieu1,
-    String? dieu2,
-    String? dieu3,
     String? noiNhan,
-    String? themDongTrong,
     int? trangThai,
     String? idCongTy,
     DateTime? ngayTao,
@@ -246,7 +202,7 @@ class ToolAndMaterialTransferRequest {
     String? nguoiCapNhat,
     bool? coHieuLuc,
     int? loai,
-    bool? isActive,
+    bool? share,
     String? trichYeu,
     String? duongDanFile,
     String? tenFile,
@@ -258,25 +214,19 @@ class ToolAndMaterialTransferRequest {
       tenPhieu: tenPhieu ?? this.tenPhieu,
       idDonViGiao: idDonViGiao ?? this.idDonViGiao,
       idDonViNhan: idDonViNhan ?? this.idDonViNhan,
-      idNguoiDeNghi: idNguoiDeNghi ?? this.idNguoiDeNghi,
+      idNguoiKyNhay: idNguoiKyNhay ?? this.idNguoiKyNhay,
+      trangThaiKyNhay: trangThaiKyNhay ?? this.trangThaiKyNhay,
       nguoiLapPhieuKyNhay: nguoiLapPhieuKyNhay ?? this.nguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: quanTrongCanXacNhan ?? this.quanTrongCanXacNhan,
-      phoPhongXacNhan: phoPhongXacNhan ?? this.phoPhongXacNhan,
       idDonViDeNghi: idDonViDeNghi ?? this.idDonViDeNghi,
+      tgGnTuNgay: tgGnTuNgay ?? this.tgGnTuNgay,
+      tgGnDenNgay: tgGnDenNgay ?? this.tgGnDenNgay,
       idTrinhDuyetCapPhong: idTrinhDuyetCapPhong ?? this.idTrinhDuyetCapPhong,
-      tggnTuNgay: tggnTuNgay ?? this.tggnTuNgay,
-      tggnDenNgay: tggnDenNgay ?? this.tggnDenNgay,
+      trinhDuyetCapPhongXacNhan: trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
       idTrinhDuyetGiamDoc: idTrinhDuyetGiamDoc ?? this.idTrinhDuyetGiamDoc,
+      trinhDuyetGiamDocXacNhan: trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
       diaDiemGiaoNhan: diaDiemGiaoNhan ?? this.diaDiemGiaoNhan,
       idPhongBanXemPhieu: idPhongBanXemPhieu ?? this.idPhongBanXemPhieu,
-      idNhanSuXemPhieu: idNhanSuXemPhieu ?? this.idNhanSuXemPhieu,
-      veViec: veViec ?? this.veViec,
-      canCu: canCu ?? this.canCu,
-      dieu1: dieu1 ?? this.dieu1,
-      dieu2: dieu2 ?? this.dieu2,
-      dieu3: dieu3 ?? this.dieu3,
       noiNhan: noiNhan ?? this.noiNhan,
-      themDongTrong: themDongTrong ?? this.themDongTrong,
       trangThai: trangThai ?? this.trangThai,
       idCongTy: idCongTy ?? this.idCongTy,
       ngayTao: ngayTao ?? this.ngayTao,
@@ -285,15 +235,14 @@ class ToolAndMaterialTransferRequest {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       coHieuLuc: coHieuLuc ?? this.coHieuLuc,
       loai: loai ?? this.loai,
-      isActive: isActive ?? this.isActive,
+      share: share ?? this.share,
       trichYeu: trichYeu ?? this.trichYeu,
       duongDanFile: duongDanFile ?? this.duongDanFile,
       tenFile: tenFile ?? this.tenFile,
       ngayKy: ngayKy ?? this.ngayKy,
     );
   }
-  
-  // Tạo một instance mới với giá trị mặc định
+
   factory ToolAndMaterialTransferRequest.empty() {
     final now = DateTime.now();
     return ToolAndMaterialTransferRequest(
@@ -302,25 +251,19 @@ class ToolAndMaterialTransferRequest {
       tenPhieu: '',
       idDonViGiao: '',
       idDonViNhan: '',
-      idNguoiDeNghi: '',
+      idNguoiKyNhay: '',
+      trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: false,
-      quanTrongCanXacNhan: false,
-      phoPhongXacNhan: false,
       idDonViDeNghi: '',
+      tgGnTuNgay: now,
+      tgGnDenNgay: now.add(const Duration(days: 1)),
       idTrinhDuyetCapPhong: '',
-      tggnTuNgay: now,
-      tggnDenNgay: now.add(const Duration(days: 1)),
+      trinhDuyetCapPhongXacNhan: false,
       idTrinhDuyetGiamDoc: '',
+      trinhDuyetGiamDocXacNhan: false,
       diaDiemGiaoNhan: '',
       idPhongBanXemPhieu: '',
-      idNhanSuXemPhieu: '',
-      veViec: '',
-      canCu: '',
-      dieu1: '',
-      dieu2: '',
-      dieu3: '',
       noiNhan: '',
-      themDongTrong: '',
       trangThai: 0,
       idCongTy: '',
       ngayTao: now,
@@ -329,7 +272,7 @@ class ToolAndMaterialTransferRequest {
       nguoiCapNhat: '',
       coHieuLuc: true,
       loai: 0,
-      isActive: true,
+      share: false,
       trichYeu: '',
       duongDanFile: '',
       tenFile: '',

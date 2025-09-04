@@ -27,18 +27,13 @@ class SendToSignerAsetHandoverEvent extends AssetHandoverEvent {
 }
 
 class CreateAssetHandoverEvent extends AssetHandoverEvent {
-  final BuildContext context;
   final Map<String, dynamic> request;
   final List<SignatoryDto> listSignatory;
 
-  const CreateAssetHandoverEvent(
-    this.context,
-    this.request,
-    this.listSignatory,
-  );
+  const CreateAssetHandoverEvent(this.request, this.listSignatory);
 
   @override
-  List<Object?> get props => [context, request, listSignatory];
+  List<Object?> get props => [request, listSignatory];
 }
 
 class UpdateAssetHandoverEvent extends AssetHandoverEvent {

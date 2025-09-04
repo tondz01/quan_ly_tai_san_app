@@ -4,15 +4,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/ownership_unit_details.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 
@@ -42,7 +39,9 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
     setState(() {
       selectedItem = item;
       titleDetailDepartmentTree = item.ten;
-      isShowDetailDepartmentTree = true;
+      isShowDetailDepartmentTree =
+          item.chiTietTaiSanList.isNotEmpty &&
+          item.detailOwnershipUnit.isNotEmpty;
     });
   }
 
@@ -128,17 +127,6 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       ),
     ];
 
-    final List<ThreadNode> sample = const [
-      ThreadNode(header: 'Phòng Tổng công ty', depth: 0),
-      ThreadNode(header: 'Phòng Kế toán', depth: 1),
-      ThreadNode(header: 'Tổ Ngân quỹ', depth: 2),
-      ThreadNode(header: 'Phòng Nhân sự', depth: 1),
-      ThreadNode(header: 'Tổ Tuyển dụng', depth: 2),
-      ThreadNode(header: 'Tổ Đào tạo', depth: 2),
-      ThreadNode(header: 'Phòng IT', depth: 1),
-      ThreadNode(header: 'Tổ Hạ tầng', depth: 2),
-      ThreadNode(header: 'Tổ Phần mềm', depth: 2),
-    ];
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
@@ -188,20 +176,6 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                           ),
                         ],
                       ),
-                      Visibility(
-                        visible: isShowDetailDepartmentTree,
-                        child: MaterialTextButton(
-                          text: 'Đóng chi tiết sở hữu',
-                          icon: Icons.visibility_off,
-                          backgroundColor: ColorValue.success,
-                          foregroundColor: Colors.white,
-                          onPressed: () {
-                            setState(() {
-                              isShowDetailDepartmentTree = false;
-                            });
-                          },
-                        ),
-                      ),
                       // FindByStateAssetHandover(provider: widget.provider),
                     ],
                   ),
@@ -239,17 +213,15 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
           // Department tree sidebar
           Visibility(
             visible: isShowDetailDepartmentTree,
-            child: Container(
-              width: 300,
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(color: Colors.grey.shade600, width: 1),
-                ),
-              ),
-              child: DetailedDiagram(
-                title: titleDetailDepartmentTree,
-                sample: sample,
-              ),
+            child: OwnershipUnitDetails(
+              title: 'Chi tiết đơn vị sở hữu "${selectedItem?.ten}"',
+              item: selectedItem ?? ToolsAndSuppliesDto.empty(),
+              provider: widget.provider,
+              onHiden: () {
+                setState(() {
+                  isShowDetailDepartmentTree = false;
+                });
+              },
             ),
           ),
         ],

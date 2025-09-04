@@ -74,7 +74,7 @@ class _ToolAndMaterialTransferListState
     'status',
     'actions',
   ];
-  
+
   List<Map<String, DateTime Function(ToolAndMaterialTransferDto)>> getters = [
     {
       'Ngày tạo':
@@ -94,11 +94,11 @@ class _ToolAndMaterialTransferListState
     },
     {
       'Thời gian giao nhận từ ngày':
-          (item) => DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
+          (item) => DateTime.tryParse(item.tgGnTuNgay ?? '') ?? DateTime.now(),
     },
     {
       'Thời gian giao nhận đến ngày':
-          (item) => DateTime.tryParse(item.tggnDenNgay ?? '') ?? DateTime.now(),
+          (item) => DateTime.tryParse(item.tgGnDenNgay ?? '') ?? DateTime.now(),
     },
   ];
 
@@ -214,7 +214,7 @@ class _ToolAndMaterialTransferListState
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày có hiệu lực',
               width: 100,
-              getValue: (item) => item.tggnTuNgay ?? '',
+              getValue: (item) => item.tgGnTuNgay ?? '',
             ),
           );
           break;
@@ -588,6 +588,12 @@ class _ToolAndMaterialTransferListState
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
+          if (item.nguoiLapPhieuKyNhay == true)
+            {
+              "id": item.idNguoiKyNhay,
+              "signed": item.trangThaiKyNhay == true,
+              "label": "Người ký nháy",
+            },
           {
             "id": item.idTrinhDuyetCapPhong,
             "signed": item.trinhDuyetCapPhongXacNhan == true,
@@ -636,20 +642,6 @@ class _ToolAndMaterialTransferListState
     // Nếu đã ký rồi thì chặn
     if (signatureFlow[currentIndex]["signed"] == true) {
       AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
-      return;
-    }
-
-    // Kiểm tra tất cả các bước trước đã ký chưa
-    final previousNotSigned = signatureFlow
-        .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
-
-    if (previousNotSigned.isNotEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
-        isError: true,
-      );
       return;
     }
 
@@ -719,7 +711,7 @@ class _ToolAndMaterialTransferListState
           child: viewSignatoryStatus(
             item.trangThaiKyNhay ?? false,
             widget.provider
-                .getNhanVienByID(item.idNguoiDeNghi ?? '')
+                .getNhanVienByID(item.idNguoiKyNhay ?? '')
                 .hoTen
                 .toString(),
           ),
@@ -814,15 +806,15 @@ class _ToolAndMaterialTransferListState
       );
       return;
     }
-    bool hasNonZero = items.any((item) => item.trangThai != 0);
-    if (hasNonZero) {
-      AppUtility.showSnackBar(
-        context,
-        'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-        isError: true,
-      );
-      return;
-    }
+    // bool hasNonZero = items.any((item) => item.trangThai != 0);
+    // if (hasNonZero) {
+    //   AppUtility.showSnackBar(
+    //     context,
+    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
+    //     isError: true,
+    //   );
+    //   return;
+    // }
 
     showConfirmDialog(
       context,

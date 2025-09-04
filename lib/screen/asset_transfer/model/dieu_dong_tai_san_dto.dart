@@ -48,6 +48,8 @@ class DieuDongTaiSanDto {
   String? tenNhanSuXemPhieu;
 
   String? idNguoiKyNhay;
+  // Tên người ký nháy
+  String? tenNguoiKyNhay;
 
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
@@ -74,7 +76,7 @@ class DieuDongTaiSanDto {
   String? ngayCapNhat;
   String? nguoiTao;
   String? nguoiCapNhat;
-  bool? coHieuLuc;
+  int? coHieuLuc;
   int? loai;
   bool? isActive;
   bool? share;
@@ -105,6 +107,8 @@ class DieuDongTaiSanDto {
     this.tenTrinhDuyetGiamDoc,
     this.idNhanSuXemPhieu,
     this.tenNhanSuXemPhieu,
+    this.idNguoiKyNhay,
+    this.tenNguoiKyNhay,
     this.nguoiLapPhieuKyNhay,
     this.quanTrongCanXacNhan,
     this.phoPhongXacNhan,
@@ -132,6 +136,7 @@ class DieuDongTaiSanDto {
     this.share,
     this.chiTietDieuDongTaiSans,
     this.listSignatory,
+    this.trangThaiKyNhay,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -159,6 +164,8 @@ class DieuDongTaiSanDto {
       tenTrinhDuyetGiamDoc: json['tenTrinhDuyetGiamDoc'],
       idNhanSuXemPhieu: json['idNhanSuXemPhieu'],
       tenNhanSuXemPhieu: json['tenNhanSuXemPhieu'],
+      idNguoiKyNhay: json['idNguoiKyNhay'],
+      tenNguoiKyNhay: json['tenNguoiKyNhay'],
       nguoiLapPhieuKyNhay: json['nguoiLapPhieuKyNhay'],
       quanTrongCanXacNhan: json['quanTrongCanXacNhan'],
       phoPhongXacNhan: json['phoPhongXacNhan'],
@@ -166,6 +173,7 @@ class DieuDongTaiSanDto {
       phoPhongDonViGiaoXacNhan: json['phoPhongDonViGiaoXacNhan'],
       trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
       trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
+      trangThaiKyNhay: json['trangThaiKyNhay'],
       tggnTuNgay: json['tggnTuNgay'],
       tggnDenNgay: json['tggnDenNgay'],
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
@@ -214,6 +222,8 @@ class DieuDongTaiSanDto {
       "tenTrinhDuyetGiamDoc": tenTrinhDuyetGiamDoc,
       "idNhanSuXemPhieu": idNhanSuXemPhieu,
       "tenNhanSuXemPhieu": tenNhanSuXemPhieu,
+      "idNguoiKyNhay": idNguoiKyNhay,
+      "tenNguoiKyNhay": tenNguoiKyNhay,
       "nguoiLapPhieuKyNhay": nguoiLapPhieuKyNhay,
       "quanTrongCanXacNhan": quanTrongCanXacNhan,
       "phoPhongXacNhan": phoPhongXacNhan,
@@ -221,6 +231,7 @@ class DieuDongTaiSanDto {
       "phoPhongDonViGiaoXacNhan": phoPhongDonViGiaoXacNhan,
       "trinhDuyetCapPhongXacNhan": trinhDuyetCapPhongXacNhan,
       "trinhDuyetGiamDocXacNhan": trinhDuyetGiamDocXacNhan,
+      "trangThaiKyNhay": trangThaiKyNhay,
       "tggnTuNgay": tggnTuNgay,
       "tggnDenNgay": tggnDenNgay,
       "diaDiemGiaoNhan": diaDiemGiaoNhan,

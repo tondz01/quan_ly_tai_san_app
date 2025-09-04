@@ -275,4 +275,15 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
     return true;
   }
+
+  PhongBan getPhongBanByID(String idPhongBan) {
+    if (_dataPhongBan != null && _dataPhongBan!.isNotEmpty) {
+      return _dataPhongBan!.firstWhere(
+        (item) => item.id == idPhongBan,
+        orElse: () => const PhongBan(),
+      );
+    } else {
+      return const PhongBan();
+    }
+  }
 }

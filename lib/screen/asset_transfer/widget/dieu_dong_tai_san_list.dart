@@ -418,7 +418,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           child: viewSignatoryStatus(
             item.trangThaiKyNhay ?? false,
             widget.provider
-                .getNhanVienByID(item.idNguoiDeNghi ?? '')
+                .getNhanVienByID(item.idNguoiKyNhay ?? '')
                 .hoTen
                 .toString(),
           ),
@@ -709,7 +709,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         [
           if (item.nguoiLapPhieuKyNhay == true)
             {
-              "id": item.idNguoiDeNghi,
+              "id": item.idNguoiKyNhay,
               "signed": item.trangThaiKyNhay == true,
               "label": "Người ký nháy",
             },

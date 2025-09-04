@@ -383,8 +383,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
               quanTrongCanXacNhan: item.quanTrongCanXacNhan ?? false,
               phoPhongXacNhan: item.phoPhongXacNhan ?? false,
               idDonViDeNghi: item.idDonViDeNghi ?? '',
-              tggnTuNgay: item.tggnTuNgay ?? '',
-              tggnDenNgay: item.tggnDenNgay ?? '',
+              tgGnTuNgay: item.tgGnTuNgay ?? '',
+              tgGnDenNgay: item.tgGnDenNgay ?? '',
               idTruongPhongDonViGiao: item.idTruongPhongDonViGiao ?? '',
               truongPhongDonViGiaoXacNhan:
                   item.truongPhongDonViGiaoXacNhan ?? false,
@@ -405,7 +405,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
               ngayCapNhat: item.ngayCapNhat ?? '',
               nguoiTao: item.nguoiTao ?? '',
               nguoiCapNhat: item.nguoiCapNhat ?? '',
-              coHieuLuc: item.coHieuLuc ?? false,
+              coHieuLuc: item.coHieuLuc ?? 1,
               loai: item.loai ?? 0,
               isActive: item.isActive ?? false,
               trichYeu: item.trichYeu ?? '',
@@ -432,5 +432,12 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     }
 
     return result;
+  }
+
+  Future<Map<String, dynamic>> getListOwnershipUnit(String id) async {
+    final res = await get(
+      '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/by-ccdcvt/$id',
+    );
+    return res.data;
   }
 }

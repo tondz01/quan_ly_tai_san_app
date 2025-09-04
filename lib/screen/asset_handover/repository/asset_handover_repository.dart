@@ -49,6 +49,7 @@ class AssetHandoverRepository extends ApiBase {
               assetHandover.id.toString(),
             );
             assetHandover.listSignatory = signatories;
+            log('message test signatories: ${jsonEncode(signatories)}');
           } catch (e) {
             log("Error loading signatories for ${assetHandover.id}: $e");
             assetHandover.listSignatory = [];
@@ -58,7 +59,6 @@ class AssetHandoverRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       result['data'] = assetHandover;
-      log('message test assetHandover: ${jsonEncode(result['data'])}');
     } catch (e) {
       SGLog.error(
         "AssetHandoverRepository",
@@ -123,10 +123,9 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-      final id = response.data['id'];
-      log('message test id: $id');
+      log('message test request: ${request['id']}');
       for (var signatory in listSignatory) {
-        final signatoryCopy = signatory.copyWith(idTaiLieu: id.toString());
+        final signatoryCopy = signatory.copyWith(idTaiLieu: request['id'].toString());
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
@@ -325,7 +324,7 @@ class AssetHandoverRepository extends ApiBase {
           "duongDanFile": item.duongDanFile ?? '',
         };
         final response = await put(
-          '${EndPointAPI.DIEU_DONG_TAI_SAN}/${item.id}',
+          '${EndPointAPI.ASSET_TRANSFER}/${item.id}',
           data: request,
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {

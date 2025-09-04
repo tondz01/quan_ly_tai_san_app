@@ -398,8 +398,7 @@ class AssetHandoverProvider with ChangeNotifier {
           state.data
               .where(
                 (item) =>
-                    item.share ??
-                    false || item.ngayTao == userInfo?.tenDangNhap,
+                    item.share == true || item.nguoiTao == userInfo?.tenDangNhap,
               )
               .toList();
 
@@ -496,11 +495,6 @@ class AssetHandoverProvider with ChangeNotifier {
             "id": item.idDaiDienBenNhan,
             "signed": item.daiDienBenNhanXacNhan == true,
             "label": "Phó phòng Đơn vị giao",
-          },
-          {
-            "id": item.idDonViDaiDien,
-            "signed": item.donViDaiDienXacNhan == "0" ? false : true,
-            "label": "Trình duyệt cấp phòng",
           },
           if (item.listSignatory?.isNotEmpty ?? false)
             ...(item.listSignatory

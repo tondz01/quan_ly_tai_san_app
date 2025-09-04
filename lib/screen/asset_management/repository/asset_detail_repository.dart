@@ -26,9 +26,9 @@ class AssetManagementRepository extends ApiBase {
           newRequestDetailAsset
               .map(
                 (e) => OwnershipUnitDetailDto(
-                  id: e.id ?? '',
+                  id: '',
                   idCCDCVT: e.idTaiSan ?? '',
-                  idTaiSanCon: e.id ?? '',
+                  idTsCon: e.id ?? '',
                   idDonViSoHuu: newRequestDetailAsset.first.idDonVi ?? '',
                   soLuong: e.soLuong ?? 0,
                   thoiGianBanGiao: DateTime.now(),
@@ -38,7 +38,6 @@ class AssetManagementRepository extends ApiBase {
               )
               .toList();
 
-      log("message test params: ${jsonEncode(newRequestDetailAsset)}");
       final response = await post(EndPointAPI.CHI_TIET_TAI_SAN, data: params);
 
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
@@ -48,10 +47,15 @@ class AssetManagementRepository extends ApiBase {
       }
 
       final responseOwnershipUnit = await post(
-        EndPointAPI.OWNERSHIP_UNIT_DETAIL,
+        '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/batch',
         data: jsonEncode(newRequestOwnershipUnit),
       );
-      log("message test responseOwnershipUnit: ${responseOwnershipUnit.data}");
+
+      if (checkStatusCodeFailed(responseOwnershipUnit.statusCode ?? 0)) {
+        result['status_code'] = responseOwnershipUnit.statusCode;
+        result['message'] = responseOwnershipUnit.data?['message'] ?? 'Unknown error';
+        return result;
+      }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;

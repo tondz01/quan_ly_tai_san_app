@@ -30,6 +30,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/deta
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -270,8 +271,8 @@ class _ToolAndMaterialTransferDetailState
         controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
         controllerRequester.text = item?.tenNguoiDeNghi ?? '';
         controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
-        controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
-        controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
+        controllerEffectiveDate.text = item?.tgGnTuNgay ?? '';
+        controllerEffectiveDateTo.text = item?.tgGnDenNgay ?? '';
         controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
         controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
 
@@ -720,7 +721,7 @@ class _ToolAndMaterialTransferDetailState
                                   : null,
                           fieldName: 'delivering_unit',
                           validationErrors: _validationErrors,
-                          onChanged: (value) {
+                          onChanged: (value) async {
                             log('delivering_unit selected: $value');
                             setState(() {
                               donViGiao = value;
@@ -731,6 +732,13 @@ class _ToolAndMaterialTransferDetailState
                                             element.phongBanId == donViGiao!.id,
                                       )
                                       .toList();
+                              // List<OwnershipUnitDetailDto> listOwnershipUnit =
+                              //     await widget.provider.getListOwnership(
+                              //       donViGiao!.id.toString(),
+                              //     );
+                              // log(
+                              //   'message test listOwnershipUnit: $listOwnershipUnit',
+                              // );
                             });
                           },
                         ),
@@ -1071,17 +1079,18 @@ class _ToolAndMaterialTransferDetailState
       tenPhieu: controllerDocumentName.text,
       idDonViGiao: donViGiao?.id ?? '',
       idDonViNhan: donViNhan?.id ?? '',
-      idNguoiDeNghi: nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: nguoiDeNghi?.id ?? '',
+      trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: false,
       phoPhongXacNhan: false,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
-      tggnTuNgay:
+      tgGnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDate.text,
           ).toIso8601String(),
-      tggnDenNgay:
+      tgGnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDateTo.text,
           ).toIso8601String(),
@@ -1096,7 +1105,7 @@ class _ToolAndMaterialTransferDetailState
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: type,
       isActive: true,
       idTruongPhongDonViGiao: '',
@@ -1109,9 +1118,7 @@ class _ToolAndMaterialTransferDetailState
       duongDanFile: _selectedFilePath ?? '',
       tenFile: _selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
-      idNguoiKyNhay: nguoiKyNhay?.id ?? '',
       share: false,
-      trangThaiKyNhay: false,
     );
   }
 
@@ -1123,17 +1130,18 @@ class _ToolAndMaterialTransferDetailState
       tenPhieu: controllerDocumentName.text,
       idDonViGiao: donViGiao?.id ?? '',
       idDonViNhan: donViNhan?.id ?? '',
-      idNguoiDeNghi: nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: nguoiDeNghi?.id ?? '',
+      trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: false,
       phoPhongXacNhan: false,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
-      tggnTuNgay:
+      tgGnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDate.text,
           ).toIso8601String(),
-      tggnDenNgay:
+      tgGnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDateTo.text,
           ).toIso8601String(),
@@ -1148,7 +1156,7 @@ class _ToolAndMaterialTransferDetailState
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: type,
       isActive: true,
       idTruongPhongDonViGiao: '',

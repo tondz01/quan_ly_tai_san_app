@@ -53,7 +53,7 @@ class ToolsAndSuppliesRepository extends ApiBase {
             if (!checkStatusCodeFailed(detailResponse.statusCode ?? 0)) {
               e.detailOwnershipUnit =
                   ResponseParser.parseToList<OwnershipUnitDetailDto>(
-                    detailResponse.data,
+                    detailResponse.data['data'],
                     OwnershipUnitDetailDto.fromJson,
                   );
             } else {
@@ -64,7 +64,6 @@ class ToolsAndSuppliesRepository extends ApiBase {
           }
         }),
       );
-
       result['data'] = list;
     } catch (e) {
       log("Error at getListToolsAndSupplies - ToolsAndSuppliesRepository: $e");
@@ -121,35 +120,6 @@ class ToolsAndSuppliesRepository extends ApiBase {
       final response = await post(
         EndPointAPI.TOOLS_AND_SUPPLIES,
         data: params.toJson(),
-      );
-
-      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
-        result['status_code'] = response.statusCode;
-        return result;
-      }
-
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] = response.data;
-    } catch (e) {
-      log("Error at createAssetGroup - AssetGroupRepository: $e");
-    }
-
-    return result;
-  }
-
-  Future<Map<String, dynamic>> createOwnershipUnitDetail(
-    List<OwnershipUnitDetailDto> params,
-  ) async {
-    OwnershipUnitDetailDto? data;
-    Map<String, dynamic> result = {
-      'data': data,
-      'status_code': Numeral.STATUS_CODE_DEFAULT,
-    };
-    SGLog.debug('ToolsAndSuppliesRequest 2', 'Request payload: $params');
-    try {
-      final response = await post(
-        '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/batch',
-        data: params,
       );
 
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {

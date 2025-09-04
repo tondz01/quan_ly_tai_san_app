@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 class ThreadNode {
   final String header;
   final Widget? child;
+  final Color? colorHeader;
   final int depth;
 
-  const ThreadNode({required this.header, required this.depth, this.child});
+  const ThreadNode({
+    required this.header,
+    required this.depth,
+    this.child,
+    this.colorHeader,
+  });
 }
 
 class ThreadList extends StatelessWidget {
@@ -38,6 +44,7 @@ class ThreadList extends StatelessWidget {
           child: _ContentBubble(
             text: node.header,
             childContent: node.child,
+            colorHeader: node.colorHeader,
             child: child ?? const SizedBox.shrink(),
           ),
         );
@@ -85,7 +92,13 @@ class _ContentBubble extends StatelessWidget {
   final String text;
   final Widget? child;
   final Widget? childContent;
-  const _ContentBubble({required this.text, this.child, this.childContent});
+  final Color? colorHeader;
+  const _ContentBubble({
+    required this.text,
+    this.child,
+    this.childContent,
+    this.colorHeader,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +113,12 @@ class _ContentBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 2,
         children: [
-          Text(text, style: Theme.of(context).textTheme.labelLarge),
+          Text(
+            text,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(color: colorHeader),
+          ),
           if (child != null) child!,
           if (childContent != null) childContent!,
         ],
