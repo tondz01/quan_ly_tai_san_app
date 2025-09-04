@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/user.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_list.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/staff_list_by_account.dart';
@@ -60,7 +62,9 @@ class _AccountViewState extends State<AccountView> {
                   title: Row(
                     children: [
                       Expanded(
-                        child: HeaderComponent(
+                        child: HeaderComponent<UserInfoDTO>(
+                          data: [],
+                          getters: [],
                           controller: TextEditingController(),
                           isShowSearch: false,
                           onSearchChanged: (value) {

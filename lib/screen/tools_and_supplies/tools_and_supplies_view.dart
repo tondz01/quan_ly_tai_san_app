@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -5,9 +7,11 @@ import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'bloc/tools_and_supplies_state.dart';
 import 'provider/tools_and_supplies_provide.dart';
 
@@ -21,6 +25,17 @@ class ToolsAndSuppliesView extends StatefulWidget {
 class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
+
+  List<Map<String, Function(ToolsAndSuppliesDto)>> getters = [
+    {'Công cụ dụng cụ': (item) => item.ten},
+    {'Đơn vị nhập': (item) => item.idDonVi},
+    {'Mã công cụ dụng cụ': (item) => item.id},
+    {'Ngày nhập': (item) => item.ngayNhap.toString()},
+    {'Đơn vị tính': (item) => item.donViTinh},
+    {'Số lượng': (item) => item.soLuong.toString()},
+    {'Giá trị': (item) => item.giaTri.toString()},
+    {'Ký hiệu': (item) => item.kyHieu},
+  ];
 
   @override
   void initState() {
@@ -64,13 +79,15 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
 
             return Scaffold(
               appBar: AppBar(
-                title: HeaderComponent(
+                title: HeaderComponent<ToolsAndSuppliesDto>(
+                  data: provider.data!,
+                  getters: getters,
                   controller: _searchController,
                   onSearchChanged: (value) {
-                    provider.onSearchToolsAndSupplies(value);
+                    SGLog.info("TagSearch", "List ${jsonEncode(value)}");
+                    // provider.onSearchToolsAndSupplies(value);
                   },
-                  onTap: () {
-                  },
+                  onTap: () {},
                   onNew: () {
                     provider.onChangeDetail(context, null);
                   },

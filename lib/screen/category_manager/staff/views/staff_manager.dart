@@ -76,12 +76,14 @@ class _StaffManagerState extends State<StaffManager> {
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              title: HeaderComponent(
+              title: HeaderComponent<NhanVien>(
+                data: _filteredData,
+                getters: [],
                 controller: controller,
                 onSearchChanged: (value) {
                   log('value: $value');
                   setState(() {
-                    _searchStaff(value);
+                    // _searchStaff(value);
                   });
                 },
                 onNew: () {

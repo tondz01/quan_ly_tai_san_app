@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/widget/asset_category_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/widget/asset_category_list.dart';
@@ -63,11 +64,13 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
 
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<AssetCategoryDto>(
                     controller: _searchController,
+                    data: provider.data!,
+                    getters: [], // Tags có thể search
                     onSearchChanged: (value) {
                       // Cập nhật trạng thái tìm kiếm trong provider
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
                     onTap: () {},
                     onNew: () {

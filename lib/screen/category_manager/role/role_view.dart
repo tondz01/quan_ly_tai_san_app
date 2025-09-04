@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_list.dart';
 
@@ -58,10 +59,12 @@ class _RoleViewState extends State<RoleView> {
 
             return Scaffold(
               appBar: AppBar(
-                title: HeaderComponent(
+                title: HeaderComponent<ChucVu>(
+                  data: provider.data!,
+                  getters: [],
                   controller: _searchController,
                   onSearchChanged: (value) {
-                    provider.onSearchRoles(value);
+                    // provider.onSearchRoles(value);
                   },
                   onTap: () {
                     // provider.onChangeDetailAssetTransfer(null);

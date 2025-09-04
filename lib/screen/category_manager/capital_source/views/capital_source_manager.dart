@@ -78,12 +78,14 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              title: HeaderComponent(
+              title: HeaderComponent<NguonKinhPhi>(
                 controller: searchController,
+                data: filteredData,
+                getters: [],
                 onSearchChanged: (value) {
-                  setState(() {
-                    _searchCapitalSource(value);
-                  });
+                  // setState(() {
+                  //   _searchCapitalSource(value);
+                  // });
                 },
                 onNew: () {
                   setState(() {

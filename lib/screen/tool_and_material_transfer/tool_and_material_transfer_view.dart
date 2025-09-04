@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_list.dart';
@@ -118,10 +119,12 @@ class _ToolAndMaterialTransferViewState
 
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<ToolAndMaterialTransferDto>(
+                    data: provider.data!,
+                    getters: [],
                     controller: _searchController,
                     onSearchChanged: (value) {
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
                     onTap: () {
                       // provider.onChangeDetailAssetTransfer(null);
@@ -245,7 +248,9 @@ class _ToolAndMaterialTransferViewState
               .updateSigningTAMTStatusSuccess(context, state);
         }
         if (state is CancelToolAndMaterialTransferSuccessState) {
-          context.read<ToolAndMaterialTransferProvider>().onCloseDetail(context);
+          context.read<ToolAndMaterialTransferProvider>().onCloseDetail(
+            context,
+          );
           AppUtility.showSnackBar(context, 'Đã hủy phiếu thành cồng!');
           context.read<ToolAndMaterialTransferProvider>().getDataAll(context);
         }

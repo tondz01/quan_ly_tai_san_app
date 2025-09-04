@@ -36,7 +36,6 @@ class _DepartmentManagerState extends State<DepartmentManager> {
     });
   }
 
-
   void _showDeleteDialog(BuildContext context, PhongBan department) {
     showDialog(
       context: context,
@@ -79,11 +78,13 @@ class _DepartmentManagerState extends State<DepartmentManager> {
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              title: HeaderComponent(
+              title: HeaderComponent<PhongBan>(
+                data: filteredData,
+                getters: [],
                 controller: searchController,
                 onSearchChanged: (value) {
                   setState(() {
-                    _searchDepartment(value);
+                    // _searchDepartment(value);
                   });
                 },
                 onNew: () {
@@ -108,7 +109,7 @@ class _DepartmentManagerState extends State<DepartmentManager> {
                             isShowInput = false;
                           });
                         },
-                        onSaved: (){
+                        onSaved: () {
                           setState(() {
                             isShowInput = false;
                           });

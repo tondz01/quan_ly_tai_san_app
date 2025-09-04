@@ -199,10 +199,12 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
               );
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<AssetHandoverDto>(
                     controller: _searchController,
+                    data: provider.data!,
+                    getters: [],
                     onSearchChanged: (value) {
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
                     onTap: provider.onTapBackHeader,
                     onNew: () {

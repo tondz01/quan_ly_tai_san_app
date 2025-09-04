@@ -78,12 +78,14 @@ class _ProjectManagerState extends State<ProjectManager> {
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
-              title: HeaderComponent(
+              title: HeaderComponent<DuAn>(
+                data: filteredData,
+                getters: [],
                 controller: searchController,
                 onSearchChanged: (value) {
                   log('value: $value');
                   setState(() {
-                    _searchProjectManger(value);
+                    // _searchProjectManger(value);
                   });
                 },
                 onNew: () {

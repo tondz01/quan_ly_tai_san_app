@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
@@ -50,11 +51,13 @@ class _AssetGroupViewState extends State<AssetGroupView> {
 
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<AssetGroupDto>(
                     controller: _searchController,
+                    data: provider.data!,
+                    getters: [], // Tags có thể search
                     onSearchChanged: (value) {
                       // Cập nhật trạng thái tìm kiếm trong provider
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
                     onTap: () {},
                     onNew: () {

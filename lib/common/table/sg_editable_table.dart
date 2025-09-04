@@ -31,10 +31,8 @@ class SgEditableTable<T> extends StatefulWidget {
   final String addRowText;
   final Function(List<T>)? onDataChanged;
   final T Function() createEmptyItem;
-  final bool isEditing; // Add isEditing property
-  final double?
-  omittedSize; // kích thước sẽ bị lược bỏ khi tính adjustColumnWidths
-  // NEW: Per-row editable settings
+  final bool isEditing;
+  final double? omittedSize;
   final bool defaultRowEditable;
   final bool Function(T item, int rowIndex)? rowEditableDecider;
 
@@ -98,7 +96,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     for (var column in widget.columns) {
       if (column.isEditable) {
-        final value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+        final value =
+            column.getValueWithIndex?.call(item, rowIndex) ??
+            column.getValue(item);
         final controller = TextEditingController(text: value?.toString() ?? '');
         _controllers[rowIndex]![column.field] = controller;
       }
@@ -488,7 +488,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
     if (column.editor == EditableCellEditor.dropdown) {
-      final currentValue = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+      final currentValue =
+          column.getValueWithIndex?.call(item, rowIndex) ??
+          column.getValue(item);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: SGDropdownInputButton<T>(
@@ -580,7 +582,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   Widget _buildDisplayCell(T item, SgEditableColumn<T> column) {
     // Try to get rowIndex for display cell
     final rowIndex = _tableData.indexOf(item);
-    final value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+    final value =
+        column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
 
     return Tooltip(
       message: column.tooltip ?? 'Không thể nhập',
@@ -657,7 +660,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   Widget _buildAddRowButton() {
     if (!widget.isEditing) {
-      return const SizedBox.shrink(); 
+      return const SizedBox.shrink();
     }
 
     return SizedBox(
@@ -684,7 +687,8 @@ class SgEditableColumn<T> {
   final TextAlign cellAlignment;
   final bool isEditable;
   final dynamic Function(T) getValue;
-  final dynamic Function(T, int)? getValueWithIndex; // NEW: getValue with rowIndex
+  final dynamic Function(T, int)?
+  getValueWithIndex; // NEW: getValue with rowIndex
   final void Function(T, dynamic) setValue;
   final dynamic Function(T)? sortValueGetter;
   final bool Function(T item, int rowIndex)? isCellEditableDecider;

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
@@ -33,8 +34,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
   Widget build(BuildContext context) {
     return BlocConsumer<CcdcGroupBloc, CcdcGroupState>(
       listener: (context, state) {
-        if (state is CcdcGroupLoadingState) {
-        }
+        if (state is CcdcGroupLoadingState) {}
         if (state is GetListCcdcGroupSuccessState) {
           context.read<CcdcGroupProvider>().getListCcdcGroupSuccess(
             context,
@@ -72,10 +72,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
           );
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<CcdcGroupProvider>().putPostDeleteFailed(
-            context,
-            state,
-          );
+          context.read<CcdcGroupProvider>().putPostDeleteFailed(context, state);
         }
       },
       builder: (context, state) {
@@ -91,10 +88,12 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
               }
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<CcdcGroup>(
+                    data: provider.data!,
+                    getters: [],
                     controller: _searchController,
                     onSearchChanged: (value) {
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
                     onTap: () {},
                     onNew: () {

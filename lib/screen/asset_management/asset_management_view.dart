@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
@@ -58,7 +59,9 @@ class _AssetManagementViewState extends State<AssetManagementView> {
               return Scaffold(
                 backgroundColor: ColorValue.neutral50,
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<AssetManagementDto>(
+                    data: provider.data!,
+                    getters: [],
                     controller:
                         provider.typeBody == ShowBody.taiSan
                             ? _searchController

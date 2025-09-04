@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_list.dart';
@@ -76,10 +77,12 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
               return Scaffold(
                 appBar: AppBar(
-                  title: HeaderComponent(
+                  title: HeaderComponent<DieuDongTaiSanDto>(
                     controller: _searchController,
+                    data: provider.data!,
+                    getters: [],
                     onSearchChanged: (value) {
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
                     onTap: () {
                       // provider.onChangeDetailAssetTransfer(null);
