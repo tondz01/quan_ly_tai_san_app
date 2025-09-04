@@ -20,8 +20,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
@@ -139,7 +139,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   bool editable() {
     return (item != null &&
         (item!.trangThai == 0 || item!.trangThai == 3) &&
-        item!.nguoiTao == currentUser?.tenDangNhap);
+        item!.nguoiTao == currentUser?.id);
   }
 
   void _initData() {
@@ -333,7 +333,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "note": "",
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
-      "nguoiTao": currentUser?.tenDangNhap ?? '',
+      "nguoiTao": currentUser?.id ?? '',
       "nguoiCapNhat": '',
       "isActive": true,
     };
@@ -346,7 +346,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     {
       int trangThai = item!.trangThai == 3 ? 1 : item!.trangThai!;
       request['trangThai'] = trangThai;
-      request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
+      request['nguoiCapNhat'] = currentUser?.id ?? '';
       context.read<AssetHandoverBloc>().add(
         UpdateAssetHandoverEvent(context, request, item!.id!),
       );
@@ -932,8 +932,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       note: '',
       ngayTao: DateTime.now().toString(),
       ngayCapNhat: DateTime.now().toString(),
-      nguoiTao: currentUser?.tenDangNhap ?? '',
-      nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+      nguoiTao: currentUser?.id ?? '',
+      nguoiCapNhat: currentUser?.id ?? '',
       isActive: true,
     );
   }

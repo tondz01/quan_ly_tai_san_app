@@ -3,12 +3,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
   bool get isLoading => _data == null || _dataPhongBan == null;
@@ -17,6 +19,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   get data => _data;
   get dataPhongBan => _dataPhongBan;
+  get dataGroupCCDC => _dataGroupCCDC;
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
@@ -42,7 +45,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 0;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
@@ -69,6 +72,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   ToolsAndSuppliesDto? _dataDetail;
   List<ToolsAndSuppliesDto>? _filteredData;
   List<PhongBan>? _dataPhongBan;
+  List<CcdcGroup>? _dataGroupCCDC;
   void onInit(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
     _isShowInput = false;
@@ -183,9 +187,13 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = state.data;
-      log('message _data: $_data');
       _updatePagination();
     }
+    _dataGroupCCDC = state.dataGroupCCDC;
+    SGLog.debug(
+      "GetListToolsAndSuppliesSuccess",
+      "GetListToolsAndSuppliesSuccessState: data: ${_data!.length}, dataGroupCCDC: ${_dataGroupCCDC!.length}",
+    );
     notifyListeners();
   }
 
@@ -207,38 +215,37 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     BuildContext context,
     CreateToolsAndSuppliesSuccessState state,
   ) {
-      onCloseDetail(context);
-      getListToolsAndSupplies(context);
+    onCloseDetail(context);
+    getListToolsAndSupplies(context);
 
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
   }
 
   void updateToolsAndSuppliesSuccess(
     BuildContext context,
     UpdateToolsAndSuppliesSuccessState state,
   ) {
-      onCloseDetail(context);
-      getListToolsAndSupplies(context);
+    onCloseDetail(context);
+    getListToolsAndSupplies(context);
 
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
   }
 
   void deleteToolsAndSuppliesSuccess(
     BuildContext context,
     DeleteToolsAndSuppliesSuccessState state,
   ) {
-      onCloseDetail(context);
-      getListToolsAndSupplies(context);
+    onCloseDetail(context);
+    getListToolsAndSupplies(context);
 
-      // Close input panel if open
-      AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
+    // Close input panel if open
+    AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
   }
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {
     _confirmBeforeLeaving(context, item);
-
     notifyListeners();
   }
 
@@ -248,10 +255,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   ) async {
     return showUnsavedChangesDialog(context, item, () {
       _dataDetail = item;
-      log('message onChangeDetail: $_dataDetail');
       _isShowInput = true;
       _isShowCollapse = true;
-      log('message _item: $_dataDetail');
       hasUnsavedChanges = false;
       Navigator.of(context).pop();
     });

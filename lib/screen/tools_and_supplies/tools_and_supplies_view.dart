@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -70,7 +70,6 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     provider.onSearchToolsAndSupplies(value);
                   },
                   onTap: () {
-                    // provider.onChangeDetailAssetTransfer(null);
                   },
                   onNew: () {
                     provider.onChangeDetail(context, null);

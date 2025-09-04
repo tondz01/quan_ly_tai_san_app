@@ -81,8 +81,6 @@ class _CmFormDateState extends State<CmFormDate> {
                   height: 40,
                   initWithNow: widget.initWithNow,
                   enable: widget.enable,
-                  // dateFormat: 'dd/MM/yyyy',
-                  // dateTimeFormat: 'dd/MM/yyyy HH:mm',
                   allowTyping: widget.allowTyping,
                   showTimeSection: widget.showTimeSection,
                   timeOptional: widget.timeOptional,

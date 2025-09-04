@@ -9,9 +9,9 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_deprecia
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
-import 'package:quan_ly_tai_san_app/screen/category/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category/project_manager/models/duan.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AssetManagementRepository extends ApiBase {

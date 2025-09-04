@@ -7,7 +7,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
-import 'package:quan_ly_tai_san_app/screen/category/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_detail.dart';

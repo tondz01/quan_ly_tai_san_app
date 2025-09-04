@@ -1,6 +1,5 @@
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/repository/ccdc_group_repository.dart';
@@ -19,10 +18,10 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   ) async {
     emit(CcdcGroupInitialState());
     emit(CcdcGroupLoadingState());
-    Map<String, dynamic> result =
-        await CcdcGroupRepository().getListCcdcGroupRepository();
+    Map<String, dynamic> result = await CcdcGroupRepository()
+        .getListCcdcGroupRepository('CT001');
     emit(CcdcGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(GetListCcdcGroupSuccessState(data: result['data']));
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
@@ -42,11 +41,10 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   ) async {
     emit(CcdcGroupInitialState());
     emit(CcdcGroupLoadingState());
-    Map<String, dynamic> result = await CcdcGroupRepository().createCcdcGroupRepository(
-      event.params,
-    );
+    Map<String, dynamic> result = await CcdcGroupRepository()
+        .createCcdcGroupRepository(event.params);
     emit(CcdcGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(CreateCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       String msg = "Lỗi khi tạo nhóm tài sản";
@@ -72,7 +70,7 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
       event.id,
     );
     emit(CcdcGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(UpdateCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       emit(
@@ -92,9 +90,11 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   ) async {
     emit(CcdcGroupInitialState());
     emit(CcdcGroupLoadingState());
-    final result = await CcdcGroupRepository().deleteCcdcGroupRepository(event.id);
+    final result = await CcdcGroupRepository().deleteCcdcGroupRepository(
+      event.id,
+    );
     emit(CcdcGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    if (checkStatusCodeDone(result)) {
       emit(DeleteCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       emit(

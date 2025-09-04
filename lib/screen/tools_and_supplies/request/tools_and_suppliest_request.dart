@@ -1,6 +1,7 @@
 class ToolsAndSuppliesRequest {
   final String id;
   final String idDonVi;
+  final String idNhomCCDC;
   final String ten;
   final DateTime ngayNhap;
   final String donViTinh;
@@ -22,6 +23,7 @@ class ToolsAndSuppliesRequest {
   ToolsAndSuppliesRequest({
     required this.id,
     required this.idDonVi,
+    required this.idNhomCCDC,
     required this.ten,
     required this.ngayNhap,
     required this.donViTinh,
@@ -45,10 +47,12 @@ class ToolsAndSuppliesRequest {
     return ToolsAndSuppliesRequest(
       id: json['id'] ?? '',
       idDonVi: json['idDonVi'] ?? '',
+      idNhomCCDC: json['idNhomCCDC'] ?? '',
       ten: json['ten'] ?? '',
-      ngayNhap: json['ngayNhap'] != null
-          ? DateTime.parse(json['ngayNhap'].toString())
-          : DateTime.now(),
+      ngayNhap:
+          json['ngayNhap'] != null
+              ? DateTime.parse(json['ngayNhap'].toString())
+              : DateTime.now(),
       donViTinh: json['donViTinh'] ?? '',
       soLuong: json['soLuong'] ?? 0,
       giaTri: json['giaTri'] is num ? (json['giaTri'] as num).toDouble() : 0.0,
@@ -59,12 +63,14 @@ class ToolsAndSuppliesRequest {
       namSanXuat: json['namSanXuat'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao: json['ngayTao'] != null
-          ? DateTime.parse(json['ngayTao'].toString())
-          : DateTime.now(),
-      ngayCapNhat: json['ngayCapNhat'] != null
-          ? DateTime.parse(json['ngayCapNhat'].toString())
-          : DateTime.now(),
+      ngayTao:
+          json['ngayTao'] != null
+              ? DateTime.parse(json['ngayTao'].toString())
+              : DateTime.now(),
+      ngayCapNhat:
+          json['ngayCapNhat'] != null
+              ? DateTime.parse(json['ngayCapNhat'].toString())
+              : DateTime.now(),
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
@@ -75,6 +81,7 @@ class ToolsAndSuppliesRequest {
     return {
       'id': id,
       'idDonVi': idDonVi,
+      'idNhomCCDC': idNhomCCDC,
       'ten': ten,
       'ngayNhap': ngayNhap.toIso8601String(),
       'donViTinh': donViTinh,

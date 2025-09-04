@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/screen/category/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 
@@ -20,15 +20,12 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
   final TextEditingController controllerCode;
   final TextEditingController controllerImportDate;
   final TextEditingController controllerUnit;
-  final TextEditingController controllerQuantity;
-  final TextEditingController controllerValue;
+
   final bool isNameValid;
   final bool isImportUnitValid;
   final bool isCodeValid;
   final bool isImportDateValid;
   final bool isUnitValid;
-  final bool isQuantityValid;
-  final bool isValueValid;
 
   const ToolsAndSuppliesFormLeft({
     super.key,
@@ -44,15 +41,11 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
     required this.controllerCode,
     required this.controllerImportDate,
     required this.controllerUnit,
-    required this.controllerQuantity,
-    required this.controllerValue,
     required this.isNameValid,
     required this.isImportUnitValid,
     required this.isCodeValid,
     required this.isImportDateValid,
     required this.isUnitValid,
-    required this.isQuantityValid,
-    required this.isValueValid,
   });
 
   @override
@@ -66,13 +59,10 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
           controller: controllerImportUnit,
           isEditing: isEditing,
           items: itemsPhongBan,
-          defaultValue:
-              controllerImportUnit.text.isNotEmpty
-                  ? getPhongBan(
-                    listPhongBan: listPhongBan,
-                    idPhongBan: controllerImportUnit.text,
-                  )
-                  : null,
+          defaultValue: getPhongBan(
+            listPhongBan: listPhongBan,
+            idPhongBan: item?.idDonVi ?? '',
+          ),
           onChanged: onPhongBanChanged,
           fieldName: 'idPhongBan',
           validationErrors: {'importUnit': !isImportUnitValid && isEditing},
@@ -87,8 +77,8 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
         CommonFormInput(
           label: 'tas.code'.tr,
           controller: controllerCode,
-          isEditing: isEditing,
-          textContent: item?.soKyHieu ?? '',
+          isEditing: item != null ? false : isEditing,
+          textContent: item?.id ?? '',
           validationErrors: {'code': !isCodeValid && isEditing},
         ),
         CmFormDate(
@@ -106,35 +96,15 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
           textContent: item?.donViTinh ?? '',
           validationErrors: {'unit': !isUnitValid && isEditing},
         ),
-        CommonFormInput(
-          label: 'tas.quantity'.tr,
-          controller: controllerQuantity,
-          isEditing: isEditing,
-          textContent: item?.soLuong.toString() ?? '0',
-          inputType: TextInputType.number,
-          validationErrors: {'quantity': !isQuantityValid && isEditing},
-        ),
-        CommonFormInput(
-          label: 'tas.value'.tr,
-          controller: controllerValue,
-          isEditing: isEditing,
-          textContent: item?.giaTri.toString() ?? '0.0',
-          inputType: TextInputType.number,
-          validationErrors: {'value': !isValueValid && isEditing},
-        ),
       ],
     );
   }
 }
 
-PhongBan getPhongBan({
+PhongBan? getPhongBan({
   required List<PhongBan> listPhongBan,
   required String idPhongBan,
 }) {
   final found = listPhongBan.where((item) => item.id == idPhongBan);
-  if (found.isEmpty) {
-    // Trả về một AssetGroupDto mặc định nếu không tìm thấy
-    return PhongBan();
-  }
-  return found.first;
+  return found.firstOrNull;
 }

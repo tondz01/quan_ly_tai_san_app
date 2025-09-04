@@ -8,7 +8,9 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class CcdcGroupRepository extends ApiBase {
-  Future<Map<String, dynamic>> getListCcdcGroupRepository() async {
+  Future<Map<String, dynamic>> getListCcdcGroupRepository(
+    String idCongTy,
+  ) async {
     List<CcdcGroup> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -18,7 +20,7 @@ class CcdcGroupRepository extends ApiBase {
     try {
       final response = await get(
         EndPointAPI.CCDC_GROUP,
-        queryParameters: {'idcongty': 'ct001'},
+        queryParameters: {'idcongty': idCongTy},
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
