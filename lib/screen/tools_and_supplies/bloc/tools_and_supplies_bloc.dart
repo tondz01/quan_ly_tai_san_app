@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_detail_repository.dart';
@@ -132,7 +130,13 @@ class ToolsAndSuppliesBloc
     Map<String, dynamic> resultAssetDetail = await AssetManagementRepository()
         .createAssetDetail(event.listAssetDetail);
 
+    Map<String, dynamic> resultDeleteAssetDetail =
+        await AssetManagementRepository().deleteAssetDetail(
+          event.listIdAssetDetail,
+        );
+
     emit(ToolsAndSuppliesLoadingDismissState());
+
     if (checkStatusCodeDone(result)) {
       emit(UpdateToolsAndSuppliesSuccessState(data: result['data'].toString()));
     } else {
@@ -144,8 +148,9 @@ class ToolsAndSuppliesBloc
         ),
       );
     }
-    
-    if (checkStatusCodeDone(resultAssetDetail)) {
+
+    if (checkStatusCodeDone(resultAssetDetail) ||
+        checkStatusCodeDone(resultDeleteAssetDetail)) {
     } else {
       String msg = "Lỗi khi update chi tiết ccdc - vật tư";
       emit(

@@ -73,6 +73,43 @@ class ToolsAndSuppliesController {
     return errors;
   }
 
+  /// Kiểm tra những item nào đã bị xóa so với danh sách cũ
+  /// Trả về danh sách các item đã bị xóa
+  List<DetailAssetDto> getDeletedItems({
+    required List<DetailAssetDto> oldList,
+    required List<DetailAssetDto> newList,
+  }) {
+    List<DetailAssetDto> deletedItems = [];
+
+    // Tạo set chứa tất cả ID từ danh sách mới để tìm kiếm nhanh
+    final Set<String> newListIds =
+        newList
+            .where((item) => item.id?.isNotEmpty == true)
+            .map((item) => item.id!)
+            .toSet();
+
+    // Kiểm tra từng item trong danh sách cũ
+    for (var oldItem in oldList) {
+      final oldItemId = oldItem.id;
+
+      // Nếu item cũ có ID và ID này không có trong danh sách mới
+      if (oldItemId?.isNotEmpty == true && !newListIds.contains(oldItemId)) {
+        deletedItems.add(oldItem);
+        SGLog.debug(
+          'getDeletedItems',
+          'Phát hiện item đã xóa: ID=${oldItem.id}, Ký hiệu=${oldItem.soKyHieu}',
+        );
+      }
+    }
+
+    SGLog.info(
+      'getDeletedItems',
+      'Tìm thấy ${deletedItems.length} item(s) đã bị xóa',
+    );
+
+    return deletedItems;
+  }
+
   /// Xử lý và chuẩn hóa dữ liệu từ form
   Map<String, dynamic> processFormData({
     required String importDateText,
@@ -466,25 +503,12 @@ class ToolsAndSuppliesController {
         // Giữ nguyên ID từ dữ liệu gốc nếu có
         if (originalDetail.id?.isNotEmpty == true) {
           currentDetail.id = originalDetail.id;
-          SGLog.debug(
-            'updateDetailAssetIds',
-            'Giữ nguyên ID cũ cho index $i: ${currentDetail.id}',
-          );
         } else {
-          // Tạo ID mới nếu ID gốc null/empty
           currentDetail.id = _generateDetailAssetId(assetCode, i);
-          SGLog.debug(
-            'updateDetailAssetIds',
-            'Tạo ID mới thay thế ID rỗng cho index $i: ${currentDetail.id}',
-          );
         }
       } else {
         // Item mới thêm - tạo ID mới
         currentDetail.id = _generateDetailAssetId(assetCode, i);
-        SGLog.debug(
-          'updateDetailAssetIds',
-          'Tạo ID mới cho item thêm index $i: ${currentDetail.id}',
-        );
       }
 
       // Luôn cập nhật idTaiSan
@@ -494,7 +518,7 @@ class ToolsAndSuppliesController {
 
   /// Tạo ID mới cho DetailAssetDto
   String _generateDetailAssetId(String assetCode, int index) {
-    return "${assetCode.trim()}-$index";
+    return "${assetCode.trim()}-${DateTime.now().millisecondsSinceEpoch}-$index";
   }
 }
 
