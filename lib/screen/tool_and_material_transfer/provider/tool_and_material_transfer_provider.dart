@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -44,6 +45,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get dataAsset => _dataAsset;
   get dataPhongBan => _dataPhongBan;
   get dataNhanVien => _dataNhanVien;
+  get listOwnershipUnit => _listOwnershipUnit;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDDNhanVien => _itemsDDNhanVien;
@@ -114,6 +116,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   List<NhanVien>? _dataNhanVien;
   List<ToolAndMaterialTransferDto>? _dataPage;
   List<ToolAndMaterialTransferDto> _filteredData = [];
+  List<OwnershipUnitDetailDto> _listOwnershipUnit = [];
   ToolAndMaterialTransferDto? _item;
   UserInfoDTO? _userInfo;
 
@@ -243,6 +246,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _data = null;
     _dataPage = null;
     _item = null;
+    _listOwnershipUnit = [];
     notifyListeners();
     _initData(context);
   }
@@ -264,6 +268,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _isShowCollapse = true;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
+    _listOwnershipUnit = [];
     log('onDispose ToolAndMaterialTransferProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
@@ -679,8 +684,17 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   Future<List<OwnershipUnitDetailDto>> getListOwnership(String id) async {
     if (id.isEmpty) return [];
-    final Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
-        .getListOwnershipUnit(id);
-    return result['data'];
+    Map<String, dynamic> result =
+        await ToolAndMaterialTransferRepository().getListOwnershipUnit();
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      final List<dynamic> rawData = result['data'];
+      final list =
+          rawData.map((item) => OwnershipUnitDetailDto.fromJson(item)).toList();
+      _listOwnershipUnit = list;
+      notifyListeners();
+      return list;
+    } else {
+      return [];
+    }
   }
 }

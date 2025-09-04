@@ -31,8 +31,8 @@ class AssetManagementRepository extends ApiBase {
                   idTsCon: e.id ?? '',
                   idDonViSoHuu: newRequestDetailAsset.first.idDonVi ?? '',
                   soLuong: e.soLuong ?? 0,
-                  thoiGianBanGiao: DateTime.now(),
-                  ngayTao: DateTime.now(),
+                  thoiGianBanGiao: DateTime.now().toIso8601String(),
+                  ngayTao: DateTime.now().toIso8601String(),
                   nguoiTao: userInfo?.tenDangNhap ?? '',
                 ),
               )

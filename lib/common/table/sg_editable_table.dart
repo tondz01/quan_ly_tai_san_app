@@ -204,6 +204,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     // Sync controller if exists
     final controller = _controllers[rowIndex]?[field];
     if (controller != null && controller.text != (value?.toString() ?? '')) {
+      log('_setCellValue: Setting controller.text to: ${value?.toString() ?? ''}');
       controller.text = value?.toString() ?? '';
     }
     setState(() {});
@@ -548,8 +549,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           hintText: 'Nhập thông tin',
           onChanged: (value) {
             setState(() {
-              controller.text = value;
-              log('message onChanged: $value');
+              // controller.text = value;
+              controller.text = column.getValue(item).toString();
+              log('message onChanged: ${column.getValue(item)}');
+              log('message onChanged2: ${controller.text}');
               _updateCellValue(rowIndex, column.field, value);
               // cascade updates
               final updater = column.onValueChanged;

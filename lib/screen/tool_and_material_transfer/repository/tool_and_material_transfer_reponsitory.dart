@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -55,12 +56,13 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
 
       final dynamic respData = response.data;
-
+      log('message test1 requestDetail: ${jsonEncode(requestDetail)}');
       for (var detail in requestDetail) {
         final responseDetail = await post(
           EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER,
           data: detail.toJson(),
         );
+        log('message test1 responseDetail: ${jsonEncode(responseDetail.data)}');
         final int? statusDetail = responseDetail.statusCode;
         final bool isOkDetail =
             statusDetail == Numeral.STATUS_CODE_SUCCESS ||
@@ -68,8 +70,11 @@ class ToolAndMaterialTransferRepository extends ApiBase {
             statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
         if (!isOkDetail) {
           result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
+          log('❌ DETAIL REQUEST ${detail.toJson()} FAILED - Status: $statusDetail');
+          log('Failed detail data: ${jsonEncode(detail.toJson())}');
           return result;
         }
+        log('✅ DETAIL REQUEST ${detail.toJson()} SUCCESS');
       }
 
       for (var signatory in listSignatory) {
@@ -296,6 +301,9 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
         toolAndMaterialTransfer.detailToolAndMaterialTransfers =
             await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
+        log(
+          'message test1 detailToolAndMaterialTransfers: ${jsonEncode(toolAndMaterialTransfer.detailToolAndMaterialTransfers)}',
+        );
       }),
     );
     await Future.wait(
@@ -434,10 +442,19 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> getListOwnershipUnit(String id) async {
-    final res = await get(
-      '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/by-ccdcvt/$id',
-    );
-    return res.data;
+  Future<Map<String, dynamic>> getListOwnershipUnit() async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final res = await get(EndPointAPI.OWNERSHIP_UNIT_DETAIL);
+      result['data'] = res.data['data'];
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+    } catch (e) {
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+    }
+
+    return result;
   }
 }

@@ -111,6 +111,7 @@ class _ToolAndMaterialTransferDetailState
   List<NhanVien?> additionalSigners = [];
   final List<TextEditingController> additionalSignerControllers = [];
   List<AdditionalSignerData> additionalSignersDetailed = [];
+  List<OwnershipUnitDetailDto> listOwnershipUnit = [];
 
   PhongBan? donViGiao;
   PhongBan? donViNhan;
@@ -264,6 +265,7 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (item != null) {
+        log('message test1 item: ${jsonEncode(item!.detailToolAndMaterialTransfers)}');
         controllerSoChungTu.text = item?.id ?? '';
         controllerSubject.text = item?.trichYeu ?? '';
         controllerDocumentName.text = item?.tenPhieu ?? '';
@@ -723,6 +725,7 @@ class _ToolAndMaterialTransferDetailState
                           validationErrors: _validationErrors,
                           onChanged: (value) async {
                             log('delivering_unit selected: $value');
+
                             setState(() {
                               donViGiao = value;
                               listStaffByDepartment =
@@ -732,14 +735,12 @@ class _ToolAndMaterialTransferDetailState
                                             element.phongBanId == donViGiao!.id,
                                       )
                                       .toList();
-                              // List<OwnershipUnitDetailDto> listOwnershipUnit =
-                              //     await widget.provider.getListOwnership(
-                              //       donViGiao!.id.toString(),
-                              //     );
-                              // log(
-                              //   'message test listOwnershipUnit: $listOwnershipUnit',
-                              // );
                             });
+
+                            await widget.provider.getListOwnership(
+                              donViGiao!.id.toString(),
+                            );
+                            // log('message test listOwnershipUnit: $listOwnershipUnit');
                           },
                         ),
                         CmFormDropdownObject<PhongBan>(
@@ -979,6 +980,8 @@ class _ToolAndMaterialTransferDetailState
                 isEditing: isEditing,
                 initialDetails: item?.detailToolAndMaterialTransfers ?? [],
                 allAssets: widget.provider.dataAsset ?? [],
+                listOwnershipUnit: widget.provider.listOwnershipUnit,
+
                 onDataChanged: (data) {
                   setState(() {
                     listNewDetails =
@@ -991,18 +994,18 @@ class _ToolAndMaterialTransferDetailState
                                 idDieuDongCCDCVatTu: controllerSoChungTu.text,
                                 soQuyetDinh: item?.soQuyetDinh ?? '',
                                 tenPhieu: controllerDocumentName.text,
-                                tenCCDCVatTu: e.ten,
-                                congSuat: e.congSuat,
-                                nuocSanXuat: e.nuocSanXuat,
-                                soKyHieu: e.soKyHieu,
-                                kyHieu: e.kyHieu,
+                                tenCCDCVatTu: e.asset?.ten ?? '',
+                                congSuat: e.asset?.congSuat ?? '0',
+                                nuocSanXuat: e.asset?.nuocSanXuat ?? '',
+                                soKyHieu: e.asset?.soKyHieu ?? '',
+                                kyHieu: e.asset?.kyHieu ?? '',
                                 namSanXuat: e.namSanXuat,
-                                idCCDCVatTu: e.id,
+                                idCCDCVatTu: e.idDetaiAsset,
                                 donViTinh: e.donViTinh,
                                 soLuong: e.soLuong,
                                 ghiChu: e.ghiChu,
-                                ngayTao: e.ngayTao.toIso8601String(),
-                                ngayCapNhat: e.ngayCapNhat.toIso8601String(),
+                                ngayTao: DateTime.now().toIso8601String(),
+                                ngayCapNhat: DateTime.now().toIso8601String(),
                                 nguoiTao: widget.provider.userInfo?.id ?? '',
                                 nguoiCapNhat:
                                     widget.provider.userInfo?.id ?? '',
@@ -1011,6 +1014,9 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
+                    log(
+                      "message test listNewDetails: ${jsonEncode(listNewDetails)}",
+                    );
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );

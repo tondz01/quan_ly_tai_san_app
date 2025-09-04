@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
@@ -11,8 +13,10 @@ import 'package:se_gay_components/common/sg_text.dart';
 class DetailToolAndMaterialTransferTable extends StatefulWidget {
   final bool isEditing;
   final List<DetailToolAndMaterialTransferDto> initialDetails;
+  final List<OwnershipUnitDetailDto> listOwnershipUnit;
   final List<ToolsAndSuppliesDto> allAssets;
-  final Function(List<ToolsAndSuppliesDto>)? onDataChanged;
+  // Thay đổi callback type
+  final Function(List<ItemDropdownDetailAsset>)? onDataChanged;
 
   const DetailToolAndMaterialTransferTable(
     BuildContext context, {
@@ -21,6 +25,7 @@ class DetailToolAndMaterialTransferTable extends StatefulWidget {
     required this.initialDetails,
     required this.allAssets,
     required this.onDataChanged,
+    required this.listOwnershipUnit,
   });
 
   @override
@@ -31,12 +36,12 @@ class DetailToolAndMaterialTransferTable extends StatefulWidget {
 class _DetailToolAndMaterialTransferTableState
     extends State<DetailToolAndMaterialTransferTable> {
   late List<DetailToolAndMaterialTransferDto> movementDetails;
-  late List<ToolsAndSuppliesDto> listAsset;
+  late List<ItemDropdownDetailAsset> listAsset; // Thay đổi type
   late List<DetailAssetDto> listDetailAsset;
   late List<OwnershipUnitDetailDto> listDetailOwnershipUnit;
   late List<ItemDropdownDetailAsset> listItemDropdownDetailAsset;
-  final GlobalKey<SgEditableTableState<ToolsAndSuppliesDto>> _tableKey =
-      GlobalKey();
+  final GlobalKey<SgEditableTableState<ItemDropdownDetailAsset>> _tableKey =
+      GlobalKey(); // Thay đổi generic type
 
   void _forceNotifyDataChanged() {
     widget.onDataChanged?.call(List.from(listAsset));
@@ -53,31 +58,46 @@ class _DetailToolAndMaterialTransferTableState
     }
   }
 
+  DetailAssetDto getDetailAssetByID(String idAsset) {
+    if (listDetailAsset.isNotEmpty) {
+      return listDetailAsset.firstWhere(
+        (item) => item.id == idAsset,
+        orElse: () => DetailAssetDto.empty(),
+      );
+    } else {
+      return DetailAssetDto.empty();
+    }
+  }
+
   void _syncDetailAssets() {
     listDetailAsset =
         widget.allAssets
             .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
             .toList();
-    
-    // listItemDropdownDetailAsset =
-    //     listDetailAsset
-    //         .map<ItemDropdownDetailAsset>(
-    //           (e) => ItemDropdownDetailAsset(
-    //             id: e.id ?? '',
-    //             idCCDCVatTu: e.idTaiSan ?? '',
-    //             tenCCDCVatTu: getAssetByID(e.idTaiSan ?? '').ten,
-    //             idDetaiAsset: e.id ?? '',
-    //             tenDetailAsset: '${getAssetByID(e.idTaiSan ?? '').ten} - ${e.namSanXuat}',
-    //             idDonVi: idDonVi,
-    //             donViTinh: donViTinh,
-    //             soLuong: soLuong,
-    //             ghiChu: ghiChu,
-    //           ),
-    //         )
-    //         .toList();
-    // log(
-    //   'message test listItemDropdownDetailAsset: ${jsonEncode(listItemDropdownDetailAsset)}',
-    // );
+    log(
+      'message test listOwnershipUnit: ${jsonEncode(widget.listOwnershipUnit)}',
+    );
+
+    listItemDropdownDetailAsset =
+        widget.listOwnershipUnit.map<ItemDropdownDetailAsset>((e) {
+          final asset = getAssetByID(e.idCCDCVT);
+          final detailAsset = getDetailAssetByID(e.idTsCon);
+
+          return ItemDropdownDetailAsset(
+            id: e.id,
+            idCCDCVatTu: e.idCCDCVT,
+            tenCCDCVatTu: asset.ten,
+            idDetaiAsset: e.id,
+            tenDetailAsset:
+                '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
+            idDonVi: e.idDonViSoHuu,
+            donViTinh: asset.donViTinh,
+            namSanXuat: detailAsset.namSanXuat ?? 2010,
+            soLuong: e.soLuong,
+            ghiChu: asset.ghiChu,
+            asset: asset,
+          );
+        }).toList();
   }
 
   @override
@@ -88,9 +108,11 @@ class _DetailToolAndMaterialTransferTableState
         widget.allAssets,
         widget.initialDetails,
       );
+      log('message test1 1 listAsset: ${jsonEncode(listAsset)}');
     } else {
       listAsset = [];
     }
+      log('message test1 listAsset: ${jsonEncode(listAsset)}');
     movementDetails = List.from(widget.initialDetails);
     _syncDetailAssets();
   }
@@ -102,6 +124,7 @@ class _DetailToolAndMaterialTransferTableState
         widget.initialDetails.isNotEmpty) {
       movementDetails = List.from(widget.initialDetails);
       listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
+      log('message test1 listAsset: ${jsonEncode(listAsset)}');
       _syncDetailAssets();
     }
     if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
@@ -110,23 +133,41 @@ class _DetailToolAndMaterialTransferTableState
     }
   }
 
-  List<ToolsAndSuppliesDto> getAssetsByChildAssets(
+  // Cập nhật getAssetsByChildAssets để trả về List<ItemDropdownDetailAsset>
+  List<ItemDropdownDetailAsset> getAssetsByChildAssets(
     List<ToolsAndSuppliesDto> allAssets,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
-    // Map nhanh id -> Asset
     final Map<String, ToolsAndSuppliesDto> idToAsset = {
       for (final a in allAssets) a.id: a,
     };
-
-    // Duyệt theo thứ tự child, loại trùng idTaiSan
-    final result = <ToolsAndSuppliesDto>[];
+    log('message test1 allAssets: ${jsonEncode(chiTietDieuDong)}');
+    final result = <ItemDropdownDetailAsset>[];
 
     for (final c in chiTietDieuDong) {
       final id = c.idCCDCVatTu;
-      final asset = idToAsset[id];
+      final idAsset = getDetailAssetByID(id).idTaiSan;
+      final asset = idToAsset[idAsset];
+      log('message test1 asset: $idAsset');
       if (asset != null) {
-        result.add(asset);
+        // Tìm ItemDropdownDetailAsset tương ứng
+        final detailAsset = listItemDropdownDetailAsset.firstWhere(
+          (element) => element.idDetaiAsset == id,
+          orElse: () => ItemDropdownDetailAsset(
+            id: '',
+            idCCDCVatTu: id,
+            tenCCDCVatTu: asset.ten,
+            idDetaiAsset: '',
+            tenDetailAsset: '${id} - ${asset.ten}',
+            idDonVi: asset.idDonVi,
+            donViTinh: asset.donViTinh,
+            namSanXuat: 2010,
+            soLuong: asset.soLuong,
+            ghiChu: asset.ghiChu,
+            asset:  asset
+          ),
+        );
+        result.add(detailAsset);
       }
     }
     return result;
@@ -148,10 +189,21 @@ class _DetailToolAndMaterialTransferTableState
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
-          child: SgEditableTable<ToolsAndSuppliesDto>(
+          child: SgEditableTable<ItemDropdownDetailAsset>( // Thay đổi generic type
             key: _tableKey,
             initialData: listAsset,
-            createEmptyItem: ToolsAndSuppliesDto.empty,
+            createEmptyItem: () => ItemDropdownDetailAsset( // Thay đổi createEmptyItem
+              id: '',
+              idCCDCVatTu: '',
+              tenCCDCVatTu: '',
+              idDetaiAsset: '',
+              tenDetailAsset: '',
+              idDonVi: '',
+              donViTinh: '',
+              namSanXuat: 2010,
+              soLuong: 0,
+              ghiChu: '',
+            ),
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
             oddRowBackgroundColor: Colors.white,
@@ -159,35 +211,44 @@ class _DetailToolAndMaterialTransferTableState
             showVerticalLines: false,
             showHorizontalLines: true,
             addRowText: 'Thêm một dòng',
-            isEditing: widget.isEditing, // Pass the editing state
+            isEditing: widget.isEditing,
             omittedSize: 130,
             onDataChanged: (data) {
               setState(() {
                 listAsset = List.from(data);
-                _syncDetailAssets();
               });
               widget.onDataChanged?.call(data);
             },
             columns: [
-              SgEditableColumn<ToolsAndSuppliesDto>(
+              SgEditableColumn<ItemDropdownDetailAsset>( // Thay đổi generic type
                 field: 'asset',
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
                 width: 120,
-                getValue: (item) => item,
+                getValue: (item) => item, // Trả về ItemDropdownDetailAsset thay vì String
                 setValue: (item, value) {
+                  // Copy properties
                   item.id = value.id;
-                  item.ten = '${value.id} - ${value.ten}';
+                  item.idCCDCVatTu = value.idCCDCVatTu;
+                  item.tenCCDCVatTu = value.tenCCDCVatTu;
+                  item.idDetaiAsset = value.idDetaiAsset;
+                  item.tenDetailAsset = value.tenDetailAsset;
                   item.idDonVi = value.idDonVi;
+                  item.donViTinh = value.donViTinh;
+                  item.namSanXuat = value.namSanXuat;
+                  item.soLuong = value.soLuong;
+                  item.ghiChu = value.ghiChu;
+                  item.soLuongXuat = value.soLuongXuat;
+                  item.asset = value.asset;
                 },
-                sortValueGetter: (item) => item,
+                sortValueGetter: (item) => item.tenDetailAsset,
                 isCellEditableDecider: (item, rowIndex) => true,
                 editor: EditableCellEditor.dropdown,
                 dropdownItems: [
-                  for (var element in widget.allAssets)
-                    DropdownMenuItem<ToolsAndSuppliesDto>(
+                  for (final element in listItemDropdownDetailAsset)
+                    DropdownMenuItem<ItemDropdownDetailAsset>(
                       value: element,
-                      child: Text('${element.id} - ${element.ten}'),
+                      child: Text(element.tenDetailAsset),
                     ),
                 ],
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
@@ -198,17 +259,17 @@ class _DetailToolAndMaterialTransferTableState
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),
-              SgEditableColumn<ToolsAndSuppliesDto>(
+              SgEditableColumn<ItemDropdownDetailAsset>(
                 field: 'don_vi_tinh',
                 title: 'Đơn vị tính',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue: (item) => item.donViTinh,
-                setValue: (item, value) => item.donViTinh = value as String,
+                setValue: (item, value) => item.donViTinh = value,
                 sortValueGetter: (item) => item.donViTinh,
                 isEditable: false,
               ),
-              SgEditableColumn<ToolsAndSuppliesDto>(
+              SgEditableColumn<ItemDropdownDetailAsset>(
                 field: 'so_luong',
                 title: 'Số lượng',
                 titleAlignment: TextAlign.center,
@@ -220,21 +281,47 @@ class _DetailToolAndMaterialTransferTableState
                 sortValueGetter: (item) => item.soLuong,
                 isEditable: false,
               ),
-              SgEditableColumn<ToolsAndSuppliesDto>(
+              SgEditableColumn<ItemDropdownDetailAsset>(
                 field: 'so_luong_xuat',
                 title: 'Số lượng xuất',
                 titleAlignment: TextAlign.center,
                 width: 100,
-                getValue: (item) => item.soLuongXuat,
+                getValue: (item) => item.soLuongXuat, // Cần thêm field này vào ItemDropdownDetailAsset
                 inputType: TextInputType.number,
+                onValueChanged: (item, rowIndex, value, updateRow) {
+                  if (value == null || value == '') {
+                    item.soLuongXuat = 0;
+                    return;
+                  }
+                  if (int.parse(value) > item.soLuong) {
+                    AppUtility.showSnackBar(
+                      context,
+                      "Số lượng xuất không được lớn hơn số lượng có sẵn",
+                      isError: true,
+                    );
+                    item.soLuongXuat = item.soLuong;
+                    updateRow('so_luong_xuat', item.soLuongXuat);
+                    log('message soLuongXuat: ${item.soLuongXuat}');
+                  } else {
+                    item.soLuongXuat = int.parse(value);
+                    updateRow('so_luong_xuat', item.soLuongXuat);
+                  }
+                },
                 setValue: (item, value) {
+                  if (value == null || value == '') {
+                    item.soLuongXuat = 0;
+                    return;
+                  }
+                  if (int.parse(value) > item.soLuong) {
+                    return;
+                  }
                   item.soLuongXuat = int.parse(value);
                   log('message soLuongXuat: $value');
                 },
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,
               ),
-              SgEditableColumn<ToolsAndSuppliesDto>(
+              SgEditableColumn<ItemDropdownDetailAsset>(
                 field: 'ghi_chu',
                 title: 'Ghi chú',
                 titleAlignment: TextAlign.center,
@@ -291,15 +378,18 @@ class _DetailToolAndMaterialTransferTableState
 }
 
 class ItemDropdownDetailAsset {
-  final String id;
-  final String idCCDCVatTu;
-  final String tenCCDCVatTu;
-  final String idDetaiAsset;
-  final String tenDetailAsset;
-  final String idDonVi;
-  final String donViTinh;
-  final int soLuong;
-  final String ghiChu;
+  String id;
+  String idCCDCVatTu;
+  String tenCCDCVatTu;
+  String idDetaiAsset;
+  String tenDetailAsset;
+  String idDonVi;
+  String donViTinh;
+  int namSanXuat;
+  int soLuong;
+  String ghiChu;
+  int soLuongXuat; // Thêm field này
+  ToolsAndSuppliesDto? asset;  
 
   ItemDropdownDetailAsset({
     required this.id,
@@ -309,8 +399,11 @@ class ItemDropdownDetailAsset {
     required this.tenDetailAsset,
     required this.idDonVi,
     required this.donViTinh,
+    required this.namSanXuat,
     required this.soLuong,
     required this.ghiChu,
+    this.soLuongXuat = 0, // Thêm parameter này
+    this.asset,
   });
 
   factory ItemDropdownDetailAsset.fromJson(Map<String, dynamic> json) {
@@ -322,11 +415,14 @@ class ItemDropdownDetailAsset {
       tenDetailAsset: json['tenDetailAsset'] ?? '',
       idDonVi: json['idDonVi'] ?? '',
       donViTinh: json['donViTinh'] ?? '',
+      namSanXuat: json['namSanXuat'] ?? '',
       soLuong: json['soLuong'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
+      soLuongXuat: json['soLuongXuat'] ?? 0,
+      asset: json['asset'] != null ? ToolsAndSuppliesDto.fromJson(json['asset']) : null,
     );
   }
-
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -336,8 +432,16 @@ class ItemDropdownDetailAsset {
       'tenDetailAsset': tenDetailAsset,
       'idDonVi': idDonVi,
       'donViTinh': donViTinh,
+      'namSanXuat': namSanXuat,
       'soLuong': soLuong,
       'ghiChu': ghiChu,
+      'soLuongXuat': soLuongXuat,
+      'asset': asset?.toJson(),
     };
+  }
+
+    @override
+  String toString() {
+    return tenDetailAsset;
   }
 }

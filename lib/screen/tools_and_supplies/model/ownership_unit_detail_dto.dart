@@ -6,8 +6,8 @@ class OwnershipUnitDetailDto {
   String idTsCon;
   String idDonViSoHuu;
   int soLuong;
-  DateTime thoiGianBanGiao;
-  DateTime ngayTao;
+  String thoiGianBanGiao;
+  String ngayTao;
   String nguoiTao;
 
   OwnershipUnitDetailDto({
@@ -21,17 +21,6 @@ class OwnershipUnitDetailDto {
     required this.nguoiTao,
   });
 
-  static String _formatDateTime(DateTime dateTime) {
-    // Format: YYYY-MM-DD HH:mm:ss
-    final y = dateTime.year.toString().padLeft(4, '0');
-    final m = dateTime.month.toString().padLeft(2, '0');
-    final d = dateTime.day.toString().padLeft(2, '0');
-    final hh = dateTime.hour.toString().padLeft(2, '0');
-    final mm = dateTime.minute.toString().padLeft(2, '0');
-    final ss = dateTime.second.toString().padLeft(2, '0');
-    return "$y-$m-$d $hh:$mm:$ss";
-  }
-
   factory OwnershipUnitDetailDto.fromJson(Map<String, dynamic> json) {
     return OwnershipUnitDetailDto(
       id: json['id']?.toString() ?? '',
@@ -42,14 +31,8 @@ class OwnershipUnitDetailDto {
           json['soLuong'] is int
               ? (json['soLuong'] as int)
               : int.tryParse(json['soLuong']?.toString() ?? '0') ?? 0,
-      thoiGianBanGiao:
-          json['thoiGianBanGiao'] != null
-              ? DateTime.parse(json['thoiGianBanGiao'].toString())
-              : DateTime.now(),
-      ngayTao:
-          json['ngayTao'] != null
-              ? DateTime.parse(json['ngayTao'].toString())
-              : DateTime.now(),
+      thoiGianBanGiao: json['thoiGianBanGiao']?.toString() ?? '',
+      ngayTao: json['ngayTao']?.toString() ?? '',
       nguoiTao: json['nguoiTao']?.toString() ?? '',
     );
   }
@@ -61,8 +44,8 @@ class OwnershipUnitDetailDto {
       'idTsCon': idTsCon,
       'idDonViSoHuu': idDonViSoHuu,
       'soLuong': soLuong,
-      'thoiGianBanGiao': _formatDateTime(thoiGianBanGiao),
-      'ngayTao': _formatDateTime(ngayTao),
+      'thoiGianBanGiao': thoiGianBanGiao,
+      'ngayTao': ngayTao,
       'nguoiTao': nguoiTao,
     };
   }
@@ -74,8 +57,8 @@ class OwnershipUnitDetailDto {
       idTsCon: '',
       idDonViSoHuu: '',
       soLuong: 0,
-      thoiGianBanGiao: DateTime.now(),
-      ngayTao: DateTime.now(),
+      thoiGianBanGiao: '',
+      ngayTao: '',
       nguoiTao: '',
     );
   }
@@ -110,8 +93,8 @@ class OwnershipUnitDetailDto {
     String? idTsCon,
     String? idDonViSoHuu,
     int? soLuong,
-    DateTime? thoiGianBanGiao,
-    DateTime? ngayTao,
+    String? thoiGianBanGiao,
+    String? ngayTao,
     String? nguoiTao,
   }) {
     return OwnershipUnitDetailDto(
