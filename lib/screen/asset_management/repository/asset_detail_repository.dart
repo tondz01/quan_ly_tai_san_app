@@ -2,8 +2,8 @@ import 'dart:developer';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
-import 'package:quan_ly_tai_san_app/screen/report/widget/SeGayComponent/lib/core/utils/sg_log.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetManagementRepository extends ApiBase {
   Future<Map<String, dynamic>> createAssetDetail(String params) async {
