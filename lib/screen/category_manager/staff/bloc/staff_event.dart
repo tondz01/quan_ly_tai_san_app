@@ -35,8 +35,8 @@ class DeleteStaff extends StaffEvent {
 }
 
 class SearchStaff extends StaffEvent {
-  final String keyword;
-  const SearchStaff(this.keyword);
+  final List<NhanVien> value;
+  const SearchStaff(this.value);
   @override
-  List<Object?> get props => [keyword];
+  List<Object?> get props => [value];
 } 

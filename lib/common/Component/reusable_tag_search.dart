@@ -43,7 +43,11 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
     super.initState();
     _controller = TextEditingController(text: query);
     _filteredItems = widget.data;
-    widget.onFilteredItemsChanged(_filteredItems);
+
+    // Gọi callback sau khi build hoàn tất để tránh setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onFilteredItemsChanged(_filteredItems);
+    });
   }
 
   @override
@@ -92,7 +96,9 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
     List<T> results = widget.data;
     if (query.trim().isEmpty) {
       _filteredItems = results;
-      widget.onFilteredItemsChanged(results);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onFilteredItemsChanged(_filteredItems);
+      });
       return;
     }
 
@@ -166,7 +172,11 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
     }
 
     _filteredItems = results;
-    widget.onFilteredItemsChanged(results);
+
+    // Gọi callback sau khi build hoàn tất để tránh setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onFilteredItemsChanged(results);
+    });
   }
 
   String _buildTagQuery(String currentQuery, String tag) {
@@ -505,6 +515,10 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
                   query = "";
                   _controller.clear();
                   _filteredItems = widget.data;
+                });
+
+                // Gọi callback sau khi setState hoàn tất
+                WidgetsBinding.instance.addPostFrameCallback((_) {
                   widget.onFilteredItemsChanged(_filteredItems);
                 });
               },

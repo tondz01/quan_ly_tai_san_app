@@ -20,46 +20,14 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       _allStaffs = await _provider.fetchNhanViens();
       _allChucvus = await _provider.fetchChucVus();
       _allDepartments = await provider.fetchDepartments();
-      
+
       emit(StaffLoaded(_allStaffs));
     });
     on<SearchStaff>((event, emit) {
-      final searchLower = event.keyword.toLowerCase();
-      final filtered =
-          _allStaffs.where((item) {
-            bool nameMatch = AppUtility.fuzzySearch(
-              item.hoTen?.toLowerCase() ?? "",
-              searchLower,
-            );
-
-            bool staffIdMatch =
-                item.id?.toLowerCase().contains(searchLower) ?? false;
-
-            bool staffOwnerMatch = AppUtility.fuzzySearch(
-              item.nguoiQuanLy?.toLowerCase() ?? "",
-              searchLower,
-            );
-
-            bool departmentMatch = AppUtility.fuzzySearch(
-              item.boPhan?.toLowerCase() ?? "",
-              searchLower,
-            );
-
-            bool positionMatch = AppUtility.fuzzySearch(
-              item.chucVu?.toLowerCase() ?? "",
-              searchLower,
-            );
-
-            return nameMatch ||
-                staffIdMatch ||
-                staffOwnerMatch ||
-                departmentMatch ||
-                positionMatch;
-          }).toList();
-      emit(StaffLoaded(filtered));
+      emit(StaffLoaded(event.value));
     });
     on<AddStaff>((event, emit) async {
-      await _provider.addNhanVien(event.staff, event.staff.avatar,);
+      await _provider.addNhanVien(event.staff, event.staff.avatar);
       add(LoadStaffs());
     });
     on<UpdateStaff>((event, emit) async {

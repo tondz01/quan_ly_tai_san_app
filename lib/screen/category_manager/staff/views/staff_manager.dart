@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_sta
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class StaffManager extends StatefulWidget {
   const StaffManager({super.key});
@@ -61,9 +62,19 @@ class _StaffManagerState extends State<StaffManager> {
     );
   }
 
-  void _searchStaff(String value) {
+  void _searchStaff(List<NhanVien> value) {
     context.read<StaffBloc>().add(SearchStaff(value));
   }
+
+  List<Map<String, Function(NhanVien)>> getters = [
+    {'Mã nhân viên': (item) => item.id},
+    {'Tên nhân viên': (item) => item.hoTen},
+    {'Email': (item) => item.emailCongViec},
+    {'Phòng ban': (item) => item.tenPhongBan},
+    {'Chức vụ': (item) => item.chucVu},
+    {'Người quản lý': (item) => item.nguoiQuanLy},
+    {'Số điện thoại': (item) => item.diDong},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -77,13 +88,13 @@ class _StaffManagerState extends State<StaffManager> {
             backgroundColor: Colors.transparent,
             appBar: AppBar(
               title: HeaderComponent<NhanVien>(
-                data: _filteredData,
-                getters: [],
+                data: context.read<StaffBloc>().staffs,
+                getters: getters,
                 controller: controller,
                 onSearchChanged: (value) {
-                  log('value: $value');
                   setState(() {
-                    // _searchStaff(value);
+                    SGLog.debug("NhanVien Search", 'Search value: $value');
+                    _searchStaff(value);
                   });
                 },
                 onNew: () {
