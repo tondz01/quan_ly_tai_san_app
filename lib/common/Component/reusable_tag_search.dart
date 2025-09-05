@@ -1,5 +1,6 @@
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 class ReusableTagSearch<T> extends StatefulWidget {
@@ -29,6 +30,8 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
   bool showTagSuggestions = false;
   List<T> _filteredItems = [];
   late TextEditingController _controller;
+  int _selectedTagIndex = 0;
+  late FocusNode _textFieldFocusNode;
 
   // Chia sẻ text style để đảm bảo nhất quán giữa TextField và TextSpan
   static const TextStyle _baseTextStyle = TextStyle(
@@ -42,6 +45,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: query);
+    _textFieldFocusNode = FocusNode();
     _filteredItems = widget.data;
 
     // Gọi callback sau khi build hoàn tất để tránh setState during build
@@ -53,6 +57,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
   @override
   void dispose() {
     _controller.dispose();
+    _textFieldFocusNode.dispose();
     super.dispose();
   }
 
@@ -229,143 +234,186 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
     final position = renderBox.localToGlobal(Offset.zero);
     final screenSize = MediaQuery.of(context).size;
 
+    // Reset selected index
+    _selectedTagIndex = 0;
+
+    // Lấy danh sách tags có sẵn
+    final availableTags =
+        widget.getters!
+            .where((tag) {
+              return !query.contains("@\"${tag.keys.first}\":");
+            })
+            .map((tag) => tag.keys.first)
+            .toList();
+
+    if (availableTags.isEmpty) return;
+
     showDialog(
       context: context,
       barrierDismissible: true,
       barrierColor: Colors.transparent,
       builder: (BuildContext dialogContext) {
-        return Stack(
-          children: [
-            // Rào chắn vô hình để đóng popup
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  if (Navigator.canPop(dialogContext)) {
-                    Navigator.of(dialogContext).pop();
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Focus(
+              autofocus: true,
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent) {
+                  if (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+                      event.logicalKey == LogicalKeyboardKey.tab) {
+                    setDialogState(() {
+                      _selectedTagIndex =
+                          (_selectedTagIndex + 1) % availableTags.length;
+                    });
+                    return KeyEventResult.handled;
+                  } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                    setDialogState(() {
+                      _selectedTagIndex =
+                          (_selectedTagIndex - 1 + availableTags.length) %
+                          availableTags.length;
+                    });
+                    return KeyEventResult.handled;
+                  } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+                    if (Navigator.canPop(dialogContext)) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                    Future.microtask(
+                      () => insertTag(availableTags[_selectedTagIndex]),
+                    );
+                    return KeyEventResult.handled;
+                  } else if (event.logicalKey == LogicalKeyboardKey.escape) {
+                    if (Navigator.canPop(dialogContext)) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                    return KeyEventResult.handled;
                   }
-                },
-                child: Container(color: Colors.transparent),
-              ),
-            ),
-            // Popup gợi ý tag
-            Positioned(
-              left: math.max(12, position.dx),
-              top: math.min(screenSize.height - 200, position.dy + 52),
-              child: Material(
-                elevation: 8,
-                borderRadius: BorderRadius.circular(12),
-                shadowColor: Colors.black26,
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: math.min(300, screenSize.width - 24),
-                    maxHeight: 240,
+                }
+                return KeyEventResult.ignored;
+              },
+              child: Stack(
+                children: [
+                  // Rào chắn vô hình để đóng popup
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (Navigator.canPop(dialogContext)) {
+                          Navigator.of(dialogContext).pop();
+                        }
+                      },
+                      child: Container(color: Colors.transparent),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Color(0xFF40444B),
-                              width: 1,
-                            ),
-                          ),
+                  // Popup gợi ý tag
+                  Positioned(
+                    left: math.max(12, position.dx),
+                    top: math.min(screenSize.height - 200, position.dy + 52),
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(12),
+                      shadowColor: Colors.black26,
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: math.min(300, screenSize.width - 24),
+                          maxHeight: 240,
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.tag,
-                              color: Color(0xFF5865F2),
-                              size: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
                             ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              "Chọn tag để lọc:",
-                              style: TextStyle(
-                                color: Color(0xFF5865F2),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: Color(0xFF40444B),
+                                    width: 1,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.tag,
+                                    color: Color(0xFF5865F2),
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    "Chọn tag để lọc:",
+                                    style: TextStyle(
+                                      color: Color(0xFF5865F2),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  const Text(
+                                    "↑↓ Tab Enter",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Tags
+                            Flexible(
+                              child: SingleChildScrollView(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children:
+                                        availableTags.asMap().entries.map((
+                                          entry,
+                                        ) {
+                                          final index = entry.key;
+                                          final tag = entry.value;
+                                          return _buildTagChip(
+                                            tag,
+                                            dialogContext,
+                                            isSelected:
+                                                index == _selectedTagIndex,
+                                          );
+                                        }).toList(),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Tags
-                      Flexible(
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: () {
-                                final availableTags =
-                                    widget.getters!
-                                        .where((tag) {
-                                          return !query.contains(
-                                            "@\"${tag.keys.first}\":",
-                                          );
-                                        })
-                                        .map(
-                                          (tag) => _buildTagChip(
-                                            tag.keys.first,
-                                            dialogContext,
-                                          ),
-                                        )
-                                        .toList();
-
-                                // Nếu không có tag nào khả dụng, hiển thị thông báo
-                                if (availableTags.isEmpty) {
-                                  return [
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(12),
-                                      child: const Text(
-                                        "Không có thẻ nào khả dụng",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 13,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                      ),
-                                    ),
-                                  ];
-                                }
-
-                                return availableTags;
-                              }(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ),
-          ],
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildTagChip(String tag, BuildContext dialogContext) {
+  Widget _buildTagChip(
+    String tag,
+    BuildContext dialogContext, {
+    bool isSelected = false,
+  }) {
     return InkWell(
       onTap: () {
         // Đóng dialog một cách an toàn
@@ -379,24 +427,21 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF5865F2),
+          color: isSelected ? const Color(0xFF4752C4) : const Color(0xFF5865F2),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF5865F2).withValues(alpha: 0.3),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.label, color: Colors.white, size: 14),
+            Icon(
+              isSelected ? Icons.label_important : Icons.label,
+              color: Colors.white,
+              size: 14,
+            ),
             const SizedBox(width: 4),
             Text(
               tag,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -456,6 +501,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
               children: [
                 TextField(
                   controller: _controller,
+                  focusNode: _textFieldFocusNode,
                   style: _baseTextStyle.copyWith(color: Colors.transparent),
                   cursorWidth: 0.5,
                   cursorHeight: 14,
