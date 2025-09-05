@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -40,7 +39,6 @@ class SignatoryRepository {
         res.data["data"],
         SignatoryDto.fromJson,
       );
-      log('message check signatories33: ${jsonEncode(signatories)}');
       return signatories;
       
     } on DioException catch (e) {

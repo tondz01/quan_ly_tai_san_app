@@ -74,7 +74,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
   List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -861,40 +861,38 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ThreadNode(header: 'Trạng thái ký', depth: 0),
       if (item.daXacNhan == true)
         ThreadNode(
-          header: 'Người ký nháy:',
+          header: 'Đại diện đơn vị để nghị:',
           depth: 1,
           child: viewSignatoryStatus(
-            item.daXacNhan ?? false,
+            item.daXacNhan == true,
             widget.provider
                 .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
                 .hoTen
                 .toString(),
           ),
         ),
-      if (item.daiDienBenGiaoXacNhan == true)
-        ThreadNode(
-          header: 'Trưởng phòng xác nhận:',
-          depth: 1,
-          child: viewSignatoryStatus(
-            item.daiDienBenGiaoXacNhan ?? false,
-            widget.provider
-                .getNhanVienByID(item.idDaiDienBenGiao ?? '')
-                .hoTen
-                .toString(),
-          ),
+      ThreadNode(
+        header: 'Đại diện đơn vị giao:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daiDienBenGiaoXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idDaiDienBenGiao ?? '')
+              .hoTen
+              .toString(),
         ),
-      if (item.daiDienBenNhanXacNhan == true)
-        ThreadNode(
-          header: 'Phó phòng xác nhận:',
-          depth: 1,
-          child: viewSignatoryStatus(
-            item.daiDienBenNhanXacNhan ?? false,
-            widget.provider
-                .getNhanVienByID(item.idDaiDienBenNhan ?? '')
-                .hoTen
-                .toString(),
-          ),
+      ),
+      ThreadNode(
+        header: 'Đại diện đơn vị nhận:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daiDienBenNhanXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idDaiDienBenNhan ?? '')
+              .hoTen
+              .toString(),
         ),
+      ),
       if (item.listSignatory != null)
         ...item.listSignatory!.map(
           (e) => ThreadNode(

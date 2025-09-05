@@ -8,8 +8,8 @@ class ToolAndMaterialTransferRequest {
   final bool trangThaiKyNhay;
   final bool nguoiLapPhieuKyNhay;
   final String idDonViDeNghi;
-  final DateTime tgGnTuNgay;
-  final DateTime tgGnDenNgay;
+  final String tgGnTuNgay;
+  final String tgGnDenNgay;
   final String idTrinhDuyetCapPhong;
   final bool trinhDuyetCapPhongXacNhan;
   final String idTrinhDuyetGiamDoc;
@@ -19,17 +19,17 @@ class ToolAndMaterialTransferRequest {
   final String noiNhan;
   final int trangThai;
   final String idCongTy;
-  final DateTime ngayTao;
-  final DateTime ngayCapNhat;
+  final String ngayTao;
+  final String ngayCapNhat;
   final String nguoiTao;
   final String nguoiCapNhat;
-  final bool coHieuLuc;
+  final int coHieuLuc;
   final int loai;
   final bool share;
   final String trichYeu;
-  final String duongDanFile;
-  final String tenFile;
-  final String ngayKy;
+  String duongDanFile;
+  String tenFile;
+  String ngayKy;
 
   ToolAndMaterialTransferRequest({
     this.id = '',
@@ -78,28 +78,6 @@ class ToolAndMaterialTransferRequest {
       return int.tryParse(v?.toString() ?? '0') ?? 0;
     }
 
-    DateTime parseTimestamp(dynamic value) {
-      if (value == null) return DateTime.now();
-      if (value is Map && value.containsKey('seconds')) {
-        final seconds = value['seconds'] as int;
-        final nanoseconds = value['nanoseconds'] as int? ?? 0;
-        return DateTime.fromMillisecondsSinceEpoch(
-          seconds * 1000 + (nanoseconds / 1000000).round(),
-        );
-      }
-      if (value is String) {
-        try {
-          return DateTime.parse(value);
-        } catch (e) {
-          return DateTime.now();
-        }
-      }
-      if (value is DateTime) {
-        return value;
-      }
-      return DateTime.now();
-    }
-
     return ToolAndMaterialTransferRequest(
       id: json['id'] ?? '',
       soQuyetDinh: json['soQuyetDinh'] ?? '',
@@ -110,8 +88,8 @@ class ToolAndMaterialTransferRequest {
       trangThaiKyNhay: parseBool(json['trangThaiKyNhay']),
       nguoiLapPhieuKyNhay: parseBool(json['nguoiLapPhieuKyNhay']),
       idDonViDeNghi: json['idDonViDeNghi'] ?? '',
-      tgGnTuNgay: parseTimestamp(json['tgGnTuNgay']),
-      tgGnDenNgay: parseTimestamp(json['tgGnDenNgay']),
+      tgGnTuNgay: json['tgGnTuNgay'] ?? '',
+      tgGnDenNgay: json['tgGnDenNgay'] ?? '',
       idTrinhDuyetCapPhong: json['idTrinhDuyetCapPhong'] ?? '',
       trinhDuyetCapPhongXacNhan: parseBool(json['trinhDuyetCapPhongXacNhan']),
       idTrinhDuyetGiamDoc: json['idTrinhDuyetGiamDoc'] ?? '',
@@ -121,11 +99,11 @@ class ToolAndMaterialTransferRequest {
       noiNhan: json['noiNhan'] ?? '',
       trangThai: parseInt(json['trangThai']),
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao: parseTimestamp(json['ngayTao']),
-      ngayCapNhat: parseTimestamp(json['ngayCapNhat']),
+      ngayTao: json['ngayTao'] ?? '',
+      ngayCapNhat: json['ngayCapNhat'] ?? '',
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
-      coHieuLuc: parseBool(json['coHieuLuc']),
+      coHieuLuc: parseInt(json['coHieuLuc']),
       loai: parseInt(json['loai']),
       share: parseBool(json['share']),
       trichYeu: json['trichYeu'] ?? '',
@@ -136,10 +114,6 @@ class ToolAndMaterialTransferRequest {
   }
 
   Map<String, dynamic> toJson() {
-    String formatDateTime(DateTime dateTime) {
-      return dateTime.toIso8601String();
-    }
-
     return {
       'id': id,
       'soQuyetDinh': soQuyetDinh,
@@ -150,8 +124,8 @@ class ToolAndMaterialTransferRequest {
       'trangThaiKyNhay': trangThaiKyNhay,
       'nguoiLapPhieuKyNhay': nguoiLapPhieuKyNhay,
       'idDonViDeNghi': idDonViDeNghi,
-      'tgGnTuNgay': formatDateTime(tgGnTuNgay),
-      'tgGnDenNgay': formatDateTime(tgGnDenNgay),
+      'tgGnTuNgay': tgGnTuNgay,
+      'tgGnDenNgay': tgGnDenNgay,
       'idTrinhDuyetCapPhong': idTrinhDuyetCapPhong,
       'trinhDuyetCapPhongXacNhan': trinhDuyetCapPhongXacNhan,
       'idTrinhDuyetGiamDoc': idTrinhDuyetGiamDoc,
@@ -161,11 +135,11 @@ class ToolAndMaterialTransferRequest {
       'noiNhan': noiNhan,
       'trangThai': trangThai,
       'idCongTy': idCongTy,
-      'ngayTao': formatDateTime(ngayTao),
-      'ngayCapNhat': formatDateTime(ngayCapNhat),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'coHieuLuc': coHieuLuc ? 1 : 0,
+      'coHieuLuc': coHieuLuc,
       'loai': loai,
       'share': share,
       'trichYeu': trichYeu,
@@ -185,8 +159,8 @@ class ToolAndMaterialTransferRequest {
     bool? trangThaiKyNhay,
     bool? nguoiLapPhieuKyNhay,
     String? idDonViDeNghi,
-    DateTime? tgGnTuNgay,
-    DateTime? tgGnDenNgay,
+    String? tgGnTuNgay,
+    String? tgGnDenNgay,
     String? idTrinhDuyetCapPhong,
     bool? trinhDuyetCapPhongXacNhan,
     String? idTrinhDuyetGiamDoc,
@@ -196,11 +170,11 @@ class ToolAndMaterialTransferRequest {
     String? noiNhan,
     int? trangThai,
     String? idCongTy,
-    DateTime? ngayTao,
-    DateTime? ngayCapNhat,
+    String? ngayTao,
+    String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
-    bool? coHieuLuc,
+    int? coHieuLuc,
     int? loai,
     bool? share,
     String? trichYeu,
@@ -221,9 +195,11 @@ class ToolAndMaterialTransferRequest {
       tgGnTuNgay: tgGnTuNgay ?? this.tgGnTuNgay,
       tgGnDenNgay: tgGnDenNgay ?? this.tgGnDenNgay,
       idTrinhDuyetCapPhong: idTrinhDuyetCapPhong ?? this.idTrinhDuyetCapPhong,
-      trinhDuyetCapPhongXacNhan: trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
+      trinhDuyetCapPhongXacNhan:
+          trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
       idTrinhDuyetGiamDoc: idTrinhDuyetGiamDoc ?? this.idTrinhDuyetGiamDoc,
-      trinhDuyetGiamDocXacNhan: trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
+      trinhDuyetGiamDocXacNhan:
+          trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
       diaDiemGiaoNhan: diaDiemGiaoNhan ?? this.diaDiemGiaoNhan,
       idPhongBanXemPhieu: idPhongBanXemPhieu ?? this.idPhongBanXemPhieu,
       noiNhan: noiNhan ?? this.noiNhan,
@@ -244,7 +220,6 @@ class ToolAndMaterialTransferRequest {
   }
 
   factory ToolAndMaterialTransferRequest.empty() {
-    final now = DateTime.now();
     return ToolAndMaterialTransferRequest(
       id: '',
       soQuyetDinh: '',
@@ -255,8 +230,8 @@ class ToolAndMaterialTransferRequest {
       trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: false,
       idDonViDeNghi: '',
-      tgGnTuNgay: now,
-      tgGnDenNgay: now.add(const Duration(days: 1)),
+      tgGnTuNgay: '',
+      tgGnDenNgay: '',
       idTrinhDuyetCapPhong: '',
       trinhDuyetCapPhongXacNhan: false,
       idTrinhDuyetGiamDoc: '',
@@ -266,11 +241,11 @@ class ToolAndMaterialTransferRequest {
       noiNhan: '',
       trangThai: 0,
       idCongTy: '',
-      ngayTao: now,
-      ngayCapNhat: now,
+      ngayTao: '',
+      ngayCapNhat: '',
       nguoiTao: '',
       nguoiCapNhat: '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: 0,
       share: false,
       trichYeu: '',

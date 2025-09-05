@@ -56,7 +56,10 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     );
   }
 
-  Future<void> _sendToSigner(SendToSignerAsetHandoverEvent event, Emitter emit) async {
+  Future<void> _sendToSigner(
+    SendToSignerAsetHandoverEvent event,
+    Emitter emit,
+  ) async {
     emit(AssetHandoverInitialState());
     emit(AssetHandoverLoadingState());
     Map<String, dynamic> result = await AssetHandoverRepository().sendToSigner(
@@ -68,11 +71,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     } else {
       String msg = "Lỗi khi gửi lệnh điều động";
       emit(
-        ErrorState(
-          title: "notice",
-          code: result['status_code'],
-          message: msg,
-        ),
+        ErrorState(title: "notice", code: result['status_code'], message: msg),
       );
     }
   }
@@ -173,7 +172,11 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     );
     emit(AssetHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(UpdateSigningStatusSuccessState());
+      emit(
+        UpdateSigningStatusSuccessState(
+          isUpdateOwnershipUnit: result['data'] == '2',
+        ),
+      );
     } else {
       String msg = "Lỗi khi cập nhập trạng thái bàn giao ${result['message']}";
       emit(

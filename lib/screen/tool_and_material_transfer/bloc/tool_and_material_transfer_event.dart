@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 
 abstract class ToolAndMaterialTransferEvent extends Equatable {
   const ToolAndMaterialTransferEvent();
@@ -46,7 +47,7 @@ class GetDataDropdownEvent extends ToolAndMaterialTransferEvent {
 //TẠO BẢN ĐIỀU ĐỘNG
 class CreateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
   final BuildContext context;
-  final ToolAndMaterialTransferDto request;
+  final ToolAndMaterialTransferRequest request;
   final List<DetailToolAndMaterialTransferDto> requestDetail;
   final List<SignatoryDto> requestSignatory;
 
@@ -63,7 +64,7 @@ class CreateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
 
 class UpdateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
   final BuildContext context;
-  final ToolAndMaterialTransferDto params;
+  final ToolAndMaterialTransferRequest params;
   final String id;
 
   const UpdateToolAndMaterialTransferEvent(this.context, this.params, this.id);

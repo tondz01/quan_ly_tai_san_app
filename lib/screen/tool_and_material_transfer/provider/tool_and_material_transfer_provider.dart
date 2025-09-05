@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -42,6 +43,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   List<ToolAndMaterialTransferDto>? get dataPage => _dataPage;
   ToolAndMaterialTransferDto? get item => _item;
   get data => _data;
+  get filteredData => _filteredData;
   get dataAsset => _dataAsset;
   get dataPhongBan => _dataPhongBan;
   get dataNhanVien => _dataNhanVien;
@@ -513,7 +515,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   Future<void> saveAssetTransfer(
     BuildContext context,
-    ToolAndMaterialTransferDto request,
+    ToolAndMaterialTransferRequest request,
     List<DetailToolAndMaterialTransferDto> requestDetail,
     List<SignatoryDto> requestSignatory,
     String fileName,

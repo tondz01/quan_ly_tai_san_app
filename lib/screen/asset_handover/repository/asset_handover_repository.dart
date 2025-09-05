@@ -125,7 +125,9 @@ class AssetHandoverRepository extends ApiBase {
       }
       log('message test request: ${request['id']}');
       for (var signatory in listSignatory) {
-        final signatoryCopy = signatory.copyWith(idTaiLieu: request['id'].toString());
+        final signatoryCopy = signatory.copyWith(
+          idTaiLieu: request['id'].toString(),
+        );
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
@@ -336,6 +338,42 @@ class AssetHandoverRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateOwnershipUnit(
+    Map<String, dynamic> request,
+    String id,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': "",
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        "${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/update-so-luong",
+        data: request,
+      );
+      final int? status = response.statusCode;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at updateAsset - AssetManagementRepository: $e",
+      );
     }
 
     return result;

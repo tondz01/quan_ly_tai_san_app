@@ -163,6 +163,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
             ),
           );
         } else if (state is UpdateSigningStatusSuccessState) {
+          // bool isUpdateOwnershipUnit = state.isUpdateOwnershipUnit;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Cập nhật trạng thái ký biên bản thành công'),

@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -29,7 +30,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> createToolAndMaterialTransfer(
-    ToolAndMaterialTransferDto request,
+    ToolAndMaterialTransferRequest request,
     List<DetailToolAndMaterialTransferDto> requestDetail,
     List<SignatoryDto> listSignatory,
   ) async {
@@ -133,7 +134,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         response.data,
         ToolAndMaterialTransferDto.fromJson,
       );
-      log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }
@@ -301,9 +301,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
         toolAndMaterialTransfer.detailToolAndMaterialTransfers =
             await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
-        log(
-          'message test1 detailToolAndMaterialTransfers: ${jsonEncode(toolAndMaterialTransfer.detailToolAndMaterialTransfers)}',
-        );
       }),
     );
     await Future.wait(
@@ -344,7 +341,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     return res.data;
   }
 
-  Future<int> update(String id, ToolAndMaterialTransferDto obj) async {
+  Future<int> update(String id, ToolAndMaterialTransferRequest obj) async {
     String url = '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/$id';
     final res = await put(url, data: obj.toJson());
     final data = res.data;
@@ -391,8 +388,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
               quanTrongCanXacNhan: item.quanTrongCanXacNhan ?? false,
               phoPhongXacNhan: item.phoPhongXacNhan ?? false,
               idDonViDeNghi: item.idDonViDeNghi ?? '',
-              tgGnTuNgay: item.tgGnTuNgay ?? '',
-              tgGnDenNgay: item.tgGnDenNgay ?? '',
+              tggnTuNgay: item.tggnTuNgay ?? '',
+              tggnDenNgay: item.tggnDenNgay ?? '',
               idTruongPhongDonViGiao: item.idTruongPhongDonViGiao ?? '',
               truongPhongDonViGiaoXacNhan:
                   item.truongPhongDonViGiaoXacNhan ?? false,

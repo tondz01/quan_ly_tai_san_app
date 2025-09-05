@@ -42,6 +42,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   DieuDongTaiSanDto? get item => _item;
   get itemPreview => _itemPreview;
   get data => _data;
+  get filteredData => _filteredData;
   get dataAsset => _dataAsset;
   get dataPhongBan => _dataPhongBan;
   get dataNhanVien => _dataNhanVien;

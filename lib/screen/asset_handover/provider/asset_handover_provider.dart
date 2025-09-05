@@ -461,11 +461,11 @@ class AssetHandoverProvider with ChangeNotifier {
 
   Future<void> getListDetailAssetMobilization(String id) async {
     if (id.isEmpty) return;
-    _isLoading = true;
+    // _isLoading = true;
     final Map<String, dynamic> result = await AssetHandoverRepository()
         .getListDetailAssetMobilization(id);
     _dataDetailAssetMobilization = result['data'];
-    _isLoading = false;
+    // _isLoading = false;
     notifyListeners();
   }
 

@@ -60,8 +60,8 @@ class ToolAndMaterialTransferDto {
   bool? trinhDuyetGiamDocXacNhan;
   
   // Thời gian giao nhận
-  String? tgGnTuNgay;
-  String? tgGnDenNgay;
+  String? tggnTuNgay;
+  String? tggnDenNgay;
   
   String? diaDiemGiaoNhan;
   String? noiNhan;
@@ -120,8 +120,8 @@ class ToolAndMaterialTransferDto {
     this.phoPhongDonViGiaoXacNhan,
     this.trinhDuyetCapPhongXacNhan,
     this.trinhDuyetGiamDocXacNhan,
-    this.tgGnTuNgay,
-    this.tgGnDenNgay,
+    this.tggnTuNgay,
+    this.tggnDenNgay,
     this.diaDiemGiaoNhan,
     this.noiNhan,
     this.trichYeu,
@@ -197,8 +197,8 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: json['phoPhongDonViGiaoXacNhan'],
       trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
       trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
-      tgGnTuNgay: json['tgGnTuNgay'],
-      tgGnDenNgay: json['tgGnDenNgay'],
+      tggnTuNgay: json['tggnTuNgay'],
+      tggnDenNgay: json['tggnDenNgay'],
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       noiNhan: json['noiNhan'],
       trichYeu: json['trichYeu'],
@@ -254,8 +254,8 @@ class ToolAndMaterialTransferDto {
       "phoPhongDonViGiaoXacNhan": phoPhongDonViGiaoXacNhan,
       "trinhDuyetCapPhongXacNhan": trinhDuyetCapPhongXacNhan,
       "trinhDuyetGiamDocXacNhan": trinhDuyetGiamDocXacNhan,
-      "tgGnTuNgay": tgGnTuNgay,
-      "tgGnDenNgay": tgGnDenNgay,
+      "tggnTuNgay": tggnTuNgay,
+      "tggnDenNgay": tggnDenNgay,
       "diaDiemGiaoNhan": diaDiemGiaoNhan,
       "noiNhan": noiNhan,
       "trichYeu": trichYeu,
@@ -312,8 +312,8 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
-      tgGnTuNgay: DateTime.now().toIso8601String(),
-      tgGnDenNgay: DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+      tggnTuNgay: DateTime.now().toIso8601String(),
+      tggnDenNgay: DateTime.now().add(const Duration(days: 1)).toIso8601String(),
       diaDiemGiaoNhan: '',
       noiNhan: '',
       trichYeu: '',
@@ -368,8 +368,8 @@ class ToolAndMaterialTransferDto {
     bool? phoPhongDonViGiaoXacNhan,
     bool? trinhDuyetCapPhongXacNhan,
     bool? trinhDuyetGiamDocXacNhan,
-    String? tgGnTuNgay,
-    String? tgGnDenNgay,
+    String? tggnTuNgay,
+    String? tggnDenNgay,
     String? diaDiemGiaoNhan,
     String? noiNhan,
     String? trichYeu,
@@ -422,8 +422,8 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: phoPhongDonViGiaoXacNhan ?? this.phoPhongDonViGiaoXacNhan,
       trinhDuyetCapPhongXacNhan: trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
       trinhDuyetGiamDocXacNhan: trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
-      tgGnTuNgay: tgGnTuNgay ?? this.tgGnTuNgay,
-      tgGnDenNgay: tgGnDenNgay ?? this.tgGnDenNgay,
+      tggnTuNgay: tggnTuNgay ?? this.tggnTuNgay,
+      tggnDenNgay: tggnDenNgay ?? this.tggnDenNgay,
       diaDiemGiaoNhan: diaDiemGiaoNhan ?? this.diaDiemGiaoNhan,
       noiNhan: noiNhan ?? this.noiNhan,
       trichYeu: trichYeu ?? this.trichYeu,

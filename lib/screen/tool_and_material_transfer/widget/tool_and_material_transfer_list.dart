@@ -66,39 +66,24 @@ class _ToolAndMaterialTransferListState
   List<String> visibleColumnIds = [
     "signing_status",
     'type',
-    'decision_date',
     'effective_date',
     'approver',
     'document',
     'id',
+    'decision_date',
+    'to_date',
     'status',
     'actions',
   ];
 
   List<Map<String, DateTime Function(ToolAndMaterialTransferDto)>> getters = [
     {
-      'Ngày tạo':
-          (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
-    },
-    {
-      'Ngày cập nhật':
-          (item) => DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
-    },
-    {
-      'Ngày ký':
-          (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
-    },
-    {
-      'Ngày ký':
-          (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
-    },
-    {
       'Thời gian giao nhận từ ngày':
-          (item) => DateTime.tryParse(item.tgGnTuNgay ?? '') ?? DateTime.now(),
+          (item) => DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
     },
     {
       'Thời gian giao nhận đến ngày':
-          (item) => DateTime.tryParse(item.tgGnDenNgay ?? '') ?? DateTime.now(),
+          (item) => DateTime.tryParse(item.tggnDenNgay ?? '') ?? DateTime.now(),
     },
   ];
 
@@ -138,11 +123,6 @@ class _ToolAndMaterialTransferListState
         isChecked: visibleColumnIds.contains('type'),
       ),
       ColumnDisplayOption(
-        id: 'decision_date',
-        label: 'Ngày ký',
-        isChecked: visibleColumnIds.contains('decision_date'),
-      ),
-      ColumnDisplayOption(
         id: 'effective_date',
         label: 'Ngày có hiệu lực',
         isChecked: visibleColumnIds.contains('effective_date'),
@@ -161,6 +141,16 @@ class _ToolAndMaterialTransferListState
         id: 'id',
         label: 'Ký số',
         isChecked: visibleColumnIds.contains('id'),
+      ),
+      ColumnDisplayOption(
+        id: 'decision_date',
+        label: 'Thời gian giao nhận từ ngày',
+        isChecked: visibleColumnIds.contains('decision_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'to_date',
+        label: 'Thời gian giao nhận đến ngày',
+        isChecked: visibleColumnIds.contains('to_date'),
       ),
       ColumnDisplayOption(
         id: 'status',
@@ -200,21 +190,12 @@ class _ToolAndMaterialTransferListState
             ),
           );
           break;
-        case 'decision_date':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Ngày ký',
-              width: 100,
-              getValue: (item) => item.ngayKy ?? '',
-            ),
-          );
-          break;
         case 'effective_date':
           columns.add(
             TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày có hiệu lực',
               width: 100,
-              getValue: (item) => item.tgGnTuNgay ?? '',
+              getValue: (item) => item.tggnTuNgay ?? '',
             ),
           );
           break;
@@ -251,6 +232,29 @@ class _ToolAndMaterialTransferListState
               title: 'Ký số',
               width: 120,
               getValue: (item) => item.id ?? '',
+            ),
+          );
+          break;
+        case 'decision_date':
+          columns.add(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
+              title: 'Thời gian giao nhận từ ngày',
+              width: 150,
+              getValue: (item) => item.tggnTuNgay ?? '',
+            ),
+          );
+          break;
+        case 'to_date':
+          columns.add(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
+              title: 'Thời gian giao nhận đến ngày',
+              width: 150,
+              getValue: (item) {
+                if (item.tggnDenNgay == null) {
+                  return '';
+                }
+                return item.tggnDenNgay!;
+              },
             ),
           );
           break;
@@ -361,6 +365,13 @@ class _ToolAndMaterialTransferListState
                       columns: columns,
                       data: widget.provider.dataPage ?? [],
                       horizontalController: ScrollController(),
+                      getters: getters,
+                      startDate: DateTime.tryParse(
+                        widget.provider.filteredData!.isNotEmpty
+                            ? widget.provider.filteredData!.first.tggnDenNgay
+                                .toString()
+                            : '',
+                      ),
                       onRowTap: (item) {
                         widget.provider.onChangeDetailToolAndMaterialTransfer(
                           item,

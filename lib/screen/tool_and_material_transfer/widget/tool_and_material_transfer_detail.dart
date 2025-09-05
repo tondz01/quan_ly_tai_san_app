@@ -30,6 +30,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/deta
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -116,7 +117,7 @@ class _ToolAndMaterialTransferDetailState
   PhongBan? donViGiao;
   PhongBan? donViNhan;
   PhongBan? donViDeNghi;
-  NhanVien? nguoiDeNghi;
+  // NhanVien? nguoiDeNghi;
   UserInfoDTO? nguoiLapPhieu;
   NhanVien? nguoiKyCapPhong;
   NhanVien? nguoiKyGiamDoc;
@@ -265,7 +266,9 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (item != null) {
-        log('message test1 item: ${jsonEncode(item!.detailToolAndMaterialTransfers)}');
+        log(
+          'message test1 item: ${jsonEncode(item!.detailToolAndMaterialTransfers)}',
+        );
         controllerSoChungTu.text = item?.id ?? '';
         controllerSubject.text = item?.trichYeu ?? '';
         controllerDocumentName.text = item?.tenPhieu ?? '';
@@ -273,8 +276,8 @@ class _ToolAndMaterialTransferDetailState
         controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
         controllerRequester.text = item?.tenNguoiDeNghi ?? '';
         controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
-        controllerEffectiveDate.text = item?.tgGnTuNgay ?? '';
-        controllerEffectiveDateTo.text = item?.tgGnDenNgay ?? '';
+        controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
+        controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
         controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
         controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
 
@@ -296,9 +299,9 @@ class _ToolAndMaterialTransferDetailState
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == donViDeNghi!.id)
                 .toList();
-        nguoiDeNghi = widget.provider.getNhanVienByID(
-          item?.idNguoiDeNghi ?? '',
-        );
+        // nguoiDeNghi = widget.provider.getNhanVienByID(
+        //   item?.idNguoiDeNghi ?? '',
+        // );
         nguoiKyNhay = widget.provider.getNhanVienByID(
           item?.idNguoiKyNhay ?? '',
         );
@@ -386,8 +389,8 @@ class _ToolAndMaterialTransferDetailState
                 .where((element) => element.phongBanId == donViDeNghi!.id)
                 .toList();
         controllerProposingUnit.text = donViDeNghi?.tenPhongBan ?? '';
-        nguoiDeNghi = nhanVienLogin;
-        controllerRequester.text = nguoiDeNghi!.hoTen ?? '';
+        nguoiKyNhay = nhanVienLogin;
+        controllerRequester.text = nguoiKyNhay!.hoTen ?? '';
         additionalSigners.clear();
         additionalSignerControllers.clear();
         additionalSignersDetailed.clear();
@@ -494,28 +497,29 @@ class _ToolAndMaterialTransferDetailState
         await repo.create(
           DetailToolAndMaterialTransferDto(
             id: d.id,
-            idDieuDongCCDCVatTu: idDieuDongTaiSan,
-            soQuyetDinh: d.soQuyetDinh,
             tenPhieu: d.tenPhieu,
+            soLuong: d.soLuong,
+            ghiChu: d.ghiChu,
+            ngayTao: d.ngayTao,
+            ngayCapNhat: d.ngayCapNhat,
+            nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+            nguoiCapNhat: '',
+            isActive: true,
             idCCDCVatTu: d.idCCDCVatTu,
+            idDieuDongCCDCVatTu: d.idDieuDongCCDCVatTu,
+            soLuongXuat: d.soLuongXuat,
+            soQuyetDinh: '',
+            namSanXuat: d.namSanXuat,
             donViTinh: d.donViTinh,
             tenCCDCVatTu: d.tenCCDCVatTu,
             congSuat: d.congSuat,
             nuocSanXuat: d.nuocSanXuat,
             soKyHieu: d.soKyHieu,
             kyHieu: d.kyHieu,
-            namSanXuat: d.namSanXuat,
-            soLuong: d.soLuong,
-            ghiChu: d.ghiChu,
-            ngayTao: d.ngayTao,
-            ngayCapNhat: d.ngayCapNhat,
-            nguoiTao: d.nguoiTao,
-            nguoiCapNhat: d.nguoiCapNhat,
-            isActive: d.isActive,
-            soLuongXuat: d.soLuongXuat,
           ),
         );
       }
+      log('message test1 item!.id: ${item!.id}');
     } catch (e) {
       log('Sync details error: $e');
     }
@@ -826,7 +830,7 @@ class _ToolAndMaterialTransferDetailState
                           label: 'at.requester'.tr,
                           controller: controllerRequester,
                           isEditing: isEditing,
-                          value: nguoiDeNghi,
+                          value: nguoiKyNhay,
                           items: [
                             ...listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
@@ -846,7 +850,7 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             log('requester selected: $value');
                             setState(() {
-                              nguoiDeNghi = value;
+                              nguoiKyNhay = value;
                             });
                           },
                         ),
@@ -1075,21 +1079,19 @@ class _ToolAndMaterialTransferDetailState
     }
   }
 
-  ToolAndMaterialTransferDto _createToolAndMaterialTransRequest(
+  ToolAndMaterialTransferRequest _createToolAndMaterialTransRequest(
     int type,
     int state,
   ) {
-    return ToolAndMaterialTransferDto(
+    return ToolAndMaterialTransferRequest(
       id: controllerSoChungTu.text,
       soQuyetDinh: controllerSoChungTu.text,
       tenPhieu: controllerDocumentName.text,
       idDonViGiao: donViGiao?.id ?? '',
       idDonViNhan: donViNhan?.id ?? '',
-      idNguoiKyNhay: nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: nguoiKyNhay?.id ?? '',
       trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: false,
-      phoPhongXacNhan: false,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
       tgGnTuNgay:
@@ -1103,7 +1105,6 @@ class _ToolAndMaterialTransferDetailState
       idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllerDeliveryLocation.text,
       idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
-      idNhanSuXemPhieu: nguoiKyGiamDoc?.id ?? '',
       noiNhan: '',
       trangThai: state,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
@@ -1113,11 +1114,6 @@ class _ToolAndMaterialTransferDetailState
       nguoiCapNhat: '',
       coHieuLuc: 1,
       loai: type,
-      isActive: true,
-      idTruongPhongDonViGiao: '',
-      idPhoPhongDonViGiao: '',
-      truongPhongDonViGiaoXacNhan: false,
-      phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
       trichYeu: controllerSubject.text,
@@ -1136,18 +1132,18 @@ class _ToolAndMaterialTransferDetailState
       tenPhieu: controllerDocumentName.text,
       idDonViGiao: donViGiao?.id ?? '',
       idDonViNhan: donViNhan?.id ?? '',
-      idNguoiKyNhay: nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: nguoiKyNhay?.id ?? '',
       trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: isNguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: false,
       phoPhongXacNhan: false,
       idDonViDeNghi: donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: nguoiKyCapPhong?.id ?? '',
-      tgGnTuNgay:
+      tggnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDate.text,
           ).toIso8601String(),
-      tgGnDenNgay:
+      tggnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDateTo.text,
           ).toIso8601String(),
@@ -1197,6 +1193,13 @@ class _ToolAndMaterialTransferDetailState
             idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
             soLuongXuat: e.soLuongXuat,
             soQuyetDinh: '',
+            namSanXuat: e.namSanXuat,
+            donViTinh: e.donViTinh,
+            tenCCDCVatTu: e.tenCCDCVatTu,
+            congSuat: e.congSuat,
+            nuocSanXuat: e.nuocSanXuat,
+            soKyHieu: e.soKyHieu,
+            kyHieu: e.kyHieu,
           ),
         )
         .toList();
@@ -1253,9 +1256,7 @@ class _ToolAndMaterialTransferDetailState
       );
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       // Cập nhật chi tiết nếu có thay đổi
-      ToolAndMaterialTransferDto newRequest = request.copyWith(
-        truongPhongDonViGiaoXacNhan: item!.truongPhongDonViGiaoXacNhan ?? false,
-        phoPhongDonViGiaoXacNhan: item!.phoPhongDonViGiaoXacNhan ?? false,
+      ToolAndMaterialTransferRequest newRequest = request.copyWith(
         trinhDuyetCapPhongXacNhan: item!.trinhDuyetCapPhongXacNhan ?? false,
         trinhDuyetGiamDocXacNhan: item!.trinhDuyetGiamDocXacNhan ?? false,
         ngayKy: item!.ngayKy ?? DateTime.now().toIso8601String(),
@@ -1265,6 +1266,7 @@ class _ToolAndMaterialTransferDetailState
         trangThaiKyNhay: item!.trangThaiKyNhay ?? false,
       );
       if (_detailsChanged()) {
+        log('message test1 item!.id: ${item!.id}');
         await _syncDetails(item!.id!);
       }
       if (mounted) {

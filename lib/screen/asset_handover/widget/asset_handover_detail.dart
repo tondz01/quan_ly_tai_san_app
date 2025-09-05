@@ -36,12 +36,14 @@ class AssetHandoverDetail extends StatefulWidget {
   final AssetHandoverProvider provider;
   final bool isFindNew;
   final bool isEditing;
+  final int type;
 
   const AssetHandoverDetail({
     super.key,
     required this.provider,
     this.isEditing = false,
     this.isFindNew = false,
+    this.type = 0,
   });
 
   @override
@@ -360,6 +362,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
+      "ngayBanGiao": ngayBanGiao,
       "trangThai": 0,
       "note": "",
       "nguoiTao": currentUser?.tenDangNhap ?? '',

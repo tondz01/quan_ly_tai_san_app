@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -98,7 +97,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
     for (var column in widget.columns) {
       if (column.isEditable) {
-        final value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+        final value =
+            column.getValueWithIndex?.call(item, rowIndex) ??
+            column.getValue(item);
         final controller = TextEditingController(text: value?.toString() ?? '');
         _controllers[rowIndex]![column.field] = controller;
       }
@@ -204,7 +205,6 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     // Sync controller if exists
     final controller = _controllers[rowIndex]?[field];
     if (controller != null && controller.text != (value?.toString() ?? '')) {
-      log('_setCellValue: Setting controller.text to: ${value?.toString() ?? ''}');
       controller.text = value?.toString() ?? '';
     }
     setState(() {});
@@ -489,7 +489,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         _controllers[rowIndex]?[column.field] ?? TextEditingController();
 
     if (column.editor == EditableCellEditor.dropdown) {
-      final currentValue = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+      final currentValue =
+          column.getValueWithIndex?.call(item, rowIndex) ??
+          column.getValue(item);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: SGDropdownInputButton<T>(
@@ -503,7 +505,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
           isShowSuffixIcon: true,
-          hintText: '',
+          hintText: '$currentValue',
           textAlign: TextAlign.left,
           textAlignItem: TextAlign.left,
           sizeBorderCircular: 6,
@@ -549,10 +551,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           hintText: 'Nhập thông tin',
           onChanged: (value) {
             setState(() {
-              // controller.text = value;
-              controller.text = column.getValue(item).toString();
-              log('message onChanged: ${column.getValue(item)}');
-              log('message onChanged2: ${controller.text}');
+              controller.text = value;
               _updateCellValue(rowIndex, column.field, value);
               // cascade updates
               final updater = column.onValueChanged;
@@ -583,7 +582,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   Widget _buildDisplayCell(T item, SgEditableColumn<T> column) {
     // Try to get rowIndex for display cell
     final rowIndex = _tableData.indexOf(item);
-    final value = column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
+    final value =
+        column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
 
     return Tooltip(
       message: column.tooltip ?? 'Không thể nhập',
@@ -687,7 +687,8 @@ class SgEditableColumn<T> {
   final TextAlign cellAlignment;
   final bool isEditable;
   final dynamic Function(T) getValue;
-  final dynamic Function(T, int)? getValueWithIndex; // NEW: getValue with rowIndex
+  final dynamic Function(T, int)?
+  getValueWithIndex; // NEW: getValue with rowIndex
   final void Function(T, dynamic) setValue;
   final dynamic Function(T)? sortValueGetter;
   final bool Function(T item, int rowIndex)? isCellEditableDecider;

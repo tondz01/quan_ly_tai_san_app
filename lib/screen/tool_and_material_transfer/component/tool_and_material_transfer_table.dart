@@ -49,7 +49,7 @@ class _DetailToolAndMaterialTransferTableState
 
   ToolsAndSuppliesDto getAssetByID(String idAsset) {
     if (widget.allAssets.isNotEmpty) {
-      return widget.allAssets!.firstWhere(
+      return widget.allAssets.firstWhere(
         (item) => item.id == idAsset,
         orElse: () => toolAndSuppliesNull(),
       );
@@ -60,10 +60,9 @@ class _DetailToolAndMaterialTransferTableState
 
   DetailAssetDto getDetailAssetByID(String idAsset) {
     if (listDetailAsset.isNotEmpty) {
-      return listDetailAsset.firstWhere(
-        (item) => item.id == idAsset,
-        orElse: () => DetailAssetDto.empty(),
-      );
+      return listDetailAsset.firstWhere((item) {
+        return item.id == idAsset;
+      }, orElse: () => DetailAssetDto.empty());
     } else {
       return DetailAssetDto.empty();
     }
@@ -74,9 +73,6 @@ class _DetailToolAndMaterialTransferTableState
         widget.allAssets
             .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
             .toList();
-    log(
-      'message test listOwnershipUnit: ${jsonEncode(widget.listOwnershipUnit)}',
-    );
 
     listItemDropdownDetailAsset =
         widget.listOwnershipUnit.map<ItemDropdownDetailAsset>((e) {
@@ -87,7 +83,7 @@ class _DetailToolAndMaterialTransferTableState
             id: e.id,
             idCCDCVatTu: e.idCCDCVT,
             tenCCDCVatTu: asset.ten,
-            idDetaiAsset: e.id,
+            idDetaiAsset: detailAsset.id ?? '',
             tenDetailAsset:
                 '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
             idDonVi: e.idDonViSoHuu,
@@ -103,18 +99,24 @@ class _DetailToolAndMaterialTransferTableState
   @override
   void initState() {
     super.initState();
+
+    // Khởi tạo các biến late trước
+    listDetailAsset = [];
+    listDetailOwnershipUnit = [];
+    listItemDropdownDetailAsset = [];
+    movementDetails = List.from(widget.initialDetails);
+
+    // Đồng bộ dữ liệu chi tiết tài sản
+    _syncDetailAssets();
+
     if (widget.initialDetails.isNotEmpty) {
       listAsset = getAssetsByChildAssets(
         widget.allAssets,
         widget.initialDetails,
       );
-      log('message test1 1 listAsset: ${jsonEncode(listAsset)}');
     } else {
       listAsset = [];
     }
-      log('message test1 listAsset: ${jsonEncode(listAsset)}');
-    movementDetails = List.from(widget.initialDetails);
-    _syncDetailAssets();
   }
 
   @override
@@ -124,7 +126,6 @@ class _DetailToolAndMaterialTransferTableState
         widget.initialDetails.isNotEmpty) {
       movementDetails = List.from(widget.initialDetails);
       listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
-      log('message test1 listAsset: ${jsonEncode(listAsset)}');
       _syncDetailAssets();
     }
     if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
@@ -141,33 +142,38 @@ class _DetailToolAndMaterialTransferTableState
     final Map<String, ToolsAndSuppliesDto> idToAsset = {
       for (final a in allAssets) a.id: a,
     };
-    log('message test1 allAssets: ${jsonEncode(chiTietDieuDong)}');
     final result = <ItemDropdownDetailAsset>[];
 
     for (final c in chiTietDieuDong) {
       final id = c.idCCDCVatTu;
-      final idAsset = getDetailAssetByID(id).idTaiSan;
-      final asset = idToAsset[idAsset];
-      log('message test1 asset: $idAsset');
+
+      final idAsset = getDetailAssetByID(id);
+      if (idAsset.idTaiSan == null) {
+        continue;
+      }
+      final asset = idToAsset[idAsset.idTaiSan];
       if (asset != null) {
         // Tìm ItemDropdownDetailAsset tương ứng
         final detailAsset = listItemDropdownDetailAsset.firstWhere(
           (element) => element.idDetaiAsset == id,
-          orElse: () => ItemDropdownDetailAsset(
-            id: '',
-            idCCDCVatTu: id,
-            tenCCDCVatTu: asset.ten,
-            idDetaiAsset: '',
-            tenDetailAsset: '${id} - ${asset.ten}',
-            idDonVi: asset.idDonVi,
-            donViTinh: asset.donViTinh,
-            namSanXuat: 2010,
-            soLuong: asset.soLuong,
-            ghiChu: asset.ghiChu,
-            asset:  asset
-          ),
+          orElse:
+              () => ItemDropdownDetailAsset(
+                id: '',
+                idCCDCVatTu: id,
+                tenCCDCVatTu: asset.ten,
+                idDetaiAsset: '',
+                tenDetailAsset: '$id - ${asset.ten}',
+                idDonVi: asset.idDonVi,
+                donViTinh: asset.donViTinh,
+                namSanXuat: 2010,
+                soLuong: asset.soLuong,
+                soLuongXuat: 0,
+                ghiChu: asset.ghiChu,
+                asset: asset,
+              ),
         );
-        result.add(detailAsset);
+        final newDetailAsset = detailAsset.copyWith(soLuongXuat: c.soLuongXuat);
+        result.add(newDetailAsset);
       }
     }
     return result;
@@ -189,21 +195,11 @@ class _DetailToolAndMaterialTransferTableState
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
-          child: SgEditableTable<ItemDropdownDetailAsset>( // Thay đổi generic type
+          child: SgEditableTable<ItemDropdownDetailAsset>(
+            // Thay đổi generic type
             key: _tableKey,
             initialData: listAsset,
-            createEmptyItem: () => ItemDropdownDetailAsset( // Thay đổi createEmptyItem
-              id: '',
-              idCCDCVatTu: '',
-              tenCCDCVatTu: '',
-              idDetaiAsset: '',
-              tenDetailAsset: '',
-              idDonVi: '',
-              donViTinh: '',
-              namSanXuat: 2010,
-              soLuong: 0,
-              ghiChu: '',
-            ),
+            createEmptyItem: () => ItemDropdownDetailAsset.empty(),
             rowHeight: 40.0,
             headerBackgroundColor: Colors.grey.shade50,
             oddRowBackgroundColor: Colors.white,
@@ -220,12 +216,15 @@ class _DetailToolAndMaterialTransferTableState
               widget.onDataChanged?.call(data);
             },
             columns: [
-              SgEditableColumn<ItemDropdownDetailAsset>( // Thay đổi generic type
+              SgEditableColumn<ItemDropdownDetailAsset>(
+                // Thay đổi generic type
                 field: 'asset',
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
-                width: 120,
-                getValue: (item) => item, // Trả về ItemDropdownDetailAsset thay vì String
+                width: 150,
+                getValue: (item) {
+                  return item;
+                }, // Trả về ItemDropdownDetailAsset thay vì String
                 setValue: (item, value) {
                   // Copy properties
                   item.id = value.id;
@@ -241,7 +240,7 @@ class _DetailToolAndMaterialTransferTableState
                   item.soLuongXuat = value.soLuongXuat;
                   item.asset = value.asset;
                 },
-                sortValueGetter: (item) => item.tenDetailAsset,
+                sortValueGetter: (item) => item.tenCCDCVatTu,
                 isCellEditableDecider: (item, rowIndex) => true,
                 editor: EditableCellEditor.dropdown,
                 dropdownItems: [
@@ -252,9 +251,11 @@ class _DetailToolAndMaterialTransferTableState
                     ),
                 ],
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
+                  updateRow('asset', item.tenCCDCVatTu);
                   updateRow('don_vi_tinh', newValue.donViTinh);
                   updateRow('so_luong', newValue.soLuong);
                   updateRow('ghi_chu', newValue.ghiChu);
+                  updateRow('so_luong_xuat', newValue.soLuongXuat.toString());
 
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
@@ -286,7 +287,9 @@ class _DetailToolAndMaterialTransferTableState
                 title: 'Số lượng xuất',
                 titleAlignment: TextAlign.center,
                 width: 100,
-                getValue: (item) => item.soLuongXuat, // Cần thêm field này vào ItemDropdownDetailAsset
+                getValue:
+                    (item) =>
+                        item.soLuongXuat, // Cần thêm field này vào ItemDropdownDetailAsset
                 inputType: TextInputType.number,
                 onValueChanged: (item, rowIndex, value, updateRow) {
                   if (value == null || value == '') {
@@ -301,10 +304,8 @@ class _DetailToolAndMaterialTransferTableState
                     );
                     item.soLuongXuat = item.soLuong;
                     updateRow('so_luong_xuat', item.soLuongXuat);
-                    log('message soLuongXuat: ${item.soLuongXuat}');
                   } else {
                     item.soLuongXuat = int.parse(value);
-                    updateRow('so_luong_xuat', item.soLuongXuat);
                   }
                 },
                 setValue: (item, value) {
@@ -316,7 +317,6 @@ class _DetailToolAndMaterialTransferTableState
                     return;
                   }
                   item.soLuongXuat = int.parse(value);
-                  log('message soLuongXuat: $value');
                 },
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,
@@ -389,7 +389,7 @@ class ItemDropdownDetailAsset {
   int soLuong;
   String ghiChu;
   int soLuongXuat; // Thêm field này
-  ToolsAndSuppliesDto? asset;  
+  ToolsAndSuppliesDto? asset;
 
   ItemDropdownDetailAsset({
     required this.id,
@@ -419,10 +419,13 @@ class ItemDropdownDetailAsset {
       soLuong: json['soLuong'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       soLuongXuat: json['soLuongXuat'] ?? 0,
-      asset: json['asset'] != null ? ToolsAndSuppliesDto.fromJson(json['asset']) : null,
+      asset:
+          json['asset'] != null
+              ? ToolsAndSuppliesDto.fromJson(json['asset'])
+              : null,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -440,8 +443,54 @@ class ItemDropdownDetailAsset {
     };
   }
 
-    @override
+  @override
   String toString() {
     return tenDetailAsset;
+  }
+
+  ItemDropdownDetailAsset copyWith({
+    int? soLuongXuat,
+    String? idCCDCVatTu,
+    String? tenCCDCVatTu,
+    String? idDetaiAsset,
+    String? tenDetailAsset,
+    String? idDonVi,
+    String? donViTinh,
+    int? namSanXuat,
+    int? soLuong,
+    String? ghiChu,
+    ToolsAndSuppliesDto? asset,
+  }) {
+    return ItemDropdownDetailAsset(
+      id: id,
+      idCCDCVatTu: idCCDCVatTu ?? this.idCCDCVatTu,
+      tenCCDCVatTu: tenCCDCVatTu ?? this.tenCCDCVatTu,
+      idDetaiAsset: idDetaiAsset ?? this.idDetaiAsset,
+      tenDetailAsset: tenDetailAsset ?? this.tenDetailAsset,
+      idDonVi: idDonVi ?? this.idDonVi,
+      donViTinh: donViTinh ?? this.donViTinh,
+      namSanXuat: namSanXuat ?? this.namSanXuat,
+      soLuong: soLuong ?? this.soLuong,
+      ghiChu: ghiChu ?? this.ghiChu,
+      soLuongXuat: soLuongXuat ?? this.soLuongXuat,
+      asset: asset ?? this.asset,
+    );
+  }
+
+  static ItemDropdownDetailAsset empty() {
+    return ItemDropdownDetailAsset(
+      id: '',
+      idCCDCVatTu: 'adasdas',
+      tenCCDCVatTu: '',
+      idDetaiAsset: '',
+      tenDetailAsset: '',
+      idDonVi: '',
+      donViTinh: '',
+      namSanXuat: 2010,
+      soLuong: 0,
+      ghiChu: '',
+      soLuongXuat: 0,
+      asset: null,
+    );
   }
 }
