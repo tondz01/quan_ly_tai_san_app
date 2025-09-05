@@ -84,8 +84,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                   getters: getters,
                   controller: _searchController,
                   onSearchChanged: (value) {
-                    SGLog.info("TagSearch", "List ${jsonEncode(value)}");
-                    // provider.onSearchToolsAndSupplies(value);
+                    provider.onSearchToolsAndSupplies(value);
                   },
                   onTap: () {},
                   onNew: () {

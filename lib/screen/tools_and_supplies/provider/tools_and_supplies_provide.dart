@@ -101,30 +101,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
   }
 
-  void onSearchToolsAndSupplies(String value) {
-    if (value.isEmpty) {
-      _filteredData = data;
-      return;
-    }
-    log('message onSearchToolsAndSupplies: $value');
-
-    String searchLower = value.toLowerCase().trim();
-    _filteredData =
-        data.where((item) {
-          bool name = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
-            searchLower,
-          );
-          bool importUnit = item.importUnit.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.importUnit.toLowerCase().contains(
-            searchLower,
-          );
-          bool unit = item.unit.toLowerCase().contains(searchLower);
-          bool value = item.value.toString().contains(searchLower);
-
-          return name || importUnit || departmentGroup || unit || value;
-        }).toList();
-    log('message _filteredData: $_filteredData');
+  void onSearchToolsAndSupplies(List<ToolsAndSuppliesDto> value) {
+    _filteredData = value;
     notifyListeners();
   }
 

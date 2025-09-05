@@ -1,5 +1,5 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'dart:math' as math;
 
 class ReusableTagSearch<T> extends StatefulWidget {
@@ -26,16 +26,15 @@ class ReusableTagSearch<T> extends StatefulWidget {
 
 class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
   String query = "";
-  String _previousQuery = "";
   bool showTagSuggestions = false;
   List<T> _filteredItems = [];
   late TextEditingController _controller;
 
-  // Shared text style for consistency between TextField and TextSpan
+  // Chia sẻ text style để đảm bảo nhất quán giữa TextField và TextSpan
   static const TextStyle _baseTextStyle = TextStyle(
     color: Colors.black87,
     fontWeight: FontWeight.w400,
-    fontSize: 16,
+    fontSize: 14,
     letterSpacing: 0.53,
   );
 
@@ -53,44 +52,40 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
     super.dispose();
   }
 
-  String _handleTagDeletion(String newValue) {
-    // Nếu query mới ngắn hơn query cũ (đang xóa)
-    if (newValue.length < _previousQuery.length) {
-      // Updated pattern to handle quoted tags
-      final tagPattern = RegExp(r'@(?:"[^"]+"|[^\s]+):');
-      final previousTags = tagPattern
-          .allMatches(_previousQuery)
-          .map((m) => m.group(0)!)
-          .toList();
+  // Kiểm tra xem có nên hiển thị popup tag suggestions hay không
+  bool _shouldShowTagSuggestions(String value) {
+    if (!value.endsWith("@")) return false;
 
-      for (var tagText in previousTags) {
-        // Nếu tag này bị xóa incomplete (không còn hoàn chỉnh)
-        if (_previousQuery.contains(tagText) && !newValue.contains(tagText)) {
-          // Tìm phần còn lại của tag trong newValue
-          final tagWithoutColon = tagText.substring(0, tagText.length - 1); // Remove ':'
+    // Nếu @ ở đầu chuỗi thì OK
+    if (value == "@") return true;
 
-          // Nếu newValue chứa phần đầu của tag (không có :) thì xóa luôn
-          if (newValue.contains(tagWithoutColon)) {
-            String result = newValue.replaceFirst(tagWithoutColon, '');
-            result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
-            return result;
-          }
-        }
-      }
-
-      // Kiểm tra tag incomplete patterns khác (including quoted tags)
-      final incompleteTagPattern = RegExp(r'@(?:"[^"]*"?|[^\s]*)(?![:\s])');
-      final matches = incompleteTagPattern.allMatches(newValue).toList();
-
-      for (var match in matches) {
-        final tagText = match.group(0)!;
-        String result = newValue.replaceFirst(tagText, '');
-        result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
-        return result;
-      }
+    // Nếu @ có khoảng trắng phía trước thì OK
+    if (value.length >= 2 && value[value.length - 2] == ' ') {
+      return true;
     }
 
-    return newValue;
+    return false;
+  }
+
+  List<T> searchObjects(
+    List<T> list,
+    String pattern,
+    List<String Function(T)> getters,
+  ) {
+    // Chuyển pattern sang regex, đồng thời bỏ dấu
+    String regexPattern = removeDiacritics(
+      pattern,
+    ).replaceAll('%', '.*').replaceAll('_', '.');
+
+    final regex = RegExp('^$regexPattern\$', caseSensitive: false);
+
+    return list.where((item) {
+      // Nếu ít nhất một getter match thì giữ lại
+      return getters.any((getter) {
+        String normalized = removeDiacritics(getter(item));
+        return regex.hasMatch(normalized);
+      });
+    }).toList();
   }
 
   void _updateFilteredItems() {
@@ -104,82 +99,78 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
     List<String> textSearchTerms = [];
     String remainingQuery = query;
 
-    // First, extract all tags (both quoted and unquoted)
-    final tagPattern = RegExp(r'@(?:"[^"]+"|[^\s]+):[^\s]*');
+    // Đầu tiên, trích xuất tất cả các tag (cả có dấu ngoặc kép và không)
+    // Pattern mới: khớp với tag value có thể chứa nhiều từ, kết thúc bằng khoảng trắng + @ hoặc cuối chuỗi
+    final tagPattern = RegExp(r'@(?:"[^"]+"|[^\s]+):(?:[^@]*?)(?=\s*@|$)');
     final tagMatches = tagPattern.allMatches(query).toList();
 
-    // Process each tag
+    // Xử lý từng tag
     for (var tagMatch in tagMatches) {
       final fullTag = tagMatch.group(0)!;
-      
-      // Remove this tag from remaining query for text search
+
+      // Xóa tag này khỏi query còn lại để tìm kiếm text
       remainingQuery = remainingQuery.replaceFirst(fullTag, ' ');
-      
-      // Parse the tag
-      final tagPart = fullTag.substring(1); // Remove @
+
+      // Phân tích tag
+      final tagPart = fullTag.substring(1); // Xóa @
       final colonIndex = tagPart.indexOf(':');
       if (colonIndex == -1) continue;
-      
+
       final tagName = tagPart.substring(0, colonIndex).trim();
       final tagValue = tagPart.substring(colonIndex + 1).trim().toLowerCase();
-      
-      // Remove quotes if present
-      final originalTag = tagName.startsWith('"') && tagName.endsWith('"')
-          ? tagName.substring(1, tagName.length - 1)
-          : tagName;
 
-      if (widget.getters?.any((getter) => getter.containsKey(originalTag)) == true) {
-        results = results.where((item) {
-          final itemValue = widget.getters!
-              .firstWhere((getter) => getter.containsKey(originalTag))[originalTag]!(item)
-              .toLowerCase();
-          return itemValue.contains(tagValue);
-        }).toList();
-      } else {
-        SGLog.debug(
-          "TagSearch",
-          '❌ [TagSearch] Tag "$originalTag" not found in getters',
-        );
-        SGLog.debug(
-          "TagSearch",
-          '🔧 [TagSearch] Available tags: ${widget.getters?.map((g) => g.keys.first).toList()}',
-        );
+      // Xóa dấu ngoặc kép nếu có
+      final originalTag =
+          tagName.startsWith('"') && tagName.endsWith('"')
+              ? tagName.substring(1, tagName.length - 1)
+              : tagName;
+
+      if (widget.getters?.any((getter) => getter.containsKey(originalTag)) ==
+          true) {
+        // Lấy function getter cho field cụ thể
+        final targetGetter =
+            widget.getters!.firstWhere(
+              (getter) => getter.containsKey(originalTag),
+            )[originalTag]!;
+
+        results = searchObjects(results, "%$tagValue%", [
+          (item) => targetGetter(item).toString(),
+        ]);
       }
     }
 
-    // Process remaining text as search terms
+    // Xử lý phần text còn lại như các từ khóa tìm kiếm
     final parts = remainingQuery.split(RegExp(r'\s+'));
     for (var part in parts) {
       if (part.trim().isNotEmpty) {
         textSearchTerms.add(part.trim().toLowerCase());
-        SGLog.debug(
-          "TagSearch",
-          '📝 [TagSearch] Added text search term: "${part.trim().toLowerCase()}"',
-        );
       }
     }
 
-    // Apply text search to all fields
+    // Áp dụng tìm kiếm text cho tất cả các trường
     if (textSearchTerms.isNotEmpty) {
-      results = results.where((item) {
-        return textSearchTerms.every((term) {
-          final hasMatch = widget.getters?.any((getter) {
-            return getter.values.any((getterFunction) {
-              final fieldValue = getterFunction(item).toLowerCase();
-              return fieldValue.contains(term);
+      results =
+          results.where((item) {
+            return textSearchTerms.every((term) {
+              final hasMatch =
+                  widget.getters?.any((getter) {
+                    return getter.values.any((getterFunction) {
+                      final fieldValue = getterFunction(item).toLowerCase();
+                      return fieldValue.contains(term);
+                    });
+                  }) ==
+                  true;
+              return hasMatch;
             });
-          }) == true;
-          return hasMatch;
-        });
-      }).toList();
+          }).toList();
     }
-    
+
     _filteredItems = results;
     widget.onFilteredItemsChanged(results);
   }
 
   String _buildTagQuery(String currentQuery, String tag) {
-    // Wrap tag with quotes if it contains spaces to avoid parsing issues
+    // Bọc tag với dấu ngoặc kép nếu nó chứa khoảng trắng để tránh lỗi phân tích
     final tagToUse = tag.contains(' ') ? '"$tag"' : tag;
 
     if (currentQuery.endsWith("@")) {
@@ -193,13 +184,13 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
 
   List<TextSpan> _buildStyledText(String text) {
     List<TextSpan> spans = [];
-    // Updated pattern to handle quoted tags: @"tag name":value or @tag:value
+    // Pattern cập nhật để xử lý tag có dấu ngoặc kép: @"tên tag":giá trị hoặc @tag:giá trị
     final tagPattern = RegExp(r'(@(?:"[^"]+"|[^@\s]+):(?:[^@\s]+\s*)*)');
 
     int lastEnd = 0;
 
     for (var match in tagPattern.allMatches(text)) {
-      // Add normal text before tag
+      // Thêm text thường trước tag
       if (match.start > lastEnd) {
         spans.add(
           TextSpan(
@@ -209,13 +200,13 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
         );
       }
 
-      // Add styled tag with different color
+      // Thêm tag được tạo kiểu với màu khác
       spans.add(TextSpan(text: match.group(0), style: _baseTextStyle));
 
       lastEnd = match.end;
     }
 
-    // Add remaining normal text
+    // Thêm phần text thường còn lại
     if (lastEnd < text.length) {
       spans.add(TextSpan(text: text.substring(lastEnd), style: _baseTextStyle));
     }
@@ -235,7 +226,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
       builder: (BuildContext dialogContext) {
         return Stack(
           children: [
-            // Invisible barrier to close popup
+            // Rào chắn vô hình để đóng popup
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
@@ -246,10 +237,10 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
                 child: Container(color: Colors.transparent),
               ),
             ),
-            // Tag suggestions popup
+            // Popup gợi ý tag
             Positioned(
-              left: math.max(12, position.dx + 12),
-              top: math.min(screenSize.height - 200, position.dy + 60),
+              left: math.max(12, position.dx),
+              top: math.min(screenSize.height - 200, position.dy + 52),
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(12),
@@ -257,15 +248,18 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
                 child: Container(
                   constraints: BoxConstraints(
                     maxWidth: math.min(300, screenSize.width - 24),
-                    maxHeight: 200,
+                    maxHeight: 240,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2F3136),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF40444B),
-                      width: 1,
-                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -293,7 +287,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
                             const Text(
                               "Chọn tag để lọc:",
                               style: TextStyle(
-                                color: Color(0xFFDCDDDE),
+                                color: Color(0xFF5865F2),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -304,27 +298,49 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
                       // Tags
                       Flexible(
                         child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(12),
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children:
-                                widget.getters!
-                                    .where((tag) {
-                                      final tagName = tag.keys.first;
-                                      final tagToCheck =
-                                          tagName.contains(' ')
-                                              ? '"$tagName"'
-                                              : tagName;
-                                      return !query.contains("@$tagToCheck:");
-                                    })
-                                    .map(
-                                      (tag) => _buildTagChip(
-                                        tag.keys.first,
-                                        dialogContext,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: () {
+                                final availableTags =
+                                    widget.getters!
+                                        .where((tag) {
+                                          return !query.contains(
+                                            "@\"${tag.keys.first}\":",
+                                          );
+                                        })
+                                        .map(
+                                          (tag) => _buildTagChip(
+                                            tag.keys.first,
+                                            dialogContext,
+                                          ),
+                                        )
+                                        .toList();
+
+                                // Nếu không có tag nào khả dụng, hiển thị thông báo
+                                if (availableTags.isEmpty) {
+                                  return [
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      child: const Text(
+                                        "Không có thẻ nào khả dụng",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 13,
+                                          fontStyle: FontStyle.italic,
+                                        ),
                                       ),
-                                    )
-                                    .toList(),
+                                    ),
+                                  ];
+                                }
+
+                                return availableTags;
+                              }(),
+                            ),
                           ),
                         ),
                       ),
@@ -342,11 +358,11 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
   Widget _buildTagChip(String tag, BuildContext dialogContext) {
     return InkWell(
       onTap: () {
-        // Safely close dialog
+        // Đóng dialog một cách an toàn
         if (Navigator.canPop(dialogContext)) {
           Navigator.of(dialogContext).pop();
         }
-        // Insert tag after dialog is closed
+        // Chèn tag sau khi dialog đã đóng
         Future.microtask(() => insertTag(tag));
       },
       borderRadius: BorderRadius.circular(16),
@@ -357,7 +373,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF5865F2).withOpacity(0.3),
+              color: const Color(0xFF5865F2).withValues(alpha: 0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -373,7 +389,7 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
@@ -383,11 +399,8 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
   }
 
   void insertTag(String tag) {
-    // Check existence using the same format as _buildTagQuery
-    final tagToCheck = tag.contains(' ') ? '"$tag"' : tag;
-
     // Kiểm tra xem tag đã tồn tại chưa
-    if (query.contains("@$tagToCheck:")) {
+    if (query.contains("@\"$tag\":")) {
       setState(() {
         showTagSuggestions = false;
       });
@@ -396,7 +409,6 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
 
     final newQuery = _buildTagQuery(query, tag);
     setState(() {
-      _previousQuery = query; // Store previous query before update
       query = newQuery;
       _controller.text = newQuery;
       _controller.selection = TextSelection.fromPosition(
@@ -410,69 +422,121 @@ class _ReusableTagSearchState<T> extends State<ReusableTagSearch<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Search Bar
-        Container(
-          margin: const EdgeInsets.all(12),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        border: Border.all(color: Colors.black12, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12.withValues(alpha: 0.1),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
-          child: Stack(
-            children: [
-              // Base TextField
-              TextField(
-                controller: _controller,
-                style: _baseTextStyle.copyWith(color: Colors.red),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: query.isEmpty ? widget.hintText : '',
-                  hintStyle: _baseTextStyle.copyWith(color: Colors.black12),
-                ),
-                onChanged: (value) {
-                  // Handle tag deletion
-                  final cleanedValue = _handleTagDeletion(value);
-                  if (cleanedValue != value) {
-                    // Update controller if value was cleaned
-                    _controller.text = cleanedValue;
-                    _controller.selection = TextSelection.fromPosition(
-                      TextPosition(offset: cleanedValue.length),
-                    );
-                    value = cleanedValue;
-                  }
-
-                  setState(() {
-                    _previousQuery =
-                        query; // Store previous query before update
-                    query = value;
-                    showTagSuggestions = value.endsWith("@");
-                  });
-
-                  if (value.endsWith("@")) {
-                    _showTagSuggestionsPopup();
-                  }
-
-                  _updateFilteredItems();
-                },
-              ),
-
-              // Styled text overlay
-              if (query.isNotEmpty)
-                Positioned(
-                  left: 15.6, // Offset for search icon
-                  top: 15,
-                  child: IgnorePointer(
-                    child: RichText(
-                      text: TextSpan(children: _buildStyledText(query)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Icon(Icons.search, color: Colors.black38, size: 20),
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                TextField(
+                  controller: _controller,
+                  style: _baseTextStyle.copyWith(color: Colors.transparent),
+                  cursorWidth: 0.5,
+                  cursorHeight: 14,
+                  cursorColor: Colors.black87,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (value) {
+                    _updateFilteredItems();
+                  },
+                  decoration: InputDecoration(
+                    hintText: query.isEmpty ? widget.hintText : '',
+                    hintStyle: _baseTextStyle.copyWith(color: Colors.black38),
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    border: InputBorder.none,
+                    fillColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 12,
                     ),
                   ),
+                  onChanged: (value) {
+                    setState(() {
+                      query = value;
+                      // Chỉ hiện popup khi @ ở đầu hoặc có khoảng trắng trước @
+                      showTagSuggestions = _shouldShowTagSuggestions(value);
+                    });
+
+                    if (_shouldShowTagSuggestions(value)) {
+                      _showTagSuggestionsPopup();
+                    }
+
+                    _updateFilteredItems();
+                  },
                 ),
-            ],
+
+                // Lớp phủ text có kiểu
+                if (query.isNotEmpty)
+                  Positioned(
+                    left: 4,
+                    top: 9,
+                    child: IgnorePointer(
+                      child: RichText(
+                        text: TextSpan(children: _buildStyledText(query)),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+          if (query.isNotEmpty)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  query = "";
+                  _controller.clear();
+                  _filteredItems = widget.data;
+                  widget.onFilteredItemsChanged(_filteredItems);
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(Icons.close, color: Colors.black38, size: 18),
+              ),
+            ),
+
+          InkWell(
+            highlightColor: Colors.transparent,
+            onTap: () {
+              _updateFilteredItems();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(7.0),
+              margin: const EdgeInsets.all(3.0),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "Tìm kiếm",
+                style: _baseTextStyle.copyWith(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
