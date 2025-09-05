@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -442,7 +443,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ],
     );
   }
-
 
   Visibility _buildActionKy() {
     return Visibility(

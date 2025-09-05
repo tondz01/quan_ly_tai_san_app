@@ -4,23 +4,25 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handove
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_transfer_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 
-class TabBarTableAsset extends StatefulWidget {
-  final AssetHandoverProvider provider;
-  const TabBarTableAsset({super.key, required this.provider});
+class TabBarTableCcdc extends StatefulWidget {
+  final ToolAndSuppliesHandoverProvider provider;
+  const TabBarTableCcdc({super.key, required this.provider});
 
   @override
-  State<TabBarTableAsset> createState() => _TabBarTableAssetState();
+  State<TabBarTableCcdc> createState() => _TabBarTableCcdcState();
 }
 
-class _TabBarTableAssetState extends State<TabBarTableAsset> {
-  List<DieuDongTaiSanDto> dataAssetTransfer = [];
+class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
+  List<ToolAndMaterialTransferDto> dataAssetTransfer = [];
   @override
   void initState() {
     super.initState();
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
+            ?.where((element) => element.trangThai == 3)
             .toList() ??
         [];
   }
@@ -83,14 +85,14 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
                 physics: NeverScrollableScrollPhysics(),
                 children: [
                   // Tab 1: Bàn giao tài sản
-                  AssetHandoverList(
-                    provider: widget.provider,
-                    listAssetTransfer: dataAssetTransfer,
-                  ),
-                  AssetTransferList(
-                    data: dataAssetTransfer,
-                    provider: widget.provider,
-                  ),
+                  // ToolAndSuppliesHandoverList(
+                  //   provider: widget.provider,
+                  //   listAssetTransfer: dataAssetTransfer,
+                  // ),
+                  // AssetTransferList(
+                  //   data: dataAssetTransfer,
+                  //   provider: widget.provider,
+                  // ),
                 ],
               ),
             ),

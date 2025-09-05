@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -60,6 +61,117 @@ class ContractPage {
 
   static Widget assetHandoverPage(
     AssetHandoverDto assetHandoverDto,
+    List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: SGText(
+            text: "BẢNG KÊ CHI TIẾT",
+            style: SettingPage.textStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 14 * SettingPage.scale,
+            ),
+          ),
+        ),
+        SizedBox(height: 14 * SettingPage.scale),
+        Table(
+          border: TableBorder.all(),
+          columnWidths: const {
+            0: FixedColumnWidth(40),
+            1: FlexColumnWidth(2),
+            2: FlexColumnWidth(2),
+            3: FlexColumnWidth(1.5),
+            4: FlexColumnWidth(1),
+            5: FlexColumnWidth(1.5),
+            6: FlexColumnWidth(1.5),
+          },
+          children: [
+            TableRow(
+              children: [
+                tableHeader("STT", SettingPage.scale, SettingPage.textStyle),
+                tableHeader(
+                  "TÊN TÀI SẢN",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Ký, mã hiệu quy cách",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Đơn vị tính",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Số lượng",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Tình trạng kỹ thuật",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Ghi chú",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+              ],
+            ),
+
+            // Dữ liệu chi tiết chưa được cung cấp trong AssetHandoverDto
+            for (int i = 0; i < (listDetailAssetMobilization?.length ?? 0); i++)
+              TableRow(
+                children: [
+                  tableCell(
+                    (i + 1).toString(),
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization![i].tenTaiSan,
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].idTaiSan,
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].donViTinh,
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].soLuong.toString(),
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].hienTrang.toString(),
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    listDetailAssetMobilization[i].ghiChu,
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+  static Widget ccdcHandoverPage(
+    ToolAndSuppliesHandoverDto toolAndSuppliesHandoverDto,
     List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization,
   ) {
     return Column(

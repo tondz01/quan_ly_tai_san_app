@@ -8,7 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_un
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class DetailToolAndMaterialTransferTable extends StatefulWidget {
+class DetailCcdcTransferTable extends StatefulWidget {
   final bool isEditing;
   final List<DetailToolAndMaterialTransferDto> initialDetails;
   final List<OwnershipUnitDetailDto> listOwnershipUnit;
@@ -16,7 +16,7 @@ class DetailToolAndMaterialTransferTable extends StatefulWidget {
   // Thay đổi callback type
   final Function(List<ItemDropdownDetailCcdc>)? onDataChanged;
 
-  const DetailToolAndMaterialTransferTable(
+  const DetailCcdcTransferTable(
     BuildContext context, {
     super.key,
     required this.isEditing,
@@ -27,12 +27,12 @@ class DetailToolAndMaterialTransferTable extends StatefulWidget {
   });
 
   @override
-  State<DetailToolAndMaterialTransferTable> createState() =>
-      _DetailToolAndMaterialTransferTableState();
+  State<DetailCcdcTransferTable> createState() =>
+      _DetailCcdcTransferTableState();
 }
 
-class _DetailToolAndMaterialTransferTableState
-    extends State<DetailToolAndMaterialTransferTable> {
+class _DetailCcdcTransferTableState
+    extends State<DetailCcdcTransferTable> {
   late List<DetailToolAndMaterialTransferDto> movementDetails;
   late List<ItemDropdownDetailCcdc> listAsset; // Thay đổi type
   late List<DetailAssetDto> listDetailAsset;
@@ -118,7 +118,7 @@ class _DetailToolAndMaterialTransferTableState
   }
 
   @override
-  void didUpdateWidget(DetailToolAndMaterialTransferTable oldWidget) {
+  void didUpdateWidget(DetailCcdcTransferTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialDetails != widget.initialDetails &&
         widget.initialDetails.isNotEmpty) {
