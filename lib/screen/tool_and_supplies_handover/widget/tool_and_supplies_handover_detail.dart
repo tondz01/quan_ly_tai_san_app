@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -15,7 +14,6 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
@@ -25,7 +23,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vi
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/detail_ccdc_transfer_table.dart';
@@ -166,10 +163,6 @@ class _ToolAndSuppliesHandoverDetailState
     } else {
       isEditing = false;
     }
-    log('message test item: ${editable()}');
-    log(
-      'message test bool: ${item != null && (item!.trangThai == 0 || item!.trangThai == 2)}',
-    );
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
@@ -402,7 +395,6 @@ class _ToolAndSuppliesHandoverDetailState
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
-      log('message test newRequest: ${jsonEncode(newRequest)}');
       bloc.add(CreateToolAndSuppliesHandoverEvent(newRequest, listSignatory));
     } else {
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;

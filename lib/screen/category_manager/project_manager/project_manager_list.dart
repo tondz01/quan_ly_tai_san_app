@@ -100,7 +100,7 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
                     Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
                     SizedBox(width: 8),
                     SGText(
-                      text: 'Danh sách nhân viên',
+                      text: 'Danh sách dự án',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -113,7 +113,7 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
                   children: [
                     SGText(
                       text:
-                          'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                          'Danh sách dự án đã chọn: ${selectedItems.length}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -121,12 +121,12 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
                       ),
                     ),
                     SizedBox(width: 16),
-                    IconButton(
-                      onPressed: () {
-                        // TODO: Xóa nhân viên đã chọn
-                      },
-                      icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    ),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     // TODO: Xóa nhân viên đã chọn
+                    //   },
+                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                    // ),
                   ],
                 ),
               ],

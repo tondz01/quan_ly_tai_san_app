@@ -80,6 +80,7 @@ class _RoleViewState extends State<RoleView> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: CommonPageView(
+                        title: 'Chi tiết chức vụ',
                         childInput: RoleDetail(provider: provider),
                         childTableView: RoleList(provider: provider),
                         isShowInput: provider.isShowInput,

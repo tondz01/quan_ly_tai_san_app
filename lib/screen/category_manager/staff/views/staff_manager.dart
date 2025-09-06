@@ -19,9 +19,24 @@ class StaffManager extends StatefulWidget {
   State<StaffManager> createState() => _StaffManagerState();
 }
 
-class _StaffManagerState extends State<StaffManager> {
+class _StaffManagerState extends State<StaffManager> with RouteAware {
   bool showForm = false;
   NhanVien? editingStaff;
+  late int totalEntries;
+  late int totalPages = 0;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = 10;
+  int currentPage = 1;
+
+  final ScrollController horizontalController = ScrollController();
+  final TextEditingController controller = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
+  List<NhanVien> _filteredData = [];
+  List<NhanVien> dataPage = [];
+  bool isFirstLoad = false;
+
+  bool isShowInput = false;
 
   void _showForm([NhanVien? staff]) {
     setState(() {
@@ -30,15 +45,68 @@ class _StaffManagerState extends State<StaffManager> {
     });
   }
 
-  final ScrollController horizontalController = ScrollController();
-  final TextEditingController controller = TextEditingController();
-  final TextEditingController searchController = TextEditingController();
-  List<NhanVien> _filteredData = [];
-  bool isFirstLoad = false;
+  void onPageChanged(int page) {
+    setState(() {
+      currentPage = page;
+      _updatePagination();
+    });
+  }
 
-  bool isShowInput = false;
+  void onRowsPerPageChanged(int? value) {
+    setState(() {
+      if (value == null) return;
+      rowsPerPage = value;
+      currentPage = 1;
+      _updatePagination();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StaffBloc>().add(const LoadStaffs()); // Sửa LoadStaff thành LoadStaffs
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StaffBloc>().add(const LoadStaffs()); // Sửa LoadStaff thành LoadStaffs
+    });
+  }
+
+  @override
+  void didPopNext() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StaffBloc>().add(const LoadStaffs()); // Sửa StaffLoaded() thành LoadStaffs()
+    });
+  }
+
   void _searchStaff(String value) {
     context.read<StaffBloc>().add(SearchStaff(value));
+  }
+
+  void _updatePagination() {
+    // Sử dụng _filteredData thay vì _data
+    totalEntries = _filteredData.length;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+    dataPage =
+        _filteredData.isNotEmpty
+            ? _filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
   }
 
   @override
@@ -48,12 +116,12 @@ class _StaffManagerState extends State<StaffManager> {
         if (state is StaffLoaded) {
           List<NhanVien> staffs = state.staffs;
           _filteredData = staffs;
-
+          _updatePagination();
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
               title: HeaderComponent(
-                controller: controller,
+                controller: searchController,
                 onSearchChanged: (value) {
                   log('value: $value');
                   setState(() {
@@ -75,6 +143,7 @@ class _StaffManagerState extends State<StaffManager> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: CommonPageView(
+                      title: 'Chi tiết nhân viên',
                       childInput: StaffFormPage(
                         staff: editingStaff,
                         staffs: staffs,
@@ -89,7 +158,7 @@ class _StaffManagerState extends State<StaffManager> {
                             }),
                       ),
                       childTableView: StaffList(
-                        data: _filteredData,
+                        data: dataPage,
                         onChangeDetail: (item) {
                           _showForm(item);
                           isShowInput = true;
@@ -116,17 +185,17 @@ class _StaffManagerState extends State<StaffManager> {
                 Visibility(
                   visible: (staffs.length) >= 5,
                   child: SGPaginationControls(
-                    totalPages: 1,
-                    currentPage: 1,
-                    rowsPerPage: 10,
+                    totalPages: totalPages,
+                    currentPage: currentPage,
+                    rowsPerPage: rowsPerPage,
                     controllerDropdownPage: controller,
                     items: [
                       DropdownMenuItem(value: 10, child: Text('10')),
                       DropdownMenuItem(value: 20, child: Text('20')),
                       DropdownMenuItem(value: 50, child: Text('50')),
                     ],
-                    onPageChanged: (page) {},
-                    onRowsPerPageChanged: (rows) {},
+                    onPageChanged: onPageChanged,
+                    onRowsPerPageChanged: onRowsPerPageChanged,
                   ),
                 ),
               ],

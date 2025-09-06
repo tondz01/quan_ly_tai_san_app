@@ -103,7 +103,7 @@ class _DepartmentListState extends State<DepartmentList> {
                     ),
                     SizedBox(width: 8),
                     SGText(
-                      text: 'Danh sách nhân viên',
+                      text: 'Danh sách đơn vị/phòng ban',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -116,7 +116,7 @@ class _DepartmentListState extends State<DepartmentList> {
                   children: [
                     SGText(
                       text:
-                          'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                          'Danh sách đơn vị/phòng ban đã chọn: ${selectedItems.length}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

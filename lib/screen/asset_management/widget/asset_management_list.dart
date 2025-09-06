@@ -301,7 +301,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetManagementDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -338,7 +338,20 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   fontSize: 16,
                 ),
               ),
-              Divider(),
+              Visibility(
+                visible: widget.provider.dataGroup?.isNotEmpty ?? false,
+                child: Divider(),
+              ),
+              Visibility(
+                visible: widget.provider.dataGroup?.isEmpty ?? true,
+                child: Center(
+                  child: SGText(
+                    text: 'Không có loại tài sản nào',
+                    color: ColorValue.link,
+                    size: 14,
+                  ),
+                ),
+              ),
               Scrollbar(
                 controller: horizontalController,
                 thumbVisibility: true,
@@ -511,9 +524,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
               data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
               getters: getters,
-              startDate: DateTime.tryParse(
-                widget.provider.filteredData?.first.ngayTao ?? '',
-              ),
+              startDate: widget.provider.filteredData?.isNotEmpty ?? false
+                  ? DateTime.tryParse(
+                      widget.provider.filteredData?.first.ngayTao ?? '',
+                    )
+                  : null,
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
               },

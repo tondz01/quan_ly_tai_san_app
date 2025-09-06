@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -29,6 +31,8 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   NhomDonVi? _group;
   PhongBan? _parentDepartment;
 
+  bool isEditing = false;
+
   @override
   void initState() {
     _initData();
@@ -44,14 +48,19 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   }
 
   void _initData() {
+    if (widget.department != null) {
+      isEditing = false;
+    } else {
+      isEditing = true;
+    }
     _departmentIdController = TextEditingController(
       text: widget.department?.id ?? '',
     );
-    
+
     _departmentNameController = TextEditingController(
       text: widget.department?.tenPhongBan ?? '',
     );
-    
+
     try {
       _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
         (group) => group.id == widget.department?.idNhomDonVi,
@@ -101,7 +110,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.department != null;
+    final isEdit = !isEditing;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
@@ -110,13 +119,10 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
       child: Form(
         key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            sectionTitle(
-              Icons.account_tree,
-              isEdit ? 'Cập nhật phòng ban' : 'Thêm đơn vị / phòng ban',
-              'Nhập thông tin đơn vị hoặc phòng ban mới.',
-            ),
+            const SizedBox(height: 24),
+            _buildHeaderDetail(),
             sectionCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,6 +170,8 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                   DropdownButtonFormField<PhongBan>(
                     value: _parentDepartment,
                     decoration: inputDecoration('Phòng/Ban cấp trên'),
+                    isExpanded: true,
+                    isDense: false,
                     items:
                         context
                             .read<DepartmentBloc>()
@@ -180,46 +188,51 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                OutlinedButton(
-                  onPressed: () {
-                    if (widget.onCancel != null) {
-                      widget.onCancel!();
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF7B8EC8),
-                    side: const BorderSide(color: Color(0xFFE6EAF3)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('Hủy'),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2264E5),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                  ),
-                  child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
-                ),
-              ],
-            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildHeaderDetail() {
+    return isEditing
+        ? Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            MaterialTextButton(
+              text: 'Lưu',
+              icon: Icons.save,
+              backgroundColor: ColorValue.success,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                _save();
+              },
+            ),
+            const SizedBox(width: 8),
+            MaterialTextButton(
+              text: 'Hủy',
+              icon: Icons.cancel,
+              backgroundColor: ColorValue.error,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                if (widget.onCancel != null) {
+                  widget.onCancel!();
+                }
+              },
+            ),
+          ],
+        )
+        : MaterialTextButton(
+          text: 'Chỉnh sửa đơn vị/phòng ban',
+          icon: Icons.save,
+          backgroundColor: ColorValue.success,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            setState(() {
+              isEditing = true;
+            });
+          },
+        );
   }
 }
 

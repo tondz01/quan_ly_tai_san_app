@@ -266,9 +266,6 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (item != null) {
-        log(
-          'message test1 item: ${jsonEncode(item!.detailToolAndMaterialTransfers)}',
-        );
         controllerSoChungTu.text = item?.id ?? '';
         controllerSubject.text = item?.trichYeu ?? '';
         controllerDocumentName.text = item?.tenPhieu ?? '';
@@ -350,9 +347,6 @@ class _ToolAndMaterialTransferDetailState
                 )
                 .toList() ??
             [];
-        log(
-          'message test additionalSignersDetailed: ${jsonEncode(additionalSignersDetailed)}',
-        );
         _loadPdfNetwork(item?.tenFile ?? '');
       } else {
         controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
@@ -519,7 +513,6 @@ class _ToolAndMaterialTransferDetailState
           ),
         );
       }
-      log('message test1 item!.id: ${item!.id}');
     } catch (e) {
       log('Sync details error: $e');
     }
@@ -625,7 +618,7 @@ class _ToolAndMaterialTransferDetailState
                   ),
                 ),
                 Visibility(
-                  visible: item != null && ![0, 5, 6].contains(item!.trangThai),
+                  visible: item != null && ![0, 2].contains(item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -728,8 +721,6 @@ class _ToolAndMaterialTransferDetailState
                           fieldName: 'delivering_unit',
                           validationErrors: _validationErrors,
                           onChanged: (value) async {
-                            log('delivering_unit selected: $value');
-
                             setState(() {
                               donViGiao = value;
                               listStaffByDepartment =
@@ -744,7 +735,6 @@ class _ToolAndMaterialTransferDetailState
                             await widget.provider.getListOwnership(
                               donViGiao!.id.toString(),
                             );
-                            // log('message test listOwnershipUnit: $listOwnershipUnit');
                           },
                         ),
                         CmFormDropdownObject<PhongBan>(
@@ -1018,9 +1008,7 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
-                    log(
-                      "message test listNewDetails: ${jsonEncode(listNewDetails)}",
-                    );
+                  
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );
@@ -1254,7 +1242,7 @@ class _ToolAndMaterialTransferDetailState
         widget.type,
         item!.trangThai ?? 0,
       );
-      int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
+      int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
       // Cập nhật chi tiết nếu có thay đổi
       ToolAndMaterialTransferRequest newRequest = request.copyWith(
         trinhDuyetCapPhongXacNhan: item!.trinhDuyetCapPhongXacNhan ?? false,
@@ -1266,7 +1254,6 @@ class _ToolAndMaterialTransferDetailState
         trangThaiKyNhay: item!.trangThaiKyNhay ?? false,
       );
       if (_detailsChanged()) {
-        log('message test1 item!.id: ${item!.id}');
         await _syncDetails(item!.id!);
       }
       if (mounted) {

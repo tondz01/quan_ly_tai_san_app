@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_un
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-class AssetManagementRepository extends ApiBase {
+class AssetManagementDetailRepository extends ApiBase {
   Future<Map<String, dynamic>> createAssetDetail(String params) async {
     Map<String, dynamic> result = {
       'data': null,

@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -23,6 +25,10 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
+
+  get selectedFileName => _selectedFileName;
+  get selectedFilePath => _selectedFilePath;
+  get selectedFileBytes => _selectedFileBytes;
 
   String? get error => _error;
   String? get subScreen => _subScreen;
@@ -51,6 +57,10 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
+
+  String? _selectedFileName;
+  String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -285,5 +295,12 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     } else {
       return const PhongBan();
     }
+  }
+
+  void onSubmit(String? fileName, String? filePath, Uint8List? fileBytes) {
+    _selectedFileName = fileName;
+    _selectedFilePath = filePath;
+    _selectedFileBytes = fileBytes;
+    notifyListeners();
   }
 }

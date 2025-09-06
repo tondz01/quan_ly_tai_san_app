@@ -48,7 +48,7 @@ class AssetGroupProvider with ChangeNotifier {
   String _searchTerm = '';
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 0;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
@@ -127,6 +127,7 @@ class AssetGroupProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _isLoading = false;
     } else {
       log('message getListAssetGroupSuccess: ${state.data.length}');
       _data = state.data;

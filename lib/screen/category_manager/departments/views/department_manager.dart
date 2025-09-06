@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
@@ -17,17 +19,51 @@ class DepartmentManager extends StatefulWidget {
   State<DepartmentManager> createState() => _DepartmentManagerState();
 }
 
-class _DepartmentManagerState extends State<DepartmentManager> {
+class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   bool showForm = false;
   PhongBan? editingDepartment;
+
+  late int totalEntries;
+  late int totalPages = 0;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = 10;
+  int currentPage = 1;
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
   List<PhongBan> data = [];
   List<PhongBan> filteredData = [];
+  List<PhongBan> dataPage = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Reload dữ liệu mỗi khi vào màn hình này
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DepartmentBloc>().add(const LoadDepartments());
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload dữ liệu khi màn hình được focus lại
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DepartmentBloc>().add(const LoadDepartments());
+    });
+  }
+
+  @override
+  void didPopNext() {
+    // Khi quay lại màn hình này từ màn hình khác
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DepartmentBloc>().add(const LoadDepartments());
+    });
+  }
 
   void _showForm([PhongBan? department]) {
     setState(() {
@@ -35,7 +71,6 @@ class _DepartmentManagerState extends State<DepartmentManager> {
       editingDepartment = department;
     });
   }
-
 
   void _showDeleteDialog(BuildContext context, PhongBan department) {
     showDialog(
@@ -67,6 +102,43 @@ class _DepartmentManagerState extends State<DepartmentManager> {
     context.read<DepartmentBloc>().add(SearchDepartment(value));
   }
 
+  void onPageChanged(int page) {
+    setState(() {
+      currentPage = page;
+      _updatePagination();
+    });
+  }
+
+  void onRowsPerPageChanged(int? value) {
+    setState(() {
+      if (value == null) return;
+      rowsPerPage = value;
+      currentPage = 1;
+      _updatePagination();
+    });
+  }
+
+  void _updatePagination() {
+    // Sử dụng _filteredData thay vì _data
+    totalEntries = filteredData.length;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+    dataPage =
+        filteredData.isNotEmpty
+            ? filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DepartmentBloc, DepartmentState>(
@@ -75,6 +147,7 @@ class _DepartmentManagerState extends State<DepartmentManager> {
           List<PhongBan> departments = state.departments;
           data = departments;
           filteredData = data;
+          _updatePagination();
 
           return Scaffold(
             backgroundColor: Colors.transparent,
@@ -101,6 +174,7 @@ class _DepartmentManagerState extends State<DepartmentManager> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: CommonPageView(
+                      title: 'Chi tiết phòng ban',
                       childInput: DepartmentFormPage(
                         department: editingDepartment,
                         onCancel: () {
@@ -108,14 +182,14 @@ class _DepartmentManagerState extends State<DepartmentManager> {
                             isShowInput = false;
                           });
                         },
-                        onSaved: (){
+                        onSaved: () {
                           setState(() {
                             isShowInput = false;
                           });
                         },
                       ),
                       childTableView: DepartmentList(
-                        data: filteredData,
+                        data: dataPage,
                         onChangeDetail: (item) {
                           _showForm(item);
                         },
@@ -137,17 +211,17 @@ class _DepartmentManagerState extends State<DepartmentManager> {
                 Visibility(
                   visible: (departments.length) >= 5,
                   child: SGPaginationControls(
-                    totalPages: 1,
-                    currentPage: 1,
-                    rowsPerPage: 10,
+                    totalPages: totalPages,
+                    currentPage: currentPage,
+                    rowsPerPage: rowsPerPage,
                     controllerDropdownPage: controller,
                     items: [
                       DropdownMenuItem(value: 10, child: Text('10')),
                       DropdownMenuItem(value: 20, child: Text('20')),
                       DropdownMenuItem(value: 50, child: Text('50')),
                     ],
-                    onPageChanged: (page) {},
-                    onRowsPerPageChanged: (rows) {},
+                    onPageChanged: onPageChanged,
+                    onRowsPerPageChanged: onRowsPerPageChanged,
                   ),
                 ),
               ],

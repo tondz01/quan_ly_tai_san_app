@@ -50,6 +50,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   bool isShowPreview = false;
   AssetHandoverDto? selected;
+  UserInfoDTO? userInfo;
+
   List<ThreadNode> listSignatoryDetail = [];
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -77,6 +79,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   void initState() {
     super.initState();
     _initializeColumnOptions();
+    userInfo = AccountHelper.instance.getUserInfo();
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -544,14 +547,20 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: userInfo?.tenDangNhap == 'admin'
+            ? 'Xóa'
+            : item.trangThai != 0
+                ? null
+                : 'Xóa',
+        iconColor: userInfo?.tenDangNhap == 'admin'
+            ? Colors.red.shade700
+            : item.trangThai != 0
+                ? Colors.grey
+                : Colors.red.shade700,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
-        onPressed:
-            () => {
-              if (item.trangThai == 0)
-                {
+        onPressed: userInfo?.tenDangNhap == 'admin'
+            ? () => {
                   showConfirmDialog(
                     context,
                     type: ConfirmType.delete,
@@ -567,8 +576,27 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                       );
                     },
                   ),
+                }
+            : () => {
+                  if (item.trangThai == 0)
+                    {
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xóa biên bản bàn giao',
+                        message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan}',
+                        highlight: item.banGiaoTaiSan!,
+                        cancelText: 'Không',
+                        confirmText: 'Xóa',
+                        onConfirm: () {
+                          widget.provider.isLoading = true;
+                          context.read<AssetHandoverBloc>().add(
+                            DeleteAssetHandoverEvent(context, item.id!),
+                          );
+                        },
+                      ),
+                    },
                 },
-            },
       ),
     ]);
   }
@@ -696,12 +724,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       case 0:
         return 'Nháp';
       case 1:
-        return 'Chờ xác nhận';
+        return 'Duyệt';
       case 2:
-        return 'Chờ duyệt';
-      case 3:
         return 'Hủy';
-      case 4:
+      case 3:
         return 'Hoàn thành';
       default:
         return '';

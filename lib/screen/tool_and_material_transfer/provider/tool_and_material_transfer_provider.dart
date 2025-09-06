@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -693,6 +694,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       final list =
           rawData.map((item) => OwnershipUnitDetailDto.fromJson(item)).toList();
       _listOwnershipUnit = list;
+      log('message listOwnershipUnit: ${jsonEncode(list)}');
       notifyListeners();
       return list;
     } else {

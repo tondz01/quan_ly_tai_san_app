@@ -169,7 +169,7 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa nhóm tài sản',
+          text: 'Chỉnh sửa nhóm CCDC - Vật tư',
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,

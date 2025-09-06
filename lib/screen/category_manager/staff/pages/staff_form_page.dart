@@ -426,46 +426,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             ),
                             const SizedBox(height: 16),
 
-                            DropdownButtonFormField<String>(
-                              value:
-                                  _activityController.text.isNotEmpty
-                                      ? _activityController.text
-                                      : null,
-                              decoration: inputDecoration(
-                                'Hoạt động',
-                                required: true,
-                              ),
-                              items: [
-                                DropdownMenuItem(
-                                  value: 'Có',
-                                  child: Text('Có'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'Không',
-                                  child: Text('Không'),
-                                ),
-                              ],
-                              onChanged:
-                                  isEditing
-                                      ? (value) {
-                                        setState(() {
-                                          _activityController.text =
-                                              value ?? '';
-                                          _isActive = value == 'Có';
-                                        });
-                                      }
-                                      : null,
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Chọn hoạt động'
-                                          : null,
-                              isExpanded: true,
-                            ),
-                            const SizedBox(height: 16),
                             DropdownButtonFormField<PhongBan>(
                               value: _phongBan,
-                              decoration: inputDecoration('Phòng/Ban cấp trên'),
+                              decoration: inputDecoration('Phòng/Ban'),
                               items:
                                   context
                                       .read<StaffBloc>()
@@ -846,7 +809,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa nhóm tài sản',
+          text: 'Chỉnh sửa nhân viên',
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,

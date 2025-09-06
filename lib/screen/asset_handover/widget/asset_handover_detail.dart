@@ -158,10 +158,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     } else {
       isEditing = false;
     }
-    log('message test item: ${editable()}');
-    log(
-      'message test bool: ${item != null && (item!.trangThai == 0 || item!.trangThai == 2)}',
-    );
 
     listNhanVien = widget.provider.dataStaff ?? [];
     listPhongBan = widget.provider.dataDepartment ?? [];
@@ -394,12 +390,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
-      log('message test newRequest: ${jsonEncode(newRequest)}');
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(newRequest, listSignatory),
       );
     } else {
-      int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
+      int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
         Map<String, dynamic>? result = await dieuDongProvider

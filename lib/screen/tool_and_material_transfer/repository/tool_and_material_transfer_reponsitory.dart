@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -57,13 +56,11 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
 
       final dynamic respData = response.data;
-      log('message test1 requestDetail: ${jsonEncode(requestDetail)}');
       for (var detail in requestDetail) {
         final responseDetail = await post(
           EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER,
           data: detail.toJson(),
         );
-        log('message test1 responseDetail: ${jsonEncode(responseDetail.data)}');
         final int? statusDetail = responseDetail.statusCode;
         final bool isOkDetail =
             statusDetail == Numeral.STATUS_CODE_SUCCESS ||
@@ -71,11 +68,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
             statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
         if (!isOkDetail) {
           result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
-          log('❌ DETAIL REQUEST ${detail.toJson()} FAILED - Status: $statusDetail');
-          log('Failed detail data: ${jsonEncode(detail.toJson())}');
           return result;
         }
-        log('✅ DETAIL REQUEST ${detail.toJson()} SUCCESS');
       }
 
       for (var signatory in listSignatory) {

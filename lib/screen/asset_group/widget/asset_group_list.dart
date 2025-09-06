@@ -171,7 +171,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetGroupDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -256,7 +256,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2.5),
                       child: Text(
-                        'Biên bản bàn giao tài sản (${widget.provider.data.length})',
+                        'Danh sách nhóm tài sản (${widget.provider.data.length})',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

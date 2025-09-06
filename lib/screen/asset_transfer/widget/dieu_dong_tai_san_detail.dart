@@ -281,6 +281,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     },
                   ),
                 ),
+
                 const SizedBox(width: 8),
                 Visibility(
                   visible: state.isEditing,
@@ -923,7 +924,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         widget.type,
         state.item!.trangThai ?? 0,
       );
-      int trangThai = state.item!.trangThai == 2 ? 1 : state.item!.trangThai!;
+      int trangThai = state.item!.trangThai == 2 ? 0 : state.item!.trangThai!;
       LenhDieuDongRequest newRequest = request.copyWith(
         trinhDuyetCapPhongXacNhan:
             state.item!.trinhDuyetCapPhongXacNhan ?? false,
@@ -1010,9 +1011,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             widget.provider.dataNhanVien
                 .where((e) => e.phongBanId == state.donViDeNghi?.id)
                 .toList();
-        log(
-          'message test state.listNhanVienThamMuu: ${state.item?.idNguoiKyNhay}',
-        );
         state.nguoiDeNghi = widget.provider.getNhanVienByID(
           state.item?.idNguoiKyNhay ?? '',
         );

@@ -49,9 +49,7 @@ class AssetHandoverRepository extends ApiBase {
               assetHandover.id.toString(),
             );
             assetHandover.listSignatory = signatories;
-            log('message test signatories: ${jsonEncode(signatories)}');
           } catch (e) {
-            log("Error loading signatories for ${assetHandover.id}: $e");
             assetHandover.listSignatory = [];
           }
         }),
@@ -123,7 +121,6 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-      log('message test request: ${request['id']}');
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request['id'].toString(),

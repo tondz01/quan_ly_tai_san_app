@@ -95,18 +95,15 @@ class AssetTransferRepository extends ApiBase {
           return result;
         }
       }
-      log('message test listSignatory: ${jsonEncode(listSignatory)}');
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request.id.toString(),
         );
-        log('message test signatoryCopy: ${jsonEncode(signatoryCopy)}');
         final responseSignatory = await post(
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
         );
         final int? statusSignatory = responseSignatory.statusCode;
-        log('message test statusSignatory: $statusSignatory');
         final bool isOkSignatory =
             statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
             statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||

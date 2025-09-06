@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
@@ -28,6 +30,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   late TextEditingController _nameController;
   late TextEditingController _noteController;
   bool _isActive = true;
+  bool isEditing = false;
 
   @override
   void initState() {
@@ -54,6 +57,11 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
   }
 
   void _initData() {
+    if (widget.duAn != null) {
+      isEditing = false;
+    } else {
+      isEditing = true;
+    }
     _codeController.text = widget.duAn?.id ?? '';
     _nameController.text = widget.duAn?.tenDuAn ?? '';
     _noteController.text = widget.duAn?.ghiChu ?? '';
@@ -98,13 +106,10 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
       child: Form(
         key: _formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            sectionTitle(
-              Icons.account_tree,
-              isEdit ? 'Cập nhật dự án' : 'Thêm mới dự án',
-              'Nhập thông tin dự án mới.',
-            ),
+            const SizedBox(height: 16),
+            _buildHeaderDetail(),
             sectionCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +121,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _codeController,
-                          enabled: !isEdit, // Read-only khi update
+                          enabled: widget.duAn != null ? false : isEditing, // Read-only khi update
                           decoration: inputDecoration(
                             'Mã dự án',
                             required: true,
@@ -136,6 +141,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                             'Tên dự án',
                             required: true,
                           ),
+                          enabled: isEditing,
                           validator:
                               (v) =>
                                   v == null || v.isEmpty
@@ -148,28 +154,19 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _noteController,
-                    decoration: inputDecoration(
-                      'Ghi chú',
-                      required: true,
-                    ),
+                    decoration: inputDecoration('Ghi chú', required: true),
+                    enabled: isEditing,
                     validator:
-                        (v) =>
-                            v == null || v.isEmpty
-                                ? 'Nhập ghi chú'
-                                : null,
+                        (v) => v == null || v.isEmpty ? 'Nhập ghi chú' : null,
                   ),
                   const SizedBox(height: 16),
                   Row(
                     children: [
                       Checkbox(
                         value: _isActive,
-                        onChanged:
-                            (v) => setState(() => _isActive = v ?? true),
+                        onChanged: (v) => !isEditing ? null : setState(() => _isActive = v ?? true),
                       ),
-                      const Text(
-                        'Có hiệu lực',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      const Text('Có hiệu lực', style: TextStyle(fontSize: 16)),
                     ],
                   ),
                 ],
@@ -215,5 +212,46 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildHeaderDetail() {
+    return isEditing
+        ? Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            MaterialTextButton(
+              text: 'Lưu',
+              icon: Icons.save,
+              backgroundColor: ColorValue.success,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                _save();
+              },
+            ),
+            const SizedBox(width: 8),
+            MaterialTextButton(
+              text: 'Hủy',
+              icon: Icons.cancel,
+              backgroundColor: ColorValue.error,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                if (widget.onCancel != null) {
+                  widget.onCancel!();
+                }
+              },
+            ),
+          ],
+        )
+        : MaterialTextButton(
+          text: 'Chỉnh sửa dự án',
+          icon: Icons.save,
+          backgroundColor: ColorValue.success,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            setState(() {
+              isEditing = true;
+            });
+          },
+        );
   }
 }

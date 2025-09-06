@@ -136,7 +136,7 @@ class _RoleDetailState extends State<RoleDetail> {
                     child: TextFormField(
                       controller: controllerIdChucVu,
                       decoration: inputDecoration('Mã chức vụ', required: true),
-                      enabled: isEditing, // Read-only khi update
+                      enabled: isEditing ? data?.id != null : false, // Read-only khi update
                       validator:
                           (v) =>
                               v == null || v.isEmpty
@@ -231,7 +231,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Bán giao tài sản",
+          label: "Bàn giao tài sản",
           value: isBanGiaoTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -243,7 +243,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Bán giao CCDC vật tư",
+          label: "Bàn giao CCDC vật tư",
           value: isBanGiaoCCDCVatTu,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -403,7 +403,7 @@ class _RoleDetailState extends State<RoleDetail> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa nhóm tài sản',
+          text: 'Chỉnh sửa chức vụ',
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,

@@ -100,6 +100,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: CommonPageView(
+                      title: 'Chi tiết nguồn vốn',
                       childInput: CapitalSourceFormPage(
                         capitalSource: editingCapitalSource,
                         onCancel: () {

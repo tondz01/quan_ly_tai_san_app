@@ -378,11 +378,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
               .where((item) {
-                log('message test item.share: ${item.share}');
-                log('message test item.nguoiTao: ${item.nguoiTao}');
-                log(
-                  'message test userInfo?.tenDangNhap: ${userInfo?.tenDangNhap}',
-                );
                 return item.share == true ||
                     item.nguoiTao == userInfo?.tenDangNhap;
               })
@@ -400,7 +395,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
                 final inGroup = idSignatureGroup
                     .map((e) => e.toLowerCase())
                     .contains(userInfo.tenDangNhap.toLowerCase());
-                log('message test inGroup: $inGroup');
                 return inGroup;
               })
               .toList();

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -83,11 +82,8 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
               ToolAndSuppliesHandover.id.toString(),
             );
             ToolAndSuppliesHandover.listSignatory = signatories;
-            log('message test signatories: ${jsonEncode(signatories)}');
           } catch (e) {
-            log(
-              "Error loading signatories for ${ToolAndSuppliesHandover.id}: $e",
-            );
+          
             ToolAndSuppliesHandover.listSignatory = [];
           }
         }),
@@ -159,7 +155,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
-      log('message test request: ${request['id']}');
       for (var signatory in listSignatory) {
         final signatoryCopy = signatory.copyWith(
           idTaiLieu: request['id'].toString(),
