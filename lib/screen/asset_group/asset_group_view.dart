@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
@@ -61,6 +62,16 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                       provider.onChangeDetail(null);
                     },
                     mainScreen: 'Nhóm tài sản',
+                    onFileSelected: (fileName, filePath, fileBytes) {
+                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách nhóm tài sản",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                   ),
                 ),
                 body: Column(

@@ -172,42 +172,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                OutlinedButton(
-                  onPressed: () {
-                    if (widget.onCancel != null) {
-                      widget.onCancel!();
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF7B8EC8),
-                    side: const BorderSide(color: Color(0xFFE6EAF3)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('Hủy'),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2264E5),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                  ),
-                  child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
-                ),
-              ],
-            ),
           ],
         ),
       ),

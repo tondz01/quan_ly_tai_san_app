@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -121,7 +124,11 @@ class _DetailToolAndMaterialTransferTableState
   void didUpdateWidget(DetailToolAndMaterialTransferTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.initialDetails != widget.initialDetails &&
-        widget.initialDetails.isNotEmpty) {
+            widget.initialDetails.isNotEmpty ||
+        oldWidget.listOwnershipUnit != widget.listOwnershipUnit) {
+      log(
+        'message widget.initialDetails: ${jsonEncode(widget.initialDetails)}',
+      );
       movementDetails = List.from(widget.initialDetails);
       listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
       _syncDetailAssets();

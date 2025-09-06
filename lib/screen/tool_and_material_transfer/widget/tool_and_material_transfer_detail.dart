@@ -684,7 +684,7 @@ class _ToolAndMaterialTransferDetailState
                         CommonFormInput(
                           label: 'Số chứng từ',
                           controller: controllerSoChungTu,
-                          isEditing: false,
+                          isEditing: isEditing,
                           textContent: controllerSoChungTu.text,
                           fieldName: 'soChungTu',
                           validationErrors: _validationErrors,
@@ -975,7 +975,6 @@ class _ToolAndMaterialTransferDetailState
                 initialDetails: item?.detailToolAndMaterialTransfers ?? [],
                 allAssets: widget.provider.dataAsset ?? [],
                 listOwnershipUnit: widget.provider.listOwnershipUnit,
-
                 onDataChanged: (data) {
                   setState(() {
                     listNewDetails =

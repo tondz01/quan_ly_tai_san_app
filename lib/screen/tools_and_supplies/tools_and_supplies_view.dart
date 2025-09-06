@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
@@ -76,27 +76,21 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                   },
                   mainScreen: 'Quản lý CCDC - Vật tư',
                   subScreen: provider.subScreen,
-                  child: Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Tooltip(
-                          message: 'Chọn file data để nhập dữ liệu',
-                          child: SizedBox(
-                            width: 200,
-                            child: DocumentUploadWidget(
-                              isEditing: true,
-                              isInsertData: true,
-                              selectedFileName: provider.selectedFileName,
-                              selectedFilePath: provider.selectedFilePath,
-                              onFileSelected: (fileName, filePath, fileBytes) {},
-                              allowedExtensions: ['csv',],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  onFileSelected: (fileName, filePath, fileBytes) {
+                      // provider.onSubmit(
+                      //   context,
+                      //   fileName ?? '',
+                      //   filePath ?? '',
+                      //   fileBytes ?? Uint8List(0),
+                      // );
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách CCDC - Vật tư",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                 ),
               ),
               // body: DepartmentTreeDemo(),

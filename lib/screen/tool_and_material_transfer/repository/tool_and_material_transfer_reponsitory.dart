@@ -433,13 +433,15 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> getListOwnershipUnit() async {
+  Future<Map<String, dynamic>> getListOwnershipUnit(String idDonViSoHuu) async {
     Map<String, dynamic> result = {
       'data': [],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
     try {
-      final res = await get(EndPointAPI.OWNERSHIP_UNIT_DETAIL);
+      final res = await get(
+        '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/by-donvisohuu/$idDonViSoHuu',
+      );
       result['data'] = res.data['data'];
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/captital_source_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
@@ -92,6 +93,16 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                   });
                 },
                 mainScreen: 'Quản lý nguồn vốn',
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                },
+                onExportData: () {
+                  AppUtility.exportData(
+                    context,
+                    "Danh sách nguồn vốn",
+                    data.map((e) => e.toJson()).toList(),
+                  );
+                },
               ),
             ),
             body: Column(

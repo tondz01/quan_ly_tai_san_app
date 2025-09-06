@@ -115,7 +115,7 @@ class AssetRequest {
       ngayCapNhat: json['ngayCapNhat'] ?? DateTime.now().toIso8601String(),
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
-      active: json['active'] ?? true,
+      active: json['isActive'] ?? true,
     );
   }
 
@@ -157,7 +157,7 @@ class AssetRequest {
       'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'active': active,
+      'isActive': active,
     };
   }
 

@@ -379,7 +379,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         CommonFormInput(
                           label: 'Số chứng từ',
                           controller: controllers.controllerSoChungTu,
-                          isEditing: false,
+                          isEditing: state.isEditing,
                           textContent: controllers.controllerSoChungTu.text,
                           fieldName: 'soChungTu',
                           validationErrors: validation.validationErrors,

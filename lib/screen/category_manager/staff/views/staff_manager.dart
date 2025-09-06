@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
@@ -65,7 +66,9 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StaffBloc>().add(const LoadStaffs()); // Sửa LoadStaff thành LoadStaffs
+      context.read<StaffBloc>().add(
+        const LoadStaffs(),
+      ); // Sửa LoadStaff thành LoadStaffs
     });
   }
 
@@ -73,14 +76,18 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StaffBloc>().add(const LoadStaffs()); // Sửa LoadStaff thành LoadStaffs
+      context.read<StaffBloc>().add(
+        const LoadStaffs(),
+      ); // Sửa LoadStaff thành LoadStaffs
     });
   }
 
   @override
   void didPopNext() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StaffBloc>().add(const LoadStaffs()); // Sửa StaffLoaded() thành LoadStaffs()
+      context.read<StaffBloc>().add(
+        const LoadStaffs(),
+      ); // Sửa StaffLoaded() thành LoadStaffs()
     });
   }
 
@@ -135,6 +142,16 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                   });
                 },
                 mainScreen: 'Quản lý nhân viên',
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                },
+                onExportData: () {
+                  AppUtility.exportData(
+                    context,
+                    "Danh sách nhân viên",
+                    staffs.map((e) => e.toJson()).toList(),
+                  );
+                },
               ),
             ),
             body: Column(

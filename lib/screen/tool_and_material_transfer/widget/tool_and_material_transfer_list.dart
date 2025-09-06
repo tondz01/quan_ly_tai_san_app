@@ -562,11 +562,11 @@ class _ToolAndMaterialTransferListState
   String getName(int type) {
     switch (type) {
       case 1:
-        return 'Phiếu duyệt cấp phát tài sản';
+        return 'Phiếu duyệt cấp phát CCDC - Vật tư';
       case 2:
-        return 'Phiếu duyệt chuyển tài sản';
+        return 'Phiếu duyệt chuyển CCDC - Vật tư';
       case 3:
-        return 'Phiếu duyệt thu hồi tài sản';
+        return 'Phiếu duyệt thu hồi CCDC - Vật tư';
     }
     return '';
   }
