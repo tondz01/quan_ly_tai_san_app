@@ -103,13 +103,7 @@ class AppRouteConf {
                   child: CapitalSourceManager(),
                 ),
           ),
-          GoRoute(
-            path: AppRoute.assetManager.path,
-            name: AppRoute.assetManager.name,
-            pageBuilder:
-                (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: AssetManager()),
-          ),
+         
           GoRoute(
             path: AppRoute.toolAndMaterialTransfer.path,
             name: AppRoute.toolAndMaterialTransfer.name,

@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
@@ -166,6 +165,16 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                   });
                 },
                 mainScreen: 'Quản lý phòng ban',
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                },
+                onExportData: () {
+                  AppUtility.exportData(
+                    context,
+                    "Danh sách phòng ban",
+                    departments.map((e) => e.toJson()).toList(),
+                  );
+                },
               ),
             ),
             body: Column(

@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -550,7 +549,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   Future<List<OwnershipUnitDetailDto>> getListOwnership(String id) async {
     if (id.isEmpty) return [];
     Map<String, dynamic> result =
-        await ToolAndMaterialTransferRepository().getListOwnershipUnit();
+        await ToolAndMaterialTransferRepository().getListOwnershipUnit(id);
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
       final list =

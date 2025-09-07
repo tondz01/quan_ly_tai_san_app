@@ -56,14 +56,14 @@ class _ToolAndMaterialTransferViewState
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Đảm bảo dữ liệu được tải lại khi màn hình được focus lại
-    if (ModalRoute.of(context)?.isCurrent == true && _isInitialized) {
-      _reloadData();
-    }
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // Đảm bảo dữ liệu được tải lại khi màn hình được focus lại
+  //   if (ModalRoute.of(context)?.isCurrent == true && _isInitialized) {
+  //     _reloadData();
+  //   }
+  // }
 
   void _initData() {
     log('currentType _initData ccdc vt: $currentType');
@@ -150,7 +150,7 @@ class _ToolAndMaterialTransferViewState
                             typeAssetTransfer: currentType,
                             idCongTy: 'CT001',
                           ),
-                          title: "Chi tiết điều chuyển tài sản",
+                          title: "Chi tiết điều chuyển CCDC - Vật tư",
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,
                           onExpandedChanged: (isExpanded) {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
@@ -74,6 +75,16 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
                       provider.onChangeDetail(null);
                     },
                     mainScreen: 'Mô hình tài sản',
+                    onFileSelected: (fileName, filePath, fileBytes) {
+                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách mô hình tài sản",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                   ),
                 ),
                 body: Column(

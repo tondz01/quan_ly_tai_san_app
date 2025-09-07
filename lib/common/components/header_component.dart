@@ -25,6 +25,7 @@ class HeaderComponent extends StatefulWidget {
     this.isShowSearch = true,
     this.child,
     this.onFileSelected,
+    this.onExportData,
   });
   final TextEditingController controller;
   final Function(String) onSearchChanged;
@@ -36,6 +37,7 @@ class HeaderComponent extends StatefulWidget {
   final bool? isShowSearch;
   final Function(String? fileName, String? filePath, Uint8List? fileBytes)?
   onFileSelected;
+  final Function()? onExportData;
   @override
   State<HeaderComponent> createState() => _HeaderComponentState();
 }
@@ -56,6 +58,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
       context: context,
       onFileSelected:
           widget.onFileSelected ?? (fileName, filePath, fileBytes) {},
+      onExportData: widget.onExportData ?? () {},
     );
   }
 }
@@ -73,6 +76,7 @@ Widget buildHeader(
   required BuildContext context,
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
+  Function()? onExportData,
 }) {
   final typeSize = TypeSizeScreenExtension.getSizeScreen(width);
   return typeSize == TypeSizeScreen.extraSmall ||
@@ -89,6 +93,7 @@ Widget buildHeader(
         child,
         context,
         onFileSelected: onFileSelected,
+        onExportData: onExportData,
       )
       : _buildHeaderScreenLarge(
         width,
@@ -102,6 +107,7 @@ Widget buildHeader(
         child,
         context,
         onFileSelected: onFileSelected,
+        onExportData: onExportData,
       );
 }
 
@@ -118,6 +124,7 @@ Widget _buildHeaderScreenLarge(
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
+  Function()? onExportData,
 }) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,6 +137,7 @@ Widget _buildHeaderScreenLarge(
         onTap,
         context,
         onFileSelected: onFileSelected,
+        onExportData: onExportData,
       ),
       // if (subScreen != null && subScreen.isNotEmpty)
       const SizedBox(width: 16),
@@ -153,6 +161,7 @@ Widget _buildHeaderScreenSmall(
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
+  Function()? onExportData,
 }) {
   return Column(
     mainAxisSize: MainAxisSize.min,
@@ -165,6 +174,7 @@ Widget _buildHeaderScreenSmall(
         onTap,
         context,
         onFileSelected: onFileSelected,
+        onExportData: onExportData,
       ),
       // if (subScreen != null && subScreen.isNotEmpty)
       const SizedBox(height: 5),
@@ -184,6 +194,7 @@ Widget _buildHeaderNameScreen(
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
+  Function()? onExportData,
 }) {
   bool isSubScreen = subScreen != null && subScreen.isNotEmpty;
   // log()
@@ -228,6 +239,7 @@ Widget _buildHeaderNameScreen(
                 context,
                 details.globalPosition,
                 onFileSelected: onFileSelected,
+                onExportData: onExportData,
               );
             },
             child: Icon(
@@ -271,6 +283,7 @@ void _showCustomMenu(
   Offset offset, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
+  Function()? onExportData,
 }) async {
   final RenderBox overlay =
       Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -313,7 +326,7 @@ void _showCustomMenu(
       if (value == 1) {
         _selectDocument(context: context, onFileSelected: onFileSelected);
       } else if (value == 2) {
-        print("Xuất toàn bộ");
+        onExportData?.call();
       }
     }
   });

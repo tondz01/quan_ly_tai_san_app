@@ -27,7 +27,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Map<String, dynamic> result = await AuthRepository().login(event.params);
     emit(LoginLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(PostLoginSuccessState(data: result['data']));
+      log('message result ${result['data']}');
+      if (result['data'] != null) {
+        log('message result222 ${result['data']}');
+        emit(PostLoginSuccessState(data: result['data']));
+      } else {
+        emit(PostLoginFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: "Tài khoản hoặc mật khẩu không chính xác",
+        ));
+      }
     } else {
       String msg = "Lỗi khi lấy dữ liệu ${result['status_code']}";
       log('message result ${result['status_code']}');
