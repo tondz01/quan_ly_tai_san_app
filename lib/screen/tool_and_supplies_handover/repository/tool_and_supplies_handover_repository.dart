@@ -1,15 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -21,39 +22,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     _signatoryRepository = SignatoryRepository();
   }
 
-  Future<Map<String, dynamic>> getListDieuDongCcdc(String idCongTy) async {
-    List<ToolAndMaterialTransferDto> list = [];
-    Map<String, dynamic> result = {
-      'data': list,
-      'status_code': Numeral.STATUS_CODE_DEFAULT,
-    };
-
-    try {
-      final response = await get(
-        EndPointAPI.TOOL_AND_MATERIAL_TRANSFER,
-        queryParameters: {'idcongty': idCongTy},
-      );
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-        result['status_code'] = response.statusCode;
-        return result;
-      }
-
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
-        response.data,
-        ToolAndMaterialTransferDto.fromJson,
-      );
-
-      log('response.data điều động: ${result['data']}');
-    } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
-    }
-
-    return result;
-  }
-
   Future<Map<String, dynamic>> getListToolAndSuppliesHandover() async {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     List<ToolAndSuppliesHandoverDto> list = [];
@@ -63,34 +31,36 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     };
     try {
       final response = await get(
-        "${EndPointAPI.ASSET_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}",
+        "${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/getbyuserid/${userInfo.tenDangNhap}",
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
 
-      List<ToolAndSuppliesHandoverDto> ToolAndSuppliesHandover =
+      List<ToolAndSuppliesHandoverDto> toolAndSuppliesHandover =
           ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
             response.data,
             ToolAndSuppliesHandoverDto.fromJson,
           );
+
       await Future.wait(
-        ToolAndSuppliesHandover.map((ToolAndSuppliesHandover) async {
+        toolAndSuppliesHandover.map((toolAndSuppliesHandover) async {
           try {
             final signatories = await _signatoryRepository.getAll(
-              ToolAndSuppliesHandover.id.toString(),
+              toolAndSuppliesHandover.id.toString(),
             );
-            ToolAndSuppliesHandover.listSignatory = signatories;
+            toolAndSuppliesHandover.listSignatory = signatories;
+            log('signatories: ${jsonEncode(signatories)}');
           } catch (e) {
-          
-            ToolAndSuppliesHandover.listSignatory = [];
+            toolAndSuppliesHandover.listSignatory = [];
           }
         }),
       );
+
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = ToolAndSuppliesHandover;
+      result['data'] = toolAndSuppliesHandover;
     } catch (e) {
       SGLog.error(
         "ToolAndSuppliesHandoverRepository",
@@ -113,7 +83,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
         queryParameters: {'iddieudongtaisan': id},
       );
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -144,14 +114,13 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     };
 
     try {
-      final response = await post(EndPointAPI.ASSET_TRANSFER, data: request);
+      final response = await post(
+        EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
+        data: request,
+      );
 
       final int? status = response.statusCode;
-      final bool isOk =
-          status == Numeral.STATUS_CODE_SUCCESS ||
-          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-      if (!isOk) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
@@ -164,11 +133,8 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
           data: signatoryCopy.toJson(),
         );
         final int? statusSignatory = responseSignatory.statusCode;
-        final bool isOkSignatory =
-            statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
-            statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-            statusSignatory == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-        if (!isOkSignatory) {
+
+        if (checkStatusCodeFailed(statusSignatory ?? 0)) {
           result['status_code'] =
               statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
           return result;
@@ -189,7 +155,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
   Future<Map<String, dynamic>> updateToolAndSuppliesHandover(
     Map<String, dynamic> request,
-    String id,
   ) async {
     Map<String, dynamic> result = {
       'data': "",
@@ -198,15 +163,12 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
     try {
       final response = await put(
-        "${EndPointAPI.ASSET_TRANSFER}/$id",
+        EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
         data: request,
       );
+      
       final int? status = response.statusCode;
-      final bool isOk =
-          status == Numeral.STATUS_CODE_SUCCESS ||
-          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-      if (!isOk) {
+      if (checkStatusCodeFailed(status ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
@@ -230,13 +192,11 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     };
 
     try {
-      final response = await delete("${EndPointAPI.ASSET_TRANSFER}/$id");
+      final response = await delete(
+        "${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/$id",
+      );
       final int? status = response.statusCode;
-      final bool isOk =
-          status == Numeral.STATUS_CODE_SUCCESS ||
-          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-      if (!isOk) {
+      if (checkStatusCodeFailed(status ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }

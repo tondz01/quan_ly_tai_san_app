@@ -11,11 +11,12 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/preview_document_ccdc_handover.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/controller/find_by_type_tool_and_supplies.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -32,25 +33,27 @@ enum FilterType {
   const FilterType(this.label, this.activeColor);
 }
 
-class AssetTransferList extends StatefulWidget {
-  final List<DieuDongTaiSanDto> data;
+class ToolAndSuppliesHandoverTransferList extends StatefulWidget {
+  final List<ToolAndMaterialTransferDto> data;
   final ToolAndSuppliesHandoverProvider provider;
 
-  const AssetTransferList({
+  const ToolAndSuppliesHandoverTransferList({
     super.key,
     required this.data,
     required this.provider,
   });
 
   @override
-  State<AssetTransferList> createState() => _AssetTransferListState();
+  State<ToolAndSuppliesHandoverTransferList> createState() =>
+      _ToolAndSuppliesHandoverTransferListState();
 }
 
-class _AssetTransferListState extends State<AssetTransferList> {
+class _ToolAndSuppliesHandoverTransferListState
+    extends State<ToolAndSuppliesHandoverTransferList> {
   bool isUploading = false;
-  List<DieuDongTaiSanDto> dataAssetTransfer = [];
-  List<DieuDongTaiSanDto> dataAssetTransferFilter = [];
-  List<DieuDongTaiSanDto> selectedItems = [];
+  List<ToolAndMaterialTransferDto> dataAssetTransfer = [];
+  List<ToolAndMaterialTransferDto> dataAssetTransferFilter = [];
+  List<ToolAndMaterialTransferDto> selectedItems = [];
   UserInfoDTO? userInfo;
 
   final Map<FilterType, bool> _filterStatus = {
@@ -156,15 +159,15 @@ class _AssetTransferListState extends State<AssetTransferList> {
     ];
   }
 
-  List<SgTableColumn<DieuDongTaiSanDto>> _buildColumns() {
-    final List<SgTableColumn<DieuDongTaiSanDto>> columns = [];
+  List<SgTableColumn<ToolAndMaterialTransferDto>> _buildColumns() {
+    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns = [];
 
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
         case 'type':
           columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Phiếu ký nội sinh',
               width: 150,
               getValue: (item) => getName(item.loai ?? 0),
@@ -173,7 +176,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'decision_date':
           columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày ký',
               width: 100,
               getValue: (item) => item.ngayKy ?? '',
@@ -182,7 +185,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'effective_date':
           columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ngày có hiệu lực',
               width: 100,
               getValue: (item) => item.tggnTuNgay ?? '',
@@ -191,7 +194,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'approver':
           columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Trình duyệt ban giám đốc',
               width: 150,
               getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
@@ -200,7 +203,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'document':
           columns.add(
-            SgTableColumn<DieuDongTaiSanDto>(
+            SgTableColumn<ToolAndMaterialTransferDto>(
               title: 'Tài liệu duyệt',
               cellBuilder:
                   (item) => SgDownloadFile(
@@ -218,7 +221,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'id':
           columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
               title: 'Ký số',
               width: 120,
               getValue: (item) => item.id ?? '',
@@ -227,7 +230,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'status':
           columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
               title: 'Trạng thái',
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
@@ -238,7 +241,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
           break;
         case 'actions':
           columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
               title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
@@ -283,7 +286,8 @@ class _AssetTransferListState extends State<AssetTransferList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<DieuDongTaiSanDto>> columns = _buildColumns();
+    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns =
+        _buildColumns();
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
@@ -317,18 +321,14 @@ class _AssetTransferListState extends State<AssetTransferList> {
             child: headerList(),
           ),
           Expanded(
-            child: TableBaseView<DieuDongTaiSanDto>(
+            child: TableBaseView<ToolAndMaterialTransferDto>(
               searchTerm: '',
               columns: columns,
               data: dataAssetTransferFilter,
               horizontalController: ScrollController(),
-              onRowTap: (item) {
-                // widget.provider.onChangeDetailDieuDongTaiSan(item);
-              },
+              onRowTap: (item) {},
               onSelectionChanged: (items) {
-                setState(() {
-                  // selectedItems = items;
-                });
+                setState(() {});
               },
             ),
           ),
@@ -380,7 +380,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
     );
   }
 
-  Widget viewAction(DieuDongTaiSanDto item) {
+  Widget viewAction(ToolAndMaterialTransferDto item) {
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.visibility,
@@ -405,64 +405,52 @@ class _AssetTransferListState extends State<AssetTransferList> {
             return;
           }
 
-          if (item.tenFile == null || item.tenFile!.isEmpty) {
-            previewDocumentView(
+          await _loadPdfNetwork(item.tenFile!);
+          if (mounted) {
+            prevDocumentCcdcHandover(
               context: context,
               item: item,
-              userInfo: userInfo!,
-              nhanVien: nhanVien,
               isShowKy: false,
               document: _document,
+              provider: widget.provider,
             );
-          } else {
-            await _loadPdfNetwork(item.tenFile!);
-            if (mounted) {
-              previewDocumentView(
-                context: context,
-                item: item,
-                userInfo: userInfo!,
-                nhanVien: nhanVien,
-                isShowKy: false,
-                document: _document,
-              );
-            }
           }
         },
       ),
       ActionButtonConfig(
         icon: Icons.navigate_next_outlined,
-        tooltip: 'Tạo biên bản bàn giao tài sản',
+        tooltip: 'Tạo biên bản bàn giao ccdc-vật tư',
         iconColor: Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              // widget.provider.onChangeDetail(
-              //   context,
-              //   AssetHandoverDto(
-              //     id: item.id,
-              //     idCongTy: item.idCongTy,
-              //     banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
-              //     quyetDinhDieuDongSo: '',
-              //     lenhDieuDong: item.id,
-              //     idDonViGiao: item.idDonViGiao,
-              //     tenDonViGiao: item.tenDonViGiao,
-              //     idDonViNhan: item.idDonViNhan,
-              //     tenDonViNhan: item.tenDonViNhan,
-              //     ngayBanGiao: '',
-              //     idLanhDao: '',
-              //     tenLanhDao: '',
-              //     tenDaiDienBanHanhQD: '',
-              //     tenDaiDienBenGiao: '',
-              //     tenDaiDienBenNhan: '',
-              //     tenDonViDaiDien: '',
-              //     daXacNhan: false,
-              //     daiDienBenGiaoXacNhan: false,
-              //     daiDienBenNhanXacNhan: false,
-              //     donViDaiDienXacNhan: '0',
-              //   ),
-              //   isFindNew: true,
-              // ),
+              widget.provider.onChangeDetail(
+                context,
+                ToolAndSuppliesHandoverDto(
+                  id: item.id,
+                  banGiaoCCDCVatTu: '',
+                  quyetDinhDieuDongSo: '',
+                  lenhDieuDong: item.id,
+                  idDonViGiao: item.idDonViGiao,
+                  tenDonViGiao: item.tenDonViGiao,
+                  idDonViNhan: item.idDonViNhan,
+                  tenDonViNhan: item.tenDonViNhan,
+                  ngayBanGiao: '',
+                  idLanhDao: '',
+                  tenLanhDao: '',
+                  tenDaiDienBanHanhQD: '',
+                  tenDaiDienBenGiao: '',
+                  tenDaiDienBenNhan: '',
+                  daXacNhan: false,
+                  daiDienBenGiaoXacNhan: false,
+                  daiDienBenNhanXacNhan: false,
+                  tenFile: "",
+                  duongDanFile: "",
+                ),
+                isFindNew: true,
+                isFindNewItem: true,
+              ),
             },
       ),
     ]);
@@ -471,11 +459,11 @@ class _AssetTransferListState extends State<AssetTransferList> {
   String getName(int type) {
     switch (type) {
       case 1:
-        return 'Phiếu duyệt cấp phát tài sản';
+        return 'Phiếu duyệt cấp phát ccdc-vật tư';
       case 2:
-        return 'Phiếu duyệt chuyển tài sản';
+        return 'Phiếu duyệt chuyển ccdc-vật tư';
       case 3:
-        return 'Phiếu duyệt thu hồi tài sản';
+        return 'Phiếu duyệt thu hồi ccdc-vật tư';
     }
     return '';
   }
@@ -504,7 +492,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
         .any((entry) => entry.value == true);
 
     // Lọc theo trạng thái
-    List<DieuDongTaiSanDto> statusFiltered;
+    List<ToolAndMaterialTransferDto> statusFiltered;
     if (_filterStatus[FilterType.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(dataAssetTransfer);
     } else {
@@ -523,7 +511,6 @@ class _AssetTransferListState extends State<AssetTransferList> {
             }
 
             if (_filterStatus[FilterType.thuHoi] == true && (itemStatus == 3)) {
-              
               return true;
             }
 

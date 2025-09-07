@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -14,6 +16,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
@@ -60,15 +63,12 @@ class _ToolAndSuppliesHandoverDetailState
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
-  // late TextEditingController controllerLeader = TextEditingController();
   late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
       TextEditingController();
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
-  // late TextEditingController controllerRepresentativeUnit =
-  //     TextEditingController();
 
   bool isEditing = false;
   UserInfoDTO? currentUser;
@@ -114,6 +114,7 @@ class _ToolAndSuppliesHandoverDetailState
   final List<NhanVien?> _additionalSigners = [];
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
+  DateTime? ngayBanGiao;
 
   @override
   void initState() {
@@ -129,6 +130,22 @@ class _ToolAndSuppliesHandoverDetailState
     setState(() {
       _document = document;
     });
+  }
+
+  Future<void> _loadPdfNetwork(String nameFile) async {
+    try {
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
   }
 
   @override
@@ -152,11 +169,26 @@ class _ToolAndSuppliesHandoverDetailState
         item!.nguoiTao == currentUser?.tenDangNhap);
   }
 
+  DateTime? _parseDate(String dateString) {
+    try {
+      // Thử parse ISO 8601 format trước
+      if (dateString.contains('T')) {
+        return DateTime.parse(dateString);
+      }
+      // Nếu không phải ISO format, thử parse dd/MM/yyyy
+      return DateFormat("dd/MM/yyyy").parse(dateString);
+    } catch (e) {
+      log('Error parsing date: $dateString, error: $e');
+      return null;
+    }
+  }
+
   void _initData() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
+    dieuDongCcdc = null;
 
     if (editable()) {
       isEditing = true;
@@ -172,41 +204,6 @@ class _ToolAndSuppliesHandoverDetailState
             .toList() ??
         [];
 
-    if (item != null) {
-      if (widget.isFindNew) {
-        isEditing = widget.isFindNew;
-      }
-      isUnitConfirm = item?.daXacNhan ?? false;
-      isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
-      isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
-      _selectedFileName = item?.tenFile ?? '';
-      _selectedFilePath = item?.duongDanFile ?? '';
-      isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
-      getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
-      _additionalSignersDetailed =
-          item?.listSignatory
-              ?.map(
-                (e) => AdditionalSignerData(
-                  employee: widget.provider.dataStaff?.firstWhere(
-                    (element) => element.id == e.idNguoiKy,
-                    orElse: () => NhanVien(),
-                  ),
-                ),
-              )
-              .toList() ??
-          [];
-      dieuDongCcdc = listAssetTransfer.firstWhere(
-        (element) => element.id == item?.lenhDieuDong,
-        orElse: () => ToolAndMaterialTransferDto(),
-      );
-    } else {
-      isUnitConfirm = false;
-      isDelivererConfirm = false;
-      isReceiverConfirm = false;
-      isRepresentativeUnitConfirm = false;
-      _selectedFileName = null;
-      _selectedFilePath = null;
-    }
     itemsNhanVien =
         listNhanVien.isNotEmpty
             ? listNhanVien
@@ -230,6 +227,7 @@ class _ToolAndSuppliesHandoverDetailState
                 )
                 .toList()
             : <DropdownMenuItem<PhongBan>>[];
+
     itemsAssetTransfer =
         listAssetTransfer.isNotEmpty
             ? listAssetTransfer
@@ -242,7 +240,54 @@ class _ToolAndSuppliesHandoverDetailState
                 )
                 .toList()
             : <DropdownMenuItem<ToolAndMaterialTransferDto>>[];
-    dieuDongCcdc = null;
+
+    if (item != null) {
+      if (widget.isFindNew) {
+        isEditing = widget.isFindNew;
+      }
+      isUnitConfirm = item?.daXacNhan ?? false;
+      isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
+      isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+      _selectedFileName = item?.tenFile ?? '';
+      _selectedFilePath = item?.duongDanFile ?? '';
+
+      ngayBanGiao =
+          item?.ngayBanGiao != null
+              ? _parseDate(item!.ngayBanGiao!.toString())
+              : null;
+      isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
+      getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
+      _additionalSignersDetailed =
+          item?.listSignatory
+              ?.map(
+                (e) => AdditionalSignerData(
+                  department: widget.provider.dataDepartment?.firstWhere(
+                    (element) => element.id == e.idPhongBan,
+                    orElse: () => PhongBan(),
+                  ),
+                  employee: widget.provider.dataStaff?.firstWhere(
+                    (element) => element.id == e.idNguoiKy,
+                    orElse: () => NhanVien(),
+                  ),
+                  signed: e.trangThai == 1,
+                ),
+              )
+              .toList() ??
+          [];
+      dieuDongCcdc = listAssetTransfer.firstWhere(
+        (element) => element.id == item?.lenhDieuDong,
+        orElse: () => ToolAndMaterialTransferDto(),
+      );
+
+      _loadPdfNetwork(item?.tenFile ?? '');
+    } else {
+      isUnitConfirm = false;
+      isDelivererConfirm = false;
+      isReceiverConfirm = false;
+      isRepresentativeUnitConfirm = false;
+      _selectedFileName = null;
+      _selectedFilePath = null;
+    }
 
     setState(() {
       _updateControllers();
@@ -258,6 +303,7 @@ class _ToolAndSuppliesHandoverDetailState
             ?.where((element) => element.phongBanId == idDonViNhan)
             .toList() ??
         [];
+
     listNhanVienDonViGiao =
         widget.provider.dataStaff
             ?.where((element) => element.phongBanId == idDonViGiao)
@@ -323,7 +369,10 @@ class _ToolAndSuppliesHandoverDetailState
       controllerOrder.text = item?.lenhDieuDong ?? '';
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-      controllerTransferDate.text = item?.ngayBanGiao ?? '';
+      controllerTransferDate.text =
+          ngayBanGiao != null
+              ? DateFormat("dd/MM/yyyy HH:mm:ss").format(ngayBanGiao!)
+              : '';
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
@@ -345,13 +394,14 @@ class _ToolAndSuppliesHandoverDetailState
 
     provider.isLoading = true;
 
-    String ngayBanGiao = "";
-    ngayBanGiao = controllerTransferDate.text;
+    DateTime ngaybangiao = DateFormat(
+      "dd/MM/yyyy HH:mm:ss",
+    ).parse(controllerTransferDate.text);
 
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
-      "banGiaoTaiSan": controllerDocumentName.text,
+      "banGiaoCCDCVatTu": controllerDocumentName.text,
       "quyetDinhDieuDongSo": dieuDongCcdc?.soQuyetDinh ?? '',
       "lenhDieuDong": dieuDongCcdc?.id ?? '',
       "idDonViGiao": donViGiao?.id ?? '',
@@ -363,12 +413,15 @@ class _ToolAndSuppliesHandoverDetailState
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
-      "ngayBanGiao": ngayBanGiao,
       "trangThai": 0,
       "note": "",
       "nguoiTao": currentUser?.tenDangNhap ?? '',
+      "nguoiCapNhat": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
+      "ngayBanGiao": ngaybangiao.toIso8601String(),
+      "ngayTao": DateTime.now().toIso8601String(),
+      "ngayCapNhat": DateTime.now().toIso8601String(),
     };
 
     final List<SignatoryDto> listSignatory =
@@ -384,18 +437,18 @@ class _ToolAndSuppliesHandoverDetailState
               ),
             )
             .toList();
-
-    if (item == null) {
+    if (provider.isFindNewItem ? true : item == null) {
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
         _selectedFileName ?? '',
         _selectedFilePath ?? '',
         _selectedFileBytes ?? Uint8List(0),
       );
-      final newRequest = request;
-      newRequest['duongDanFile'] = result!['filePath'] ?? '';
-      newRequest['tenFile'] = result['fileName'] ?? '';
-      bloc.add(CreateToolAndSuppliesHandoverEvent(newRequest, listSignatory));
+
+      request['duongDanFile'] = result!['filePath'] ?? '';
+      request['tenFile'] = result['fileName'] ?? '';
+
+      bloc.add(CreateToolAndSuppliesHandoverEvent(request, listSignatory));
     } else {
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
@@ -409,11 +462,16 @@ class _ToolAndSuppliesHandoverDetailState
             );
         request['duongDanFile'] = result!['filePath'] ?? '';
         request['tenFile'] = result['fileName'] ?? '';
+      } else {
+        request['duongDanFile'] = item!.duongDanFile ?? '';
+        request['tenFile'] = item!.tenFile ?? '';
       }
       request['trangThai'] = trangThai;
       request['share'] = item!.share ?? false;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
-      bloc.add(UpdateToolAndSuppliesHandoverEvent(context, request, item!.id!));
+      if (mounted) {
+        bloc.add(UpdateToolAndSuppliesHandoverEvent(context, request));
+      }
     }
 
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
@@ -423,35 +481,6 @@ class _ToolAndSuppliesHandoverDetailState
       }
     });
   }
-
-  // String _formatDate(String date) {
-  //   String dateResult = "";
-  //   try {
-  //     if (date.isNotEmpty) {
-  //       if (date.contains("T")) {
-  //         dateResult = date;
-  //       } else {
-  //         List<String> dateParts = date.split('/');
-  //         if (dateParts.length == 3) {
-  //           DateTime date = DateTime(
-  //             int.parse(dateParts[2]),
-  //             int.parse(dateParts[1]),
-  //             int.parse(dateParts[0]),
-  //           );
-  //           dateResult = date.toIso8601String();
-  //         } else {
-  //           DateTime? parsedDate = DateTime.tryParse(date);
-  //           if (parsedDate != null) {
-  //             dateResult = parsedDate.toIso8601String();
-  //           }
-  //         }
-  //       }
-  //     }
-  //   } catch (e) {
-  //     dateResult = DateTime.now().toIso8601String();
-  //   }
-  //   return dateResult;
-  // }
 
   void _saveChanges() {
     if (!isEditing) return;
@@ -549,25 +578,8 @@ class _ToolAndSuppliesHandoverDetailState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // Hiển thị indicator unsaved changes và nút Save/Cancel
             Row(
               children: [
-                // if (widget.provider.hasUnsavedChanges)
-                //   Container(
-                //     padding: const EdgeInsets.symmetric(
-                //       horizontal: 8,
-                //       vertical: 4,
-                //     ),
-                //     decoration: BoxDecoration(
-                //       color: Colors.orange,
-                //       borderRadius: BorderRadius.circular(4),
-                //     ),
-                //     child: const Text(
-                //       'Có thay đổi chưa lưu',
-                //       style: TextStyle(color: Colors.white, fontSize: 12),
-                //     ),
-                //   ),
-                // const SizedBox(width: 10),
                 Visibility(
                   visible: isEditing,
                   child: MaterialTextButton(
@@ -704,16 +716,13 @@ class _ToolAndSuppliesHandoverDetailState
                         dieuDongCcdc?.detailToolAndMaterialTransfers ?? [],
                     listOwnershipUnit: widget.provider.listOwnershipUnit,
                     allAssets: widget.provider.dataCcdc,
-                    onDataChanged: (data) {
-                      // widget.provider.dataDetailAssetMobilization = data;
-                    },
+                    onDataChanged: (data) {},
                   ),
                 ),
               ),
               previewDocumentCcdcHandover(
                 context: context,
-                item: item ?? getToolAndSuppliesHandoverPreview(),
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                item: dieuDongCcdc,
                 provider: widget.provider,
                 isShowKy: false,
                 document: _document,
@@ -746,19 +755,18 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   Widget _buildInfoToolAndSuppliesHandover() {
-    DateTime? ngayBanGiao;
     return Column(
       children: [
         CommonFormInput(
           label: 'Số phiếu bàn giao',
           controller: controllerHandoverNumber,
-          isEditing: (isEditing && item == null),
+          isEditing: widget.provider.isFindNewItem ? true : (isEditing && item == null),
           fieldName: 'handoverNumber',
           textContent: item?.id ?? '',
           validationErrors: _validationErrors,
         ),
         CommonFormInput(
-          label: 'Bàn giao tài sản',
+          label: 'Bàn giao ccdc-vật tư',
           controller: controllerDocumentName,
           isEditing: isEditing,
           textContent: item?.banGiaoCCDCVatTu ?? '',
@@ -771,41 +779,29 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerOrder,
           isEditing: isEditing,
           value: dieuDongCcdc,
-          // defaultValue:
-          //     item?.lenhDieuDong != null
-          //         ? getAssetTransfer(
-          //           listAssetTransfer: listAssetTransfer,
-          //           idAssetTransfer: item!.quyetDinhDieuDongSo!,
-          //         )
-          //         : null,
           fieldName: 'order',
           items: itemsAssetTransfer,
           onChanged: (value) async {
             setState(() {
               dieuDongCcdc = value;
 
-              // if (dieuDongTaiSan?.tenFile!.isNotEmpty ?? true) {
-              //   _loadPdfNetwork(dieuDongTaiSan?.tenFile ?? '');
-              // }
-
               //change Đơn vị giao
               donViGiao = getPhongBan(
                 listPhongBan: listPhongBan,
                 idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
               );
-              // controllerSenderUnit.text = donViGiao?.tenPhongBan ?? '';
 
               //change Đơn vị nhận
               donViNhan = getPhongBan(
                 listPhongBan: listPhongBan,
                 idPhongBan: dieuDongCcdc?.idDonViNhan ?? '',
               );
+
               // controllerReceiverUnit.text = donViNhan?.tenPhongBan ?? '';
               getStaffDonViGiaoAndNhan(
                 dieuDongCcdc?.idDonViNhan ?? '',
                 dieuDongCcdc?.idDonViGiao ?? '',
               );
-              widget.provider.getListDetailAssetMobilization(value.id ?? '');
             });
             await widget.provider.getListOwnership(donViGiao!.id.toString());
           },
@@ -982,6 +978,9 @@ class _ToolAndSuppliesHandoverDetailState
           onChangedDetailed: (list) {
             setState(() {
               _additionalSignersDetailed = list;
+              log(
+                'message _additionalSignersDetailed: ${jsonEncode(_additionalSignersDetailed)}',
+              );
             });
           },
         ),

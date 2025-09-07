@@ -10,22 +10,20 @@ import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:path/path.dart' as path;
 
 Widget previewDocumentCcdcHandover({
   required BuildContext context,
-  required ToolAndSuppliesHandoverDto? item,
+  required ToolAndMaterialTransferDto? item,
   required ToolAndSuppliesHandoverProvider provider,
-  required List<ChiTietDieuDongTaiSan> itemsDetail,
   bool isShowKy = true,
   bool isDisabled = false,
   PdfDocument? document,
@@ -38,8 +36,7 @@ Widget previewDocumentCcdcHandover({
         item: item,
         provider: provider,
         isShowKy: isShowKy,
-        itemsDetail: itemsDetail,
-        document: document
+        document: document,
       );
     },
     child: Row(
@@ -71,14 +68,12 @@ Widget previewDocumentCcdcHandover({
 
 prevDocumentCcdcHandover({
   required BuildContext context,
-  required ToolAndSuppliesHandoverDto item,
-  required List<ChiTietDieuDongTaiSan> itemsDetail,
+  required ToolAndMaterialTransferDto item,
   required ToolAndSuppliesHandoverProvider provider,
   bool isShowKy = true,
   PdfDocument? document,
 }) {
   UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
-  log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVien(idNhanVien: userInfo.tenDangNhap);
   String tenFileChuKyNhay = path.basename(nhanVien.chuKyNhay.toString());
   String tenFileChuKyThuong = path.basename(nhanVien.chuKyThuong.toString());
@@ -111,7 +106,7 @@ prevDocumentCcdcHandover({
                 scale: 1.2,
                 maxWidth: 800,
                 maxHeight: 800 * (297 / 210),
-                child: ContractPage.ccdcHandoverPage(item, itemsDetail),
+                child: ContractPage.toolAndMaterialTransferPage(item),
               ),
             ],
             signatureList: [urlChuKyNhay, urlChuKyThuong],

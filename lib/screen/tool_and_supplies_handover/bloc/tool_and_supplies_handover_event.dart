@@ -39,9 +39,8 @@ class CreateToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {
 class UpdateToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {
   final BuildContext context;
   final Map<String, dynamic> request;
-  final String id;
 
-  const UpdateToolAndSuppliesHandoverEvent(this.context, this.request, this.id);
+  const UpdateToolAndSuppliesHandoverEvent(this.context, this.request);
 
   @override
   List<Object?> get props => [context, request];

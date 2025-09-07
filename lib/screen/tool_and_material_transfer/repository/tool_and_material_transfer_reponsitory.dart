@@ -278,18 +278,23 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   }
 
   Future<List<ToolAndMaterialTransferDto>> getAllToolAndMeterialTransfer(
-    int type,
+    int? type,
   ) async {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
     final res = await get(
       '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}',
     );
+
     List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
-        (res.data as List)
-            .map((e) => ToolAndMaterialTransferDto.fromJson(e))
-            .where((e) => e.loai == type)
-            .toList();
+        type == null
+            ? (res.data as List)
+                .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+                .toList()
+            : (res.data as List)
+                .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+                .where((e) => e.loai == type)
+                .toList();
 
     await Future.wait(
       toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
