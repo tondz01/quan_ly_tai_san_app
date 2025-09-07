@@ -83,17 +83,17 @@ class ChiTietDieuDongTaiSanRepository {
     return chiTietDieuDongTaiSan;
   }
 
-  Future<int> create(ChiTietDieuDongTaiSan obj) async {
+  Future<dynamic> create(ChiTietDieuDongTaiSan obj) async {
     final res = await _dio.post('', data: obj.toJson());
     return res.data;
   }
 
-  Future<int> update(String id, ChiTietDieuDongTaiSan obj) async {
+  Future<dynamic> update(String id, ChiTietDieuDongTaiSan obj) async {
     final res = await _dio.put('/$id', data: obj.toJson());
     return res.data;
   }
 
-  Future<int> delete(String id) async {
+  Future<dynamic> delete(String id) async {
     final res = await _dio.delete('/$id');
     return res.data;
   }

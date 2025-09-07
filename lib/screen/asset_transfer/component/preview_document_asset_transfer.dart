@@ -190,6 +190,12 @@ previewDocumentView({
               final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(
                 context,
               );
+              if (item.share == false) {
+                final newItem = item.copyWith(
+                  share: true,
+                );
+                assetHandoverBloc.add(SendToSignerEvent(context, [newItem]));
+              }
               assetHandoverBloc.add(
                 UpdateSigningStatusEvent(
                   context,

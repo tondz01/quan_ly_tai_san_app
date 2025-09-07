@@ -61,6 +61,9 @@ class DieuDongTaiSanRepository {
         dieuDongTaiSan
             .chiTietDieuDongTaiSans = await _chiTietDieuDongTaiSanRepository
             .getAll(dieuDongTaiSan.id.toString());
+        log(
+          'dieuDongTaiSan.chiTietDieuDongTaiSans: ${dieuDongTaiSan.chiTietDieuDongTaiSans}',
+        );
       }),
     );
 
@@ -74,13 +77,11 @@ class DieuDongTaiSanRepository {
           dieuDongTaiSan.listSignatory = signatories;
           for (final signatory in signatories) {
             log(
-              "  - ID: ${signatory.id}, NguoiKy: ${signatory.idNguoiKy}, TrangThai: ${signatory.trangThai}",
+              "message test1:  - ID: ${signatory.id}, PhongBan: ${signatory.idPhongBan}, NguoiKy: ${signatory.idNguoiKy}, TrangThai: ${signatory.trangThai}",
             );
           }
         } catch (e) {
-          log(
-            "Error loading signatories for ${dieuDongTaiSan.id}: $e",
-          );
+          log("Error loading signatories for ${dieuDongTaiSan.id}: $e");
           dieuDongTaiSan.listSignatory = [];
         }
       }),

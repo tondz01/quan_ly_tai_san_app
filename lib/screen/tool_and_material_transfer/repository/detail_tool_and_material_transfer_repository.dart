@@ -26,7 +26,7 @@ class DetailToolAndMaterialTransferRepository {
     //   return client;
     // };
   }
-  String _generateCurlCommand(
+  String generateCurlCommand(
     String method,
     String url,
     Map<String, dynamic>? queryParams,
@@ -68,7 +68,7 @@ class DetailToolAndMaterialTransferRepository {
     final queryParams = {"iddieudongccdcvattu": idToolAndMaterialTransfer};
     
     // Log cURL command
-    final curlCommand = _generateCurlCommand('GET', '', queryParams, null);
+    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
     log('cURL command: $curlCommand');
     final res = await _dio.get(
       '',

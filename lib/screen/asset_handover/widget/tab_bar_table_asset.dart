@@ -20,7 +20,7 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
     super.initState();
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
+            ?.where((element) => element.trangThai == 3)
             .toList() ??
         [];
   }

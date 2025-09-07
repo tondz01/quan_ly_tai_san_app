@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -84,7 +85,9 @@ class AssetTransferRepository extends ApiBase {
           EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
           data: detail.toJson(),
         );
+        log('message test1 responseDetail: ${jsonEncode(detail)}');
         final int? statusDetail = responseDetail.statusCode;
+        log('message test1 statusDetail: $statusDetail');
         final bool isOkDetail =
             statusDetail == Numeral.STATUS_CODE_SUCCESS ||
             statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
@@ -102,6 +105,8 @@ class AssetTransferRepository extends ApiBase {
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
         );
+        log('message test1 responseSignatory: ${signatoryCopy.toJson()}');
+        log('message test1 responseSignatory: ${jsonEncode(signatoryCopy)}');
         final int? statusSignatory = responseSignatory.statusCode;
         final bool isOkSignatory =
             statusSignatory == Numeral.STATUS_CODE_SUCCESS ||

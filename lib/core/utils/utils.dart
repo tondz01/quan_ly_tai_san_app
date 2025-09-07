@@ -173,4 +173,21 @@ abstract class AppUtility {
       log('message exportData error: ${result['message']}');
     }
   }
+
+  static Widget viewShareStatus(bool isShare) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          isShare ? 'Đã chia sẻ' : 'Chưa chia sẻ',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: isShare ? Colors.green : Colors.red,
+          ),
+        ),
+        
+      ],
+    );
+  }
 }

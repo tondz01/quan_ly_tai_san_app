@@ -514,24 +514,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           _selectedAssetTransfer =
               matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-          if (_selectedAssetTransfer == null ||
-              _selectedAssetTransfer!.tenFile!.isEmpty) {
-            if (mounted) {
-              SGLog.debug(
-                "AssetHandoverList",
-                "No document found for item: ${item.id}",
-              );
-              previewDocumentHandover(
-                context: context,
-                item: item,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-                provider: widget.provider,
-                isShowKy: false,
-              );
-            }
-            return;
-          }
-          _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+          _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {
               previewDocumentHandover(
                 context: context,
@@ -794,19 +777,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       _selectedAssetTransfer =
           matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-      if (_selectedAssetTransfer == null ||
-          _selectedAssetTransfer!.tenFile!.isEmpty) {
-        if (mounted) {
-          previewDocumentHandover(
-            context: context,
-            item: item,
-            itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-            provider: widget.provider,
-          );
-        }
-        return;
-      }
-      _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+      _loadPdfNetwork(item.tenFile!).then((_) {
         if (mounted) {
           previewDocumentHandover(
             context: context,
@@ -835,15 +806,15 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       );
       return;
     }
-    bool hasNonZero = items.any((item) => item.trangThai != 0);
-    if (hasNonZero) {
-      AppUtility.showSnackBar(
-        context,
-        'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-        isError: true,
-      );
-      return;
-    }
+    // bool hasNonZero = items.any((item) => item.trangThai != 0);
+    // if (hasNonZero) {
+    //   AppUtility.showSnackBar(
+    //     context,
+    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
+    //     isError: true,
+    //   );
+    //   return;
+    // }
 
     showConfirmDialog(
       context,

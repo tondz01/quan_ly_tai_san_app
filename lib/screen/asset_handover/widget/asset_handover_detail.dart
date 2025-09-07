@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -339,8 +340,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     assetHandoverProvider.isLoading = true;
 
-    String ngayBanGiao = "";
-    ngayBanGiao = controllerTransferDate.text;
+    DateTime ngaybangiao = DateFormat(
+      "dd/MM/yyyy HH:mm:ss",
+    ).parse(controllerTransferDate.text);
 
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
@@ -357,7 +359,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
-      "ngayBanGiao": ngayBanGiao,
+      "ngayBanGiao": ngaybangiao.toIso8601String(),
+      "ngayTao": DateTime.now().toIso8601String(),
+      "ngayCapNhat": DateTime.now().toIso8601String(),
       "trangThai": 0,
       "note": "",
       "nguoiTao": currentUser?.tenDangNhap ?? '',

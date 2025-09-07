@@ -40,6 +40,28 @@ abstract class ConfigViewAT {
       ),
     );
   }
+  static Widget showShareStatus(bool isShare) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color: isShare ? Colors.green : Colors.red,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text: isShare ? 'Đã chia sẻ' : 'Chưa chia sẻ',
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
 
   static Color getColorStatus(int status) {
     switch (status) {

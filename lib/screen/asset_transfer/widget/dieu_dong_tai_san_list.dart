@@ -62,6 +62,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
     'signing_status',
+    'share',
     'type',
     'effective_date',
     'approver',
@@ -77,6 +78,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    if (selected != null) {
+      _buildDetailDepartmentTree(selected!);
+    }
     _initializeColumnOptions();
     _callGetListAssetHandover();
   }
@@ -103,6 +107,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         id: 'signing_status',
         label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'share',
+        label: 'Chia sẻ',
+        isChecked: visibleColumnIds.contains('share'),
       ),
       ColumnDisplayOption(
         id: 'type',
@@ -179,6 +188,16 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchable: true,
+            ),
+          );
+          break;
+        case 'share':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Chia sẻ',
+              width: 150,
+              cellBuilder:
+                  (item) => ConfigViewAT.showShareStatus(item.share ?? false),
             ),
           );
           break;
@@ -553,6 +572,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                         onTap: () {
                           if (selectedItems.isNotEmpty) {
                             DieuDongTaiSanDto? item = selectedItems.first;
+
                             _handleSignDocument(
                               item,
                               userInfo!,
@@ -840,15 +860,17 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       );
       return;
     }
-    bool hasNonZero = items.any((item) => item.trangThai != 0);
-    if (hasNonZero) {
-      AppUtility.showSnackBar(
-        context,
-        'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-        isError: true,
-      );
-      return;
-    }
+    // bool hasNonZero = items.any(
+    //   (item) => item.trangThai != 0 && item.trangThai != 2,
+    // );
+    // if (hasNonZero) {
+    //   AppUtility.showSnackBar(
+    //     context,
+    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
+    //     isError: true,
+    //   );
+    //   return;
+    // }
 
     showConfirmDialog(
       context,

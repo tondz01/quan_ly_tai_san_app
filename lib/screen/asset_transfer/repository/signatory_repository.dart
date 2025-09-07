@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -9,11 +10,19 @@ import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 
 class SignatoryRepository {
   late final Dio _dio;
+  late final Dio _dioDelete;
 
   SignatoryRepository() {
     _dio = Dio(
       BaseOptions(
         baseUrl: "${ApiConfig.getBaseURL()}/api/chuky/nguoi-ky",
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    _dioDelete = Dio(
+      BaseOptions(
+        baseUrl: "${ApiConfig.getBaseURL()}/api/chuky",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ),
@@ -30,9 +39,7 @@ class SignatoryRepository {
 
   Future<List<SignatoryDto>> getAll(String idDieuDongTaiSan) async {
     try {
-      final res = await _dio.get(
-        '/tailieu/$idDieuDongTaiSan',
-      );
+      final res = await _dio.get('/tailieu/$idDieuDongTaiSan');
       log('message check signatories22: ${res.data["data"]}');
       // Sử dụng ResponseParser để parse an toàn
       final signatories = ResponseParser.parseToList<SignatoryDto>(
@@ -40,7 +47,6 @@ class SignatoryRepository {
         SignatoryDto.fromJson,
       );
       return signatories;
-      
     } on DioException catch (e) {
       // Thử fallback key tham số khác trong trường hợp API yêu cầu tên khác
       if (e.response?.statusCode == Numeral.STATUS_CODE_DELETE) {
@@ -53,37 +59,29 @@ class SignatoryRepository {
             '',
             queryParameters: {"idDieuDongTaiSan": idDieuDongTaiSan},
           );
-          
+
           // Xử lý tương tự cho retry
           if (resRetry.data is Map<String, dynamic>) {
             final responseData = resRetry.data as Map<String, dynamic>;
             if (responseData['data'] is List) {
-              List<SignatoryDto> listSignatory = (responseData['data'] as List)
-                  .map((e) => SignatoryDto.fromJson(e))
-                  .toList();
+              List<SignatoryDto> listSignatory =
+                  (responseData['data'] as List)
+                      .map((e) => SignatoryDto.fromJson(e))
+                      .toList();
               return listSignatory;
             }
           }
-          
+
           return [];
         } catch (e2) {
-          SGLog.error(
-            'Signatory Requesst.getAll',
-            'Fallback thất bại: $e2',
-          );
+          SGLog.error('Signatory Requesst.getAll', 'Fallback thất bại: $e2');
           return [];
         }
       }
-      SGLog.error(
-        'Signatory Requesst.getAll',
-        'Lỗi khi gọi API: ${e.message}',
-      );
+      SGLog.error('Signatory Requesst.getAll', 'Lỗi khi gọi API: ${e.message}');
       return [];
     } catch (e) {
-      SGLog.error(
-        'Signatory Requesst.getAll',
-        'Lỗi không xác định: $e',
-      );
+      SGLog.error('Signatory Requesst.getAll', 'Lỗi không xác định: $e');
       return [];
     }
   }
@@ -106,7 +104,9 @@ class SignatoryRepository {
   }
 
   Future<int> delete(String id) async {
-    final res = await _dio.delete('/$id');
+    log('Delete signatory: $id');
+   
+    final res = await _dioDelete.delete('/$id');
     return res.data;
   }
 }

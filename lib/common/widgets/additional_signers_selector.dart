@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -261,8 +263,11 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                     ? _buildStaffItemsForDepartment(dept)
                     : widget.itemsNhanVien;
             NhanVien? nhanVien = _signersData[index].employee;
+            log('message test1 phong ban: ${_signersData[index].department}');
             TextEditingController controller = _controllers[index];
             controller.text = nhanVien?.hoTen ?? '';
+            _deptControllers[index].text =
+                _signersData[index].department?.tenPhongBan ?? '';
             return Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Column(

@@ -675,10 +675,17 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     final currentIndex = signatureFlow.indexWhere(
       (s) => s["id"] == userInfo.tenDangNhap,
     );
-    if (signatureFlow[currentIndex]["signed"] == -1) {
+    
+    // Kiểm tra nếu không tìm thấy user trong signatureFlow
+    if (currentIndex == -1 || currentIndex >= signatureFlow.length) {
+      return -1; // User không có trong danh sách ký
+    }
+    
+    final currentSigner = signatureFlow[currentIndex];
+    if (currentSigner["signed"] == -1) {
       return -1;
     }
 
-    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+    return currentSigner["signed"] == true ? 1 : 0;
   }
 }

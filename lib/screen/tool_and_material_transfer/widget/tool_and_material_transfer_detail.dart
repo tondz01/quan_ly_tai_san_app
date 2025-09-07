@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -108,6 +109,8 @@ class _ToolAndMaterialTransferDetailState
   List<DetailToolAndMaterialTransferDto> listNewDetails = [];
   List<DetailToolAndMaterialTransferDto> _initialDetails = [];
   List<NhanVien> listStaffByDepartment = [];
+  List<NhanVien> listNhanVien = [];
+  List<NhanVien> nvPhongGD = [];
 
   List<NhanVien?> additionalSigners = [];
   final List<TextEditingController> additionalSignerControllers = [];
@@ -117,7 +120,6 @@ class _ToolAndMaterialTransferDetailState
   PhongBan? donViGiao;
   PhongBan? donViNhan;
   PhongBan? donViDeNghi;
-  // NhanVien? nguoiDeNghi;
   UserInfoDTO? nguoiLapPhieu;
   NhanVien? nguoiKyCapPhong;
   NhanVien? nguoiKyGiamDoc;
@@ -125,7 +127,7 @@ class _ToolAndMaterialTransferDetailState
   ToolAndMaterialTransferDto? itemPreview;
 
   List<NhanVien> listNhanVienThamMuu = [];
-  List<AdditionalSignerData> initialDataSignersNew = [];
+  List<AdditionalSignerData> initialSignersDetailed = [];
 
   late ToolAndMaterialTransferDto? item;
 
@@ -256,7 +258,8 @@ class _ToolAndMaterialTransferDetailState
       // Reset item từ provider
       item = widget.provider.item;
       isNew = item == null;
-
+      listNhanVien = widget.provider.dataNhanVien;
+      nvPhongGD = listNhanVien.where((e) => e.phongBanId == 'P21').toList();
       // Reset editing state
       isEditing = widget.isEditing;
       if (editable()) {
@@ -296,12 +299,10 @@ class _ToolAndMaterialTransferDetailState
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == donViDeNghi!.id)
                 .toList();
-        // nguoiDeNghi = widget.provider.getNhanVienByID(
-        //   item?.idNguoiDeNghi ?? '',
-        // );
         nguoiKyNhay = widget.provider.getNhanVienByID(
           item?.idNguoiKyNhay ?? '',
         );
+        log('item?.nguoiKyNhay: ${jsonEncode(nguoiKyNhay)}');
         nguoiKyCapPhong = widget.provider.getNhanVienByID(
           item?.idTrinhDuyetCapPhong ?? '',
         );
@@ -312,37 +313,40 @@ class _ToolAndMaterialTransferDetailState
 
         isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
         proposingUnit = item?.tenDonViDeNghi;
-
+        initialSignersDetailed = List<AdditionalSignerData>.from(
+          item?.listSignatory
+                  ?.map(
+                    (e) => AdditionalSignerData(
+                      department: widget.provider.getPhongBanByID(
+                        e.idPhongBan ?? '',
+                      ),
+                      employee: widget.provider.getNhanVienByID(
+                        e.idNguoiKy ?? '',
+                      ),
+                    ),
+                  )
+                  .toList() ??
+              [],
+        );
         // Lưu snapshot chi tiết ban đầu để so sánh
         _initialDetails = List<DetailToolAndMaterialTransferDto>.from(
           item?.detailToolAndMaterialTransfers ??
               <DetailToolAndMaterialTransferDto>[],
         );
 
-        initialDataSignersNew =
-            item?.listSignatory
-                ?.map(
-                  (e) => AdditionalSignerData(
-                    employee: widget.provider.getNhanVienByID(
-                      e.idNguoiKy ?? '',
-                    ),
-                    department: widget.provider.getPhongBanByID(
-                      e.idNguoiKy ?? '',
-                    ),
-                    signed: e.trangThai == 1,
-                  ),
-                )
-                .toList() ??
-            [];
         controllersInitialized = true;
 
         additionalSignersDetailed =
             item?.listSignatory
                 ?.map(
                   (e) => AdditionalSignerData(
+                    department: widget.provider.getPhongBanByID(
+                      e.idPhongBan ?? '',
+                    ),
                     employee: widget.provider.getNhanVienByID(
                       e.idNguoiKy ?? '',
                     ),
+                    signed: e.trangThai == 1,
                   ),
                 )
                 .toList() ??
@@ -379,7 +383,7 @@ class _ToolAndMaterialTransferDetailState
         );
 
         listNhanVienThamMuu =
-            widget.provider.dataNhanVien
+            listNhanVien
                 .where((element) => element.phongBanId == donViDeNghi!.id)
                 .toList();
         controllerProposingUnit.text = donViDeNghi?.tenPhongBan ?? '';
@@ -410,7 +414,7 @@ class _ToolAndMaterialTransferDetailState
 
     if (donViGiao != null) {
       listStaffByDepartment =
-          widget.provider.dataNhanVien
+          listNhanVien
               .where((element) => element.phongBanId == donViGiao!.id)
               .toList();
     }
@@ -470,6 +474,17 @@ class _ToolAndMaterialTransferDetailState
           (a['idCCDCVatTu'] as String).compareTo(b['idCCDCVatTu'] as String),
     );
     return data;
+  }
+
+  bool _signatoriesChanged() {
+    if (item == null) return additionalSignersDetailed.isNotEmpty;
+    final beforeJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(initialSignersDetailed),
+    );
+    final afterJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(additionalSignersDetailed),
+    );
+    return beforeJson != afterJson;
   }
 
   bool _detailsChanged() {
@@ -862,7 +877,7 @@ class _ToolAndMaterialTransferDetailState
                           isEditing: isEditing,
                           value: nguoiKyCapPhong,
                           items: [
-                            ...listNhanVienThamMuu.map(
+                            ...nvPhongGD.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -888,7 +903,7 @@ class _ToolAndMaterialTransferDetailState
                           isEditing: isEditing,
                           value: nguoiKyGiamDoc,
                           items: [
-                            ...listNhanVienThamMuu.map(
+                            ...nvPhongGD.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -913,7 +928,7 @@ class _ToolAndMaterialTransferDetailState
                           labelSigned: 'Người đại diện',
                           isEditing: isEditing,
                           itemsNhanVien: [
-                            ...listStaffByDepartment.map(
+                            ...listNhanVien.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -921,7 +936,7 @@ class _ToolAndMaterialTransferDetailState
                             ),
                           ],
                           phongBan: widget.provider.dataPhongBan,
-                          listNhanVien: listStaffByDepartment,
+                          listNhanVien: listNhanVien,
                           initialSigners: additionalSigners,
                           onChanged: (list) {
                             setState(() {
@@ -930,7 +945,7 @@ class _ToolAndMaterialTransferDetailState
                                 ..addAll(list);
                             });
                           },
-                          initialSignerData: initialDataSignersNew,
+                          initialSignerData: additionalSignersDetailed,
                           onChangedDetailed: (list) {
                             setState(() {
                               additionalSignersDetailed = list;
@@ -1007,7 +1022,7 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
-                  
+
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );
@@ -1254,6 +1269,13 @@ class _ToolAndMaterialTransferDetailState
       );
       if (_detailsChanged()) {
         await _syncDetails(item!.id!);
+      }
+
+      if (_signatoriesChanged()) {
+        await UpdateSignerData().syncSignatories(
+          item!.id!,
+          additionalSignersDetailed,
+        );
       }
       if (mounted) {
         context.read<ToolAndMaterialTransferBloc>().add(

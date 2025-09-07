@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -190,13 +191,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = ChiTietDieuDongTaiSanRepository();
+      
+      // Xóa các chi tiết cũ
       for (final d in state.initialDetails) {
         if (d.id.isNotEmpty) {
-          await repo.delete(d.id);
+          final deleteResult = await repo.delete(d.id);
+          log('Delete detail result: $deleteResult');
         }
       }
+      
+      // Tạo các chi tiết mới
       for (final d in state.listNewDetails) {
-        await repo.create(
+        final createResult = await repo.create(
           ChiTietDieuDongTaiSan(
             id: d.id,
             idDieuDongTaiSan: idDieuDongTaiSan,
@@ -215,10 +221,22 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             isActive: d.isActive,
           ),
         );
+        log('Create detail result: $createResult');
       }
     } catch (e) {
       log('Sync details error: $e');
     }
+  }
+
+  bool _signatoriesChanged() {
+    if (state.item == null) return state.additionalSignersDetailed.isNotEmpty;
+    final beforeJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(state.initialSignersDetailed),
+    );
+    final afterJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(state.additionalSignersDetailed),
+    );
+    return beforeJson != afterJson;
   }
 
   @override
@@ -314,7 +332,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 Visibility(
                   visible:
                       state.item != null &&
-                      ![0, 5, 6].contains(state.item!.trangThai),
+                      ![0, 2, 3].contains(state.item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -524,6 +542,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                             state.donViDeNghi?.id,
                                       )
                                       .toList();
+                              log(
+                                'message listNhanVienThamMuu: $state.listNhanVienThamMuu',
+                              );
                             });
                           },
                         ),
@@ -534,7 +555,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: state.isEditing,
                           value: state.nguoiDeNghi,
                           items: [
-                            ...state.listStaffByDepartment.map(
+                            ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -580,7 +601,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyCapPhong,
                           items: [
-                            ...state.listNhanVienThamMuu.map(
+                            ...state.nvPhongGD.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -612,7 +633,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyGiamDoc,
                           items: [
-                            ...state.listNhanVienThamMuu.map(
+                            ...state.nvPhongGD.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -637,7 +658,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           labelSigned: 'Người đại diện',
                           isEditing: state.isEditing,
                           itemsNhanVien: [
-                            ...state.listStaffByDepartment.map(
+                            ...state.listNhanVien.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -645,7 +666,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ),
                           ],
                           phongBan: widget.provider.dataPhongBan,
-                          listNhanVien: state.listStaffByDepartment,
+                          listNhanVien: state.listNhanVien,
                           initialSigners: state.additionalSigners,
                           onChanged: (list) {
                             setState(() {
@@ -658,6 +679,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChangedDetailed: (list) {
                             setState(() {
                               state.additionalSignersDetailed = list;
+                              log('message test1 list: ${jsonEncode(list)}');
                             });
                           },
                         ),
@@ -882,13 +904,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   List<SignatoryDto> _createListSignatory() {
-    return state.additionalSigners
+    return state.additionalSignersDetailed
         .map(
           (e) => SignatoryDto(
             id: UUIDGenerator.generateWithFormat('NK-************'),
-            idTaiLieu: state.item?.id ?? '',
-            idNguoiKy: e?.id ?? '',
-            tenNguoiKy: e?.hoTen ?? '',
+            idTaiLieu: controllers.controllerSoChungTu.text,
+            idNguoiKy: e.employee?.id ?? '',
+            idPhongBan: e.department?.id ?? '',
+            tenNguoiKy: e.employee?.hoTen ?? '',
             trangThai: 0,
           ),
         )
@@ -937,6 +960,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       if (_detailsChanged()) {
         await _syncDetails(state.item!.id!);
       }
+
+      // Thêm dòng này - Cập nhật người ký nếu có thay đổi
+      if (_signatoriesChanged()) {
+        await UpdateSignerData().syncSignatories(
+          state.item!.id!,
+          state.additionalSignersDetailed,
+        );
+      }
+
       if (mounted) {
         context.read<DieuDongTaiSanBloc>().add(
           UpdateDieuDongEvent(context, newRequest, state.item!.id!),
@@ -960,7 +992,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       state.item = widget.provider.item;
       state.isNew = state.item == null;
       state.messageEditing = null;
-
+      state.nvPhongGD =
+          widget.provider.dataNhanVien
+              .where((e) => e.phongBanId == 'P21')
+              .toList();
+      state.listNhanVien = widget.provider.dataNhanVien;
       // Reset editing state
       state.isEditing = widget.isEditing;
       if (editable()) {
@@ -1038,6 +1074,23 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
 
+        // Thêm phần này - Lưu snapshot signatories ban đầu để so sánh
+        state.initialSignersDetailed = List<AdditionalSignerData>.from(
+          state.item?.listSignatory
+                  ?.map(
+                    (e) => AdditionalSignerData(
+                      department: widget.provider.getPhongBanByID(
+                        e.idPhongBan ?? '',
+                      ),
+                      employee: widget.provider.getNhanVienByID(
+                        e.idNguoiKy ?? '',
+                      ),
+                    ),
+                  )
+                  .toList() ??
+              [],
+        );
+
         state.listNewDetails = List<ChiTietDieuDongTaiSan>.from(
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
@@ -1046,14 +1099,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             state.item?.listSignatory
                 ?.map(
                   (e) => AdditionalSignerData(
+                    department: widget.provider.getPhongBanByID(
+                      e.idPhongBan ?? '',
+                    ),
                     employee: widget.provider.getNhanVienByID(
                       e.idNguoiKy ?? '',
                     ),
+                    signed: e.trangThai == 1,
                   ),
                 )
                 .toList() ??
             [];
-
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
         controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
@@ -1093,6 +1149,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         controllers.controllerRequester.text = state.nguoiDeNghi?.hoTen ?? '';
         state.nguoiKyCapPhong = null;
         state.nguoiKyGiamDoc = null;
+        state.additionalSignersDetailed.clear();
+        state.initialSignersDetailed.clear(); // Thêm dòng này
       }
 
       if (state.proposingUnit != null &&

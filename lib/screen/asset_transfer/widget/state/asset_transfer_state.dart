@@ -23,6 +23,7 @@ class AssetTransferState {
   List<ChiTietDieuDongTaiSan> listNewDetails = [];
   List<ChiTietDieuDongTaiSan> _initialDetails = [];
   List<NhanVien> listStaffByDepartment = [];
+  List<NhanVien> listNhanVien = [];
 
   UserInfoDTO? nguoiLapPhieu;
   PhongBan? donViGiao;
@@ -39,6 +40,8 @@ class AssetTransferState {
   final List<TextEditingController> additionalSignerControllers = [];
   List<AdditionalSignerData> additionalSignersDetailed = [];
   List<NhanVien> listNhanVienThamMuu = [];
+  List<NhanVien> nvPhongGD = [];
+  List<AdditionalSignerData> _initialSignersDetailed = [];
 
   // Getters
   bool get isUploading => _isUploading;
@@ -46,6 +49,7 @@ class AssetTransferState {
   String? get selectedFileName => _selectedFileName;
   String? get selectedFilePath => _selectedFilePath;
   List<ChiTietDieuDongTaiSan> get initialDetails => _initialDetails;
+  List<AdditionalSignerData> get initialSignersDetailed => _initialSignersDetailed;
 
   // Setters
   set isUploading(bool value) => _isUploading = value;
@@ -54,6 +58,8 @@ class AssetTransferState {
   set selectedFilePath(String? value) => _selectedFilePath = value;
   set initialDetails(List<ChiTietDieuDongTaiSan> value) =>
       _initialDetails = value;
+  set initialSignersDetailed(List<AdditionalSignerData> value) =>
+      _initialSignersDetailed = value;
 
   void reset() {
     isEditing = false;
@@ -82,8 +88,11 @@ class AssetTransferState {
     additionalSignerControllers.clear();
     additionalSignersDetailed.clear();
     listNhanVienThamMuu.clear();
-
+    listNhanVien.clear();
     item = null;
     itemPreview = null;
+    _initialSignersDetailed.clear();
+
+    nvPhongGD.clear();
   }
 }

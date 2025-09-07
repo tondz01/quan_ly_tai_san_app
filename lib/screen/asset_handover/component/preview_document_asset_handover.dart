@@ -39,7 +39,7 @@ Widget previewDocumentAssetHandover({
         provider: provider,
         isShowKy: isShowKy,
         itemsDetail: itemsDetail,
-        document: document
+        document: document,
       );
     },
     child: Row(
@@ -126,6 +126,12 @@ previewDocumentHandover({
               final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
                 context,
               );
+              if (item.share == false) {
+                final newItem = item.copyWith(share: true);
+                assetHandoverBloc.add(
+                  SendToSignerAsetHandoverEvent(context, [newItem]),
+                );
+              }
               assetHandoverBloc.add(
                 UpdateSigningStatusEvent(
                   context,
