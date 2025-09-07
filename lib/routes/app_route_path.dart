@@ -46,7 +46,8 @@ enum AppRoute {
   role(path: "/role", name: 'role'),
   bienBanKiemKeCcdc(path: "/kiem-ke-ccdc", name: 'kiem-ke-ccdc'),
   bienBanDoiChieu(path: "/doi-cheiu-kiem-ke", name: 'doi-cheiu-kiem-ke'),
-  ccdcGroup(path: "/ccdc-group", name: 'ccdc-group');
+  ccdcGroup(path: "/ccdc-group", name: 'ccdc-group'),
+  toolAndSuppliesHandover(path: "/tool-and-supplies-handover", name: 'tool-and-supplies-handover');
 
   final String path;
   final String? name;

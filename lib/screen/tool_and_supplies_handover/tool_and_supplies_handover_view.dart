@@ -8,7 +8,7 @@ import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tab_bar_table_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tab_bar_table_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_detail.dart';
 
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -22,11 +22,13 @@ class ToolAndSuppliesHandoverView extends StatefulWidget {
   const ToolAndSuppliesHandoverView({super.key});
 
   @override
-  State<ToolAndSuppliesHandoverView> createState() => _ToolAndSuppliesHandoverViewState();
+  State<ToolAndSuppliesHandoverView> createState() =>
+      _ToolAndSuppliesHandoverViewState();
 }
 
-class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverView> {
-  ToolAndSuppliesHandoverDto? ToolAndSuppliesHandoverData;
+class _ToolAndSuppliesHandoverViewState
+    extends State<ToolAndSuppliesHandoverView> {
+  ToolAndSuppliesHandoverDto? toolAndSuppliesHandoverData;
   Map<String, dynamic>? menuSelectionData;
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
@@ -43,20 +45,21 @@ class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverVie
     final extra = GoRouterState.of(context).extra;
 
     if (extra is Map<String, dynamic>) {
-      ToolAndSuppliesHandoverData = extra['ToolAndSuppliesHandoverDto'] as ToolAndSuppliesHandoverDto?;
+      toolAndSuppliesHandoverData =
+          extra['ToolAndSuppliesHandoverDto'] as ToolAndSuppliesHandoverDto?;
       menuSelectionData = extra['menuSelection'] as Map<String, dynamic>?;
 
-      if (ToolAndSuppliesHandoverData != null) {
-        _handleToolAndSuppliesHandoverData(ToolAndSuppliesHandoverData!);
+      if (toolAndSuppliesHandoverData != null) {
+        _handleToolAndSuppliesHandoverData(toolAndSuppliesHandoverData!);
       }
 
       if (menuSelectionData != null) {
         _updateMenuSelection();
       }
     } else if (extra is ToolAndSuppliesHandoverDto) {
-      ToolAndSuppliesHandoverData = extra;
-      if (ToolAndSuppliesHandoverData != null) {
-        _handleToolAndSuppliesHandoverData(ToolAndSuppliesHandoverData!);
+      toolAndSuppliesHandoverData = extra;
+      if (toolAndSuppliesHandoverData != null) {
+        _handleToolAndSuppliesHandoverData(toolAndSuppliesHandoverData!);
       }
     }
   }
@@ -76,11 +79,20 @@ class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverVie
     }
   }
 
-  void _handleToolAndSuppliesHandoverData(ToolAndSuppliesHandoverDto ToolAndSuppliesHandoverDto) {
-    final provider = Provider.of<ToolAndSuppliesHandoverProvider>(context, listen: false);
+  void _handleToolAndSuppliesHandoverData(
+    ToolAndSuppliesHandoverDto toolAndSuppliesHandoverDto,
+  ) {
+    final provider = Provider.of<ToolAndSuppliesHandoverProvider>(
+      context,
+      listen: false,
+    );
 
     provider.onInit(context);
-    provider.onChangeDetail(context, ToolAndSuppliesHandoverDto);
+    provider.onChangeDetail(
+      context,
+      toolAndSuppliesHandoverDto,
+      isFindNewItem: false,
+    );
   }
 
   @override
@@ -97,7 +109,7 @@ class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverVie
       );
 
       // Chỉ khởi tạo nếu không có data từ router
-      if (ToolAndSuppliesHandoverData == null) {
+      if (toolAndSuppliesHandoverData == null) {
         provider.onInit(context);
       }
     });
@@ -111,15 +123,17 @@ class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverVie
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ToolAndSuppliesHandoverBloc, ToolAndSuppliesHandoverState>(
+    return BlocConsumer<
+      ToolAndSuppliesHandoverBloc,
+      ToolAndSuppliesHandoverState
+    >(
       listener: (context, state) {
         if (state is ToolAndSuppliesHandoverLoadingState) {
         } else if (state is GetListToolAndSuppliesHandoverSuccessState) {
           log('message filteredData  state ${state.data}');
-          context.read<ToolAndSuppliesHandoverProvider>().getListToolAndSuppliesHandoverSuccess(
-            context,
-            state,
-          );
+          context
+              .read<ToolAndSuppliesHandoverProvider>()
+              .getListToolAndSuppliesHandoverSuccess(context, state);
         } else if (state is CreateToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -211,7 +225,7 @@ class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverVie
                       provider.onChangeDetail(context, null);
                       provider.onTapNewHeader();
                     },
-                    mainScreen: 'Biên bản bàn giao tài sản',
+                    mainScreen: 'Biên bản bàn giao CCDC-Vật tư',
                     subScreen: provider.subScreen,
                   ),
                 ),
@@ -222,7 +236,10 @@ class _ToolAndSuppliesHandoverViewState extends State<ToolAndSuppliesHandoverVie
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
                           title: "Chi tiết biên bản bàn giao tài sản",
-                          childInput: ToolAndSuppliesHandoverDetail(provider: provider,isFindNew: provider.isFindNew,),
+                          childInput: ToolAndSuppliesHandoverDetail(
+                            provider: provider,
+                            isFindNew: provider.isFindNew,
+                          ),
                           childTableView: TabBarTableCcdc(provider: provider),
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,

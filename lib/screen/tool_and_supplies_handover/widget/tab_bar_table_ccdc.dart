@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_list.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_transfer_list.dart';
 
 class TabBarTableCcdc extends StatefulWidget {
   final ToolAndSuppliesHandoverProvider provider;
@@ -81,14 +83,14 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
                 physics: NeverScrollableScrollPhysics(),
                 children: [
                   // Tab 1: Bàn giao tài sản
-                  // ToolAndSuppliesHandoverList(
-                  //   provider: widget.provider,
-                  //   listAssetTransfer: dataAssetTransfer,
-                  // ),
-                  // AssetTransferList(
-                  //   data: dataAssetTransfer,
-                  //   provider: widget.provider,
-                  // ),
+                  ToolAndSuppliesHandoverList(
+                    provider: widget.provider,
+                    listAssetTransfer: dataAssetTransfer,
+                  ),
+                  ToolAndSuppliesHandoverTransferList(
+                    data: dataAssetTransfer,
+                    provider: widget.provider,
+                  ),
                 ],
               ),
             ),

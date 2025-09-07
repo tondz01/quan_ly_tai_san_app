@@ -165,6 +165,7 @@ class AppMenuData {
       ],
     ),
     MenuItem(label: 'Bàn giao tài sản', route: AppRoute.assetHandover.path),
+    MenuItem(label: 'Bàn giao CCDC-Vật tư', route: AppRoute.toolAndSuppliesHandover.path),
     MenuItem(
       label: 'Báo cáo',
       reportSubItems: [

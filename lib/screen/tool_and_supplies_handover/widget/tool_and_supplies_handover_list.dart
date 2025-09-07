@@ -12,35 +12,36 @@ import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/preview_document_ccdc_handover.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-class AssetHandoverList extends StatefulWidget {
-  final AssetHandoverProvider provider;
-  final List<DieuDongTaiSanDto> listAssetTransfer;
-  const AssetHandoverList({
+class ToolAndSuppliesHandoverList extends StatefulWidget {
+  final ToolAndSuppliesHandoverProvider provider;
+  final List<ToolAndMaterialTransferDto> listAssetTransfer;
+  const ToolAndSuppliesHandoverList({
     super.key,
     required this.provider,
     required this.listAssetTransfer,
   });
 
   @override
-  State<AssetHandoverList> createState() => _AssetHandoverListState();
+  State<ToolAndSuppliesHandoverList> createState() =>
+      _ToolAndSuppliesHandoverListState();
 }
 
-class _AssetHandoverListState extends State<AssetHandoverList> {
+class _ToolAndSuppliesHandoverListState
+    extends State<ToolAndSuppliesHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
   String urlPreview = '';
@@ -49,12 +50,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   bool isShowDetailDepartmentTree = false;
 
   bool isShowPreview = false;
-  AssetHandoverDto? selected;
+  ToolAndSuppliesHandoverDto? selected;
   List<ThreadNode> listSignatoryDetail = [];
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
 
-  List<AssetHandoverDto> selectedItems = [];
+  List<ToolAndSuppliesHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
     'signing_status',
     'name',
@@ -70,8 +71,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   ];
 
   PdfDocument? _document;
-  DieuDongTaiSanDto? _selectedAssetTransfer;
-  List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [];
+  List<Map<String, DateTime Function(ToolAndSuppliesHandoverDto)>> getters = [];
 
   @override
   void initState() {
@@ -104,7 +104,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ColumnDisplayOption(
         id: 'name',
-        label: 'Bàn giao tài sản',
+        label: 'Bàn giao ccdc-vật tư',
         isChecked: visibleColumnIds.contains('name'),
       ),
       ColumnDisplayOption(
@@ -155,15 +155,15 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     ];
   }
 
-  List<SgTableColumn<AssetHandoverDto>> _buildColumns() {
-    final List<SgTableColumn<AssetHandoverDto>> columns = [];
+  List<SgTableColumn<ToolAndSuppliesHandoverDto>> _buildColumns() {
+    final List<SgTableColumn<ToolAndSuppliesHandoverDto>> columns = [];
 
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
         case 'signing_status':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
               title: 'Trạng thái ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
@@ -173,16 +173,16 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'name':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Bàn giao tài sản',
-              getValue: (item) => item.banGiaoTaiSan ?? '',
+              getValue: (item) => item.banGiaoCCDCVatTu ?? '',
               width: 170,
             ),
           );
           break;
         case 'decision_number':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Quyết định điều động',
               getValue: (item) => item.quyetDinhDieuDongSo ?? '',
               width: 120,
@@ -191,7 +191,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'transfer_order':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Lệnh điều động',
               getValue: (item) => item.lenhDieuDong ?? '',
               width: 120,
@@ -200,7 +200,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'transfer_date':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Ngày bàn giao',
               getValue:
                   (item) =>
@@ -216,7 +216,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'movement_details':
           columns.add(
-            SgTableColumn<AssetHandoverDto>(
+            SgTableColumn<ToolAndSuppliesHandoverDto>(
               title: 'Chi tiết bàn giao',
               cellBuilder: (item) => showMovementDetails([]),
               cellAlignment: TextAlign.center,
@@ -228,7 +228,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'sender_unit':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Đơn vị giao',
               getValue: (item) => item.tenDonViGiao ?? '',
               width: 120,
@@ -237,7 +237,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'receiver_unit':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Đơn vị nhận',
               getValue: (item) => item.tenDonViNhan ?? '',
               width: 120,
@@ -246,7 +246,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'created_by':
           columns.add(
-            TableBaseConfig.columnTable<AssetHandoverDto>(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Người lập phiếu',
               getValue: (item) => item.nguoiTao ?? '',
               width: 120,
@@ -255,7 +255,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'status':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
               title: 'Trạng thái',
               cellBuilder: (item) => showStatus(item.trangThai ?? 0),
               width: 150,
@@ -265,7 +265,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           break;
         case 'actions':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
               title: '',
               cellBuilder: (item) => viewAction(item),
               width: 120,
@@ -310,7 +310,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
+    final List<SgTableColumn<ToolAndSuppliesHandoverDto>> columns =
+        _buildColumns();
     return Row(
       children: [
         // if (url.isNotEmpty && isShowPreview) displayPreview(),
@@ -385,19 +386,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                               ],
                             ),
 
-                            FindByStateAssetHandover(provider: widget.provider),
+                            // FindByStateAssetHandover(provider: widget.provider),
                           ],
                         ),
                       ),
                       Expanded(
-                        child: TableBaseView<AssetHandoverDto>(
+                        child: TableBaseView<ToolAndSuppliesHandoverDto>(
                           searchTerm: '',
                           columns: columns,
                           data: widget.provider.dataPage ?? [],
                           horizontalController: ScrollController(),
                           onRowTap: (item) {
                             isShowPreview = true;
-                            widget.provider.onChangeDetail(context, item);
+                            widget.provider.onChangeDetail(
+                              context,
+                              item,
+                              isFindNewItem: false,
+                            );
                             setState(() {
                               nameBenBan =
                                   'trạng thái ký " Biên bản bàn giao ${item.id} "';
@@ -458,7 +463,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                   if (selectedItems.isNotEmpty) {
                     UserInfoDTO? userInfo =
                         AccountHelper.instance.getUserInfo();
-                    AssetHandoverDto? item =
+                    ToolAndSuppliesHandoverDto? item =
                         selectedItems.isNotEmpty ? selectedItems.first : null;
                     _handleSignDocument(item!, userInfo!, widget.provider);
                   }
@@ -489,7 +494,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-  Widget viewAction(AssetHandoverDto item) {
+  Widget viewAction(ToolAndSuppliesHandoverDto item) {
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.visibility,
@@ -498,41 +503,24 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () async {
+          SGLog.info(
+            "viewAction",
+            "View action pressed for item: ${item.tenFile}",
+          );
           isShowPreview = true;
-          await widget.provider.getListDetailAssetMobilization(
-            item.quyetDinhDieuDongSo ?? '',
-          );
-
-          final matchingTransfers = widget.listAssetTransfer.where(
-            (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
-          );
-
-          _selectedAssetTransfer =
-              matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
-
-          if (_selectedAssetTransfer == null ||
-              _selectedAssetTransfer!.tenFile!.isEmpty) {
-            if (mounted) {
-              SGLog.debug(
-                "AssetHandoverList",
-                "No document found for item: ${item.id}",
+          var dieuDongCcdc = widget.provider.dataAssetTransfer
+              ?.where((element) => element.trangThai == 3)
+              .toList()
+              .firstWhere(
+                (element) => element.id == item.lenhDieuDong,
+                orElse: () => ToolAndMaterialTransferDto(),
               );
-              previewDocumentHandover(
-                context: context,
-                item: item,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-                provider: widget.provider,
-                isShowKy: false,
-              );
-            }
-            return;
-          }
-          _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+
+          _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {
-              previewDocumentHandover(
+              prevDocumentCcdcHandover(
                 context: context,
-                item: item,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                item: dieuDongCcdc!,
                 provider: widget.provider,
                 isShowKy: false,
                 document: _document,
@@ -555,14 +543,14 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     context,
                     type: ConfirmType.delete,
                     title: 'Xóa biên bản bàn giao',
-                    message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan}',
-                    highlight: item.banGiaoTaiSan!,
+                    message: 'Bạn có chắc muốn xóa ${item.banGiaoCCDCVatTu}',
+                    highlight: item.banGiaoCCDCVatTu!,
                     cancelText: 'Không',
                     confirmText: 'Xóa',
                     onConfirm: () {
                       widget.provider.isLoading = true;
-                      context.read<AssetHandoverBloc>().add(
-                        DeleteAssetHandoverEvent(context, item.id!),
+                      context.read<ToolAndSuppliesHandoverBloc>().add(
+                        DeleteToolAndSuppliesHandoverEvent(context, item.id!),
                       );
                     },
                   ),
@@ -650,7 +638,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     }
   }
 
-  Widget showSigningStatus(AssetHandoverDto item) {
+  Widget showSigningStatus(ToolAndSuppliesHandoverDto item) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 48.0),
       child: Container(
@@ -708,9 +696,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   }
 
   void _handleSignDocument(
-    AssetHandoverDto item,
+    ToolAndSuppliesHandoverDto item,
     UserInfoDTO userInfo,
-    AssetHandoverProvider provider,
+    ToolAndSuppliesHandoverProvider provider,
   ) async {
     final signatureFlow =
         [
@@ -759,33 +747,22 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
         return;
       }
-      log('signatureFlow: ${signatureFlow.toString()}');
-      final matchingTransfers = widget.listAssetTransfer.where(
-        (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
-      );
 
-      _selectedAssetTransfer =
-          matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
-
-      if (_selectedAssetTransfer == null ||
-          _selectedAssetTransfer!.tenFile!.isEmpty) {
-        if (mounted) {
-          previewDocumentHandover(
-            context: context,
-            item: item,
-            itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-            provider: widget.provider,
+      var dieuDongCcdc = widget.provider.dataAssetTransfer
+          ?.where((element) => element.trangThai == 3)
+          .toList()
+          .firstWhere(
+            (element) => element.id == item.lenhDieuDong,
+            orElse: () => ToolAndMaterialTransferDto(),
           );
-        }
-        return;
-      }
-      _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+
+      _loadPdfNetwork(item.tenFile!).then((_) {
         if (mounted) {
-          previewDocumentHandover(
+          prevDocumentCcdcHandover(
             context: context,
-            item: item,
-            itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+            item: dieuDongCcdc!,
             provider: widget.provider,
+            isShowKy: false,
             document: _document,
           );
         }
@@ -799,7 +776,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     }
   }
 
-  void _handleSendToSigner(List<AssetHandoverDto> items) {
+  void _handleSendToSigner(List<ToolAndSuppliesHandoverDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,
@@ -826,7 +803,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
-        context.read<AssetHandoverBloc>().add(
+        context.read<ToolAndSuppliesHandoverBloc>().add(
           SendToSignerAsetHandoverEvent(context, items),
         );
       },
@@ -834,7 +811,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   }
 
   // build detail department tree
-  void _buildDetailDepartmentTree(AssetHandoverDto item) {
+  void _buildDetailDepartmentTree(ToolAndSuppliesHandoverDto item) {
     listSignatoryDetail.clear();
     selected = item;
     listSignatoryDetail = [

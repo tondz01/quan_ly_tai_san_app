@@ -205,7 +205,7 @@ class _DetailCcdcTransferTableState
             showVerticalLines: false,
             showHorizontalLines: true,
             addRowText: 'Thêm một dòng',
-            isEditing: widget.isEditing,
+            isEditing: false,
             omittedSize: 130,
             onDataChanged: (data) {
               setState(() {
@@ -215,16 +215,14 @@ class _DetailCcdcTransferTableState
             },
             columns: [
               SgEditableColumn<ItemDropdownDetailCcdc>(
-                // Thay đổi generic type
                 field: 'asset',
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
                 width: 150,
                 getValue: (item) {
                   return item;
-                }, // Trả về ItemDropdownDetailAsset thay vì String
+                }, 
                 setValue: (item, value) {
-                  // Copy properties
                   item.id = value.id;
                   item.idCCDCVatTu = value.idCCDCVatTu;
                   item.tenCCDCVatTu = value.tenCCDCVatTu;

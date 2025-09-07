@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
@@ -43,16 +44,18 @@ class ToolAndSuppliesHandoverBloc
     Map<String, dynamic> result =
         await ToolAndSuppliesHandoverRepository()
             .getListToolAndSuppliesHandover();
-    Map<String, dynamic> resultAssetTransfer =
-        await ToolAndSuppliesHandoverRepository().getListDieuDongCcdc(userInfo.idCongTy);
-    Map<String, dynamic> resultCcdc =
-        await ToolsAndSuppliesRepository()
-            .getListToolsAndSupplies(userInfo.idCongTy);
+
+    dataDieuDongTaiSanDto = await ToolAndMaterialTransferRepository()
+        .getAllToolAndMeterialTransfer(null);
+
+    Map<String, dynamic> resultCcdc = await ToolsAndSuppliesRepository()
+        .getListToolsAndSupplies(userInfo.idCongTy);
+
     dataDepartment = await DepartmentsProvider().fetchDepartments();
     dataStaff = await NhanVienProvider().fetchNhanViens();
     dataToolAndSuppliesHandoverDto = result['data'];
-    dataDieuDongTaiSanDto = resultAssetTransfer['data'];
     dataCcdc = resultCcdc['data'];
+
     emit(ToolAndSuppliesHandoverLoadingDismissState());
 
     emit(
@@ -129,7 +132,6 @@ class ToolAndSuppliesHandoverBloc
     final Map<String, dynamic> result =
         await ToolAndSuppliesHandoverRepository().updateToolAndSuppliesHandover(
           event.request,
-          event.id,
         );
 
     final int? statusCode = result['status_code'] as int?;

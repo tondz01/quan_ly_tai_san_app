@@ -40,12 +40,11 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   bool get isFindNew => _isFindNew;
+  bool get isFindNewItem => _isFindNewItem;
   List<ToolAndSuppliesHandoverDto>? get dataPage => _dataPage;
   List<ToolAndMaterialTransferDto>? get dataAssetTransfer => _dataAssetTransfer;
   List<PhongBan>? get dataDepartment => _dataDepartment;
   List<NhanVien>? get dataStaff => _dataStaff;
-  List<ChiTietDieuDongTaiSan>? get dataDetailAssetMobilization =>
-      _dataDetailAssetMobilization;
 
   ToolAndSuppliesHandoverDto? get item => _item;
   get data => _data;
@@ -91,6 +90,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   bool _isShowCollapse = true;
   bool _hasUnsavedChanges = false;
   bool _isFindNew = false;
+  bool _isFindNewItem = false;
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
@@ -126,7 +126,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   List<ToolAndMaterialTransferDto>? _dataAssetTransfer;
   List<PhongBan>? _dataDepartment;
   List<NhanVien>? _dataStaff;
-  List<ChiTietDieuDongTaiSan>? _dataDetailAssetMobilization;
   List<ToolsAndSuppliesDto>? _dataCcdc;
   List<OwnershipUnitDetailDto> _listOwnershipUnit = [];
   // Danh sách dữ liệu đã được lọc
@@ -316,7 +315,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   void onTapNewHeader() {
     _item = null;
-    _dataDetailAssetMobilization = null;
     notifyListeners();
   }
 
@@ -370,13 +368,12 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     BuildContext context,
     ToolAndSuppliesHandoverDto? item, {
     bool isFindNew = false,
+    bool isFindNewItem = false,
   }) {
-    if (item != null) {
-      getListDetailAssetMobilization(item.lenhDieuDong ?? '');
-    }
     _confirmBeforeLeaving(context, item);
 
     _isFindNew = isFindNew;
+    _isFindNewItem = isFindNewItem;
     notifyListeners();
   }
 
@@ -474,17 +471,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     return true;
   }
 
-  Future<void> getListDetailAssetMobilization(String id) async {
-    if (id.isEmpty) return;
-    // _isLoading = true;
-    final Map<String, dynamic> result =
-        await ToolAndSuppliesHandoverRepository()
-            .getListDetailAssetMobilization(id);
-    _dataDetailAssetMobilization = result['data'];
-    // _isLoading = false;
-    notifyListeners();
-  }
-
   NhanVien getNhanVien({required String idNhanVien}) {
     if (dataStaff == null) return NhanVien();
     final found = dataStaff!.firstWhere(
@@ -548,8 +534,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   Future<List<OwnershipUnitDetailDto>> getListOwnership(String id) async {
     if (id.isEmpty) return [];
-    Map<String, dynamic> result =
-        await ToolAndMaterialTransferRepository().getListOwnershipUnit(id);
+    Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+        .getListOwnershipUnit(id);
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
       final list =

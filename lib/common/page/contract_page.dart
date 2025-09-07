@@ -170,6 +170,7 @@ class ContractPage {
       ],
     );
   }
+
   static Widget ccdcHandoverPage(
     ToolAndSuppliesHandoverDto toolAndSuppliesHandoverDto,
     List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization,
@@ -407,14 +408,15 @@ class ContractPage {
             2: FlexColumnWidth(2),
             3: FlexColumnWidth(1),
             4: FlexColumnWidth(1),
-            5: FlexColumnWidth(1.5),
+            5: FlexColumnWidth(1),
+            6: FlexColumnWidth(1),
           },
           children: [
             TableRow(
               children: [
                 tableHeader("STT", SettingPage.scale, SettingPage.textStyle),
                 tableHeader(
-                  "TÊN TÀI SẢN",
+                  "TÊN CCDC, VẬT TƯ",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -430,6 +432,11 @@ class ContractPage {
                 ),
                 tableHeader(
                   "Số lượng",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Số lượng xuất kho",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -482,6 +489,14 @@ class ContractPage {
                     toolAndMaterialTransferDto
                         .detailToolAndMaterialTransfers![i]
                         .soLuong
+                        .toString(),
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    toolAndMaterialTransferDto
+                        .detailToolAndMaterialTransfers![i]
+                        .soLuongXuat
                         .toString(),
                     SettingPage.scale,
                     SettingPage.textStyle,

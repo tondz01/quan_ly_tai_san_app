@@ -507,15 +507,6 @@ class _ToolAndMaterialTransferListState
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () {
-          if (item.tenFile == null || item.tenFile!.isEmpty) {
-            previewDocumentToolAndMaterial(
-              context: context,
-              item: item,
-              provider: widget.provider,
-              isShowKy: false,
-            );
-            return;
-          }
           _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {
               previewDocumentToolAndMaterial(
@@ -656,15 +647,6 @@ class _ToolAndMaterialTransferListState
       return;
     }
 
-    // Nếu vượt qua tất cả check → mở preview để ký
-    if (item.tenFile == null || item.tenFile!.isEmpty) {
-      previewDocumentToolAndMaterial(
-        context: context,
-        item: item,
-        provider: provider,
-      );
-      return;
-    }
     _loadPdfNetwork(item.tenFile!).then((_) {
       if (mounted) {
         previewDocumentToolAndMaterial(
