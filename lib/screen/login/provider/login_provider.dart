@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
@@ -70,6 +71,8 @@ class LoginProvider with ChangeNotifier {
   onLoginSuccess(BuildContext context, PostLoginSuccessState data) async {
     _error = null;
     _isLoggedIn = true;
+    _userInfo = data.data;
+    log('test login: onLoginSuccess: ${jsonEncode(_userInfo)}');
     notifyListeners();
     context.go(AppRoute.dashboard.path);
   }

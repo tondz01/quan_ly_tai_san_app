@@ -3,21 +3,31 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/chi_tiet_dieu_dong_tai_san_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferRepository extends ApiBase {
+  late final ChiTietDieuDongTaiSanRepository _chiTietDieuDongTaiSanRepository;
+
+  AssetTransferRepository() {
+    _chiTietDieuDongTaiSanRepository = ChiTietDieuDongTaiSanRepository();
+  }
   // Get danh sách tài sản
-  Future<Map<String, dynamic>> getListDieuDongTaiSan(String idCongTy) async {
+  Future<Map<String, dynamic>> getListDieuDongTaiSan() async {
+    final userInfo = AccountHelper.instance.getUserInfo();
+    final idCongTy = userInfo?.idCongTy;
     List<DieuDongTaiSanDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -29,19 +39,29 @@ class AssetTransferRepository extends ApiBase {
         EndPointAPI.DIEU_DONG_TAI_SAN,
         queryParameters: {'idcongty': idCongTy},
       );
+      final dieuDongTaiSans = ResponseParser.parseToList<DieuDongTaiSanDto>(
+        response.data,
+        DieuDongTaiSanDto.fromJson,
+      );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
+      await Future.wait(
+        dieuDongTaiSans.map((dieuDongTaiSan) async {
+          dieuDongTaiSan
+              .chiTietDieuDongTaiSans = await _chiTietDieuDongTaiSanRepository
+              .getAll(dieuDongTaiSan.id.toString());
+        }),
+      );
       // Parse response data using the common ResponseParser utility
       result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
-        response.data,
+        dieuDongTaiSans,
         DieuDongTaiSanDto.fromJson,
       );
-      
+
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
@@ -179,7 +199,6 @@ class AssetTransferRepository extends ApiBase {
         response.data,
         DieuDongTaiSanDto.fromJson,
       );
-      log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
@@ -228,10 +247,13 @@ class AssetTransferRepository extends ApiBase {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-    log('message test 2: $fileName');
     try {
       final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+        'file': MultipartFile.fromBytes(
+          fileBytes,
+          filename: fileName,
+          contentType: MediaType('application', 'pdf'),
+        ),
       });
       final response = await post(
         EndPointAPI.UPLOAD_FILE,

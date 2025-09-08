@@ -338,6 +338,7 @@ class ContractPage {
                 ),
               ],
             ),
+            if (dieuDongTaiSanDto.chiTietDieuDongTaiSans != null)
             for (
               int i = 0;
               i < dieuDongTaiSanDto.chiTietDieuDongTaiSans!.length;

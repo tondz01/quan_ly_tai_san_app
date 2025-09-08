@@ -249,6 +249,39 @@ class AssetHandoverRepository extends ApiBase {
     return result;
   }
 
+  
+Future<Map<String, dynamic>> updateAssetOwnership(
+    Map<String, dynamic> request,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/updatedonvi',
+        data: request,
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
+        response.data,
+        AssetHandoverDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at update ownership unit: $e");
+    }
+
+    return result;
+  }
+
   //Hủy phiếu ký nội sinh
   Future<Map<String, dynamic>> cancelAssetHandover(String id) async {
     Map<String, dynamic> result = {

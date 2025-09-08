@@ -38,7 +38,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     Map<String, dynamic> result =
         await AssetHandoverRepository().getListAssetHandover();
     Map<String, dynamic> resultAssetTransfer = await AssetTransferRepository()
-        .getListDieuDongTaiSan("ct001");
+        .getListDieuDongTaiSan();
     dataDepartment = await DepartmentsProvider().fetchDepartments();
     dataStaff = await NhanVienProvider().fetchNhanViens();
     dataAssetHandoverDto = result['data'];

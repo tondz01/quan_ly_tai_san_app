@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
@@ -27,9 +25,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Map<String, dynamic> result = await AuthRepository().login(event.params);
     emit(LoginLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      log('message result ${result['data']}');
       if (result['data'] != null) {
-        log('message result222 ${result['data']}');
         emit(PostLoginSuccessState(data: result['data']));
       } else {
         emit(PostLoginFailedState(
@@ -39,13 +35,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         ));
       }
     } else {
-      String msg = "Lỗi khi lấy dữ liệu ${result['status_code']}";
-      log('message result ${result['status_code']}');
       emit(
         PostLoginFailedState(
           title: "notice",
           code: result['status_code'],
-          message: msg,
+          message: result['message'],
         ),
       );
     }

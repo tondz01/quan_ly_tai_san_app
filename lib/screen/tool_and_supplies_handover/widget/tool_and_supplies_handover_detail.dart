@@ -126,10 +126,31 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   Future<void> _loadPdf(String path) async {
-    final document = await PdfDocument.openFile(path);
-    setState(() {
-      _document = document;
-    });
+    try {
+      final document = await PdfDocument.openFile(path);
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF from path", e.toString());
+    }
+  }
+
+  Future<void> _loadPdfFromBytes(Uint8List bytes) async {
+    try {
+      final document = await PdfDocument.openData(bytes);
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF from bytes", e.toString());
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -438,6 +459,11 @@ class _ToolAndSuppliesHandoverDetailState
             )
             .toList();
     if (provider.isFindNewItem ? true : item == null) {
+      SGLog.debug(
+        "AssetTransferRepository",
+        "uploadFileBytes - fileName: $_selectedFileName, fileBytes length: ${_selectedFileBytes?.length}, filePath: $_selectedFilePath",
+      );
+
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
         _selectedFileName ?? '',
@@ -690,7 +716,12 @@ class _ToolAndSuppliesHandoverDetailState
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
                     if (fileName != null) {
-                      _loadPdf(filePath!);
+                      // Ưu tiên load từ bytes nếu có (web), fallback sang path (mobile/desktop)
+                      if (fileBytes != null) {
+                        _loadPdfFromBytes(fileBytes);
+                      } else if (filePath != null && !filePath.startsWith('data:')) {
+                        _loadPdf(filePath);
+                      }
                     }
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');
@@ -760,7 +791,10 @@ class _ToolAndSuppliesHandoverDetailState
         CommonFormInput(
           label: 'Số phiếu bàn giao',
           controller: controllerHandoverNumber,
-          isEditing: widget.provider.isFindNewItem ? true : (isEditing && item == null),
+          isEditing:
+              widget.provider.isFindNewItem
+                  ? true
+                  : (isEditing && item == null),
           fieldName: 'handoverNumber',
           textContent: item?.id ?? '',
           validationErrors: _validationErrors,

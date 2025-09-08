@@ -30,25 +30,29 @@ class AuthRepository extends ApiBase {
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
         return result;
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      // result['data'] = UserInfoDTO.fromJson(response.data);
-      final resp = response.data;
-      if (resp is Map<String, dynamic>) {
-        result['data'] = UserInfoDTO.fromJson(resp);
-      } else {
-        // Backend có thể trả về chuỗi hoặc dạng khác -> chuyển thành String để hiển thị
-        result['data'] = resp.toString();
-      }
+
+      final raw = response.data;
+      final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
+      final userMap = rawData is String
+          ? (jsonDecode(rawData) as Map<String, dynamic>)
+          : (rawData as Map<String, dynamic>);
+      final user = UserInfoDTO.fromJson(userMap);
+      result['data'] = user;
+      log('test login: result11: ${response.data}');
+      log('test login: result: ${jsonEncode(result['data'])}');
       AccountHelper.instance.setUserInfo(result['data']);
-      log('result: ${result['data']}');
-      print(
-        'AccountHelper: ${jsonEncode(AccountHelper.instance.getUserInfo())}',
+      log(
+        'test login: AccountHelper: ${jsonEncode(AccountHelper.instance.getUserInfo())}',
       );
     } catch (e) {
-      log("Error at createAssetCategory - AssetCategoryRepository: $e");
+      log(
+        "test login: Error at createAssetCategory - AssetCategoryRepository: $e",
+      );
     }
 
     return result;
@@ -123,9 +127,7 @@ class AuthRepository extends ApiBase {
 
   Future<Response<void>> deleteUser(String id) async {
     try {
-      final response = await delete(
-        '${EndPointAPI.ACCOUNT}/$id',
-      );
+      final response = await delete('${EndPointAPI.ACCOUNT}/$id');
       // Don't try to parse response.data if it's empty
       return Response<void>(
         data: null,
@@ -153,11 +155,14 @@ class AuthRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<UserInfoDTO>(
-        response.data,
-        UserInfoDTO.fromJson,
-      );
+      final raw = response.data;
+      final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
+      final userMap = rawData is String
+          ? (jsonDecode(rawData) as Map<String, dynamic>)
+          : (rawData as Map<String, dynamic>);
+      final user = UserInfoDTO.fromJson(userMap);
+      result['data'] = user;
+      AccountHelper.instance.setUserInfo(result['data']);
     } catch (e) {
       log("Error at getListUser - AuthRepository: $e");
     }

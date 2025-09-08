@@ -14,6 +14,8 @@ class ChiTietDieuDongTaiSanRepository {
         baseUrl: "${ApiConfig.getBaseURL()}/api/chitietdieudongtaisan",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
+        // Không ném DioException cho các mã lỗi HTTP, cho phép tự xử lý
+        validateStatus: (status) => true,
       ),
     );
 
@@ -28,42 +30,59 @@ class ChiTietDieuDongTaiSanRepository {
 
   Future<List<ChiTietDieuDongTaiSan>> getAll(String idDieuDongTaiSan) async {
     try {
-      final res = await _dio.get(
+      // Bỏ qua nếu id rỗng
+      if (idDieuDongTaiSan.isEmpty) {
+        SGLog.error(
+          'ChiTietDieuDongTaiSanRepository.getAll',
+          'Bỏ qua gọi API vì idDieuDongTaiSan rỗng',
+        );
+        return [];
+      }
+
+      // Thử với key chuẩn thường dùng theo backend
+      Response res = await _dio.get(
         '',
         queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
       );
-      List<ChiTietDieuDongTaiSan> chiTietDieuDongs = (res.data as List)
-          .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
-          .toList();
-      return chiTietDieuDongs;
-    } on DioException catch (e) {
-      // Thử fallback key tham số khác trong trường hợp API yêu cầu tên khác
-      if (e.response?.statusCode == Numeral.STATUS_CODE_DELETE) {
+
+      if ((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 300) {
+        List<ChiTietDieuDongTaiSan> chiTietDieuDongs = (res.data as List)
+            .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
+            .toList();
+        return chiTietDieuDongs;
+      }
+
+      // Nếu 400 (hoặc không thành công), thử fallback với key khác
+      if (res.statusCode == Numeral.STATUS_CODE_DELETE ||
+          (res.statusCode ?? 0) < 200 ||
+          (res.statusCode ?? 0) >= 300) {
         SGLog.error(
           'ChiTietDieuDongTaiSanRepository.getAll',
-          '400 Bad Request với key iddieudongtaisan, thử lại với idDieuDongTaiSan',
+          'HTTP ${res.statusCode} với key iddieudongtaisan, thử lại với idDieuDongTaiSan',
         );
-        try {
-          final resRetry = await _dio.get(
-            '',
-            queryParameters: {"idDieuDongTaiSan": idDieuDongTaiSan},
-          );
+        final resRetry = await _dio.get(
+          '',
+          queryParameters: {"idDieuDongTaiSan": idDieuDongTaiSan},
+        );
+        if ((resRetry.statusCode ?? 0) >= 200 &&
+            (resRetry.statusCode ?? 0) < 300) {
           List<ChiTietDieuDongTaiSan> chiTietDieuDongs =
               (resRetry.data as List)
                   .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
                   .toList();
           return chiTietDieuDongs;
-        } catch (e2) {
-          SGLog.error(
-            'ChiTietDieuDongTaiSanRepository.getAll',
-            'Fallback thất bại: $e2',
-          );
-          return [];
         }
+        SGLog.error(
+          'ChiTietDieuDongTaiSanRepository.getAll',
+          'Fallback thất bại với HTTP ${resRetry.statusCode}',
+        );
+        return [];
       }
+
+      // Trường hợp khác không thành công
       SGLog.error(
         'ChiTietDieuDongTaiSanRepository.getAll',
-        'Lỗi khi gọi API: ${e.message}',
+        'Gọi API không thành công: HTTP ${res.statusCode}',
       );
       return [];
     } catch (e) {

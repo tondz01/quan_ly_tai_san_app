@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
@@ -25,9 +28,9 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
             ?.where((element) => element.trangThai == 3)
-            .where((element) => element.nguoiTao == userInfo?.tenDangNhap)
             .toList() ??
         [];
+    log('messege test 2 dataAssetTransfer: ${jsonEncode(dataAssetTransfer)}');
   }
 
   @override
