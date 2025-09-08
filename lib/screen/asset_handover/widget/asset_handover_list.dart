@@ -779,7 +779,17 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       _selectedAssetTransfer =
           matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-      _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+      final tenFile = _selectedAssetTransfer?.tenFile;
+      if (tenFile == null || tenFile.isEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Không tìm thấy tệp để xem/ ký',
+          isError: true,
+        );
+        return;
+      }
+
+      _loadPdfNetwork(tenFile).then((_) {
         if (mounted) {
           previewDocumentHandover(
             context: context,
