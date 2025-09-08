@@ -201,30 +201,33 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: widget.allowedExtensions,
-        withData: false,
+        withData: true, // Thay đổi thành true để lấy file bytes
         withReadStream: false,
       );
 
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
-        widget.onFileSelected(file.name, file.path, kIsWeb ? file.bytes : null);
-        log('Selected file: ${file.name}, Path: ${file.path}');
+        widget.onFileSelected(file.name, file.path, file.bytes);
       }
     } on PlatformException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi chọn tệp: ${e.message}'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi chọn tệp: ${e.message}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
     } catch (e) {
       log('Error selecting file: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Không thể chọn tệp: ${e.toString()}'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Không thể chọn tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
     }
   }
 

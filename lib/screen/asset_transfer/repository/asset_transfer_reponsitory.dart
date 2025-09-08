@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
@@ -41,7 +42,7 @@ class AssetTransferRepository extends ApiBase {
         response.data,
         DieuDongTaiSanDto.fromJson,
       );
-      
+
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
@@ -228,9 +229,14 @@ class AssetTransferRepository extends ApiBase {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
+    
     try {
       final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+        'file': MultipartFile.fromBytes(
+          fileBytes,
+          filename: fileName,
+          contentType: MediaType('application', 'pdf'),
+        ),
       });
       final response = await post(
         EndPointAPI.UPLOAD_FILE,
