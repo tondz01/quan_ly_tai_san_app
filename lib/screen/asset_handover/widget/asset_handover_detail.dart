@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -68,6 +66,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   //     TextEditingController();
 
   bool isEditing = false;
+  bool isNew = false;
   UserInfoDTO? currentUser;
 
   bool isUnitConfirm = false;
@@ -149,6 +148,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   void _initData() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+    isNew = widget.isFindNew;
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
@@ -191,10 +191,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               )
               .toList() ??
           [];
-      dieuDongTaiSan = listAssetTransfer.firstWhere(
-        (element) => element.id == item?.lenhDieuDong,
-        orElse: () => DieuDongTaiSanDto(),
-      );
     } else {
       isUnitConfirm = false;
       isDelivererConfirm = false;
@@ -315,7 +311,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (item != null) {
       controllerHandoverNumber.text = item?.id ?? '';
       controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
-      controllerOrder.text = item?.lenhDieuDong ?? '';
+       dieuDongTaiSan = listAssetTransfer.firstWhere(
+        (element) => element.id == item?.lenhDieuDong,
+        orElse: () => DieuDongTaiSanDto(),
+      );
+      controllerOrder.text = dieuDongTaiSan?.id ?? '';
+      widget.provider.getListDetailAssetMobilization(controllerOrder.text);
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
       controllerTransferDate.text = item?.ngayBanGiao ?? '';
@@ -383,7 +384,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             )
             .toList();
 
-    if (item == null) {
+    if (item == null || isNew) {
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
         _selectedFileName ?? '',
@@ -409,6 +410,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             );
         request['duongDanFile'] = result!['filePath'] ?? '';
         request['tenFile'] = result['fileName'] ?? '';
+      } else {
+        request['duongDanFile'] = item!.duongDanFile ?? '';
+        request['tenFile'] = item!.tenFile ?? '';
       }
       request['trangThai'] = trangThai;
       request['share'] = item!.share ?? false;
@@ -544,7 +548,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget _buildTableDetail() {
     final screenWidth = MediaQuery.of(context).size.width;
     bool isWideScreen = screenWidth > 800;
-    log('message isEditing ${item?.trangThai}');
     return Column(
       children: [
         Row(

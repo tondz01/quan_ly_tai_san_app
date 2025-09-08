@@ -1022,7 +1022,6 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
-
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );
@@ -1037,6 +1036,7 @@ class _ToolAndMaterialTransferDetailState
                 provider: widget.provider,
                 isDisabled: listNewDetails.isEmpty,
                 document: _document,
+                isShowKy: false,
               ),
             ],
           ),

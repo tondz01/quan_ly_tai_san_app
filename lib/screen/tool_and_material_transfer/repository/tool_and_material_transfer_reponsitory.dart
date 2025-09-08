@@ -295,7 +295,43 @@ class ToolAndMaterialTransferRepository extends ApiBase {
                 .map((e) => ToolAndMaterialTransferDto.fromJson(e))
                 .where((e) => e.loai == type)
                 .toList();
+    await Future.wait(
+      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+        toolAndMaterialTransfer.detailToolAndMaterialTransfers =
+            await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
+      }),
+    );
+    await Future.wait(
+      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+        try {
+          final signatories = await _signatoryRepository.getAll(
+            toolAndMaterialTransfer.id.toString(),
+          );
+          toolAndMaterialTransfer.listSignatory = signatories;
+        } catch (e) {
+          log(
+            "Error loading signatories for ${toolAndMaterialTransfer.id}: $e",
+          );
+          toolAndMaterialTransfer.listSignatory = [];
+        }
+      }),
+    );
 
+    return toolAndMaterialTransfers;
+  }
+
+  Future<List<ToolAndMaterialTransferDto>>
+  getAllToolAndMeterialTransferByCT() async {
+    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
+
+    final res = await get(
+      '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}?idcongty=${userInfo.idCongTy}',
+    );
+
+    List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
+        (res.data as List)
+            .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+            .toList();
     await Future.wait(
       toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
         toolAndMaterialTransfer.detailToolAndMaterialTransfers =

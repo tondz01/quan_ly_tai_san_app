@@ -45,9 +45,9 @@ class ToolAndSuppliesHandoverBloc
         await ToolAndSuppliesHandoverRepository()
             .getListToolAndSuppliesHandover();
 
-    dataDieuDongTaiSanDto = await ToolAndMaterialTransferRepository()
-        .getAllToolAndMeterialTransfer(null);
-
+    dataDieuDongTaiSanDto =
+        await ToolAndMaterialTransferRepository()
+            .getAllToolAndMeterialTransferByCT();
     Map<String, dynamic> resultCcdc = await ToolsAndSuppliesRepository()
         .getListToolsAndSupplies(userInfo.idCongTy);
 
@@ -190,13 +190,11 @@ class ToolAndSuppliesHandoverBloc
     emit(ToolAndSuppliesHandoverInitialState());
     emit(ToolAndSuppliesHandoverLoadingState());
     Map<String, dynamic> result = await ToolAndSuppliesHandoverRepository()
-        .updateState(event.id, event.userId);
+        .updateState(event.id, event.userId, event.request);
     emit(ToolAndSuppliesHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(
-        UpdateSigningStatusSuccessState(
-          isUpdateOwnershipUnit: result['data'] == '2',
-        ),
+        UpdateSigningStatusSuccessState(isUpdateOwnershipUnit: result['data']),
       );
     } else {
       String msg = "Lỗi khi cập nhập trạng thái bàn giao ${result['message']}";

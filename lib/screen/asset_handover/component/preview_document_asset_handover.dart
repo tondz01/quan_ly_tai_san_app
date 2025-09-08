@@ -122,23 +122,47 @@ previewDocumentHandover({
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,
             isKySo: nhanVien.kySo ?? false,
-            eventSignature: () {
+            eventSignature: () async{
               final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
                 context,
               );
+              final request = itemsDetail
+                  .map(
+                    (e) => {"id": e.idTaiSan, "idDonVi": item.idDonViNhan},
+                  )
+                  .toList();
+
+              // Tạo danh sách các Future để chạy song song
+              List<Future<void>> futures = [];
+
+              // Thêm UpdateSigningStatusEvent
+              futures.add(
+                Future(() {
+                  assetHandoverBloc.add(
+                    UpdateSigningStatusEvent(
+                      context,
+                      item.id.toString(),
+                      userInfo.tenDangNhap,
+                      request,
+                    ),
+                  );
+                }),
+              );
+
+              // Thêm SendToSignerAsetHandoverEvent nếu cần
               if (item.share == false) {
                 final newItem = item.copyWith(share: true);
-                assetHandoverBloc.add(
-                  SendToSignerAsetHandoverEvent(context, [newItem]),
+                futures.add(
+                  Future(() {
+                    assetHandoverBloc.add(
+                      SendToSignerAsetHandoverEvent(context, [newItem]),
+                    );
+                  }),
                 );
               }
-              assetHandoverBloc.add(
-                UpdateSigningStatusEvent(
-                  context,
-                  item.id.toString(),
-                  userInfo.tenDangNhap,
-                ),
-              );
+
+              // Chạy song song tất cả
+              await Future.wait(futures);
             },
           ),
         ),

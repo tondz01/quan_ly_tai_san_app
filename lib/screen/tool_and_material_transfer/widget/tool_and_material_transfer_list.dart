@@ -52,6 +52,8 @@ class _ToolAndMaterialTransferListState
     extends State<ToolAndMaterialTransferList> {
   bool isUploading = false;
 
+  UserInfoDTO? userInfo;
+
   final List<ToolAndMaterialTransferDto> listAssetHandover = [];
   List<ToolAndMaterialTransferDto> listItemSelected = [];
   PdfDocument? _document;
@@ -64,7 +66,8 @@ class _ToolAndMaterialTransferListState
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    "signing_status",
+    'signing_status',
+    'share',
     'type',
     'effective_date',
     'approver',
@@ -92,6 +95,23 @@ class _ToolAndMaterialTransferListState
     super.initState();
     _initializeColumnOptions();
     _callGetListAssetHandover();
+    userInfo = widget.provider.userInfo;
+  }
+
+  @override
+  void didUpdateWidget(covariant ToolAndMaterialTransferList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      if (selected != null && widget.provider.dataPage != null) {
+        selected = widget.provider.dataPage?.firstWhere(
+          (element) => element.id == selected?.id,
+          orElse: () => ToolAndMaterialTransferDto(),
+        );
+        if (selected!.id != null) {
+          _buildDetailDepartmentTree(selected!);
+        }
+      }
+    });
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -116,6 +136,11 @@ class _ToolAndMaterialTransferListState
         id: 'signing_status',
         label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'share',
+        label: 'Chia sẻ',
+        isChecked: visibleColumnIds.contains('share'),
       ),
       ColumnDisplayOption(
         id: 'type',
@@ -178,6 +203,19 @@ class _ToolAndMaterialTransferListState
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchable: true,
+            ),
+          );
+          break;
+        case 'share':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
+              title: 'Chia sẻ',
+              width: 150,
+              cellBuilder:
+                  (item) => ConfigViewAT.showShareStatus(
+                    item.share ?? false,
+                    item.nguoiTao == userInfo?.tenDangNhap,
+                  ),
             ),
           );
           break;
@@ -522,13 +560,16 @@ class _ToolAndMaterialTransferListState
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
+        iconColor:
+            (item.trangThai == 0 || item.trangThai == 2)
+                ? Colors.red.shade700
+                : Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai == 0)
+              if (item.trangThai == 0 || item.trangThai == 2)
                 {
                   showConfirmDialog(
                     context,

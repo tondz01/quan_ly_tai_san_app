@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_stat
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -59,6 +61,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   List<AssetHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
     'signing_status',
+    'share',
     'name',
     'decision_number',
     'transfer_order',
@@ -80,6 +83,22 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     super.initState();
     _initializeColumnOptions();
     userInfo = AccountHelper.instance.getUserInfo();
+  }
+
+  @override
+  void didUpdateWidget(covariant AssetHandoverList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      if (selected != null && widget.provider.dataPage != null) {
+        selected = widget.provider.dataPage?.firstWhere(
+          (element) => element.id == selected?.id,
+          orElse: () => AssetHandoverDto(),
+        );
+        if (selected!.id != null) {
+          _buildDetailDepartmentTree(selected!);
+        }
+      }
+    });
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -104,6 +123,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         id: 'signing_status',
         label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'share',
+        label: 'Chia sẻ',
+        isChecked: visibleColumnIds.contains('share'),
       ),
       ColumnDisplayOption(
         id: 'name',
@@ -171,6 +195,19 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchable: true,
+            ),
+          );
+          break;
+        case 'share':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Chia sẻ',
+              width: 150,
+              cellBuilder:
+                  (item) => ConfigViewAT.showShareStatus(
+                    item.share ?? false,
+                    item.nguoiTao == userInfo?.tenDangNhap,
+                  ),
             ),
           );
           break;
@@ -446,7 +483,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-
   Visibility _buildActionKy() {
     return Visibility(
       visible: selectedItems.isNotEmpty,
@@ -464,6 +500,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         AccountHelper.instance.getUserInfo();
                     AssetHandoverDto? item =
                         selectedItems.isNotEmpty ? selectedItems.first : null;
+                    log('item: ${jsonEncode(item)}');
                     _handleSignDocument(item!, userInfo!, widget.provider);
                   }
                 },
@@ -530,20 +567,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: userInfo?.tenDangNhap == 'admin'
-            ? 'Xóa'
-            : item.trangThai != 0
+        tooltip:
+            userInfo?.tenDangNhap == 'admin'
+                ? 'Xóa'
+                : item.trangThai != 0
                 ? null
                 : 'Xóa',
-        iconColor: userInfo?.tenDangNhap == 'admin'
-            ? Colors.red.shade700
-            : item.trangThai != 0
+        iconColor:
+            userInfo?.tenDangNhap == 'admin'
+                ? Colors.red.shade700
+                : item.trangThai != 0
                 ? Colors.grey
                 : Colors.red.shade700,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
-        onPressed: userInfo?.tenDangNhap == 'admin'
-            ? () => {
+        onPressed:
+            userInfo?.tenDangNhap == 'admin'
+                ? () => {
                   showConfirmDialog(
                     context,
                     type: ConfirmType.delete,
@@ -560,7 +600,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     },
                   ),
                 }
-            : () => {
+                : () => {
                   if (item.trangThai == 0)
                     {
                       showConfirmDialog(
@@ -770,14 +810,27 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         return;
       }
       log('signatureFlow: ${signatureFlow.toString()}');
+      log('item: ${jsonEncode(widget.listAssetTransfer)}');
       final matchingTransfers = widget.listAssetTransfer.where(
         (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
       );
 
+      log('tenFile: ${jsonEncode(_selectedAssetTransfer)}');
+
       _selectedAssetTransfer =
           matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-      _loadPdfNetwork(item.tenFile!).then((_) {
+      final tenFile = _selectedAssetTransfer?.tenFile;
+      if (tenFile == null || tenFile.isEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Không tìm thấy tệp để xem/ ký',
+          isError: true,
+        );
+        return;
+      }
+
+      _loadPdfNetwork(tenFile).then((_) {
         if (mounted) {
           previewDocumentHandover(
             context: context,
@@ -837,18 +890,17 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-      if (item.daXacNhan == true)
-        ThreadNode(
-          header: 'Đại diện đơn vị để nghị:',
-          depth: 1,
-          child: viewSignatoryStatus(
-            item.daXacNhan == true,
-            widget.provider
-                .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
-                .hoTen
-                .toString(),
-          ),
+      ThreadNode(
+        header: 'Đại diện đơn vị để nghị:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daXacNhan == true,
+          widget.provider
+              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+              .hoTen
+              .toString(),
         ),
+      ),
       ThreadNode(
         header: 'Đại diện đơn vị giao:',
         depth: 1,

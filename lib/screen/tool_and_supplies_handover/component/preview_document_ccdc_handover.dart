@@ -1,7 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' show PdfDocument, PdfPageView;
@@ -121,11 +119,30 @@ prevDocumentCcdcHandover({
               final bloc = BlocProvider.of<ToolAndSuppliesHandoverBloc>(
                 context,
               );
+      //           private String id;
+      // private String idCCDCVT;
+      // private String idDonViSoHuu;
+      // private int soLuong;
+      // private String thoiGianBanGiao;
+      // private String ngayTao;
+      // private String nguoiTao;
+      // private String idTsCon;
+              List<Map<String, dynamic>> request = item.detailToolAndMaterialTransfers?.map((e) => {
+                'id': e.id,
+                'idCCDCVT': e.idCCDCVatTu,
+                'idDonViSoHuu': item.idDonViNhan,
+                'soLuong': e.soLuongXuat,
+                'thoiGianBanGiao': item.ngayTao,
+                'ngayTao': item.ngayTao,
+                'nguoiTao': userInfo.tenDangNhap,
+                'idTsCon': e.idCCDCVatTu,
+              }).toList() ?? [];
               bloc.add(
                 UpdateSigningStatusCcdcEvent(
                   context,
                   item.id.toString(),
                   userInfo.tenDangNhap,
+                  request
                 ),
               );
             },

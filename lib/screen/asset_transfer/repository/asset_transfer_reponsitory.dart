@@ -4,21 +4,26 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/chi_tiet_dieu_dong_request.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/request/lenh_dieu_dong_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferRepository extends ApiBase {
   // Get danh sách tài sản
-  Future<Map<String, dynamic>> getListDieuDongTaiSan(String idCongTy) async {
+  Future<Map<String, dynamic>> getListDieuDongTaiSan({int? type = -1}) async {
+    final userInfo = AccountHelper.instance.getUserInfo();
+    final idCongTy = userInfo?.idCongTy;
     List<DieuDongTaiSanDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -30,20 +35,34 @@ class AssetTransferRepository extends ApiBase {
         EndPointAPI.DIEU_DONG_TAI_SAN,
         queryParameters: {'idcongty': idCongTy},
       );
+
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
       }
 
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      List<DieuDongTaiSanDto> dieuDongTaiSans =
+          ResponseParser.parseToList<DieuDongTaiSanDto>(
+            response.data,
+            DieuDongTaiSanDto.fromJson,
+          );
 
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
-        response.data,
-        DieuDongTaiSanDto.fromJson,
+      if (type != null && type != -1) {
+        dieuDongTaiSans =
+            dieuDongTaiSans.where((e) => e.loai == type).toList();
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      await Future.wait(
+        dieuDongTaiSans.map((dieuDongTaiSan) async {
+          Map<String, dynamic> result = await getChiTietDieuDongTaiSan(
+            dieuDongTaiSan.id.toString(),
+          );
+          dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
+        }),
       );
-      
-      log('response.data điều động: ${result['data']}');
+      log('message test15: ${jsonEncode(dieuDongTaiSans)}');
+      result['data'] = dieuDongTaiSans;
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
@@ -85,9 +104,7 @@ class AssetTransferRepository extends ApiBase {
           EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
           data: detail.toJson(),
         );
-        log('message test1 responseDetail: ${jsonEncode(detail)}');
         final int? statusDetail = responseDetail.statusCode;
-        log('message test1 statusDetail: $statusDetail');
         final bool isOkDetail =
             statusDetail == Numeral.STATUS_CODE_SUCCESS ||
             statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
@@ -105,8 +122,6 @@ class AssetTransferRepository extends ApiBase {
           EndPointAPI.SIGNATORY,
           data: signatoryCopy.toJson(),
         );
-        log('message test1 responseSignatory: ${signatoryCopy.toJson()}');
-        log('message test1 responseSignatory: ${jsonEncode(signatoryCopy)}');
         final int? statusSignatory = responseSignatory.statusCode;
         final bool isOkSignatory =
             statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
@@ -184,7 +199,6 @@ class AssetTransferRepository extends ApiBase {
         response.data,
         DieuDongTaiSanDto.fromJson,
       );
-      log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
@@ -235,7 +249,11 @@ class AssetTransferRepository extends ApiBase {
     };
     try {
       final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+        'file': MultipartFile.fromBytes(
+          fileBytes,
+          filename: fileName,
+          contentType: MediaType('application', 'pdf'),
+        ),
       });
       final response = await post(
         EndPointAPI.UPLOAD_FILE,
@@ -297,6 +315,35 @@ class AssetTransferRepository extends ApiBase {
                 ? responseNV.statusCode
                 : responsePB.statusCode;
       }
+    } catch (e) {
+      log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getChiTietDieuDongTaiSan(
+    String idTaiLieu,
+  ) async {
+    List<ChiTietDieuDongTaiSan> data = [];
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
+        queryParameters: {'iddieudongtaisan': idTaiLieu},
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+        result['data'] = ResponseParser.parseToList<ChiTietDieuDongTaiSan>(
+          response.data,
+          ChiTietDieuDongTaiSan.fromJson,
+        );
+      }
+      log('message test13: ${jsonEncode(result)}');
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");
     }

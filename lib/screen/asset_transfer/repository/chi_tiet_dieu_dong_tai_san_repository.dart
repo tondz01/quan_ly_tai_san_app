@@ -1,7 +1,8 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../model/chi_tiet_dieu_dong_tai_san.dart';
 
@@ -14,6 +15,7 @@ class ChiTietDieuDongTaiSanRepository {
         baseUrl: "${ApiConfig.getBaseURL()}/api/chitietdieudongtaisan",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
+        // Không ném DioException cho các mã lỗi HTTP, cho phép tự xử lý
       ),
     );
 
@@ -27,52 +29,21 @@ class ChiTietDieuDongTaiSanRepository {
   }
 
   Future<List<ChiTietDieuDongTaiSan>> getAll(String idDieuDongTaiSan) async {
-    try {
-      final res = await _dio.get(
-        '',
-        queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
-      );
-      List<ChiTietDieuDongTaiSan> chiTietDieuDongs = (res.data as List)
-          .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
-          .toList();
-      return chiTietDieuDongs;
-    } on DioException catch (e) {
-      // Thử fallback key tham số khác trong trường hợp API yêu cầu tên khác
-      if (e.response?.statusCode == Numeral.STATUS_CODE_DELETE) {
-        SGLog.error(
-          'ChiTietDieuDongTaiSanRepository.getAll',
-          '400 Bad Request với key iddieudongtaisan, thử lại với idDieuDongTaiSan',
-        );
-        try {
-          final resRetry = await _dio.get(
-            '',
-            queryParameters: {"idDieuDongTaiSan": idDieuDongTaiSan},
-          );
-          List<ChiTietDieuDongTaiSan> chiTietDieuDongs =
-              (resRetry.data as List)
-                  .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
-                  .toList();
-          return chiTietDieuDongs;
-        } catch (e2) {
-          SGLog.error(
-            'ChiTietDieuDongTaiSanRepository.getAll',
-            'Fallback thất bại: $e2',
-          );
-          return [];
-        }
-      }
-      SGLog.error(
-        'ChiTietDieuDongTaiSanRepository.getAll',
-        'Lỗi khi gọi API: ${e.message}',
-      );
-      return [];
-    } catch (e) {
-      SGLog.error(
-        'ChiTietDieuDongTaiSanRepository.getAll',
-        'Lỗi không xác định: $e',
-      );
-      return [];
-    }
+    log('message test: ${idDieuDongTaiSan}');
+    final queryParams = {"iddieudongtaisan": idDieuDongTaiSan};
+
+    // Log cURL command
+    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
+    log('cURL command: $curlCommand');
+    final res = await _dio.get(
+      '',
+      queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
+    );
+    List<ChiTietDieuDongTaiSan> chiTietDieuDongs =
+        (res.data as List)
+            .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
+            .toList();
+    return chiTietDieuDongs;
   }
 
   Future<ChiTietDieuDongTaiSan> getById(String id) async {
@@ -96,5 +67,41 @@ class ChiTietDieuDongTaiSanRepository {
   Future<dynamic> delete(String id) async {
     final res = await _dio.delete('/$id');
     return res.data;
+  }
+
+  String generateCurlCommand(
+    String method,
+    String url,
+    Map<String, dynamic>? queryParams,
+    dynamic data,
+  ) {
+    final baseUrl = "${ApiConfig.getBaseURL()}/api/chitietdieudongtaisan";
+    final fullUrl = baseUrl + url;
+
+    String curl = 'curl -X $method';
+
+    // Add headers
+    curl += ' -H "Content-Type: application/json"';
+    curl += ' -H "Accept: application/json"';
+
+    // Add query parameters
+    if (queryParams != null && queryParams.isNotEmpty) {
+      final queryString = queryParams.entries
+          .map(
+            (e) =>
+                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value.toString())}',
+          )
+          .join('&');
+      curl += ' "$fullUrl?$queryString"';
+    } else {
+      curl += ' "$fullUrl"';
+    }
+
+    // Add data for POST/PUT requests
+    if (data != null && (method == 'POST' || method == 'PUT')) {
+      curl += ' -d \'${jsonEncode(data)}\'';
+    }
+
+    return curl;
   }
 }

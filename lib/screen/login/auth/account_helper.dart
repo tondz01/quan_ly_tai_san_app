@@ -15,7 +15,7 @@ class AccountHelper {
   static AccountHelper get instance => _instance;
 
   setUserInfo(userLogin) {
-    log("setUserInfo $userLogin");
+    log("test login: setUserInfo $userLogin");
     StorageService.write(StorageKey.USER_INFO, userLogin);
   }
 

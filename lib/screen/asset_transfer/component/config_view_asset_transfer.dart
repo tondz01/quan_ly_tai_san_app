@@ -40,7 +40,7 @@ abstract class ConfigViewAT {
       ),
     );
   }
-  static Widget showShareStatus(bool isShare) {
+  static Widget showShareStatus(bool isShare, bool isMyCreated) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 48.0),
       child: Container(
@@ -51,7 +51,7 @@ abstract class ConfigViewAT {
           borderRadius: BorderRadius.circular(4),
         ),
         child: SGText(
-          text: isShare ? 'Đã chia sẻ' : 'Chưa chia sẻ',
+          text: isShare ? isMyCreated ? 'Đã chia sẻ': "Được chia sẻ" : 'Chưa chia sẻ',
           size: 12,
           style: TextStyle(
             fontWeight: FontWeight.w500,

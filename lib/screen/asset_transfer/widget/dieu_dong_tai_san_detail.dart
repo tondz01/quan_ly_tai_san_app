@@ -22,6 +22,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/controllers/asset_transfer_controllers.dart';
@@ -75,6 +76,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   final Map<String, TextEditingController> contractTermsControllers = {};
   final List<DieuDongTaiSanDto> listAssetHandover = [];
   PdfDocument? _document;
+  List<AssetManagementDto> assetByDepartment = [];
 
   bool _validateForm() {
     return validation.validateForm(
@@ -191,7 +193,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = ChiTietDieuDongTaiSanRepository();
-      
+
       // Xóa các chi tiết cũ
       for (final d in state.initialDetails) {
         if (d.id.isNotEmpty) {
@@ -199,7 +201,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           log('Delete detail result: $deleteResult');
         }
       }
-      
+
       // Tạo các chi tiết mới
       for (final d in state.listNewDetails) {
         final createResult = await repo.create(
@@ -437,7 +439,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           fieldName: 'delivering_unit',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('delivering_unit selected: $value');
                             setState(() {
                               state.donViGiao = value;
                               state.listStaffByDepartment =
@@ -448,6 +449,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                             state.donViGiao!.id,
                                       )
                                       .toList();
+                              assetByDepartment =
+                                  widget.provider.dataAsset.where((element) {
+                                    return element.idDonViHienThoi ==
+                                        state.donViGiao!.id;
+                                  }).toList();
                             });
                           },
                         ),
@@ -719,7 +725,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 context,
                 isEditing: state.isEditing,
                 initialDetails: state.item?.chiTietDieuDongTaiSans ?? [],
-                allAssets: widget.provider.dataAsset ?? [],
+                allAssets: assetByDepartment,
                 onDataChanged: (data) {
                   setState(() {
                     state.listNewDetails =
@@ -734,7 +740,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 soQuyetDinh: state.item?.soQuyetDinh ?? '',
                                 tenPhieu:
                                     controllers.controllerDocumentName.text,
-                                idTaiSan: e.id ?? '',
+                                idTaiSan:
+                                    e.id?.replaceAll(RegExp(r"\s+"), "") ?? '',
                                 tenTaiSan: e.tenTaiSan ?? '',
                                 donViTinh: e.donViTinh ?? '',
                                 hienTrang: e.hienTrang ?? 0,
@@ -830,7 +837,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
       trichYeu: controllers.controllerSubject.text,
-      duongDanFile: this.state.selectedFilePath ?? '',
+      duongDanFile: this.state.selectedFileName ?? '',
       tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
@@ -1095,6 +1102,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
         state.controllersInitialized = true;
+        state.additionalSignersDetailed.clear();
         state.additionalSignersDetailed =
             state.item?.listSignatory
                 ?.map(

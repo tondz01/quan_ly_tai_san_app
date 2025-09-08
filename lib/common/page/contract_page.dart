@@ -338,6 +338,7 @@ class ContractPage {
                 ),
               ],
             ),
+            if (dieuDongTaiSanDto.chiTietDieuDongTaiSans != null)
             for (
               int i = 0;
               i < dieuDongTaiSanDto.chiTietDieuDongTaiSans!.length;
@@ -447,69 +448,71 @@ class ContractPage {
                 ),
               ],
             ),
-            for (
-              int i = 0;
-              i <
-                  toolAndMaterialTransferDto
-                      .detailToolAndMaterialTransfers!
-                      .length;
-              i++
-            )
-              TableRow(
-                children: [
-                  tableCell(
-                    (i + 1).toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
+            if (toolAndMaterialTransferDto.detailToolAndMaterialTransfers !=
+                null)
+              for (
+                int i = 0;
+                i <
                     toolAndMaterialTransferDto
-                            .detailToolAndMaterialTransfers![i]
-                            .tenCCDCVatTu ??
-                        '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    toolAndMaterialTransferDto
-                        .detailToolAndMaterialTransfers![i]
-                        .idCCDCVatTu,
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    toolAndMaterialTransferDto
-                            .detailToolAndMaterialTransfers![i]
-                            .donViTinh ??
-                        '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    toolAndMaterialTransferDto
-                        .detailToolAndMaterialTransfers![i]
-                        .soLuong
-                        .toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    toolAndMaterialTransferDto
-                        .detailToolAndMaterialTransfers![i]
-                        .soLuongXuat
-                        .toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    toolAndMaterialTransferDto
-                        .detailToolAndMaterialTransfers![i]
-                        .ghiChu,
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                ],
-              ),
+                        .detailToolAndMaterialTransfers!
+                        .length;
+                i++
+              )
+                TableRow(
+                  children: [
+                    tableCell(
+                      (i + 1).toString(),
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto
+                              .detailToolAndMaterialTransfers![i]
+                              .tenCCDCVatTu ??
+                          '',
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .idCCDCVatTu,
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto
+                              .detailToolAndMaterialTransfers![i]
+                              .donViTinh ??
+                          '',
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .soLuong
+                          .toString(),
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .soLuongXuat
+                          .toString(),
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      toolAndMaterialTransferDto
+                          .detailToolAndMaterialTransfers![i]
+                          .ghiChu,
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                  ],
+                ),
           ],
         ),
       ],

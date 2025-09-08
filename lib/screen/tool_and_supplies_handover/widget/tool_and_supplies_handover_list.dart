@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -47,6 +49,8 @@ class _ToolAndSuppliesHandoverListState
   String urlPreview = '';
   String nameBenBan = "";
 
+  UserInfoDTO? userInfo;
+
   bool isShowDetailDepartmentTree = false;
 
   bool isShowPreview = false;
@@ -58,6 +62,7 @@ class _ToolAndSuppliesHandoverListState
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
     'signing_status',
+    'share',
     'name',
     'decision_number',
     'transfer_order',
@@ -77,6 +82,23 @@ class _ToolAndSuppliesHandoverListState
   void initState() {
     super.initState();
     _initializeColumnOptions();
+    userInfo = widget.provider.userInfo;
+  }
+
+  @override
+  void didUpdateWidget(covariant ToolAndSuppliesHandoverList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      if (selected != null && widget.provider.dataPage != null) {
+        selected = widget.provider.dataPage?.firstWhere(
+          (element) => element.id == selected?.id,
+          orElse: () => ToolAndSuppliesHandoverDto(),
+        );
+        if (selected!.id != null) {
+          _buildDetailDepartmentTree(selected!);
+        }
+      }
+    });
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -101,6 +123,11 @@ class _ToolAndSuppliesHandoverListState
         id: 'signing_status',
         label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'share',
+        label: 'Chia sẻ',
+        isChecked: visibleColumnIds.contains('share'),
       ),
       ColumnDisplayOption(
         id: 'name',
@@ -168,6 +195,19 @@ class _ToolAndSuppliesHandoverListState
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchable: true,
+            ),
+          );
+          break;
+        case 'share':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+              title: 'Chia sẻ',
+              width: 150,
+              cellBuilder:
+                  (item) => ConfigViewAT.showShareStatus(
+                    item.share ?? false,
+                    item.nguoiTao == userInfo?.tenDangNhap,
+                  ),
             ),
           );
           break;
@@ -507,6 +547,7 @@ class _ToolAndSuppliesHandoverListState
             "viewAction",
             "View action pressed for item: ${item.tenFile}",
           );
+          log('message item: ${jsonEncode(item)}');
           isShowPreview = true;
           var dieuDongCcdc = widget.provider.dataAssetTransfer
               ?.where((element) => element.trangThai == 3)
@@ -515,6 +556,7 @@ class _ToolAndSuppliesHandoverListState
                 (element) => element.id == item.lenhDieuDong,
                 orElse: () => ToolAndMaterialTransferDto(),
               );
+          log('message item: ${jsonEncode(item)}');
 
           _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {

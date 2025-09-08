@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -428,7 +429,9 @@ class _ToolAndSuppliesHandoverTransferListState
               widget.provider.onChangeDetail(
                 context,
                 ToolAndSuppliesHandoverDto(
-                  id: item.id,
+                  id: UUIDGenerator.generateWithFormat(
+                    'BBCCDC-******',
+                  ),
                   banGiaoCCDCVatTu: '',
                   quyetDinhDieuDongSo: '',
                   lenhDieuDong: item.id,

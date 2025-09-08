@@ -17,6 +17,7 @@ class AuthRepository extends ApiBase {
     Map<String, dynamic> result = {
       'data': data,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'message': '',
     };
 
     try {
@@ -26,29 +27,79 @@ class AuthRepository extends ApiBase {
           'tenDangNhap': params.tenDangNhap,
           'matKhau': params.matKhau,
         },
+        options: Options(
+          // Cho phép nhận response kể cả khi 400/500 thay vì ném exception
+          validateStatus: (status) => true,
+          receiveDataWhenStatusError: true,
+        ),
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
+        final data = response.data;
+        if (data is Map<String, dynamic>) {
+          result['message'] = (data['message'] ?? data['error'] ?? data['detail'] ?? '').toString();
+        } else if (data is String) {
+          try {
+            final parsed = jsonDecode(data);
+            if (parsed is Map<String, dynamic>) {
+              result['message'] = (parsed['message'] ?? parsed['error'] ?? parsed['detail'] ?? '').toString();
+            } else {
+              result['message'] = data;
+            }
+          } catch (_) {
+            result['message'] = data;
+          }
+        }
         return result;
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      // result['data'] = UserInfoDTO.fromJson(response.data);
-      final resp = response.data;
-      if (resp is Map<String, dynamic>) {
-        result['data'] = UserInfoDTO.fromJson(resp);
-      } else {
-        // Backend có thể trả về chuỗi hoặc dạng khác -> chuyển thành String để hiển thị
-        result['data'] = resp.toString();
-      }
-      AccountHelper.instance.setUserInfo(result['data']);
-      log('result: ${result['data']}');
-      print(
-        'AccountHelper: ${jsonEncode(AccountHelper.instance.getUserInfo())}',
-      );
+
+      final raw = response.data;
+      final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
+      final userMap = rawData is String
+          ? (jsonDecode(rawData) as Map<String, dynamic>)
+          : (rawData as Map<String, dynamic>);
+      final user = UserInfoDTO.fromJson(userMap);
+      log('message test 2: ${jsonEncode(raw)}');
+      AccountHelper.instance.setUserInfo(user);
+      result['data'] = user;
+      result['message'] = '';
     } catch (e) {
-      log("Error at createAssetCategory - AssetCategoryRepository: $e");
+      log(
+        "test login: Error at login - AuthRepository: $e",
+      );
+      if (e is DioException) {
+        final resp = e.response;
+        result['status_code'] = resp?.statusCode ?? Numeral.STATUS_CODE_DEFAULT;
+        final data = resp?.data;
+        if (data is Map<String, dynamic>) {
+          final msg = data['message'] ?? data['error'] ?? data['detail'];
+          if (msg != null) {
+            result['message'] = msg.toString();
+          }
+        } else if (data is String) {
+          try {
+            final parsed = jsonDecode(data);
+            if (parsed is Map<String, dynamic>) {
+              final msg = parsed['message'] ?? parsed['error'] ?? parsed['detail'];
+              if (msg != null) {
+                result['message'] = msg.toString();
+              }
+            } else {
+              result['message'] = data;
+            }
+          } catch (_) {
+            result['message'] = data;
+          }
+        }
+        if ((result['message'] as String).isEmpty) {
+          result['message'] = e.message ?? 'Đã xảy ra lỗi khi đăng nhập';
+        }
+      } else {
+        result['message'] = 'Đã xảy ra lỗi khi đăng nhập';
+      }
     }
 
     return result;
@@ -123,9 +174,7 @@ class AuthRepository extends ApiBase {
 
   Future<Response<void>> deleteUser(String id) async {
     try {
-      final response = await delete(
-        '${EndPointAPI.ACCOUNT}/$id',
-      );
+      final response = await delete('${EndPointAPI.ACCOUNT}/$id');
       // Don't try to parse response.data if it's empty
       return Response<void>(
         data: null,
@@ -153,11 +202,17 @@ class AuthRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<UserInfoDTO>(
-        response.data,
+      // Chuẩn hóa dữ liệu trả về sang danh sách UserInfoDTO
+      final raw = response.data;
+      dynamic normalized = raw;
+      if (raw is Map && raw.containsKey('data')) {
+        normalized = raw['data'];
+      }
+      final users = ResponseParser.parseToList<UserInfoDTO>(
+        normalized,
         UserInfoDTO.fromJson,
       );
+      result['data'] = users;
     } catch (e) {
       log("Error at getListUser - AuthRepository: $e");
     }

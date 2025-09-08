@@ -86,6 +86,22 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     _callGetListAssetHandover();
   }
 
+  @override
+  void didUpdateWidget(covariant DieuDongTaiSanList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      if (selected != null && widget.provider.dataPage != null) {
+        selected = widget.provider.dataPage?.firstWhere(
+          (element) => element.id == selected?.id,
+          orElse: () => DieuDongTaiSanDto(),
+        );
+        if (selected!.id != null) {
+          _buildDetailDepartmentTree(selected!);
+        }
+      }
+    });
+  }
+
   Future<void> _loadPdfNetwork(String nameFile) async {
     try {
       final document = await PdfDocument.openUri(
@@ -198,7 +214,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               title: 'Chia sẻ',
               width: 150,
               cellBuilder:
-                  (item) => ConfigViewAT.showShareStatus(item.share ?? false),
+                  (item) => ConfigViewAT.showShareStatus(
+                    item.share ?? false,
+                    item.nguoiTao == userInfo?.tenDangNhap,
+                  ),
             ),
           );
           break;
@@ -646,7 +665,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () async {
-          if (item.tenFile == null || item.tenFile!.isEmpty) {
+          await _loadPdfNetwork(item.tenFile!);
+          if (mounted) {
             previewDocument(
               context: context,
               item: item,
@@ -654,29 +674,21 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               isShowKy: false,
               document: _document,
             );
-          } else {
-            await _loadPdfNetwork(item.tenFile!);
-            if (mounted) {
-              previewDocument(
-                context: context,
-                item: item,
-                provider: widget.provider,
-                isShowKy: false,
-                document: _document,
-              );
-            }
           }
         },
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
+        iconColor:
+            (item.trangThai == 0 || item.trangThai == 2)
+                ? Colors.red.shade700
+                : Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai == 0)
+              if (item.trangThai == 0 || item.trangThai == 2)
                 {
                   showConfirmDialog(
                     context,
@@ -797,7 +809,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     }
 
     // Nếu vượt qua tất cả check → mở preview để ký
-    if (item.tenFile == null || item.tenFile!.isEmpty) {
+
+    await _loadPdfNetwork(item.tenFile!);
+    if (mounted) {
       previewDocument(
         context: context,
         item: item,
@@ -805,17 +819,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         isShowKy: true,
         document: _document,
       );
-    } else {
-      await _loadPdfNetwork(item.tenFile!);
-      if (mounted) {
-        previewDocument(
-          context: context,
-          item: item,
-          provider: widget.provider,
-          isShowKy: true,
-          document: _document,
-        );
-      }
     }
   }
 

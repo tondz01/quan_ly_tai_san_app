@@ -126,9 +126,6 @@ class _DetailToolAndMaterialTransferTableState
     if (oldWidget.initialDetails != widget.initialDetails &&
             widget.initialDetails.isNotEmpty ||
         oldWidget.listOwnershipUnit != widget.listOwnershipUnit) {
-      log(
-        'message widget.initialDetails: ${jsonEncode(widget.initialDetails)}',
-      );
       movementDetails = List.from(widget.initialDetails);
       listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
       _syncDetailAssets();

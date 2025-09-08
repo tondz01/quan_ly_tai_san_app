@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
@@ -61,9 +62,6 @@ class DieuDongTaiSanRepository {
         dieuDongTaiSan
             .chiTietDieuDongTaiSans = await _chiTietDieuDongTaiSanRepository
             .getAll(dieuDongTaiSan.id.toString());
-        log(
-          'dieuDongTaiSan.chiTietDieuDongTaiSans: ${dieuDongTaiSan.chiTietDieuDongTaiSans}',
-        );
       }),
     );
 
@@ -75,11 +73,6 @@ class DieuDongTaiSanRepository {
           );
           // Đảm bảo listSignatory được khởi tạo
           dieuDongTaiSan.listSignatory = signatories;
-          for (final signatory in signatories) {
-            log(
-              "message test1:  - ID: ${signatory.id}, PhongBan: ${signatory.idPhongBan}, NguoiKy: ${signatory.idNguoiKy}, TrangThai: ${signatory.trangThai}",
-            );
-          }
         } catch (e) {
           log("Error loading signatories for ${dieuDongTaiSan.id}: $e");
           dieuDongTaiSan.listSignatory = [];
@@ -101,11 +94,13 @@ class DieuDongTaiSanRepository {
         await _chiTietDieuDongTaiSanRepository.getAll(
           dieuDongTaiSan.id.toString(),
         );
+    log('message test9: ${jsonEncode(chiTietDieuDongTS)}');
     List<SignatoryDto> listSignatory = await _signatoryRepository.getAll(
       dieuDongTaiSan.id.toString(),
     );
     dieuDongTaiSan.chiTietDieuDongTaiSans = chiTietDieuDongTS;
     dieuDongTaiSan.listSignatory = listSignatory;
+    log('message test10: ${jsonEncode(dieuDongTaiSan)}');
     return dieuDongTaiSan;
   }
 

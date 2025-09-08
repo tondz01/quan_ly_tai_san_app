@@ -38,7 +38,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     Map<String, dynamic> result =
         await AssetHandoverRepository().getListAssetHandover();
     Map<String, dynamic> resultAssetTransfer = await AssetTransferRepository()
-        .getListDieuDongTaiSan("ct001");
+        .getListDieuDongTaiSan();
     dataDepartment = await DepartmentsProvider().fetchDepartments();
     dataStaff = await NhanVienProvider().fetchNhanViens();
     dataAssetHandoverDto = result['data'];
@@ -169,12 +169,13 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
     Map<String, dynamic> result = await AssetHandoverRepository().updateState(
       event.id,
       event.userId,
+      event.request,
     );
     emit(AssetHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(
         UpdateSigningStatusSuccessState(
-          isUpdateOwnershipUnit: result['data'] == '2',
+          isUpdateOwnershipUnit: result['data'] == result['data'],
         ),
       );
     } else {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -111,16 +112,19 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     // Đồng bộ khi initialSignerData hoặc initialSigners thay đổi từ bên ngoài
     if (oldWidget.initialSignerData != widget.initialSignerData ||
         oldWidget.initialSigners != widget.initialSigners) {
+          log('initialSignerData: ${jsonEncode(widget.initialSignerData)}');
       if (widget.initialSignerData != null &&
           widget.initialSignerData!.isNotEmpty) {
         _signersData = List<AdditionalSignerData>.from(
           widget.initialSignerData!,
         );
+        log('signersData: ${jsonEncode(_signersData)}');
       } else {
         _signersData =
             widget.initialSigners
                 .map((e) => AdditionalSignerData(employee: e))
                 .toList();
+        log('signersData: ${jsonEncode(_signersData)}');
       }
 
       // Cập nhật controllers theo số lượng mới
@@ -263,7 +267,6 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                     ? _buildStaffItemsForDepartment(dept)
                     : widget.itemsNhanVien;
             NhanVien? nhanVien = _signersData[index].employee;
-            log('message test1 phong ban: ${_signersData[index].department}');
             TextEditingController controller = _controllers[index];
             controller.text = nhanVien?.hoTen ?? '';
             _deptControllers[index].text =

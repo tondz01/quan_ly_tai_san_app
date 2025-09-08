@@ -62,11 +62,12 @@ class UpdateSigningStatusEvent extends AssetHandoverEvent {
   final BuildContext context;
   final String id;
   final String userId;
+  final List<Map<String, dynamic>> request;
 
-  const UpdateSigningStatusEvent(this.context, this.id, this.userId);
+  const UpdateSigningStatusEvent(this.context, this.id, this.userId, this.request);
 
   @override
-  List<Object?> get props => [context, id, userId];
+  List<Object?> get props => [context, id, userId, request];
 }
 
 //Hủy phiếu ký nội sinh

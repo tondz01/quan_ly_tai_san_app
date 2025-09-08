@@ -2,10 +2,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
-import '../model/dieu_dong_tai_san_dto.dart';
 import '../repository/dieu_dong_tai_san_repository.dart';
 import 'dieu_dong_tai_san_event.dart'
-    show CancelDieuDongTaiSanEvent, CreateDieuDongEvent, DeleteDieuDongEvent, DieuDongTaiSanEvent, GetDataDropdownEvent, GetListAssetEvent, GetListDieuDongTaiSanEvent, SendToSignerEvent, UpdateDieuDongEvent, UpdateSigningStatusEvent;
+    show
+        CancelDieuDongTaiSanEvent,
+        CreateDieuDongEvent,
+        DeleteDieuDongEvent,
+        DieuDongTaiSanEvent,
+        GetDataDropdownEvent,
+        GetListAssetEvent,
+        GetListDieuDongTaiSanEvent,
+        SendToSignerEvent,
+        UpdateDieuDongEvent,
+        UpdateSigningStatusEvent;
 import 'dieu_dong_tai_san_state.dart';
 
 class DieuDongTaiSanBloc
@@ -28,10 +37,10 @@ class DieuDongTaiSanBloc
   ) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
-    List<DieuDongTaiSanDto> dieuDongTaiSans = await DieuDongTaiSanRepository()
-        .getAll(event.typeAssetTransfer);
+    Map<String, dynamic> dieuDongTaiSans = await AssetTransferRepository()
+        .getListDieuDongTaiSan(type:  event.typeAssetTransfer);
     emit(DieuDongTaiSanLoadingDismissState());
-    emit(GetListDieuDongTaiSanSuccessState(data: dieuDongTaiSans));
+    emit(GetListDieuDongTaiSanSuccessState(data: dieuDongTaiSans['data']));
   }
 
   Future<void> _getListAsset(GetListAssetEvent event, Emitter emit) async {
@@ -90,7 +99,11 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetTransferRepository()
-        .createAssetTransfer(event.request, event.requestDetail, event.listSignatory);
+        .createAssetTransfer(
+          event.request,
+          event.requestDetail,
+          event.listSignatory,
+        );
     emit(DieuDongTaiSanLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(CreateDieuDongSuccessState());
@@ -123,7 +136,7 @@ class DieuDongTaiSanBloc
       );
     }
   }
-  
+
   Future<void> _sendToSigner(SendToSignerEvent event, Emitter emit) async {
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
@@ -166,7 +167,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
         data: request,
       );
-      
+
       final int? status = response.statusCode;
       if (checkStatusCodeFailed(status ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
@@ -214,7 +215,11 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
   }
 
   //Cập nhập trạng thái phiếu ký nội sinh
-  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
+  Future<Map<String, dynamic>> updateState(
+    String id,
+    String idNhanVien,
+    List<Map<String, dynamic>> request,
+  ) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -232,10 +237,19 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
-        response.data,
-        ToolAndSuppliesHandoverDto.fromJson,
-      );
+      final dynamic payload = response.data;
+
+      // Lấy ra mã data (int) dù server trả Map hay int thô
+      final int? dataCode =
+          (payload is Map)
+              ? int.tryParse(payload['data']?.toString() ?? '')
+              : int.tryParse(payload.toString());
+
+      // Lưu lại nếu cần
+      result['data'] = payload;
+      if (dataCode == 3) {
+        await UpdateOwnershipUnit().updateCCDTOwnership(request);
+      }
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
@@ -285,44 +299,49 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
     UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
+    final request =
+        items
+            .map(
+              (item) => {
+                "id": item.id,
+                "idCongTy": currentUser.idCongTy,
+                "banGiaoCCDCVatTu": item.banGiaoCCDCVatTu ?? '',
+                "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
+                "lenhDieuDong": item.lenhDieuDong ?? '',
+                "idDonViGiao": item.idDonViGiao ?? '',
+                "idDonViNhan": item.idDonViNhan ?? '',
+                "idLanhDao": item.idLanhDao ?? '',
+                "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
+                "daXacNhan": item.daXacNhan,
+                "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
+                "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan,
+                "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
+                "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan,
+                "trangThai": item.trangThai,
+                "note": item.note ?? '',
+                "nguoiTao": item.nguoiTao ?? '',
+                "nguoiCapNhat": currentUser.tenDangNhap,
+                "isActive": true,
+                "ngayBanGiao": item.ngayBanGiao,
+                "ngayTao": item.ngayTao,
+                "ngayCapNhat": item.ngayCapNhat,
+                "share": true,
+                "tenFile": item.tenFile ?? '',
+                "duongDanFile": item.duongDanFile ?? '',
+              },
+            )
+            .toList();
+
     try {
-      for (var item in items) {
-        final Map<String, dynamic> request = {
-          "id": item.id,
-          "idCongTy": currentUser.idCongTy,
-          "banGiaoTaiSan": item.banGiaoCCDCVatTu ?? '',
-          "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
-          "lenhDieuDong": item.lenhDieuDong ?? '',
-          "idDonViGiao": item.idDonViGiao ?? '',
-          "idDonViNhan": item.idDonViNhan ?? '',
-          "ngayBanGiao": item.ngayBanGiao ?? '',
-          "idLanhDao": item.idLanhDao ?? '',
-          "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
-          "daXacNhan": item.daXacNhan ?? '',
-          "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
-          "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan ?? '',
-          "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
-          "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan ?? '',
-          "trangThai": item.trangThai ?? '',
-          "note": item.note ?? '',
-          "ngayTao": item.ngayTao ?? '',
-          "ngayCapNhat": DateTime.now().toIso8601String(),
-          "nguoiTao": item.nguoiTao ?? '',
-          "nguoiCapNhat": currentUser.tenDangNhap,
-          "isActive": item.active ?? true,
-          "share": true,
-          "tenFile": item.tenFile ?? '',
-          "duongDanFile": item.duongDanFile ?? '',
-        };
-        final response = await put(
-          '${EndPointAPI.ASSET_TRANSFER}/${item.id}',
-          data: request,
-        );
-        if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
-          result['data'] = response.data;
-        } else {
-          result['status_code'] = response.statusCode;
-        }
+      log('request111: $request');
+      final response = await put(
+        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/batch',
+        data: jsonEncode(request),
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        result['data'] = response.data;
+      } else {
+        result['status_code'] = response.statusCode;
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

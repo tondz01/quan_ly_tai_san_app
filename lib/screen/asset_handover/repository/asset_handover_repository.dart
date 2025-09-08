@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
@@ -219,7 +220,11 @@ class AssetHandoverRepository extends ApiBase {
   }
 
   //Cập nhập trạng thái phiếu ký nội sinh
-  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
+  Future<Map<String, dynamic>> updateState(
+    String id,
+    String idNhanVien,
+    List<Map<String, dynamic>> request,
+  ) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -233,15 +238,23 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = response.statusCode;
         return result;
       }
-
+      log('message test16: ${response.data}');
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
-        response.data,
-        AssetHandoverDto.fromJson,
-      );
-      log('response.data điều động: ${result['data']}');
+      final dynamic payload = response.data;
+
+      // Lấy ra mã data (int) dù server trả Map hay int thô
+      final int? dataCode =
+          (payload is Map)
+              ? int.tryParse(payload['data']?.toString() ?? '')
+              : int.tryParse(payload.toString());
+
+      // Lưu lại nếu cần
+      result['data'] = payload;
+      if (dataCode == 3) {
+        await UpdateOwnershipUnit().updateAssetOwnership(request);
+      }
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
