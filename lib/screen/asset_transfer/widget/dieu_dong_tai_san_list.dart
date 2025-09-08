@@ -78,6 +78,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    isShowDetailDepartmentTree = false;
     if (selected != null) {
       _buildDetailDepartmentTree(selected!);
     }

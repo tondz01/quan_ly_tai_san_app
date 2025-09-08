@@ -554,21 +554,9 @@ class _AssetDetailState extends State<AssetDetail> {
 
   // Thêm: Hàm validate form trước khi lưu
   List<String> _validateForm() {
-    final List<String> errors = [];
-
     final String tenTaiSan = ctrlTenTaiSan.text.trim();
     final String donViTinh = ctrlDonViTinh.text.trim();
 
-    final int soKyKhauHao = int.tryParse(ctrlSoKyKhauHao.text.trim()) ?? 0;
-    final int kyKhauHaoBanDau =
-        int.tryParse(ctrlKyKhauHaoBanDau.text.trim()) ?? 0;
-
-    final int taiKhoanTaiSan =
-        int.tryParse(ctrlTaiKhoanTaiSan.text.trim()) ?? 0;
-    final int taiKhoanKhauHao =
-        int.tryParse(ctrlTaiKhoanKhauHao.text.trim()) ?? 0;
-    final int taiKhoanChiPhi =
-        int.tryParse(ctrlTaiKhoanChiPhi.text.trim()) ?? 0;
 
     final int namSanXuat = int.tryParse(ctrlNamSanXuat.text.trim()) ?? 0;
 
