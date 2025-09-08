@@ -536,8 +536,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       return;
     }
     request = request.copyWith(
-      // duongDanFile: result['filePath'] ?? '',
-      // tenFile: result['fileName'] ?? '',
+      duongDanFile: result['filePath'] ?? '',
+      tenFile: result['fileName'] ?? '',
     );
 
     SGLog.debug(

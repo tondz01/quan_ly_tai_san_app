@@ -1,3 +1,4 @@
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
@@ -46,8 +47,7 @@ class ToolAndSuppliesHandoverBloc
             .getListToolAndSuppliesHandover();
 
     dataDieuDongTaiSanDto = await ToolAndMaterialTransferRepository()
-        .getAllToolAndMeterialTransfer(null);
-
+        .getAllToolAndMeterialTransferByCT();
     Map<String, dynamic> resultCcdc = await ToolsAndSuppliesRepository()
         .getListToolsAndSupplies(userInfo.idCongTy);
 
@@ -195,7 +195,7 @@ class ToolAndSuppliesHandoverBloc
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(
         UpdateSigningStatusSuccessState(
-          isUpdateOwnershipUnit: result['data'] == '2',
+          isUpdateOwnershipUnit: result['data'],
         ),
       );
     } else {

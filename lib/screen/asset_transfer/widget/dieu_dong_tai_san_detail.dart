@@ -314,7 +314,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 Visibility(
                   visible:
                       state.item != null &&
-                      ![0, 5, 6].contains(state.item!.trangThai),
+                      ![0, 2, 3].contains(state.item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -534,7 +534,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: state.isEditing,
                           value: state.nguoiDeNghi,
                           items: [
-                            ...state.listStaffByDepartment.map(
+                            ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -612,7 +612,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyGiamDoc,
                           items: [
-                            ...state.listNhanVienThamMuu.map(
+                            ...state.nvBanGiamDoc.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -712,7 +712,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 soQuyetDinh: state.item?.soQuyetDinh ?? '',
                                 tenPhieu:
                                     controllers.controllerDocumentName.text,
-                                idTaiSan: e.id ?? '',
+                                idTaiSan: e.id?.replaceAll(RegExp(r"\s+"), "") ?? '',
                                 tenTaiSan: e.tenTaiSan ?? '',
                                 donViTinh: e.donViTinh ?? '',
                                 hienTrang: e.hienTrang ?? 0,
@@ -808,7 +808,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
       trichYeu: controllers.controllerSubject.text,
-      duongDanFile: this.state.selectedFilePath ?? '',
+      duongDanFile: this.state.selectedFileName?? '',
       tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
@@ -956,6 +956,10 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     setState(() {
       state.listNewDetails.clear();
       state.nguoiLapPhieu = widget.provider.userInfo;
+      state.nvBanGiamDoc =
+          widget.provider.dataNhanVien
+              .where((e) => e.phongBanId == "P21")
+              .toList();
       // Reset item từ provider
       state.item = widget.provider.item;
       state.isNew = state.item == null;
@@ -1042,13 +1046,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
         state.controllersInitialized = true;
+        state.additionalSignersDetailed.clear();
         state.additionalSignersDetailed =
             state.item?.listSignatory
                 ?.map(
                   (e) => AdditionalSignerData(
+                    department: widget.provider.getPhongBanByID(
+                      e.idPhongBan ?? '',
+                    ),
                     employee: widget.provider.getNhanVienByID(
                       e.idNguoiKy ?? '',
                     ),
+                    signed: e.trangThai == 1,
                   ),
                 )
                 .toList() ??

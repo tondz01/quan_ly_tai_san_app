@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
@@ -441,7 +442,9 @@ class _AssetTransferListState extends State<AssetTransferList> {
               widget.provider.onChangeDetail(
                 context,
                 AssetHandoverDto(
-                  id: item.id,
+                  id: UUIDGenerator.generateWithFormat(
+                    'BG-************',
+                  ),
                   idCongTy: item.idCongTy,
                   banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
                   quyetDinhDieuDongSo: '',

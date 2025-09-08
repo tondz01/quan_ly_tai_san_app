@@ -72,7 +72,7 @@ class _TableChildAssetsState extends State<TableChildAssets> {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: const SGText(
-            text: 'Chi tiết tài sản điều chuyển:',
+            text: 'Chi tiết tài sản con:',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             textAlign: TextAlign.start,
           ),

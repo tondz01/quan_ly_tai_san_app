@@ -95,6 +95,7 @@ class _ToolAndMaterialTransferListState
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
+    log('message test 2: ${Config.baseUrl}/api/upload/preview/$nameFile');
     try {
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
@@ -507,6 +508,7 @@ class _ToolAndMaterialTransferListState
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () {
+          log('message test 2: ${item.tenFile}');
           _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {
               previewDocumentToolAndMaterial(
@@ -522,13 +524,16 @@ class _ToolAndMaterialTransferListState
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
+        iconColor:
+            (item.trangThai == 0 || item.trangThai == 2)
+                ? Colors.red.shade700
+                : Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai == 0)
+              if (item.trangThai == 0 || item.trangThai == 2)
                 {
                   showConfirmDialog(
                     context,

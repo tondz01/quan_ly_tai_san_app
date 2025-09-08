@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -82,6 +84,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
+    log('message test 2: ${Config.baseUrl}/api/upload/preview/$nameFile');
     try {
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
@@ -103,6 +106,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         id: 'signing_status',
         label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'Trạng thái',
+        label: 'Ký số',
+        isChecked: visibleColumnIds.contains('id'),
       ),
       ColumnDisplayOption(
         id: 'type',
@@ -625,7 +633,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () async {
-          if (item.tenFile == null || item.tenFile!.isEmpty) {
+          await _loadPdfNetwork(item.tenFile!);
+          if (mounted) {
             previewDocument(
               context: context,
               item: item,
@@ -633,29 +642,21 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               isShowKy: false,
               document: _document,
             );
-          } else {
-            await _loadPdfNetwork(item.tenFile!);
-            if (mounted) {
-              previewDocument(
-                context: context,
-                item: item,
-                provider: widget.provider,
-                isShowKy: false,
-                document: _document,
-              );
-            }
           }
         },
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
+        iconColor:
+            (item.trangThai == 0 || item.trangThai == 2)
+                ? Colors.red.shade700
+                : Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai == 0)
+              if (item.trangThai == 0 || item.trangThai == 2)
                 {
                   showConfirmDialog(
                     context,
@@ -776,7 +777,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     }
 
     // Nếu vượt qua tất cả check → mở preview để ký
-    if (item.tenFile == null || item.tenFile!.isEmpty) {
+
+    await _loadPdfNetwork(item.tenFile!);
+    if (mounted) {
       previewDocument(
         context: context,
         item: item,
@@ -784,17 +787,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         isShowKy: true,
         document: _document,
       );
-    } else {
-      await _loadPdfNetwork(item.tenFile!);
-      if (mounted) {
-        previewDocument(
-          context: context,
-          item: item,
-          provider: widget.provider,
-          isShowKy: true,
-          document: _document,
-        );
-      }
     }
   }
 

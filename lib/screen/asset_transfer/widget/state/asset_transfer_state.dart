@@ -39,6 +39,7 @@ class AssetTransferState {
   final List<TextEditingController> additionalSignerControllers = [];
   List<AdditionalSignerData> additionalSignersDetailed = [];
   List<NhanVien> listNhanVienThamMuu = [];
+  List<NhanVien> nvBanGiamDoc = [];
 
   // Getters
   bool get isUploading => _isUploading;

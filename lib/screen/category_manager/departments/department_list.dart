@@ -52,15 +52,36 @@ class _DepartmentListState extends State<DepartmentList> {
       TableBaseConfig.columnWidgetBase<PhongBan>(
         title: '',
         cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<PhongBan>(
-              item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
-              onDelete: (item) {
-                widget.onDelete?.call(item);
-              },
-            ),
+            (item) =>
+                item.id == "P21"
+                    ? Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
+                      margin: const EdgeInsets.only(bottom: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: SGText(
+                        text: 'Không thể xóa',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                    : TableBaseConfig.viewActionBase<PhongBan>(
+                      item: item,
+                      onDelete:
+                          item.id == "P001"
+                              ? null
+                              : (item) {
+                                widget.onDelete?.call(item);
+                              },
+                    ),
         width: 120,
         searchable: true,
       ),
@@ -125,8 +146,7 @@ class _DepartmentListState extends State<DepartmentList> {
                     ),
                     SizedBox(width: 16),
                     IconButton(
-                      onPressed: () {
-                      },
+                      onPressed: () {},
                       icon: Icon(Icons.delete, color: Colors.grey.shade700),
                     ),
                   ],

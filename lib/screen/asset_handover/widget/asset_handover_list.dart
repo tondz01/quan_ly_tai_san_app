@@ -446,7 +446,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-
   Visibility _buildActionKy() {
     return Visibility(
       visible: selectedItems.isNotEmpty,
@@ -514,23 +513,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           _selectedAssetTransfer =
               matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-          if (_selectedAssetTransfer == null ||
-              _selectedAssetTransfer!.tenFile!.isEmpty) {
-            if (mounted) {
-              SGLog.debug(
-                "AssetHandoverList",
-                "No document found for item: ${item.id}",
-              );
-              previewDocumentHandover(
-                context: context,
-                item: item,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-                provider: widget.provider,
-                isShowKy: false,
-              );
-            }
-            return;
-          }
           _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
             if (mounted) {
               previewDocumentHandover(
@@ -547,20 +529,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: userInfo?.tenDangNhap == 'admin'
-            ? 'Xóa'
-            : item.trangThai != 0
+        tooltip:
+            userInfo?.tenDangNhap == 'admin'
+                ? 'Xóa'
+                : item.trangThai != 0
                 ? null
                 : 'Xóa',
-        iconColor: userInfo?.tenDangNhap == 'admin'
-            ? Colors.red.shade700
-            : item.trangThai != 0
+        iconColor:
+            userInfo?.tenDangNhap == 'admin'
+                ? Colors.red.shade700
+                : item.trangThai != 0
                 ? Colors.grey
                 : Colors.red.shade700,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
-        onPressed: userInfo?.tenDangNhap == 'admin'
-            ? () => {
+        onPressed:
+            userInfo?.tenDangNhap == 'admin'
+                ? () => {
                   showConfirmDialog(
                     context,
                     type: ConfirmType.delete,
@@ -577,7 +562,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     },
                   ),
                 }
-            : () => {
+                : () => {
                   if (item.trangThai == 0)
                     {
                       showConfirmDialog(
@@ -794,18 +779,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       _selectedAssetTransfer =
           matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-      if (_selectedAssetTransfer == null ||
-          _selectedAssetTransfer!.tenFile!.isEmpty) {
-        if (mounted) {
-          previewDocumentHandover(
-            context: context,
-            item: item,
-            itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-            provider: widget.provider,
-          );
-        }
-        return;
-      }
       _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
         if (mounted) {
           previewDocumentHandover(
@@ -866,18 +839,17 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-      if (item.daXacNhan == true)
-        ThreadNode(
-          header: 'Đại diện đơn vị để nghị:',
-          depth: 1,
-          child: viewSignatoryStatus(
-            item.daXacNhan == true,
-            widget.provider
-                .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
-                .hoTen
-                .toString(),
-          ),
+      ThreadNode(
+        header: 'Đại diện đơn vị để nghị:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daXacNhan == true,
+          widget.provider
+              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+              .hoTen
+              .toString(),
         ),
+      ),
       ThreadNode(
         header: 'Đại diện đơn vị giao:',
         depth: 1,

@@ -97,7 +97,6 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.duAn != null;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),

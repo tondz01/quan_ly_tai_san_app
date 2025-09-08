@@ -228,6 +228,7 @@ class AssetTransferRepository extends ApiBase {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
+    log('message test 2: $fileName');
     try {
       final formData = FormData.fromMap({
         'file': MultipartFile.fromBytes(fileBytes, filename: fileName),

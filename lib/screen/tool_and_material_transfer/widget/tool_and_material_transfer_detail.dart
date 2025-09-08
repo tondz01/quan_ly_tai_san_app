@@ -125,7 +125,7 @@ class _ToolAndMaterialTransferDetailState
   ToolAndMaterialTransferDto? itemPreview;
 
   List<NhanVien> listNhanVienThamMuu = [];
-  List<AdditionalSignerData> initialDataSignersNew = [];
+  List<NhanVien> nvBanGiamDoc = [];
 
   late ToolAndMaterialTransferDto? item;
 
@@ -253,6 +253,11 @@ class _ToolAndMaterialTransferDetailState
       listNewDetails.clear();
       item = null;
       nguoiLapPhieu = widget.provider.userInfo;
+      nvBanGiamDoc =
+          widget.provider.dataNhanVien
+              .where((element) => element.phongBanId == "P21")
+              .toList();
+      log('message test 2: ${nvBanGiamDoc.length}');
       // Reset item từ provider
       item = widget.provider.item;
       isNew = item == null;
@@ -319,30 +324,19 @@ class _ToolAndMaterialTransferDetailState
               <DetailToolAndMaterialTransferDto>[],
         );
 
-        initialDataSignersNew =
-            item?.listSignatory
-                ?.map(
-                  (e) => AdditionalSignerData(
-                    employee: widget.provider.getNhanVienByID(
-                      e.idNguoiKy ?? '',
-                    ),
-                    department: widget.provider.getPhongBanByID(
-                      e.idNguoiKy ?? '',
-                    ),
-                    signed: e.trangThai == 1,
-                  ),
-                )
-                .toList() ??
-            [];
         controllersInitialized = true;
 
         additionalSignersDetailed =
             item?.listSignatory
                 ?.map(
                   (e) => AdditionalSignerData(
+                    department: widget.provider.getPhongBanByID(
+                      e.idPhongBan ?? '',
+                    ),
                     employee: widget.provider.getNhanVienByID(
                       e.idNguoiKy ?? '',
                     ),
+                    signed: e.trangThai == 1,
                   ),
                 )
                 .toList() ??
@@ -888,7 +882,7 @@ class _ToolAndMaterialTransferDetailState
                           isEditing: isEditing,
                           value: nguoiKyGiamDoc,
                           items: [
-                            ...listNhanVienThamMuu.map(
+                            ...nvBanGiamDoc.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -930,7 +924,7 @@ class _ToolAndMaterialTransferDetailState
                                 ..addAll(list);
                             });
                           },
-                          initialSignerData: initialDataSignersNew,
+                          initialSignerData: additionalSignersDetailed,
                           onChangedDetailed: (list) {
                             setState(() {
                               additionalSignersDetailed = list;
@@ -1007,7 +1001,7 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
-                  
+                    log('message test 2: ${jsonEncode(listNewDetails)}');
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );
@@ -1022,6 +1016,7 @@ class _ToolAndMaterialTransferDetailState
                 provider: widget.provider,
                 isDisabled: listNewDetails.isEmpty,
                 document: _document,
+                isShowKy: false,
               ),
             ],
           ),

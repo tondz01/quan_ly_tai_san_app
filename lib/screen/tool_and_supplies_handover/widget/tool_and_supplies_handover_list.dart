@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -507,6 +508,7 @@ class _ToolAndSuppliesHandoverListState
             "viewAction",
             "View action pressed for item: ${item.tenFile}",
           );
+          log('message item: ${jsonEncode(item)}');
           isShowPreview = true;
           var dieuDongCcdc = widget.provider.dataAssetTransfer
               ?.where((element) => element.trangThai == 3)
@@ -515,6 +517,7 @@ class _ToolAndSuppliesHandoverListState
                 (element) => element.id == item.lenhDieuDong,
                 orElse: () => ToolAndMaterialTransferDto(),
               );
+          log('message item: ${jsonEncode(item)}');
 
           _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {

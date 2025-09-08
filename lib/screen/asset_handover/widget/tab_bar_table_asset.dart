@@ -4,6 +4,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handove
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_transfer_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
 class TabBarTableAsset extends StatefulWidget {
   final AssetHandoverProvider provider;
@@ -15,12 +17,15 @@ class TabBarTableAsset extends StatefulWidget {
 
 class _TabBarTableAssetState extends State<TabBarTableAsset> {
   List<DieuDongTaiSanDto> dataAssetTransfer = [];
+  UserInfoDTO? userInfo;
   @override
   void initState() {
     super.initState();
+    userInfo = AccountHelper.instance.getUserInfo();
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
+            ?.where((element) => element.trangThai == 3)
+            .where((element) => element.nguoiTao == userInfo?.tenDangNhap)
             .toList() ??
         [];
   }

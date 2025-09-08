@@ -166,7 +166,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER,
         data: request,
       );
-      
+
       final int? status = response.statusCode;
       if (checkStatusCodeFailed(status ?? 0)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
@@ -285,44 +285,49 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
     UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
+    final request =
+        items
+            .map(
+              (item) => {
+                "id": item.id,
+                "idCongTy": currentUser.idCongTy,
+                "banGiaoCCDCVatTu": item.banGiaoCCDCVatTu ?? '',
+                "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
+                "lenhDieuDong": item.lenhDieuDong ?? '',
+                "idDonViGiao": item.idDonViGiao ?? '',
+                "idDonViNhan": item.idDonViNhan ?? '',
+                "idLanhDao": item.idLanhDao ?? '',
+                "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
+                "daXacNhan": item.daXacNhan,
+                "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
+                "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan,
+                "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
+                "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan,
+                "trangThai": item.trangThai,
+                "note": item.note ?? '',
+                "nguoiTao": item.nguoiTao ?? '',
+                "nguoiCapNhat": currentUser.tenDangNhap,
+                "isActive": true,
+                "ngayBanGiao": item.ngayBanGiao,
+                "ngayTao": item.ngayTao,
+                "ngayCapNhat": item.ngayCapNhat,
+                "share": true,
+                "tenFile": item.tenFile ?? '',
+                "duongDanFile": item.duongDanFile ?? '',
+              },
+            )
+            .toList();
+
     try {
-      for (var item in items) {
-        final Map<String, dynamic> request = {
-          "id": item.id,
-          "idCongTy": currentUser.idCongTy,
-          "banGiaoTaiSan": item.banGiaoCCDCVatTu ?? '',
-          "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
-          "lenhDieuDong": item.lenhDieuDong ?? '',
-          "idDonViGiao": item.idDonViGiao ?? '',
-          "idDonViNhan": item.idDonViNhan ?? '',
-          "ngayBanGiao": item.ngayBanGiao ?? '',
-          "idLanhDao": item.idLanhDao ?? '',
-          "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
-          "daXacNhan": item.daXacNhan ?? '',
-          "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
-          "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan ?? '',
-          "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
-          "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan ?? '',
-          "trangThai": item.trangThai ?? '',
-          "note": item.note ?? '',
-          "ngayTao": item.ngayTao ?? '',
-          "ngayCapNhat": DateTime.now().toIso8601String(),
-          "nguoiTao": item.nguoiTao ?? '',
-          "nguoiCapNhat": currentUser.tenDangNhap,
-          "isActive": item.active ?? true,
-          "share": true,
-          "tenFile": item.tenFile ?? '',
-          "duongDanFile": item.duongDanFile ?? '',
-        };
-        final response = await put(
-          '${EndPointAPI.ASSET_TRANSFER}/${item.id}',
-          data: request,
-        );
-        if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
-          result['data'] = response.data;
-        } else {
-          result['status_code'] = response.statusCode;
-        }
+      log('request111: $request');
+      final response = await put(
+        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/batch',
+        data: jsonEncode(request),
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        result['data'] = response.data;
+      } else {
+        result['status_code'] = response.statusCode;
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -67,6 +68,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   //     TextEditingController();
 
   bool isEditing = false;
+  bool isNew = false;
   UserInfoDTO? currentUser;
 
   bool isUnitConfirm = false;
@@ -148,6 +150,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   void _initData() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+    isNew = widget.isFindNew;
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
@@ -339,8 +342,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     assetHandoverProvider.isLoading = true;
 
-    String ngayBanGiao = "";
-    ngayBanGiao = controllerTransferDate.text;
+    DateTime ngaybangiao = DateFormat(
+      "dd/MM/yyyy HH:mm:ss",
+    ).parse(controllerTransferDate.text);
 
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
@@ -357,7 +361,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
-      "ngayBanGiao": ngayBanGiao,
+      "ngayBanGiao": ngaybangiao.toIso8601String(),
+      "ngayTao": DateTime.now().toIso8601String(),
+      "ngayCapNhat": DateTime.now().toIso8601String(),
       "trangThai": 0,
       "note": "",
       "nguoiTao": currentUser?.tenDangNhap ?? '',
@@ -379,7 +385,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             )
             .toList();
 
-    if (item == null) {
+    if (item == null || isNew) {
+      log('message test 2: Create');
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
         _selectedFileName ?? '',
@@ -387,12 +394,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         _selectedFileBytes ?? Uint8List(0),
       );
       final newRequest = request;
+      log('message test 2: ${result}');
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(newRequest, listSignatory),
       );
     } else {
+      log('message test 2: update');
       int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
@@ -405,6 +414,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             );
         request['duongDanFile'] = result!['filePath'] ?? '';
         request['tenFile'] = result['fileName'] ?? '';
+      } else {
+        request['duongDanFile'] = item!.duongDanFile ?? '';
+        request['tenFile'] = item!.tenFile ?? '';
       }
       request['trangThai'] = trangThai;
       request['share'] = item!.share ?? false;
