@@ -270,6 +270,7 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (item != null) {
+        log('message item: ${jsonEncode(item)}');
         controllerSoChungTu.text = item?.id ?? '';
         controllerSubject.text = item?.trichYeu ?? '';
         controllerDocumentName.text = item?.tenPhieu ?? '';
@@ -288,6 +289,12 @@ class _ToolAndMaterialTransferDetailState
 
         //load date value dropdown
         donViGiao = widget.provider.getPhongBanByID(item?.idDonViGiao ?? '');
+        widget.provider.getListOwnership(item?.idDonViGiao ?? '').then((value) {
+          setState(() {
+            listOwnershipUnit = value;
+            log('message listOwnershipUnit: ${jsonEncode(listOwnershipUnit)}');
+          });
+        });
         listStaffByDepartment =
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == donViGiao!.id)
@@ -451,9 +458,6 @@ class _ToolAndMaterialTransferDetailState
     super.dispose();
   }
 
-  void findPhongBan(String? value) {
-    log('message');
-  }
 
   List<Map<String, dynamic>> _normalizeDetails(
     List<DetailToolAndMaterialTransferDto> list,
@@ -503,26 +507,24 @@ class _ToolAndMaterialTransferDetailState
           await repo.delete(d.id);
         }
       }
-      for (final d in listNewDetails) {
-        await repo.create(
-          listNewDetails
-              .map(
-                (e) => ChiTietBanGiaoRequest(
-                  id: UUIDGenerator.generateWithFormat('CTBG-************'),
-                  idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
-                  idCCDCVatTu: e.idCCDCVatTu,
-                  soLuong: e.soLuong,
-                  idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
-                  soLuongXuat: e.soLuongXuat,
-                  ghiChu: e.ghiChu,
-                  nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
-                  nguoiCapNhat: '',
-                  isActive: true,
-                ),
-              )
-              .toList(),
-        );
-      }
+      await repo.create(
+        listNewDetails
+            .map(
+              (e) => ChiTietBanGiaoRequest(
+                id: UUIDGenerator.generateWithFormat('CTBG-************'),
+                idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
+                idCCDCVatTu: e.idCCDCVatTu,
+                soLuong: e.soLuong,
+                idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
+                soLuongXuat: e.soLuongXuat,
+                ghiChu: e.ghiChu,
+                nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+                nguoiCapNhat: '',
+                isActive: true,
+              ),
+            )
+            .toList(),
+      );
     } catch (e) {
       log('Sync details error: $e');
     }
@@ -551,7 +553,6 @@ class _ToolAndMaterialTransferDetailState
               // Handle successful data loading
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-              log('Asset handover data loaded successfully');
             } else if (state is GetListToolAndMaterialTransferFailedState) {
             } else if (state is ToolAndMaterialTransferLoadingState) {
               // Show loading indicator
@@ -812,7 +813,6 @@ class _ToolAndMaterialTransferDetailState
                                   )
                                   : null,
                           onChanged: (value) {
-                            log('receivingUnit selected: $value');
                             setState(() {
                               donViDeNghi = value;
                               listNhanVienThamMuu =
@@ -848,7 +848,6 @@ class _ToolAndMaterialTransferDetailState
                           fieldName: 'requester',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
-                            log('requester selected: $value');
                             setState(() {
                               nguoiKyNhay = value;
                             });
@@ -1177,7 +1176,6 @@ class _ToolAndMaterialTransferDetailState
   }
 
   List<ChiTietBanGiaoRequest> _createDieuDongRequestDetail() {
-    log('listNewDetails: ${jsonEncode(listNewDetails)}');
     return listNewDetails
         .map(
           (e) => ChiTietBanGiaoRequest(

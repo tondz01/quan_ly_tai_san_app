@@ -204,7 +204,7 @@ class _ToolAndSuppliesHandoverDetailState
     }
   }
 
-  void _initData() {
+  void _initData() async {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
@@ -265,6 +265,17 @@ class _ToolAndSuppliesHandoverDetailState
     if (item != null) {
       if (widget.isFindNew) {
         isEditing = widget.isFindNew;
+        dieuDongCcdc = listAssetTransfer.firstWhere(
+          (element) => element.id == item?.lenhDieuDong,
+          orElse: () => ToolAndMaterialTransferDto(),
+        );
+        donViGiao = getPhongBan(
+          listPhongBan: listPhongBan,
+          idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
+        );
+        await widget.provider.getListOwnership(donViGiao!.id.toString());
+        log('message check bug2 dieuDongCcdc: ${jsonEncode(dieuDongCcdc)}');
+        log('message check bug2 listOwnershipUnit1: ${jsonEncode(widget.provider.listOwnershipUnit)}');
       }
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
@@ -719,7 +730,8 @@ class _ToolAndSuppliesHandoverDetailState
                       // Ưu tiên load từ bytes nếu có (web), fallback sang path (mobile/desktop)
                       if (fileBytes != null) {
                         _loadPdfFromBytes(fileBytes);
-                      } else if (filePath != null && !filePath.startsWith('data:')) {
+                      } else if (filePath != null &&
+                          !filePath.startsWith('data:')) {
                         _loadPdf(filePath);
                       }
                     }
@@ -825,6 +837,7 @@ class _ToolAndSuppliesHandoverDetailState
                 listPhongBan: listPhongBan,
                 idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
               );
+              log('message check bug2 donViGiao: ${jsonEncode(donViGiao)}');
 
               //change Đơn vị nhận
               donViNhan = getPhongBan(
@@ -839,6 +852,9 @@ class _ToolAndSuppliesHandoverDetailState
               );
             });
             await widget.provider.getListOwnership(donViGiao!.id.toString());
+            log(
+              'message check bug2 listOwnershipUnit: ${jsonEncode(widget.provider.listOwnershipUnit)}',
+            );
           },
           validationErrors: _validationErrors,
         ),

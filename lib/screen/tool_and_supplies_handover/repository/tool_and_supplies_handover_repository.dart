@@ -219,6 +219,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     String id,
     String idNhanVien,
     List<Map<String, dynamic>> request,
+    List<Map<String, dynamic>> requestQuantity,
   ) async {
     Map<String, dynamic> result = {
       'data': '',
@@ -249,6 +250,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       result['data'] = payload;
       if (dataCode == 3) {
         await UpdateOwnershipUnit().updateCCDTOwnership(request);
+        await UpdateOwnershipUnit().updateCCDTOwnershipQuantity(requestQuantity);
       }
       log('response.data điều động: ${result['data']}');
     } catch (e) {

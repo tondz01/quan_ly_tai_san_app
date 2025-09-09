@@ -125,14 +125,6 @@ prevDocumentCcdcHandover({
               final bloc = BlocProvider.of<ToolAndSuppliesHandoverBloc>(
                 context,
               );
-              //           private String id;
-              // private String idCCDCVT;
-              // private String idDonViSoHuu;
-              // private int soLuong;
-              // private String thoiGianBanGiao;
-              // private String ngayTao;
-              // private String nguoiTao;
-              // private String idTsCon;
               List<Map<String, dynamic>> request =
                   item.detailToolAndMaterialTransfers
                       ?.map(
@@ -149,13 +141,37 @@ prevDocumentCcdcHandover({
                       )
                       .toList() ??
                   [];
+              List<Map<String, dynamic>> requestQuantity =
+                  item.detailToolAndMaterialTransfers
+                      ?.map(
+                        (e) => {
+                          'idCCDCVT': e.idCCDCVatTu,
+                          'idDonViGui': item.idDonViGiao,
+                          'idDonViNhan': item.idDonViNhan,
+                          'soLuongBanGiao': e.soLuongXuat,
+                          'thoiGianBanGiao': item.ngayTao,
+                          'idTsCon': e.idChiTietCCDCVatTu,
+                        },
+                      )
+                      .toList() ??
+                  [];
               log('request check: $request');
+              log('request requestQuantity: $requestQuantity');
+              if (dieuDongCcdc?.share == false) {
+                bloc.add(
+                  SendToSignerAsetHandoverEvent(context, [
+                    dieuDongCcdc!.copyWith(share: true),
+                  ]),
+                );
+              }
+
               bloc.add(
                 UpdateSigningStatusCcdcEvent(
                   context,
-                  dieuDongCcdc?.id.toString() ?? '',
+                  dieuDongCcdc!.id.toString(),
                   userInfo.tenDangNhap,
                   request,
+                  requestQuantity,
                 ),
               );
             },

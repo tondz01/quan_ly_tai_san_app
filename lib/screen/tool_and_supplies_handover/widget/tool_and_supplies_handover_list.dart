@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -724,12 +721,10 @@ class _ToolAndSuppliesHandoverListState
       case 0:
         return 'Nháp';
       case 1:
-        return 'Chờ xác nhận';
+        return 'Duyệt';
       case 2:
-        return 'Chờ duyệt';
-      case 3:
         return 'Hủy';
-      case 4:
+      case 3:
         return 'Hoàn thành';
       default:
         return '';
@@ -827,16 +822,6 @@ class _ToolAndSuppliesHandoverListState
       );
       return;
     }
-    // bool hasNonZero = items.any((item) => item.trangThai != 0);
-    // if (hasNonZero) {
-    //   AppUtility.showSnackBar(
-    //     context,
-    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-    //     isError: true,
-    //   );
-    //   return;
-    // }
-
     showConfirmDialog(
       context,
       type: ConfirmType.delete,

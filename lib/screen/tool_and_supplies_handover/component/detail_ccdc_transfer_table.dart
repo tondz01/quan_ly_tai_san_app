@@ -143,7 +143,7 @@ class _DetailCcdcTransferTableState
     final result = <ItemDropdownDetailCcdc>[];
 
     for (final c in chiTietDieuDong) {
-      final id = c.idCCDCVatTu;
+      final id = c.idChiTietCCDCVatTu;
 
       final idAsset = getDetailAssetByID(id);
       if (idAsset.idTaiSan == null) {

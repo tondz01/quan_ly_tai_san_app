@@ -62,4 +62,32 @@ class UpdateOwnershipUnit extends ApiBase {
 
     return result;
   }
+  Future<Map<String, dynamic>> updateCCDTOwnershipQuantity(
+    List<Map<String, dynamic>> request,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/update-so-luong/batch',
+        data: request,
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = response.data;
+    } catch (e) {
+      log("Error at update ownership unit: $e");
+    }
+
+    return result;
+  }
 }

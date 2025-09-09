@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -74,7 +71,6 @@ class _DetailToolAndMaterialTransferTableState
         widget.allAssets
             .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
             .toList();
-
     listItemDropdownDetailAsset =
         widget.listOwnershipUnit.map<ItemDropdownDetailCcdc>((e) {
           final asset = getAssetByID(e.idCCDCVT);
@@ -147,7 +143,7 @@ class _DetailToolAndMaterialTransferTableState
     final result = <ItemDropdownDetailCcdc>[];
 
     for (final c in chiTietDieuDong) {
-      final id = c.idCCDCVatTu;
+      final id = c.idChiTietCCDCVatTu;
 
       final idAsset = getDetailAssetByID(id);
       if (idAsset.idTaiSan == null) {

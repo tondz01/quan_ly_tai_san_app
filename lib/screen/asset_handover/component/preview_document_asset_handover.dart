@@ -132,7 +132,6 @@ previewDocumentHandover({
                   )
                   .toList();
 
-              // Tạo danh sách các Future để chạy song song
               List<Future<void>> futures = [];
 
               // Thêm UpdateSigningStatusEvent

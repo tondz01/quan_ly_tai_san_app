@@ -693,6 +693,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (id.isEmpty) return [];
     Map<String, dynamic> result =
         await ToolAndMaterialTransferRepository().getListOwnershipUnit(id);
+    log('message result: ${jsonEncode(result)}');
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
       final list =

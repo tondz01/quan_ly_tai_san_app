@@ -844,15 +844,6 @@ class _ToolAndMaterialTransferListState
       );
       return;
     }
-    // bool hasNonZero = items.any((item) => item.trangThai != 0);
-    // if (hasNonZero) {
-    //   AppUtility.showSnackBar(
-    //     context,
-    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-    //     isError: true,
-    //   );
-    //   return;
-    // }
 
     showConfirmDialog(
       context,

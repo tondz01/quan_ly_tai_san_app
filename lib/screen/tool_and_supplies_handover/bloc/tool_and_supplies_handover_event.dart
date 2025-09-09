@@ -62,11 +62,12 @@ class UpdateSigningStatusCcdcEvent extends ToolAndSuppliesHandoverEvent {
   final String id;
   final String userId;
   final List<Map<String, dynamic>> request;
+  final List<Map<String, dynamic>> requestQuantity;
 
-  const UpdateSigningStatusCcdcEvent(this.context, this.id, this.userId, this.request);
+  const UpdateSigningStatusCcdcEvent(this.context, this.id, this.userId, this.request, this.requestQuantity);
 
   @override
-  List<Object?> get props => [context, id, userId, request];
+  List<Object?> get props => [context, id, userId, request, requestQuantity];
 }
 
 //Hủy phiếu ký nội sinh

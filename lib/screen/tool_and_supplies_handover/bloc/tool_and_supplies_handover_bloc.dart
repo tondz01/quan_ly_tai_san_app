@@ -190,7 +190,12 @@ class ToolAndSuppliesHandoverBloc
     emit(ToolAndSuppliesHandoverInitialState());
     emit(ToolAndSuppliesHandoverLoadingState());
     Map<String, dynamic> result = await ToolAndSuppliesHandoverRepository()
-        .updateState(event.id, event.userId, event.request);
+        .updateState(
+          event.id,
+          event.userId,
+          event.request,
+          event.requestQuantity,
+        );
     emit(ToolAndSuppliesHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(
