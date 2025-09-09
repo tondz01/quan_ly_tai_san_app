@@ -194,7 +194,9 @@ class ToolAndSuppliesHandoverBloc
     emit(ToolAndSuppliesHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(
-        UpdateSigningStatusSuccessState(isUpdateOwnershipUnit: result['data']),
+        UpdateSigningStatusSuccessState(
+          isUpdateOwnershipUnit: result['data'] == 2,
+        ),
       );
     } else {
       String msg = "Lỗi khi cập nhập trạng thái bàn giao ${result['message']}";

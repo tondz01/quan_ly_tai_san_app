@@ -39,7 +39,6 @@ class SignatoryRepository {
   Future<List<SignatoryDto>> getAll(String idDieuDongTaiSan) async {
     try {
       final res = await _dio.get('/tailieu/$idDieuDongTaiSan');
-      log('message check signatories22: ${res.data["data"]}');
       // Sử dụng ResponseParser để parse an toàn
       final signatories = ResponseParser.parseToList<SignatoryDto>(
         res.data["data"],
@@ -77,7 +76,6 @@ class SignatoryRepository {
           return [];
         }
       }
-      SGLog.error('Signatory Requesst.getAll', 'Lỗi khi gọi API: ${e.message}');
       return [];
     } catch (e) {
       SGLog.error('Signatory Requesst.getAll', 'Lỗi không xác định: $e');

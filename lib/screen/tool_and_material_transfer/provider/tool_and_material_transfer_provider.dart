@@ -14,8 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
@@ -517,7 +517,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   Future<void> saveAssetTransfer(
     BuildContext context,
     ToolAndMaterialTransferRequest request,
-    List<DetailToolAndMaterialTransferDto> requestDetail,
+    List<ChiTietBanGiaoRequest> requestDetail,
     List<SignatoryDto> requestSignatory,
     String fileName,
     String filePath,
@@ -677,6 +677,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     final currentIndex = signatureFlow.indexWhere(
       (s) => s["id"] == userInfo.tenDangNhap,
     );
+
+    if (currentIndex == -1) {
+      return -1;
+    }
 
     if (signatureFlow[currentIndex]["signed"] == -1) {
       return -1;

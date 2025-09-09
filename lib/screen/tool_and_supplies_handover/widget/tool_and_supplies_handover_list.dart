@@ -547,7 +547,6 @@ class _ToolAndSuppliesHandoverListState
             "viewAction",
             "View action pressed for item: ${item.tenFile}",
           );
-          log('message item: ${jsonEncode(item)}');
           isShowPreview = true;
           var dieuDongCcdc = widget.provider.dataAssetTransfer
               ?.where((element) => element.trangThai == 3)
@@ -556,7 +555,6 @@ class _ToolAndSuppliesHandoverListState
                 (element) => element.id == item.lenhDieuDong,
                 orElse: () => ToolAndMaterialTransferDto(),
               );
-          log('message item: ${jsonEncode(item)}');
 
           _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {
@@ -565,6 +563,7 @@ class _ToolAndSuppliesHandoverListState
                 item: dieuDongCcdc!,
                 provider: widget.provider,
                 isShowKy: false,
+                dieuDongCcdc: item,
                 document: _document,
               );
             }
@@ -804,7 +803,8 @@ class _ToolAndSuppliesHandoverListState
             context: context,
             item: dieuDongCcdc!,
             provider: widget.provider,
-            isShowKy: false,
+            isShowKy: true,
+            dieuDongCcdc: item,
             document: _document,
           );
         }
@@ -858,7 +858,6 @@ class _ToolAndSuppliesHandoverListState
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-      if (item.daXacNhan == true)
         ThreadNode(
           header: 'Đại diện đơn vị để nghị:',
           depth: 1,

@@ -31,6 +31,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/deta
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
@@ -504,28 +505,22 @@ class _ToolAndMaterialTransferDetailState
       }
       for (final d in listNewDetails) {
         await repo.create(
-          DetailToolAndMaterialTransferDto(
-            id: d.id,
-            tenPhieu: d.tenPhieu,
-            soLuong: d.soLuong,
-            ghiChu: d.ghiChu,
-            ngayTao: d.ngayTao,
-            ngayCapNhat: d.ngayCapNhat,
-            nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
-            nguoiCapNhat: '',
-            isActive: true,
-            idCCDCVatTu: d.idCCDCVatTu,
-            idDieuDongCCDCVatTu: d.idDieuDongCCDCVatTu,
-            soLuongXuat: d.soLuongXuat,
-            soQuyetDinh: '',
-            namSanXuat: d.namSanXuat,
-            donViTinh: d.donViTinh,
-            tenCCDCVatTu: d.tenCCDCVatTu,
-            congSuat: d.congSuat,
-            nuocSanXuat: d.nuocSanXuat,
-            soKyHieu: d.soKyHieu,
-            kyHieu: d.kyHieu,
-          ),
+          listNewDetails
+              .map(
+                (e) => ChiTietBanGiaoRequest(
+                  id: UUIDGenerator.generateWithFormat('CTBG-************'),
+                  idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
+                  idCCDCVatTu: e.idCCDCVatTu,
+                  soLuong: e.soLuong,
+                  idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
+                  soLuongXuat: e.soLuongXuat,
+                  ghiChu: e.ghiChu,
+                  nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+                  nguoiCapNhat: '',
+                  isActive: true,
+                ),
+              )
+              .toList(),
         );
       }
     } catch (e) {
@@ -633,7 +628,7 @@ class _ToolAndMaterialTransferDetailState
                   ),
                 ),
                 Visibility(
-                  visible: item != null && ![0, 2].contains(item!.trangThai),
+                  visible: item != null && ![0, 2, 3].contains(item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -1008,7 +1003,8 @@ class _ToolAndMaterialTransferDetailState
                                 soKyHieu: e.asset?.soKyHieu ?? '',
                                 kyHieu: e.asset?.kyHieu ?? '',
                                 namSanXuat: e.namSanXuat,
-                                idCCDCVatTu: e.idDetaiAsset,
+                                idCCDCVatTu: e.asset?.id ?? '',
+                                idChiTietCCDCVatTu: e.idDetaiAsset,
                                 donViTinh: e.donViTinh,
                                 soLuong: e.soLuong,
                                 ghiChu: e.ghiChu,
@@ -1022,6 +1018,7 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
+                    log('listNewDetails test1: ${jsonEncode(listNewDetails)}');
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );
@@ -1033,7 +1030,9 @@ class _ToolAndMaterialTransferDetailState
               previewDocumentToolAndMaterialTransfer(
                 context: context,
                 item: item ?? itemPreview,
-                provider: widget.provider,
+                nhanVien: widget.provider.getNhanVienByID(
+                  widget.provider.userInfo?.tenDangNhap ?? '',
+                ),
                 isDisabled: listNewDetails.isEmpty,
                 document: _document,
                 isShowKy: false,
@@ -1177,31 +1176,21 @@ class _ToolAndMaterialTransferDetailState
     );
   }
 
-  List<DetailToolAndMaterialTransferDto> _createDieuDongRequestDetail() {
+  List<ChiTietBanGiaoRequest> _createDieuDongRequestDetail() {
     log('listNewDetails: ${jsonEncode(listNewDetails)}');
     return listNewDetails
         .map(
-          (e) => DetailToolAndMaterialTransferDto(
-            id: e.id,
-            tenPhieu: e.tenPhieu,
+          (e) => ChiTietBanGiaoRequest(
+            id: UUIDGenerator.generateWithFormat('CTBG-************'),
+            idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
+            idCCDCVatTu: e.idCCDCVatTu,
             soLuong: e.soLuong,
+            idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
+            soLuongXuat: e.soLuongXuat,
             ghiChu: e.ghiChu,
-            ngayTao: e.ngayTao,
-            ngayCapNhat: e.ngayCapNhat,
             nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
             nguoiCapNhat: '',
             isActive: true,
-            idCCDCVatTu: e.idCCDCVatTu,
-            idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
-            soLuongXuat: e.soLuongXuat,
-            soQuyetDinh: '',
-            namSanXuat: e.namSanXuat,
-            donViTinh: e.donViTinh,
-            tenCCDCVatTu: e.tenCCDCVatTu,
-            congSuat: e.congSuat,
-            nuocSanXuat: e.nuocSanXuat,
-            soKyHieu: e.soKyHieu,
-            kyHieu: e.kyHieu,
           ),
         )
         .toList();

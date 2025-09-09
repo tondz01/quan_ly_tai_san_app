@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -15,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -30,7 +32,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
 
   Future<Map<String, dynamic>> createToolAndMaterialTransfer(
     ToolAndMaterialTransferRequest request,
-    List<DetailToolAndMaterialTransferDto> requestDetail,
+    List<ChiTietBanGiaoRequest> requestDetail,
     List<SignatoryDto> listSignatory,
   ) async {
     ToolAndMaterialTransferDto? data;
@@ -56,20 +58,19 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
 
       final dynamic respData = response.data;
-      for (var detail in requestDetail) {
-        final responseDetail = await post(
-          EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER,
-          data: detail.toJson(),
-        );
-        final int? statusDetail = responseDetail.statusCode;
-        final bool isOkDetail =
-            statusDetail == Numeral.STATUS_CODE_SUCCESS ||
-            statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-            statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-        if (!isOkDetail) {
-          result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
-          return result;
-        }
+      log('listNewDetails test1: requestDetail: ${jsonEncode(requestDetail)}');
+      final responseDetail = await post(
+        '${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch',
+        data: jsonEncode(requestDetail),
+      );
+      final int? statusDetail = responseDetail.statusCode;
+      final bool isOkDetail =
+          statusDetail == Numeral.STATUS_CODE_SUCCESS ||
+          statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOkDetail) {
+        result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
       }
 
       for (var signatory in listSignatory) {
@@ -299,6 +300,9 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
         toolAndMaterialTransfer.detailToolAndMaterialTransfers =
             await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
+        log(
+          'toolAndMaterialTransfer.detailToolAndMaterialTransfers: ${jsonEncode(toolAndMaterialTransfers)}',
+        );
       }),
     );
     await Future.wait(

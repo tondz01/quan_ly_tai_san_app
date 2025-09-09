@@ -754,6 +754,7 @@ class _ToolAndSuppliesHandoverDetailState
               previewDocumentCcdcHandover(
                 context: context,
                 item: dieuDongCcdc,
+                dieuDongCcdc: item,
                 provider: widget.provider,
                 isShowKy: false,
                 document: _document,

@@ -11,18 +11,18 @@ import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:path/path.dart' as path;
 
 Widget previewDocumentToolAndMaterialTransfer({
   required BuildContext context,
   required ToolAndMaterialTransferDto? item,
-  required ToolAndMaterialTransferProvider provider,
+  required NhanVien nhanVien,
   bool isDisabled = false,
   bool isShowKy = true,
   PdfDocument? document,
@@ -35,7 +35,7 @@ Widget previewDocumentToolAndMaterialTransfer({
       previewDocumentToolAndMaterial(
         context: context,
         item: item,
-        provider: provider,
+        nhanVien: nhanVien,
         isShowKy: isShowKy,
         document: document,
       );
@@ -70,12 +70,11 @@ Widget previewDocumentToolAndMaterialTransfer({
 previewDocumentToolAndMaterial({
   required BuildContext context,
   required ToolAndMaterialTransferDto item,
-  required ToolAndMaterialTransferProvider provider,
+  required NhanVien nhanVien,
   bool isShowKy = true,
   PdfDocument? document,
 }) {
-  UserInfoDTO userInfo = provider.userInfo!;
-  NhanVien nhanVien = provider.getNhanVienByID(userInfo.tenDangNhap);
+  UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
   String tenFile = path.basename(nhanVien.chuKyNhay.toString());
   String tenFileKyThuong = path.basename(nhanVien.chuKyThuong.toString());
   String urlKyNhay = '${Config.baseUrl}/api/upload/download/$tenFile';
@@ -111,8 +110,8 @@ previewDocumentToolAndMaterial({
             ],
             signatureList: [urlKyNhay, urlKyThuong],
             idTaiLieu: item.id.toString(),
-            idNguoiKy: userInfo.tenDangNhap,
-            tenNguoiKy: userInfo.hoTen,
+            idNguoiKy: userInfo?.tenDangNhap ?? '',
+            tenNguoiKy: userInfo?.hoTen ?? '',
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,
             isKySo: nhanVien.kySo ?? false,
@@ -124,7 +123,7 @@ previewDocumentToolAndMaterial({
                 UpdateSigningTAMTStatusEvent(
                   context,
                   item.id.toString(),
-                  userInfo.tenDangNhap,
+                  userInfo?.tenDangNhap ?? '',
                 ),
               );
             },

@@ -4,6 +4,7 @@ class DetailToolAndMaterialTransferDto {
   final String? tenCCDCVatTu;
   final String soQuyetDinh;
   final String idCCDCVatTu; // idTaiSan
+  final String idChiTietCCDCVatTu;
   final String tenPhieu;
   final String? donViTinh;
   final String? congSuat;
@@ -24,6 +25,7 @@ class DetailToolAndMaterialTransferDto {
     required this.id,
     required this.idDieuDongCCDCVatTu,
     required this.idCCDCVatTu,
+    required this.idChiTietCCDCVatTu,
     required this.soQuyetDinh,
     required this.tenPhieu,
     this.tenCCDCVatTu,
@@ -71,6 +73,7 @@ class DetailToolAndMaterialTransferDto {
       id: parseString(json['id']),
       idDieuDongCCDCVatTu: parseString(json['idDieuDongCCDCVatTu'] ?? json['idToolAndMaterialTransfer']),
       idCCDCVatTu: parseString(json['idCCDCVatTu'] ?? json['idTaiSan']),
+      idChiTietCCDCVatTu: parseString(json['idChiTietCCDCVatTu']),
       soQuyetDinh: parseString(json['soQuyetDinh']),
       tenPhieu: parseString(json['tenPhieu']),
       tenCCDCVatTu: json['tenCCDCVatTu'],
@@ -99,6 +102,7 @@ class DetailToolAndMaterialTransferDto {
       'idToolAndMaterialTransfer': idDieuDongCCDCVatTu, // Tương thích ngược
       'idCCDCVatTu': idCCDCVatTu,
       'idTaiSan': idCCDCVatTu, // Tương thích ngược
+      'idChiTietCCDCVatTu': idChiTietCCDCVatTu,
       'soQuyetDinh': soQuyetDinh,
       'tenPhieu': tenPhieu,
       'tenCCDCVatTu': tenCCDCVatTu,
@@ -125,6 +129,7 @@ class DetailToolAndMaterialTransferDto {
       id: '',
       idDieuDongCCDCVatTu: '',
       idCCDCVatTu: '',
+      idChiTietCCDCVatTu: '',
       soQuyetDinh: '',
       tenPhieu: '',
       tenCCDCVatTu: null,
@@ -150,6 +155,7 @@ class DetailToolAndMaterialTransferDto {
     String? id,
     String? idDieuDongCCDCVatTu,
     String? idCCDCVatTu,
+    String? idChiTietCCDCVatTu,
     String? soQuyetDinh,
     String? tenPhieu,
     String? tenCCDCVatTu,
@@ -172,6 +178,7 @@ class DetailToolAndMaterialTransferDto {
       id: id ?? this.id,
       idDieuDongCCDCVatTu: idDieuDongCCDCVatTu ?? this.idDieuDongCCDCVatTu,
       idCCDCVatTu: idCCDCVatTu ?? this.idCCDCVatTu,
+      idChiTietCCDCVatTu: idChiTietCCDCVatTu ?? this.idChiTietCCDCVatTu,
       soQuyetDinh: soQuyetDinh ?? this.soQuyetDinh,
       tenPhieu: tenPhieu ?? this.tenPhieu,
       tenCCDCVatTu: tenCCDCVatTu ?? this.tenCCDCVatTu,

@@ -227,7 +227,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.ASSET_TRANSFER}/capnhattrangthai?id=$id&userId=$idNhanVien',
+        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/capnhattrangthai?id=$id&userId=$idNhanVien',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

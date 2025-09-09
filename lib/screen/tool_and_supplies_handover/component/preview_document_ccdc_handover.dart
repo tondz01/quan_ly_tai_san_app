@@ -1,5 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' show PdfDocument, PdfPageView;
@@ -14,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:path/path.dart' as path;
@@ -21,6 +24,7 @@ import 'package:path/path.dart' as path;
 Widget previewDocumentCcdcHandover({
   required BuildContext context,
   required ToolAndMaterialTransferDto? item,
+  required ToolAndSuppliesHandoverDto? dieuDongCcdc,
   required ToolAndSuppliesHandoverProvider provider,
   bool isShowKy = true,
   bool isDisabled = false,
@@ -34,6 +38,7 @@ Widget previewDocumentCcdcHandover({
         item: item,
         provider: provider,
         isShowKy: isShowKy,
+        dieuDongCcdc: dieuDongCcdc,
         document: document,
       );
     },
@@ -67,6 +72,7 @@ Widget previewDocumentCcdcHandover({
 prevDocumentCcdcHandover({
   required BuildContext context,
   required ToolAndMaterialTransferDto item,
+  required ToolAndSuppliesHandoverDto? dieuDongCcdc,
   required ToolAndSuppliesHandoverProvider provider,
   bool isShowKy = true,
   PdfDocument? document,
@@ -119,30 +125,37 @@ prevDocumentCcdcHandover({
               final bloc = BlocProvider.of<ToolAndSuppliesHandoverBloc>(
                 context,
               );
-      //           private String id;
-      // private String idCCDCVT;
-      // private String idDonViSoHuu;
-      // private int soLuong;
-      // private String thoiGianBanGiao;
-      // private String ngayTao;
-      // private String nguoiTao;
-      // private String idTsCon;
-              List<Map<String, dynamic>> request = item.detailToolAndMaterialTransfers?.map((e) => {
-                'id': e.id,
-                'idCCDCVT': e.idCCDCVatTu,
-                'idDonViSoHuu': item.idDonViNhan,
-                'soLuong': e.soLuongXuat,
-                'thoiGianBanGiao': item.ngayTao,
-                'ngayTao': item.ngayTao,
-                'nguoiTao': userInfo.tenDangNhap,
-                'idTsCon': e.idCCDCVatTu,
-              }).toList() ?? [];
+              //           private String id;
+              // private String idCCDCVT;
+              // private String idDonViSoHuu;
+              // private int soLuong;
+              // private String thoiGianBanGiao;
+              // private String ngayTao;
+              // private String nguoiTao;
+              // private String idTsCon;
+              List<Map<String, dynamic>> request =
+                  item.detailToolAndMaterialTransfers
+                      ?.map(
+                        (e) => {
+                          'id': e.id,
+                          'idCCDCVT': e.idCCDCVatTu,
+                          'idDonViSoHuu': item.idDonViNhan,
+                          'soLuong': e.soLuongXuat,
+                          'thoiGianBanGiao': item.ngayTao,
+                          'ngayTao': item.ngayTao,
+                          'nguoiTao': userInfo.tenDangNhap,
+                          'idTsCon': e.idChiTietCCDCVatTu,
+                        },
+                      )
+                      .toList() ??
+                  [];
+              log('request check: $request');
               bloc.add(
                 UpdateSigningStatusCcdcEvent(
                   context,
-                  item.id.toString(),
+                  dieuDongCcdc?.id.toString() ?? '',
                   userInfo.tenDangNhap,
-                  request
+                  request,
                 ),
               );
             },

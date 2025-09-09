@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
 import '../model/detail_tool_and_material_transfer_dto.dart';
@@ -89,8 +90,8 @@ class DetailToolAndMaterialTransferRepository {
     return chiTietToolAndMaterialTransfer;
   }
 
-  Future<int> create(DetailToolAndMaterialTransferDto obj) async {
-    final res = await _dio.post('', data: obj.toJson());
+  Future<int> create(List<ChiTietBanGiaoRequest> obj) async {
+    final res = await _dio.post('/batch', data: jsonEncode(obj));
     return res.data;
   }
 

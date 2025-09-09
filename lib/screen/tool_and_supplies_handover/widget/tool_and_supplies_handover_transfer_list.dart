@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
@@ -15,8 +16,9 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/preview_document_ccdc_handover.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/controller/find_by_type_tool_and_supplies.dart';
@@ -408,12 +410,14 @@ class _ToolAndSuppliesHandoverTransferListState
 
           await _loadPdfNetwork(item.tenFile!);
           if (mounted) {
-            prevDocumentCcdcHandover(
+            previewDocumentToolAndMaterial(
               context: context,
               item: item,
               isShowKy: false,
               document: _document,
-              provider: widget.provider,
+              nhanVien: widget.provider.getNhanVienByID(
+                widget.provider.userInfo?.tenDangNhap ?? '',
+              ),
             );
           }
         },

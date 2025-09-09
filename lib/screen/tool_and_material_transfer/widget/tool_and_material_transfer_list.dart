@@ -550,7 +550,9 @@ class _ToolAndMaterialTransferListState
               previewDocumentToolAndMaterial(
                 context: context,
                 item: item,
-                provider: widget.provider,
+                nhanVien: widget.provider.getNhanVienByID(
+                  widget.provider.userInfo?.tenDangNhap ?? '',
+                ),
                 document: _document,
                 isShowKy: false,
               );
@@ -693,7 +695,9 @@ class _ToolAndMaterialTransferListState
         previewDocumentToolAndMaterial(
           context: context,
           item: item,
-          provider: widget.provider,
+          nhanVien: widget.provider.getNhanVienByID(
+            widget.provider.userInfo?.tenDangNhap ?? '',
+          ),
           document: _document,
         );
       }
