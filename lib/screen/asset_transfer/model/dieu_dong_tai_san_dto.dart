@@ -81,6 +81,7 @@ class DieuDongTaiSanDto {
   bool? isActive;
   bool? share;
   bool? daBanGiao;
+  bool? byStep;
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
   List<SignatoryDto>? listSignatory;
 
@@ -139,6 +140,7 @@ class DieuDongTaiSanDto {
     this.listSignatory,
     this.trangThaiKyNhay,
     this.daBanGiao,
+    this.byStep,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -197,6 +199,7 @@ class DieuDongTaiSanDto {
       chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
       listSignatory: json['listSignatory'],
       daBanGiao: json['daBanGiao'],
+      byStep: json['byStep'],
     );
   }
 
@@ -256,6 +259,7 @@ class DieuDongTaiSanDto {
       "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
       "listSignatory": listSignatory,
       "daBanGiao": daBanGiao,
+      "byStep": byStep,
     };
   }
 
@@ -314,6 +318,7 @@ class DieuDongTaiSanDto {
     List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans,
     List<SignatoryDto>? listSignatory,
     bool? daBanGiao,
+    bool? byStep,
   }) {
     return DieuDongTaiSanDto(
       id: id ?? this.id,
@@ -378,6 +383,7 @@ class DieuDongTaiSanDto {
           chiTietDieuDongTaiSans ?? this.chiTietDieuDongTaiSans,
       listSignatory: listSignatory ?? this.listSignatory,
       daBanGiao: daBanGiao ?? this.daBanGiao,
+      byStep: byStep ?? this.byStep,
     );
   }
 }

@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -38,12 +40,19 @@ class AuthRepository extends ApiBase {
         result['status_code'] = response.statusCode;
         final data = response.data;
         if (data is Map<String, dynamic>) {
-          result['message'] = (data['message'] ?? data['error'] ?? data['detail'] ?? '').toString();
+          result['message'] =
+              (data['message'] ?? data['error'] ?? data['detail'] ?? '')
+                  .toString();
         } else if (data is String) {
           try {
             final parsed = jsonDecode(data);
             if (parsed is Map<String, dynamic>) {
-              result['message'] = (parsed['message'] ?? parsed['error'] ?? parsed['detail'] ?? '').toString();
+              result['message'] =
+                  (parsed['message'] ??
+                          parsed['error'] ??
+                          parsed['detail'] ??
+                          '')
+                      .toString();
             } else {
               result['message'] = data;
             }
@@ -58,18 +67,21 @@ class AuthRepository extends ApiBase {
 
       final raw = response.data;
       final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
-      final userMap = rawData is String
-          ? (jsonDecode(rawData) as Map<String, dynamic>)
-          : (rawData as Map<String, dynamic>);
+      final userMap =
+          rawData is String
+              ? (jsonDecode(rawData) as Map<String, dynamic>)
+              : (rawData as Map<String, dynamic>);
       final user = UserInfoDTO.fromJson(userMap);
-      log('message test 2: ${jsonEncode(raw)}');
       AccountHelper.instance.setUserInfo(user);
+
+      // Gọi các API phụ trợ
+      await _loadUserDepartments(user.idCongTy);
+      await _loadUserEmployee(user.idCongTy);
+      await _loadChucVu(user.idCongTy);
+
       result['data'] = user;
       result['message'] = '';
     } catch (e) {
-      log(
-        "test login: Error at login - AuthRepository: $e",
-      );
       if (e is DioException) {
         final resp = e.response;
         result['status_code'] = resp?.statusCode ?? Numeral.STATUS_CODE_DEFAULT;
@@ -83,7 +95,8 @@ class AuthRepository extends ApiBase {
           try {
             final parsed = jsonDecode(data);
             if (parsed is Map<String, dynamic>) {
-              final msg = parsed['message'] ?? parsed['error'] ?? parsed['detail'];
+              final msg =
+                  parsed['message'] ?? parsed['error'] ?? parsed['detail'];
               if (msg != null) {
                 result['message'] = msg.toString();
               }
@@ -103,6 +116,69 @@ class AuthRepository extends ApiBase {
     }
 
     return result;
+  }
+
+  /// Load danh sách phòng ban của user và lưu vào AccountHelper
+  Future<void> _loadUserDepartments(String idCongTy) async {
+    try {
+      final response = await get(
+        EndPointAPI.PHONG_BAN,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final List<dynamic> rawData = response.data;
+        final List<PhongBan> departments =
+            rawData
+                .map((json) => PhongBan.fromJson(json as Map<String, dynamic>))
+                .toList();
+        AccountHelper.instance.setDepartment(departments);
+      }
+    } catch (e) {
+      log('Error calling API PHONG_BAN: $e');
+    }
+  }
+
+  /// Load thông tin nhân viên của user và lưu vào AccountHelper
+  Future<void> _loadUserEmployee(String idCongTy) async {
+    try {
+      final response = await get(
+        EndPointAPI.NHAN_VIEN,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final rawNhanVien = response.data;
+
+        // API trả về mảng JSON luôn
+        final nhanVienList =
+            (rawNhanVien as List<dynamic>)
+                .map((e) => NhanVien.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        AccountHelper.instance.setNhanVien(nhanVienList);
+      }
+    } catch (e) {
+      log('Error calling API NHAN_VIEN: $e');
+    }
+  }
+
+  /// Load thông tin chức vụ của user và lưu vào AccountHelper
+  Future<void> _loadChucVu(String idCongTy) async {
+    try {
+      final response = await get('${EndPointAPI.CHUC_VU}/congty/$idCongTy');
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final rawChucVu = response.data;
+        // Lấy ra list trong field "data"
+        final data = rawChucVu['data'] as List<dynamic>;
+        final chucVuList =
+            data
+                .map((e) => ChucVu.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        AccountHelper.instance.setChucVu(chucVuList);
+      }
+    } catch (e) {
+      log('Error calling API CHUC_VU: $e');
+    }
   }
 
   Future<Map<String, dynamic>> createAccount(UserInfoDTO params) async {
@@ -243,54 +319,10 @@ class AuthRepository extends ApiBase {
         response.data,
         NhanVien.fromJson,
       );
+      log('message Check getListNhanVien: ${jsonEncode(result['data'])}');
     } catch (e) {
       log("Error at getListNhanVien - AuthRepository: $e");
     }
     return result;
   }
 }
-
-final fakeUserList = [
-  {
-    "id": 1,
-    "username": "admin",
-    "password": "hashed_password_1",
-    "fullName": "Admin User",
-    "dateOfBirth": "1985-01-01T00:00:00.000Z",
-    "email": "admin@example.com",
-    "createdAt": "2024-01-01T08:00:00.000Z",
-    "updatedAt": "2024-01-10T10:00:00.000Z",
-    "createdBy": "system",
-    "updatedBy": "admin",
-    "isActive": true,
-    "role": "ADMIN",
-  },
-  {
-    "id": 2,
-    "username": "john_doe",
-    "password": "hashed_password_2",
-    "fullName": "John Doe",
-    "dateOfBirth": "1990-05-15T00:00:00.000Z",
-    "email": "john.doe@example.com",
-    "createdAt": "2024-02-01T09:00:00.000Z",
-    "updatedAt": "2024-02-15T11:00:00.000Z",
-    "createdBy": "admin",
-    "updatedBy": "john_doe",
-    "isActive": true,
-    "role": "USER",
-  },
-  {
-    "id": 3,
-    "username": "jane_smith",
-    "password": "hashed_password_3",
-    "fullName": "Jane Smith",
-    "dateOfBirth": "1992-08-20T00:00:00.000Z",
-    "email": "jane.smith@example.com",
-    "createdAt": "2024-03-01T10:00:00.000Z",
-    "updatedAt": null,
-    "createdBy": "admin",
-    "updatedBy": null,
-    "isActive": false,
-    "role": "USER",
-  },
-];

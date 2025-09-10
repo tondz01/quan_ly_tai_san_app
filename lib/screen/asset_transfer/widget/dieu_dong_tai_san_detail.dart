@@ -556,7 +556,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         ),
 
                         CmFormDropdownObject<NhanVien>(
-                          label: 'at.requester'.tr,
+                          label: 'Người lập phiếu',
                           controller: controllers.controllerRequester,
                           isEditing: state.isEditing,
                           value: state.nguoiDeNghi,
@@ -601,7 +601,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         ),
 
                         CmFormDropdownObject<NhanVien>(
-                          label: 'at.department_approval'.tr,
+                          label: 'Người duyệt',
                           controller: controllers.controllerDepartmentApproval,
                           isEditing:
                               state.isEditing && state.donViDeNghi != null,
@@ -631,34 +631,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             state.nguoiKyCapPhong = value;
                           },
                         ),
-
-                        CmFormDropdownObject<NhanVien>(
-                          label: 'at.approver'.tr,
-                          controller: controllers.controllerApprover,
-                          isEditing:
-                              state.isEditing && state.donViDeNghi != null,
-                          value: state.nguoiKyGiamDoc,
-                          items: [
-                            ...state.nvPhongGD.map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.hoTen ?? ''),
-                              ),
-                            ),
-                          ],
-                          defaultValue:
-                              controllers.controllerApprover.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllers.controllerApprover.text,
-                                  )
-                                  : null,
-                          fieldName: 'approver',
-                          validationErrors: validation.validationErrors,
-                          onChanged: (value) {
-                            state.nguoiKyGiamDoc = value;
-                          },
-                        ),
-                        AdditionalSignersSelector(
+AdditionalSignersSelector(
                           addButtonText: "Thêm đơn bị đại diện",
                           labelDepartment: "Đơn vị đại diện",
                           labelSigned: 'Người đại diện',
@@ -687,6 +660,32 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.additionalSignersDetailed = list;
                               log('message test1 list: ${jsonEncode(list)}');
                             });
+                          },
+                        ),
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'Người phê duyệt',
+                          controller: controllers.controllerApprover,
+                          isEditing:
+                              state.isEditing && state.donViDeNghi != null,
+                          value: state.nguoiKyGiamDoc,
+                          items: [
+                            ...state.nvPhongGD.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          defaultValue:
+                              controllers.controllerApprover.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllers.controllerApprover.text,
+                                  )
+                                  : null,
+                          fieldName: 'approver',
+                          validationErrors: validation.validationErrors,
+                          onChanged: (value) {
+                            state.nguoiKyGiamDoc = value;
                           },
                         ),
                       ],

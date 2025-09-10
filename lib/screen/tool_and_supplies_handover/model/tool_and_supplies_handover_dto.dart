@@ -32,6 +32,7 @@ class ToolAndSuppliesHandoverDto {
   final String? tenFile;
   final bool? active;
   List<SignatoryDto>? listSignatory;
+  bool? byStep;
 
   ToolAndSuppliesHandoverDto({
     this.id,
@@ -65,6 +66,7 @@ class ToolAndSuppliesHandoverDto {
     this.tenFile,
     this.active,
     this.listSignatory,
+    this.byStep,
   });
 
   factory ToolAndSuppliesHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -105,6 +107,7 @@ class ToolAndSuppliesHandoverDto {
                 json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
               )
               : null,
+      byStep: json['byStep'],
     );
   }
 
@@ -141,6 +144,7 @@ class ToolAndSuppliesHandoverDto {
       'tenFile': tenFile,
       'active': active,
       'listSignatory': listSignatory,
+      'byStep': byStep,
     };
   }
 
@@ -176,6 +180,7 @@ class ToolAndSuppliesHandoverDto {
     String? tenFile,
     bool? active,
     List<SignatoryDto>? listSignatory,
+    bool? byStep,
   }) {
     return ToolAndSuppliesHandoverDto(
       id: id ?? this.id,
@@ -209,6 +214,7 @@ class ToolAndSuppliesHandoverDto {
       tenFile: tenFile ?? this.tenFile,
       active: active ?? this.active,
       listSignatory: listSignatory ?? this.listSignatory,
+      byStep: byStep ?? this.byStep,
     );
   }
 }

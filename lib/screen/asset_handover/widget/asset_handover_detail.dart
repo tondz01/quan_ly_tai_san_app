@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -708,7 +711,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               ),
               previewDocumentAssetHandover(
                 context: context,
-                item: item ?? getAssetHandoverPreview(),
+                item: getAssetHandoverPreview(),
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
                 isShowKy: false,
@@ -981,6 +984,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   AssetHandoverDto? getAssetHandoverPreview() {
+    log("message check item getAssetHandoverPreview");
     return AssetHandoverDto(
       id: controllerHandoverNumber.text,
       idCongTy: currentUser?.idCongTy ?? '',

@@ -35,6 +35,7 @@ class AssetHandoverDto {
   final bool? share;
   final String? tenFile;
   final String? duongDanFile;
+  final bool? byStep;
   List<SignatoryDto>? listSignatory;
 
   AssetHandoverDto({
@@ -73,6 +74,7 @@ class AssetHandoverDto {
     this.tenFile,
     this.duongDanFile,
     this.listSignatory,
+    this.byStep,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -116,6 +118,7 @@ class AssetHandoverDto {
               json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
             )
           : null,
+      byStep: json['byStep'],
     );
   }
 
@@ -156,6 +159,7 @@ class AssetHandoverDto {
       'tenFile': tenFile,
       'duongDanFile': duongDanFile,
       'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
+      'byStep': byStep,
     };
   }
 
@@ -195,6 +199,7 @@ class AssetHandoverDto {
     String? tenFile,
     String? duongDanFile,
     List<SignatoryDto>? listSignatory,
+    bool? byStep,
   }) {
     return AssetHandoverDto(
       id: id ?? this.id,
@@ -232,6 +237,7 @@ class AssetHandoverDto {
       tenFile: tenFile ?? this.tenFile,
       duongDanFile: duongDanFile ?? this.duongDanFile,
       listSignatory: listSignatory ?? this.listSignatory,
+      byStep: byStep ?? this.byStep,
     );
   }
 }

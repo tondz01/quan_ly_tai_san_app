@@ -41,4 +41,7 @@ class StorageKey {
   static const APP_VERSION = 'app_version';
   static const BUILD_NUMBER = 'buildNumber';
   static const REMEMBER_LOGIN = 'remember_login';
+  static const DEPARTMENT = 'department';
+  static const NHAN_VIEN = 'nhan_vien';
+  static const CHUC_VU = 'chuc_vu';
 }

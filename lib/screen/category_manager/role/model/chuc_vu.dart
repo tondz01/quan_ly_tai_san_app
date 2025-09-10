@@ -45,6 +45,29 @@ class ChucVu extends Equatable {
     required this.nguoiCapNhat,
   });
 
+  /// Constructor tạo chức vụ empty với giá trị mặc định
+  const ChucVu.empty()
+      : id = '',
+        tenChucVu = '',
+        quanLyNhanVien = false,
+        quanLyPhongBan = false,
+        quanLyDuAn = false,
+        quanLyNguonVon = false,
+        quanLyMoHinhTaiSan = false,
+        quanLyNhomTaiSan = false,
+        quanLyTaiSan = false,
+        quanLyCCDCVatTu = false,
+        dieuDongTaiSan = false,
+        dieuDongCCDCVatTu = false,
+        banGiaoTaiSan = false,
+        banGiaoCCDCVatTu = false,
+        baoCao = false,
+        idCongTy = '',
+        ngayTao = '',
+        ngayCapNhat = '',
+        nguoiTao = '',
+        nguoiCapNhat = '';
+
   /// Tạo object từ JSON
   factory ChucVu.fromJson(Map<String, dynamic> json) {
     return ChucVu(
