@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 abstract class AssetHandoverEvent extends Equatable {
   const AssetHandoverEvent();
@@ -14,14 +16,24 @@ class GetListAssetHandoverEvent extends AssetHandoverEvent {
   List<Object?> get props => [context];
 }
 
-class CreateAssetHandoverEvent extends AssetHandoverEvent {
+class SendToSignerAsetHandoverEvent extends AssetHandoverEvent {
   final BuildContext context;
-  final Map<String, dynamic> request;
+  final List<AssetHandoverDto> params;
 
-  const CreateAssetHandoverEvent(this.context, this.request);
+  const SendToSignerAsetHandoverEvent(this.context, this.params);
 
   @override
-  List<Object?> get props => [context, request];
+  List<Object?> get props => [context, params];
+}
+
+class CreateAssetHandoverEvent extends AssetHandoverEvent {
+  final Map<String, dynamic> request;
+  final List<SignatoryDto> listSignatory;
+
+  const CreateAssetHandoverEvent(this.request, this.listSignatory);
+
+  @override
+  List<Object?> get props => [request, listSignatory];
 }
 
 class UpdateAssetHandoverEvent extends AssetHandoverEvent {
@@ -50,11 +62,13 @@ class UpdateSigningStatusEvent extends AssetHandoverEvent {
   final BuildContext context;
   final String id;
   final String userId;
+  final List<Map<String, dynamic>> request;
+  final String idDieuChuyen;
 
-  const UpdateSigningStatusEvent(this.context, this.id, this.userId);
+  const UpdateSigningStatusEvent(this.context, this.id, this.userId, this.request, this.idDieuChuyen);
 
   @override
-  List<Object?> get props => [context, id, userId];
+  List<Object?> get props => [context, id, userId, request, idDieuChuyen];
 }
 
 //Hủy phiếu ký nội sinh

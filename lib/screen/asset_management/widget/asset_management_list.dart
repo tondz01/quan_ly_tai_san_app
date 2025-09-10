@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
@@ -29,6 +27,7 @@ class AssetManagementList extends StatefulWidget {
 
 class _AssetManagementListState extends State<AssetManagementList> {
   late List<ColumnDisplayOption> columnOptions;
+  ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
     'code_asset',
     'name_asset',
@@ -302,7 +301,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetManagementDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -339,36 +338,60 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   fontSize: 16,
                 ),
               ),
-              Divider(),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  spacing: 16,
-                  children: [
-                    ...widget.provider.dataGroup!.map(
-                      (item) => ItemAssetGroup(
-                        titleName: item.tenNhom,
-                        numberAsset: getCountAssetByAssetManagement(
-                          widget.provider.data!,
-                          '${item.id}',
+              Visibility(
+                visible: widget.provider.dataGroup?.isNotEmpty ?? false,
+                child: Divider(),
+              ),
+              Visibility(
+                visible: widget.provider.dataGroup?.isEmpty ?? true,
+                child: Center(
+                  child: SGText(
+                    text: 'Không có loại tài sản nào',
+                    color: ColorValue.link,
+                    size: 14,
+                  ),
+                ),
+              ),
+              Scrollbar(
+                controller: horizontalController,
+                thumbVisibility: true,
+                thickness: 4,
+                notificationPredicate:
+                    (notification) =>
+                        notification.metrics.axis == Axis.horizontal,
+                child: SingleChildScrollView(
+                  controller: horizontalController,
+                  scrollDirection: Axis.horizontal,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 13.0),
+                    child: Row(
+                      spacing: 16,
+                      children: [
+                        ...widget.provider.dataGroup!.map(
+                          (item) => ItemAssetGroup(
+                            titleName: item.tenNhom,
+                            numberAsset: getCountAssetByAssetManagement(
+                              widget.provider.data!,
+                              '${item.id}',
+                            ),
+                            image: "assets/images/assets.png",
+                            onTap: () {
+                              context.go(AppRoute.staffManager.path);
+                            },
+                            valueCheckBox: widget.provider.getCheckBoxStatus(
+                              item.id,
+                            ),
+                            onChange: (value) {
+                              widget.provider.updateCheckBoxStatus(
+                                item.id,
+                                value,
+                              );
+                            },
+                          ),
                         ),
-                        image: "assets/images/assets.png",
-                        onTap: () {
-                          context.go(AppRoute.staffManager.path);
-                        },
-                        valueCheckBox: widget.provider.getCheckBoxStatus(
-                          item.id,
-                        ),
-                        onChange: (value) {
-                          log('message ItemAssetGroup: $value');
-                          widget.provider.updateCheckBoxStatus(item.id, value);
-                          log(
-                            'widget.provider.getCheckBoxStatus: ${widget.provider.getCheckBoxStatus(item.id)}',
-                          );
-                        },
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -501,9 +524,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
               data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
               getters: getters,
-              startDate: DateTime.tryParse(
-                widget.provider.filteredData?.first.ngayTao ?? '',
-              ),
+              startDate: widget.provider.filteredData?.isNotEmpty ?? false
+                  ? DateTime.tryParse(
+                      widget.provider.filteredData?.first.ngayTao ?? '',
+                    )
+                  : null,
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
               },
@@ -529,7 +554,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 type: ConfirmType.delete,
                 title: 'Xóa nhóm tài sản',
                 message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom!,
+                highlight: item.tenNhom ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {

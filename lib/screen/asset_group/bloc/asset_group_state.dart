@@ -24,12 +24,11 @@ class GetListAssetGroupSuccessState extends AssetGroupState {
 }
 
 class CreateAssetGroupSuccessState extends AssetGroupState {
-  final String data;
 
-  const CreateAssetGroupSuccessState({required this.data});
+  const CreateAssetGroupSuccessState();
 
   @override
-  List<Object> get props => [data];
+  List<Object> get props => [];
 }
 
 class GetListAssetGroupFailedState extends AssetGroupState {

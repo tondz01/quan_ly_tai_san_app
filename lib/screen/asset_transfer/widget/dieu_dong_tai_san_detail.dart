@@ -9,18 +9,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/controllers/asset_transfer_controllers.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/state/asset_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/validation/asset_transfer_validation.dart';
@@ -72,6 +76,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   final Map<String, TextEditingController> contractTermsControllers = {};
   final List<DieuDongTaiSanDto> listAssetHandover = [];
   PdfDocument? _document;
+  List<AssetManagementDto> assetByDepartment = [];
 
   bool _validateForm() {
     return validation.validateForm(
@@ -110,9 +115,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
-    SGLog.info("LoadPdfNetwork","Loading PDF from network: $nameFile");
+    SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
     try {
-      final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
       setState(() {
         _document = document;
       });
@@ -186,13 +193,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = ChiTietDieuDongTaiSanRepository();
+
+      // Xóa các chi tiết cũ
       for (final d in state.initialDetails) {
         if (d.id.isNotEmpty) {
-          await repo.delete(d.id);
+          final deleteResult = await repo.delete(d.id);
+          log('Delete detail result: $deleteResult');
         }
       }
+
+      // Tạo các chi tiết mới
       for (final d in state.listNewDetails) {
-        await repo.create(
+        final createResult = await repo.create(
           ChiTietDieuDongTaiSan(
             id: d.id,
             idDieuDongTaiSan: idDieuDongTaiSan,
@@ -211,10 +223,22 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             isActive: d.isActive,
           ),
         );
+        log('Create detail result: $createResult');
       }
     } catch (e) {
       log('Sync details error: $e');
     }
+  }
+
+  bool _signatoriesChanged() {
+    if (state.item == null) return state.additionalSignersDetailed.isNotEmpty;
+    final beforeJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(state.initialSignersDetailed),
+    );
+    final afterJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(state.additionalSignersDetailed),
+    );
+    return beforeJson != afterJson;
   }
 
   @override
@@ -228,22 +252,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
     return MultiBlocListener(
       listeners: [
-        // Lắng nghe từ AssetHandoverBloc
         BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
           listener: (context, state) {
             if (state is GetListDieuDongTaiSanSuccessState) {
-              // Handle successful data loading
               listAssetHandover.clear();
               listAssetHandover.addAll(state.data);
-              log('Asset handover data loaded successfully');
             } else if (state is GetListDieuDongTaiSanFailedState) {
             } else if (state is DieuDongTaiSanLoadingState) {
-              // Show loading indicator
               setState(() {
                 this.state.isUploading = true;
               });
             } else if (state is DieuDongTaiSanLoadingDismissState) {
-              // Hide loading indicator
               setState(() {
                 this.state.isUploading = false;
               });
@@ -282,6 +301,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     },
                   ),
                 ),
+
                 const SizedBox(width: 8),
                 Visibility(
                   visible: state.isEditing,
@@ -314,7 +334,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 Visibility(
                   visible:
                       state.item != null &&
-                      ![0, 5, 6].contains(state.item!.trangThai),
+                      ![0, 2, 3].contains(state.item!.trangThai),
                   child: MaterialTextButton(
                     text: 'Hủy phiếu ${widget.provider.getScreenTitle()}',
                     icon: Icons.cancel,
@@ -351,15 +371,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
             const SizedBox(width: 5),
             SgIndicator(
-              steps: [
-                'Nháp',
-                'Chờ xác nhận',
-                'Xác nhận',
-                'Chờ duyệt',
-                'Duyệt',
-                'Hủy',
-                'Hoàn thành',
-              ],
+              steps: ['Nháp', 'Duyệt', 'Hủy', 'Hoàn thành'],
               fontSize: 10,
               currentStep: state.item?.trangThai ?? 0,
             ),
@@ -387,7 +399,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                         CommonFormInput(
                           label: 'Số chứng từ',
                           controller: controllers.controllerSoChungTu,
-                          isEditing: false,
+                          isEditing: state.isEditing,
                           textContent: controllers.controllerSoChungTu.text,
                           fieldName: 'soChungTu',
                           validationErrors: validation.validationErrors,
@@ -427,7 +439,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           fieldName: 'delivering_unit',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('delivering_unit selected: $value');
                             setState(() {
                               state.donViGiao = value;
                               state.listStaffByDepartment =
@@ -438,6 +449,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                             state.donViGiao!.id,
                                       )
                                       .toList();
+                              assetByDepartment =
+                                  widget.provider.dataAsset.where((element) {
+                                    return element.idDonViHienThoi ==
+                                        state.donViGiao!.id;
+                                  }).toList();
                             });
                           },
                         ),
@@ -445,7 +461,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           label: 'at.receiving_unit'.tr,
                           controller: controllers.controllerReceivingUnit,
                           isEditing: state.isEditing,
-
+                          value: state.donViNhan,
                           items: widget.provider.itemsDDPhongBan,
                           defaultValue:
                               controllers
@@ -461,183 +477,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             log('receivingUnit selected: $value');
                             state.donViNhan = value;
-                          },
-                        ),
-                        CmFormDropdownObject<NhanVien>(
-                          label: 'at.requester'.tr,
-                          controller: controllers.controllerRequester,
-                          isEditing: state.isEditing,
-
-                          items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllers.controllerRequester.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllers.controllerRequester.text,
-                                  )
-                                  : null,
-                          fieldName: 'requester',
-                          validationErrors: validation.validationErrors,
-                          onChanged: (value) {
-                            log('requester selected: $value');
-                            setState(() {
-                              state.donViDeNghi = widget.provider
-                                  .getPhongBanByID(value.phongBanId ?? '');
-                              controllers.controllerProposingUnit.text =
-                                  state.donViDeNghi?.tenPhongBan ?? '';
-                              state.nguoiDeNghi = value;
-                            });
-                          },
-                        ),
-                        CommonCheckboxInput(
-                          label: 'at.preparer_initialed'.tr,
-                          value: state.isNguoiLapPhieuKyNhay,
-                          isEditing: state.isEditing,
-                          isDisabled: !state.isEditing,
-                          onChanged: (newValue) {
-                            setState(() {
-                              state.isNguoiLapPhieuKyNhay = newValue;
-                            });
-                          },
-                        ),
-                        CommonCheckboxInput(
-                          label: 'at.require_manager_approval'.tr,
-                          value: state.isQuanTrongCanXacNhan,
-                          isEditing: state.isEditing,
-                          isDisabled: !state.isEditing,
-                          onChanged: (newValue) {
-                            setState(() {
-                              log('donViGiao: ${state.donViGiao}');
-                              if (state.donViGiao == null) {
-                                AppUtility.showSnackBar(
-                                  context,
-                                  'Vui lòng chọn đơn vị giao trước.',
-                                  isError: true,
-                                );
-                                return;
-                              }
-                              state.isQuanTrongCanXacNhan = newValue;
-                              if (!state.isQuanTrongCanXacNhan) {
-                                state.isPhoPhongXacNhan = false;
-                              }
-                            });
-                          },
-                        ),
-                        Visibility(
-                          visible: state.isQuanTrongCanXacNhan,
-                          child: CmFormDropdownObject<NhanVien>(
-                            label: 'Trưởng phòng xác nhận',
-                            controller: controllers.controllerTPDonViGiao,
-                            isEditing: state.isEditing,
-
-                            items: [
-                              ...state.listStaffByDepartment.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.hoTen ?? ''),
-                                ),
-                              ),
-                            ],
-                            defaultValue:
-                                controllers
-                                        .controllerTPDonViGiao
-                                        .text
-                                        .isNotEmpty
-                                    ? widget.provider.getNhanVienByID(
-                                      controllers.controllerTPDonViGiao.text,
-                                    )
-                                    : null,
-                            fieldName: 'tPDonViGiao',
-                            validationErrors: validation.validationErrors,
-                            value: state.tPDonViGiao,
-                            onChanged: (value) {
-                              setState(() {
-                                state.tPDonViGiao = value;
-                              });
-                            },
-                          ),
-                        ),
-                        if (state.isQuanTrongCanXacNhan)
-                          CommonCheckboxInput(
-                            label: 'at.deputy_confirmed'.tr,
-                            value: state.isPhoPhongXacNhan,
-                            isEditing: state.isEditing,
-                            isDisabled: !state.isEditing,
-                            onChanged: (newValue) {
-                              setState(() {
-                                state.isPhoPhongXacNhan = newValue;
-                              });
-                            },
-                          ),
-                        Visibility(
-                          visible: state.isPhoPhongXacNhan,
-                          child: CmFormDropdownObject<NhanVien>(
-                            label: 'Phó phòng xác nhận',
-                            controller: controllers.controllerPPDonViNhan,
-                            isEditing: state.isEditing,
-
-                            items: [
-                              ...state.listStaffByDepartment.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.hoTen ?? ''),
-                                ),
-                              ),
-                            ],
-                            defaultValue:
-                                controllers
-                                        .controllerPPDonViNhan
-                                        .text
-                                        .isNotEmpty
-                                    ? widget.provider.getNhanVienByID(
-                                      controllers.controllerPPDonViNhan.text,
-                                    )
-                                    : null,
-                            fieldName: 'pPDonViNhan',
-                            validationErrors: validation.validationErrors,
-                            onChanged: (value) {
-                              setState(() {
-                                state.pPDonViGiao = value;
-                              });
-                            },
-                          ),
-                        ),
-                        CommonFormInput(
-                          label: 'at.proposing_unit'.tr,
-                          controller: controllers.controllerProposingUnit,
-                          isEditing: false,
-                          textContent: state.proposingUnit ?? '',
-                          inputType: TextInputType.number,
-                          validationErrors: validation.validationErrors,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  Expanded(
-                    child: Column(
-                      children: [
-                        CmFormDropdownObject<NhanVien>(
-                          label: 'at.department_approval'.tr,
-                          controller: controllers.controllerDepartmentApproval,
-                          isEditing: state.isEditing,
-                          value: state.nguoiKyCapPhong,
-                          items: widget.provider.itemsDDNhanVien,
-                          defaultValue:
-                              controllers
-                                      .controllerDepartmentApproval
-                                      .text
-                                      .isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllers
-                                        .controllerDepartmentApproval
-                                        .text,
-                                  )
-                                  : null,
-                          fieldName: 'departmentApproval',
-                          validationErrors: validation.validationErrors,
-                          onChanged: (value) {
-                            log('department_approval selected: $value');
-                            state.nguoiKyCapPhong = value;
                           },
                         ),
                         CmFormDate(
@@ -674,12 +513,169 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                   )
                                   : DateTime.now(),
                         ),
-                        CmFormDropdownObject<NhanVien>(
-                          label: 'at.approver'.tr,
-                          controller: controllers.controllerApprover,
+                      ],
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        CmFormDropdownObject<PhongBan>(
+                          label: 'Đơn vị đề nghị'.tr,
+                          controller: controllers.controllerProposingUnit,
                           isEditing: state.isEditing,
+                          value: state.donViDeNghi,
+                          items: widget.provider.itemsDDPhongBan,
+                          defaultValue:
+                              controllers
+                                      .controllerProposingUnit
+                                      .text
+                                      .isNotEmpty
+                                  ? widget.provider.getPhongBanByID(
+                                    controllers.controllerProposingUnit.text,
+                                  )
+                                  : null,
+                          fieldName: 'receivingUnit',
+                          validationErrors: validation.validationErrors,
+                          onChanged: (value) {
+                            setState(() {
+                              state.donViDeNghi = value;
+                              state.listNhanVienThamMuu =
+                                  widget.provider.dataNhanVien
+                                      .where(
+                                        (e) =>
+                                            e.phongBanId ==
+                                            state.donViDeNghi?.id,
+                                      )
+                                      .toList();
+                              log(
+                                'message listNhanVienThamMuu: $state.listNhanVienThamMuu',
+                              );
+                            });
+                          },
+                        ),
+
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'Người lập phiếu',
+                          controller: controllers.controllerRequester,
+                          isEditing: state.isEditing,
+                          value: state.nguoiDeNghi,
+                          items: [
+                            ...state.listNhanVienThamMuu.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          defaultValue:
+                              controllers.controllerRequester.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllers.controllerRequester.text,
+                                  )
+                                  : null,
+                          fieldName: 'requester',
+                          validationErrors: validation.validationErrors,
+                          onChanged: (value) {
+                            setState(() {
+                              state.nguoiDeNghi = value;
+                              state.donViDeNghi = widget.provider
+                                  .getPhongBanByID(value.phongBanId ?? '');
+                              // controllers.controllerProposingUnit.text =
+                              //     state.donViDeNghi?.tenPhongBan ?? '';
+                              // state.donThamMuu = widget.provider
+                              //     .getPhongBanByID(value.phongBanId ?? '');
+                            });
+                          },
+                        ),
+                        CommonCheckboxInput(
+                          label: 'at.preparer_initialed'.tr,
+                          value: state.isNguoiLapPhieuKyNhay,
+                          isEditing: state.isEditing,
+                          isDisabled: !state.isEditing,
+                          onChanged: (newValue) {
+                            setState(() {
+                              state.isNguoiLapPhieuKyNhay = newValue;
+                            });
+                          },
+                        ),
+
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'Người duyệt',
+                          controller: controllers.controllerDepartmentApproval,
+                          isEditing:
+                              state.isEditing && state.donViDeNghi != null,
+                          value: state.nguoiKyCapPhong,
+                          items: [
+                            ...state.listNhanVienThamMuu.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          defaultValue:
+                              controllers
+                                      .controllerDepartmentApproval
+                                      .text
+                                      .isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllers
+                                        .controllerDepartmentApproval
+                                        .text,
+                                  )
+                                  : null,
+                          fieldName: 'departmentApproval',
+                          validationErrors: validation.validationErrors,
+                          onChanged: (value) {
+                            state.nguoiKyCapPhong = value;
+                          },
+                        ),
+AdditionalSignersSelector(
+                          addButtonText: "Thêm đơn bị đại diện",
+                          labelDepartment: "Đơn vị đại diện",
+                          labelSigned: 'Người đại diện',
+                          isEditing: state.isEditing,
+                          itemsNhanVien: [
+                            ...state.listNhanVien.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          phongBan: widget.provider.dataPhongBan,
+                          listNhanVien: state.listNhanVien,
+                          initialSigners: state.additionalSigners,
+                          onChanged: (list) {
+                            setState(() {
+                              state.additionalSigners
+                                ..clear()
+                                ..addAll(list);
+                            });
+                          },
+                          initialSignerData: state.additionalSignersDetailed,
+                          onChangedDetailed: (list) {
+                            setState(() {
+                              state.additionalSignersDetailed = list;
+                              log('message test1 list: ${jsonEncode(list)}');
+                            });
+                          },
+                        ),
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'Người phê duyệt',
+                          controller: controllers.controllerApprover,
+                          isEditing:
+                              state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyGiamDoc,
-                          items: widget.provider.itemsDDNhanVien,
+                          items: [
+                            ...state.nvPhongGD.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
                           defaultValue:
                               controllers.controllerApprover.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
@@ -728,7 +724,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 context,
                 isEditing: state.isEditing,
                 initialDetails: state.item?.chiTietDieuDongTaiSans ?? [],
-                allAssets: widget.provider.dataAsset ?? [],
+                allAssets: assetByDepartment,
                 onDataChanged: (data) {
                   setState(() {
                     state.listNewDetails =
@@ -743,7 +739,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 soQuyetDinh: state.item?.soQuyetDinh ?? '',
                                 tenPhieu:
                                     controllers.controllerDocumentName.text,
-                                idTaiSan: e.id ?? '',
+                                idTaiSan:
+                                    e.id?.replaceAll(RegExp(r"\s+"), "") ?? '',
                                 tenTaiSan: e.tenTaiSan ?? '',
                                 donViTinh: e.donViTinh ?? '',
                                 hienTrang: e.hienTrang ?? 0,
@@ -811,24 +808,22 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: this.state.donViGiao?.id ?? '',
       idDonViNhan: this.state.donViNhan?.id ?? '',
-      idNguoiDeNghi: this.state.nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: this.state.nguoiDeNghi?.id ?? '',
+      trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: this.state.isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: this.state.isQuanTrongCanXacNhan,
-      phoPhongXacNhan: this.state.isPhoPhongXacNhan,
       idDonViDeNghi: this.state.donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: this.state.nguoiKyCapPhong?.id ?? '',
-      tggnTuNgay:
+      tgGnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDate.text,
           ).toIso8601String(),
-      tggnDenNgay:
+      tgGnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDateTo.text,
           ).toIso8601String(),
       idTrinhDuyetGiamDoc: this.state.nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllers.controllerDeliveryLocation.text,
       idPhongBanXemPhieu: this.state.nguoiKyCapPhong?.id ?? '',
-      idNhanSuXemPhieu: this.state.nguoiKyGiamDoc?.id ?? '',
       noiNhan: '',
       trangThai: state,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
@@ -836,19 +831,16 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: type,
-      isActive: true,
-      idTruongPhongDonViGiao: this.state.tPDonViGiao?.id ?? '',
-      idPhoPhongDonViGiao: this.state.pPDonViGiao?.id ?? '',
-      truongPhongDonViGiaoXacNhan: false,
-      phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
       trichYeu: controllers.controllerSubject.text,
-      duongDanFile: this.state.selectedFilePath ?? '',
+      duongDanFile: this.state.selectedFileName ?? '',
       tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
+      share: false,
+      daBanGiao: false,
     );
   }
 
@@ -862,10 +854,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenPhieu: controllers.controllerDocumentName.text,
       idDonViGiao: state.donViGiao?.id ?? '',
       idDonViNhan: state.donViNhan?.id ?? '',
-      idNguoiDeNghi: state.nguoiDeNghi?.id ?? '',
+      idNguoiKyNhay: state.nguoiDeNghi?.id ?? '',
+      tenNguoiKyNhay: state.nguoiDeNghi?.hoTen ?? '',
       nguoiLapPhieuKyNhay: state.isNguoiLapPhieuKyNhay,
-      quanTrongCanXacNhan: state.isQuanTrongCanXacNhan,
-      phoPhongXacNhan: state.isPhoPhongXacNhan,
+      quanTrongCanXacNhan: false,
+      phoPhongXacNhan: false,
       idDonViDeNghi: state.donViDeNghi?.id ?? '',
       idTrinhDuyetCapPhong: state.nguoiKyCapPhong?.id ?? '',
       tggnTuNgay:
@@ -887,7 +880,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       ngayCapNhat: DateTime.now().toIso8601String(),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: type,
       isActive: true,
       trichYeu: controllers.controllerSubject.text,
@@ -917,6 +910,21 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         .toList();
   }
 
+  List<SignatoryDto> _createListSignatory() {
+    return state.additionalSignersDetailed
+        .map(
+          (e) => SignatoryDto(
+            id: UUIDGenerator.generateWithFormat('NK-************'),
+            idTaiLieu: controllers.controllerSoChungTu.text,
+            idNguoiKy: e.employee?.id ?? '',
+            idPhongBan: e.department?.id ?? '',
+            tenNguoiKy: e.employee?.hoTen ?? '',
+            trangThai: 0,
+          ),
+        )
+        .toList();
+  }
+
   Future<void> _handleSave() async {
     if (!state.isEditing) return;
     if (!_validateForm()) {
@@ -928,15 +936,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       );
       return;
     }
-    // final bloc = context.read<DieuDongTaiSanBloc>();
     if (state.item == null) {
-      final request = _createDieuDongRequest(widget.type, getState());
+      final request = _createDieuDongRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
-      // bloc.add(CreateDieuDongEvent(context, request));
+      final listSignatory = _createListSignatory();
       widget.provider.saveAssetTransfer(
         context,
         request,
         requestDetail,
+        listSignatory,
         state.selectedFileName ?? '',
         state.selectedFilePath ?? '',
         _selectedFileBytes ?? Uint8List(0),
@@ -946,22 +954,29 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         widget.type,
         state.item!.trangThai ?? 0,
       );
-      int trangThai = state.item!.trangThai == 5 ? 1 : state.item!.trangThai!;
+      int trangThai = state.item!.trangThai == 2 ? 0 : state.item!.trangThai!;
       LenhDieuDongRequest newRequest = request.copyWith(
-        truongPhongDonViGiaoXacNhan:
-            state.item!.truongPhongDonViGiaoXacNhan ?? false,
-        phoPhongDonViGiaoXacNhan: state.item!.phoPhongDonViGiaoXacNhan ?? false,
         trinhDuyetCapPhongXacNhan:
             state.item!.trinhDuyetCapPhongXacNhan ?? false,
         trinhDuyetGiamDocXacNhan: state.item!.trinhDuyetGiamDocXacNhan ?? false,
         ngayKy: state.item!.ngayKy ?? DateTime.now().toIso8601String(),
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
         trangThai: trangThai,
+        daBanGiao: state.item!.daBanGiao ?? false,
       );
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {
         await _syncDetails(state.item!.id!);
       }
+
+      // Thêm dòng này - Cập nhật người ký nếu có thay đổi
+      if (_signatoriesChanged()) {
+        await UpdateSignerData().syncSignatories(
+          state.item!.id!,
+          state.additionalSignersDetailed,
+        );
+      }
+
       if (mounted) {
         context.read<DieuDongTaiSanBloc>().add(
           UpdateDieuDongEvent(context, newRequest, state.item!.id!),
@@ -970,22 +985,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     }
   }
 
-  int getState() {
-    int state = 0;
-    if (!this.state.isNguoiLapPhieuKyNhay &&
-        !this.state.isQuanTrongCanXacNhan) {
-      state = 3;
-    } else if (!this.state.isNguoiLapPhieuKyNhay) {
-      state = 1;
-    } else if (this.state.isNguoiLapPhieuKyNhay) {
-      state = 0;
-    }
-    return state;
-  }
-
   bool editable() {
     return (state.item != null &&
-        (state.item!.trangThai == 0 || state.item!.trangThai == 5) &&
+        (state.item!.trangThai == 0 || state.item!.trangThai == 2) &&
         state.item!.nguoiTao == widget.provider.userInfo?.tenDangNhap);
   }
 
@@ -998,7 +1000,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       state.item = widget.provider.item;
       state.isNew = state.item == null;
       state.messageEditing = null;
-
+      state.nvPhongGD =
+          widget.provider.dataNhanVien
+              .where((e) => e.phongBanId == 'P21')
+              .toList();
+      state.listNhanVien = widget.provider.dataNhanVien;
       // Reset editing state
       state.isEditing = widget.isEditing;
       if (editable()) {
@@ -1009,7 +1015,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         // }
         state.isEditing = false;
       }
-      log('message state.isEditing ${state.isEditing}');
       if (state.item != null) {
         controllers.controllerSoChungTu.text = state.item?.id ?? '';
         controllers.controllerSubject.text = state.item?.trichYeu ?? '';
@@ -1043,15 +1048,18 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == state.donViGiao!.id)
                 .toList();
-
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          state.item?.idDonViDeNghi ?? '',
+        );
+        state.listNhanVienThamMuu =
+            widget.provider.dataNhanVien
+                .where((e) => e.phongBanId == state.donViDeNghi?.id)
+                .toList();
+        state.nguoiDeNghi = widget.provider.getNhanVienByID(
+          state.item?.idNguoiKyNhay ?? '',
+        );
         state.donViNhan = widget.provider.getPhongBanByID(
           state.item?.idDonViNhan ?? '',
-        );
-        state.pPDonViGiao = widget.provider.getNhanVienByID(
-          state.item?.idPhoPhongDonViGiao ?? '',
-        );
-        state.tPDonViGiao = widget.provider.getNhanVienByID(
-          state.item?.idTruongPhongDonViGiao ?? '',
         );
         state.nguoiKyCapPhong = widget.provider.getNhanVienByID(
           state.item?.idTrinhDuyetCapPhong ?? '',
@@ -1059,19 +1067,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.nguoiKyGiamDoc = widget.provider.getNhanVienByID(
           state.item?.idTrinhDuyetGiamDoc ?? '',
         );
-        state.donViDeNghi = widget.provider.getPhongBanByID(
-          state.item?.idDonViDeNghi ?? '',
-        );
-        state.nguoiDeNghi = widget.provider.getNhanVienByID(
-          state.item?.idNguoiDeNghi ?? '',
-        );
+        controllers.controllerApprover.text = state.nguoiKyGiamDoc?.id ?? '';
+        controllers.controllerDepartmentApproval.text =
+            state.nguoiKyCapPhong?.id ?? '';
 
         // Initialize selected file if available
         state.selectedFileName = state.item?.tenFile;
         state.selectedFilePath = state.item?.duongDanFile;
         state.isNguoiLapPhieuKyNhay = state.item?.nguoiLapPhieuKyNhay ?? false;
-        state.isQuanTrongCanXacNhan = state.item?.quanTrongCanXacNhan ?? false;
-        state.isPhoPhongXacNhan = state.item?.phoPhongXacNhan ?? false;
         state.proposingUnit = state.item?.tenDonViDeNghi;
 
         // Lưu snapshot chi tiết ban đầu để so sánh
@@ -1079,11 +1082,43 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
 
+        // Thêm phần này - Lưu snapshot signatories ban đầu để so sánh
+        state.initialSignersDetailed = List<AdditionalSignerData>.from(
+          state.item?.listSignatory
+                  ?.map(
+                    (e) => AdditionalSignerData(
+                      department: widget.provider.getPhongBanByID(
+                        e.idPhongBan ?? '',
+                      ),
+                      employee: widget.provider.getNhanVienByID(
+                        e.idNguoiKy ?? '',
+                      ),
+                    ),
+                  )
+                  .toList() ??
+              [],
+        );
+
         state.listNewDetails = List<ChiTietDieuDongTaiSan>.from(
           state.item?.chiTietDieuDongTaiSans ?? <ChiTietDieuDongTaiSan>[],
         );
         state.controllersInitialized = true;
-
+        state.additionalSignersDetailed.clear();
+        state.additionalSignersDetailed =
+            state.item?.listSignatory
+                ?.map(
+                  (e) => AdditionalSignerData(
+                    department: widget.provider.getPhongBanByID(
+                      e.idPhongBan ?? '',
+                    ),
+                    employee: widget.provider.getNhanVienByID(
+                      e.idNguoiKy ?? '',
+                    ),
+                    signed: e.trangThai == 1,
+                  ),
+                )
+                .toList() ??
+            [];
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
         controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
@@ -1105,30 +1140,36 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.selectedFileName = null;
         state.selectedFilePath = null;
         state.isNguoiLapPhieuKyNhay = false;
-        state.isQuanTrongCanXacNhan = false;
-        state.isPhoPhongXacNhan = false;
         state.donViGiao = null;
         state.donViNhan = null;
-        state.donViDeNghi = null;
-        state.nguoiDeNghi = widget.provider.getNhanVienByID(
-          widget.provider.userInfo?.tenDangNhap ?? '',
+        NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(
+          (e) => e.id == widget.provider.userInfo?.tenDangNhap,
+          orElse: () => NhanVien(),
         );
-        state.tPDonViGiao = null;
-        state.pPDonViGiao = null;
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          nhanVienLogin.phongBanId ?? '',
+        );
+        state.listNhanVienThamMuu =
+            widget.provider.dataNhanVien
+                .where((e) => e.phongBanId == state.donViDeNghi?.id)
+                .toList();
+
+        state.nguoiDeNghi = nhanVienLogin;
+        controllers.controllerRequester.text = state.nguoiDeNghi?.hoTen ?? '';
         state.nguoiKyCapPhong = null;
         state.nguoiKyGiamDoc = null;
+        state.additionalSignersDetailed.clear();
+        state.initialSignersDetailed.clear(); // Thêm dòng này
       }
 
       if (state.proposingUnit != null &&
           state.proposingUnit!.isNotEmpty &&
           !state.controllersInitialized) {
-        controllers.controllerProposingUnit.text = state.proposingUnit!;
+        // controllers.controllerProposingUnit.text = state.proposingUnit!;
       }
 
       // Reset các biến trạng thái
       state.isNguoiLapPhieuKyNhay = state.item?.nguoiLapPhieuKyNhay ?? false;
-      state.isQuanTrongCanXacNhan = state.item?.quanTrongCanXacNhan ?? false;
-      state.isPhoPhongXacNhan = state.item?.phoPhongXacNhan ?? false;
       state.proposingUnit = state.item?.tenDonViDeNghi;
 
       // Reset file upload

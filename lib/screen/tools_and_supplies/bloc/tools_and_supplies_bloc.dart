@@ -85,7 +85,7 @@ class ToolsAndSuppliesBloc
     Map<String, dynamic> result = await ToolsAndSuppliesRepository()
         .createToolsAndSupplies(event.params);
 
-    Map<String, dynamic> resultAssetDetail = await AssetManagementRepository()
+    Map<String, dynamic> resultAssetDetail = await AssetManagementDetailRepository()
         .createAssetDetail(event.listAssetDetail);
 
     emit(ToolsAndSuppliesLoadingDismissState());
@@ -127,11 +127,11 @@ class ToolsAndSuppliesBloc
       event.params,
     );
 
-    Map<String, dynamic> resultAssetDetail = await AssetManagementRepository()
+    Map<String, dynamic> resultAssetDetail = await AssetManagementDetailRepository()
         .createAssetDetail(event.listAssetDetail);
 
     Map<String, dynamic> resultDeleteAssetDetail =
-        await AssetManagementRepository().deleteAssetDetail(
+        await AssetManagementDetailRepository().deleteAssetDetail(
           event.listIdAssetDetail,
         );
 
@@ -173,7 +173,7 @@ class ToolsAndSuppliesBloc
     final result = await ToolsAndSuppliesRepository().deleteToolsAndSupplies(
       event.id,
     );
-    final resultAssetDetail = await AssetManagementRepository()
+    final resultAssetDetail = await AssetManagementDetailRepository()
         .deleteAssetDetail(event.listIdAssetDetail);
     emit(ToolsAndSuppliesLoadingDismissState());
     if (checkStatusCodeDone(result)) {

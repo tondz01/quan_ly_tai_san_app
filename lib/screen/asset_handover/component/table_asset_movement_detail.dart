@@ -16,7 +16,6 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
   final ScrollController _scrollController = ScrollController();
   bool isExpanded = true;
   String getHienTrang(int hienTrang) {
-    log('hienTrang: $hienTrang');
     switch (hienTrang) {
       case 0:
         return 'Đang sử dụng';

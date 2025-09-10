@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 
 class ToolsAndSuppliesDto {
   String id;
@@ -27,6 +28,7 @@ class ToolsAndSuppliesDto {
   List<DetailAssetDto> chiTietTaiSanList;
   int soLuongXuat;
   bool isActive;
+  List<OwnershipUnitDetailDto> detailOwnershipUnit;
 
   ToolsAndSuppliesDto({
     required this.id,
@@ -53,6 +55,7 @@ class ToolsAndSuppliesDto {
     required this.isActive,
     this.chiTietTaiSanList = const [],
     this.soLuongXuat = 0,
+    this.detailOwnershipUnit = const [],
   });
 
   factory ToolsAndSuppliesDto.fromJson(Map<String, dynamic> json) {
@@ -95,6 +98,12 @@ class ToolsAndSuppliesDto {
                   .toList()
               : [],
       soLuongXuat: json['soLuongXuat'] ?? 0,
+      detailOwnershipUnit:
+          json['detailOwnershipUnit'] != null
+              ? (json['detailOwnershipUnit'] as List)
+                  .map((item) => OwnershipUnitDetailDto.fromJson(item))
+                  .toList()
+              : [],
     );
   }
 
@@ -120,6 +129,8 @@ class ToolsAndSuppliesDto {
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'soLuongXuat': soLuongXuat.toString(),
+      'chiTietTaiSanList': chiTietTaiSanList.map((e) => e.toJson()).toList(),
+      'detailOwnershipUnit': detailOwnershipUnit.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -149,6 +160,7 @@ class ToolsAndSuppliesDto {
       isActive: true,
       chiTietTaiSanList: [],
       soLuongXuat: 0,
+      detailOwnershipUnit: [],
     );
   }
 
@@ -192,6 +204,7 @@ class ToolsAndSuppliesDto {
     String? nguoiCapNhat,
     int? soLuongXuat,
     bool? isActive,
+    List<OwnershipUnitDetailDto>? detailOwnershipUnit,
   }) {
     return ToolsAndSuppliesDto(
       id: id ?? this.id,
@@ -217,6 +230,7 @@ class ToolsAndSuppliesDto {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
+      detailOwnershipUnit: detailOwnershipUnit ?? this.detailOwnershipUnit,
     );
   }
 }

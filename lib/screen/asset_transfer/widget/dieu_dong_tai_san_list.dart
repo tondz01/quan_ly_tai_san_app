@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
@@ -23,6 +24,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -45,7 +47,13 @@ class DieuDongTaiSanList extends StatefulWidget {
 
 class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isUploading = false;
+  bool isShowDetailDepartmentTree = false;
+
+  String nameBenBan = "";
+
   List<DieuDongTaiSanDto> selectedItems = [];
+  DieuDongTaiSanDto? selected;
+  List<ThreadNode> listSignatoryDetail = [];
   UserInfoDTO? userInfo;
 
   final List<AssetHandoverDto> listAssetHandover = [];
@@ -53,12 +61,15 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
+    'signing_status',
+    'share',
     'type',
-    'decision_date',
     'effective_date',
     'approver',
     'document',
     'id',
+    'decision_date',
+    'to_date',
     'status',
     'actions',
   ];
@@ -67,8 +78,28 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    isShowDetailDepartmentTree = false;
+    if (selected != null) {
+      _buildDetailDepartmentTree(selected!);
+    }
     _initializeColumnOptions();
     _callGetListAssetHandover();
+  }
+
+  @override
+  void didUpdateWidget(covariant DieuDongTaiSanList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      if (selected != null && widget.provider.dataPage != null) {
+        selected = widget.provider.dataPage?.firstWhere(
+          (element) => element.id == selected?.id,
+          orElse: () => DieuDongTaiSanDto(),
+        );
+        if (selected!.id != null) {
+          _buildDetailDepartmentTree(selected!);
+        }
+      }
+    });
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -90,15 +121,21 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
+        id: 'signing_status',
+        label: 'Trạng thái ký',
+        isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'share',
+        label: 'Chia sẻ',
+        isChecked: visibleColumnIds.contains('share'),
+      ),
+      ColumnDisplayOption(
         id: 'type',
         label: 'Phiếu ký nội sinh',
         isChecked: visibleColumnIds.contains('type'),
       ),
-      ColumnDisplayOption(
-        id: 'decision_date',
-        label: 'Ngày ký',
-        isChecked: visibleColumnIds.contains('decision_date'),
-      ),
+
       ColumnDisplayOption(
         id: 'effective_date',
         label: 'Ngày có hiệu lực',
@@ -120,8 +157,18 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         isChecked: visibleColumnIds.contains('id'),
       ),
       ColumnDisplayOption(
+        id: 'decision_date',
+        label: 'Thời gian giao nhận từ ngày',
+        isChecked: visibleColumnIds.contains('decision_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'to_date',
+        label: 'Thời gian giao nhận đến ngày',
+        isChecked: visibleColumnIds.contains('to_date'),
+      ),
+      ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái',
+        label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(
@@ -132,23 +179,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     ];
 
     getters = [
-      {
-        'Ngày tạo':
-            (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
-      },
-      {
-        'Ngày cập nhật':
-            (item) =>
-                DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
-      },
-      {
-        'Ngày ký':
-            (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
-      },
-      {
-        'Ngày ký':
-            (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
-      },
       {
         'Thời gian giao nhận từ ngày':
             (item) =>
@@ -168,21 +198,35 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'signing_status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Trạng thái ký',
+              cellBuilder: (item) => showSigningStatus(item),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'share':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Chia sẻ',
+              width: 150,
+              cellBuilder:
+                  (item) => ConfigViewAT.showShareStatus(
+                    item.share ?? false,
+                    item.nguoiTao == userInfo?.tenDangNhap,
+                  ),
+            ),
+          );
+          break;
         case 'type':
           columns.add(
             TableBaseConfig.columnTable<DieuDongTaiSanDto>(
               title: 'Phiếu ký nội sinh',
               width: 150,
               getValue: (item) => getName(item.loai ?? 0),
-            ),
-          );
-          break;
-        case 'decision_date':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Ngày ký',
-              width: 100,
-              getValue: (item) => item.ngayKy ?? '',
             ),
           );
           break;
@@ -231,10 +275,33 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             ),
           );
           break;
+        case 'decision_date':
+          columns.add(
+            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+              title: 'Thời gian giao nhận từ ngày',
+              width: 150,
+              getValue: (item) => item.tggnTuNgay ?? '',
+            ),
+          );
+          break;
+        case 'to_date':
+          columns.add(
+            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
+              title: 'Thời gian giao nhận đến ngày',
+              width: 150,
+              getValue: (item) {
+                if (item.tggnDenNgay == null) {
+                  return '';
+                }
+                return item.tggnDenNgay!;
+              },
+            ),
+          );
+          break;
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Trạng thái',
+              title: 'Trạng thái phiếu',
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
@@ -245,9 +312,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
-              width: 120,
+              width: 180,
               searchable: true,
             ),
           );
@@ -315,37 +382,72 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             ),
           ],
         ),
-        child: Column(
+        child: Row(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: headerList(),
-            ),
             Expanded(
-              child: TableBaseView<DieuDongTaiSanDto>(
-                searchTerm: '',
-                columns: columns,
-                data: widget.provider.dataPage ?? [],
-                horizontalController: ScrollController(),
-                getters: getters,
-                startDate: DateTime.tryParse(
-                  widget.provider.dataPage?.first.ngayTao ?? '',
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: headerList(),
+                  ),
+                  Expanded(
+                    child: TableBaseView<DieuDongTaiSanDto>(
+                      searchTerm: '',
+                      columns: columns,
+                      data: widget.provider.dataPage ?? [],
+                      horizontalController: ScrollController(),
+                      getters: getters,
+                      startDate: DateTime.tryParse(
+                        widget.provider.filteredData!.isNotEmpty
+                            ? widget.provider.filteredData!.first.tggnDenNgay
+                                .toString()
+                            : '',
+                      ),
+                      onRowTap: (item) {
+                        widget.provider.onChangeDetailDieuDongTaiSan(item);
+                        setState(() {
+                          nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
+                          isShowDetailDepartmentTree = true;
+                          _buildDetailDepartmentTree(item);
+                        });
+                      },
+                      onSelectionChanged: (items) {
+                        setState(() {
+                          selectedItems = items;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Department tree sidebar
+            Visibility(
+              visible: isShowDetailDepartmentTree,
+              child: Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.grey.shade600, width: 1),
+                  ),
                 ),
-                onRowTap: (item) {
-                  widget.provider.onChangeDetailDieuDongTaiSan(item);
-                },
-                onSelectionChanged: (items) {
-                  setState(() {
-                    selectedItems = items;
-                  });
-                },
+                child: DetailedDiagram(
+                  title: nameBenBan,
+                  sample: listSignatoryDetail,
+                  onHiden: () {
+                    setState(() {
+                      isShowDetailDepartmentTree = false;
+                    });
+                  },
+                ),
               ),
             ),
           ],
@@ -354,132 +456,183 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     );
   }
 
+  void _buildDetailDepartmentTree(DieuDongTaiSanDto item) {
+    listSignatoryDetail.clear();
+    selected = item;
+    listSignatoryDetail = [
+      ThreadNode(header: 'Trạng thái ký', depth: 0),
+      if (item.nguoiLapPhieuKyNhay == true)
+        ThreadNode(
+          header: 'Người ký nháy:',
+          depth: 1,
+          child: viewSignatoryStatus(
+            item.trangThaiKyNhay ?? false,
+            widget.provider
+                .getNhanVienByID(item.idNguoiKyNhay ?? '')
+                .hoTen
+                .toString(),
+          ),
+        ),
+      if (item.quanTrongCanXacNhan == true)
+        ThreadNode(
+          header: 'Trưởng phòng xác nhận:',
+          depth: 1,
+          child: viewSignatoryStatus(
+            item.truongPhongDonViGiaoXacNhan ?? false,
+            widget.provider
+                .getNhanVienByID(item.idTruongPhongDonViGiao ?? '')
+                .hoTen
+                .toString(),
+          ),
+        ),
+      if (item.phoPhongDonViGiaoXacNhan == true)
+        ThreadNode(
+          header: 'Phó phòng xác nhận:',
+          depth: 1,
+          child: viewSignatoryStatus(
+            item.phoPhongDonViGiaoXacNhan ?? false,
+            widget.provider
+                .getNhanVienByID(item.idPhoPhongDonViGiao ?? '')
+                .hoTen
+                .toString(),
+          ),
+        ),
+      ThreadNode(
+        header: 'Trình duyệt cấp phòng:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.trinhDuyetCapPhongXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idTrinhDuyetCapPhong ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+      ThreadNode(
+        header: 'Trình duyệt ban giám đốc:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.trinhDuyetGiamDocXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idTrinhDuyetGiamDoc ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
+    ];
+  }
+
+  Widget viewSignatoryStatus(bool isDone, String name) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          name,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: isDone ? Colors.green : Colors.red,
+          ),
+        ),
+        Visibility(
+          visible: isDone,
+          child: Tooltip(
+            message: 'Đã ký',
+            child: Icon(Icons.check_circle, color: Colors.green, size: 18),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget headerList() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    bool isColumn = screenWidth < 1360;
-    return isColumn
-        ? Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              spacing: 8,
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 2.5),
-                  child: Text(
-                    '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ),
-
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-                SizedBox(width: 8),
-                Visibility(
-                  visible: selectedItems.isNotEmpty && selectedItems.length < 2,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (selectedItems.isNotEmpty) {
-                        DieuDongTaiSanDto? item = selectedItems.first;
-                        _handleSignDocument(item, userInfo!, widget.provider);
-                      }
-                    },
-                    child: Row(
-                      spacing: 8,
-                      children: [
-                        Tooltip(
-                          message: 'Ký biên bản',
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.green,
-                            size: 18,
-                          ),
-                        ),
-                        SGText(
-                          text:
-                              'Số lượng biên bản đã chọn: ${selectedItems.length}',
-                          color: Colors.blue,
-                          size: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+            SizedBox(width: 8),
+            Text(
+              '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
             ),
-            SizedBox(height: 20),
-            RowFindByStatus(provider: widget.provider),
-          ],
-        )
-        : Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
-                  style: TextStyle(
-                    fontSize: 14,
+
+            // Spacer(),
+            GestureDetector(
+              onTap: _showColumnDisplayPopup,
+              child: Icon(Icons.settings, color: ColorValue.link, size: 18),
+            ),
+            SizedBox(width: 8),
+            Visibility(
+              visible: selectedItems.isNotEmpty,
+              child: Row(
+                spacing: 8,
+                children: [
+                  Visibility(
+                    visible:
+                        selectedItems.isNotEmpty && selectedItems.length < 2,
+                    child: Tooltip(
+                      message: 'Ký biên bản',
+                      child: InkWell(
+                        onTap: () {
+                          if (selectedItems.isNotEmpty) {
+                            DieuDongTaiSanDto? item = selectedItems.first;
+
+                            _handleSignDocument(
+                              item,
+                              userInfo!,
+                              widget.provider,
+                            );
+                          }
+                        },
+                        child: Icon(Icons.edit, color: Colors.green, size: 18),
+                      ),
+                    ),
+                  ),
+                  Tooltip(
+                    message: 'Chia sẻ với người ký',
+                    child: InkWell(
+                      onTap: () {
+                        if (selectedItems.isNotEmpty) {
+                          _handleSendToSigner(selectedItems);
+                        }
+                      },
+                      child: Icon(
+                        Icons.send_sharp,
+                        color: Colors.blue,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                  SGText(
+                    text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+                    color: Colors.blue,
+                    size: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
                   ),
-                ),
-
-                // Spacer(),
-                GestureDetector(
-                  onTap: _showColumnDisplayPopup,
-                  child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-                ),
-                SizedBox(width: 8),
-                Visibility(
-                  visible: selectedItems.isNotEmpty && selectedItems.length < 2,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (selectedItems.isNotEmpty) {
-                        DieuDongTaiSanDto? item = selectedItems.first;
-                        _handleSignDocument(item, userInfo!, widget.provider);
-                      }
-                    },
-                    child: Row(
-                      spacing: 8,
-                      children: [
-                        Tooltip(
-                          message: 'Ký biên bản',
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.green,
-                            size: 18,
-                          ),
-                        ),
-                        SGText(
-                          text:
-                              'Số lượng biên bản đã chọn: ${selectedItems.length}',
-                          color: Colors.blue,
-                          size: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-            Expanded(child: RowFindByStatus(provider: widget.provider)),
           ],
-        );
+        ),
+        Expanded(child: RowFindByStatus(provider: widget.provider)),
+      ],
+    );
   }
 
   Widget viewAction(DieuDongTaiSanDto item) {
@@ -512,7 +665,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         backgroundColor: Colors.green.shade50,
         borderColor: Colors.green.shade200,
         onPressed: () async {
-          if (item.tenFile == null || item.tenFile!.isEmpty) {
+          await _loadPdfNetwork(item.tenFile!);
+          if (mounted) {
             previewDocument(
               context: context,
               item: item,
@@ -520,29 +674,21 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               isShowKy: false,
               document: _document,
             );
-          } else {
-            await _loadPdfNetwork(item.tenFile!);
-            if (mounted) {
-              previewDocument(
-                context: context,
-                item: item,
-                provider: widget.provider,
-                isShowKy: false,
-                document: _document,
-              );
-            }
           }
         },
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
+        iconColor:
+            (item.trangThai == 0 || item.trangThai == 2)
+                ? Colors.red.shade700
+                : Colors.grey,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
             () => {
-              if (item.trangThai == 0)
+              if (item.trangThai == 0 || item.trangThai == 2)
                 {
                   showConfirmDialog(
                     context,
@@ -605,36 +751,35 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
-              {"id": item.nguoiTao, "signed": true, "label": "Người tạo"},
-              {
-                "id": item.idTruongPhongDonViGiao,
-                "signed": item.truongPhongDonViGiaoXacNhan == true,
-                "label": "Trưởng phòng Đơn vị giao",
+          if (item.nguoiLapPhieuKyNhay == true)
+            {
+              "id": item.idNguoiKyNhay,
+              "signed": item.trangThaiKyNhay == true,
+              "label": "Người ký nháy",
+            },
+          {
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
+            "label": "Trình duyệt cấp phòng",
+          },
+          {
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+            "label": "Giám đốc",
+          },
+          if (item.listSignatory != null)
+            ...item.listSignatory!.map(
+              (e) => {
+                "id": e.idNguoiKy,
+                "signed": e.trangThai == 1,
+                "label": e.tenNguoiKy,
               },
-              {
-                "id": item.idPhoPhongDonViGiao,
-                "signed": item.phoPhongDonViGiaoXacNhan == true,
-                "label": "Phó phòng Đơn vị giao",
-              },
-              {
-                "id": item.idTrinhDuyetCapPhong,
-                "signed": item.trangThai != null && item.trangThai! >= 3,
-                "label": "Trình duyệt cấp phòng",
-              },
-              {
-                "id": item.idTrinhDuyetGiamDoc,
-                "signed": item.trangThai != null && item.trangThai! >= 3,
-                "label": "Giám đốc",
-              },
-            ]
-            .where(
-              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
-            )
-            .toList();
+            ),
+        ].toList();
     // Kiểm tra hoàn thành
-    if (item.trangThai == 6 || item.trangThai == 5) {
+    if (item.trangThai == 3 || item.trangThai == 2) {
       String title = widget.provider.getScreenTitle();
-      String message = item.trangThai == 5 ? 'Đã bị hủy' : 'Đã hoàn thành';
+      String message = item.trangThai == 2 ? 'Đã bị hủy' : 'Đã hoàn thành';
       AppUtility.showSnackBar(
         context,
         'Phiếu $title này "$message", không thể ký.',
@@ -663,40 +808,86 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       return;
     }
 
-    // Kiểm tra tất cả các bước trước đã ký chưa
-    final previousNotSigned = signatureFlow
-        .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
-
-    if (previousNotSigned.isNotEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
-        isError: true,
-      );
-      return;
-    }
-
     // Nếu vượt qua tất cả check → mở preview để ký
-    if (item.tenFile == null || item.tenFile!.isEmpty) {
+
+    await _loadPdfNetwork(item.tenFile!);
+    if (mounted) {
       previewDocument(
         context: context,
         item: item,
         provider: widget.provider,
-        isShowKy: false,
+        isShowKy: true,
         document: _document,
       );
-    } else {
-      await _loadPdfNetwork(item.tenFile!);
-      if (mounted) {
-        previewDocument(
-          context: context,
-          item: item,
-          provider: widget.provider,
-          isShowKy: false,
-          document: _document,
-        );
-      }
     }
+  }
+
+  Widget showSigningStatus(DieuDongTaiSanDto item) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? Colors.red
+                  : Colors.blue,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? 'Đã ký'
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? 'Chưa ký'
+                  : "Người tạo phiếu",
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleSendToSigner(List<DieuDongTaiSanDto> items) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return;
+    }
+    // bool hasNonZero = items.any(
+    //   (item) => item.trangThai != 0 && item.trangThai != 2,
+    // );
+    // if (hasNonZero) {
+    //   AppUtility.showSnackBar(
+    //     context,
+    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
+    //     isError: true,
+    //   );
+    //   return;
+    // }
+
+    showConfirmDialog(
+      context,
+      type: ConfirmType.delete,
+      title: 'Chia sẻ',
+      message: 'Bạn có chắc muốn chia sẻ với người ký?',
+      cancelText: 'Không',
+      confirmText: 'Chia sẻ',
+      onConfirm: () {
+        context.read<DieuDongTaiSanBloc>().add(
+          SendToSignerEvent(context, items),
+        );
+      },
+    );
   }
 }

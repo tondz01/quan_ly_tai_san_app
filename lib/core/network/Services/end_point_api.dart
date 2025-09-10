@@ -3,6 +3,7 @@
 class EndPointAPI {
   static String TOOLS_AND_SUPPLIES = "/api/ccdcvattu";
   static String ASSET_TRANSFER = "/api/bangiaotaisan";
+  static String TOOL_AND_SUPPLIES_HANDOVER = "/api/bangiaoccdcvattu";
   static String DU_AN = "/api/duan";
   static String NGUON_KINH_PHI = "/api/nguonvon";
   static String PHONG_BAN = "/api/phongban";
@@ -27,4 +28,7 @@ class EndPointAPI {
   static String SIGNING_STATUS_CCDCVATTU = "/api/bangiaoccdcvattu/capnhatky/";
   static String BAO_CAO = "/api/baocao";
   static String CHI_TIET_TAI_SAN = "/api/chitiettaisan/batch";
+  static String SIGNATORY = "/api/chuky/nguoi-ky";
+  static String OWNERSHIP_UNIT_DETAIL = "/chitietdonvisohuu";
+  static String EXPORT_DATA = "/api/upload/export";
 }

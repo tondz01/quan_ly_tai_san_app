@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/role/provider/role_p
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 import '../../screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 
@@ -22,6 +23,7 @@ List<SingleChildWidget> get providers {
     ChangeNotifierProvider(create: (context) => AssetCategoryProvider()),
     ChangeNotifierProvider(create: (context) => LoginProvider()),
     ChangeNotifierProvider(create: (context) => AssetHandoverProvider()),
+    ChangeNotifierProvider(create: (context) => ToolAndSuppliesHandoverProvider()),
     ChangeNotifierProvider(create: (context) => RoleProvider()),
   ];
 }

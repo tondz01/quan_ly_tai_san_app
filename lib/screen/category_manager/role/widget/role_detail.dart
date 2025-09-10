@@ -136,7 +136,7 @@ class _RoleDetailState extends State<RoleDetail> {
                     child: TextFormField(
                       controller: controllerIdChucVu,
                       decoration: inputDecoration('Mã chức vụ', required: true),
-                      enabled: isEditing, // Read-only khi update
+                      enabled: isEditing ? data?.id != null : false, // Read-only khi update
                       validator:
                           (v) =>
                               v == null || v.isEmpty
@@ -231,7 +231,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Bán giao tài sản",
+          label: "Bàn giao tài sản",
           value: isBanGiaoTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -243,7 +243,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Bán giao CCDC vật tư",
+          label: "Bàn giao CCDC vật tư",
           value: isBanGiaoCCDCVatTu,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -383,7 +383,9 @@ class _RoleDetailState extends State<RoleDetail> {
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
               onPressed: () {
-                _saveChanges();
+                setState(() {
+                  _saveChanges();
+                });
               },
             ),
             const SizedBox(width: 8),
@@ -401,7 +403,7 @@ class _RoleDetailState extends State<RoleDetail> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa nhóm tài sản',
+          text: 'Chỉnh sửa chức vụ',
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,
@@ -454,9 +456,6 @@ class _RoleDetailState extends State<RoleDetail> {
     final ngayTao = DateTime.now().toString();
     final ngayCapNhat = DateTime.now().toString();
 
-    log('ngayTao type: ${ngayTao.runtimeType}, value: $ngayTao');
-    log('ngayCapNhat type: ${ngayCapNhat.runtimeType}, value: $ngayCapNhat');
-
     return ChucVu(
       id: controllerIdChucVu.text,
       tenChucVu: controllerNameChucVu.text,
@@ -499,13 +498,29 @@ class _RoleDetailState extends State<RoleDetail> {
       bloc.add(CreateRoleEvent(request));
     } else {
       final request = chucVuRequest();
+      log('controllerNameChucVu: ${controllerNameChucVu.text}');
       ChucVu newRequest = data!.copyWith(
+        tenChucVu: controllerNameChucVu.text,
+        quanLyNhanVien: isQuanLyNhanVien,
+        quanLyPhongBan: isQuanLyPhongBan,
+        quanLyDuAn: isQuanLyDuAn,
+        quanLyNguonVon: isQuanLyNguonVon,
+        quanLyMoHinhTaiSan: isQuanLyMoHinhTaiSan,
+        quanLyNhomTaiSan: isQuanLyNhomTaiSan,
+        quanLyTaiSan: isQuanLyTaiSan,
+        quanLyCCDCVatTu: isQuanLyCCDCVatTu,
+        dieuDongTaiSan: isDieuDongTaiSan,
+        dieuDongCCDCVatTu: isDieuDongCCDCVatTu,
+        banGiaoTaiSan: isBanGiaoTaiSan,
+        banGiaoCCDCVatTu: isBanGiaoCCDCVatTu,
+        baoCao: isBaoCao,
         idCongTy: data!.idCongTy,
         nguoiTao: data!.nguoiTao,
         ngayTao: data!.ngayTao,
         ngayCapNhat: DateTime.now().toString(),
         nguoiCapNhat: widget.provider.userInfo?.id ?? '',
       );
+      log('UpdateRoleEvent request: ${newRequest.toJson()}');
       log('UpdateRoleEvent request: ${request.toJson()}');
       bloc.add(UpdateRoleEvent(newRequest));
     }

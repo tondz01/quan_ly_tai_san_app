@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class CcdcGroupView extends StatefulWidget {
@@ -101,6 +102,16 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                       provider.onChangeDetail(null);
                     },
                     mainScreen: 'Nhóm ccdc',
+                    onFileSelected: (fileName, filePath, fileBytes) {
+                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách nhóm CCDC - Vật tư",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                   ),
                 ),
                 body: Column(

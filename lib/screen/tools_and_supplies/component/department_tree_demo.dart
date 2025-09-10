@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/common/diagram/department_tree.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class DepartmentTreeDemo extends StatelessWidget {
+class DetailedDiagram extends StatefulWidget {
   final String title;
-  final ToolsAndSuppliesDto? data;
-  const DepartmentTreeDemo({
+  final List<ThreadNode> sample;
+  final Function()? onHiden;
+  const DetailedDiagram({
     super.key,
     required this.title,
-    required this.data,
+    required this.sample,
+    this.onHiden,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final rootComments = [
-      TreeNode(
-        name: data?.ten ?? "Công cụ ...",
-        message: "Số lượng: ${data?.soLuong ?? 0}",
-        children: [
-          TreeNode(name: "Kho công ty", message: "Số lượng: 3"),
-          TreeNode(name: "Ban giam đốc", message: "Số lượng: 2"),
-          TreeNode(name: "Phòng kế toán", message: "Số lượng: 5"),
-        ],
-      ),
-    ];
+  State<DetailedDiagram> createState() => _DetailedDiagramState();
+}
 
+class _DetailedDiagramState extends State<DetailedDiagram> {
+  @override
+  void didUpdateWidget(covariant DetailedDiagram oldWidget) {
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         Container(
@@ -42,28 +42,27 @@ class DepartmentTreeDemo extends StatelessWidget {
               SizedBox(width: 8),
               Expanded(
                 child: SGText(
-                  text: 'Chi tiết đơn vị sở hữu "$title"',
+                  text: 'Chi tiết ${widget.title}',
                   size: 14,
                   fontWeight: FontWeight.w500,
+                ),
+              ),
+              InkWell(
+                onTap: widget.onHiden,
+                child: Icon(
+                  Icons.visibility_off,
+                  size: 16,
+                  color: ColorValue.cyan,
                 ),
               ),
             ],
           ),
         ),
         Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < rootComments.length; i++)
-                  DepartmentTree(
-                    node: rootComments[i],
-                    isLast: i == rootComments.length - 1,
-                    isFirst: i == 0,
-                  ),
-              ],
-            ),
+          child: ThreadList(
+            nodes: widget.sample,
+            indentWidth: 28,
+            lineColor: const Color(0xFF9E9E9E),
           ),
         ),
       ],

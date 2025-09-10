@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -69,13 +70,27 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                   onSearchChanged: (value) {
                     provider.onSearchToolsAndSupplies(value);
                   },
-                  onTap: () {
-                  },
+                  onTap: () {},
                   onNew: () {
                     provider.onChangeDetail(context, null);
                   },
                   mainScreen: 'Quản lý CCDC - Vật tư',
                   subScreen: provider.subScreen,
+                  onFileSelected: (fileName, filePath, fileBytes) {
+                      // provider.onSubmit(
+                      //   context,
+                      //   fileName ?? '',
+                      //   filePath ?? '',
+                      //   fileBytes ?? Uint8List(0),
+                      // );
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách CCDC - Vật tư",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                 ),
               ),
               // body: DepartmentTreeDemo(),

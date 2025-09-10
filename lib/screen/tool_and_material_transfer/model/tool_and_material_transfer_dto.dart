@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+
 import 'detail_tool_and_material_transfer_dto.dart';
 
 class ToolAndMaterialTransferDto {
@@ -45,6 +47,9 @@ class ToolAndMaterialTransferDto {
   String? idNhanSuXemPhieu;
   String? tenNhanSuXemPhieu;
 
+  String? idNguoiKyNhay;
+  bool? trangThaiKyNhay;
+
   // Các trường xác nhận
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
@@ -74,11 +79,15 @@ class ToolAndMaterialTransferDto {
   String? nguoiTao;
   String? nguoiCapNhat;
   
-  bool? coHieuLuc;
+  int? coHieuLuc;
   int? loai;
+  bool? share;
   bool? isActive;
+  bool? daBanGiao;
+  bool? byStep;
   
   List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers;
+  List<SignatoryDto>? listSignatory;
 
   ToolAndMaterialTransferDto({
     this.id,
@@ -104,6 +113,8 @@ class ToolAndMaterialTransferDto {
     this.tenTrinhDuyetGiamDoc,
     this.idNhanSuXemPhieu,
     this.tenNhanSuXemPhieu,
+    this.idNguoiKyNhay,
+    this.trangThaiKyNhay,
     this.nguoiLapPhieuKyNhay,
     this.quanTrongCanXacNhan,
     this.phoPhongXacNhan,
@@ -127,8 +138,12 @@ class ToolAndMaterialTransferDto {
     this.nguoiCapNhat,
     this.coHieuLuc,
     this.loai,
+    this.share,
     this.isActive,
     this.detailToolAndMaterialTransfers,
+    this.listSignatory,
+    this.daBanGiao,
+    this.byStep,
   });
 
   factory ToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -142,6 +157,15 @@ class ToolAndMaterialTransferDto {
             .toList();
       }
       return null;
+    }
+
+    List<SignatoryDto>? parseSignatory(dynamic signatory) {
+
+      if (signatory == null) return null;
+      if (signatory is List) {
+        return signatory.map((item) => SignatoryDto.fromJson(item)).toList();
+      }
+      return [];
     }
 
     return ToolAndMaterialTransferDto(
@@ -168,6 +192,8 @@ class ToolAndMaterialTransferDto {
       tenTrinhDuyetGiamDoc: json['tenTrinhDuyetGiamDoc'],
       idNhanSuXemPhieu: json['idNhanSuXemPhieu'],
       tenNhanSuXemPhieu: json['tenNhanSuXemPhieu'],
+      idNguoiKyNhay: json['idNguoiKyNhay'],
+      trangThaiKyNhay: json['trangThaiKyNhay'],
       nguoiLapPhieuKyNhay: json['nguoiLapPhieuKyNhay'],
       quanTrongCanXacNhan: json['quanTrongCanXacNhan'],
       phoPhongXacNhan: json['phoPhongXacNhan'],
@@ -191,8 +217,12 @@ class ToolAndMaterialTransferDto {
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],
       loai: json['loai'],
+      share: json['share'],
       isActive: json['isActive'],
       detailToolAndMaterialTransfers: parseDetails(json['chiTietToolAndMaterialTransfers']),
+      listSignatory: parseSignatory(json['listSignatory']),
+      daBanGiao: json['daBanGiao'],
+      byStep: json['byStep'],
     );
   }
 
@@ -221,6 +251,8 @@ class ToolAndMaterialTransferDto {
       "tenTrinhDuyetGiamDoc": tenTrinhDuyetGiamDoc,
       "idNhanSuXemPhieu": idNhanSuXemPhieu,
       "tenNhanSuXemPhieu": tenNhanSuXemPhieu,
+      "idNguoiKyNhay": idNguoiKyNhay,
+      "trangThaiKyNhay": trangThaiKyNhay,
       "nguoiLapPhieuKyNhay": nguoiLapPhieuKyNhay,
       "quanTrongCanXacNhan": quanTrongCanXacNhan,
       "phoPhongXacNhan": phoPhongXacNhan,
@@ -244,8 +276,12 @@ class ToolAndMaterialTransferDto {
       "nguoiCapNhat": nguoiCapNhat,
       "coHieuLuc": coHieuLuc,
       "loai": loai,
+      "share": share,
       "isActive": isActive,
       "chiTietToolAndMaterialTransfers": detailToolAndMaterialTransfers?.map((detail) => detail.toJson()).toList(),
+      "listSignatory": listSignatory?.map((signatory) => signatory.toJson()).toList(),
+      "daBanGiao": daBanGiao,
+      "byStep": byStep,
     };
   }
   
@@ -275,6 +311,8 @@ class ToolAndMaterialTransferDto {
       tenTrinhDuyetGiamDoc: '',
       idNhanSuXemPhieu: '',
       tenNhanSuXemPhieu: '',
+      idNguoiKyNhay: '',
+      trangThaiKyNhay: false,
       nguoiLapPhieuKyNhay: false,
       quanTrongCanXacNhan: false,
       phoPhongXacNhan: false,
@@ -296,10 +334,13 @@ class ToolAndMaterialTransferDto {
       ngayCapNhat: null,
       nguoiTao: '',
       nguoiCapNhat: '',
-      coHieuLuc: true,
+      coHieuLuc: 1,
       loai: 0,
       isActive: true,
       detailToolAndMaterialTransfers: [],
+      listSignatory: [],
+      daBanGiao: false,
+      byStep: false,
     );
   }
 
@@ -328,6 +369,8 @@ class ToolAndMaterialTransferDto {
     String? tenTrinhDuyetGiamDoc,
     String? idNhanSuXemPhieu,
     String? tenNhanSuXemPhieu,
+    String? idNguoiKyNhay,
+    bool? trangThaiKyNhay,
     bool? nguoiLapPhieuKyNhay,
     bool? quanTrongCanXacNhan,
     bool? phoPhongXacNhan,
@@ -349,10 +392,14 @@ class ToolAndMaterialTransferDto {
     String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
-    bool? coHieuLuc,
+    int? coHieuLuc,
     int? loai,
+    bool? share,
     bool? isActive,
     List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers,
+    List<SignatoryDto>? listSignatory,
+    bool? daBanGiao,
+    bool? byStep,
   }) {
     return ToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -378,6 +425,8 @@ class ToolAndMaterialTransferDto {
       tenTrinhDuyetGiamDoc: tenTrinhDuyetGiamDoc ?? this.tenTrinhDuyetGiamDoc,
       idNhanSuXemPhieu: idNhanSuXemPhieu ?? this.idNhanSuXemPhieu,
       tenNhanSuXemPhieu: tenNhanSuXemPhieu ?? this.tenNhanSuXemPhieu,
+      idNguoiKyNhay: idNguoiKyNhay ?? this.idNguoiKyNhay,
+      trangThaiKyNhay: trangThaiKyNhay ?? this.trangThaiKyNhay,
       nguoiLapPhieuKyNhay: nguoiLapPhieuKyNhay ?? this.nguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: quanTrongCanXacNhan ?? this.quanTrongCanXacNhan,
       phoPhongXacNhan: phoPhongXacNhan ?? this.phoPhongXacNhan,
@@ -401,8 +450,12 @@ class ToolAndMaterialTransferDto {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       coHieuLuc: coHieuLuc ?? this.coHieuLuc,
       loai: loai ?? this.loai,
+      share: share ?? this.share,
       isActive: isActive ?? this.isActive,
+      daBanGiao: daBanGiao ?? this.daBanGiao,
+      byStep: byStep ?? this.byStep,
       detailToolAndMaterialTransfers: detailToolAndMaterialTransfers ?? this.detailToolAndMaterialTransfers,
+      listSignatory: listSignatory ?? this.listSignatory,
     );
   }
   

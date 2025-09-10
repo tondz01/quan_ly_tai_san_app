@@ -234,6 +234,7 @@ class _AccountDetailState extends State<AccountDetail> {
   void _saveChanges() {
     log('message: _saveChanges');
     final userInfo = widget.userInfo.copyWith(
+      matKhau: ctrlMatKhau.text,
       rule: int.parse(roleSelected?.id ?? '0'),
     );
     log('message: userInfo: ${jsonEncode(userInfo.toJson())}');

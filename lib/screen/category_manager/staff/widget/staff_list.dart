@@ -55,20 +55,6 @@ class _StaffListState extends State<StaffList> {
         width: 120,
       ),
       TableBaseConfig.columnTable<NhanVien>(
-        title: 'Hoạt động',
-        getValue:
-            (item) =>
-                item.isActive == true ? 'Đang hoạt động' : 'Ngừng hoạt động',
-        titleAlignment: TextAlign.start,
-        width: 150,
-      ),
-      TableBaseConfig.columnTable<NhanVien>(
-        title: 'Hạn chót cho hoạt động tiếp theo',
-        getValue: (item) => item.gioLamViec ?? '',
-        titleAlignment: TextAlign.center,
-        width: 150,
-      ),
-      TableBaseConfig.columnTable<NhanVien>(
         title: 'Phòng ban',
         getValue: (item) => item.tenPhongBan ?? '',
         titleAlignment: TextAlign.center,
@@ -87,7 +73,7 @@ class _StaffListState extends State<StaffList> {
         width: 150,
       ),
       TableBaseConfig.columnWidgetBase<NhanVien>(
-        title: '',
+        title: 'Thao tác',
         cellBuilder: (item) => viewAction(item),
         width: 120,
         searchable: true,
@@ -153,12 +139,12 @@ class _StaffListState extends State<StaffList> {
                       ),
                     ),
                     SizedBox(width: 16),
-                    IconButton(
-                      onPressed: () {
-                        // TODO: Xóa nhân viên đã chọn
-                      },
-                      icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    ),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     // TODO: Xóa nhân viên đã chọn
+                    //   },
+                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                    // ),
                   ],
                 ),
               ],

@@ -11,8 +11,9 @@ class UserInfoDTO {
   final String idCongTy;
   final int rule;
   final bool isActive;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
+  final String? ngayTao;
+  final String? ngayCapNhat;
+  final String? chuKy;
 
   const UserInfoDTO({
     required this.id,
@@ -29,15 +30,11 @@ class UserInfoDTO {
     required this.isActive,
     this.ngayTao,
     this.ngayCapNhat,
+    this.chuKy,
   });
 
   factory UserInfoDTO.fromJson(Map<String, dynamic> json) {
-    DateTime? parseDate(dynamic v) {
-      if (v == null) return null;
-      final s = '$v';
-      if (s.isEmpty) return null;
-      return DateTime.tryParse(s);
-    }
+
 
     return UserInfoDTO(
       id: json['id'] as String? ?? '',
@@ -52,8 +49,9 @@ class UserInfoDTO {
       idCongTy: json['idCongTy'] as String? ?? '',
       rule: json['rule'] is int ? json['rule'] as int : int.tryParse('${json['rule']}') ?? 0,
       isActive: json['isActive'] is bool ? json['isActive'] as bool : json['isActive'] == 1,
-      ngayTao: parseDate(json['ngayTao']),
-      ngayCapNhat: parseDate(json['ngayCapNhat']),
+      ngayTao: json['ngayTao'] as String?,
+      ngayCapNhat: json['ngayCapNhat'] as String?,
+      chuKy: json['chuKy'] as String?,
     );
   }
 
@@ -71,8 +69,9 @@ class UserInfoDTO {
       'idCongTy': idCongTy,
       'rule': rule,
       'isActive': isActive,
-      'ngayTao': ngayTao?.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String(),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
+      'chuKy': chuKy,
     };
   }
   
@@ -89,8 +88,9 @@ class UserInfoDTO {
     String? idCongTy,
     int? rule,
     bool? isActive,
-    DateTime? ngayTao,
-    DateTime? ngayCapNhat,
+    String? ngayTao,
+    String? ngayCapNhat,
+    String? chuKy,
   }) {
     return UserInfoDTO(
       id: id ?? this.id,
@@ -107,6 +107,7 @@ class UserInfoDTO {
       isActive: isActive ?? this.isActive,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      chuKy: chuKy ?? this.chuKy,
     );
   }
 }

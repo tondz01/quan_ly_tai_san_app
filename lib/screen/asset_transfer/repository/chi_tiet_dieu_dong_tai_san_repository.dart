@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
@@ -12,6 +15,7 @@ class ChiTietDieuDongTaiSanRepository {
         baseUrl: "${ApiConfig.getBaseURL()}/api/chitietdieudongtaisan",
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
+        // Không ném DioException cho các mã lỗi HTTP, cho phép tự xử lý
       ),
     );
 
@@ -25,6 +29,12 @@ class ChiTietDieuDongTaiSanRepository {
   }
 
   Future<List<ChiTietDieuDongTaiSan>> getAll(String idDieuDongTaiSan) async {
+    log('message test: ${idDieuDongTaiSan}');
+    final queryParams = {"iddieudongtaisan": idDieuDongTaiSan};
+
+    // Log cURL command
+    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
+    log('cURL command: $curlCommand');
     final res = await _dio.get(
       '',
       queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
@@ -44,18 +54,54 @@ class ChiTietDieuDongTaiSanRepository {
     return chiTietDieuDongTaiSan;
   }
 
-  Future<int> create(ChiTietDieuDongTaiSan obj) async {
+  Future<dynamic> create(ChiTietDieuDongTaiSan obj) async {
     final res = await _dio.post('', data: obj.toJson());
     return res.data;
   }
 
-  Future<int> update(String id, ChiTietDieuDongTaiSan obj) async {
+  Future<dynamic> update(String id, ChiTietDieuDongTaiSan obj) async {
     final res = await _dio.put('/$id', data: obj.toJson());
     return res.data;
   }
 
-  Future<int> delete(String id) async {
+  Future<dynamic> delete(String id) async {
     final res = await _dio.delete('/$id');
     return res.data;
+  }
+
+  String generateCurlCommand(
+    String method,
+    String url,
+    Map<String, dynamic>? queryParams,
+    dynamic data,
+  ) {
+    final baseUrl = "${ApiConfig.getBaseURL()}/api/chitietdieudongtaisan";
+    final fullUrl = baseUrl + url;
+
+    String curl = 'curl -X $method';
+
+    // Add headers
+    curl += ' -H "Content-Type: application/json"';
+    curl += ' -H "Accept: application/json"';
+
+    // Add query parameters
+    if (queryParams != null && queryParams.isNotEmpty) {
+      final queryString = queryParams.entries
+          .map(
+            (e) =>
+                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value.toString())}',
+          )
+          .join('&');
+      curl += ' "$fullUrl?$queryString"';
+    } else {
+      curl += ' "$fullUrl"';
+    }
+
+    // Add data for POST/PUT requests
+    if (data != null && (method == 'POST' || method == 'PUT')) {
+      curl += ' -d \'${jsonEncode(data)}\'';
+    }
+
+    return curl;
   }
 }

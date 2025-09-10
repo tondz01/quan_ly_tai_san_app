@@ -37,7 +37,7 @@ class AssetCategoryProvider with ChangeNotifier {
   String _searchTerm = '';
 
   late int totalEntries;
-  late int totalPages;
+  late int totalPages = 1;
   late int startIndex;
   late int endIndex;
   int rowsPerPage = 10;
@@ -127,6 +127,7 @@ class AssetCategoryProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _isLoading = false;
     } else {
       _data = state.data;
       _filteredData = List.from(_data!);

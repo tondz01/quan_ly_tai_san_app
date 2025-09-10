@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
@@ -52,6 +54,7 @@ class AssetManagementBloc
         .getListAssetManagement(event.idCongTy);
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      log('message test: ${result['data']}');
       emit(GetListAssetManagementSuccessState(data: result['data']));
     } else {
       String msg = "Lỗi khi lấy dữ liệu";

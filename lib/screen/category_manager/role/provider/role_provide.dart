@@ -193,7 +193,7 @@ class RoleProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Tạo CCDC - Vật tư thành công!');
+    AppUtility.showSnackBar(context, 'Thêm "Chức vụ" tư thành công!');
   }
 
   void updateRolesSuccess(BuildContext context, UpdateRoleSuccessState state) {
@@ -202,7 +202,7 @@ class RoleProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Cập nhập CCDC - Vật tư thành công!');
+    AppUtility.showSnackBar(context, 'Cập nhập "Chức vụ" tư thành công!');
   }
 
   void deleteRolesSuccess(BuildContext context, DeleteRoleSuccessState state) {
@@ -211,7 +211,7 @@ class RoleProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
+    AppUtility.showSnackBar(context, 'Xóa "Chức vụ" tư thành công!');
   }
 
   void onChangeDetail(BuildContext context, ChucVu? item) {

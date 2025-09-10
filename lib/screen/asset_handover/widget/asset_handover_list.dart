@@ -1,35 +1,42 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/web_view/web_view_common.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/component/columns_asset_handover_component.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/find_by_state_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverList extends StatefulWidget {
   final AssetHandoverProvider provider;
-  const AssetHandoverList({super.key, required this.provider});
+  final List<DieuDongTaiSanDto> listAssetTransfer;
+  const AssetHandoverList({
+    super.key,
+    required this.provider,
+    required this.listAssetTransfer,
+  });
 
   @override
   State<AssetHandoverList> createState() => _AssetHandoverListState();
@@ -39,12 +46,22 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
   String urlPreview = '';
+  String nameBenBan = "";
+
+  bool isShowDetailDepartmentTree = false;
 
   bool isShowPreview = false;
+  AssetHandoverDto? selected;
+  UserInfoDTO? userInfo;
+
+  List<ThreadNode> listSignatoryDetail = [];
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
+
   List<AssetHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
+    'signing_status',
+    'share',
     'name',
     'decision_number',
     'transfer_order',
@@ -56,39 +73,32 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'status',
     'actions',
   ];
-  List<DieuDongTaiSanDto> listAssetTransfer = [];
 
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
   List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [];
-  
+
   @override
   void initState() {
     super.initState();
     _initializeColumnOptions();
+    userInfo = AccountHelper.instance.getUserInfo();
+  }
 
-    getters = [
-      {
-        'Ngày tạo':
-            (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
-      },
-      {
-        'Ngày cập nhật':
-            (item) =>
-                DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
-      },
-      {
-        'Ngày bàn giao':
-            (item) =>
-                DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
-      },
-    ];
-
-    listAssetTransfer =
-        widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
-            .toList() ??
-        [];
+  @override
+  void didUpdateWidget(covariant AssetHandoverList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    setState(() {
+      if (selected != null && widget.provider.dataPage != null) {
+        selected = widget.provider.dataPage?.firstWhere(
+          (element) => element.id == selected?.id,
+          orElse: () => AssetHandoverDto(),
+        );
+        if (selected!.id != null) {
+          _buildDetailDepartmentTree(selected!);
+        }
+      }
+    });
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -109,6 +119,16 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'signing_status',
+        label: 'Trạng thái ký',
+        isChecked: visibleColumnIds.contains('signing_status'),
+      ),
+      ColumnDisplayOption(
+        id: 'share',
+        label: 'Chia sẻ',
+        isChecked: visibleColumnIds.contains('share'),
+      ),
       ColumnDisplayOption(
         id: 'name',
         label: 'Bàn giao tài sản',
@@ -151,7 +171,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái',
+        label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(
@@ -168,6 +188,29 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'signing_status':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Trạng thái ký',
+              cellBuilder: (item) => showSigningStatus(item),
+              width: 150,
+              searchable: true,
+            ),
+          );
+          break;
+        case 'share':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Chia sẻ',
+              width: 150,
+              cellBuilder:
+                  (item) => ConfigViewAT.showShareStatus(
+                    item.share ?? false,
+                    item.nguoiTao == userInfo?.tenDangNhap,
+                  ),
+            ),
+          );
+          break;
         case 'name':
           columns.add(
             TableBaseConfig.columnTable<AssetHandoverDto>(
@@ -308,7 +351,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<AssetHandoverDto>> columns = _buildColumns();
-    log('message filteredData ${widget.provider.dataPage}');
     return Row(
       children: [
         // if (url.isNotEmpty && isShowPreview) displayPreview(),
@@ -317,7 +359,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(0),
+                topRight: Radius.circular(0),
+                bottomLeft: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              ),
               border: Border.all(color: Colors.grey.shade300, width: 1),
               boxShadow: [
                 BoxShadow(
@@ -327,73 +374,105 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                 ),
               ],
             ),
-            child: Column(
+            child: Row(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Expanded(
+                  child: Column(
                     children: [
-                      Row(
-                        spacing: 8,
-                        children: [
-                          Icon(
-                            Icons.table_chart,
-                            color: Colors.grey.shade600,
-                            size: 18,
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            topRight: Radius.circular(8),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 2.5),
-                            child: Text(
-                              'Biên bản bàn giao tài sản (${widget.provider.data?.length ?? 0})',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade700,
-                              ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              spacing: 8,
+                              children: [
+                                Icon(
+                                  Icons.table_chart,
+                                  color: Colors.grey.shade600,
+                                  size: 18,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 2.5),
+                                  child: Text(
+                                    'Biên bản bàn giao tài sản (${widget.provider.data?.length ?? 0})',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: _showColumnDisplayPopup,
+                                  child: Icon(
+                                    Icons.settings,
+                                    color: ColorValue.link,
+                                    size: 18,
+                                  ),
+                                ),
+                                _buildActionKy(),
+                              ],
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: _showColumnDisplayPopup,
-                            child: Icon(
-                              Icons.settings,
-                              color: ColorValue.link,
-                              size: 18,
-                            ),
-                          ),
-                          _buildActionKy(),
-                        ],
+
+                            FindByStateAssetHandover(provider: widget.provider),
+                          ],
+                        ),
                       ),
-                      FindByStateAssetHandover(provider: widget.provider),
+                      Expanded(
+                        child: TableBaseView<AssetHandoverDto>(
+                          searchTerm: '',
+                          columns: columns,
+                          data: widget.provider.dataPage ?? [],
+                          horizontalController: ScrollController(),
+                          onRowTap: (item) {
+                            isShowPreview = true;
+                            widget.provider.onChangeDetail(context, item);
+                            setState(() {
+                              nameBenBan =
+                                  'trạng thái ký " Biên bản bàn giao ${item.id} "';
+                              isShowDetailDepartmentTree = true;
+                              _buildDetailDepartmentTree(item);
+                            });
+                          },
+                          onSelectionChanged: (items) {
+                            setState(() {
+                              selectedItems = items;
+                            });
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: TableBaseView<AssetHandoverDto>(
-                    searchTerm: '',
-                    columns: columns,
-                    data: widget.provider.dataPage ?? [],
-                    horizontalController: ScrollController(),
-                    getters: getters,
-                    startDate: DateTime.tryParse(
-                      widget.provider.dataPage?.first.ngayTao ?? '',
+                Visibility(
+                  visible: isShowDetailDepartmentTree,
+                  child: Container(
+                    width: 300,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        left: BorderSide(color: Colors.grey.shade600, width: 1),
+                      ),
                     ),
-                    onRowTap: (item) {
-                      isShowPreview = true;
-                      widget.provider.onChangeDetail(context, item);
-                    },
-                    onSelectionChanged: (items) {
-                      setState(() {
-                        selectedItems = items;
-                      });
-                    },
+                    child: DetailedDiagram(
+                      title: nameBenBan,
+                      sample: listSignatoryDetail,
+                      onHiden: () {
+                        setState(() {
+                          isShowDetailDepartmentTree = false;
+                        });
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -404,136 +483,49 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     );
   }
 
-  Widget displayPreview() {
-    return Container(
-      width: MediaQuery.of(context).size.width * 0.35,
-      height: MediaQuery.of(context).size.height,
-      color: Colors.amber,
-      padding: EdgeInsets.only(left: 10, right: 10),
-      child: WebViewContainer(
-        url: url,
-        title: "Preview Document",
-        onPressed: () {
-          setState(() {
-            isShowPreview = !isShowPreview;
-          });
-        },
-      ),
-    );
-  }
-
   Visibility _buildActionKy() {
     return Visibility(
-      visible: selectedItems.isNotEmpty && selectedItems.length < 2,
-      child: GestureDetector(
-        onTap: () {
-          if (selectedItems.isNotEmpty) {
-            UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
-            AssetHandoverDto? item =
-                selectedItems.isNotEmpty ? selectedItems.first : null;
-            final signatureFlow =
-                [
-                  {
-                    "id": item?.idDaiDiendonviBanHanhQD,
-                    "signed": item?.daXacNhan == true,
-                    "label": "Người tạo",
-                  },
-                  {
-                    "id": item?.idDaiDienBenGiao,
-                    "signed": item?.daiDienBenGiaoXacNhan == true,
-                    "label": "Trưởng phòng",
-                  },
-                  {
-                    "id": item?.idDaiDienBenNhan,
-                    "signed": item?.daiDienBenNhanXacNhan == true,
-                    "label": "Phó phòng Đơn vị giao",
-                  },
-                  {
-                    "id": item?.idDonViDaiDien,
-                    "signed": item?.donViDaiDienXacNhan == "0" ? false : true,
-                    "label": "Trình duyệt cấp phòng",
-                  },
-                ].toList();
-
-            if (signatureFlow.isNotEmpty) {
-              // Kiểm tra user có trong flow không
-              final currentIndex = signatureFlow.indexWhere(
-                (s) => s["id"] == userInfo?.tenDangNhap,
-              );
-              log('currentIndex: $currentIndex');
-              if (currentIndex == -1) {
-                AppUtility.showSnackBar(
-                  context,
-                  'Bạn không có quyền ký văn bản này',
-                  isError: true,
-                );
-                return;
-              }
-              if (signatureFlow[currentIndex]["signed"] == true) {
-                AppUtility.showSnackBar(
-                  context,
-                  'Bạn đã ký rồi.',
-                  isError: true,
-                );
-                return;
-              }
-              log('signatureFlow: ${signatureFlow.toString()}');
-              final matchingTransfers = listAssetTransfer.where(
-                (x) => x.soQuyetDinh == item!.quyetDinhDieuDongSo,
-              );
-
-              _selectedAssetTransfer =
-                  matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
-
-              if (_selectedAssetTransfer == null ||
-                  _selectedAssetTransfer!.tenFile!.isEmpty) {
-                if (mounted) {
-                  previewDocumentHandover(
-                    context: context,
-                    item: item!,
-                    itemsDetail:
-                        widget.provider.dataDetailAssetMobilization ?? [],
-                    provider: widget.provider,
-                  );
-                }
-                return;
-              }
-              _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
-                if (mounted) {
-                  previewDocumentHandover(
-                    context: context,
-                    item: item!,
-                    itemsDetail:
-                        widget.provider.dataDetailAssetMobilization ?? [],
-                    provider: widget.provider,
-                    document: _document,
-                  );
-                }
-              });
-            } else {
-              AppUtility.showSnackBar(
-                context,
-                'Bạn không có quyền ký biên bản này',
-                isError: true,
-              );
-            }
-          }
-        },
-        child: Row(
-          spacing: 8,
-          children: [
-            Tooltip(
+      visible: selectedItems.isNotEmpty,
+      child: Row(
+        spacing: 8,
+        children: [
+          Visibility(
+            visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+            child: Tooltip(
               message: 'Ký biên bản',
-              child: Icon(Icons.edit, color: Colors.green, size: 18),
+              child: InkWell(
+                onTap: () {
+                  if (selectedItems.isNotEmpty) {
+                    UserInfoDTO? userInfo =
+                        AccountHelper.instance.getUserInfo();
+                    AssetHandoverDto? item =
+                        selectedItems.isNotEmpty ? selectedItems.first : null;
+                    log('item: ${jsonEncode(item)}');
+                    _handleSignDocument(item!, userInfo!, widget.provider);
+                  }
+                },
+                child: Icon(Icons.edit, color: Colors.green, size: 18),
+              ),
             ),
-            SGText(
-              text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
-              color: Colors.blue,
-              size: 14,
-              fontWeight: FontWeight.w500,
+          ),
+          Tooltip(
+            message: 'Chia sẻ với người ký',
+            child: InkWell(
+              onTap: () {
+                if (selectedItems.isNotEmpty) {
+                  _handleSendToSigner(selectedItems);
+                }
+              },
+              child: Icon(Icons.send_sharp, color: Colors.blue, size: 18),
             ),
-          ],
-        ),
+          ),
+          SGText(
+            text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
+            color: Colors.blue,
+            size: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ],
       ),
     );
   }
@@ -552,31 +544,14 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             item.quyetDinhDieuDongSo ?? '',
           );
 
-          final matchingTransfers = listAssetTransfer.where(
+          final matchingTransfers = widget.listAssetTransfer.where(
             (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
           );
 
           _selectedAssetTransfer =
               matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
 
-          if (_selectedAssetTransfer == null ||
-              _selectedAssetTransfer!.tenFile!.isEmpty) {
-            if (mounted) {
-              SGLog.debug(
-                "AssetHandoverList",
-                "No document found for item: ${item.id}",
-              );
-              previewDocumentHandover(
-                context: context,
-                item: item,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
-                provider: widget.provider,
-                isShowKy: false,
-              );
-            }
-            return;
-          }
-          _loadPdfNetwork(_selectedAssetTransfer!.tenFile!).then((_) {
+          _loadPdfNetwork(item.tenFile!).then((_) {
             if (mounted) {
               previewDocumentHandover(
                 context: context,
@@ -592,14 +567,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ActionButtonConfig(
         icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
+        tooltip:
+            userInfo?.tenDangNhap == 'admin'
+                ? 'Xóa'
+                : item.trangThai != 0
+                ? null
+                : 'Xóa',
+        iconColor:
+            userInfo?.tenDangNhap == 'admin'
+                ? Colors.red.shade700
+                : item.trangThai != 0
+                ? Colors.grey
+                : Colors.red.shade700,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
-            () => {
-              if (item.trangThai == 0)
-                {
+            userInfo?.tenDangNhap == 'admin'
+                ? () => {
                   showConfirmDialog(
                     context,
                     type: ConfirmType.delete,
@@ -615,8 +599,27 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                       );
                     },
                   ),
+                }
+                : () => {
+                  if (item.trangThai == 0)
+                    {
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xóa biên bản bàn giao',
+                        message: 'Bạn có chắc muốn xóa ${item.banGiaoTaiSan}',
+                        highlight: item.banGiaoTaiSan!,
+                        cancelText: 'Không',
+                        confirmText: 'Xóa',
+                        onConfirm: () {
+                          widget.provider.isLoading = true;
+                          context.read<AssetHandoverBloc>().add(
+                            DeleteAssetHandoverEvent(context, item.id!),
+                          );
+                        },
+                      ),
+                    },
                 },
-            },
       ),
     ]);
   }
@@ -699,6 +702,39 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     }
   }
 
+  Widget showSigningStatus(AssetHandoverDto item) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? Colors.red
+                  : Colors.blue,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? 'Đã ký'
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? 'Chưa ký'
+                  : "Người tạo phiếu",
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
   //  all('Tất cả', ColorValue.darkGrey),
   //   draft('Nháp', ColorValue.silverGray),
   //   ready('Sẵn sàng', ColorValue.lightAmber),
@@ -711,15 +747,213 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       case 0:
         return 'Nháp';
       case 1:
-        return 'Chờ xác nhận';
+        return 'Duyệt';
       case 2:
-        return 'Chờ duyệt';
-      case 3:
         return 'Hủy';
-      case 4:
+      case 3:
         return 'Hoàn thành';
       default:
         return '';
     }
+  }
+
+  void _handleSignDocument(
+    AssetHandoverDto item,
+    UserInfoDTO userInfo,
+    AssetHandoverProvider provider,
+  ) async {
+    final signatureFlow =
+        [
+          {
+            "id": item.idDaiDiendonviBanHanhQD,
+            "signed": item.daXacNhan == true,
+            "label": "Người tạo",
+          },
+          {
+            "id": item.idDaiDienBenGiao,
+            "signed": item.daiDienBenGiaoXacNhan == true,
+            "label": "Trưởng phòng",
+          },
+          {
+            "id": item.idDaiDienBenNhan,
+            "signed": item.daiDienBenNhanXacNhan == true,
+            "label": "Phó phòng Đơn vị giao",
+          },
+          if (item.listSignatory?.isNotEmpty ?? false)
+            ...(item.listSignatory
+                    ?.map(
+                      (e) => {
+                        "id": e.idNguoiKy,
+                        "signed": e.trangThai == 1,
+                        "label": e.tenNguoiKy ?? '',
+                      },
+                    )
+                    .toList() ??
+                []),
+        ].toList();
+
+    if (signatureFlow.isNotEmpty) {
+      // Kiểm tra user có trong flow không
+      final currentIndex = signatureFlow.indexWhere(
+        (s) => s["id"] == userInfo.tenDangNhap,
+      );
+      if (currentIndex == -1) {
+        AppUtility.showSnackBar(
+          context,
+          'Bạn không có quyền ký văn bản này',
+          isError: true,
+        );
+        return;
+      }
+      if (signatureFlow[currentIndex]["signed"] == true) {
+        AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
+        return;
+      }
+      log('signatureFlow: ${signatureFlow.toString()}');
+      log('item: ${jsonEncode(widget.listAssetTransfer)}');
+      final matchingTransfers = widget.listAssetTransfer.where(
+        (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
+      );
+
+      log('tenFile: ${jsonEncode(_selectedAssetTransfer)}');
+
+      _selectedAssetTransfer =
+          matchingTransfers.isNotEmpty ? matchingTransfers.first : null;
+
+      final tenFile = _selectedAssetTransfer?.tenFile;
+      if (tenFile == null || tenFile.isEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Không tìm thấy tệp để xem/ ký',
+          isError: true,
+        );
+        return;
+      }
+
+      _loadPdfNetwork(tenFile).then((_) {
+        if (mounted) {
+          previewDocumentHandover(
+            context: context,
+            item: item,
+            itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+            provider: widget.provider,
+            document: _document,
+          );
+        }
+      });
+    } else {
+      AppUtility.showSnackBar(
+        context,
+        'Bạn không có quyền ký biên bản này',
+        isError: true,
+      );
+    }
+  }
+
+  void _handleSendToSigner(List<AssetHandoverDto> items) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return;
+    }
+    // bool hasNonZero = items.any((item) => item.trangThai != 0);
+    // if (hasNonZero) {
+    //   AppUtility.showSnackBar(
+    //     context,
+    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
+    //     isError: true,
+    //   );
+    //   return;
+    // }
+
+    showConfirmDialog(
+      context,
+      type: ConfirmType.delete,
+      title: 'Chia sẻ',
+      message: 'Bạn có chắc muốn chia sẻ với người ký?',
+      cancelText: 'Không',
+      confirmText: 'Chia sẻ',
+      onConfirm: () {
+        context.read<AssetHandoverBloc>().add(
+          SendToSignerAsetHandoverEvent(context, items),
+        );
+      },
+    );
+  }
+
+  // build detail department tree
+  void _buildDetailDepartmentTree(AssetHandoverDto item) {
+    listSignatoryDetail.clear();
+    selected = item;
+    listSignatoryDetail = [
+      ThreadNode(header: 'Trạng thái ký', depth: 0),
+      ThreadNode(
+        header: 'Đại diện đơn vị để nghị:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daXacNhan == true,
+          widget.provider
+              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+      ThreadNode(
+        header: 'Đại diện đơn vị giao:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daiDienBenGiaoXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idDaiDienBenGiao ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+      ThreadNode(
+        header: 'Đại diện đơn vị nhận:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daiDienBenNhanXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idDaiDienBenNhan ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
+    ];
+  }
+
+  Widget viewSignatoryStatus(bool isDone, String name) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          name,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: isDone ? Colors.green : Colors.red,
+          ),
+        ),
+        Visibility(
+          visible: isDone,
+          child: Tooltip(
+            message: 'Đã ký',
+            child: Icon(Icons.check_circle, color: Colors.green, size: 18),
+          ),
+        ),
+      ],
+    );
   }
 }

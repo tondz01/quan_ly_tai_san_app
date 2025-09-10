@@ -3,13 +3,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class StaffManager extends StatefulWidget {
@@ -19,9 +20,24 @@ class StaffManager extends StatefulWidget {
   State<StaffManager> createState() => _StaffManagerState();
 }
 
-class _StaffManagerState extends State<StaffManager> {
+class _StaffManagerState extends State<StaffManager> with RouteAware {
   bool showForm = false;
   NhanVien? editingStaff;
+  late int totalEntries;
+  late int totalPages = 0;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = 10;
+  int currentPage = 1;
+
+  final ScrollController horizontalController = ScrollController();
+  final TextEditingController controller = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
+  List<NhanVien> _filteredData = [];
+  List<NhanVien> dataPage = [];
+  bool isFirstLoad = false;
+
+  bool isShowInput = false;
 
   void _showForm([NhanVien? staff]) {
     setState(() {
@@ -30,39 +46,74 @@ class _StaffManagerState extends State<StaffManager> {
     });
   }
 
-  final ScrollController horizontalController = ScrollController();
-  final TextEditingController controller = TextEditingController();
-  final TextEditingController searchController = TextEditingController();
-  List<NhanVien> _filteredData = [];
-  bool isFirstLoad = false;
+  void onPageChanged(int page) {
+    setState(() {
+      currentPage = page;
+      _updatePagination();
+    });
+  }
 
-  bool isShowInput = false;
-  void _showDeleteDialog(BuildContext context, NhanVien staff) {
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Xác nhận xóa'),
-            content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Hủy'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<StaffBloc>().add(DeleteStaff(staff));
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text('Xóa'),
-              ),
-            ],
-          ),
-    );
+  void onRowsPerPageChanged(int? value) {
+    setState(() {
+      if (value == null) return;
+      rowsPerPage = value;
+      currentPage = 1;
+      _updatePagination();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StaffBloc>().add(
+        const LoadStaffs(),
+      ); // Sửa LoadStaff thành LoadStaffs
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StaffBloc>().add(
+        const LoadStaffs(),
+      ); // Sửa LoadStaff thành LoadStaffs
+    });
+  }
+
+  @override
+  void didPopNext() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StaffBloc>().add(
+        const LoadStaffs(),
+      ); // Sửa StaffLoaded() thành LoadStaffs()
+    });
   }
 
   void _searchStaff(String value) {
     context.read<StaffBloc>().add(SearchStaff(value));
+  }
+
+  void _updatePagination() {
+    // Sử dụng _filteredData thay vì _data
+    totalEntries = _filteredData.length;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+    dataPage =
+        _filteredData.isNotEmpty
+            ? _filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
   }
 
   @override
@@ -72,12 +123,12 @@ class _StaffManagerState extends State<StaffManager> {
         if (state is StaffLoaded) {
           List<NhanVien> staffs = state.staffs;
           _filteredData = staffs;
-
+          _updatePagination();
           return Scaffold(
             backgroundColor: Colors.transparent,
             appBar: AppBar(
               title: HeaderComponent(
-                controller: controller,
+                controller: searchController,
                 onSearchChanged: (value) {
                   log('value: $value');
                   setState(() {
@@ -91,6 +142,16 @@ class _StaffManagerState extends State<StaffManager> {
                   });
                 },
                 mainScreen: 'Quản lý nhân viên',
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                },
+                onExportData: () {
+                  AppUtility.exportData(
+                    context,
+                    "Danh sách nhân viên",
+                    staffs.map((e) => e.toJson()).toList(),
+                  );
+                },
               ),
             ),
             body: Column(
@@ -99,6 +160,7 @@ class _StaffManagerState extends State<StaffManager> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: CommonPageView(
+                      title: 'Chi tiết nhân viên',
                       childInput: StaffFormPage(
                         staff: editingStaff,
                         staffs: staffs,
@@ -113,13 +175,16 @@ class _StaffManagerState extends State<StaffManager> {
                             }),
                       ),
                       childTableView: StaffList(
-                        data: _filteredData,
+                        data: dataPage,
                         onChangeDetail: (item) {
                           _showForm(item);
                           isShowInput = true;
                         },
                         onDelete: (item) {
-                          _showDeleteDialog(context, item);
+                          setState(() {
+                            isShowInput = false;
+                            context.read<StaffBloc>().add(DeleteStaff(item));
+                          });
                         },
                         onEdit: (item) {
                           _showForm(item);
@@ -137,17 +202,17 @@ class _StaffManagerState extends State<StaffManager> {
                 Visibility(
                   visible: (staffs.length) >= 5,
                   child: SGPaginationControls(
-                    totalPages: 1,
-                    currentPage: 1,
-                    rowsPerPage: 10,
+                    totalPages: totalPages,
+                    currentPage: currentPage,
+                    rowsPerPage: rowsPerPage,
                     controllerDropdownPage: controller,
                     items: [
                       DropdownMenuItem(value: 10, child: Text('10')),
                       DropdownMenuItem(value: 20, child: Text('20')),
                       DropdownMenuItem(value: 50, child: Text('50')),
                     ],
-                    onPageChanged: (page) {},
-                    onRowsPerPageChanged: (rows) {},
+                    onPageChanged: onPageChanged,
+                    onRowsPerPageChanged: onRowsPerPageChanged,
                   ),
                 ),
               ],

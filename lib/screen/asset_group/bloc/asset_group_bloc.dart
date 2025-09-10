@@ -45,10 +45,11 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
       event.params,
     );
     emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(CreateAssetGroupSuccessState(data: result['data'].toString()));
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
+        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      emit(CreateAssetGroupSuccessState());
     } else {
-      String msg = "Lỗi khi tạo nhóm tài sản";
+      String msg = "Lỗi khi tạo nhóm tài sản ${result['message']}";
       emit(
         CreateAssetGroupFailedState(
           title: "notice",

@@ -452,17 +452,20 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                child: TableBaseConfig.tableBase<T>(
-                  columns: newColumns,
-                  isShowCheckboxes: widget.isShowCheckboxes,
-                  data: _filteredData,
-                  searchTerm: widget.searchTerm,
-                  onRowTap: (item) {
-                    widget.onRowTap?.call(item);
-                  },
-                  onSelectionChanged: (items) {
-                    widget.onSelectionChanged?.call(items);
-                  },
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TableBaseConfig.tableBase<T>(
+                    columns: newColumns,
+                    isShowCheckboxes: widget.isShowCheckboxes,
+                    data: _filteredData,
+                    searchTerm: widget.searchTerm,
+                    onRowTap: (item) {
+                      widget.onRowTap?.call(item);
+                    },
+                    onSelectionChanged: (items) {
+                      widget.onSelectionChanged?.call(items);
+                    },
+                  ),
                 ),
               ),
             ),

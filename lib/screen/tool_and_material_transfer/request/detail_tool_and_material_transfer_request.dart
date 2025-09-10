@@ -1,29 +1,29 @@
-class ChiTietDieuDongRequest {
+class ChiTietBanGiaoRequest {
   final String id;
-  final String idDieuDongTaiSan;
-  final String idTaiSan;
+  final String idDieuDongCCDCVatTu;
+  final String idCCDCVatTu;
   final int soLuong;
+  final String idChiTietCCDCVatTu;
+  final int soLuongXuat;
   final String ghiChu;
-  final String ngayTao;
-  final String ngayCapNhat;
   final String nguoiTao;
   final String nguoiCapNhat;
   final bool isActive;
 
-  ChiTietDieuDongRequest({
+  ChiTietBanGiaoRequest({
     required this.id,
-    required this.idDieuDongTaiSan,
-    required this.idTaiSan,
+    required this.idDieuDongCCDCVatTu,
+    required this.idCCDCVatTu,
     required this.soLuong,
+    required this.idChiTietCCDCVatTu,
+    required this.soLuongXuat,
     required this.ghiChu,
-    required this.ngayTao,
-    required this.ngayCapNhat,
     required this.nguoiTao,
     required this.nguoiCapNhat,
     required this.isActive,
   });
 
-  factory ChiTietDieuDongRequest.fromJson(Map<String, dynamic> json) {
+  factory ChiTietBanGiaoRequest.fromJson(Map<String, dynamic> json) {
     bool parseBool(dynamic v) {
       if (v is bool) return v;
       if (v is num) return v != 0;
@@ -36,14 +36,14 @@ class ChiTietDieuDongRequest {
       return int.tryParse(v?.toString() ?? '0') ?? 0;
     }
 
-    return ChiTietDieuDongRequest(
+    return ChiTietBanGiaoRequest(
       id: json['id'] ?? '',
-      idDieuDongTaiSan: json['idDieuDongTaiSan'] ?? '',
-      idTaiSan: json['idTaiSan'] ?? '',
+      idDieuDongCCDCVatTu: json['idDieuDongCCDCVatTu'] ?? '',
+      idCCDCVatTu: json['idCCDCVatTu'] ?? '',
       soLuong: parseInt(json['soLuong']),
+      idChiTietCCDCVatTu: json['idChiTietCCDCVatTu'] ?? '',
+      soLuongXuat: parseInt(json['soLuongXuat']),
       ghiChu: json['ghiChu'] ?? '',
-      ngayTao: json['ngayTao'] ?? '',
-      ngayCapNhat: json['ngayCapNhat'] ?? '',
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: parseBool(json['isActive']),
@@ -53,38 +53,38 @@ class ChiTietDieuDongRequest {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'idDieuDongTaiSan': idDieuDongTaiSan,
-      'idTaiSan': idTaiSan,
+      'idDieuDongCCDCVatTu': idDieuDongCCDCVatTu,
+      'idCCDCVatTu': idCCDCVatTu,
       'soLuong': soLuong,
+      'idChiTietCCDCVatTu': idChiTietCCDCVatTu,
+      'soLuongXuat': soLuongXuat,
       'ghiChu': ghiChu,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
     };
   }
 
-  ChiTietDieuDongRequest copyWith({
+  ChiTietBanGiaoRequest copyWith({
     String? id,
-    String? idDieuDongTaiSan,
-    String? idTaiSan,
+    String? idDieuDongCCDCVatTu,
+    String? idCCDCVatTu,
     int? soLuong,
+    String? idChiTietCCDCVatTu,
+    int? soLuongXuat,
     String? ghiChu,
-    String? ngayTao,
-    String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
     bool? isActive,
   }) {
-    return ChiTietDieuDongRequest(
+    return ChiTietBanGiaoRequest(
       id: id ?? this.id,
-      idDieuDongTaiSan: idDieuDongTaiSan ?? this.idDieuDongTaiSan,
-      idTaiSan: idTaiSan ?? this.idTaiSan,
+      idDieuDongCCDCVatTu: idDieuDongCCDCVatTu ?? this.idDieuDongCCDCVatTu,
+      idCCDCVatTu: idCCDCVatTu ?? this.idCCDCVatTu,
       soLuong: soLuong ?? this.soLuong,
+      idChiTietCCDCVatTu: idChiTietCCDCVatTu ?? this.idChiTietCCDCVatTu,
+      soLuongXuat: soLuongXuat ?? this.soLuongXuat,
       ghiChu: ghiChu ?? this.ghiChu,
-      ngayTao: ngayTao ?? this.ngayTao,
-      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,

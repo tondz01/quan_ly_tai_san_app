@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,7 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreci
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 
 class AssetManagementView extends StatefulWidget {
   const AssetManagementView({super.key});
@@ -38,6 +39,26 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         listen: false,
       ).onInit(context);
     });
+    log('message test: initState');
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _searchController.dispose();
+    _searchKhauHaoController.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AssetManagementProvider>(
+        context,
+        listen: false,
+      ).onInit(context);
+    });
+    log('message test: didChangeDependencies');
   }
 
   @override
@@ -78,6 +99,21 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     },
                     mainScreen: "Quản lý tài sản",
                     subScreen: provider.subScreen,
+                    onFileSelected: (fileName, filePath, fileBytes) {
+                      provider.onSubmit(
+                        context,
+                        fileName ?? '',
+                        filePath ?? '',
+                        fileBytes ?? Uint8List(0),
+                      );
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách tài sản",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                   ),
                 ),
                 body: Column(

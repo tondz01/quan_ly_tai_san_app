@@ -1,17 +1,26 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverRepository extends ApiBase {
+  late final SignatoryRepository _signatoryRepository;
+
+  AssetHandoverRepository() {
+    _signatoryRepository = SignatoryRepository();
+  }
+
   Future<Map<String, dynamic>> getListAssetHandover() async {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     List<AssetHandoverDto> list = [];
@@ -28,13 +37,26 @@ class AssetHandoverRepository extends ApiBase {
         return result;
       }
 
+      List<AssetHandoverDto> assetHandover =
+          ResponseParser.parseToList<AssetHandoverDto>(
+            response.data,
+            AssetHandoverDto.fromJson,
+          );
+      await Future.wait(
+        assetHandover.map((assetHandover) async {
+          try {
+            final signatories = await _signatoryRepository.getAll(
+              assetHandover.id.toString(),
+            );
+            assetHandover.listSignatory = signatories;
+          } catch (e) {
+            assetHandover.listSignatory = [];
+          }
+        }),
+      );
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
-        response.data,
-        AssetHandoverDto.fromJson,
-      );
-      log('message filteredData  result ${result}');
+      result['data'] = assetHandover;
     } catch (e) {
       SGLog.error(
         "AssetHandoverRepository",
@@ -80,6 +102,7 @@ class AssetHandoverRepository extends ApiBase {
 
   Future<Map<String, dynamic>> createAssetHandover(
     Map<String, dynamic> request,
+    List<SignatoryDto> listSignatory,
   ) async {
     Map<String, dynamic> result = {
       'data': "",
@@ -97,6 +120,25 @@ class AssetHandoverRepository extends ApiBase {
       if (!isOk) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
+      }
+      for (var signatory in listSignatory) {
+        final signatoryCopy = signatory.copyWith(
+          idTaiLieu: request['id'].toString(),
+        );
+        final responseSignatory = await post(
+          EndPointAPI.SIGNATORY,
+          data: signatoryCopy.toJson(),
+        );
+        final int? statusSignatory = responseSignatory.statusCode;
+        final bool isOkSignatory =
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS ||
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+            statusSignatory == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+        if (!isOkSignatory) {
+          result['status_code'] =
+              statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
+          return result;
+        }
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
@@ -178,7 +220,12 @@ class AssetHandoverRepository extends ApiBase {
   }
 
   //Cập nhập trạng thái phiếu ký nội sinh
-  Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
+  Future<Map<String, dynamic>> updateState(
+    String id,
+    String idNhanVien,
+    List<Map<String, dynamic>> request,
+    String idDieuChuyen,
+  ) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -192,17 +239,59 @@ class AssetHandoverRepository extends ApiBase {
         result['status_code'] = response.statusCode;
         return result;
       }
+      log('message test16: ${response.data}');
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      final dynamic payload = response.data;
+
+      // Lấy ra mã data (int) dù server trả Map hay int thô
+      final int? dataCode =
+          (payload is Map)
+              ? int.tryParse(payload['data']?.toString() ?? '')
+              : int.tryParse(payload.toString());
+
+      // Lưu lại nếu cần
+      result['data'] = payload;
+      if (dataCode == 3) {
+        await UpdateOwnershipUnit().updateAssetOwnership(request);
+        await updateStateAssetTransfer(idDieuChuyen, true);
+      }
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateStateAssetTransfer(
+    String id,
+    bool trangThaiBanGiao,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/update-trang-thai-ban-giao?id=$id&trangThaiBanGiao=$trangThaiBanGiao',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<AssetHandoverDto>(
-        response.data,
-        AssetHandoverDto.fromJson,
-      );
-      log('response.data điều động: ${result['data']}');
+      result['data'] = response.data;
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      log(
+        "Error at updateStateBanGiao - AssetTransferRepository: $e",
+      );
     }
 
     return result;
@@ -236,6 +325,99 @@ class AssetHandoverRepository extends ApiBase {
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> sendToSigner(
+    List<AssetHandoverDto> items,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    UserInfoDTO currentUser = AccountHelper.instance.getUserInfo()!;
+    try {
+      for (var item in items) {
+        final Map<String, dynamic> request = {
+          "id": item.id,
+          "idCongTy": item.idCongTy ?? '',
+          "banGiaoTaiSan": item.banGiaoTaiSan ?? '',
+          "quyetDinhDieuDongSo": item.quyetDinhDieuDongSo ?? '',
+          "lenhDieuDong": item.lenhDieuDong ?? '',
+          "idDonViGiao": item.idDonViGiao ?? '',
+          "idDonViNhan": item.idDonViNhan ?? '',
+          "ngayBanGiao": item.ngayBanGiao ?? '',
+          "idLanhDao": item.idLanhDao ?? '',
+          "idDaiDiendonviBanHanhQD": item.idDaiDiendonviBanHanhQD ?? '',
+          "daXacNhan": item.daXacNhan ?? '',
+          "idDaiDienBenGiao": item.idDaiDienBenGiao ?? '',
+          "daiDienBenGiaoXacNhan": item.daiDienBenGiaoXacNhan ?? '',
+          "idDaiDienBenNhan": item.idDaiDienBenNhan ?? '',
+          "daiDienBenNhanXacNhan": item.daiDienBenNhanXacNhan ?? '',
+          "idDonViDaiDien": item.idDonViDaiDien ?? '',
+          "donViDaiDienXacNhan": item.donViDaiDienXacNhan ?? '',
+          "trangThai": item.trangThai ?? '',
+          "note": item.note ?? '',
+          "ngayTao": item.ngayTao ?? '',
+          "ngayCapNhat": DateTime.now().toIso8601String(),
+          "nguoiTao": item.nguoiTao ?? '',
+          "nguoiCapNhat": currentUser.tenDangNhap,
+          "isActive": item.isActive ?? '',
+          "share": true,
+          "tenFile": item.tenFile ?? '',
+          "duongDanFile": item.duongDanFile ?? '',
+        };
+        final response = await put(
+          '${EndPointAPI.ASSET_TRANSFER}/${item.id}',
+          data: request,
+        );
+        if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+          result['data'] = response.data;
+        } else {
+          result['status_code'] = response.statusCode;
+        }
+      }
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+    } catch (e) {
+      log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateOwnershipUnit(
+    Map<String, dynamic> request,
+    String id,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': "",
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        "${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/update-so-luong",
+        data: request,
+      );
+      final int? status = response.statusCode;
+      final bool isOk =
+          status == Numeral.STATUS_CODE_SUCCESS ||
+          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOk) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at updateAsset - AssetManagementRepository: $e",
+      );
     }
 
     return result;

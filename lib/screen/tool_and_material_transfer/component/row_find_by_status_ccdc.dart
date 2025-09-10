@@ -26,9 +26,6 @@ class _FilterCheckboxes extends StatelessWidget {
     final filterStates = {
       'all': provider.isShowAll,
       'draft': provider.isShowDraft,
-      'waitingForConfirmation': provider.isShowWaitingForConfirmation,
-      'confirmed': provider.isShowConfirmed,
-      'browser': provider.isShowBrowser,
       'approve': provider.isShowApprove,
       'cancel': provider.isShowCancel,
       'complete': provider.isShowComplete,
@@ -38,9 +35,6 @@ class _FilterCheckboxes extends StatelessWidget {
     final filterCounts = {
       'all': provider.allCount,
       'draft': provider.draftCount,
-      'waitingForConfirmation': provider.waitingForConfirmationCount,
-      'confirmed': provider.confirmedCount,
-      'browser': provider.browserCount,
       'approve': provider.approveCount,
       'cancel': provider.cancelCount,
       'complete': provider.completeCount,
@@ -50,9 +44,6 @@ class _FilterCheckboxes extends StatelessWidget {
     final filterColors = {
       'all': FilterStatus.all.activeColor,
       'draft': FilterStatus.draft.activeColor,
-      'waitingForConfirmation': FilterStatus.waitingForConfirmation.activeColor,
-      'confirmed': FilterStatus.confirmed.activeColor,
-      'browser': FilterStatus.browser.activeColor,
       'approve': FilterStatus.approve.activeColor,
       'cancel': FilterStatus.cancel.activeColor,
       'complete': FilterStatus.complete.activeColor,
@@ -72,15 +63,6 @@ class _FilterCheckboxes extends StatelessWidget {
             break;
           case 'draft':
             status = FilterStatus.draft;
-            break;
-          case 'waitingForConfirmation':
-            status = FilterStatus.waitingForConfirmation;
-            break;
-          case 'confirmed':
-            status = FilterStatus.confirmed;
-            break;
-          case 'browser':
-            status = FilterStatus.browser;
             break;
           case 'approve':
             status = FilterStatus.approve;

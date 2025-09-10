@@ -426,46 +426,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
                             ),
                             const SizedBox(height: 16),
 
-                            DropdownButtonFormField<String>(
-                              value:
-                                  _activityController.text.isNotEmpty
-                                      ? _activityController.text
-                                      : null,
-                              decoration: inputDecoration(
-                                'Hoạt động',
-                                required: true,
-                              ),
-                              items: [
-                                DropdownMenuItem(
-                                  value: 'Có',
-                                  child: Text('Có'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'Không',
-                                  child: Text('Không'),
-                                ),
-                              ],
-                              onChanged:
-                                  isEditing
-                                      ? (value) {
-                                        setState(() {
-                                          _activityController.text =
-                                              value ?? '';
-                                          _isActive = value == 'Có';
-                                        });
-                                      }
-                                      : null,
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Chọn hoạt động'
-                                          : null,
-                              isExpanded: true,
-                            ),
-                            const SizedBox(height: 16),
                             DropdownButtonFormField<PhongBan>(
                               value: _phongBan,
-                              decoration: inputDecoration('Phòng/Ban cấp trên'),
+                              decoration: inputDecoration('Phòng/Ban'),
                               items:
                                   context
                                       .read<StaffBloc>()
@@ -557,59 +520,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      OutlinedButton(
-                        onPressed: () {
-                          if (widget.onCancel != null) {
-                            widget.onCancel!();
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF7B8EC8),
-                          side: const BorderSide(color: Color(0xFFE6EAF3)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Hủy'),
-                      ),
-                      const Spacer(),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (_isCanSave) {
-                            _save();
-                          } else {
-                            if (_pinController.text.isEmpty) {
-                              AppUtility.showSnackBar(
-                                context,
-                                'Vui lòng nhập mã PIN để lấy Agreement UUID',
-                                isError: true,
-                              );
-                            } else if (_agreementUUIdController.text.isEmpty) {
-                              AppUtility.showSnackBar(
-                                context,
-                                'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
-                                isError: true,
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2264E5),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                        ),
-                        child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -865,7 +775,23 @@ class _StaffFormPageState extends State<StaffFormPage> {
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
               onPressed: () {
-                widget.onSaved?.call();
+                if (_isCanSave) {
+                  _save();
+                } else {
+                  if (_pinController.text.isEmpty) {
+                    AppUtility.showSnackBar(
+                      context,
+                      'Vui lòng nhập mã PIN để lấy Agreement UUID',
+                      isError: true,
+                    );
+                  } else if (_agreementUUIdController.text.isEmpty) {
+                    AppUtility.showSnackBar(
+                      context,
+                      'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
+                      isError: true,
+                    );
+                  }
+                }
               },
             ),
             const SizedBox(width: 8),
@@ -875,13 +801,15 @@ class _StaffFormPageState extends State<StaffFormPage> {
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
               onPressed: () {
-                widget.onCancel?.call();
+                if (widget.onCancel != null) {
+                  widget.onCancel!();
+                }
               },
             ),
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa nhóm tài sản',
+          text: 'Chỉnh sửa nhân viên',
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,

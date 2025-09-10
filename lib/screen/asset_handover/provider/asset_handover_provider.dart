@@ -12,16 +12,17 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
   draft('Nháp', ColorValue.silverGray),
-  ready('Sẵn sàng', ColorValue.lightAmber),
-  confirm('Xác nhận', ColorValue.mediumGreen),
-  browser('Trình duyệt', ColorValue.lightBlue),
+  browser('Duyệt', ColorValue.lightBlue),
   complete('Hoàn thành', ColorValue.forestGreen),
   cancel('Hủy', ColorValue.coral);
 
@@ -34,6 +35,7 @@ class AssetHandoverProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  bool get isFindNew => _isFindNew;
   List<AssetHandoverDto>? get dataPage => _dataPage;
   List<DieuDongTaiSanDto>? get dataAssetTransfer => _dataAssetTransfer;
   List<PhongBan>? get dataDepartment => _dataDepartment;
@@ -43,6 +45,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
   AssetHandoverDto? get item => _item;
   get data => _data;
+  get userInfo => _userInfo;
   get filteredData => _filteredData;
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
@@ -50,7 +53,6 @@ class AssetHandoverProvider with ChangeNotifier {
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
-  bool get isShowReady => _filterStatus[FilterStatus.ready] ?? false;
   bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
@@ -59,14 +61,12 @@ class AssetHandoverProvider with ChangeNotifier {
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
-  int get readyCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get browserCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
-  int get cancelCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
+  int get cancelCount =>
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
 
   set isLoading(bool value) {
     _isLoading = value;
@@ -84,7 +84,7 @@ class AssetHandoverProvider with ChangeNotifier {
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   bool _hasUnsavedChanges = false;
-
+  bool _isFindNew = false;
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
@@ -125,6 +125,8 @@ class AssetHandoverProvider with ChangeNotifier {
   List<AssetHandoverDto> _filteredData = [];
   final List<SgTableColumn<AssetHandoverDto>> _columns = [];
   AssetHandoverDto? _item;
+
+  UserInfoDTO? _userInfo;
 
   // Method để refresh data và filter
   void refreshData(BuildContext context) {
@@ -215,23 +217,18 @@ class AssetHandoverProvider with ChangeNotifier {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.ready] == true &&
+            if (_filterStatus[FilterStatus.browser] == true &&
                 (itemStatus == 1)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true &&
+            if (_filterStatus[FilterStatus.cancel] == true &&
                 (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 3)) {
-              return true;
-            }
-
             if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 4)) {
+                (itemStatus == 3)) {
               return true;
             }
 
@@ -272,7 +269,6 @@ class AssetHandoverProvider with ChangeNotifier {
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
     FilterStatus.draft: false,
-    FilterStatus.ready: false,
     FilterStatus.browser: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
@@ -281,6 +277,7 @@ class AssetHandoverProvider with ChangeNotifier {
   // Nội dung tìm kiếm
 
   void onInit(BuildContext context) {
+    _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
     controllerDropdownPage = TextEditingController(text: '10');
 
@@ -315,7 +312,6 @@ class AssetHandoverProvider with ChangeNotifier {
 
   void getListAssetHandover(BuildContext context) {
     _isLoading = true;
-    log('message filteredData  getListAssetHandover');
     Future.microtask(() {
       context.read<AssetHandoverBloc>().add(GetListAssetHandoverEvent(context));
     });
@@ -333,7 +329,6 @@ class AssetHandoverProvider with ChangeNotifier {
       startIndex = 0;
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
-    log('message _filteredData ${_filteredData}');
     dataPage =
         _filteredData.isNotEmpty
             ? _filteredData.sublist(
@@ -350,7 +345,6 @@ class AssetHandoverProvider with ChangeNotifier {
   }
 
   void onRowsPerPageChanged(int? value) {
-    log('message onRowsPerPageChanged: $value');
     if (value == null) return;
     rowsPerPage = value;
     currentPage = 1;
@@ -358,12 +352,17 @@ class AssetHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetail(BuildContext context, AssetHandoverDto? item) {
+  void onChangeDetail(
+    BuildContext context,
+    AssetHandoverDto? item, {
+    bool isFindNew = false,
+  }) {
     if (item != null) {
       getListDetailAssetMobilization(item.lenhDieuDong ?? '');
     }
     _confirmBeforeLeaving(context, item);
 
+    _isFindNew = isFindNew;
     notifyListeners();
   }
 
@@ -392,14 +391,18 @@ class AssetHandoverProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
       _item = null;
-      log('message _filteredData state.data.isEmpt ${_filteredData}');
     } else {
       _filteredData.clear();
       _data?.clear();
-      _data = state.data;
+      _data =
+          state.data
+              .where(
+                (item) =>
+                    item.share == true || item.nguoiTao == userInfo?.tenDangNhap,
+              )
+              .toList();
 
       _filteredData = List.from(_data!);
-      log('message _filteredData ${_filteredData}');
       _updatePagination();
     }
     _isLoading = false;
@@ -427,10 +430,8 @@ class AssetHandoverProvider with ChangeNotifier {
                 TextButton(
                   onPressed: () {
                     _item = item;
-                    log('message onChangeDetail: $_item');
                     isShowInput = true;
                     isShowCollapse = true;
-                    log('message _item: $_item');
                     hasUnsavedChanges = false;
                     Navigator.of(context).pop();
                   },
@@ -460,11 +461,11 @@ class AssetHandoverProvider with ChangeNotifier {
 
   Future<void> getListDetailAssetMobilization(String id) async {
     if (id.isEmpty) return;
-    _isLoading = true;
+    // _isLoading = true;
     final Map<String, dynamic> result = await AssetHandoverRepository()
         .getListDetailAssetMobilization(id);
     _dataDetailAssetMobilization = result['data'];
-    _isLoading = false;
+    // _isLoading = false;
     notifyListeners();
   }
 
@@ -475,5 +476,57 @@ class AssetHandoverProvider with ChangeNotifier {
       orElse: () => NhanVien(),
     );
     return found;
+  }
+
+  int isCheckSigningStatus(AssetHandoverDto item) {
+    final signatureFlow =
+        [
+          {
+            "id": item.idDaiDiendonviBanHanhQD,
+            "signed": item.daXacNhan == true,
+            "label": "Người tạo",
+          },
+          {
+            "id": item.idDaiDienBenGiao,
+            "signed": item.daiDienBenGiaoXacNhan == true,
+            "label": "Trưởng phòng",
+          },
+          {
+            "id": item.idDaiDienBenNhan,
+            "signed": item.daiDienBenNhanXacNhan == true,
+            "label": "Phó phòng Đơn vị giao",
+          },
+          if (item.listSignatory?.isNotEmpty ?? false)
+            ...(item.listSignatory
+                    ?.map(
+                      (e) => {
+                        "id": e.idNguoiKy,
+                        "signed": e.trangThai == 1,
+                        "label": e.tenNguoiKy ?? '',
+                      },
+                    )
+                    .toList() ??
+                []),
+        ].toList();
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    if (currentIndex == -1) {
+      return -1;
+    }
+
+    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+  }
+
+  NhanVien getNhanVienByID(String idNhanVien) {
+    if (_dataStaff != null && _dataStaff!.isNotEmpty) {
+      return _dataStaff!.firstWhere(
+        (item) => item.id == idNhanVien,
+        orElse: () => const NhanVien(),
+      );
+    } else {
+      return const NhanVien();
+    }
   }
 }

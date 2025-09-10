@@ -426,8 +426,8 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
             idCongTy: item.idCongTy ?? 'CT001',
             rule: 0,
             isActive: true,
-            ngayTao: DateTime.parse(getDateNow()),
-            ngayCapNhat: DateTime.parse(getDateNow()),
+            ngayTao: getDateNow(),
+            ngayCapNhat: getDateNow(),
           );
           setState(() {
             lableTitle = 'Tạo account cho nhân viên ${item.hoTen}';

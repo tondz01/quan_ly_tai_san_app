@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
@@ -24,9 +24,6 @@ import '../model/dieu_dong_tai_san_dto.dart';
 enum FilterStatus {
   all('Tất cả', ColorValue.darkGrey),
   draft('Nháp', ColorValue.silverGray),
-  waitingForConfirmation('Chờ xác nhận', ColorValue.lightAmber),
-  confirmed('Xác nhận', ColorValue.mediumGreen),
-  browser('Chờ duyệt', ColorValue.lightBlue),
   approve('Duyệt', ColorValue.cyan),
   cancel('Hủy', ColorValue.coral),
   complete('Hoàn thành', ColorValue.forestGreen);
@@ -45,6 +42,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   DieuDongTaiSanDto? get item => _item;
   get itemPreview => _itemPreview;
   get data => _data;
+  get filteredData => _filteredData;
   get dataAsset => _dataAsset;
   get dataPhongBan => _dataPhongBan;
   get dataNhanVien => _dataNhanVien;
@@ -55,10 +53,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
-  bool get isShowWaitingForConfirmation =>
-      _filterStatus[FilterStatus.waitingForConfirmation] ?? false;
-  bool get isShowConfirmed => _filterStatus[FilterStatus.confirmed] ?? false;
-  bool get isShowBrowser => _filterStatus[FilterStatus.browser] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
   bool get isShowCancel => _filterStatus[FilterStatus.cancel] ?? false;
   bool get isShowComplete => _filterStatus[FilterStatus.complete] ?? false;
@@ -67,18 +61,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   int get allCount => _data?.length ?? 0;
   int get draftCount =>
       _data?.where((item) => (item.trangThai ?? 0) == 0).length ?? 0;
-  int get waitingForConfirmationCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
-  int get confirmedCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
-  int get browserCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
   int get approveCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 4).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 1).length ?? 0;
   int get cancelCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 5).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 2).length ?? 0;
   int get completeCount =>
-      _data?.where((item) => (item.trangThai ?? 0) == 6).length ?? 0;
+      _data?.where((item) => (item.trangThai ?? 0) == 3).length ?? 0;
 
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -155,8 +143,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   void changeIsShowPreview(DieuDongTaiSanDto? itemPreview) {
-      _itemPreview = itemPreview;
-      notifyListeners();
+    _itemPreview = itemPreview;
+    notifyListeners();
   }
 
   void setFilterStatus(FilterStatus status, bool? value) {
@@ -185,45 +173,27 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     List<DieuDongTaiSanDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(_data!);
-      log('Filtro por estado: todos los datos (${statusFiltered.length})');
     } else {
       statusFiltered =
           _data!.where((item) {
             int itemStatus = item.trangThai ?? 0;
-            log('itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true &&
                 (itemStatus == 0)) {
               return true;
             }
-
-            if (_filterStatus[FilterStatus.waitingForConfirmation] == true &&
-                itemStatus == 1) {
+            if (_filterStatus[FilterStatus.approve] == true &&
+                (itemStatus == 1)) {
               return true;
             }
-
-            if (_filterStatus[FilterStatus.confirmed] == true &&
+            if (_filterStatus[FilterStatus.cancel] == true &&
                 (itemStatus == 2)) {
               return true;
             }
 
-            if (_filterStatus[FilterStatus.browser] == true &&
+            if (_filterStatus[FilterStatus.complete] == true &&
                 (itemStatus == 3)) {
               return true;
             }
-            if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 4)) {
-              return true;
-            }
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 5)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 6)) {
-              return true;
-            }
-
             return false;
           }).toList();
     }
@@ -259,17 +229,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   final Map<FilterStatus, bool> _filterStatus = {
     FilterStatus.all: false,
     FilterStatus.draft: false,
-    FilterStatus.waitingForConfirmation: false,
-    FilterStatus.confirmed: false,
-    FilterStatus.browser: false,
     FilterStatus.approve: false,
     FilterStatus.cancel: false,
     FilterStatus.complete: false,
   };
 
   void onInit(BuildContext context, int typeDieuDongTaiSan) {
-    log('onInit: Starting initialization for type: $typeDieuDongTaiSan');
-
     // Không gọi onDispose() ở đây để tránh mất dữ liệu
     // onDispose();
 
@@ -303,7 +268,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     endIndex = 0;
     currentPage = 1;
 
-    log('onDispose DieuDongTaiSanProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
@@ -323,7 +287,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       );
       bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
       bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
-      
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -415,26 +378,26 @@ class DieuDongTaiSanProvider with ChangeNotifier {
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
               .where((item) {
-                final idSignatureGroup1 =
-                    [item.nguoiTao,
-                    item.idPhoPhongDonViGiao,
-                    item.idTruongPhongDonViGiao,
-                    ].whereType<String>().toList();
-                final idSignatureGroup2 =
+                return item.share == true ||
+                    item.nguoiTao == userInfo?.tenDangNhap;
+              })
+              .where((item) {
+                final idSignatureGroup =
                     [
+                      item.nguoiTao,
+                      item.idNguoiKyNhay,
                       item.idTrinhDuyetCapPhong,
                       item.idTrinhDuyetGiamDoc,
+                      if (item.listSignatory != null)
+                        ...item.listSignatory!.map((e) => e.idNguoiKy),
                     ].whereType<String>().toList();
 
-                final inGroup1 = idSignatureGroup1.contains(userInfo.tenDangNhap);
-                final inGroup2 = idSignatureGroup2.contains(userInfo.tenDangNhap);
-
-                return (inGroup2 && (item.trangThai ?? 0) >= 3) || inGroup1;
+                final inGroup = idSignatureGroup
+                    .map((e) => e.toLowerCase())
+                    .contains(userInfo.tenDangNhap.toLowerCase());
+                return inGroup;
               })
               .toList();
-      log(
-        'message _data typeDieuDongTaiSan: $typeDieuDongTaiSan} -- ${jsonEncode(state.data)}',
-      );
       _filteredData = List.from(_data!);
     }
     _updatePagination();
@@ -524,6 +487,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     getDataAll(context);
     notifyListeners();
   }
+
   void updateSignatureSuccess(
     BuildContext context,
     UpdateSigningStatusSuccessState state,
@@ -556,6 +520,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     BuildContext context,
     LenhDieuDongRequest request,
     List<ChiTietDieuDongRequest> requestDetail,
+    List<SignatoryDto> listSignatory,
     String fileName,
     String filePath,
     Uint8List fileBytes,
@@ -571,8 +536,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       return;
     }
     request = request.copyWith(
-      // duongDanFile: result['filePath'] ?? '',
-      // tenFile: result['fileName'] ?? '',
+      duongDanFile: result['filePath'] ?? '',
+      tenFile: result['fileName'] ?? '',
     );
 
     SGLog.debug(
@@ -581,7 +546,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     );
     if (context.mounted) {
       final bloc = context.read<DieuDongTaiSanBloc>();
-      bloc.add(CreateDieuDongEvent(context, request, requestDetail));
+      bloc.add(
+        CreateDieuDongEvent(context, request, requestDetail, listSignatory),
+      );
     }
 
     notifyListeners();
@@ -608,14 +575,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
               : await AssetTransferRepository().uploadFile(filePath);
       final statusCode = result['status_code'] as int? ?? 0;
       if (statusCode >= 200 && statusCode < 300) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tệp "$fileName" đã được tải lên thành công'),
-              backgroundColor: Colors.green.shade600,
-            ),
-          );
-        }
+        // if (context.mounted) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text('Tệp "$fileName" đã được tải lên thành công'),
+        //       backgroundColor: Colors.green.shade600,
+        //     ),
+        //   );
+        // }
         return result['data'];
       } else {
         if (context.mounted) {
@@ -673,5 +640,52 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       default:
         return 'Quản lý tài sản';
     }
+  }
+
+  int isCheckSigningStatus(DieuDongTaiSanDto item) {
+    final signatureFlow =
+        [
+          {"id": item.nguoiTao, "signed": -1, "label": "Người tạo"},
+          if (item.nguoiLapPhieuKyNhay == true)
+            {
+              "id": item.idNguoiKyNhay,
+              "signed": item.trangThaiKyNhay == true,
+              "label": "Người ký nháy",
+            },
+          {
+            "id": item.idTrinhDuyetCapPhong,
+            "signed": item.trinhDuyetCapPhongXacNhan == true,
+            "label": "Trình duyệt cấp phòng",
+          },
+          {
+            "id": item.idTrinhDuyetGiamDoc,
+            "signed": item.trinhDuyetGiamDocXacNhan == true,
+            "label": "Giám đốc",
+          },
+          if (item.listSignatory != null)
+            ...item.listSignatory!.map(
+              (e) => {
+                "id": e.idNguoiKy,
+                "signed": e.trangThai == 1,
+                "label": e.tenNguoiKy,
+              },
+            ),
+        ].toList();
+
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo.tenDangNhap,
+    );
+    
+    // Kiểm tra nếu không tìm thấy user trong signatureFlow
+    if (currentIndex == -1 || currentIndex >= signatureFlow.length) {
+      return -1; // User không có trong danh sách ký
+    }
+    
+    final currentSigner = signatureFlow[currentIndex];
+    if (currentSigner["signed"] == -1) {
+      return -1;
+    }
+
+    return currentSigner["signed"] == true ? 1 : 0;
   }
 }

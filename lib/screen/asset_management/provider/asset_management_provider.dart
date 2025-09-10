@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -13,23 +13,19 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 enum ShowBody { taiSan, khauHao }
 
 class AssetManagementProvider with ChangeNotifier {
   get error => _error;
-  bool get isLoading =>
-      _data == null ||
-      _dataGroup == null ||
-      _dataProject == null ||
-      _dataCapitalSource == null ||
-      _dataDepartment == null ||
-      _dataKhauHao == null;
+  bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   bool get isShowInputKhauHao => _isShowInputKhauHao;
@@ -59,6 +55,10 @@ class AssetManagementProvider with ChangeNotifier {
   get itemsPhongBan => _itemsPhongBan;
   get itemsCountry => _itemsCountry;
 
+  get selectedFileName => _selectedFileName;
+  get selectedFilePath => _selectedFilePath;
+  get selectedFileBytes => _selectedFileBytes;
+
   set isShowInput(bool value) {
     _isShowInput = value;
     notifyListeners();
@@ -83,7 +83,7 @@ class AssetManagementProvider with ChangeNotifier {
 
   Widget? _body;
 
-  // bool _isLoading = true;
+  bool _isLoading = true;
   bool _isShowInput = false;
   bool _isShowCollapse = false;
   bool _isShowInputKhauHao = false;
@@ -91,6 +91,9 @@ class AssetManagementProvider with ChangeNotifier {
   String? _error;
 
   String? _subScreen;
+  String? _selectedFileName;
+  String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
 
   UserInfoDTO? _userInfo;
 
@@ -145,6 +148,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<Map<String, bool>?> checkBoxAssetGroup = [];
   onInit(BuildContext context) {
     reset();
+    log('message onInit');
     _userInfo = AccountHelper.instance.getUserInfo();
     onLoadItemDropdown();
     onCloseDetail(context);
@@ -161,13 +165,14 @@ class AssetManagementProvider with ChangeNotifier {
   }
 
   reset() {
-    // _isLoading = true;
+    _isLoading = true;
     onChangeBody(ShowBody.taiSan);
     clearFilter();
   }
 
   Future<void> getDataAll(BuildContext context) async {
     try {
+      _isLoading = true;
       final bloc = context.read<AssetManagementBloc>();
       String idCongTy = _userInfo?.idCongTy ?? '';
       // Gọi song song, không cần delay
@@ -221,7 +226,6 @@ class AssetManagementProvider with ChangeNotifier {
         list.add(element);
       }
     }
-    log('getListChildAssetsByIdAsset: ${list.length}');
     return list;
   }
 
@@ -245,9 +249,11 @@ class AssetManagementProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       // _filteredData = [];
+      _isLoading = false;
     } else {
       _data = state.data;
       _filteredData = List.from(_data!); // Khởi tạo filteredData
+      _isLoading = false;
     }
     notifyListeners();
   }
@@ -260,6 +266,7 @@ class AssetManagementProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _dataChildAssets = [];
       // _filteredData = [];
+      log('message getListChildAssetsSuccess: ${state.data}');
     } else {
       _dataChildAssets = state.data;
       _filteredData = List.from(_dataChildAssets!); // Khởi tạo filteredData
@@ -357,6 +364,7 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
+    log('getListCapitalSourceSuccess: ${_itemsNguonKinhPhi?.length}');
     notifyListeners();
   }
 
@@ -373,6 +381,7 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
+    log('getListDepartmentSuccess: ${_itemsPhongBan?.length}');
     notifyListeners();
   }
 
@@ -385,10 +394,7 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateAssetSuccess(
-    BuildContext context,
-    UpdateAssetSuccessState state,
-  ) {
+  void updateAssetSuccess(BuildContext context, UpdateAssetSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
     getDataAll(context);
@@ -499,5 +505,75 @@ class AssetManagementProvider with ChangeNotifier {
     ];
 
     log('onLoadItemDropdown itemsHienTrang: ${_itemsHienTrang.length}');
+  }
+
+  void onSubmit(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) {
+    _selectedFileName = fileName;
+    _selectedFilePath = filePath;
+    _selectedFileBytes = fileBytes;
+    insertData(context, fileName, filePath, fileBytes);
+    notifyListeners();
+  }
+
+  Future<Map<String, dynamic>?> insertData(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await AssetManagementRepository().insertDataFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await AssetManagementRepository().insertDataFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     content: Text('Tệp "$fileName" đã được tải lên thành công'),
+          //     backgroundColor: Colors.green.shade600,
+          //   ),
+          // );
+          getDataAll(context);
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
   }
 }

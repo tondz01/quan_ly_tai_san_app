@@ -11,6 +11,7 @@ import 'tool_and_material_transfer_event.dart'
         GetDataDropdownEvent,
         GetListAssetEvent,
         GetListToolAndMaterialTransferEvent,
+        SendToSignerTAMTEvent,
         ToolAndMaterialTransferEvent,
         UpdateSigningTAMTStatusEvent,
         UpdateToolAndMaterialTransferEvent;
@@ -27,6 +28,7 @@ class ToolAndMaterialTransferBloc
     on<DeleteToolAndMaterialTransferEvent>(_deleteToolAndMaterialTransfer);
     on<UpdateSigningTAMTStatusEvent>(_updateSigningStatus);
     on<CancelToolAndMaterialTransferEvent>(_cancelDieuDongTaiSan);
+    on<SendToSignerTAMTEvent>(_sendToSigner);
   }
 
   Future<void> _getListToolAndMaterialTransfer(
@@ -103,7 +105,11 @@ class ToolAndMaterialTransferBloc
     emit(ToolAndMaterialTransferInitialState());
     emit(ToolAndMaterialTransferLoadingState());
     Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
-        .createToolAndMaterialTransfer(event.request, event.requestDetail);
+        .createToolAndMaterialTransfer(
+          event.request,
+          event.requestDetail,
+          event.requestSignatory,
+        );
     emit(ToolAndMaterialTransferLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(CreateDieuDongSuccessState());
@@ -184,6 +190,27 @@ class ToolAndMaterialTransferBloc
     }
   }
 
+  Future<void> _sendToSigner(SendToSignerTAMTEvent event, Emitter emit) async {
+    emit(ToolAndMaterialTransferInitialState());
+    emit(ToolAndMaterialTransferLoadingState());
+    emit(ToolAndMaterialTransferLoadingState());
+    Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+        .sendToSigner(event.params);
+    emit(ToolAndMaterialTransferLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(UpdateDieuDongSuccessState(data: result['data'].toString()));
+    } else {
+      String msg = "Lỗi khi gửi lệnh điều động CCDC - Vật tư";
+      emit(
+        PutPostDeleteFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
   Future<void> _cancelDieuDongTaiSan(
     CancelToolAndMaterialTransferEvent event,
     Emitter emit,
@@ -197,7 +224,7 @@ class ToolAndMaterialTransferBloc
       emit(CancelToolAndMaterialTransferSuccessState());
     } else {
       String msg =
-          "Lỗi khi cập nhập trạng thái lệnh điều động ${result['message']}";
+          "Lỗi khi cập nhập trạng thái lệnh điều động CCDC - Vật tư ${result['message']}";
       emit(
         UpdateSigningTAMTStatusFailedState(
           title: "notice",

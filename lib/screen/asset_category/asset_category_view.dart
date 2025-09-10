@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/provider/asset_category_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/widget/asset_category_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/widget/asset_category_list.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetCategoryView extends StatefulWidget {
@@ -74,6 +75,16 @@ class _AssetCategoryViewState extends State<AssetCategoryView> {
                       provider.onChangeDetail(null);
                     },
                     mainScreen: 'Mô hình tài sản',
+                    onFileSelected: (fileName, filePath, fileBytes) {
+                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    },
+                    onExportData: () {
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách mô hình tài sản",
+                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      );
+                    },
                   ),
                 ),
                 body: Column(

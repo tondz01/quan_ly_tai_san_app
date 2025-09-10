@@ -8,7 +8,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_list.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
@@ -56,14 +56,14 @@ class _ToolAndMaterialTransferViewState
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Đảm bảo dữ liệu được tải lại khi màn hình được focus lại
-    if (ModalRoute.of(context)?.isCurrent == true && _isInitialized) {
-      _reloadData();
-    }
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // Đảm bảo dữ liệu được tải lại khi màn hình được focus lại
+  //   if (ModalRoute.of(context)?.isCurrent == true && _isInitialized) {
+  //     _reloadData();
+  //   }
+  // }
 
   void _initData() {
     log('currentType _initData ccdc vt: $currentType');
@@ -150,7 +150,7 @@ class _ToolAndMaterialTransferViewState
                             typeAssetTransfer: currentType,
                             idCongTy: 'CT001',
                           ),
-                          title: "Chi tiết điều chuyển tài sản",
+                          title: "Chi tiết điều chuyển CCDC - Vật tư",
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,
                           onExpandedChanged: (isExpanded) {

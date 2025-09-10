@@ -1,8 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -122,7 +119,6 @@ class _CommonFormInputState extends State<CommonFormInput> {
         }
       });
     }
-    log('message _updateControllerText: ${widget.controller.text}');
   }
 
   @override

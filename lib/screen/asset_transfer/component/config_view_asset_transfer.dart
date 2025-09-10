@@ -8,16 +8,10 @@ abstract class ConfigViewAT {
       case 0:
         return 'Nháp';
       case 1:
-        return 'Chờ xác nhận';
-      case 2:
-        return 'Xác nhận';
-      case 3:
-        return 'Chờ Duyệt';
-      case 4:
         return 'Duyệt';
-      case 5:
+      case 2:
         return 'Hủy';
-      case 6:
+      case 3:
         return 'Hoàn thành';
       default:
         return '';
@@ -36,6 +30,28 @@ abstract class ConfigViewAT {
         ),
         child: SGText(
           text: getStatus(status),
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+  static Widget showShareStatus(bool isShare, bool isMyCreated) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color: isShare ? Colors.green : Colors.red,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text: isShare ? isMyCreated ? 'Đã chia sẻ': "Được chia sẻ" : 'Chưa chia sẻ',
           size: 12,
           style: TextStyle(
             fontWeight: FontWeight.w500,

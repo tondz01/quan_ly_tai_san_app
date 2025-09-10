@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_list.dart';
 
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'bloc/role_state.dart';
 import 'provider/role_provide.dart';
@@ -71,6 +72,16 @@ class _RoleViewState extends State<RoleView> {
                   },
                   mainScreen: 'Quản lý chức vụ',
                   subScreen: provider.subScreen,
+                  onFileSelected: (fileName, filePath, fileBytes) {
+                    AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                  },
+                  onExportData: () {
+                    AppUtility.exportData(
+                      context,
+                      "Danh sách chức vụ",
+                      provider.data?.map((e) => e.toJson()).toList() ?? [],
+                    );
+                  },
                 ),
               ),
               // body: DepartmentTreeDemo(),
@@ -80,6 +91,7 @@ class _RoleViewState extends State<RoleView> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: CommonPageView(
+                        title: 'Chi tiết chức vụ',
                         childInput: RoleDetail(provider: provider),
                         childTableView: RoleList(provider: provider),
                         isShowInput: provider.isShowInput,

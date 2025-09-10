@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:async'; // Add this import for unawaited
 
+import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
@@ -49,7 +50,6 @@ class AssetGroupRepository extends ApiBase {
       'data': data,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-
     try {
       final response = await post(
         EndPointAPI.ASSET_GROUP,
@@ -59,11 +59,13 @@ class AssetGroupRepository extends ApiBase {
       unawaited(
         post(
           EndPointAPI.ASSET_GROUP_V2,
-          data: {
-            'action': 'create_asset_group',
-            'timestamp': DateTime.now().toIso8601String(),
-            'params': params.toJson(),
-          },
+          data: params.toJson(),
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
         ),
       );
 

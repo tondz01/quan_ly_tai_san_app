@@ -3,13 +3,14 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/project_manager_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/pages/project_form_page.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class ProjectManager extends StatefulWidget {
@@ -93,6 +94,16 @@ class _ProjectManagerState extends State<ProjectManager> {
                   });
                 },
                 mainScreen: 'Quản lý dự án',
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                },
+                onExportData: () {
+                  AppUtility.exportData(
+                    context,
+                    "Danh sách dự án",
+                    data.map((e) => e.toJson()).toList(),
+                  );
+                },
               ),
             ),
             body: Column(

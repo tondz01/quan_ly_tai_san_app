@@ -1,10 +1,12 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' show PdfDocument, PdfPageView;
+import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
@@ -33,13 +35,14 @@ Widget previewDocumentAssetHandover({
   return InkWell(
     onTap: () {
       if (item == null) return;
+      log("message check itemV1 ${jsonEncode(item)}");
       previewDocumentHandover(
         context: context,
         item: item,
         provider: provider,
         isShowKy: isShowKy,
         itemsDetail: itemsDetail,
-        document: document
+        document: document,
       );
     },
     child: Row(
@@ -86,6 +89,53 @@ previewDocumentHandover({
       '${Config.baseUrl}/api/upload/download/$tenFileChuKyNhay';
   String urlChuKyThuong =
       '${Config.baseUrl}/api/upload/download/$tenFileChuKyThuong';
+
+  String getChucVu(String idUser) {
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+    final chucVu = AccountHelper.instance.getChucVuById(
+      nhanVien?.chucVuId ?? '',
+    );
+    return chucVu?.tenChucVu ?? '';
+  }
+
+  String getDonVi(String idUser) {
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+    final donVi = AccountHelper.instance.getDepartmentById(
+      nhanVien?.phongBanId ?? '',
+    );
+    return donVi?.tenPhongBan ?? '';
+  }
+
+  List<SigneInfo> listSigneInfo = [
+    SigneInfo(
+      idNhanVien: item.idDaiDiendonviBanHanhQD ?? '',
+      hoTen: item.tenDaiDienBanHanhQD ?? '',
+      chucVu: getChucVu(item.idDaiDiendonviBanHanhQD ?? ''),
+      donVi: getDonVi(item.idDaiDiendonviBanHanhQD ?? ''),
+    ),
+    SigneInfo(
+      idNhanVien: item.idDaiDienBenGiao ?? '',
+      hoTen: item.tenDaiDienBenGiao ?? '',
+      chucVu: getChucVu(item.idDaiDienBenGiao ?? ''),
+      donVi: getDonVi(item.idDaiDienBenGiao ?? ''),
+    ),
+    SigneInfo(
+      idNhanVien: item.idDaiDienBenNhan ?? '',
+      hoTen: item.tenDaiDienBenNhan ?? '',
+      chucVu: getChucVu(item.idDaiDienBenNhan ?? ''),
+      donVi: getDonVi(item.idDaiDienBenNhan ?? ''),
+    ),
+    ...item.listSignatory?.map(
+          (e) => SigneInfo(
+            idNhanVien: e.idNguoiKy ?? '',
+            hoTen: e.tenNguoiKy ?? '',
+            chucVu: getChucVu(e.idNguoiKy ?? ''),
+            donVi: getDonVi(e.idNguoiKy ?? ''),
+          ),
+        ) ??
+        [],
+    // SigneInfo(
+  ];
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -111,7 +161,7 @@ previewDocumentHandover({
                 scale: 1.2,
                 maxWidth: 800,
                 maxHeight: 800 * (297 / 210),
-                child: ContractPage.assetHandoverPage(item, itemsDetail),
+                child: ContractPage.assetHandoverPageV2(item, itemsDetail, listSigneInfo),
               ),
             ],
             signatureList: [urlChuKyNhay, urlChuKyThuong],
@@ -126,13 +176,23 @@ previewDocumentHandover({
               final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
                 context,
               );
+              final request =
+                  itemsDetail
+                      .map(
+                        (e) => {"id": e.idTaiSan, "idDonVi": item.idDonViNhan},
+                      )
+                      .toList();
+
               assetHandoverBloc.add(
                 UpdateSigningStatusEvent(
                   context,
                   item.id.toString(),
                   userInfo.tenDangNhap,
+                  request,
+                  item.lenhDieuDong.toString(),
                 ),
               );
+              // Chạy song song tất cả
             },
           ),
         ),

@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -12,7 +14,8 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/document_upload_widget.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -20,23 +23,28 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
 
 class AssetHandoverDetail extends StatefulWidget {
   final AssetHandoverProvider provider;
+  final bool isFindNew;
   final bool isEditing;
-  final bool isNew;
+  final int type;
 
   const AssetHandoverDetail({
     super.key,
-    this.isEditing = false,
-    this.isNew = false,
     required this.provider,
+    this.isEditing = false,
+    this.isFindNew = false,
+    this.type = 0,
   });
 
   @override
@@ -50,17 +58,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
-  late TextEditingController controllerLeader = TextEditingController();
+  // late TextEditingController controllerLeader = TextEditingController();
   late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
       TextEditingController();
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
-  late TextEditingController controllerRepresentativeUnit =
-      TextEditingController();
+  // late TextEditingController controllerRepresentativeUnit =
+  //     TextEditingController();
 
   bool isEditing = false;
+  bool isNew = false;
   UserInfoDTO? currentUser;
 
   bool isUnitConfirm = false;
@@ -72,6 +81,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   String? proposingUnit;
   String? _selectedFileName;
   String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
 
   AssetHandoverDto? item;
 
@@ -97,6 +107,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   DieuDongTaiSanDto? dieuDongTaiSan;
 
   PdfDocument? _document;
+  // Danh sách người ký bổ sung và controller tương ứng
+  final List<NhanVien?> _additionalSigners = [];
+  final List<TextEditingController> _additionalSignerControllers = [];
+  List<AdditionalSignerData> _additionalSignersDetailed = [];
 
   @override
   void initState() {
@@ -107,18 +121,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     super.initState();
   }
 
-  Future<void> _loadPdfNetwork(String nameFile) async {
-    try {
-      final document = await PdfDocument.openUri(Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"));
-      setState(() {
-        _document = document;
-      });
-    } catch (e) {
-      setState(() {
-        _document = null;
-      });
-      SGLog.error("Error loading PDF", e.toString());
-    }
+  Future<void> _loadPdf(String path) async {
+    final document = await PdfDocument.openFile(path);
+    setState(() {
+      _document = document;
+    });
   }
 
   @override
@@ -138,18 +145,18 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   bool editable() {
     return (item != null &&
-        (item!.trangThai == 0 || item!.trangThai == 3) &&
-        item!.nguoiTao == currentUser?.id);
+        (item!.trangThai == 0 || item!.trangThai == 2) &&
+        item!.nguoiTao == currentUser?.tenDangNhap);
   }
 
   void _initData() {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+    isNew = widget.isFindNew;
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
 
     if (editable()) {
-      log('message item ${item?.trangThai}');
       isEditing = true;
     } else {
       isEditing = false;
@@ -159,22 +166,41 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     listPhongBan = widget.provider.dataDepartment ?? [];
     listAssetTransfer =
         widget.provider.dataAssetTransfer
-            ?.where((element) => element.trangThai == 6)
+            ?.where((element) => element.trangThai == 3)
             .toList() ??
         [];
 
     if (item != null) {
+      if (widget.isFindNew) {
+        isEditing = widget.isFindNew;
+      }
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+      _selectedFileName = item?.tenFile ?? '';
+      _selectedFilePath = item?.duongDanFile ?? '';
       isRepresentativeUnitConfirm =
           item?.donViDaiDienXacNhan == "0" ? false : true;
       getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
+      _additionalSignersDetailed =
+          item?.listSignatory
+              ?.map(
+                (e) => AdditionalSignerData(
+                  employee: widget.provider.dataStaff?.firstWhere(
+                    (element) => element.id == e.idNguoiKy,
+                    orElse: () => NhanVien(),
+                  ),
+                ),
+              )
+              .toList() ??
+          [];
     } else {
       isUnitConfirm = false;
       isDelivererConfirm = false;
       isReceiverConfirm = false;
       isRepresentativeUnitConfirm = false;
+      _selectedFileName = null;
+      _selectedFilePath = null;
     }
     itemsNhanVien =
         listNhanVien.isNotEmpty
@@ -210,8 +236,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 )
                 .toList()
             : <DropdownMenuItem<DieuDongTaiSanDto>>[];
+    dieuDongTaiSan = null;
 
-    // Cập nhật controllers với dữ liệu mới
     setState(() {
       _updateControllers();
     });
@@ -256,9 +282,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (controllerTransferDate.text.isEmpty) {
       newValidationErrors['transferDate'] = true;
     }
-    if (controllerLeader.text.isEmpty) {
-      newValidationErrors['leader'] = true;
-    }
+    // if (controllerLeader.text.isEmpty) {
+    //   newValidationErrors['leader'] = true;
+    // }
     if (controllerIssuingUnitRepresentative.text.isEmpty) {
       newValidationErrors['issuingUnitRepresentative'] = true;
     }
@@ -268,9 +294,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (controllerReceiverRepresentative.text.isEmpty) {
       newValidationErrors['receiverRepresentative'] = true;
     }
-    if (controllerRepresentativeUnit.text.isEmpty) {
-      newValidationErrors['representativeUnit'] = true;
-    }
+    // if (controllerRepresentativeUnit.text.isEmpty) {
+    //   newValidationErrors['representativeUnit'] = true;
+    // }
 
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
@@ -288,16 +314,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (item != null) {
       controllerHandoverNumber.text = item?.id ?? '';
       controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
-      controllerOrder.text = item?.lenhDieuDong ?? '';
+       dieuDongTaiSan = listAssetTransfer.firstWhere(
+        (element) => element.id == item?.lenhDieuDong,
+        orElse: () => DieuDongTaiSanDto(),
+      );
+      controllerOrder.text = dieuDongTaiSan?.id ?? '';
+      widget.provider.getListDetailAssetMobilization(controllerOrder.text);
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
       controllerTransferDate.text = item?.ngayBanGiao ?? '';
-      controllerLeader.text = item?.tenLanhDao ?? '';
+      // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
       controllerDelivererRepresentative.text = item?.tenDaiDienBenGiao ?? '';
       controllerReceiverRepresentative.text = item?.tenDaiDienBenNhan ?? '';
-      controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
+      // controllerRepresentativeUnit.text = item?.tenDonViDaiDien ?? '';
     } else {
       isEditing = true;
       controllerHandoverNumber.text = '';
@@ -305,11 +336,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     }
   }
 
-  void _saveAssetHandover() {
-    context.read<AssetHandoverProvider>().isLoading = true;
+  Future<void> _saveAssetHandover() async {
+    if (!mounted) return;
+    final assetHandoverProvider = context.read<AssetHandoverProvider>();
+    final dieuDongProvider = context.read<DieuDongTaiSanProvider>();
+    final assetHandoverBloc = context.read<AssetHandoverBloc>();
 
-    String ngayBanGiao = "";
-    ngayBanGiao = _formatDate(controllerTransferDate.text);
+    assetHandoverProvider.isLoading = true;
+
+    DateTime ngaybangiao = DateFormat(
+      "dd/MM/yyyy HH:mm:ss",
+    ).parse(controllerTransferDate.text);
 
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
@@ -319,7 +356,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "lenhDieuDong": dieuDongTaiSan?.id ?? '',
       "idDonViGiao": donViGiao?.id ?? '',
       "idDonViNhan": donViNhan?.id ?? '',
-      "ngayBanGiao": ngayBanGiao,
       "idLanhDao": nguoiLanhDao?.id ?? '',
       "idDaiDiendonviBanHanhQD": nguoiDaiDienBanHanhQD?.id ?? '',
       "daXacNhan": isUnitConfirm,
@@ -327,27 +363,64 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
-      "idDonViDaiDien": nguoiDaiDienDonViDaiDien?.id ?? '',
-      "donViDaiDienXacNhan": isRepresentativeUnitConfirm,
-      "trangThai": 1,
-      "note": "",
+      "ngayBanGiao": ngaybangiao.toIso8601String(),
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
-      "nguoiTao": currentUser?.id ?? '',
-      "nguoiCapNhat": '',
+      "trangThai": 0,
+      "note": "",
+      "nguoiTao": currentUser?.tenDangNhap ?? '',
       "isActive": true,
+      "share": false,
     };
 
-    if (item == null) {
-      context.read<AssetHandoverBloc>().add(
-        CreateAssetHandoverEvent(context, request),
+    final List<SignatoryDto> listSignatory =
+        _additionalSignersDetailed
+            .map(
+              (e) => SignatoryDto(
+                id: UUIDGenerator.generateWithFormat("SIG-******"),
+                idTaiLieu: request['id'].toString(),
+                idPhongBan: e.department?.id ?? '',
+                idNguoiKy: e.employee?.id ?? '',
+                tenNguoiKy: e.employee?.hoTen ?? '',
+                trangThai: 1,
+              ),
+            )
+            .toList();
+
+    if (item == null || isNew) {
+      Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
+        context,
+        _selectedFileName ?? '',
+        _selectedFilePath ?? '',
+        _selectedFileBytes ?? Uint8List(0),
       );
-    }
-    {
-      int trangThai = item!.trangThai == 3 ? 1 : item!.trangThai!;
+      final newRequest = request;
+      newRequest['duongDanFile'] = result!['filePath'] ?? '';
+      newRequest['tenFile'] = result['fileName'] ?? '';
+      assetHandoverBloc.add(
+        CreateAssetHandoverEvent(newRequest, listSignatory),
+      );
+    } else {
+      int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
+      if (item!.tenFile != _selectedFileName ||
+          item!.duongDanFile != _selectedFilePath) {
+        Map<String, dynamic>? result = await dieuDongProvider
+            .uploadWordDocument(
+              context,
+              _selectedFileName ?? '',
+              _selectedFilePath ?? '',
+              _selectedFileBytes ?? Uint8List(0),
+            );
+        request['duongDanFile'] = result!['filePath'] ?? '';
+        request['tenFile'] = result['fileName'] ?? '';
+      } else {
+        request['duongDanFile'] = item!.duongDanFile ?? '';
+        request['tenFile'] = item!.tenFile ?? '';
+      }
       request['trangThai'] = trangThai;
-      request['nguoiCapNhat'] = currentUser?.id ?? '';
-      context.read<AssetHandoverBloc>().add(
+      request['share'] = item!.share ?? false;
+      request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
+      assetHandoverBloc.add(
         UpdateAssetHandoverEvent(context, request, item!.id!),
       );
     }
@@ -360,34 +433,34 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
-  String _formatDate(String date) {
-    String dateResult = "";
-    try {
-      if (date.isNotEmpty) {
-        if (date.contains("T")) {
-          dateResult = date;
-        } else {
-          List<String> dateParts = date.split('/');
-          if (dateParts.length == 3) {
-            DateTime date = DateTime(
-              int.parse(dateParts[2]),
-              int.parse(dateParts[1]),
-              int.parse(dateParts[0]),
-            );
-            dateResult = date.toIso8601String();
-          } else {
-            DateTime? parsedDate = DateTime.tryParse(date);
-            if (parsedDate != null) {
-              dateResult = parsedDate.toIso8601String();
-            }
-          }
-        }
-      }
-    } catch (e) {
-      dateResult = DateTime.now().toIso8601String();
-    }
-    return dateResult;
-  }
+  // String _formatDate(String date) {
+  //   String dateResult = "";
+  //   try {
+  //     if (date.isNotEmpty) {
+  //       if (date.contains("T")) {
+  //         dateResult = date;
+  //       } else {
+  //         List<String> dateParts = date.split('/');
+  //         if (dateParts.length == 3) {
+  //           DateTime date = DateTime(
+  //             int.parse(dateParts[2]),
+  //             int.parse(dateParts[1]),
+  //             int.parse(dateParts[0]),
+  //           );
+  //           dateResult = date.toIso8601String();
+  //         } else {
+  //           DateTime? parsedDate = DateTime.tryParse(date);
+  //           if (parsedDate != null) {
+  //             dateResult = parsedDate.toIso8601String();
+  //           }
+  //         }
+  //       }
+  //     }
+  //   } catch (e) {
+  //     dateResult = DateTime.now().toIso8601String();
+  //   }
+  //   return dateResult;
+  // }
 
   void _saveChanges() {
     if (!isEditing) return;
@@ -400,17 +473,27 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       );
       return;
     }
+    if ((_selectedFileName ?? '').isEmpty ||
+        (_selectedFilePath ?? '').isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        "Vui lòng chon file trước khi lưu",
+        isError: true,
+      );
+      return;
+    }
+
     _saveAssetHandover();
   }
 
-  void _cancelChanges() {
-    _updateControllers();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        widget.provider.hasUnsavedChanges = false;
-      }
-    });
-  }
+  // void _cancelChanges() {
+  //   _updateControllers();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (mounted) {
+  //       widget.provider.hasUnsavedChanges = false;
+  //     }
+  //   });
+  // }
 
   DieuDongTaiSanDto getAssetTransfer({
     required List<DieuDongTaiSanDto> listAssetTransfer,
@@ -436,13 +519,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   @override
   void dispose() {
+    for (final c in _additionalSignerControllers) {
+      c.dispose();
+    }
     // Giải phóng các controller
     controllerHandoverNumber.dispose();
     controllerDocumentName.dispose();
     controllerOrder.dispose();
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
-
+    controllerTransferDate.dispose();
+    // controllerLeader.dispose();
+    controllerIssuingUnitRepresentative.dispose();
+    controllerDelivererRepresentative.dispose();
+    controllerReceiverRepresentative.dispose();
+    // controllerRepresentativeUnit.dispose();
     super.dispose();
   }
 
@@ -460,7 +551,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget _buildTableDetail() {
     final screenWidth = MediaQuery.of(context).size.width;
     bool isWideScreen = screenWidth > 800;
-    log('message isEditing ${item?.trangThai}');
     return Column(
       children: [
         Row(
@@ -510,7 +600,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                       showConfirmDialog(
                         context,
                         type: ConfirmType.delete,
-                        title: 'Xác nhận hủy tạo phiếu Bàn giao}',
+                        title: 'Xác nhận hủy tạo phiếu Bàn giao',
                         cancelText: 'Không',
                         confirmText: 'Có',
                         message:
@@ -527,7 +617,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   ),
                 ),
                 Visibility(
-                  visible: item != null && ![0, 3, 4].contains(item!.trangThai),
+                  visible:
+                      item != null &&
+                      ![0, 2, 3].contains(item!.trangThai) &&
+                      !widget.isFindNew,
                   child: MaterialTextButton(
                     text: 'Hủy phiếu bàn giao',
                     icon: Icons.cancel,
@@ -561,7 +654,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               ],
             ),
             SgIndicator(
-              steps: ['Nháp', 'Chờ xác nhận', 'Chờ duyệt', 'Hủy', 'Hoàn thành'],
+              steps: ['Nháp', 'Duyệt', 'Hủy', 'Hoàn thành'],
               currentStep: item?.trangThai ?? 0,
               fontSize: 10,
             ),
@@ -580,33 +673,45 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             children: [
               _buildInfoAssetHandoverMobile(isWideScreen),
               const SizedBox(height: 20),
-              Visibility(
-                visible: _selectedFileName != null && _selectedFilePath != null,
-                child: DocumentUploadWidget(
-                  isEditing: false,
-                  selectedFileName: _selectedFileName,
-                  selectedFilePath: _selectedFilePath,
-                  validationErrors: _validationErrors,
-                  onFileSelected: (fileName, filePath, fileBytes) {},
-                  // onUpload: _uploadWordDocument,
-                  isUploading: false,
-                  label: 'Tài liệu Quyết định',
-                  errorMessage: 'Tài liệu quyết định là bắt buộc',
-                  hintText: 'Định dạng hỗ trợ: .pdf',
-                  allowedExtensions: ['pdf'],
-                ),
+              DocumentUploadWidget(
+                isEditing: isEditing,
+                selectedFileName: _selectedFileName,
+                selectedFilePath: _selectedFilePath,
+                validationErrors: _validationErrors,
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  setState(() {
+                    _selectedFileName = fileName;
+                    _selectedFilePath = filePath;
+                    _selectedFileBytes = fileBytes;
+                    if (fileName != null) {
+                      _loadPdf(filePath!);
+                    }
+                    if (_validationErrors.containsKey('document')) {
+                      _validationErrors.remove('document');
+                    }
+                  });
+                },
+                // onUpload: _uploadWordDocument,
+                isUploading: true,
+                label: 'Tài liệu Quyết định',
+                errorMessage: 'Tài liệu quyết định là bắt buộc',
+                hintText: 'Định dạng hỗ trợ: .pdf',
+                allowedExtensions: ['pdf'],
               ),
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: TableAssetMovementDetail(
-                  listDetailAssetMobilization:
-                      widget.provider.dataDetailAssetMobilization,
+              Visibility(
+                visible: dieuDongTaiSan != null,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: TableAssetMovementDetail(
+                    listDetailAssetMobilization:
+                        widget.provider.dataDetailAssetMobilization,
+                  ),
                 ),
               ),
               previewDocumentAssetHandover(
                 context: context,
-                item: item ?? getAssetHandoverPreview(),
+                item: getAssetHandoverPreview(),
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
                 isShowKy: false,
@@ -672,14 +777,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           fieldName: 'order',
           items: itemsAssetTransfer,
           onChanged: (value) {
-            dieuDongTaiSan = value;
             setState(() {
-              _selectedFileName = dieuDongTaiSan?.tenFile;
-              _selectedFilePath = dieuDongTaiSan?.duongDanFile;
-
-              if (dieuDongTaiSan?.tenFile!.isNotEmpty ?? true) {
-                _loadPdfNetwork(dieuDongTaiSan?.tenFile ?? '');
-              }
+              dieuDongTaiSan = value;
+              // if (dieuDongTaiSan?.tenFile!.isNotEmpty ?? true) {
+              //   _loadPdfNetwork(dieuDongTaiSan?.tenFile ?? '');
+              // }
 
               //change Đơn vị giao
               donViGiao = getPhongBan(
@@ -750,21 +852,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
         ),
-        CmFormDropdownObject<NhanVien>(
-          label: 'Lãnh đạo',
-          controller: controllerLeader,
-          isEditing: isEditing,
-          defaultValue:
-              item?.idLanhDao != null
-                  ? widget.provider.getNhanVien(idNhanVien: item!.idLanhDao!)
-                  : null,
-          fieldName: 'leader',
-          items: itemsNhanVien,
-          validationErrors: _validationErrors,
-          onChanged: (value) {
-            nguoiLanhDao = value;
-          },
-        ),
       ],
     );
   }
@@ -773,7 +860,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     return Column(
       children: [
         CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện Đơn vị ban hành QĐ',
+          label: 'Đại diện đơn vị đề nghị',
           controller: controllerIssuingUnitRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -801,7 +888,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện bên giao',
+          label: 'Đơn vị giao',
           controller: controllerDelivererRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -836,7 +923,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         CmFormDropdownObject<NhanVien>(
-          label: 'Đại diện bên nhận',
+          label: 'Đơn vị bên nhận',
           controller: controllerReceiverRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -870,31 +957,25 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             });
           },
         ),
-        CmFormDropdownObject<NhanVien>(
-          label: 'Đơn vị Đại diện',
-          controller: controllerRepresentativeUnit,
+        AdditionalSignersSelector(
+          addButtonText: "Thêm đơn bị đại diện",
+          labelDepartment: "Đơn vị đại diện",
           isEditing: isEditing,
-          defaultValue:
-              item?.idDonViDaiDien != null
-                  ? widget.provider.getNhanVien(
-                    idNhanVien: item!.idDonViDaiDien!,
-                  )
-                  : null,
-          fieldName: 'representativeUnit',
-          items: itemsNhanVien,
-          onChanged: (value) {
-            nguoiDaiDienDonViDaiDien = value;
-          },
-          validationErrors: _validationErrors,
-        ),
-        CommonCheckboxInput(
-          label: 'Đơn vị Đại diện đã xác nhận',
-          value: isRepresentativeUnitConfirm,
-          isEditing: isEditing,
-          isDisabled: true,
-          onChanged: (newValue) {
+          itemsNhanVien: itemsNhanVien,
+          phongBan: widget.provider.dataDepartment,
+          listNhanVien: listNhanVien,
+          initialSigners: _additionalSigners,
+          onChanged: (list) {
             setState(() {
-              isRepresentativeUnitConfirm = newValue;
+              _additionalSigners
+                ..clear()
+                ..addAll(list);
+            });
+          },
+          initialSignerData: _additionalSignersDetailed,
+          onChangedDetailed: (list) {
+            setState(() {
+              _additionalSignersDetailed = list;
             });
           },
         ),
@@ -903,6 +984,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   AssetHandoverDto? getAssetHandoverPreview() {
+    log("message check item getAssetHandoverPreview");
     return AssetHandoverDto(
       id: controllerHandoverNumber.text,
       idCongTy: currentUser?.idCongTy ?? '',
@@ -915,7 +997,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenDonViNhan: donViNhan?.tenPhongBan ?? '',
       idDonViDaiDien: nguoiDaiDienBanHanhQD?.id ?? '',
       tenDonViDaiDien: nguoiDaiDienBanHanhQD?.hoTen ?? '',
-      ngayBanGiao: _formatDate(controllerTransferDate.text),
+      ngayBanGiao: controllerTransferDate.text,
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',

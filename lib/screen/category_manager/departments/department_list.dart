@@ -1,10 +1,10 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -52,17 +52,46 @@ class _DepartmentListState extends State<DepartmentList> {
         width: 150,
       ),
       TableBaseConfig.columnWidgetBase<PhongBan>(
-        title: '',
+        title: 'Thao tác',
         cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<PhongBan>(
-              item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
-              onDelete: (item) {
-                widget.onDelete?.call(item);
-              },
-            ),
+            (item) =>
+                item.id == "P21"
+                    ? Tooltip(
+                      message: 'Đơn vị/phòng ban này là mặc định',
+                      child: Container(
+                        padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                        decoration: BoxDecoration(
+                          color: ColorValue.brightRed,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: SGText(
+                          text: 'Không thể xóa',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                    : TableBaseConfig.viewActionBase<PhongBan>(
+                      item: item,
+
+                      onDelete:
+                          item.id == "P21"
+                              ? null
+                              : (item) {
+                                if (item.id == "P21") {
+                                  AppUtility.showSnackBar(
+                                    context,
+                                    'Không thể xóa đơn vị/phòng ban đã chọn "Ban giám đốc"',
+                                    isError: true,
+                                  );
+                                  return;
+                                }
+                                widget.onDelete?.call(item);
+                              },
+                    ),
         width: 120,
         searchable: true,
       ),
@@ -105,7 +134,7 @@ class _DepartmentListState extends State<DepartmentList> {
                     ),
                     SizedBox(width: 8),
                     SGText(
-                      text: 'Danh sách nhân viên',
+                      text: 'Danh sách đơn vị/phòng ban',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -118,7 +147,7 @@ class _DepartmentListState extends State<DepartmentList> {
                   children: [
                     SGText(
                       text:
-                          'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                          'Danh sách đơn vị/phòng ban đã chọn: ${selectedItems.length}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -126,11 +155,11 @@ class _DepartmentListState extends State<DepartmentList> {
                       ),
                     ),
                     SizedBox(width: 16),
-                    IconButton(
-                      onPressed: () {
-                      },
-                      icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    ),
+                    // IconButton(
+                    //   onPressed: () {
+                    //   },
+                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                    // ),
                   ],
                 ),
               ],

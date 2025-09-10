@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/tool_and_supplies_handover_view.dart';
+
 import 'routes.dart';
 
 class AppRouteConf {
@@ -59,6 +61,15 @@ class AppRouteConf {
                 ),
           ),
           GoRoute(
+            path: AppRoute.toolAndSuppliesHandover.path,
+            name: AppRoute.toolAndSuppliesHandover.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const ToolAndSuppliesHandoverView(),
+                ),
+          ),
+          GoRoute(
             path: AppRoute.staffManager.path,
             name: AppRoute.staffManager.name,
             pageBuilder:
@@ -92,13 +103,7 @@ class AppRouteConf {
                   child: CapitalSourceManager(),
                 ),
           ),
-          GoRoute(
-            path: AppRoute.assetManager.path,
-            name: AppRoute.assetManager.name,
-            pageBuilder:
-                (context, state) =>
-                    NoTransitionPage(key: state.pageKey, child: AssetManager()),
-          ),
+         
           GoRoute(
             path: AppRoute.toolAndMaterialTransfer.path,
             name: AppRoute.toolAndMaterialTransfer.name,

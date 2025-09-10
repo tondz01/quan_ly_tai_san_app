@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/captital_source_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/pages/capital_source_form_page.dart';
-import 'package:quan_ly_tai_san_app/common/Component/header_component.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class CapitalSourceManager extends StatefulWidget {
@@ -91,6 +93,16 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                   });
                 },
                 mainScreen: 'Quản lý nguồn vốn',
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                },
+                onExportData: () {
+                  AppUtility.exportData(
+                    context,
+                    "Danh sách nguồn vốn",
+                    data.map((e) => e.toJson()).toList(),
+                  );
+                },
               ),
             ),
             body: Column(
@@ -99,6 +111,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: CommonPageView(
+                      title: 'Chi tiết nguồn vốn',
                       childInput: CapitalSourceFormPage(
                         capitalSource: editingCapitalSource,
                         onCancel: () {
