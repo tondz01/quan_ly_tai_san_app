@@ -30,6 +30,7 @@ class ToolAndMaterialTransferRequest {
   String duongDanFile;
   String tenFile;
   String ngayKy;
+  final bool daBanGiao;
 
   ToolAndMaterialTransferRequest({
     this.id = '',
@@ -63,6 +64,7 @@ class ToolAndMaterialTransferRequest {
     required this.duongDanFile,
     required this.tenFile,
     this.ngayKy = '',
+    required this.daBanGiao,
   });
 
   factory ToolAndMaterialTransferRequest.fromJson(Map<String, dynamic> json) {
@@ -110,6 +112,7 @@ class ToolAndMaterialTransferRequest {
       duongDanFile: json['duongDanFile'] ?? '',
       tenFile: json['tenFile'] ?? '',
       ngayKy: json['ngayKy']?.toString() ?? '',
+      daBanGiao: parseBool(json['daBanGiao']),
     );
   }
 
@@ -146,6 +149,7 @@ class ToolAndMaterialTransferRequest {
       'duongDanFile': duongDanFile,
       'tenFile': tenFile,
       'ngayKy': ngayKy,
+      'daBanGiao': daBanGiao,
     };
   }
 
@@ -181,6 +185,7 @@ class ToolAndMaterialTransferRequest {
     String? duongDanFile,
     String? tenFile,
     String? ngayKy,
+    bool? daBanGiao,
   }) {
     return ToolAndMaterialTransferRequest(
       id: id ?? this.id,
@@ -216,6 +221,7 @@ class ToolAndMaterialTransferRequest {
       duongDanFile: duongDanFile ?? this.duongDanFile,
       tenFile: tenFile ?? this.tenFile,
       ngayKy: ngayKy ?? this.ngayKy,
+      daBanGiao: daBanGiao ?? this.daBanGiao,
     );
   }
 
@@ -252,6 +258,7 @@ class ToolAndMaterialTransferRequest {
       duongDanFile: '',
       tenFile: '',
       ngayKy: '',
+      daBanGiao: false,
     );
   }
 }

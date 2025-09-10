@@ -607,7 +607,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.isEditing && state.donViDeNghi != null,
                           value: state.nguoiKyCapPhong,
                           items: [
-                            ...state.nvPhongGD.map(
+                            ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -841,6 +841,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tenFile: this.state.selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
+      daBanGiao: false,
     );
   }
 
@@ -962,6 +963,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         ngayKy: state.item!.ngayKy ?? DateTime.now().toIso8601String(),
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
         trangThai: trangThai,
+        daBanGiao: state.item!.daBanGiao ?? false,
       );
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {

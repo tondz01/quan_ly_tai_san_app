@@ -575,14 +575,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
               : await AssetTransferRepository().uploadFile(filePath);
       final statusCode = result['status_code'] as int? ?? 0;
       if (statusCode >= 200 && statusCode < 300) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tệp "$fileName" đã được tải lên thành công'),
-              backgroundColor: Colors.green.shade600,
-            ),
-          );
-        }
+        // if (context.mounted) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text('Tệp "$fileName" đã được tải lên thành công'),
+        //       backgroundColor: Colors.green.shade600,
+        //     ),
+        //   );
+        // }
         return result['data'];
       } else {
         if (context.mounted) {

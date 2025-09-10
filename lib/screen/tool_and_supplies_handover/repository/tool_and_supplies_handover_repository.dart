@@ -217,6 +217,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
   //Cập nhập trạng thái phiếu ký nội sinh
   Future<Map<String, dynamic>> updateState(
     String id,
+    String idDieuChuyen,
     String idNhanVien,
     List<Map<String, dynamic>> request,
     List<Map<String, dynamic>> requestQuantity,
@@ -248,9 +249,12 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
       // Lưu lại nếu cần
       result['data'] = payload;
+      log('dataCode: $dataCode');
       if (dataCode == 3) {
-        await UpdateOwnershipUnit().updateCCDTOwnership(request);
-        await UpdateOwnershipUnit().updateCCDTOwnershipQuantity(requestQuantity);
+        await UpdateOwnershipUnit().updateCCDTOwnershipQuantity(
+          requestQuantity,
+        );
+        await updateStateBanGiao(idDieuChuyen, true);
       }
       log('response.data điều động: ${result['data']}');
     } catch (e) {
@@ -288,6 +292,39 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateStateBanGiao(
+    String id,
+    bool trangThaiBanGiao,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/update-trang-thai-ban-giao?id=$id&trangThaiBanGiao=$trangThaiBanGiao',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = response.data;
+    } catch (e) {
+      log(
+        "Error at updateStateBanGiao - ToolAndMaterialTransferRepository: $e",
+      );
     }
 
     return result;

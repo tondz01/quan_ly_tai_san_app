@@ -133,7 +133,7 @@ prevDocumentCcdcHandover({
                           'idCCDCVT': e.idCCDCVatTu,
                           'idDonViSoHuu': item.idDonViNhan,
                           'soLuong': e.soLuongXuat,
-                          'thoiGianBanGiao': item.ngayTao,
+                          'thoiGianBanGiao': DateTime.now().toIso8601String(),
                           'ngayTao': item.ngayTao,
                           'nguoiTao': userInfo.tenDangNhap,
                           'idTsCon': e.idChiTietCCDCVatTu,
@@ -149,21 +149,19 @@ prevDocumentCcdcHandover({
                           'idDonViGui': item.idDonViGiao,
                           'idDonViNhan': item.idDonViNhan,
                           'soLuongBanGiao': e.soLuongXuat,
-                          'thoiGianBanGiao': item.ngayTao,
+                          'thoiGianBanGiao': DateTime.now().toIso8601String(),
                           'idTsCon': e.idChiTietCCDCVatTu,
                         },
                       )
                       .toList() ??
                   [];
-              log('request check: $request');
-              log('request requestQuantity: $requestQuantity');
-              if (dieuDongCcdc?.share == false) {
-                bloc.add(
-                  SendToSignerAsetHandoverEvent(context, [
-                    dieuDongCcdc!.copyWith(share: true),
-                  ]),
-                );
-              }
+              // if (dieuDongCcdc?.share == false) {
+              //   bloc.add(
+              //     SendToSignerAsetHandoverEvent(context, [
+              //       dieuDongCcdc!.copyWith(share: true),
+              //     ]),
+              //   );
+              // }
 
               bloc.add(
                 UpdateSigningStatusCcdcEvent(
@@ -172,6 +170,7 @@ prevDocumentCcdcHandover({
                   userInfo.tenDangNhap,
                   request,
                   requestQuantity,
+                  dieuDongCcdc.lenhDieuDong.toString(),
                 ),
               );
             },

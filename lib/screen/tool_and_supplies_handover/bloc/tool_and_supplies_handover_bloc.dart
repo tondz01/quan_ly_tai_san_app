@@ -192,6 +192,7 @@ class ToolAndSuppliesHandoverBloc
     Map<String, dynamic> result = await ToolAndSuppliesHandoverRepository()
         .updateState(
           event.id,
+          event.idDieuChuyen,
           event.userId,
           event.request,
           event.requestQuantity,

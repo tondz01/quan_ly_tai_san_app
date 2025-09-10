@@ -83,6 +83,7 @@ class ToolAndMaterialTransferDto {
   int? loai;
   bool? share;
   bool? isActive;
+  bool? daBanGiao;
   
   List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers;
   List<SignatoryDto>? listSignatory;
@@ -140,6 +141,7 @@ class ToolAndMaterialTransferDto {
     this.isActive,
     this.detailToolAndMaterialTransfers,
     this.listSignatory,
+    this.daBanGiao,
   });
 
   factory ToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -217,6 +219,7 @@ class ToolAndMaterialTransferDto {
       isActive: json['isActive'],
       detailToolAndMaterialTransfers: parseDetails(json['chiTietToolAndMaterialTransfers']),
       listSignatory: parseSignatory(json['listSignatory']),
+      daBanGiao: json['daBanGiao'],
     );
   }
 
@@ -274,6 +277,7 @@ class ToolAndMaterialTransferDto {
       "isActive": isActive,
       "chiTietToolAndMaterialTransfers": detailToolAndMaterialTransfers?.map((detail) => detail.toJson()).toList(),
       "listSignatory": listSignatory?.map((signatory) => signatory.toJson()).toList(),
+      "daBanGiao": daBanGiao,
     };
   }
   
@@ -331,6 +335,7 @@ class ToolAndMaterialTransferDto {
       isActive: true,
       detailToolAndMaterialTransfers: [],
       listSignatory: [],
+      daBanGiao: false,
     );
   }
 
@@ -388,6 +393,7 @@ class ToolAndMaterialTransferDto {
     bool? isActive,
     List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers,
     List<SignatoryDto>? listSignatory,
+    bool? daBanGiao,
   }) {
     return ToolAndMaterialTransferDto(
       id: id ?? this.id,

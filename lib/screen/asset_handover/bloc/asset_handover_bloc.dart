@@ -170,6 +170,7 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
       event.id,
       event.userId,
       event.request,
+      event.idDieuChuyen,
     );
     emit(AssetHandoverLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {

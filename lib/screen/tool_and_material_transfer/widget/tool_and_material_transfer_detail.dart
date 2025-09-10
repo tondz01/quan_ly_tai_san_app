@@ -871,7 +871,7 @@ class _ToolAndMaterialTransferDetailState
                           isEditing: isEditing,
                           value: nguoiKyCapPhong,
                           items: [
-                            ...nvPhongGD.map(
+                            ...listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -1121,6 +1121,7 @@ class _ToolAndMaterialTransferDetailState
       tenFile: _selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
+      daBanGiao: false,
     );
   }
 
@@ -1253,6 +1254,7 @@ class _ToolAndMaterialTransferDetailState
         trangThai: trangThai,
         share: item!.share ?? false,
         trangThaiKyNhay: item!.trangThaiKyNhay ?? false,
+        daBanGiao: item!.daBanGiao ?? false,
       );
       if (_detailsChanged()) {
         await _syncDetails(item!.id!);

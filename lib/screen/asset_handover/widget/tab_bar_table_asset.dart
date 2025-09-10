@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
@@ -22,9 +24,25 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
   void initState() {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
+    _getDataAssetTransfer();
+    log('dataAssetTransfer: ${dataAssetTransfer.length}');
+  }
+  @override
+  void dispose() {
+    super.dispose();
+    dataAssetTransfer = [];
+  }
+  @override
+  void didUpdateWidget(TabBarTableAsset oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _getDataAssetTransfer();
+  }
+
+  void _getDataAssetTransfer() {
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
             ?.where((element) => element.trangThai == 3)
+            .where((element) => element.daBanGiao == false)
             .toList() ??
         [];
   }

@@ -552,88 +552,103 @@ class _AssetDetailState extends State<AssetDetail> {
     );
   }
 
+  List<String> errorMessage = [];
+
   // Thêm: Hàm validate form trước khi lưu
   List<String> _validateForm() {
     final String tenTaiSan = ctrlTenTaiSan.text.trim();
     final String donViTinh = ctrlDonViTinh.text.trim();
 
-
     final int namSanXuat = int.tryParse(ctrlNamSanXuat.text.trim()) ?? 0;
 
     final num nguyenGia = AppUtility.parseCurrency(ctrlNguyenGia.text);
     final num giaTriThanhLy = AppUtility.parseCurrency(ctrlGiaTriThanhLy.text);
-
+    validationErrors['idDonViBanDau'] = false;
+    validationErrors['idDonViHienThoi'] = false;
+    validationErrors['donViBanDau'] = false;
     // Bắt buộc
     if (tenTaiSan.isEmpty) {
       validationErrors['tenTaiSan'] = true;
+      errorMessage.add('Tên tài sản');
     }
     if (ctrlMaTaiSan.text.isEmpty) {
       validationErrors['id'] = true;
+      errorMessage.add('Mã tài sản');
     }
     if (nguyenGia <= 0) {
       validationErrors['nguyenGia'] = true;
+      errorMessage.add('Nguyên giá');
     }
     if (ctrlGiaTriKhauHaoBanDau.text.isEmpty) {
       validationErrors['giaTriKhauHaoBanDau'] = true;
+      errorMessage.add('Giá trị khấu hao ban đầu');
     }
     if (giaTriThanhLy < 0) {
       validationErrors['giaTriThanhLy'] = true;
+      errorMessage.add('Giá trị thanh lý');
     }
     if ((idAssetGroup ?? '').isEmpty) {
       validationErrors['idAssetGroup'] = true;
+      errorMessage.add('Nhóm tài sản');
     }
     if ((idAssetCategory ?? '').isEmpty && ctrlTenMoHinh.text.trim().isEmpty) {
       validationErrors['idAssetCategory'] = true;
+      errorMessage.add('Loại tài sản');
     }
     if (ctrlKyHieu.text.isEmpty) {
       validationErrors['kyHieu'] = true;
+      errorMessage.add('Ký hiệu');
     }
     if (ctrlSoKyHieu.text.isEmpty) {
       validationErrors['soKyHieu'] = true;
+      errorMessage.add('Số ký hiệu');
     }
     if (ctrlCongSuat.text.isEmpty) {
       validationErrors['congSuat'] = true;
+      errorMessage.add('Công suất');
     }
     if (ctrlNuocSanXuat.text.isEmpty) {
       validationErrors['nuocSanXuat'] = true;
+      errorMessage.add('Nước sản xuất');
     }
     if (ctrlNamSanXuat.text.isEmpty) {
       validationErrors['namSanXuat'] = true;
+      errorMessage.add('Năm sản xuất');
     }
     if (ctrlLyDoTang.text.isEmpty) {
       validationErrors['lyDoTang'] = true;
+      errorMessage.add('Lý do tăng');
     }
     if (ctrlHienTrang.text.isEmpty) {
       validationErrors['hienTrang'] = true;
+      errorMessage.add('Hiện trạng');
     }
     if (ctrlSoLuong.text.isEmpty) {
       validationErrors['soLuong'] = true;
+      errorMessage.add('Số lượng');
     }
     if (ctrlDonViTinh.text.isEmpty) {
       validationErrors['donViTinh'] = true;
+      errorMessage.add('Đơn vị tính');
     }
     if (ctrlGhiChu.text.isEmpty) {
       validationErrors['ghiChu'] = true;
-    }
-    if (ctrlDonViBanDau.text.isEmpty) {
-      validationErrors['donViBanDau'] = true;
+      errorMessage.add('Ghi chú');
     }
     if (ctrlDonViHienThoi.text.isEmpty) {
       validationErrors['donViHienThoi'] = true;
-    }
-    if (valueKhoiTaoDonVi == false) {
-      validationErrors['idDonViBanDau'] = true;
-    }
-    if (valueKhoiTaoDonVi == false) {
-      validationErrors['idDonViHienThoi'] = true;
+      errorMessage.add('Đơn vị hiện thời');
     }
     if (donViTinh.isEmpty) {
       validationErrors['donViTinh'] = true;
+      errorMessage.add('Đơn vị tính');
     }
 
     // Số lượng, nguyên giá, khấu hao
     if ((phuongPhapKhauHao ?? 0) == 0) {
       validationErrors['phuongPhapKhauHao'] = true;
+      errorMessage.add('Phương pháp khấu hao');
+      log('message errorMessage: ${errorMessage}');
     }
 
     // Năm sản xuất (nếu nhập)
@@ -641,15 +656,21 @@ class _AssetDetailState extends State<AssetDetail> {
       final int currentYear = DateTime.now().year;
       if (namSanXuat < 1900 || namSanXuat > currentYear) {
         validationErrors['namSanXuat'] = true;
+        errorMessage.add('Năm sản xuất');
+        log('message errorMessage: ${errorMessage}');
       }
     }
 
     // Ngày (chỉ kiểm tra không rỗng)
     if (ctrlNgayVaoSo.text.trim().isEmpty) {
       validationErrors['ngayVaoSo'] = true;
+      errorMessage.add('Ngày vào sử dụng');
+      log('message errorMessage: ${errorMessage}');
     }
     if (ctrlNgaySuDung.text.trim().isEmpty) {
       validationErrors['ngaySuDung'] = true;
+      errorMessage.add('Ngày sử dụng');
+      log('message errorMessage: ${errorMessage}');
     }
 
     return validationErrors.entries
@@ -715,9 +736,12 @@ class _AssetDetailState extends State<AssetDetail> {
     // Validate trước khi lưu
     final errors = _validateForm();
     if (errors.isNotEmpty) {
+      log('message errors: ${errors}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
+          content: Text(
+            'Vui lòng điền đầy đủ thông tin bắt buộc: ${errors.join(', ')}',
+          ),
           backgroundColor: Colors.red,
         ),
       );

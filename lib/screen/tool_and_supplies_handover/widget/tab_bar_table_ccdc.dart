@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
@@ -18,9 +20,21 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
   @override
   void initState() {
     super.initState();
+    _getDataAssetTransfer();
+  }
+
+  @override
+  void didUpdateWidget(TabBarTableCcdc oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    log('dataAssetTransfer: ${dataAssetTransfer.length}');
+    _getDataAssetTransfer();
+  }
+
+  void _getDataAssetTransfer() {
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
             ?.where((element) => element.trangThai == 3)
+            .where((element) => element.daBanGiao == false)
             .toList() ??
         [];
   }

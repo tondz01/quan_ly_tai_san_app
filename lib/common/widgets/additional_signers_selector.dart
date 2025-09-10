@@ -112,19 +112,16 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     // Đồng bộ khi initialSignerData hoặc initialSigners thay đổi từ bên ngoài
     if (oldWidget.initialSignerData != widget.initialSignerData ||
         oldWidget.initialSigners != widget.initialSigners) {
-          log('initialSignerData: ${jsonEncode(widget.initialSignerData)}');
       if (widget.initialSignerData != null &&
           widget.initialSignerData!.isNotEmpty) {
         _signersData = List<AdditionalSignerData>.from(
           widget.initialSignerData!,
         );
-        log('signersData: ${jsonEncode(_signersData)}');
       } else {
         _signersData =
             widget.initialSigners
                 .map((e) => AdditionalSignerData(employee: e))
                 .toList();
-        log('signersData: ${jsonEncode(_signersData)}');
       }
 
       // Cập nhật controllers theo số lượng mới

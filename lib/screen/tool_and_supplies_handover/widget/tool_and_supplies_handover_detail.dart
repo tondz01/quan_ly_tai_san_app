@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -274,8 +273,6 @@ class _ToolAndSuppliesHandoverDetailState
           idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
         );
         await widget.provider.getListOwnership(donViGiao!.id.toString());
-        log('message check bug2 dieuDongCcdc: ${jsonEncode(dieuDongCcdc)}');
-        log('message check bug2 listOwnershipUnit1: ${jsonEncode(widget.provider.listOwnershipUnit)}');
       }
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
@@ -837,8 +834,6 @@ class _ToolAndSuppliesHandoverDetailState
                 listPhongBan: listPhongBan,
                 idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
               );
-              log('message check bug2 donViGiao: ${jsonEncode(donViGiao)}');
-
               //change Đơn vị nhận
               donViNhan = getPhongBan(
                 listPhongBan: listPhongBan,
@@ -852,9 +847,6 @@ class _ToolAndSuppliesHandoverDetailState
               );
             });
             await widget.provider.getListOwnership(donViGiao!.id.toString());
-            log(
-              'message check bug2 listOwnershipUnit: ${jsonEncode(widget.provider.listOwnershipUnit)}',
-            );
           },
           validationErrors: _validationErrors,
         ),
@@ -1029,9 +1021,6 @@ class _ToolAndSuppliesHandoverDetailState
           onChangedDetailed: (list) {
             setState(() {
               _additionalSignersDetailed = list;
-              log(
-                'message _additionalSignersDetailed: ${jsonEncode(_additionalSignersDetailed)}',
-              );
             });
           },
         ),

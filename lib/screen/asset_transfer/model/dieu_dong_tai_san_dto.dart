@@ -54,14 +54,14 @@ class DieuDongTaiSanDto {
   bool? nguoiLapPhieuKyNhay;
   bool? quanTrongCanXacNhan;
   bool? phoPhongXacNhan;
-  
+
   // Các trường xác nhận
   bool? truongPhongDonViGiaoXacNhan;
   bool? phoPhongDonViGiaoXacNhan;
   bool? trinhDuyetCapPhongXacNhan;
   bool? trinhDuyetGiamDocXacNhan;
   bool? trangThaiKyNhay;
-  
+
   String? tggnTuNgay;
   String? tggnDenNgay;
   String? diaDiemGiaoNhan;
@@ -80,6 +80,7 @@ class DieuDongTaiSanDto {
   int? loai;
   bool? isActive;
   bool? share;
+  bool? daBanGiao;
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
   List<SignatoryDto>? listSignatory;
 
@@ -137,6 +138,7 @@ class DieuDongTaiSanDto {
     this.chiTietDieuDongTaiSans,
     this.listSignatory,
     this.trangThaiKyNhay,
+    this.daBanGiao,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -194,6 +196,7 @@ class DieuDongTaiSanDto {
       share: json['share'],
       chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
       listSignatory: json['listSignatory'],
+      daBanGiao: json['daBanGiao'],
     );
   }
 
@@ -252,6 +255,7 @@ class DieuDongTaiSanDto {
       "share": share,
       "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
       "listSignatory": listSignatory,
+      "daBanGiao": daBanGiao,
     };
   }
 
@@ -309,6 +313,7 @@ class DieuDongTaiSanDto {
     bool? share,
     List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans,
     List<SignatoryDto>? listSignatory,
+    bool? daBanGiao,
   }) {
     return DieuDongTaiSanDto(
       id: id ?? this.id,
@@ -324,12 +329,15 @@ class DieuDongTaiSanDto {
       tenPhongBanXemPhieu: tenPhongBanXemPhieu ?? this.tenPhongBanXemPhieu,
       idNguoiDeNghi: idNguoiDeNghi ?? this.idNguoiDeNghi,
       tenNguoiDeNghi: tenNguoiDeNghi ?? this.tenNguoiDeNghi,
-      idTruongPhongDonViGiao: idTruongPhongDonViGiao ?? this.idTruongPhongDonViGiao,
-      tenTruongPhongDonViGiao: tenTruongPhongDonViGiao ?? this.tenTruongPhongDonViGiao,
+      idTruongPhongDonViGiao:
+          idTruongPhongDonViGiao ?? this.idTruongPhongDonViGiao,
+      tenTruongPhongDonViGiao:
+          tenTruongPhongDonViGiao ?? this.tenTruongPhongDonViGiao,
       idPhoPhongDonViGiao: idPhoPhongDonViGiao ?? this.idPhoPhongDonViGiao,
       tenPhoPhongDonViGiao: tenPhoPhongDonViGiao ?? this.tenPhoPhongDonViGiao,
       idTrinhDuyetCapPhong: idTrinhDuyetCapPhong ?? this.idTrinhDuyetCapPhong,
-      tenTrinhDuyetCapPhong: tenTrinhDuyetCapPhong ?? this.tenTrinhDuyetCapPhong,
+      tenTrinhDuyetCapPhong:
+          tenTrinhDuyetCapPhong ?? this.tenTrinhDuyetCapPhong,
       idTrinhDuyetGiamDoc: idTrinhDuyetGiamDoc ?? this.idTrinhDuyetGiamDoc,
       tenTrinhDuyetGiamDoc: tenTrinhDuyetGiamDoc ?? this.tenTrinhDuyetGiamDoc,
       idNhanSuXemPhieu: idNhanSuXemPhieu ?? this.idNhanSuXemPhieu,
@@ -339,10 +347,14 @@ class DieuDongTaiSanDto {
       nguoiLapPhieuKyNhay: nguoiLapPhieuKyNhay ?? this.nguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: quanTrongCanXacNhan ?? this.quanTrongCanXacNhan,
       phoPhongXacNhan: phoPhongXacNhan ?? this.phoPhongXacNhan,
-      truongPhongDonViGiaoXacNhan: truongPhongDonViGiaoXacNhan ?? this.truongPhongDonViGiaoXacNhan,
-      phoPhongDonViGiaoXacNhan: phoPhongDonViGiaoXacNhan ?? this.phoPhongDonViGiaoXacNhan,
-      trinhDuyetCapPhongXacNhan: trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
-      trinhDuyetGiamDocXacNhan: trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
+      truongPhongDonViGiaoXacNhan:
+          truongPhongDonViGiaoXacNhan ?? this.truongPhongDonViGiaoXacNhan,
+      phoPhongDonViGiaoXacNhan:
+          phoPhongDonViGiaoXacNhan ?? this.phoPhongDonViGiaoXacNhan,
+      trinhDuyetCapPhongXacNhan:
+          trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
+      trinhDuyetGiamDocXacNhan:
+          trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
       trangThaiKyNhay: trangThaiKyNhay ?? this.trangThaiKyNhay,
       tggnTuNgay: tggnTuNgay ?? this.tggnTuNgay,
       tggnDenNgay: tggnDenNgay ?? this.tggnDenNgay,
@@ -362,8 +374,10 @@ class DieuDongTaiSanDto {
       loai: loai ?? this.loai,
       isActive: isActive ?? this.isActive,
       share: share ?? this.share,
-      chiTietDieuDongTaiSans: chiTietDieuDongTaiSans ?? this.chiTietDieuDongTaiSans,
+      chiTietDieuDongTaiSans:
+          chiTietDieuDongTaiSans ?? this.chiTietDieuDongTaiSans,
       listSignatory: listSignatory ?? this.listSignatory,
+      daBanGiao: daBanGiao ?? this.daBanGiao,
     );
   }
 }

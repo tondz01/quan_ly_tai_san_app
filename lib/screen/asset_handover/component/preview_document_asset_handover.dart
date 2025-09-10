@@ -122,46 +122,27 @@ previewDocumentHandover({
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,
             isKySo: nhanVien.kySo ?? false,
-            eventSignature: () async{
+            eventSignature: () {
               final assetHandoverBloc = BlocProvider.of<AssetHandoverBloc>(
                 context,
               );
-              final request = itemsDetail
-                  .map(
-                    (e) => {"id": e.idTaiSan, "idDonVi": item.idDonViNhan},
-                  )
-                  .toList();
+              final request =
+                  itemsDetail
+                      .map(
+                        (e) => {"id": e.idTaiSan, "idDonVi": item.idDonViNhan},
+                      )
+                      .toList();
 
-              List<Future<void>> futures = [];
-
-              // Thêm UpdateSigningStatusEvent
-              futures.add(
-                Future(() {
-                  assetHandoverBloc.add(
-                    UpdateSigningStatusEvent(
-                      context,
-                      item.id.toString(),
-                      userInfo.tenDangNhap,
-                      request,
-                    ),
-                  );
-                }),
+              assetHandoverBloc.add(
+                UpdateSigningStatusEvent(
+                  context,
+                  item.id.toString(),
+                  userInfo.tenDangNhap,
+                  request,
+                  item.lenhDieuDong.toString(),
+                ),
               );
-
-              // Thêm SendToSignerAsetHandoverEvent nếu cần
-              if (item.share == false) {
-                final newItem = item.copyWith(share: true);
-                futures.add(
-                  Future(() {
-                    assetHandoverBloc.add(
-                      SendToSignerAsetHandoverEvent(context, [newItem]),
-                    );
-                  }),
-                );
-              }
-
               // Chạy song song tất cả
-              await Future.wait(futures);
             },
           ),
         ),

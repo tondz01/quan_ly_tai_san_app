@@ -224,6 +224,7 @@ class AssetHandoverRepository extends ApiBase {
     String id,
     String idNhanVien,
     List<Map<String, dynamic>> request,
+    String idDieuChuyen,
   ) async {
     Map<String, dynamic> result = {
       'data': '',
@@ -254,9 +255,43 @@ class AssetHandoverRepository extends ApiBase {
       result['data'] = payload;
       if (dataCode == 3) {
         await UpdateOwnershipUnit().updateAssetOwnership(request);
+        await updateStateAssetTransfer(idDieuChuyen, true);
       }
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateStateAssetTransfer(
+    String id,
+    bool trangThaiBanGiao,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/update-trang-thai-ban-giao?id=$id&trangThaiBanGiao=$trangThaiBanGiao',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = response.data;
+    } catch (e) {
+      log(
+        "Error at updateStateBanGiao - AssetTransferRepository: $e",
+      );
     }
 
     return result;

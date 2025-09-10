@@ -14,7 +14,7 @@ class UpdateOwnershipUnit extends ApiBase {
     };
 
     try {
-      final response = await post(
+      final response = await put(
         '${EndPointAPI.ASSET_MANAGEMENT}/updatedonvi',
         data: request,
       );

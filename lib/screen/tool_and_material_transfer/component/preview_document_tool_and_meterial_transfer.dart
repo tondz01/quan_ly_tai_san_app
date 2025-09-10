@@ -119,11 +119,11 @@ previewDocumentToolAndMaterial({
             eventSignature: () {
               final toolAndMaterialTransferBloc =
                   BlocProvider.of<ToolAndMaterialTransferBloc>(context);
-              if (item.share == false) {
-                toolAndMaterialTransferBloc.add(
-                  SendToSignerTAMTEvent(context, [item.copyWith(share: true)]),
-                );
-              }
+              // if (item.share == false) {
+              //   toolAndMaterialTransferBloc.add(
+              //     SendToSignerTAMTEvent(context, [item.copyWith(share: true)]),
+              //   );
+              // }
               toolAndMaterialTransferBloc.add(
                 UpdateSigningTAMTStatusEvent(
                   context,
