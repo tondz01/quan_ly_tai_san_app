@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,8 +16,67 @@ enum SortDirection { none, ascending, descending }
 // Add editor type enum for editable cells
 enum EditableCellEditor { text, dropdown }
 
-class SgEditableTable<T> extends StatefulWidget {
-  final List<SgEditableColumn<T>> columns;
+// Add validation result class for better error handling
+class ValidationResult {
+  final bool isValid;
+  final String? errorMessage;
+  
+  const ValidationResult({required this.isValid, this.errorMessage});
+  
+  static const ValidationResult valid = ValidationResult(isValid: true);
+  static ValidationResult invalid(String message) => 
+      ValidationResult(isValid: false, errorMessage: message);
+}
+
+// Add controller pool for memory management
+class ControllerPool {
+  final Map<String, TextEditingController> _availableControllers = {};
+  final Map<String, TextEditingController> _usedControllers = {};
+  
+  TextEditingController getController(String key, String initialValue) {
+    if (_usedControllers.containsKey(key)) {
+      final controller = _usedControllers[key]!;
+      if (controller.text != initialValue) {
+        controller.text = initialValue;
+      }
+      return controller;
+    }
+    
+    TextEditingController controller;
+    
+    if (_availableControllers.isNotEmpty) {
+      controller = _availableControllers.remove(_availableControllers.keys.first)!;
+      controller.text = initialValue;
+    } else {
+      controller = TextEditingController(text: initialValue);
+    }
+    
+    _usedControllers[key] = controller;
+    return controller;
+  }
+  
+  void releaseController(String key) {
+    final controller = _usedControllers.remove(key);
+    if (controller != null) {
+      controller.clear();
+      _availableControllers['pool_${_availableControllers.length}'] = controller;
+    }
+  }
+  
+  void dispose() {
+    for (final controller in _usedControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _availableControllers.values) {
+      controller.dispose();
+    }
+    _usedControllers.clear();
+    _availableControllers.clear();
+  }
+}
+
+class DetailEditableTable<T> extends StatefulWidget {
+  final List<DetailEditableColumn<T>> columns;
   final List<T> initialData;
   final double rowHeight;
   final Color? textHeaderColor;
@@ -30,14 +91,22 @@ class SgEditableTable<T> extends StatefulWidget {
   final String addRowText;
   final Function(List<T>)? onDataChanged;
   final T Function() createEmptyItem;
-  final bool isEditing; // Add isEditing property
-  final double?
-  omittedSize; // kích thước sẽ bị lược bỏ khi tính adjustColumnWidths
-  // NEW: Per-row editable settings
+  final bool isEditing;
+  final double? omittedSize;
+  // Per-row editable settings
   final bool defaultRowEditable;
   final bool Function(T item, int rowIndex)? rowEditableDecider;
+  
+  // NEW: Validation and error handling
+  final ValidationResult Function(T item, String field, dynamic value)? validator;
+  final void Function(String errorMessage)? onError;
+  final int maxRows;
+  
+  // NEW: Performance settings
+  final bool useVirtualScrolling;
+  final bool enableRowCaching;
 
-  const SgEditableTable({
+  const DetailEditableTable({
     super.key,
     required this.columns,
     required this.initialData,
@@ -54,59 +123,62 @@ class SgEditableTable<T> extends StatefulWidget {
     this.showHorizontalLines = true,
     this.addRowText = 'Thêm một dòng',
     this.onDataChanged,
-    this.isEditing = true, // Default to true for backward compatibility
+    this.isEditing = true,
     this.defaultRowEditable = true,
     this.rowEditableDecider,
     this.omittedSize,
+    this.validator,
+    this.onError,
+    this.maxRows = 1000,
+    this.useVirtualScrolling = false,
+    this.enableRowCaching = true,
   });
 
   @override
-  State<SgEditableTable<T>> createState() => SgEditableTableState<T>();
+  State<DetailEditableTable<T>> createState() => DetailEditableTableState<T>();
 }
 
-class SgEditableTableState<T> extends State<SgEditableTable<T>> {
+class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
   late List<T> _tableData;
   int? _selectedRowIndex;
-  Map<int, Map<String, TextEditingController>> _controllers = {};
-  // NEW: track per-row editable flags
+  
+  // Use controller pool for better memory management
+  late ControllerPool _controllerPool;
+  
+  // Cache for row widgets to improve performance
+  final Map<int, Widget> _cachedRows = {};
+  
+  // Per-row editable flags
   Map<int, bool> _rowEditableFlags = {};
+  
+  // Validation errors cache
+  final Map<String, String> _validationErrors = {};
 
-  // Add sorting state variables
+  // Sorting state
   int? _sortColumnIndex;
   SortDirection _sortDirection = SortDirection.none;
+  
+  // Performance optimization flags
+  bool _isProcessingUpdate = false;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
+    _controllerPool = ControllerPool();
     _tableData = List.from(widget.initialData);
-    _initControllers();
+    _initRowEditableFlags();
   }
 
-  void _initControllers() {
-    _controllers.clear();
+  void _initRowEditableFlags() {
     _rowEditableFlags.clear();
     for (int i = 0; i < _tableData.length; i++) {
-      _initRowControllers(i);
       _initRowEditableFlag(i);
     }
   }
 
-  void _initRowControllers(int rowIndex) {
-    final item = _tableData[rowIndex];
-    _controllers[rowIndex] = {};
-
-    for (var column in widget.columns) {
-      if (column.isEditable) {
-        final value =
-            column.getValueWithIndex?.call(item, rowIndex) ??
-            column.getValue(item);
-        final controller = TextEditingController(text: value?.toString() ?? '');
-        _controllers[rowIndex]![column.field] = controller;
-      }
-    }
-  }
-
   void _initRowEditableFlag(int rowIndex) {
+    if (rowIndex >= _tableData.length) return;
     final item = _tableData[rowIndex];
     final editable =
         widget.rowEditableDecider?.call(item, rowIndex) ??
@@ -115,103 +187,144 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 
   @override
-  void didUpdateWidget(SgEditableTable<T> oldWidget) {
+  void didUpdateWidget(DetailEditableTable<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.initialData != oldWidget.initialData) {
       setState(() {
         _tableData = List.from(widget.initialData);
-        _initControllers();
+        _initRowEditableFlags();
+        _clearCache();
       });
     }
   }
 
+  void _clearCache() {
+    _cachedRows.clear();
+    _validationErrors.clear();
+  }
+
   @override
   void dispose() {
-    // Dispose all text controllers
-    for (var rowControllers in _controllers.values) {
-      for (var controller in rowControllers.values) {
-        controller.dispose();
-      }
-    }
+    _controllerPool.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
   void _addRow() {
+    if (_tableData.length >= widget.maxRows) {
+      _showError('Đã đạt giới hạn tối đa ${widget.maxRows} dòng');
+      return;
+    }
+    
     setState(() {
       final newItem = widget.createEmptyItem();
       _tableData.add(newItem);
       final newIndex = _tableData.length - 1;
-      _initRowControllers(newIndex);
-      // Set editable flag for new row
-      _rowEditableFlags[newIndex] =
-          widget.rowEditableDecider?.call(newItem, newIndex) ??
-          widget.defaultRowEditable;
+      _initRowEditableFlag(newIndex);
+      _clearCache();
     });
     _notifyDataChanged();
   }
 
   void _removeRow(int index) {
-    // Dispose controllers for the row being removed
-    final rowControllers = _controllers[index];
-    if (rowControllers != null) {
-      for (var controller in rowControllers.values) {
-        controller.dispose();
+    if (index < 0 || index >= _tableData.length) return;
+    
+    // Release controllers for editable columns in this row
+    for (var column in widget.columns) {
+      if (column.isEditable) {
+        final key = _getControllerKey(index, column.field);
+        _controllerPool.releaseController(key);
       }
     }
 
     setState(() {
       _tableData.removeAt(index);
-
-      // Rebuild controllers with updated indices
-      final newControllers = <int, Map<String, TextEditingController>>{};
-      final newEditableFlags = <int, bool>{};
-      for (int i = 0; i < _tableData.length; i++) {
-        if (i < index) {
-          newControllers[i] = _controllers[i] ?? {};
-          newEditableFlags[i] =
-              _rowEditableFlags[i] ?? widget.defaultRowEditable;
-        } else {
-          final oldIndex = i + 1;
-          if (_controllers.containsKey(oldIndex)) {
-            newControllers[i] = _controllers[oldIndex] ?? {};
-          } else {
-            _initRowControllers(i);
-            newControllers[i] = _controllers[i] ?? {};
-          }
-          if (_rowEditableFlags.containsKey(oldIndex)) {
-            newEditableFlags[i] =
-                _rowEditableFlags[oldIndex] ?? widget.defaultRowEditable;
-          } else {
-            newEditableFlags[i] =
-                widget.rowEditableDecider?.call(_tableData[i], i) ??
-                widget.defaultRowEditable;
-          }
-        }
-      }
-      _controllers = newControllers;
-      _rowEditableFlags = newEditableFlags;
+      _reindexRowEditableFlags(index);
+      _clearCache();
     });
     _notifyDataChanged();
   }
 
+  void _reindexRowEditableFlags(int removedIndex) {
+    final newFlags = <int, bool>{};
+    for (int i = 0; i < _tableData.length; i++) {
+      if (i < removedIndex) {
+        newFlags[i] = _rowEditableFlags[i] ?? widget.defaultRowEditable;
+      } else {
+        newFlags[i] = _rowEditableFlags[i + 1] ?? widget.defaultRowEditable;
+      }
+    }
+    _rowEditableFlags = newFlags;
+  }
+
+  String _getControllerKey(int rowIndex, String field) {
+    return 'row_${rowIndex}_$field';
+  }
+
+  void _showError(String message) {
+    if (widget.onError != null) {
+      widget.onError!(message);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  ValidationResult _validateCellValue(T item, String field, dynamic value) {
+    if (widget.validator != null) {
+      return widget.validator!(item, field, value);
+    }
+    return ValidationResult.valid;
+  }
+
   void _updateCellValue(int rowIndex, String field, dynamic value) {
+    // Validate the value
+    final validation = _validateCellValue(_tableData[rowIndex], field, value);
+    final validationKey = '${rowIndex}_$field';
+    
+    if (!validation.isValid && validation.errorMessage != null) {
+      _validationErrors[validationKey] = validation.errorMessage!;
+      _showError(validation.errorMessage!);
+      return;
+    } else {
+      _validationErrors.remove(validationKey);
+    }
+    
     _setCellValue(rowIndex, field, value);
   }
 
   // Safely set a cell value in data and sync controller text
   void _setCellValue(int rowIndex, String field, dynamic value) {
+    if (rowIndex >= _tableData.length) return;
+    
     final column = widget.columns.firstWhere((c) => c.field == field);
     column.setValue(_tableData[rowIndex], value);
-    // Sync controller if exists
-    final controller = _controllers[rowIndex]?[field];
-    if (controller != null && controller.text != (value?.toString() ?? '')) {
+    
+    // Sync controller if it exists
+    final key = _getControllerKey(rowIndex, field);
+    final controller = _controllerPool.getController(key, value?.toString() ?? '');
+    if (controller.text != (value?.toString() ?? '')) {
       controller.text = value?.toString() ?? '';
     }
-    setState(() {});
-    _notifyDataChanged();
+    
+    setState(() {
+      _clearCache(); // Clear cache when data changes
+    });
+    _debounceNotifyDataChanged();
   }
 
-  // Add sorting methods
+  void _debounceNotifyDataChanged() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _notifyDataChanged();
+    });
+  }
+
+  // Add sorting methods - optimized to avoid rebuilding all controllers
   void _sortData() {
     if (_sortColumnIndex == null ||
         _sortDirection == SortDirection.none ||
@@ -219,6 +332,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         widget.columns[_sortColumnIndex!].sortValueGetter == null) {
       return;
     }
+
+    if (_isProcessingUpdate) return;
+    _isProcessingUpdate = true;
 
     setState(() {
       final sortValueGetter =
@@ -254,10 +370,12 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             : -comparison;
       });
 
-      // Rebuild controllers after sorting
-      _initControllers();
+      // Clear cache after sorting instead of rebuilding all controllers
+      _clearCache();
+      _initRowEditableFlags();
     });
 
+    _isProcessingUpdate = false;
     _notifyDataChanged();
   }
 
@@ -420,6 +538,11 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     bool isEven,
     Map<String, double> newWidths,
   ) {
+    // Use cached row if available and caching is enabled
+    if (widget.enableRowCaching && _cachedRows.containsKey(index)) {
+      return _cachedRows[index]!;
+    }
+
     final backgroundColor =
         _selectedRowIndex == index
             ? widget.selectedRowColor
@@ -427,7 +550,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             ? widget.evenRowBackgroundColor
             : widget.oddRowBackgroundColor;
 
-    return Container(
+    final rowWidget = Container(
       height: widget.rowHeight,
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -473,9 +596,16 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
         ],
       ),
     );
+
+    // Cache the row if caching is enabled
+    if (widget.enableRowCaching) {
+      _cachedRows[index] = rowWidget;
+    }
+
+    return rowWidget;
   }
 
-  bool _isCellEditable(T item, int rowIndex, SgEditableColumn<T> column) {
+  bool _isCellEditable(T item, int rowIndex, DetailEditableColumn<T> column) {
     if (!widget.isEditing) return false;
     if (!column.isEditable) return false;
     final byRow = _rowEditableFlags[rowIndex] ?? true;
@@ -484,9 +614,16 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
     return byRow && byColumn;
   }
 
-  Widget _buildEditableCell(T item, int rowIndex, SgEditableColumn<T> column) {
-    final controller =
-        _controllers[rowIndex]?[column.field] ?? TextEditingController();
+  Widget _buildEditableCell(
+    T item,
+    int rowIndex,
+    DetailEditableColumn<T> column,
+  ) {
+    // Get controller from pool
+    final value = column.getValueWithIndex?.call(item, rowIndex) ?? 
+                  column.getValue(item);
+    final key = _getControllerKey(rowIndex, column.field);
+    final controller = _controllerPool.getController(key, value?.toString() ?? '');
 
     if (column.editor == EditableCellEditor.dropdown) {
       final currentValue =
@@ -505,7 +642,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
           isShowSuffixIcon: true,
-          hintText: '$currentValue',
+          hintText: '',
           textAlign: TextAlign.left,
           textAlignItem: TextAlign.left,
           sizeBorderCircular: 6,
@@ -552,6 +689,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           onChanged: (value) {
             setState(() {
               controller.text = value;
+              log('message onChanged: $value');
               _updateCellValue(rowIndex, column.field, value);
               // cascade updates
               final updater = column.onValueChanged;
@@ -567,19 +705,29 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             });
           },
         ),
-        if (column.errorText.isNotEmpty)
+        // Display validation error if exists
+        if (_validationErrors.containsKey('${rowIndex}_${column.field}'))
+          Padding(
+            padding: const EdgeInsets.all(4),
+            child: Text(
+              "*${_validationErrors['${rowIndex}_${column.field}']}",
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          )
+        // Display column error text if exists
+        else if (column.errorText.isNotEmpty)
           Padding(
             padding: const EdgeInsets.all(4),
             child: Text(
               "*${column.errorText}",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
           ),
       ],
     );
   }
 
-  Widget _buildDisplayCell(T item, SgEditableColumn<T> column) {
+  Widget _buildDisplayCell(T item, DetailEditableColumn<T> column) {
     // Try to get rowIndex for display cell
     final rowIndex = _tableData.indexOf(item);
     final value =
@@ -660,7 +808,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   Widget _buildAddRowButton() {
     if (!widget.isEditing) {
-      return const SizedBox.shrink(); 
+      return const SizedBox.shrink(); // Hide when not in edit mode
     }
 
     return SizedBox(
@@ -678,7 +826,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }
 }
 
-class SgEditableColumn<T> {
+class DetailEditableColumn<T> {
   final String field;
   final String title;
   final String? tooltip;
@@ -687,26 +835,22 @@ class SgEditableColumn<T> {
   final TextAlign cellAlignment;
   final bool isEditable;
   final dynamic Function(T) getValue;
-  final dynamic Function(T, int)?
-  getValueWithIndex; // NEW: getValue with rowIndex
+  final dynamic Function(T, int)? getValueWithIndex;
   final void Function(T, dynamic) setValue;
   final dynamic Function(T)? sortValueGetter;
   final bool Function(T item, int rowIndex)? isCellEditableDecider;
   final TextInputType? inputType;
   final String errorText;
-  // NEW: editor type and dropdown config
   final EditableCellEditor editor;
   final List<DropdownMenuItem<T>>? dropdownItems;
-  // NEW: cascade update callback when value changes
   final void Function(
     T item,
     int rowIndex,
     dynamic newValue,
     void Function(String targetField, dynamic targetValue) updateRow,
-  )?
-  onValueChanged;
+  )? onValueChanged;
 
-  SgEditableColumn({
+  DetailEditableColumn({
     required this.field,
     required this.title,
     this.tooltip,
@@ -715,7 +859,7 @@ class SgEditableColumn<T> {
     this.cellAlignment = TextAlign.left,
     this.isEditable = true,
     required this.getValue,
-    this.getValueWithIndex, // NEW: optional parameter
+    this.getValueWithIndex, 
     required this.setValue,
     this.sortValueGetter,
     this.isCellEditableDecider,

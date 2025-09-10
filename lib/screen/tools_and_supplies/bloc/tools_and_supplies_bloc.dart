@@ -130,7 +130,13 @@ class ToolsAndSuppliesBloc
     Map<String, dynamic> resultAssetDetail = await AssetManagementDetailRepository()
         .createAssetDetail(event.listAssetDetail);
 
+    Map<String, dynamic> resultDeleteAssetDetail =
+        await AssetManagementDetailRepository().deleteAssetDetail(
+          event.listIdAssetDetail,
+        );
+
     emit(ToolsAndSuppliesLoadingDismissState());
+
     if (checkStatusCodeDone(result)) {
       emit(UpdateToolsAndSuppliesSuccessState(data: result['data'].toString()));
     } else {
@@ -142,8 +148,9 @@ class ToolsAndSuppliesBloc
         ),
       );
     }
-    
-    if (checkStatusCodeDone(resultAssetDetail)) {
+
+    if (checkStatusCodeDone(resultAssetDetail) ||
+        checkStatusCodeDone(resultDeleteAssetDetail)) {
     } else {
       String msg = "Lỗi khi update chi tiết ccdc - vật tư";
       emit(
