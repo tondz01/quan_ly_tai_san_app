@@ -475,7 +475,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           fieldName: 'receivingUnit',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('receivingUnit selected: $value');
                             state.donViNhan = value;
                           },
                         ),
@@ -483,9 +482,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           label: 'at.effective_date'.tr,
                           controller: controllers.controllerEffectiveDate,
                           isEditing: state.isEditing,
-                          onChanged: (value) {
-                            log('Effective date selected: $value');
-                          },
+                          onChanged: (value) {},
                           value:
                               controllers
                                       .controllerEffectiveDate
@@ -500,9 +497,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           label: 'at.effective_date_to'.tr,
                           controller: controllers.controllerEffectiveDateTo,
                           isEditing: state.isEditing,
-                          onChanged: (value) {
-                            log('Effective date selected: $value');
-                          },
+                          onChanged: (value) {},
                           value:
                               controllers
                                       .controllerEffectiveDateTo
@@ -631,7 +626,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             state.nguoiKyCapPhong = value;
                           },
                         ),
-AdditionalSignersSelector(
+                        AdditionalSignersSelector(
                           addButtonText: "Thêm đơn bị đại diện",
                           labelDepartment: "Đơn vị đại diện",
                           labelSigned: 'Người đại diện',
@@ -662,6 +657,7 @@ AdditionalSignersSelector(
                             });
                           },
                         ),
+                        SizedBox(height: 10),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người phê duyệt',
                           controller: controllers.controllerApprover,
@@ -686,6 +682,17 @@ AdditionalSignersSelector(
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             state.nguoiKyGiamDoc = value;
+                          },
+                        ),
+                        CommonCheckboxInput(
+                          label: 'Ký theo lượt',
+                          value: state.isByStep,
+                          isEditing: state.isEditing,
+                          isDisabled: !state.isEditing,
+                          onChanged: (newValue) {
+                            setState(() {
+                              state.isByStep = newValue;
+                            });
                           },
                         ),
                       ],
@@ -1037,7 +1044,7 @@ AdditionalSignersSelector(
             state.item?.tenTruongPhongDonViGiao ?? '';
         controllers.controllerPPDonViNhan.text =
             state.item?.tenPhoPhongDonViGiao ?? '';
-
+        state.isByStep = state.item?.byStep ?? false;
         //load date value dropdown
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
@@ -1137,9 +1144,10 @@ AdditionalSignersSelector(
         controllers.controllerProposingUnit.text = '';
 
         state.controllersInitialized = false;
+        state.isNguoiLapPhieuKyNhay = false;
+        state.isByStep = false;
         state.selectedFileName = null;
         state.selectedFilePath = null;
-        state.isNguoiLapPhieuKyNhay = false;
         state.donViGiao = null;
         state.donViNhan = null;
         NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(

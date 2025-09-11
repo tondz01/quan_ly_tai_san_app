@@ -1,10 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' show PdfDocument, PdfPageView;
+import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_contract.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
@@ -85,6 +84,56 @@ prevDocumentCcdcHandover({
       '${Config.baseUrl}/api/upload/download/$tenFileChuKyNhay';
   String urlChuKyThuong =
       '${Config.baseUrl}/api/upload/download/$tenFileChuKyThuong';
+
+  String getChucVu(String idUser) {
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+    final chucVu = AccountHelper.instance.getChucVuById(
+      nhanVien?.chucVuId ?? '',
+    );
+    return chucVu?.tenChucVu ?? '';
+  }
+
+  String getDonVi(String idUser) {
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+    final donVi = AccountHelper.instance.getDepartmentById(
+      nhanVien?.phongBanId ?? '',
+    );
+    return donVi?.tenPhongBan ?? '';
+  }
+
+  List<SigneInfo> listSigneInfo = [
+    SigneInfo(
+      idNhanVien: dieuDongCcdc?.idDaiDienBenGiao ?? '',
+      title: 'Đại diện đơn vị đề nghị',
+      hoTen: dieuDongCcdc?.tenDaiDienBenGiao ?? '',
+      chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenGiao ?? ''),
+    ),
+    SigneInfo(
+      idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
+      title: 'Đại diện đơn vị bên giao',
+      hoTen: dieuDongCcdc?.tenDaiDienBenNhan ?? '',
+      chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
+      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
+    ),
+    for (int i = 0; i < (dieuDongCcdc?.listSignatory?.length ?? 0); i++)
+      SigneInfo(
+        idNhanVien: dieuDongCcdc?.listSignatory?[i].idNguoiKy ?? '',
+        title: 'Đại diện ký ${i + 1}',
+        hoTen: dieuDongCcdc?.listSignatory?[i].tenNguoiKy ?? '',
+        chucVu: getChucVu(dieuDongCcdc?.listSignatory?[i].idNguoiKy ?? ''),
+        donVi: getDonVi(dieuDongCcdc?.listSignatory?[i].idNguoiKy ?? ''),
+      ),
+    SigneInfo(
+      idNhanVien: dieuDongCcdc?.idDaiDienBenNhan ?? '',
+      title: 'Đại diện đơn vị bên nhận',
+      hoTen: dieuDongCcdc?.tenDaiDienBenNhan ?? '',
+      chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
+      donVi: getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
+    ),
+
+    // SigneInfo(
+  ];
   return showDialog(
     context: context,
     barrierDismissible: true,
@@ -110,7 +159,11 @@ prevDocumentCcdcHandover({
                 scale: 1.2,
                 maxWidth: 800,
                 maxHeight: 800 * (297 / 210),
-                child: ContractPage.toolAndMaterialTransferPage(item),
+                child: ContractPage.toolAndSuppliesHandoverPageV2(
+                  dieuDongCcdc!,
+                  item.detailToolAndMaterialTransfers,
+                  listSigneInfo,
+                ),
               ),
             ],
             signatureList: [urlChuKyNhay, urlChuKyThuong],
@@ -166,7 +219,7 @@ prevDocumentCcdcHandover({
               bloc.add(
                 UpdateSigningStatusCcdcEvent(
                   context,
-                  dieuDongCcdc!.id.toString(),
+                  dieuDongCcdc.id.toString(),
                   userInfo.tenDangNhap,
                   request,
                   requestQuantity,

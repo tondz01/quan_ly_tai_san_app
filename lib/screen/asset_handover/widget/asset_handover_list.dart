@@ -764,33 +764,37 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   ) async {
     final signatureFlow =
         [
-          {
-            "id": item.idDaiDiendonviBanHanhQD,
-            "signed": item.daXacNhan == true,
-            "label": "Người tạo",
-          },
-          {
-            "id": item.idDaiDienBenGiao,
-            "signed": item.daiDienBenGiaoXacNhan == true,
-            "label": "Trưởng phòng",
-          },
-          {
-            "id": item.idDaiDienBenNhan,
-            "signed": item.daiDienBenNhanXacNhan == true,
-            "label": "Phó phòng Đơn vị giao",
-          },
-          if (item.listSignatory?.isNotEmpty ?? false)
-            ...(item.listSignatory
-                    ?.map(
-                      (e) => {
-                        "id": e.idNguoiKy,
-                        "signed": e.trangThai == 1,
-                        "label": e.tenNguoiKy ?? '',
-                      },
-                    )
-                    .toList() ??
-                []),
-        ].toList();
+              {
+                "id": item.idDaiDiendonviBanHanhQD,
+                "signed": item.daXacNhan == true,
+                "label": "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
+              },
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+                "label": "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+                "label": "Đại diện đơn vị nhận: ${item.tenDaiDienBenNhan}",
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                            "label": "Người ký: ${e.tenNguoiKy ?? ''}",
+                          },
+                        )
+                        .toList() ??
+                    []),
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
 
     if (signatureFlow.isNotEmpty) {
       // Kiểm tra user có trong flow không
@@ -809,8 +813,20 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
         return;
       }
-      log('signatureFlow: ${signatureFlow.toString()}');
-      log('item: ${jsonEncode(widget.listAssetTransfer)}');
+      // Kiểm tra tất cả các bước trước đã ký chưa
+      final previousNotSigned = signatureFlow
+          .take(currentIndex)
+          .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+      if (previousNotSigned.isNotEmpty && item.byStep == true) {
+        AppUtility.showSnackBar(
+          context,
+          '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+          isError: true,
+        );
+        return;
+      }
+
       final matchingTransfers = widget.listAssetTransfer.where(
         (x) => x.soQuyetDinh == item.quyetDinhDieuDongSo,
       );

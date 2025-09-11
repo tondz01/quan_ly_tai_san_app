@@ -13,6 +13,7 @@ class AssetTransferState {
   bool isRefreshing = false;
   bool isNew = false;
   bool _controllersInitialized = false;
+  bool isByStep = false;
 
   String? proposingUnit;
   String? _selectedFileName;
@@ -67,7 +68,7 @@ class AssetTransferState {
     _isUploading = false;
     isRefreshing = false;
     isNew = false;
-
+    isByStep = false;
     proposingUnit = null;
     _controllersInitialized = false;
     _selectedFileName = null;

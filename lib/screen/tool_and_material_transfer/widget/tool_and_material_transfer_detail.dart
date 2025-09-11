@@ -99,6 +99,7 @@ class _ToolAndMaterialTransferDetailState
   bool _isUploading = false;
   bool isRefreshing = false;
   bool isNew = false;
+  bool isByStep = false;
 
   String? proposingUnit;
   bool controllersInitialized = false;
@@ -321,6 +322,7 @@ class _ToolAndMaterialTransferDetailState
 
         isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
         proposingUnit = item?.tenDonViDeNghi;
+        isByStep = item?.byStep ?? false;
         initialSignersDetailed = List<AdditionalSignerData>.from(
           item?.listSignatory
                   ?.map(
@@ -381,6 +383,7 @@ class _ToolAndMaterialTransferDetailState
         _selectedFileName = null;
         _selectedFilePath = null;
         isNguoiLapPhieuKyNhay = false;
+        isByStep = false;
         donViGiao = null;
         donViNhan = null;
         NhanVien nhanVienLogin = widget.provider.getNhanVienByID(
@@ -457,7 +460,6 @@ class _ToolAndMaterialTransferDetailState
 
     super.dispose();
   }
-
 
   List<Map<String, dynamic>> _normalizeDetails(
     List<DetailToolAndMaterialTransferDto> list,
@@ -763,7 +765,6 @@ class _ToolAndMaterialTransferDetailState
                           fieldName: 'receivingUnit',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
-                            log('receivingUnit selected: $value');
                             donViNhan = value;
                           },
                         ),
@@ -827,7 +828,7 @@ class _ToolAndMaterialTransferDetailState
                           },
                         ),
                         CmFormDropdownObject<NhanVien>(
-                          label: 'at.requester'.tr,
+                          label: 'Người lập phiếu',
                           controller: controllerRequester,
                           isEditing: isEditing,
                           value: nguoiKyNhay,
@@ -866,7 +867,7 @@ class _ToolAndMaterialTransferDetailState
                         ),
 
                         CmFormDropdownObject<NhanVien>(
-                          label: 'at.department_approval'.tr,
+                          label: 'Người duyệt',
                           controller: controllerDepartmentApproval,
                           isEditing: isEditing,
                           value: nguoiKyCapPhong,
@@ -888,32 +889,6 @@ class _ToolAndMaterialTransferDetailState
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             nguoiKyCapPhong = value;
-                          },
-                        ),
-
-                        CmFormDropdownObject<NhanVien>(
-                          label: 'at.approver'.tr,
-                          controller: controllerApprover,
-                          isEditing: isEditing,
-                          value: nguoiKyGiamDoc,
-                          items: [
-                            ...nvPhongGD.map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e.hoTen ?? ''),
-                              ),
-                            ),
-                          ],
-                          defaultValue:
-                              controllerApprover.text.isNotEmpty
-                                  ? widget.provider.getNhanVienByID(
-                                    controllerApprover.text,
-                                  )
-                                  : null,
-                          fieldName: 'approver',
-                          validationErrors: _validationErrors,
-                          onChanged: (value) {
-                            nguoiKyGiamDoc = value;
                           },
                         ),
                         AdditionalSignersSelector(
@@ -943,6 +918,44 @@ class _ToolAndMaterialTransferDetailState
                           onChangedDetailed: (list) {
                             setState(() {
                               additionalSignersDetailed = list;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 10),
+                        CmFormDropdownObject<NhanVien>(
+                          label: 'Người phê duyệt',
+                          controller: controllerApprover,
+                          isEditing: isEditing,
+                          value: nguoiKyGiamDoc,
+                          items: [
+                            ...nvPhongGD.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.hoTen ?? ''),
+                              ),
+                            ),
+                          ],
+                          defaultValue:
+                              controllerApprover.text.isNotEmpty
+                                  ? widget.provider.getNhanVienByID(
+                                    controllerApprover.text,
+                                  )
+                                  : null,
+                          fieldName: 'approver',
+                          validationErrors: _validationErrors,
+                          onChanged: (value) {
+                            nguoiKyGiamDoc = value;
+                          },
+                        ),
+
+                        CommonCheckboxInput(
+                          label: 'Ký theo lượt',
+                          value: isByStep,
+                          isEditing: isEditing,
+                          isDisabled: !isEditing,
+                          onChanged: (newValue) {
+                            setState(() {
+                              isByStep = newValue;
                             });
                           },
                         ),

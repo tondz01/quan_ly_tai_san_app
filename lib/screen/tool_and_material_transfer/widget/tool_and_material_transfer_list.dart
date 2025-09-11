@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
@@ -633,31 +634,35 @@ class _ToolAndMaterialTransferListState
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
-          if (item.nguoiLapPhieuKyNhay == true)
-            {
-              "id": item.idNguoiKyNhay,
-              "signed": item.trangThaiKyNhay == true,
-              "label": "Người ký nháy",
-            },
-          {
-            "id": item.idTrinhDuyetCapPhong,
-            "signed": item.trinhDuyetCapPhongXacNhan == true,
-            "label": "Trình duyệt cấp phòng",
-          },
-          {
-            "id": item.idTrinhDuyetGiamDoc,
-            "signed": item.trinhDuyetGiamDocXacNhan == true,
-            "label": "Giám đốc",
-          },
-          if (item.listSignatory != null)
-            ...item.listSignatory!.map(
-              (e) => {
-                "id": e.idNguoiKy,
-                "signed": e.trangThai == 1,
-                "label": e.tenNguoiKy,
+              if (item.nguoiLapPhieuKyNhay == true)
+                {
+                  "id": item.idNguoiKyNhay,
+                  "signed": item.trangThaiKyNhay == true,
+                  "label":
+                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
+                },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trinhDuyetCapPhongXacNhan == true,
+                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
               },
-            ),
-        ].toList();
+              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                {
+                  "id": item.listSignatory![i].idNguoiKy,
+                  "signed": item.listSignatory![i].trangThai == 1,
+                  "label":
+                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trinhDuyetGiamDocXacNhan == true,
+                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
 
     // Kiểm tra hoàn thành
     if (item.trangThai == 3 || item.trangThai == 2) {
@@ -687,6 +692,19 @@ class _ToolAndMaterialTransferListState
     // Nếu đã ký rồi thì chặn
     if (signatureFlow[currentIndex]["signed"] == true) {
       AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
+      return;
+    }
+    // Kiểm tra tất cả các bước trước đã ký chưa
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+    if (previousNotSigned.isNotEmpty && item.byStep == true) {
+      AppUtility.showSnackBar(
+        context,
+        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+        isError: true,
+      );
       return;
     }
 

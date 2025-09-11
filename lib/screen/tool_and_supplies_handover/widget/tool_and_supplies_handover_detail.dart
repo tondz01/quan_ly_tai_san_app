@@ -77,6 +77,7 @@ class _ToolAndSuppliesHandoverDetailState
   bool isReceiverConfirm = false;
   bool isRepresentativeUnitConfirm = false;
   bool isExpanded = false;
+  bool isByStep = false;
 
   String? proposingUnit;
   String? _selectedFileName;
@@ -277,6 +278,7 @@ class _ToolAndSuppliesHandoverDetailState
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+      isByStep = item?.byStep ?? false;
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
 
@@ -316,6 +318,7 @@ class _ToolAndSuppliesHandoverDetailState
       isRepresentativeUnitConfirm = false;
       _selectedFileName = null;
       _selectedFilePath = null;
+      isByStep = false;
     }
 
     setState(() {
@@ -763,7 +766,7 @@ class _ToolAndSuppliesHandoverDetailState
               previewDocumentCcdcHandover(
                 context: context,
                 item: dieuDongCcdc,
-                dieuDongCcdc: item,
+                dieuDongCcdc: getToolAndSuppliesHandoverPreview(),
                 provider: widget.provider,
                 isShowKy: false,
                 document: _document,
@@ -1024,6 +1027,18 @@ class _ToolAndSuppliesHandoverDetailState
             });
           },
         ),
+        const SizedBox(height: 10),
+        CommonCheckboxInput(
+          label: 'Ký theo lượt',
+          value: isByStep,
+          isEditing: isEditing,
+          isDisabled: !isEditing,
+          onChanged: (newValue) {
+            setState(() {
+              isByStep = newValue;
+            });
+          },
+        ),
       ],
     );
   }
@@ -1057,6 +1072,19 @@ class _ToolAndSuppliesHandoverDetailState
       nguoiTao: currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       active: true,
+      listSignatory:
+          _additionalSignersDetailed
+              .map(
+                (e) => SignatoryDto(
+                  id: UUIDGenerator.generateWithFormat("SIG-******"),
+                  idTaiLieu: item?.id ?? '',
+                  idPhongBan: e.department?.id ?? '',
+                  idNguoiKy: e.employee?.id ?? '',
+                  tenNguoiKy: e.employee?.hoTen ?? '',
+                  trangThai: 1,
+                ),
+              )
+              .toList(),
     );
   }
 }

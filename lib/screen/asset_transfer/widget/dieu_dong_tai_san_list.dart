@@ -751,31 +751,34 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Định nghĩa luồng ký theo thứ tự
     final signatureFlow =
         [
-          if (item.nguoiLapPhieuKyNhay == true)
-            {
-              "id": item.idNguoiKyNhay,
-              "signed": item.trangThaiKyNhay == true,
-              "label": "Người ký nháy",
-            },
-          {
-            "id": item.idTrinhDuyetCapPhong,
-            "signed": item.trinhDuyetCapPhongXacNhan == true,
-            "label": "Trình duyệt cấp phòng",
-          },
-          {
-            "id": item.idTrinhDuyetGiamDoc,
-            "signed": item.trinhDuyetGiamDocXacNhan == true,
-            "label": "Giám đốc",
-          },
-          if (item.listSignatory != null)
-            ...item.listSignatory!.map(
-              (e) => {
-                "id": e.idNguoiKy,
-                "signed": e.trangThai == 1,
-                "label": e.tenNguoiKy,
+              if (item.nguoiLapPhieuKyNhay == true)
+                {
+                  "id": item.idNguoiKyNhay,
+                  "signed": item.trangThaiKyNhay == true,
+                  "label": "Người lập phiếu: ${item.tenNguoiKyNhay}",
+                },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trinhDuyetCapPhongXacNhan == true,
+                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
               },
-            ),
-        ].toList();
+              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                {
+                  "id": item.listSignatory![i].idNguoiKy,
+                  "signed": item.listSignatory![i].trangThai == 1,
+                  "label":
+                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trinhDuyetGiamDocXacNhan == true,
+                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
     // Kiểm tra hoàn thành
     if (item.trangThai == 3 || item.trangThai == 2) {
       String title = widget.provider.getScreenTitle();
@@ -807,7 +810,19 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
       return;
     }
+    // Kiểm tra tất cả các bước trước đã ký chưa
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
 
+    if (previousNotSigned.isNotEmpty && item.byStep == true) {
+      AppUtility.showSnackBar(
+        context,
+        '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+        isError: true,
+      );
+      return;
+    }
     // Nếu vượt qua tất cả check → mở preview để ký
 
     await _loadPdfNetwork(item.tenFile!);
