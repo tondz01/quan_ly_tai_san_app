@@ -334,7 +334,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
     _itemPreview = null;
     _item = item;
-    log('message onChangeDetailDieuDongTaiSan: $_item');
     isShowInput = true;
     isShowCollapse = true;
     notifyListeners();
@@ -356,10 +355,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data![index] = updatedItem;
       _updatePagination();
       notifyListeners();
-
-      log('Đã cập nhật item có ID: ${updatedItem.id}');
-    } else {
-      log('Không tìm thấy item có ID: ${updatedItem.id}');
     }
   }
 
@@ -374,6 +369,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
+      AccountHelper.instance.setAssetTransfer(state.data);
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)

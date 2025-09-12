@@ -44,4 +44,9 @@ class StorageKey {
   static const DEPARTMENT = 'department';
   static const NHAN_VIEN = 'nhan_vien';
   static const CHUC_VU = 'chuc_vu';
+  static const ASSET_TRANSFER = 'asset_transfer';
+  static const ASSET_HANDOVER = 'asset_handover';
+  static const TOOL_AND_MATERIAL_TRANSFER = 'tool_and_material_transfer';
+  static const TOOL_AND_MATERIAL_TRANSFER_HANDOVER = 'tool_and_material_transfer_handover';
+
 }

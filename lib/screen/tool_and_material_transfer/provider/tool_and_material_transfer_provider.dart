@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -171,12 +170,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     List<ToolAndMaterialTransferDto> statusFiltered;
     if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(_data!);
-      log('Filtro por estado: todos los datos (${statusFiltered.length})');
     } else {
       statusFiltered =
           _data!.where((item) {
             int itemStatus = item.trangThai ?? 0;
-            log('itemStatus: $itemStatus');
             if (_filterStatus[FilterStatus.draft] == true &&
                 (itemStatus == 0)) {
               return true;
@@ -272,7 +269,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
     _listOwnershipUnit = [];
-    log('onDispose ToolAndMaterialTransferProvider');
     if (controllerDropdownPage != null) {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
@@ -333,7 +329,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void onChangeDetailToolAndMaterialTransfer(ToolAndMaterialTransferDto? item) {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
     _item = item;
-    log('message onChangeDetailToolAndMaterialTransfer: $_item');
     isShowInput = true;
     isShowCollapse = true;
     notifyListeners();
@@ -355,8 +350,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data![index] = updatedItem;
       _updatePagination();
       notifyListeners();
-
-      log('Đã cập nhật item có ID: ${updatedItem.id}');
     } else {
       log('Không tìm thấy item có ID: ${updatedItem.id}');
     }
@@ -371,6 +364,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
     } else {
+      AccountHelper.instance.setToolAndMaterialTransfer(state.data);
       _data =
           state.data
               .where((element) => element.loai == typeToolAndMaterialTransfer)
@@ -693,13 +687,11 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (id.isEmpty) return [];
     Map<String, dynamic> result =
         await ToolAndMaterialTransferRepository().getListOwnershipUnit(id);
-    log('message result: ${jsonEncode(result)}');
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
       final list =
           rawData.map((item) => OwnershipUnitDetailDto.fromJson(item)).toList();
       _listOwnershipUnit = list;
-      log('message listOwnershipUnit: ${jsonEncode(list)}');
       notifyListeners();
       return list;
     } else {

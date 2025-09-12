@@ -394,6 +394,7 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
+      AccountHelper.instance.setAssetHandover(state.data);
       _data =
           state.data
               .where(

@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -184,8 +182,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   }
 
   void setFilterStatus(FilterStatus status, bool? value) {
-    log('message setFilterStatus: $status, $value');
-
     _filterStatus[status] = value ?? false;
 
     if (status == FilterStatus.all && value == true) {
@@ -403,6 +399,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
+      AccountHelper.instance.setToolAndMaterialHandover(state.data);
       _data =
           state.data
               .where(

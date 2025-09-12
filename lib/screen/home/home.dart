@@ -6,6 +6,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
+import 'package:quan_ly_tai_san_app/screen/home/utils/menu_prefs.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
@@ -42,9 +43,31 @@ class _HomeState extends State<Home> {
     _selectedIndex = 0;
     _selectedSubIndex = 0;
 
+    // Khôi phục trạng thái menu đã lưu (web)
+    final savedIndex = MenuPrefs.getSelectedIndex();
+    final savedSubIndex = MenuPrefs.getSelectedSubIndex();
+    if (savedIndex != null) {
+      // Ràng buộc trong phạm vi
+      if (savedIndex >= 0 && savedIndex < _menuData.menuItems.length) {
+        _selectedIndex = savedIndex;
+      }
+    }
+    if (savedSubIndex != null) {
+      final hasSubs = _menuData.menuItems[_selectedIndex].reportSubItems.isNotEmpty ||
+          _menuData.menuItems[_selectedIndex].projectGroups.isNotEmpty;
+      if (hasSubs) {
+        _selectedSubIndex = savedSubIndex;
+      } else {
+        _selectedSubIndex = 0;
+      }
+    }
+
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
     userInfo = AccountHelper.instance.getUserInfo();
+    if(userInfo == null){
+      context.go(AppRoute.login.path);
+    }
   }
 
   void _updateSelectedIndex(int index, int subIndex) {
@@ -53,6 +76,8 @@ class _HomeState extends State<Home> {
         _selectedIndex = index;
         _selectedSubIndex = subIndex;
       });
+      // Lưu trạng thái lựa chọn
+      MenuPrefs.setSelection(_selectedIndex, _selectedSubIndex);
     }
   }
 
@@ -97,6 +122,8 @@ class _HomeState extends State<Home> {
               if (item.reportSubItems.isEmpty && item.projectGroups.isEmpty) {
                 // Đảm bảo index được dùng là vị trí của item trong mảng
                 _selectedIndex = index;
+                _selectedSubIndex = 0;
+                MenuPrefs.setSelection(_selectedIndex, _selectedSubIndex);
                 if (item.route.isNotEmpty) {
                   isItemOne = true;
                   context.go(item.route);

@@ -271,7 +271,6 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (item != null) {
-        log('message item: ${jsonEncode(item)}');
         controllerSoChungTu.text = item?.id ?? '';
         controllerSubject.text = item?.trichYeu ?? '';
         controllerDocumentName.text = item?.tenPhieu ?? '';
@@ -293,7 +292,6 @@ class _ToolAndMaterialTransferDetailState
         widget.provider.getListOwnership(item?.idDonViGiao ?? '').then((value) {
           setState(() {
             listOwnershipUnit = value;
-            log('message listOwnershipUnit: ${jsonEncode(listOwnershipUnit)}');
           });
         });
         listStaffByDepartment =
@@ -311,7 +309,6 @@ class _ToolAndMaterialTransferDetailState
         nguoiKyNhay = widget.provider.getNhanVienByID(
           item?.idNguoiKyNhay ?? '',
         );
-        log('item?.nguoiKyNhay: ${jsonEncode(nguoiKyNhay)}');
         nguoiKyCapPhong = widget.provider.getNhanVienByID(
           item?.idTrinhDuyetCapPhong ?? '',
         );
@@ -534,13 +531,9 @@ class _ToolAndMaterialTransferDetailState
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    log('screenWidth: $screenWidth');
-
     _checkAndRefreshWidget();
 
     if (item == null && !isRefreshing) {
-      log('item == null');
       onReload();
       isEditing = true;
       isRefreshing = true;
@@ -1030,7 +1023,6 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             )
                             .toList();
-                    log('listNewDetails test1: ${jsonEncode(listNewDetails)}');
                     itemPreview = _createToolAndMaterialTransPreview(
                       widget.type,
                     );
