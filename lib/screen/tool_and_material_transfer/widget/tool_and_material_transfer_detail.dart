@@ -694,6 +694,7 @@ class _ToolAndMaterialTransferDetailState
                           textContent: controllerSoChungTu.text,
                           fieldName: 'soChungTu',
                           validationErrors: _validationErrors,
+                          isRequired: true,
                         ),
                         CommonFormInput(
                           label: 'Tên phiếu',
@@ -702,6 +703,7 @@ class _ToolAndMaterialTransferDetailState
                           textContent: item?.tenPhieu ?? '',
                           fieldName: 'documentName',
                           validationErrors: _validationErrors,
+                          isRequired: true,
                         ),
                         CommonFormInput(
                           label: 'Trích yêu',
@@ -710,6 +712,7 @@ class _ToolAndMaterialTransferDetailState
                           textContent: item?.trichYeu ?? '',
                           fieldName: 'subject',
                           validationErrors: _validationErrors,
+                          isRequired: true,
                         ),
 
                         CmFormDropdownObject<PhongBan>(
@@ -742,6 +745,7 @@ class _ToolAndMaterialTransferDetailState
                               donViGiao!.id.toString(),
                             );
                           },
+                          isRequired: true,
                         ),
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.receiving_unit'.tr,
@@ -760,6 +764,7 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             donViNhan = value;
                           },
+                          isRequired: true,
                         ),
                         CmFormDate(
                           label: 'at.effective_date'.tr,
@@ -772,6 +777,7 @@ class _ToolAndMaterialTransferDetailState
                                     controllerEffectiveDate.text,
                                   )
                                   : DateTime.now(),
+                          isRequired: true,
                         ),
                         CmFormDate(
                           label: 'at.effective_date_to'.tr,
@@ -784,6 +790,7 @@ class _ToolAndMaterialTransferDetailState
                                     controllerEffectiveDateTo.text,
                                   )
                                   : DateTime.now(),
+                          isRequired: true,
                         ),
                       ],
                     ),
@@ -819,6 +826,7 @@ class _ToolAndMaterialTransferDetailState
                                       .toList();
                             });
                           },
+                          isRequired: true,
                         ),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người lập phiếu',
@@ -846,6 +854,7 @@ class _ToolAndMaterialTransferDetailState
                               nguoiKyNhay = value;
                             });
                           },
+                          isRequired: true,
                         ),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
@@ -883,6 +892,7 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             nguoiKyCapPhong = value;
                           },
+                          isRequired: true,
                         ),
                         AdditionalSignersSelector(
                           addButtonText: "Thêm đơn bị đại diện",
@@ -928,6 +938,7 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             ),
                           ],
+                          isRequired: true,
                           defaultValue:
                               controllerApprover.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(

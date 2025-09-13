@@ -22,6 +22,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -64,10 +65,10 @@ class _ToolAndSuppliesHandoverListState
     'decision_number',
     'transfer_order',
     'transfer_date',
-    'movement_details',
     'sender_unit',
     'receiver_unit',
     'created_by',
+    'by_step',
     'status',
     'actions',
   ];
@@ -128,7 +129,7 @@ class _ToolAndSuppliesHandoverListState
       ),
       ColumnDisplayOption(
         id: 'name',
-        label: 'Bàn giao ccdc-vật tư',
+        label: 'Tên phiếu',
         isChecked: visibleColumnIds.contains('name'),
       ),
       ColumnDisplayOption(
@@ -147,11 +148,6 @@ class _ToolAndSuppliesHandoverListState
         isChecked: visibleColumnIds.contains('transfer_date'),
       ),
       ColumnDisplayOption(
-        id: 'movement_details',
-        label: 'Chi tiết bàn giao',
-        isChecked: visibleColumnIds.contains('movement_details'),
-      ),
-      ColumnDisplayOption(
         id: 'sender_unit',
         label: 'Đơn vị giao',
         isChecked: visibleColumnIds.contains('sender_unit'),
@@ -165,6 +161,11 @@ class _ToolAndSuppliesHandoverListState
         id: 'created_by',
         label: 'Người lập phiếu',
         isChecked: visibleColumnIds.contains('created_by'),
+      ),
+      ColumnDisplayOption(
+        id: 'by_step',
+        label: 'Ký theo lượt',
+        isChecked: visibleColumnIds.contains('by_step'),
       ),
       ColumnDisplayOption(
         id: 'status',
@@ -211,7 +212,7 @@ class _ToolAndSuppliesHandoverListState
         case 'name':
           columns.add(
             TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
-              title: 'Bàn giao tài sản',
+              title: 'Tên phiếu',
               getValue: (item) => item.banGiaoCCDCVatTu ?? '',
               width: 170,
             ),
@@ -251,18 +252,6 @@ class _ToolAndSuppliesHandoverListState
             ),
           );
           break;
-        case 'movement_details':
-          columns.add(
-            SgTableColumn<ToolAndSuppliesHandoverDto>(
-              title: 'Chi tiết bàn giao',
-              cellBuilder: (item) => showMovementDetails([]),
-              cellAlignment: TextAlign.center,
-              titleAlignment: TextAlign.center,
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
         case 'sender_unit':
           columns.add(
             TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
@@ -287,6 +276,17 @@ class _ToolAndSuppliesHandoverListState
               title: 'Người lập phiếu',
               getValue: (item) => item.nguoiTao ?? '',
               width: 120,
+            ),
+          );
+          break;
+        case 'by_step':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+              title: 'Ký theo lượt',
+              cellBuilder:
+                  (item) =>
+                      SgCheckbox(value: item.byStep == true, onChanged: null),
+              width: 100,
             ),
           );
           break;
@@ -688,6 +688,10 @@ class _ToolAndSuppliesHandoverListState
                   ? Colors.green
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? Colors.red
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? Colors.purple
                   : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
@@ -697,6 +701,10 @@ class _ToolAndSuppliesHandoverListState
                   ? 'Đã ký'
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? 'Chưa ký'
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? 'Đã ký & tạo'
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? 'Chưa ký & tạo'
                   : "Người tạo phiếu",
           size: 12,
           style: TextStyle(

@@ -515,7 +515,20 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       return -1;
     }
 
-    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+    final currentSigner = signatureFlow[currentIndex];
+
+    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap &&
+        currentSigner["signed"] != -1) {
+      return currentSigner["signed"] == true
+          ? 3
+          : 5; // 3: Đã ký & tạo, 5: Chưa ký & tạo
+    }
+
+    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap) {
+      return -1; // Chỉ là người tạo, không phải người ký
+    }
+
+    return currentSigner["signed"] == true ? 1 : 0;
   }
 
   NhanVien getNhanVienByID(String idNhanVien) {

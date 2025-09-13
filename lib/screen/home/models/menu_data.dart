@@ -1,9 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/sg_sidebar_horizontal.dart';
 
 /// Class đại diện cho một mục trong menu
@@ -98,11 +100,9 @@ class MenuDataNotifier extends ChangeNotifier {
 class AppMenuData extends ChangeNotifier {
   late final List<MenuItem> menuItems;
   final MenuDataNotifier _notifier = MenuDataNotifier();
-  
-  // 🔥 THÊM: ValueNotifier để trigger rebuild
+
   final ValueNotifier<int> _countTrigger = ValueNotifier<int>(0);
-  
-  // 🔥 THÊM: Singleton instance
+
   static AppMenuData? _instance;
   static AppMenuData get instance {
     _instance ??= AppMenuData._internal();
@@ -112,7 +112,7 @@ class AppMenuData extends ChangeNotifier {
   AppMenuData._internal() {
     MenuItem._nextIndex = 0;
     _buildMenuItems();
-    
+
     // Lắng nghe thay đổi từ notifier
     _notifier.addListener(() {
       notifyListeners();
@@ -158,25 +158,29 @@ class AppMenuData extends ChangeNotifier {
       ),
       MenuItem(
         label: 'Điều động tài sản ',
-        child: _buildRealtimeCountWidget(() => 
-          countAssetTransfer + countAssetTransfer2 + countAssetTransfer3
+        child: _buildRealtimeCountWidget(
+          () => countAssetTransfer + countAssetTransfer2 + countAssetTransfer3,
         ),
         reportSubItems: [
           SubMenuItem(
             label: 'Cấp phát tài sản',
-            child: _buildRealtimeCountWidget(() => countAssetTransfer),
+            child: _buildRealtimeCountWidgetInSubMenu(() => countAssetTransfer),
             route: AppRoute.assetTransfer.path,
             extra: "1",
           ),
           SubMenuItem(
             label: 'Điều chuyển tài sản',
-            child: _buildRealtimeCountWidget(() => countAssetTransfer2),
+            child: _buildRealtimeCountWidgetInSubMenu(
+              () => countAssetTransfer2,
+            ),
             route: AppRoute.assetTransfer.path,
             extra: "3",
           ),
           SubMenuItem(
             label: 'Thu hồi tài sản',
-            child: _buildRealtimeCountWidget(() => countAssetTransfer3),
+            child: _buildRealtimeCountWidgetInSubMenu(
+              () => countAssetTransfer3,
+            ),
             route: AppRoute.assetTransfer.path,
             extra: "2",
           ),
@@ -184,26 +188,35 @@ class AppMenuData extends ChangeNotifier {
       ),
       MenuItem(
         label: 'Điều động CCDC - Vật tư',
-        child: _buildRealtimeCountWidget(() => 
-          countToolAndSupplies + countToolAndSupplies2 + countToolAndSupplies3
+        child: _buildRealtimeCountWidget(
+          () =>
+              countToolAndSupplies +
+              countToolAndSupplies2 +
+              countToolAndSupplies3,
         ),
         route: AppRoute.toolAndMaterialTransfer.path,
         reportSubItems: [
           SubMenuItem(
             label: 'Cấp phát CCDC - vật tư',
-            child: _buildRealtimeCountWidget(() => countToolAndSupplies),
+            child: _buildRealtimeCountWidgetInSubMenu(
+              () => countToolAndSupplies,
+            ),
             route: AppRoute.toolAndMaterialTransfer.path,
             extra: "1",
           ),
           SubMenuItem(
             label: 'Điều chuyển CCDC - vật tư',
-            child: _buildRealtimeCountWidget(() => countToolAndSupplies2),
+            child: _buildRealtimeCountWidgetInSubMenu(
+              () => countToolAndSupplies2,
+            ),
             route: AppRoute.toolAndMaterialTransfer.path,
             extra: "3",
           ),
           SubMenuItem(
             label: 'Thu hồi CCDC - vật tư',
-            child: _buildRealtimeCountWidget(() => countToolAndSupplies3),
+            child: _buildRealtimeCountWidgetInSubMenu(
+              () => countToolAndSupplies3,
+            ),
             route: AppRoute.toolAndMaterialTransfer.path,
             extra: "2",
           ),
@@ -265,7 +278,6 @@ class AppMenuData extends ChangeNotifier {
 
   /// Method để refresh counts và rebuild menu items
   void refreshCounts() {
-    // 🔥 THÊM: Trigger rebuild
     _countTrigger.value++;
     notifyListeners();
   }
@@ -275,13 +287,22 @@ class AppMenuData extends ChangeNotifier {
     instance.refreshCounts();
   }
 
-  // 🔥 THÊM: Widget real-time với ValueListenableBuilder
   Widget _buildRealtimeCountWidget(int Function() countGetter) {
     return ValueListenableBuilder<int>(
       valueListenable: _countTrigger,
       builder: (context, value, child) {
         final count = countGetter();
         return _buildShowCount(count);
+      },
+    );
+  }
+
+  Widget _buildRealtimeCountWidgetInSubMenu(int Function() countGetter) {
+    return ValueListenableBuilder<int>(
+      valueListenable: _countTrigger,
+      builder: (context, value, child) {
+        final count = countGetter();
+        return _buildShowCountInSubMenu(count);
       },
     );
   }
@@ -329,9 +350,6 @@ class AppMenuData extends ChangeNotifier {
   }
 
   Widget _buildShowCount(int count) {
-    // Chỉ hiển thị badge nếu count > 0
-    SGLog.debug('Home', 'Count: $count');
-    log('message count: $count');
     if (count <= 0) return const SizedBox.shrink();
 
     return Container(
@@ -348,6 +366,53 @@ class AppMenuData extends ChangeNotifier {
             fontSize: 11,
             color: Colors.white,
             fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShowCountInSubMenu(int count) {
+    if (count <= 0) return const SizedBox.shrink();
+    Color badgeColor;
+    String displayText;
+
+    // Phân loại màu theo loại tài liệu
+    if (count > 99) {
+      badgeColor = const Color(0xFF2196F3); // Blue
+      displayText = '99+ mới';
+    } else if (count > 50) {
+      badgeColor = const Color(0xFF4CAF50); // Green
+      displayText = '$count mới';
+    } else if (count > 10) {
+      badgeColor = const Color(0xFFFF9800); // Orange
+      displayText = '$count mới';
+    } else {
+      badgeColor = ColorValue.coral;
+      displayText = '$count mới';
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: badgeColor.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      constraints: const BoxConstraints(minWidth: 24, minHeight: 20),
+      child: Center(
+        child: Text(
+          displayText,
+          style: const TextStyle(
+            fontSize: 11,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
           ),
         ),
       ),

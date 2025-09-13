@@ -105,6 +105,7 @@ class _HomeState extends State<Home> {
         label: item.label,
         icon: item.icon,
         child: item.child,
+        
         isActive: _selectedIndex == item.index,
         popupWidth: calculatePopupWidth(item),
         popupBorderRadius: 4.0,

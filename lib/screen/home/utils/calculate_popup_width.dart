@@ -40,5 +40,5 @@ double calculatePopupWidth(MenuItem item) {
   width = width > subItemWidth ? width : subItemWidth;
   width = width > groupTitleWidth ? width : groupTitleWidth;
   width = width > groupItemWidth ? width : groupItemWidth;
-  return width + 20.0;
+  return width + 40.0;
 }

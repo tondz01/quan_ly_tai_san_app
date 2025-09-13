@@ -26,6 +26,7 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -66,11 +67,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'decision_number',
     'transfer_order',
     'transfer_date',
-    'movement_details',
     'sender_unit',
     'receiver_unit',
     'created_by',
     'status',
+    'by_step',
     'actions',
   ];
 
@@ -131,7 +132,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ColumnDisplayOption(
         id: 'name',
-        label: 'Bàn giao tài sản',
+        label: 'Tên phiếu',
         isChecked: visibleColumnIds.contains('name'),
       ),
       ColumnDisplayOption(
@@ -170,6 +171,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         isChecked: visibleColumnIds.contains('created_by'),
       ),
       ColumnDisplayOption(
+        id: 'by_step',
+        label: 'Ký theo lượt',
+        isChecked: visibleColumnIds.contains('by_step'),
+      ),
+      ColumnDisplayOption(
         id: 'status',
         label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
@@ -195,6 +201,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -214,9 +221,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         case 'name':
           columns.add(
             TableBaseConfig.columnTable<AssetHandoverDto>(
-              title: 'Bàn giao tài sản',
+              title: 'Tên phiếu',
               getValue: (item) => item.banGiaoTaiSan ?? '',
               width: 170,
+              filterable: true,
             ),
           );
           break;
@@ -254,18 +262,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             ),
           );
           break;
-        case 'movement_details':
-          columns.add(
-            SgTableColumn<AssetHandoverDto>(
-              title: 'Chi tiết bàn giao',
-              cellBuilder: (item) => showMovementDetails([]),
-              cellAlignment: TextAlign.center,
-              titleAlignment: TextAlign.center,
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
         case 'sender_unit':
           columns.add(
             TableBaseConfig.columnTable<AssetHandoverDto>(
@@ -288,8 +284,24 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           columns.add(
             TableBaseConfig.columnTable<AssetHandoverDto>(
               title: 'Người lập phiếu',
-              getValue: (item) => item.nguoiTao ?? '',
+              getValue:
+                  (item) =>
+                      AccountHelper.instance
+                          .getNhanVienById(item.nguoiTao ?? '')
+                          ?.hoTen ??
+                      '',
               width: 120,
+            ),
+          );
+          break;
+        case 'by_step':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Ký theo lượt',
+              cellBuilder:
+                  (item) =>
+                      SgCheckbox(value: item.byStep == true, onChanged: null),
+              width: 100,
             ),
           );
           break;
@@ -306,7 +318,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -714,6 +726,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                   ? Colors.green
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? Colors.red
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? Colors.purple
                   : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
@@ -723,6 +739,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                   ? 'Đã ký'
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? 'Chưa ký'
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? 'Đã ký & tạo'
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? 'Chưa ký & tạo'
                   : "Người tạo phiếu",
           size: 12,
           style: TextStyle(

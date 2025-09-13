@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_datetime_input_button.dart';
@@ -19,6 +21,7 @@ class CmFormDate extends StatefulWidget {
     this.timeOptional = true,
     this.includeSeconds = true,
     this.initialIncludeTime = false,
+    this.isRequired = false,
   });
   final String label;
   final TextEditingController controller;
@@ -34,7 +37,7 @@ class CmFormDate extends StatefulWidget {
   final Function(DateTime?)? onChanged;
   final String? fieldName;
   final Map<String, bool>? validationErrors;
-
+  final bool isRequired;
   @override
   State<CmFormDate> createState() => _CmFormDateState();
 }
@@ -54,16 +57,24 @@ class _CmFormDateState extends State<CmFormDate> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 180,
-            child: Text(
-              '${widget.label} :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !widget.isEditing
-                        ? Colors.black87.withValues(alpha: 0.6)
-                        : Colors.black,
-              ),
+            width: 195,
+            child: Row(
+              children: [
+                Text(
+                  '${widget.label} :',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color:
+                        !widget.isEditing
+                            ? Colors.black87.withOpacity(0.6)
+                            : Colors.black,
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isRequired,
+                  child: Text(' *', style: TextStyle(color: Colors.red)),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 20),

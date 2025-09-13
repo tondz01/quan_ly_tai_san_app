@@ -647,7 +647,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
           if (item.nguoiLapPhieuKyNhay == true)
             {
               "id": item.idNguoiKyNhay,
-              "signed": item.trangThaiKyNhay,
+              "signed": item.trangThaiKyNhay == true,
               "label": "Người ký nháy",
             },
           {
@@ -674,21 +674,34 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       (s) => s["id"] == userInfo.tenDangNhap,
     );
 
-    if (currentIndex == -1) {
+    if (currentIndex == -1 || currentIndex >= signatureFlow.length) {
       return -1;
     }
 
-    if (signatureFlow[currentIndex]["signed"] == -1) {
+    final currentSigner = signatureFlow[currentIndex];
+
+    if (item.nguoiLapPhieuKyNhay == true &&
+        item.idNguoiKyNhay == userInfo.tenDangNhap) {
+      return item.trangThaiKyNhay == true ? 2 : 4;
+    }
+
+    if (item.nguoiTao == userInfo.tenDangNhap &&
+        currentSigner["signed"] != -1) {
+      return currentSigner["signed"] == true ? 3 : 5;
+    }
+
+    // Logic cũ
+    if (currentSigner["signed"] == -1) {
       return -1;
     }
 
-    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+    return currentSigner["signed"] == true ? 1 : 0;
   }
 
   Future<List<OwnershipUnitDetailDto>> getListOwnership(String id) async {
     if (id.isEmpty) return [];
-    Map<String, dynamic> result =
-        await ToolAndMaterialTransferRepository().getListOwnershipUnit(id);
+    Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+        .getListOwnershipUnit(id);
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
       final list =

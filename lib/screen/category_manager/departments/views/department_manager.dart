@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/dep
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class DepartmentManager extends StatefulWidget {
@@ -145,6 +146,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
         if (state is DepartmentLoaded) {
           List<PhongBan> departments = state.departments;
           data = departments;
+          AccountHelper.instance.clearDepartment();
+          AccountHelper.instance.setDepartment(departments);
           filteredData = data;
           _updatePagination();
 

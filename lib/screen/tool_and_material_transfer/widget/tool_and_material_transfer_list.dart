@@ -76,6 +76,8 @@ class _ToolAndMaterialTransferListState
     'id',
     'decision_date',
     'to_date',
+    'don_vi_giao',
+    'don_vi_nhan',
     'status',
     'actions',
   ];
@@ -177,6 +179,16 @@ class _ToolAndMaterialTransferListState
         id: 'to_date',
         label: 'Thời gian giao nhận đến ngày',
         isChecked: visibleColumnIds.contains('to_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'don_vi_giao',
+        label: 'Đơn vị giao',
+        isChecked: visibleColumnIds.contains('don_vi_giao'),
+      ),
+      ColumnDisplayOption(
+        id: 'don_vi_nhan',
+        label: 'Đơn vị nhận',
+        isChecked: visibleColumnIds.contains('don_vi_nhan'),
       ),
       ColumnDisplayOption(
         id: 'status',
@@ -294,6 +306,15 @@ class _ToolAndMaterialTransferListState
                 }
                 return item.tggnDenNgay!;
               },
+            ),
+          );
+          break;
+        case 'don_vi_giao':
+          columns.add(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
+              title: 'Đơn vị giao',
+              width: 150,
+              getValue: (item) => AccountHelper.instance.getDepartmentById(item.idDonViGiao ?? '')?.tenPhongBan ?? '',
             ),
           );
           break;
@@ -729,21 +750,35 @@ class _ToolAndMaterialTransferListState
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(
-          color:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? Colors.red
-                  : Colors.blue,
+          color: widget.provider.isCheckSigningStatus(item) == 1
+              ? Colors.green
+              : widget.provider.isCheckSigningStatus(item) == 0
+              ? Colors.red
+              : widget.provider.isCheckSigningStatus(item) == 2
+              ? Colors.green
+              : widget.provider.isCheckSigningStatus(item) == 3
+              ? Colors.green
+              : widget.provider.isCheckSigningStatus(item) == 4
+              ? Colors.orange
+              : widget.provider.isCheckSigningStatus(item) == 5
+              ? Colors.purple
+              : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
         child: SGText(
-          text:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? 'Đã ký'
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? 'Chưa ký'
-                  : "Người tạo phiếu",
+          text: widget.provider.isCheckSigningStatus(item) == 1
+              ? 'Đã ký'
+              : widget.provider.isCheckSigningStatus(item) == 0
+              ? 'Chưa ký'
+              : widget.provider.isCheckSigningStatus(item) == 2
+              ? 'Đã ký nháy'
+              : widget.provider.isCheckSigningStatus(item) == 3
+              ? 'Đã ký & tạo'
+              : widget.provider.isCheckSigningStatus(item) == 4
+              ? 'Chưa ký nháy'
+              : widget.provider.isCheckSigningStatus(item) == 5
+              ? 'Chưa ký & tạo'
+              : "Người tạo phiếu",
           size: 12,
           style: TextStyle(
             fontWeight: FontWeight.w500,

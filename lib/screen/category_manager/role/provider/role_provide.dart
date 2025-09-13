@@ -95,7 +95,6 @@ class RoleProvider with ChangeNotifier {
       _isLoading = true;
       final bloc = context.read<RoleBloc>();
       bloc.add(GetListRoleEvent(context, userInfo?.idCongTy ?? ''));
-      log('userInfo?.idCongTy: ${userInfo?.idCongTy}');
     } catch (e) {
       log('Error adding Role events: $e');
     }
@@ -180,8 +179,9 @@ class RoleProvider with ChangeNotifier {
       _filteredData = [];
     } else {
       _data = state.data;
+      AccountHelper.instance.clearChucVu();
+      AccountHelper.instance.setChucVu(_data);
       _filteredData = state.data;
-      log('message getListRolesSuccess _data: $_data');
       _updatePagination();
     }
     notifyListeners();
@@ -191,7 +191,6 @@ class RoleProvider with ChangeNotifier {
     _isLoading = false;
     onCloseDetail(context);
     getListRoles(context);
-
     // Close input panel if open
     AppUtility.showSnackBar(context, 'Thêm "Chức vụ" tư thành công!');
   }

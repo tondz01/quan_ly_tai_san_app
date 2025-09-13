@@ -214,7 +214,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
         }
         if (state is CancelDieuDongTaiSanSuccessState) {
           context.read<DieuDongTaiSanProvider>().onCloseDetail(context);
-          AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+          AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
           context.read<DieuDongTaiSanProvider>().getDataAll(context);
         }
         if (state is UpdateSigningStatusFailedState) {

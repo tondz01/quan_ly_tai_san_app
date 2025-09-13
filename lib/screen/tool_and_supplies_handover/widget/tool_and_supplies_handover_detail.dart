@@ -813,6 +813,7 @@ class _ToolAndSuppliesHandoverDetailState
           fieldName: 'handoverNumber',
           textContent: item?.id ?? '',
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'Bàn giao ccdc-vật tư',
@@ -821,6 +822,7 @@ class _ToolAndSuppliesHandoverDetailState
           textContent: item?.banGiaoCCDCVatTu ?? '',
           fieldName: 'documentName',
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
 
         CmFormDropdownObject<ToolAndMaterialTransferDto>(
@@ -854,6 +856,7 @@ class _ToolAndSuppliesHandoverDetailState
             await widget.provider.getListOwnership(donViGiao!.id.toString());
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị giao',
@@ -873,6 +876,7 @@ class _ToolAndSuppliesHandoverDetailState
             donViGiao = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị nhận',
@@ -892,6 +896,7 @@ class _ToolAndSuppliesHandoverDetailState
             donViNhan = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CmFormDate(
           label: 'Ngày bàn giao',
@@ -901,6 +906,7 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (dt) {},
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
+          isRequired: true,
         ),
       ],
     );
@@ -925,6 +931,7 @@ class _ToolAndSuppliesHandoverDetailState
             nguoiDaiDienBanHanhQD = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonCheckboxInput(
           label: 'Đã xác nhận',
@@ -960,6 +967,7 @@ class _ToolAndSuppliesHandoverDetailState
             nguoiDaiDienBenGiao = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonCheckboxInput(
           label: 'Đại diện bên giao đã xác nhận',
@@ -995,6 +1003,7 @@ class _ToolAndSuppliesHandoverDetailState
             nguoiDaiDienBenNhan = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonCheckboxInput(
           label: 'Đại diện bên nhận đã xác nhận',
@@ -1008,8 +1017,8 @@ class _ToolAndSuppliesHandoverDetailState
           },
         ),
         AdditionalSignersSelector(
-          addButtonText: "Thêm đơn bị đại diện",
-          labelDepartment: "Đơn vị đại diện",
+          addButtonText: "Thêm người đại diện",
+          labelDepartment: "Người đại diện",
           isEditing: isEditing,
           itemsNhanVien: itemsNhanVien,
           phongBan: widget.provider.dataDepartment,
