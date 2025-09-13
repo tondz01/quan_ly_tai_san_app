@@ -17,6 +17,7 @@ class AppRouteConf {
       ShellRoute(
         builder: (context, state, child) {
           return Home(child: child);
+          return Home(child: child);
         },
         routes: [
           GoRoute(
@@ -25,7 +26,7 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const DashboardScreen(),
+                  child: const DashboardView(),
                 ),
           ),
           GoRoute(

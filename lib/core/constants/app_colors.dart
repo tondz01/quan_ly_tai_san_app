@@ -11,6 +11,9 @@ abstract class ColorValue {
   static const Color accentCyan = Color(0xFF00BCD4); // Cyan 500
   static const Color accentLightCyan = Color(0xFF80DEEA); // Cyan 200
 
+  static const Color backgroundBG3= Color(0xFFE6F1FD); // Light Blue 200
+  static const Color backgroundBG4= Color(0xFFEDEEFC); // Light Blue 200
+
   // Neutral colors
   static const Color neutral50 = Color(0xFFFAFAFA);
   static const Color neutral100 = Color(0xFFF5F5F5);
@@ -53,6 +56,8 @@ abstract class ColorValue {
   static const Color tealAccent = Color(0xFF009688);
   static const Color darkGrey = Color(0xFF424242);
   static const Color teal = Color(0xFF00796B);
+  static const Color pink = Color(0xFFFF4069);
+  static const Color amber = Color(0xFFFFC234);
   
   static const Color lightTealAccent = Color(0xFF80CBC4);
   static const Color darkTealAccent = Color(0xFF00796B);
