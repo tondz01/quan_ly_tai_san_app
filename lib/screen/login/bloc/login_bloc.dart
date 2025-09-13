@@ -1,8 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginInitialState()) {
@@ -25,14 +30,36 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Map<String, dynamic> result = await AuthRepository().login(event.params);
     emit(LoginLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      final reponse = await AssetTransferRepository().getListDieuDongTaiSan();
+      if (reponse['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final data = reponse['data'];
+        AccountHelper.instance.setAssetTransfer(data);
+      }
+      final reponseToolsHandover = await ToolAndSuppliesHandoverRepository().getListToolAndSuppliesHandover();
+      if (reponseToolsHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final data = reponseToolsHandover['data'];
+        AccountHelper.instance.setToolAndMaterialHandover(data);
+      }
+      final reponseAssetHandover = await AssetHandoverRepository().getListAssetHandover();
+      if (reponseAssetHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final data = reponseAssetHandover['data'];
+        AccountHelper.instance.setAssetHandover(data);
+      }
+      final reponseToolAndMaterialTransfer = await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransferByCT();
+      if (reponseToolAndMaterialTransfer.isNotEmpty) {
+        final data = reponseToolAndMaterialTransfer;
+        AccountHelper.instance.setToolAndMaterialHandover(data);
+      }
       if (result['data'] != null) {
         emit(PostLoginSuccessState(data: result['data']));
       } else {
-        emit(PostLoginFailedState(
-          title: "notice",
-          code: result['status_code'],
-          message: "Tài khoản hoặc mật khẩu không chính xác",
-        ));
+        emit(
+          PostLoginFailedState(
+            title: "notice",
+            code: result['status_code'],
+            message: "Tài khoản hoặc mật khẩu không chính xác",
+          ),
+        );
       }
     } else {
       emit(
@@ -105,8 +132,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       emit(LoginLoadingDismissState());
       emit(
         CreateAccountFailedState(
-          title: "error", 
-          code: -1, 
+          title: "error",
+          code: -1,
           message: e.toString(),
         ),
       );

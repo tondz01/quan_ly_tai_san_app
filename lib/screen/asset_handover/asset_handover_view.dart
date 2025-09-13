@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_ev
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/tab_bar_table_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -173,7 +174,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
           context.read<AssetHandoverBloc>().add(
             GetListAssetHandoverEvent(context),
           );
-         
+          AccountHelper.refreshAllCounts();
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is CancelAssetHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -223,7 +224,10 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
                           title: "Chi tiết biên bản bàn giao tài sản",
-                          childInput: AssetHandoverDetail(provider: provider,isFindNew: provider.isFindNew,),
+                          childInput: AssetHandoverDetail(
+                            provider: provider,
+                            isFindNew: provider.isFindNew,
+                          ),
                           childTableView: TabBarTableAsset(provider: provider),
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,

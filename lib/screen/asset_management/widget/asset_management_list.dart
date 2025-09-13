@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -198,7 +199,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Đơn vị sử dụng',
-              getValue: (item) => item.idDonViHienThoi ?? '',
+              getValue:
+                  (item) =>
+                      AccountHelper.instance
+                          .getDepartmentById(item.idDonViHienThoi ?? '')
+                          ?.tenPhongBan ??
+                      '',
               width: 150,
             ),
           );
@@ -524,11 +530,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
               data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
               getters: getters,
-              startDate: widget.provider.filteredData?.isNotEmpty ?? false
-                  ? DateTime.tryParse(
-                      widget.provider.filteredData?.first.ngayTao ?? '',
-                    )
-                  : null,
+              startDate:
+                  widget.provider.filteredData?.isNotEmpty ?? false
+                      ? DateTime.tryParse(
+                        widget.provider.filteredData?.first.ngayTao ?? '',
+                      )
+                      : null,
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
               },

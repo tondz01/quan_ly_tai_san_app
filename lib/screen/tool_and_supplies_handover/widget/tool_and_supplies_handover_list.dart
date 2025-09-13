@@ -738,33 +738,37 @@ class _ToolAndSuppliesHandoverListState
   ) async {
     final signatureFlow =
         [
-          {
-            "id": item.idDaiDiendonviBanHanhQD,
-            "signed": item.daXacNhan == true,
-            "label": "Người tạo",
-          },
-          {
-            "id": item.idDaiDienBenGiao,
-            "signed": item.daiDienBenGiaoXacNhan == true,
-            "label": "Trưởng phòng",
-          },
-          {
-            "id": item.idDaiDienBenNhan,
-            "signed": item.daiDienBenNhanXacNhan == true,
-            "label": "Phó phòng Đơn vị giao",
-          },
-          if (item.listSignatory?.isNotEmpty ?? false)
-            ...(item.listSignatory
-                    ?.map(
-                      (e) => {
-                        "id": e.idNguoiKy,
-                        "signed": e.trangThai == 1,
-                        "label": e.tenNguoiKy ?? '',
-                      },
-                    )
-                    .toList() ??
-                []),
-        ].toList();
+              {
+                "id": item.idDaiDiendonviBanHanhQD,
+                "signed": item.daXacNhan == true,
+                "label": "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
+              },
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+                "label": "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+                "label": "Đại diện đơn vị nhận: ${item.tenDaiDienBenNhan}",
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                            "label": "Người ký: ${e.tenNguoiKy ?? ''}",
+                          },
+                        )
+                        .toList() ??
+                    []),
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
 
     if (signatureFlow.isNotEmpty) {
       // Kiểm tra user có trong flow không
@@ -843,17 +847,17 @@ class _ToolAndSuppliesHandoverListState
     selected = item;
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
-        ThreadNode(
-          header: 'Đại diện đơn vị để nghị:',
-          depth: 1,
-          child: viewSignatoryStatus(
-            item.daXacNhan == true,
-            widget.provider
-                .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
-                .hoTen
-                .toString(),
-          ),
+      ThreadNode(
+        header: 'Đại diện đơn vị để nghị:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daXacNhan == true,
+          widget.provider
+              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+              .hoTen
+              .toString(),
         ),
+      ),
       ThreadNode(
         header: 'Đại diện đơn vị giao:',
         depth: 1,

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -16,6 +15,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -77,6 +77,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   bool isReceiverConfirm = false;
   bool isRepresentativeUnitConfirm = false;
   bool isExpanded = false;
+  bool isByStep = false;
 
   String? proposingUnit;
   String? _selectedFileName;
@@ -128,6 +129,23 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
+  Future<void> _loadPdfNetwork(String nameFile) async {
+    SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
+    try {
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
+  }
+
   @override
   void didUpdateWidget(AssetHandoverDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -174,6 +192,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       if (widget.isFindNew) {
         isEditing = widget.isFindNew;
       }
+      isByStep = item?.byStep ?? false;
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
@@ -194,7 +213,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               )
               .toList() ??
           [];
+      if (!widget.isFindNew) {
+        _loadPdfNetwork(item?.tenFile ?? '');
+      }
     } else {
+      isByStep = false;
       isUnitConfirm = false;
       isDelivererConfirm = false;
       isReceiverConfirm = false;
@@ -314,7 +337,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (item != null) {
       controllerHandoverNumber.text = item?.id ?? '';
       controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
-       dieuDongTaiSan = listAssetTransfer.firstWhere(
+      dieuDongTaiSan = listAssetTransfer.firstWhere(
         (element) => element.id == item?.lenhDieuDong,
         orElse: () => DieuDongTaiSanDto(),
       );
@@ -371,6 +394,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "nguoiTao": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
+      "byStep": isByStep,
     };
 
     final List<SignatoryDto> listSignatory =
@@ -433,35 +457,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
-  // String _formatDate(String date) {
-  //   String dateResult = "";
-  //   try {
-  //     if (date.isNotEmpty) {
-  //       if (date.contains("T")) {
-  //         dateResult = date;
-  //       } else {
-  //         List<String> dateParts = date.split('/');
-  //         if (dateParts.length == 3) {
-  //           DateTime date = DateTime(
-  //             int.parse(dateParts[2]),
-  //             int.parse(dateParts[1]),
-  //             int.parse(dateParts[0]),
-  //           );
-  //           dateResult = date.toIso8601String();
-  //         } else {
-  //           DateTime? parsedDate = DateTime.tryParse(date);
-  //           if (parsedDate != null) {
-  //             dateResult = parsedDate.toIso8601String();
-  //           }
-  //         }
-  //       }
-  //     }
-  //   } catch (e) {
-  //     dateResult = DateTime.now().toIso8601String();
-  //   }
-  //   return dateResult;
-  // }
-
   void _saveChanges() {
     if (!isEditing) return;
     if (!_validateForm()) {
@@ -485,15 +480,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     _saveAssetHandover();
   }
-
-  // void _cancelChanges() {
-  //   _updateControllers();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     if (mounted) {
-  //       widget.provider.hasUnsavedChanges = false;
-  //     }
-  //   });
-  // }
 
   DieuDongTaiSanDto getAssetTransfer({
     required List<DieuDongTaiSanDto> listAssetTransfer,
@@ -979,12 +965,23 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             });
           },
         ),
+        const SizedBox(height: 10),
+        CommonCheckboxInput(
+          label: 'Ký theo lượt',
+          value: isByStep,
+          isEditing: isEditing,
+          isDisabled: !isEditing,
+          onChanged: (newValue) {
+            setState(() {
+              isByStep = newValue;
+            });
+          },
+        ),
       ],
     );
   }
 
   AssetHandoverDto? getAssetHandoverPreview() {
-    log("message check item getAssetHandoverPreview");
     return AssetHandoverDto(
       id: controllerHandoverNumber.text,
       idCongTy: currentUser?.idCongTy ?? '',
@@ -1017,6 +1014,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       nguoiTao: currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       isActive: true,
+      listSignatory:
+          _additionalSignersDetailed
+              .map(
+                (e) => SignatoryDto(
+                  id: UUIDGenerator.generateWithFormat("SIG-******"),
+                  idTaiLieu: item?.id ?? '',
+                  idPhongBan: e.department?.id ?? '',
+                  idNguoiKy: e.employee?.id ?? '',
+                  tenNguoiKy: e.employee?.hoTen ?? '',
+                  trangThai: 1,
+                ),
+              )
+              .toList(),
+      tenFile: _selectedFileName ?? '',
+      duongDanFile: _selectedFilePath ?? '',
     );
   }
 }

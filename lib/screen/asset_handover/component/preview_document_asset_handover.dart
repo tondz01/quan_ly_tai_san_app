@@ -1,6 +1,4 @@
 // ignore_for_file: depend_on_referenced_packages
-
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -35,7 +33,6 @@ Widget previewDocumentAssetHandover({
   return InkWell(
     onTap: () {
       if (item == null) return;
-      log("message check itemV1 ${jsonEncode(item)}");
       previewDocumentHandover(
         context: context,
         item: item,
@@ -109,31 +106,34 @@ previewDocumentHandover({
   List<SigneInfo> listSigneInfo = [
     SigneInfo(
       idNhanVien: item.idDaiDiendonviBanHanhQD ?? '',
+      title: 'Đại diện đơn vị đề nghị',
       hoTen: item.tenDaiDienBanHanhQD ?? '',
       chucVu: getChucVu(item.idDaiDiendonviBanHanhQD ?? ''),
       donVi: getDonVi(item.idDaiDiendonviBanHanhQD ?? ''),
     ),
     SigneInfo(
       idNhanVien: item.idDaiDienBenGiao ?? '',
+      title: 'Đại diện đơn vị bên giao',
       hoTen: item.tenDaiDienBenGiao ?? '',
       chucVu: getChucVu(item.idDaiDienBenGiao ?? ''),
       donVi: getDonVi(item.idDaiDienBenGiao ?? ''),
     ),
+    for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+      SigneInfo(
+        idNhanVien: item.listSignatory?[i].idNguoiKy ?? '',
+        title: 'Đại diện ký ${i + 1}',
+        hoTen: item.listSignatory?[i].tenNguoiKy ?? '',
+        chucVu: getChucVu(item.listSignatory?[i].idNguoiKy ?? ''),
+        donVi: getDonVi(item.listSignatory?[i].idNguoiKy ?? ''),
+      ),
     SigneInfo(
       idNhanVien: item.idDaiDienBenNhan ?? '',
+      title: 'Đại diện đơn vị bên nhận',
       hoTen: item.tenDaiDienBenNhan ?? '',
       chucVu: getChucVu(item.idDaiDienBenNhan ?? ''),
       donVi: getDonVi(item.idDaiDienBenNhan ?? ''),
     ),
-    ...item.listSignatory?.map(
-          (e) => SigneInfo(
-            idNhanVien: e.idNguoiKy ?? '',
-            hoTen: e.tenNguoiKy ?? '',
-            chucVu: getChucVu(e.idNguoiKy ?? ''),
-            donVi: getDonVi(e.idNguoiKy ?? ''),
-          ),
-        ) ??
-        [],
+
     // SigneInfo(
   ];
   return showDialog(
@@ -161,7 +161,11 @@ previewDocumentHandover({
                 scale: 1.2,
                 maxWidth: 800,
                 maxHeight: 800 * (297 / 210),
-                child: ContractPage.assetHandoverPageV2(item, itemsDetail, listSigneInfo),
+                child: ContractPage.assetHandoverPageV2(
+                  item,
+                  itemsDetail,
+                  listSigneInfo,
+                ),
               ),
             ],
             signatureList: [urlChuKyNhay, urlChuKyThuong],

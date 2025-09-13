@@ -381,7 +381,6 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
-    log('getListDepartmentSuccess: ${_itemsPhongBan?.length}');
     notifyListeners();
   }
 

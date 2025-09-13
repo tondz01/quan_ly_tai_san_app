@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -108,7 +109,6 @@ class _AssetDetailState extends State<AssetDetail> {
   void didUpdateWidget(covariant AssetDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.provider.dataDetail != data) {
-      log('message didUpdateWidget: ${widget.provider.dataDetail?.toJson()}');
       _initData();
     }
   }
@@ -122,7 +122,6 @@ class _AssetDetailState extends State<AssetDetail> {
       data = null;
       isEditing = true;
     }
-    log('message _initData: $isEditing');
     _initController();
   }
 
@@ -192,13 +191,18 @@ class _AssetDetailState extends State<AssetDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SGText(
-                  text: 'Tên Tài sản',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isEditing ? Colors.black : ColorValue.neutral500,
-                  ),
-                  // fontWeight: FontWeight.w800,
+                Row(
+                  children: [
+                    SGText(
+                      text: 'Tên Tài sản',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isEditing ? Colors.black : ColorValue.neutral500,
+                      ),
+                      // fontWeight: FontWeight.w800,
+                    ),
+                    Text(' *', style: TextStyle(color: Colors.red)),
+                  ],
                 ),
                 const SizedBox(width: 10),
                 SGInputText(
@@ -219,10 +223,19 @@ class _AssetDetailState extends State<AssetDetail> {
                     left: size.width * 0.1,
                     right: size.width * 0.1,
                     top: 10,
-                    bottom: 20,
+                    bottom: 10,
                   ),
                   child: Divider(color: ColorValue.neutral300, height: 1),
                 ),
+                Visibility(
+                  visible: validationErrors['tenTaiSan'] == true,
+                  child: Text(
+                    'Trường "Tên tài sản" không được để trống',
+                    style: TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -249,6 +262,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         listAssetGroup: widget.provider.dataGroup!,
                         itemsAssetCategory: itemsAssetCategory,
                         itemsAssetGroup: widget.provider.itemsAssetGroup!,
+                        validationErrors: validationErrors,
                         onAssetCategoryChanged: (value) {
                           setState(() {
                             idAssetCategory = value.id;
@@ -264,9 +278,6 @@ class _AssetDetailState extends State<AssetDetail> {
                                 value.taiKhoanKhauHao.toString();
                             ctrlTaiKhoanChiPhi.text =
                                 value.taiKhoanChiPhi.toString();
-                            log(
-                              'Asset category changed: ${ctrlTaiKhoanChiPhi.text}',
-                            );
                           });
                         },
                         onAssetGroupChanged: (value) {
@@ -317,6 +328,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         country: country,
                         phongBanBanDau: phongBanBanDau,
                         phongBanHienThoi: phongBanHienThoi,
+                        validationErrors: validationErrors,
                         onNuocSanXuatChanged: (value) {
                           setState(() {
                             country = value;
@@ -417,6 +429,7 @@ class _AssetDetailState extends State<AssetDetail> {
               foregroundColor: Colors.white,
               onPressed: () {
                 isEditing = false;
+                widget.provider.onCloseDetail(context);
               },
             ),
           ],
@@ -555,7 +568,8 @@ class _AssetDetailState extends State<AssetDetail> {
   List<String> errorMessage = [];
 
   // Thêm: Hàm validate form trước khi lưu
-  List<String> _validateForm() {
+  bool _validateForm() {
+    Map<String, bool> newValidationErrors = {};
     final String tenTaiSan = ctrlTenTaiSan.text.trim();
     final String donViTinh = ctrlDonViTinh.text.trim();
 
@@ -563,120 +577,119 @@ class _AssetDetailState extends State<AssetDetail> {
 
     final num nguyenGia = AppUtility.parseCurrency(ctrlNguyenGia.text);
     final num giaTriThanhLy = AppUtility.parseCurrency(ctrlGiaTriThanhLy.text);
-    validationErrors['idDonViBanDau'] = false;
-    validationErrors['idDonViHienThoi'] = false;
-    validationErrors['donViBanDau'] = false;
+    newValidationErrors['idDonViBanDau'] = false;
+    newValidationErrors['idDonViHienThoi'] = false;
+    newValidationErrors['donViBanDau'] = false;
     // Bắt buộc
     if (tenTaiSan.isEmpty) {
-      validationErrors['tenTaiSan'] = true;
-      errorMessage.add('Tên tài sản');
+      newValidationErrors['tenTaiSan'] = true;
     }
     if (ctrlMaTaiSan.text.isEmpty) {
-      validationErrors['id'] = true;
-      errorMessage.add('Mã tài sản');
+      newValidationErrors['id'] = true;
     }
     if (nguyenGia <= 0) {
-      validationErrors['nguyenGia'] = true;
-      errorMessage.add('Nguyên giá');
+      newValidationErrors['nguyenGia'] = true;
     }
     if (ctrlGiaTriKhauHaoBanDau.text.isEmpty) {
-      validationErrors['giaTriKhauHaoBanDau'] = true;
-      errorMessage.add('Giá trị khấu hao ban đầu');
+      newValidationErrors['giaTriKhauHaoBanDau'] = true;
     }
     if (giaTriThanhLy < 0) {
-      validationErrors['giaTriThanhLy'] = true;
-      errorMessage.add('Giá trị thanh lý');
+      newValidationErrors['giaTriThanhLy'] = true;
     }
-    if ((idAssetGroup ?? '').isEmpty) {
-      validationErrors['idAssetGroup'] = true;
-      errorMessage.add('Nhóm tài sản');
+    if (ctrlKyKhauHaoBanDau.text.isEmpty) {
+      newValidationErrors['kyKhauHaoBanDau'] = true;
     }
-    if ((idAssetCategory ?? '').isEmpty && ctrlTenMoHinh.text.trim().isEmpty) {
-      validationErrors['idAssetCategory'] = true;
-      errorMessage.add('Loại tài sản');
+    if (ctrlGiaTriKhauHaoBanDau.text.isEmpty) {
+      newValidationErrors['giaTriKhauHaoBanDau'] = true;
+    }
+    if (ctrlKyKhauHaoBanDau.text.isEmpty) {
+      newValidationErrors['kyKhauHaoBanDau'] = true;
+    }
+    if (idAssetGroup == null) {
+      newValidationErrors['idNhomTaiSan'] = true;
+    }
+    if (idAssetCategory == null) {
+      newValidationErrors['idMoHinhTaiSan'] = true;
+    }
+    if (duAn == null) {
+      newValidationErrors['duAn'] = true;
+    }
+    if (idNguonKinhPhi == null) {
+      newValidationErrors['nguonKinhPhi'] = true;
+    }
+    if (lyDoTang == null) {
+      newValidationErrors['lyDoTang'] = true;
+    }
+    if (country == null) {
+      newValidationErrors['nuocSanXuat'] = true;
+    }
+    if (hienTrang == null) {
+      newValidationErrors['hienTrang'] = true;
     }
     if (ctrlKyHieu.text.isEmpty) {
-      validationErrors['kyHieu'] = true;
-      errorMessage.add('Ký hiệu');
+      newValidationErrors['kyHieu'] = true;
     }
     if (ctrlSoKyHieu.text.isEmpty) {
-      validationErrors['soKyHieu'] = true;
-      errorMessage.add('Số ký hiệu');
+      newValidationErrors['soKyHieu'] = true;
     }
     if (ctrlCongSuat.text.isEmpty) {
-      validationErrors['congSuat'] = true;
-      errorMessage.add('Công suất');
+      newValidationErrors['congSuat'] = true;
     }
     if (ctrlNuocSanXuat.text.isEmpty) {
-      validationErrors['nuocSanXuat'] = true;
-      errorMessage.add('Nước sản xuất');
+      newValidationErrors['nuocSanXuat'] = true;
     }
     if (ctrlNamSanXuat.text.isEmpty) {
-      validationErrors['namSanXuat'] = true;
-      errorMessage.add('Năm sản xuất');
+      newValidationErrors['namSanXuat'] = true;
     }
     if (ctrlLyDoTang.text.isEmpty) {
-      validationErrors['lyDoTang'] = true;
-      errorMessage.add('Lý do tăng');
+      newValidationErrors['lyDoTang'] = true;
     }
     if (ctrlHienTrang.text.isEmpty) {
-      validationErrors['hienTrang'] = true;
-      errorMessage.add('Hiện trạng');
+      newValidationErrors['hienTrang'] = true;
     }
     if (ctrlSoLuong.text.isEmpty) {
-      validationErrors['soLuong'] = true;
-      errorMessage.add('Số lượng');
+      newValidationErrors['soLuong'] = true;
     }
     if (ctrlDonViTinh.text.isEmpty) {
-      validationErrors['donViTinh'] = true;
-      errorMessage.add('Đơn vị tính');
+      newValidationErrors['donViTinh'] = true;
     }
     if (ctrlGhiChu.text.isEmpty) {
-      validationErrors['ghiChu'] = true;
-      errorMessage.add('Ghi chú');
+      newValidationErrors['ghiChu'] = true;
     }
     if (ctrlDonViHienThoi.text.isEmpty) {
-      validationErrors['donViHienThoi'] = true;
-      errorMessage.add('Đơn vị hiện thời');
+      newValidationErrors['idDonViHienThoi'] = true;
     }
     if (donViTinh.isEmpty) {
-      validationErrors['donViTinh'] = true;
-      errorMessage.add('Đơn vị tính');
+      newValidationErrors['donViTinh'] = true;
     }
 
     // Số lượng, nguyên giá, khấu hao
     if ((phuongPhapKhauHao ?? 0) == 0) {
-      validationErrors['phuongPhapKhauHao'] = true;
-      errorMessage.add('Phương pháp khấu hao');
-      log('message errorMessage: ${errorMessage}');
+      newValidationErrors['phuongPhapKhauHao'] = true;
     }
 
     // Năm sản xuất (nếu nhập)
     if (ctrlNamSanXuat.text.trim().isNotEmpty) {
       final int currentYear = DateTime.now().year;
       if (namSanXuat < 1900 || namSanXuat > currentYear) {
-        validationErrors['namSanXuat'] = true;
-        errorMessage.add('Năm sản xuất');
-        log('message errorMessage: ${errorMessage}');
+        newValidationErrors['namSanXuat'] = true;
       }
     }
 
     // Ngày (chỉ kiểm tra không rỗng)
     if (ctrlNgayVaoSo.text.trim().isEmpty) {
-      validationErrors['ngayVaoSo'] = true;
-      errorMessage.add('Ngày vào sử dụng');
-      log('message errorMessage: ${errorMessage}');
+      newValidationErrors['ngayVaoSo'] = true;
     }
     if (ctrlNgaySuDung.text.trim().isEmpty) {
-      validationErrors['ngaySuDung'] = true;
-      errorMessage.add('Ngày sử dụng');
-      log('message errorMessage: ${errorMessage}');
+      newValidationErrors['ngaySuDung'] = true;
     }
-
-    return validationErrors.entries
-        .where((e) => e.value == true)
-        .map((e) => e.key)
-        .toList();
+    bool hasChanges = !mapEquals(validationErrors, newValidationErrors);
+    if (hasChanges) {
+      setState(() {
+        validationErrors = newValidationErrors;
+      });
+    }
+    return newValidationErrors.isEmpty;
   }
 
   List<ChildAssetDto> _createChildAssets() {
@@ -734,14 +747,10 @@ class _AssetDetailState extends State<AssetDetail> {
     if (!isEditing) return;
 
     // Validate trước khi lưu
-    final errors = _validateForm();
-    if (errors.isNotEmpty) {
-      log('message errors: ${errors}');
+    if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Vui lòng điền đầy đủ thông tin bắt buộc: ${errors.join(', ')}',
-          ),
+          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc (*)'),
           backgroundColor: Colors.red,
         ),
       );
@@ -752,9 +761,6 @@ class _AssetDetailState extends State<AssetDetail> {
     var childAssets = _createChildAssets();
     final bloc = context.read<AssetManagementBloc>();
     if (data == null) {
-      log(
-        'message requestrequestrequestrequestrequest: ${jsonEncode(request)}',
-      );
       childAssets =
           childAssets
               .map(

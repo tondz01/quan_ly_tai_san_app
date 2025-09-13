@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable, deprecated_member_use, avoid_web_libraries_in_flutter
+
 import 'dart:typed_data';
 import 'dart:html' as html;
 

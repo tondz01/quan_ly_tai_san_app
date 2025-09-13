@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tab_bar_table_ccdc.dart';
@@ -144,6 +145,7 @@ class _ToolAndSuppliesHandoverViewState
           context.read<ToolAndSuppliesHandoverBloc>().add(
             GetListToolAndSuppliesHandoverEvent(context),
           );
+          AccountHelper.refreshAllCounts();
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is UpdateToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(

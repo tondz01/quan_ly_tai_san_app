@@ -475,7 +475,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           fieldName: 'receivingUnit',
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
-                            log('receivingUnit selected: $value');
                             state.donViNhan = value;
                           },
                         ),
@@ -483,9 +482,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           label: 'at.effective_date'.tr,
                           controller: controllers.controllerEffectiveDate,
                           isEditing: state.isEditing,
-                          onChanged: (value) {
-                            log('Effective date selected: $value');
-                          },
+                          onChanged: (value) {},
                           value:
                               controllers
                                       .controllerEffectiveDate
@@ -500,9 +497,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           label: 'at.effective_date_to'.tr,
                           controller: controllers.controllerEffectiveDateTo,
                           isEditing: state.isEditing,
-                          onChanged: (value) {
-                            log('Effective date selected: $value');
-                          },
+                          onChanged: (value) {},
                           value:
                               controllers
                                       .controllerEffectiveDateTo
@@ -579,8 +574,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             setState(() {
                               state.nguoiDeNghi = value;
-                              state.donViDeNghi = widget.provider
-                                  .getPhongBanByID(value.phongBanId ?? '');
+                              // state.donViDeNghi = widget.provider
+                              //     .getPhongBanByID(value.phongBanId ?? '');
                               // controllers.controllerProposingUnit.text =
                               //     state.donViDeNghi?.tenPhongBan ?? '';
                               // state.donThamMuu = widget.provider
@@ -631,7 +626,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             state.nguoiKyCapPhong = value;
                           },
                         ),
-AdditionalSignersSelector(
+                        AdditionalSignersSelector(
                           addButtonText: "Thêm đơn bị đại diện",
                           labelDepartment: "Đơn vị đại diện",
                           labelSigned: 'Người đại diện',
@@ -662,6 +657,7 @@ AdditionalSignersSelector(
                             });
                           },
                         ),
+                        SizedBox(height: 10),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người phê duyệt',
                           controller: controllers.controllerApprover,
@@ -686,6 +682,17 @@ AdditionalSignersSelector(
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             state.nguoiKyGiamDoc = value;
+                          },
+                        ),
+                        CommonCheckboxInput(
+                          label: 'Ký theo lượt',
+                          value: state.isByStep,
+                          isEditing: state.isEditing,
+                          isDisabled: !state.isEditing,
+                          onChanged: (newValue) {
+                            setState(() {
+                              state.isByStep = newValue;
+                            });
                           },
                         ),
                       ],
@@ -841,6 +848,7 @@ AdditionalSignersSelector(
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
       daBanGiao: false,
+      byStep: this.state.isByStep,
     );
   }
 
@@ -1010,9 +1018,6 @@ AdditionalSignersSelector(
       if (editable()) {
         state.isEditing = true;
       } else {
-        // if (state.item!.nguoiTao != widget.provider.userInfo?.tenDangNhap) {
-        //   state.messageEditing = 'Bạn không có quyền chỉnh sửa phiếu này';
-        // }
         state.isEditing = false;
       }
       if (state.item != null) {
@@ -1037,20 +1042,25 @@ AdditionalSignersSelector(
             state.item?.tenTruongPhongDonViGiao ?? '';
         controllers.controllerPPDonViNhan.text =
             state.item?.tenPhoPhongDonViGiao ?? '';
-
+        state.isByStep = state.item?.byStep ?? false;
         //load date value dropdown
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
         );
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          state.item?.idDonViDeNghi ?? '',
+        );
+        assetByDepartment =
+            widget.provider.dataAsset.where((element) {
+              return element.idDonViHienThoi == state.donViGiao!.id;
+            }).toList();
 
         //load list staff by department
         state.listStaffByDepartment =
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == state.donViGiao!.id)
                 .toList();
-        state.donViDeNghi = widget.provider.getPhongBanByID(
-          state.item?.idDonViDeNghi ?? '',
-        );
+
         state.listNhanVienThamMuu =
             widget.provider.dataNhanVien
                 .where((e) => e.phongBanId == state.donViDeNghi?.id)
@@ -1058,6 +1068,7 @@ AdditionalSignersSelector(
         state.nguoiDeNghi = widget.provider.getNhanVienByID(
           state.item?.idNguoiKyNhay ?? '',
         );
+        controllers.controllerRequester.text = state.nguoiDeNghi?.hoTen ?? '';
         state.donViNhan = widget.provider.getPhongBanByID(
           state.item?.idDonViNhan ?? '',
         );
@@ -1137,9 +1148,10 @@ AdditionalSignersSelector(
         controllers.controllerProposingUnit.text = '';
 
         state.controllersInitialized = false;
+        state.isNguoiLapPhieuKyNhay = false;
+        state.isByStep = false;
         state.selectedFileName = null;
         state.selectedFilePath = null;
-        state.isNguoiLapPhieuKyNhay = false;
         state.donViGiao = null;
         state.donViNhan = null;
         NhanVien nhanVienLogin = widget.provider.dataNhanVien.firstWhere(
