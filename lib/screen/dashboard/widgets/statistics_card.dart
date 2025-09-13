@@ -6,18 +6,12 @@ import 'package:se_gay_components/common/sg_text.dart';
 class StatisticsCard extends StatelessWidget {
   final String title;
   final String value;
-  final IconData icon;
-  final String? trend;
-  final bool? trendUp;
   final Color? backgroundColor;
 
   const StatisticsCard({
     super.key,
     required this.title,
     required this.value,
-    required this.icon,
-    this.trend,
-    this.trendUp,
     this.backgroundColor,
   });
 
@@ -39,8 +33,8 @@ class StatisticsCard extends StatelessWidget {
             children: [
               SGText(text: value, style: AppTextStyle.textStyleSemiBold24.copyWith(height: 1.4)),
               Expanded(child: SizedBox.shrink()),
-              SGText(text: trend!, style: AppTextStyle.textStyleRegular12),
-              Icon((trendUp ?? true) ? Icons.trending_up : Icons.trending_down, size: 12, color: Colors.black),
+              // SGText(text: trend!, style: AppTextStyle.textStyleRegular12),
+              // Icon((trendUp ?? true) ? Icons.trending_up : Icons.trending_down, size: 12, color: Colors.black),
             ],
           ),
         ],

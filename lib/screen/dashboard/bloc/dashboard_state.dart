@@ -3,6 +3,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/dashboard/model/dashboard_report.dart';
 
 abstract class DashboardState extends Equatable {
   const DashboardState();
@@ -17,9 +18,10 @@ class DashboardLoaded extends DashboardState {
   final List<AssetManagementDto> assets;
   final List<PhongBan> departments;
   final List<DuAn> projects;
-  const DashboardLoaded(this.staffs, this.assets, this.departments, this.projects);
+  final DashboardReport? data;
+  const DashboardLoaded(this.staffs, this.assets, this.departments, this.projects, this.data);
   @override
-  List<Object?> get props => [staffs, assets, departments, projects];
+  List<Object?> get props => [staffs, assets, departments, projects, data];
 }
 
 class DashboardError extends DashboardState {

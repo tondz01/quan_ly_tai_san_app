@@ -30,7 +30,8 @@ class ScrollableBarChart extends StatelessWidget {
           final int count = data.length;
           final double minWidth = constraints.maxWidth;
           final double contentWidth = count * (barWidth + spacing) + 40;
-          final double chartWidth = contentWidth < minWidth ? minWidth : contentWidth;
+          final double chartWidth =
+              contentWidth < minWidth ? minWidth : contentWidth;
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
@@ -39,17 +40,24 @@ class ScrollableBarChart extends StatelessWidget {
               child: Chart(
                 data: data,
                 variables: {
-                  categoryKey: Variable(accessor: (Map map) => map[categoryKey] as String),
-                  valueKey: Variable(accessor: (Map map) => map[valueKey] as num),
+                  categoryKey: Variable(
+                    accessor: (Map map) => map[categoryKey] as String,
+                  ),
+                  valueKey: Variable(
+                    accessor: (Map map) => map[valueKey] as num,
+                  ),
                 },
                 marks: [
                   IntervalMark(
                     size: SizeEncode(value: barWidth),
-                    label: LabelEncode(encoder: (tuple) => Label((tuple[valueKey]).toString())),
+                    label: LabelEncode(
+                      encoder: (tuple) => Label((tuple[valueKey]).toString()),
+                    ),
                     elevation: ElevationEncode(value: 0),
-                    color: barColor != null
-                        ? ColorEncode(value: barColor!)
-                        : ColorEncode(value: Defaults.primaryColor),
+                    color:
+                        barColor != null
+                            ? ColorEncode(value: barColor!)
+                            : ColorEncode(value: Defaults.primaryColor),
                   ),
                 ],
                 axes: [Defaults.horizontalAxis, Defaults.verticalAxis],
@@ -60,4 +68,4 @@ class ScrollableBarChart extends StatelessWidget {
       ),
     );
   }
-} 
+}

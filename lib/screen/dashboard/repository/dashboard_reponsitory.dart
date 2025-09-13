@@ -1,14 +1,15 @@
-import 'dart:developer';
+import 'dart:convert';
 
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/screen/dashboard/model/dashboard_report.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class DashboardRepository extends ApiBase {
-  Future<Map<String, dynamic>> getListDieuDongTaiSan({int? type = -1}) async {
-    Map<String, dynamic> data = {};
+  Future<Map<String, dynamic>> getDashboardData() async {
     Map<String, dynamic> result = {
-      'data': data,
+      'data': null,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
     try {
@@ -19,9 +20,15 @@ class DashboardRepository extends ApiBase {
         return result;
       }
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      result['data'] = result['data'];
+
+      DashboardReport dashboardData = DashboardReport.fromJson(response.data);
+      result['data'] = dashboardData;
+      SGLog.debug("Dashboard", jsonEncode(dashboardData));
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error(
+        "Dashboard",
+        "Error at getDashboardData - DashboardRepository: $e",
+      );
     }
 
     return result;
