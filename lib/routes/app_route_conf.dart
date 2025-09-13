@@ -1,4 +1,3 @@
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/tool_and_supplies_handover_view.dart';
 
 import 'routes.dart';
 
@@ -25,7 +24,7 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const DashboardScreen(),
+                  child: const DashboardView(),
                 ),
           ),
           GoRoute(
