@@ -1127,6 +1127,7 @@ class _ToolAndMaterialTransferDetailState
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
       daBanGiao: false,
+      byStep: isByStep,
     );
   }
 
@@ -1178,6 +1179,7 @@ class _ToolAndMaterialTransferDetailState
       tenFile: _selectedFileName ?? '',
       ngayKy: DateTime.now().toIso8601String(),
       detailToolAndMaterialTransfers: listNewDetails,
+      byStep: isByStep,
     );
   }
 

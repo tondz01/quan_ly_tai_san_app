@@ -23,6 +23,7 @@ class CommonFormInput extends StatefulWidget {
     this.isMoney = false,
     this.validationErrors,
     this.width,
+    this.isRequired = false,
   });
   final double? width;
   final String label;
@@ -37,6 +38,7 @@ class CommonFormInput extends StatefulWidget {
   final String? fieldName;
   final Map<String, bool>? validationErrors;
   final bool isMoney;
+  final bool isRequired;
   @override
   State<CommonFormInput> createState() => _CommonFormInputState();
 }
@@ -136,16 +138,24 @@ class _CommonFormInputState extends State<CommonFormInput> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 180,
-            child: Text(
-              '${widget.label} :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !widget.isEditing
-                        ? Colors.black87.withOpacity(0.6)
-                        : Colors.black,
-              ),
+            width: 195,
+            child: Row(
+              children: [
+                Text(
+                  '${widget.label} : ',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color:
+                        !widget.isEditing
+                            ? Colors.black87.withOpacity(0.6)
+                            : Colors.black,
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isRequired,
+                  child: Text('*', style: TextStyle(color: Colors.red)),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 20),

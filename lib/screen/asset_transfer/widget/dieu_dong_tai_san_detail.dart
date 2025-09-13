@@ -574,8 +574,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChanged: (value) {
                             setState(() {
                               state.nguoiDeNghi = value;
-                              state.donViDeNghi = widget.provider
-                                  .getPhongBanByID(value.phongBanId ?? '');
+                              // state.donViDeNghi = widget.provider
+                              //     .getPhongBanByID(value.phongBanId ?? '');
                               // controllers.controllerProposingUnit.text =
                               //     state.donViDeNghi?.tenPhongBan ?? '';
                               // state.donThamMuu = widget.provider
@@ -848,6 +848,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       ngayKy: DateTime.now().toIso8601String(),
       share: false,
       daBanGiao: false,
+      byStep: this.state.isByStep,
     );
   }
 
@@ -1017,9 +1018,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       if (editable()) {
         state.isEditing = true;
       } else {
-        // if (state.item!.nguoiTao != widget.provider.userInfo?.tenDangNhap) {
-        //   state.messageEditing = 'Bạn không có quyền chỉnh sửa phiếu này';
-        // }
         state.isEditing = false;
       }
       if (state.item != null) {
@@ -1049,15 +1047,20 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
         );
+        state.donViDeNghi = widget.provider.getPhongBanByID(
+          state.item?.idDonViDeNghi ?? '',
+        );
+        assetByDepartment =
+            widget.provider.dataAsset.where((element) {
+              return element.idDonViHienThoi == state.donViGiao!.id;
+            }).toList();
 
         //load list staff by department
         state.listStaffByDepartment =
             widget.provider.dataNhanVien
                 .where((element) => element.phongBanId == state.donViGiao!.id)
                 .toList();
-        state.donViDeNghi = widget.provider.getPhongBanByID(
-          state.item?.idDonViDeNghi ?? '',
-        );
+
         state.listNhanVienThamMuu =
             widget.provider.dataNhanVien
                 .where((e) => e.phongBanId == state.donViDeNghi?.id)
@@ -1065,6 +1068,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.nguoiDeNghi = widget.provider.getNhanVienByID(
           state.item?.idNguoiKyNhay ?? '',
         );
+        controllers.controllerRequester.text = state.nguoiDeNghi?.hoTen ?? '';
         state.donViNhan = widget.provider.getPhongBanByID(
           state.item?.idDonViNhan ?? '',
         );

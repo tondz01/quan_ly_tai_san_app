@@ -57,7 +57,6 @@ class _AssetTransferMovementTableState
   @override
   void didUpdateWidget(AssetTransferMovementTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Chỉ cập nhật khi initialDetails thực sự thay đổi và khác với dữ liệu hiện tại
     if (oldWidget.initialDetails != widget.initialDetails &&
         widget.initialDetails.isNotEmpty) {
       movementDetails = List.from(widget.initialDetails);

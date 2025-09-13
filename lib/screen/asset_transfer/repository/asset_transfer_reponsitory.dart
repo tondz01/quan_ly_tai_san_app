@@ -393,6 +393,7 @@ class AssetTransferRepository extends ApiBase {
           ngayKy: item.ngayKy ?? '',
           share: true,
           daBanGiao: item.daBanGiao ?? false,
+          byStep: item.byStep ?? false,
         );
         final response = await put(
           '${EndPointAPI.DIEU_DONG_TAI_SAN}/${item.id}',

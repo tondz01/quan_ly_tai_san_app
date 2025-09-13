@@ -16,6 +16,7 @@ class CmFormDropdownObject<T> extends StatefulWidget {
     this.validationErrors,
     this.value,
     this.defaultValue,
+    this.isRequired = false,
   });
   final String label;
   final TextEditingController controller;
@@ -27,7 +28,7 @@ class CmFormDropdownObject<T> extends StatefulWidget {
   final Function(T)? onChanged;
   final String? fieldName;
   final Map<String, bool>? validationErrors;
-
+  final bool isRequired;
   @override
   State<CmFormDropdownObject<T>> createState() => _CommonFormInputState<T>();
 }
@@ -47,16 +48,24 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 180,
-            child: Text(
-              '${widget.label} :',
-              style: TextStyle(
+            width: 195,
+            child: Row(
+              children: [
+                Text(
+                  '${widget.label} :',
+                  style: TextStyle(
                 fontWeight: FontWeight.w500,
                 color:
                     !widget.isEditing
                         ? Colors.black87.withOpacity(0.6)
                         : Colors.black,
-              ),
+                  ),
+                ),
+                Visibility(
+                  visible: widget.isRequired,
+                  child: Text(' *', style: TextStyle(color: Colors.red)),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 20),

@@ -309,8 +309,9 @@ class _ToolAndSuppliesHandoverDetailState
         (element) => element.id == item?.lenhDieuDong,
         orElse: () => ToolAndMaterialTransferDto(),
       );
-
-      _loadPdfNetwork(item?.tenFile ?? '');
+      if (!widget.isFindNew) {
+        _loadPdfNetwork(item?.tenFile ?? '');
+      }
     } else {
       isUnitConfirm = false;
       isDelivererConfirm = false;
@@ -454,6 +455,7 @@ class _ToolAndSuppliesHandoverDetailState
       "ngayBanGiao": ngaybangiao.toIso8601String(),
       "ngayTao": DateTime.now().toIso8601String(),
       "ngayCapNhat": DateTime.now().toIso8601String(),
+      "byStep": isByStep,
     };
 
     final List<SignatoryDto> listSignatory =

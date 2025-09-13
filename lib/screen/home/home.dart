@@ -28,7 +28,7 @@ class _HomeState extends State<Home> {
   int _selectedSubIndex = 0;
   UserInfoDTO? userInfo;
   late SGPopupManager _popupManager;
-  // Khởi tạo model menu data
+  // 🔥 SỬA: Sử dụng singleton instance thay vì tạo mới
   late AppMenuData _menuData;
   // Thêm biến để theo dõi trạng thái của popup
   bool _isPopupOpen = false;
@@ -38,7 +38,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _menuData = AppMenuData();
+    // 🔥 SỬA: Sử dụng singleton instance
+    _menuData = AppMenuData.instance;
     _popupManager = SGPopupManager();
     _selectedIndex = 0;
     _selectedSubIndex = 0;
@@ -103,6 +104,7 @@ class _HomeState extends State<Home> {
       return SGSidebarHorizontalItem(
         label: item.label,
         icon: item.icon,
+        child: item.child,
         isActive: _selectedIndex == item.index,
         popupWidth: calculatePopupWidth(item),
         popupBorderRadius: 4.0,
@@ -153,6 +155,7 @@ class _HomeState extends State<Home> {
             _menuData.menuItems[parentIndex].reportSubItems[subIndex];
         return SGSidebarSubItem(
           label: subItem.label,
+          child: subItem.child,
           icon: subItem.icon,
           isActive:
               (_selectedIndex == parentIndex && _selectedSubIndex == subIndex),
@@ -197,6 +200,7 @@ class _HomeState extends State<Home> {
           return SGSidebarSubItem(
             label: item.label,
             icon: item.icon,
+            child: item.child, // 🔥 THÊM DÒNG NÀY
             isActive:
                 _selectedIndex == parentIndex && _selectedSubIndex == subIndex,
             onTap:
@@ -216,65 +220,70 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // Lấy danh sách items từ model
-    final sidebarItems = _getItems();
-    return MainWrapper(
-      header: null,
-      sidebar: Container(
-        padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
-        decoration: BoxDecoration(color: Colors.blue),
-        child: Row(
-          children: [
-            if (AppImage.imageLogo.isNotEmpty)
-              CircleAvatar(
-                radius: 24,
-                child: Image.asset(
-                  AppImage.imageLogo,
-                  fit: BoxFit.cover,
-                ), // kích thước avatar
-              ),
-            const SizedBox(width: 16),
-            Expanded(
-              child:
-                  sidebarItems.isNotEmpty
-                      ? SGSidebarHorizontal(
-                        items: sidebarItems,
-                        onShowSubItems: (subItems) {
-                          // Cập nhật lại UI nếu cần thiết
-                          setState(() {});
-                        },
-                      )
-                      : const SizedBox.shrink(),
-            ),
-            const SizedBox(width: 16),
-            userInfo != null
-                ? _buildHeaderActionRight(userInfo!)
-                : const SizedBox.shrink(),
-          ],
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(color: ColorValue.neutral50),
-        child: Stack(
-          children: [
-            // Content
-            widget.child,
-            // Thêm barrier chỉ hiển thị khi popup đang mở
-            if (_isPopupOpen && !isItemOne)
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: () {
-                    primaryFocus?.unfocus();
-                    FocusScope.of(context).unfocus();
-                    _popupManager.closeAllPopups();
-                  },
-                  behavior: HitTestBehavior.translucent,
-                  child: Container(color: Colors.transparent),
+    return ListenableBuilder(
+      listenable: _menuData, // 🔥 SỬA: Sử dụng _menuData thay vì tạo mới
+      builder: (context, child) {
+        // Lấy danh sách items từ model
+        final sidebarItems = _getItems();
+        return MainWrapper(
+          header: null,
+          sidebar: Container(
+            padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
+            decoration: BoxDecoration(color: Colors.blue),
+            child: Row(
+              children: [
+                if (AppImage.imageLogo.isNotEmpty)
+                  CircleAvatar(
+                    radius: 24,
+                    child: Image.asset(
+                      AppImage.imageLogo,
+                      fit: BoxFit.cover,
+                    ), // kích thước avatar
+                  ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child:
+                      sidebarItems.isNotEmpty
+                          ? SGSidebarHorizontal(
+                            items: sidebarItems,
+                            onShowSubItems: (subItems) {
+                              // Cập nhật lại UI nếu cần thiết
+                              setState(() {});
+                            },
+                          )
+                          : const SizedBox.shrink(),
                 ),
-              ),
-          ],
-        ),
-      ),
+                const SizedBox(width: 16),
+                userInfo != null
+                    ? _buildHeaderActionRight(userInfo!)
+                    : const SizedBox.shrink(),
+              ],
+            ),
+          ),
+          body: Container(
+            decoration: BoxDecoration(color: ColorValue.neutral50),
+            child: Stack(
+              children: [
+                // Content
+                widget.child,
+                // Thêm barrier chỉ hiển thị khi popup đang mở
+                if (_isPopupOpen && !isItemOne)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () {
+                        primaryFocus?.unfocus();
+                        FocusScope.of(context).unfocus();
+                        _popupManager.closeAllPopups();
+                      },
+                      behavior: HitTestBehavior.translucent,
+                      child: Container(color: Colors.transparent),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -293,40 +302,6 @@ class _HomeState extends State<Home> {
           },
           tooltip: 'Quản lý tài khoản',
         ),
-        // const SizedBox(width: 8),
-        // Chat button with popup
-        // PopupMenuButton<String>(
-        //   offset: const Offset(-83, 10),
-        //   child: MaterialIconButton(icon: Icons.chat_bubble_outline, onPressed: null, tooltip: 'Chat'),
-        //   itemBuilder:
-        //       (context) => [
-        //         PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
-        //         PopupMenuItem(value: 'yesterday', child: _buildTimeOption('Yesterday')),
-        //         PopupMenuItem(value: 'last7days', child: _buildTimeOption('Last 7 days')),
-        //         PopupMenuItem(value: 'thismonth', child: _buildTimeOption('This month')),
-        //         PopupMenuItem(value: 'custom', child: _buildTimeOption('Custom range')),
-        //       ],
-        //   onSelected: (value) {
-        //     SGLog.debug('Header', '$value selected');
-        //   },
-        // ),
-        // const SizedBox(width: 8),
-        // Time button with popup
-        // PopupMenuButton<String>(
-        //   offset: const Offset(-83, 10),
-        //   child: MaterialIconButton(icon: Icons.access_time, onPressed: null, tooltip: 'Thời gian'),
-        //   itemBuilder:
-        //       (context) => [
-        //         PopupMenuItem(value: 'today', child: _buildTimeOption('Today')),
-        //         PopupMenuItem(value: 'yesterday', child: _buildTimeOption('Yesterday')),
-        //         PopupMenuItem(value: 'last7days', child: _buildTimeOption('Last 7 days')),
-        //         PopupMenuItem(value: 'thismonth', child: _buildTimeOption('This month')),
-        //         PopupMenuItem(value: 'custom', child: _buildTimeOption('Custom range')),
-        //       ],
-        //   onSelected: (value) {
-        //     SGLog.debug('Header', '$value selected');
-        //   },
-        // ),
         const SizedBox(width: 16),
         // User avatar
         Tooltip(

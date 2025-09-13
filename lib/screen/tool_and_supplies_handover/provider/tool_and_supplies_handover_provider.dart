@@ -399,7 +399,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
+      AccountHelper.instance.clearToolAndSuppliesHandover();
       AccountHelper.instance.setToolAndMaterialHandover(state.data);
+      AccountHelper.refreshAllCounts();
       _data =
           state.data
               .where(

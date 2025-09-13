@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +15,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
@@ -126,6 +129,23 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
+  Future<void> _loadPdfNetwork(String nameFile) async {
+    SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
+    try {
+      final document = await PdfDocument.openUri(
+        Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
+      );
+      setState(() {
+        _document = document;
+      });
+    } catch (e) {
+      setState(() {
+        _document = null;
+      });
+      SGLog.error("Error loading PDF", e.toString());
+    }
+  }
+
   @override
   void didUpdateWidget(AssetHandoverDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -193,6 +213,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               )
               .toList() ??
           [];
+      if (!widget.isFindNew) {
+        _loadPdfNetwork(item?.tenFile ?? '');
+      }
     } else {
       isByStep = false;
       isUnitConfirm = false;
@@ -314,7 +337,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (item != null) {
       controllerHandoverNumber.text = item?.id ?? '';
       controllerDocumentName.text = item?.banGiaoTaiSan ?? '';
-       dieuDongTaiSan = listAssetTransfer.firstWhere(
+      dieuDongTaiSan = listAssetTransfer.firstWhere(
         (element) => element.id == item?.lenhDieuDong,
         orElse: () => DieuDongTaiSanDto(),
       );
@@ -371,6 +394,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "nguoiTao": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
+      "byStep": isByStep,
     };
 
     final List<SignatoryDto> listSignatory =
@@ -990,18 +1014,21 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       nguoiTao: currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       isActive: true,
-      listSignatory: _additionalSignersDetailed
-            .map(
-              (e) => SignatoryDto(
-                id: UUIDGenerator.generateWithFormat("SIG-******"),
-                idTaiLieu: item?.id ?? '',
-                idPhongBan: e.department?.id ?? '',
-                idNguoiKy: e.employee?.id ?? '',
-                tenNguoiKy: e.employee?.hoTen ?? '',
-                trangThai: 1,
-              ),
-            )
-            .toList(),
+      listSignatory:
+          _additionalSignersDetailed
+              .map(
+                (e) => SignatoryDto(
+                  id: UUIDGenerator.generateWithFormat("SIG-******"),
+                  idTaiLieu: item?.id ?? '',
+                  idPhongBan: e.department?.id ?? '',
+                  idNguoiKy: e.employee?.id ?? '',
+                  tenNguoiKy: e.employee?.hoTen ?? '',
+                  trangThai: 1,
+                ),
+              )
+              .toList(),
+      tenFile: _selectedFileName ?? '',
+      duongDanFile: _selectedFilePath ?? '',
     );
   }
 }

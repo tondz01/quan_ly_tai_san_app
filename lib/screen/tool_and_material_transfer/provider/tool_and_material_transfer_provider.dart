@@ -364,7 +364,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data = [];
       _filteredData = [];
     } else {
+      AccountHelper.instance.clearToolAndMaterialTransfer();
       AccountHelper.instance.setToolAndMaterialTransfer(state.data);
+      AccountHelper.refreshAllCounts();
       _data =
           state.data
               .where((element) => element.loai == typeToolAndMaterialTransfer)

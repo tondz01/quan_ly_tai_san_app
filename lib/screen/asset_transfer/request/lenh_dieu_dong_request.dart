@@ -31,6 +31,7 @@ class LenhDieuDongRequest {
   final String tenFile;
   final String ngayKy;
   final bool daBanGiao;
+  final bool byStep;
 
   LenhDieuDongRequest({
     this.id = '',
@@ -65,6 +66,7 @@ class LenhDieuDongRequest {
     required this.tenFile,
     required this.ngayKy,
     required this.daBanGiao,
+    required this.byStep,
   });
 
   factory LenhDieuDongRequest.fromJson(Map<String, dynamic> json) {
@@ -113,6 +115,7 @@ class LenhDieuDongRequest {
       tenFile: json['tenFile'] ?? '',
       ngayKy: json['ngayKy']?.toString() ?? '',
       daBanGiao: parseBool(json['daBanGiao']),
+      byStep: parseBool(json['byStep']),
     );
   }
 
@@ -150,6 +153,7 @@ class LenhDieuDongRequest {
       'tenFile': tenFile,
       'ngayKy': ngayKy,
       'daBanGiao': daBanGiao,
+      'byStep': byStep,
     };
   }
 
@@ -186,6 +190,7 @@ class LenhDieuDongRequest {
     String? tenFile,
     String? ngayKy,
     bool? daBanGiao,
+    bool? byStep,
   }) {
     return LenhDieuDongRequest(
       id: id ?? this.id,
@@ -220,6 +225,7 @@ class LenhDieuDongRequest {
       tenFile: tenFile ?? this.tenFile,
       ngayKy: ngayKy ?? this.ngayKy,
       daBanGiao: daBanGiao ?? this.daBanGiao,
+      byStep: byStep ?? this.byStep,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -10,7 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/auth_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
 
 class AccountHelper {
   //create private constructor
@@ -128,9 +129,11 @@ class AccountHelper {
       try {
         return raw
             .whereType()
-            .map((e) => DieuDongTaiSanDto.fromJson(
-                  Map<String, dynamic>.from(e as Map),
-                ))
+            .map(
+              (e) => DieuDongTaiSanDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
             .toList();
       } catch (_) {
         return null;
@@ -139,31 +142,59 @@ class AccountHelper {
     return null;
   }
 
+  //  THÊM: Clear Asset Transfer
+  void clearAssetTransfer() {
+    StorageService.remove(StorageKey.ASSET_TRANSFER);
+    refreshAllCounts();
+  }
+
   int getAssetTransferCount(int type) {
     final assetTransfer = getAssetTransfer();
-    final listAssetTransfer = assetTransfer
-        ?.where(
-          (item) =>
-              item.share == true || item.nguoiTao == getUserInfo()?.tenDangNhap,
-        )
-        .where((item) {
-          final idSignatureGroup =
-              [
-                item.nguoiTao,
-                item.idNguoiKyNhay,
-                item.idTrinhDuyetCapPhong,
-                item.idTrinhDuyetGiamDoc,
-                if (item.listSignatory != null)
-                  ...item.listSignatory!.map((e) => e.idNguoiKy),
-              ].whereType<String>().toList();
+    final listAssetTransfer =
+        assetTransfer
+            ?.where(
+              (item) =>
+                  item.share == true ||
+                  item.nguoiTao == getUserInfo()?.tenDangNhap,
+            )
+            .where((item) {
+              final idSignatureGroup =
+                  [
+                    if (item.nguoiLapPhieuKyNhay == true)
+                      {
+                        "id": item.idNguoiKyNhay,
+                        "signed": item.trangThaiKyNhay == true,
+                        "label": "Người lập phiếu: ${item.tenNguoiKyNhay}",
+                      },
+                    {
+                      "id": item.idTrinhDuyetCapPhong,
+                      "signed": item.trinhDuyetCapPhongXacNhan == true,
+                      "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
+                    },
+                    for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                      {
+                        "id": item.listSignatory![i].idNguoiKy,
+                        "signed": item.listSignatory![i].trangThai == 1,
+                        "label":
+                            "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                      },
+                    {
+                      "id": item.idTrinhDuyetGiamDoc,
+                      "signed": item.trinhDuyetGiamDocXacNhan == true,
+                      "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+                    },
+                  ].toList();
 
-          final inGroup = idSignatureGroup
-              .map((e) => e.toLowerCase())
-              .contains(getUserInfo()?.tenDangNhap ?? '');
-          return inGroup;
-        })
-        .where((item) => item.loai == type)
-        .toList();
+              final userSignature = idSignatureGroup.firstWhere(
+                (e) => e["id"] == getUserInfo()?.tenDangNhap,
+                orElse: () => {"id": null, "signed": false, "label": ""},
+              );
+
+              return userSignature["id"] != null &&
+                  userSignature["signed"] == false;
+            })
+            .where((item) => item.loai == type)
+            .toList();
     return listAssetTransfer?.length ?? 0;
   }
 
@@ -183,9 +214,11 @@ class AccountHelper {
       try {
         return raw
             .whereType()
-            .map((e) => ToolAndMaterialTransferDto.fromJson(
-                  Map<String, dynamic>.from(e as Map),
-                ))
+            .map(
+              (e) => ToolAndMaterialTransferDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
             .toList();
       } catch (_) {
         return null;
@@ -194,31 +227,59 @@ class AccountHelper {
     return null;
   }
 
+  // 🔥 THÊM: Clear Tool and Material Transfer
+  void clearToolAndMaterialTransfer() {
+    StorageService.remove(StorageKey.TOOL_AND_MATERIAL_TRANSFER);
+    refreshAllCounts();
+  }
+
   int getToolAndMaterialTransferCount(int type) {
     final toolAndSupplies = getToolAndMaterialTransfer();
-    final listToolAndSupplies = toolAndSupplies
-        ?.where((element) => element.loai == type)
-        .where((item) {
-          return item.share == true ||
-              item.nguoiTao == getUserInfo()?.tenDangNhap;
-        })
-        .where((item) {
-          final idSignatureGroup =
-              [
-                item.nguoiTao,
-                item.idNguoiKyNhay,
-                item.idTrinhDuyetCapPhong,
-                item.idTrinhDuyetGiamDoc,
-                if (item.listSignatory != null)
-                  ...item.listSignatory!.map((e) => e.idNguoiKy),
-              ].whereType<String>().toList();
+    final listToolAndSupplies =
+        toolAndSupplies
+            ?.where((element) => element.loai == type)
+            .where((item) {
+              return item.share == true ||
+                  item.nguoiTao == getUserInfo()?.tenDangNhap;
+            })
+            .where((item) {
+              final idSignatureGroup =
+                  [
+                    if (item.nguoiLapPhieuKyNhay == true)
+                      {
+                        "id": item.idNguoiKyNhay,
+                        "signed": item.trangThaiKyNhay == true,
+                        "label":
+                            "Người lập phiếu: ${getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
+                      },
+                    {
+                      "id": item.idTrinhDuyetCapPhong,
+                      "signed": item.trinhDuyetCapPhongXacNhan == true,
+                      "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
+                    },
+                    for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                      {
+                        "id": item.listSignatory![i].idNguoiKy,
+                        "signed": item.listSignatory![i].trangThai == 1,
+                        "label":
+                            "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                      },
+                    {
+                      "id": item.idTrinhDuyetGiamDoc,
+                      "signed": item.trinhDuyetGiamDocXacNhan == true,
+                      "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+                    },
+                  ].toList();
 
-          final inGroup = idSignatureGroup
-              .map((e) => e.toLowerCase())
-              .contains(getUserInfo()?.tenDangNhap ?? '');
-          return inGroup;
-        })
-        .toList();
+              final userSignature = idSignatureGroup.firstWhere(
+                (e) => e["id"] == getUserInfo()?.tenDangNhap,
+                orElse: () => {"id": null, "signed": false, "label": ""},
+              );
+
+              return userSignature["id"] != null &&
+                  userSignature["signed"] == false;
+            })
+            .toList();
     return listToolAndSupplies?.length ?? 0;
   }
 
@@ -235,7 +296,11 @@ class AccountHelper {
       try {
         return raw
             .whereType()
-            .map((e) => AssetHandoverDto.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) => AssetHandoverDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
             .toList();
       } catch (_) {
         return null;
@@ -244,11 +309,64 @@ class AccountHelper {
     return null;
   }
 
+  //  THÊM: Clear Asset Handover
+  void clearAssetHandover() {
+    StorageService.remove(StorageKey.ASSET_HANDOVER);
+    refreshAllCounts();
+  }
+
   int getAssetHandoverCount() {
     final assetHandover = getAssetHandover();
-    final listAssetHandover = assetHandover
-        ?.where((item) => item.share == true || item.nguoiTao == getUserInfo()?.tenDangNhap)
-        .toList();
+    final listAssetHandover =
+        assetHandover
+            ?.where(
+              (item) =>
+                  item.share == true ||
+                  item.nguoiTao == getUserInfo()?.tenDangNhap,
+            )
+            .where((item) {
+              final idSignatureGroup =
+                  [
+                    {
+                      "id": item.idDaiDiendonviBanHanhQD,
+                      "signed": item.daXacNhan == true,
+                      "label":
+                          "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
+                    },
+                    {
+                      "id": item.idDaiDienBenGiao,
+                      "signed": item.daiDienBenGiaoXacNhan == true,
+                      "label":
+                          "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
+                    },
+                    {
+                      "id": item.idDaiDienBenNhan,
+                      "signed": item.daiDienBenNhanXacNhan == true,
+                      "label":
+                          "Đại diện đơn vị nhận: ${item.tenDaiDienBenNhan}",
+                    },
+                    if (item.listSignatory?.isNotEmpty ?? false)
+                      ...(item.listSignatory
+                              ?.map(
+                                (e) => {
+                                  "id": e.idNguoiKy,
+                                  "signed": e.trangThai == 1,
+                                  "label": "Người ký: ${e.tenNguoiKy ?? ''}",
+                                },
+                              )
+                              .toList() ??
+                          []),
+                  ].toList();
+
+              final userSignature = idSignatureGroup.firstWhere(
+                (e) => e["id"] == getUserInfo()?.tenDangNhap,
+                orElse: () => {"id": null, "signed": false, "label": ""},
+              );
+
+              return userSignature["id"] != null &&
+                  userSignature["signed"] == false;
+            })
+            .toList();
     return listAssetHandover?.length ?? 0;
   }
 
@@ -261,16 +379,20 @@ class AccountHelper {
   }
 
   List<ToolAndSuppliesHandoverDto>? getToolAndMaterialHandover() {
-    final raw = StorageService.read(StorageKey.TOOL_AND_MATERIAL_TRANSFER_HANDOVER);
+    final raw = StorageService.read(
+      StorageKey.TOOL_AND_MATERIAL_TRANSFER_HANDOVER,
+    );
     if (raw == null) return null;
     if (raw is List<ToolAndSuppliesHandoverDto>) return raw;
     if (raw is List) {
       try {
         return raw
             .whereType()
-            .map((e) => ToolAndSuppliesHandoverDto.fromJson(
-                  Map<String, dynamic>.from(e as Map),
-                ))
+            .map(
+              (e) => ToolAndSuppliesHandoverDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
             .toList();
       } catch (_) {
         return null;
@@ -281,9 +403,104 @@ class AccountHelper {
 
   int getToolAndMaterialHandoverCount() {
     final toolAndSuppliesHandover = getToolAndMaterialHandover();
-    final listToolAndSuppliesHandover = toolAndSuppliesHandover
-        ?.where((item) => item.share == true || item.nguoiTao == getUserInfo()?.tenDangNhap)
-        .toList();
+    final listToolAndSuppliesHandover =
+        toolAndSuppliesHandover
+            ?.where(
+              (item) =>
+                  item.share == true ||
+                  item.nguoiTao == getUserInfo()?.tenDangNhap,
+            )
+            .where((item) {
+              final idSignatureGroup =
+                  [
+                    {
+                      "id": item.idDaiDiendonviBanHanhQD,
+                      "signed": item.daXacNhan == true,
+                      "label":
+                          "Đại diện đơn vị đề nghị: ${item.tenDaiDienBanHanhQD}",
+                    },
+                    {
+                      "id": item.idDaiDienBenGiao,
+                      "signed": item.daiDienBenGiaoXacNhan == true,
+                      "label":
+                          "Đại diện đơn vị giao: ${item.tenDaiDienBenGiao}",
+                    },
+                    {
+                      "id": item.idDaiDienBenNhan,
+                      "signed": item.daiDienBenNhanXacNhan == true,
+                      "label":
+                          "Đại diện đơn vị nhận: ${item.tenDaiDienBenNhan}",
+                    },
+                    if (item.listSignatory?.isNotEmpty ?? false)
+                      ...(item.listSignatory
+                              ?.map(
+                                (e) => {
+                                  "id": e.idNguoiKy,
+                                  "signed": e.trangThai == 1,
+                                  "label": "Người ký: ${e.tenNguoiKy ?? ''}",
+                                },
+                              )
+                              .toList() ??
+                          []),
+                  ].toList();
+
+              final userSignature = idSignatureGroup.firstWhere(
+                (e) => e["id"] == getUserInfo()?.tenDangNhap,
+                orElse: () => {"id": null, "signed": false, "label": ""},
+              );
+
+              return userSignature["id"] != null &&
+                  userSignature["signed"] == false;
+            })
+            .toList();
+            log('message listToolAndSuppliesHandover: $listToolAndSuppliesHandover');
     return listToolAndSuppliesHandover?.length ?? 0;
+  }
+
+  // 🔥 THÊM: Clear Tool and Supplies Handover
+  void clearToolAndSuppliesHandover() {
+    StorageService.remove(StorageKey.TOOL_AND_MATERIAL_TRANSFER_HANDOVER);
+    refreshAllCounts();
+  }
+
+  //  THÊM: Clear tất cả dữ liệu
+  void clearAllData() {
+    clearAssetTransfer();
+    clearAssetHandover();
+    clearToolAndMaterialTransfer();
+    clearToolAndSuppliesHandover();
+    refreshAllCounts();
+  }
+
+  // 🔥 THÊM: Clear dữ liệu theo loại
+  void clearDataByType(String type) {
+    switch (type.toLowerCase()) {
+      case 'asset_transfer':
+        clearAssetTransfer();
+        break;
+      case 'asset_handover':
+        clearAssetHandover();
+        break;
+      case 'tool_and_material_transfer':
+        clearToolAndMaterialTransfer();
+        break;
+      case 'tool_and_supplies_handover':
+        clearToolAndSuppliesHandover();
+        break;
+      default:
+        log('Unknown data type: $type');
+    }
+  }
+
+  /// Method để refresh tất cả count values
+  void refreshCounts() {
+    // Trigger rebuild của menu data
+    MenuRefreshService().refreshCounts();
+  }
+
+  /// Global method để refresh counts từ bất kỳ đâu trong app
+  static void refreshAllCounts() {
+    // 🔥 SỬA LẠI: Gọi AppMenuData.refreshAllCounts() thay vì MenuRefreshService
+    AppMenuData.refreshAllCounts();
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -369,7 +370,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
+      AccountHelper.instance.clearAssetTransfer();
       AccountHelper.instance.setAssetTransfer(state.data);
+      AccountHelper.refreshAllCounts();
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
@@ -447,8 +450,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     CreateDieuDongSuccessState state,
   ) {
     onCloseDetail(context);
-    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
+    AppUtility.showSnackBar(context, 'Tạo mới thành công!');
     getDataAll(context);
+    AccountHelper.refreshAllCounts();
     notifyListeners();
   }
 
@@ -489,7 +493,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     UpdateSigningStatusSuccessState state,
   ) {
     onCloseDetail(context);
-    AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+    AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
     getDataAll(context);
     notifyListeners();
   }
@@ -671,12 +675,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     final currentIndex = signatureFlow.indexWhere(
       (s) => s["id"] == userInfo.tenDangNhap,
     );
-    
+
     // Kiểm tra nếu không tìm thấy user trong signatureFlow
     if (currentIndex == -1 || currentIndex >= signatureFlow.length) {
       return -1; // User không có trong danh sách ký
     }
-    
+
     final currentSigner = signatureFlow[currentIndex];
     if (currentSigner["signed"] == -1) {
       return -1;

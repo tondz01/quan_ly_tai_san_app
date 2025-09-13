@@ -1,6 +1,4 @@
 // ignore_for_file: depend_on_referenced_packages
-
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -35,7 +33,6 @@ Widget previewDocumentAssetHandover({
   return InkWell(
     onTap: () {
       if (item == null) return;
-      log("message check itemV1 ${jsonEncode(item)}");
       previewDocumentHandover(
         context: context,
         item: item,

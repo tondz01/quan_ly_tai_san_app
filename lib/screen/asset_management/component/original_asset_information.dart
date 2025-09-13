@@ -39,7 +39,7 @@ Widget buildOriginalAssetInfomation(
   Function(AssetCategoryDto)? onAssetCategoryChanged,
   Function(AssetGroupDto)? onAssetGroupChanged,
   required List<AssetCategoryDto> listAssetCategory,
-  required List<AssetGroupDto> listAssetGroup,
+  required List<AssetGroupDto> listAssetGroup, 
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
   required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
   required Function(DateTime?)? onChangedNgayVaoSo,
@@ -111,6 +111,7 @@ Widget buildOriginalAssetInfomation(
           textContent: ctrlMaTaiSan.text,
           fieldName: 'id',
           validationErrors: validationErrors,
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'Nguyên giá tài sản',
@@ -121,6 +122,7 @@ Widget buildOriginalAssetInfomation(
           inputType: TextInputType.number,
           isMoney: true,
           validationErrors: validationErrors,
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'Giá trị Khấu hao ban đầu',
@@ -131,6 +133,7 @@ Widget buildOriginalAssetInfomation(
           inputType: TextInputType.number,
           isMoney: true,
           validationErrors: validationErrors,
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'Kỳ khấu hao ban đầu',
@@ -140,6 +143,7 @@ Widget buildOriginalAssetInfomation(
           fieldName: 'kyKhauHaoBanDau',
           inputType: TextInputType.number,
           validationErrors: validationErrors,
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'Giá trị thanh lý',
@@ -150,14 +154,16 @@ Widget buildOriginalAssetInfomation(
           inputType: TextInputType.number,
           isMoney: true,
           validationErrors: validationErrors,
+          isRequired: true,
         ),
 
         CmFormDropdownObject<AssetCategoryDto>(
           label: 'Mô hình tài sản',
           controller: ctrlTenMoHinh,
           isEditing: isEditing,
-
+          fieldName: 'idMoHinhTaiSan',
           items: itemsAssetCategory,
+
           defaultValue:
               ctrlTenMoHinh.text.isNotEmpty
                   ? getAssetCategory(
@@ -166,6 +172,7 @@ Widget buildOriginalAssetInfomation(
                   )
                   : null,
           onChanged: onAssetCategoryChanged,
+          isRequired: true,
         ),
 
         CommonFormInput(
@@ -185,7 +192,6 @@ Widget buildOriginalAssetInfomation(
           controller: ctrlSoKyKhauHao,
           isEditing: false,
           textContent: ctrlSoKyKhauHao.text,
-
           fieldName: 'soKyKhauHao',
           validationErrors: validationErrors,
         ),
@@ -228,6 +234,7 @@ Widget buildOriginalAssetInfomation(
           onChanged: onAssetGroupChanged,
           fieldName: 'idNhomTaiSan',
           validationErrors: validationErrors,
+          isRequired: true,
         ),
         CmFormDate(
           label: 'Ngày vào sổ',
