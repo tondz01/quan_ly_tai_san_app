@@ -12,7 +12,6 @@ export 'package:quan_ly_tai_san_app/screen/category_manager/departments/views/de
 export 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/views/project_manager.dart';
 export 'package:quan_ly_tai_san_app/screen/category_manager/role/role_view.dart';
 export 'package:quan_ly_tai_san_app/screen/category_manager/staff/views/staff_manager.dart';
-export 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_screen.dart';
 export 'package:quan_ly_tai_san_app/screen/home/home.dart';
 export 'package:quan_ly_tai_san_app/screen/login/login_view.dart';
 export 'package:quan_ly_tai_san_app/screen/login/account_view.dart';
@@ -26,3 +25,5 @@ export 'package:quan_ly_tai_san_app/screen/report/widget/report_screen.dart';
 export 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 export 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';
 export 'package:quan_ly_tai_san_app/screen/ccdc_group/ccdc_group_view.dart';
+export 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_view.dart';
+export 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/tool_and_supplies_handover_view.dart';

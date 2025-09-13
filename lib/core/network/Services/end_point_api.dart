@@ -31,4 +31,5 @@ class EndPointAPI {
   static String SIGNATORY = "/api/chuky/nguoi-ky";
   static String OWNERSHIP_UNIT_DETAIL = "/chitietdonvisohuu";
   static String EXPORT_DATA = "/api/upload/export";
+  static String DASHBOARD = "/api/dashboard/statistics";
 }
