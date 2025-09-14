@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -7,8 +8,10 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/repository/role_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class RoleProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -218,5 +221,62 @@ class RoleProvider with ChangeNotifier {
     _isShowInput = true;
     _isShowCollapse = true;
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>?> insertData(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await RoleRepository().insertDataFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await RoleRepository().insertDataFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import data thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+          getListRoles(context);
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
   }
 }

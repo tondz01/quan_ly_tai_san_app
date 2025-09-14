@@ -1,5 +1,7 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
@@ -11,7 +13,9 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/pages/project_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/providers/project_provider.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ProjectManager extends StatefulWidget {
   const ProjectManager({super.key});
@@ -37,6 +41,62 @@ class _ProjectManagerState extends State<ProjectManager> {
       isShowInput = true;
       editingProject = duAn;
     });
+  }
+
+  Future<Map<String, dynamic>?> insertData(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await ProjectProvider().insertDataFileBytes(fileName, fileBytes)
+              : await ProjectProvider().insertDataFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import dữ liệu thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<ProjectBloc>().add(LoadProjects());
+          });
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
   }
 
   void _showDeleteDialog(BuildContext context, DuAn? duAn) {
@@ -95,7 +155,11 @@ class _ProjectManagerState extends State<ProjectManager> {
                 },
                 mainScreen: 'Quản lý dự án',
                 onFileSelected: (fileName, filePath, fileBytes) {
-                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                  if (fileName!.isNotEmpty &&
+                      filePath!.isNotEmpty &&
+                      fileBytes != null) {
+                    insertData(context, fileName, filePath, fileBytes);
+                  }
                 },
                 onExportData: () {
                   AppUtility.exportData(

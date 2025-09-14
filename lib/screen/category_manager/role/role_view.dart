@@ -73,7 +73,12 @@ class _RoleViewState extends State<RoleView> {
                   mainScreen: 'Quản lý chức vụ',
                   subScreen: provider.subScreen,
                   onFileSelected: (fileName, filePath, fileBytes) {
-                    AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    provider.insertData(
+                      context,
+                      fileName!,
+                      filePath!,
+                      fileBytes!,
+                    );
                   },
                   onExportData: () {
                     AppUtility.exportData(

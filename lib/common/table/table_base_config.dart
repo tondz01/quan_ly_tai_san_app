@@ -49,7 +49,7 @@ abstract class TableBaseConfig {
         columns: columns,
         onSelectionChanged: onSelectionChanged,
         onRowTap: onRowTap,
-        enableColumnFilters: true,
+        // enableColumnFilters: true,
       ),
     );
   }
@@ -108,7 +108,7 @@ abstract class TableBaseConfig {
       width: width,
       searchable: searchable,
       align: titleAlignment ?? TextAlign.left,
-      filterable: filterable,
+      // filterable: filterable,
     );
   }
 
@@ -140,7 +140,7 @@ abstract class TableBaseConfig {
       titleAlignment: titleAlignment ?? TextAlign.center,
       width: width,
       searchable: searchable ?? false,
-      filterable: filterable ?? false,
+      // filterable: filterable ?? false,
     );
   }
 }

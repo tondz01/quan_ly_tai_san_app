@@ -91,9 +91,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     },
                     mainScreen: provider.getScreenTitle(),
                     subScreen: provider.subScreen,
-                    onFileSelected: (fileName, filePath, fileBytes) {
-                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
-                    },
+                    // onFileSelected: (fileName, filePath, fileBytes) {
+                    //   AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    // },
                     onExportData: () {
                       AppUtility.exportData(
                         context,

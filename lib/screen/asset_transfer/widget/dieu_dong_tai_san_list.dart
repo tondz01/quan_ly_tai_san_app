@@ -227,7 +227,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               },
               width: 150,
               searchable: true,
-              filterable: true,
             ),
           );
           break;
