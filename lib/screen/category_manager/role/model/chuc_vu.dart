@@ -120,6 +120,43 @@ class ChucVu extends Equatable {
     };
   }
 
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
+
+  /// Dữ liệu export (tương tự phòng ban)
+  Map<String, dynamic> toExportJson() {
+    return {
+      'id': _nullIfEmpty(id),
+      'tenChucVu': _nullIfEmpty(tenChucVu),
+      'quanLyNhanVien': quanLyNhanVien,
+      'quanLyPhongBan': quanLyPhongBan,
+      'quanLyDuAn': quanLyDuAn,
+      'quanLyNguonVon': quanLyNguonVon,
+      'quanLyMoHinhTaiSan': quanLyMoHinhTaiSan,
+      'quanLyNhomTaiSan': quanLyNhomTaiSan,
+      'quanLyTaiSan': quanLyTaiSan,
+      'quanLyCCDCVatTu': quanLyCCDCVatTu,
+      'dieuDongTaiSan': dieuDongTaiSan,
+      'dieuDongCCDCVatTu': dieuDongCCDCVatTu,
+      'banGiaoTaiSan': banGiaoTaiSan,
+      'banGiaoCCDCVatTu': banGiaoCCDCVatTu,
+      'baoCao': baoCao,
+      'idCongTy': _nullIfEmpty("ct001"),
+      'ngayTao': _nullIfEmpty(ngayTao),
+      'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
+      'nguoiTao': _nullIfEmpty(nguoiTao),
+      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
+    };
+  }
+
   /// copyWith để dễ dàng cập nhật field
   ChucVu copyWith({
     String? id,

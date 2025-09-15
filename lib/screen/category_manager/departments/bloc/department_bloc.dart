@@ -32,15 +32,14 @@ class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
 
             bool staffIdMatch =
                 item.id?.toLowerCase().contains(searchLower) ?? false;
-            bool departmentGroup =
-                item.tenNhom?.toLowerCase().contains(searchLower) ?? false;
+           
 
             bool parentRoom = AppUtility.fuzzySearch(
               item.phongCapTren?.toLowerCase() ?? '',
               searchLower,
             );
 
-            return nameMatch || staffIdMatch || parentRoom || departmentGroup;
+            return nameMatch || staffIdMatch || parentRoom;
           }).toList();
       if (state is DepartmentLoaded) {
         final currentState = state as DepartmentLoaded;

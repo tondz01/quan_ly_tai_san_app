@@ -28,7 +28,7 @@ class NhanVien extends Equatable {
   final String? nguoiCapNhat;
   final String? phongBanId;
   final String? tenPhongBan;
-  final bool? isActive;
+  final bool? active;
   final String? ngayTao;
   final String? ngayCapNhat;
 
@@ -62,7 +62,7 @@ class NhanVien extends Equatable {
     this.muiGio,
     this.nguoiTao,
     this.nguoiCapNhat,
-    this.isActive,
+    this.active,
     this.ngayTao,
     this.ngayCapNhat,
     this.phongBanId,
@@ -94,7 +94,7 @@ class NhanVien extends Equatable {
       laQuanLy: json['laQuanLy'],
       avatar: json['avatar'],
       idCongTy: json['idCongTy'],
-      isActive: json['isActive'],
+      active: json['active'],
       kyNhay: json['kyNhay'],
       kyThuong: json['kyThuong'],
       kySo: json['kySo'],
@@ -161,7 +161,7 @@ class NhanVien extends Equatable {
       muiGio: muiGio ?? this.muiGio,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
-      isActive: isActive ?? this.isActive,
+      active: isActive ?? this.active,
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
       kyNhay: kyNhay ?? this.kyNhay,
@@ -192,7 +192,7 @@ class NhanVien extends Equatable {
       'hinhThucLamViec': hinhThucLamViec,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'isActive': isActive,
+      'active': active,
       'phongBanId': phongBanId,
       'kyNhay': kyNhay,
       'kyThuong': kyThuong,
@@ -205,10 +205,10 @@ class NhanVien extends Equatable {
   // Trả về null nếu là chuỗi rỗng hoặc chỉ khoảng trắng; giữ nguyên nếu không phải String
   dynamic _nullIfEmpty(dynamic value) {
     if (value == null) {
-      return "null";
+      return "";
     }
     if (value is String) {
-      return value.trim().isEmpty ? "null" : value;
+      return value.trim().isEmpty ? "" : value;
     }
     return value;
   }
@@ -220,27 +220,28 @@ class NhanVien extends Equatable {
       'hoTen': _nullIfEmpty(hoTen),
       'diDong': _nullIfEmpty(diDong),
       'emailCongViec': _nullIfEmpty(emailCongViec),
-      'agreementUUId': _nullIfEmpty(agreementUUId),
-      'pin': _nullIfEmpty(pin),
+      'kyNhay': kyNhay,
+      'kyThuong': kyThuong,
+      'kySo': kySo,
       'chuKyNhay': _nullIfEmpty(chuKyNhay),
       'chuKyThuong': _nullIfEmpty(chuKyThuong),
+      'agreementUUId': _nullIfEmpty(agreementUUId),
+      'pin': _nullIfEmpty(pin),
       'boPhan': _nullIfEmpty(boPhan),
       'chucVu': _nullIfEmpty(chucVu),
       'nguoiQuanLy': _nullIfEmpty(nguoiQuanLy),
       'laQuanLy': laQuanLy,
       'avatar': _nullIfEmpty(avatar),
-      'idCongTy': _nullIfEmpty("ct001"),
+      'idCongTy': _nullIfEmpty(idCongTy),
       'diaChiLamViec': _nullIfEmpty(diaChiLamViec),
       'hinhThucLamViec': _nullIfEmpty(hinhThucLamViec),
+      'gioLamViec': _nullIfEmpty('PBTM'),
+      'muiGio': _nullIfEmpty('true'),
       'nguoiTao': _nullIfEmpty(nguoiTao),
       'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
-      'isActive': isActive,
-      'phongBanId': _nullIfEmpty(phongBanId),
-      'kyNhay': kyNhay,
-      'kyThuong': kyThuong,
-      'kySo': kySo,
       'ngayTao': _nullIfEmpty(ngayTao),
       'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
+      'active': active,
     };
   }
 
@@ -269,7 +270,7 @@ class NhanVien extends Equatable {
     muiGio,
     nguoiTao,
     nguoiCapNhat,
-    isActive,
+    active,
     ngayTao,
     ngayCapNhat,
     kyNhay,

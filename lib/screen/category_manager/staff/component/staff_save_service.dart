@@ -65,7 +65,7 @@ class StaffSaveService {
           s(oldV.chucVuId ?? oldV.chucVu) != s(newV.chucVuId ?? newV.chucVu) ||
           oldDept != newDept ||
           b(oldV.laQuanLy) != b(newV.laQuanLy) ||
-          b(oldV.isActive) != b(newV.isActive) ||
+          b(oldV.active) != b(newV.active) ||
           b(oldV.kyNhay) != b(newV.kyNhay) ||
           b(oldV.kyThuong) != b(newV.kyThuong) ||
           b(oldV.kySo) != b(newV.kySo);
@@ -119,7 +119,7 @@ class StaffSaveService {
         hoTen: nameController.text.trim(),
         diDong: telController.text.trim(),
         emailCongViec: emailController.text.trim(),
-        isActive: isActive,
+        active: isActive,
         chucVu: chucVuDTO?.id,
         chucVuId: chucVuDTO?.id,
         nguoiQuanLy: staffDTO?.id ?? '',

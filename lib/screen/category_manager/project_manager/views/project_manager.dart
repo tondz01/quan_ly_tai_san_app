@@ -164,8 +164,8 @@ class _ProjectManagerState extends State<ProjectManager> {
                 onExportData: () {
                   AppUtility.exportData(
                     context,
-                    "Danh sách dự án",
-                    data.map((e) => e.toJson()).toList(),
+                    "du_an",
+                    data.map((e) => e.toExportJson()).toList(),
                   );
                 },
               ),

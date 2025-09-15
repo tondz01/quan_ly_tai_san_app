@@ -128,9 +128,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
               backgroundColor: Colors.green.shade600,
             ),
           );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.read<StaffBloc>().add(const LoadStaffs());
-          });
+          context.read<StaffBloc>().add(const LoadStaffs());
         }
         return result['data'];
       } else {

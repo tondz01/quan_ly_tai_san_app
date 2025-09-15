@@ -124,7 +124,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
-    _isActive = widget.staff?.isActive ?? false;
+    _isActive = widget.staff?.active ?? false;
     _activityController = TextEditingController(
       text: _isActive ? 'Có' : 'Không',
     );

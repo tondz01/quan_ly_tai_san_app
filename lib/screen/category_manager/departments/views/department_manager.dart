@@ -236,8 +236,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                 onExportData: () {
                   AppUtility.exportData(
                     context,
-                    "Danh sách phòng ban",
-                    departments.map((e) => e.toJson()).toList(),
+                    "phong_ban",
+                    departments.map((e) => e.toExportJson()).toList(),
                   );
                 },
               ),

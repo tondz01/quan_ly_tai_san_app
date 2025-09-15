@@ -6,6 +6,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class DepartmentList extends StatefulWidget {
@@ -42,8 +43,13 @@ class _DepartmentListState extends State<DepartmentList> {
         width: 150,
       ),
       TableBaseConfig.columnTable<PhongBan>(
-        title: 'Nhân viên',
-        getValue: (item) => item.soLuongNhanVien.toString(),
+        title: 'Sô lượng nhân viên',
+        getValue:
+            (item) =>
+                ((AccountHelper.instance.getNhanVien() ?? const [])
+                        .where((e) => e.phongBanId == item.id)
+                        .length)
+                    .toString(),
         width: 150,
       ),
       TableBaseConfig.columnTable<PhongBan>(
@@ -59,7 +65,12 @@ class _DepartmentListState extends State<DepartmentList> {
                     ? Tooltip(
                       message: 'Đơn vị/phòng ban này là mặc định',
                       child: Container(
-                        padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                        padding: EdgeInsets.only(
+                          left: 8,
+                          right: 8,
+                          top: 4,
+                          bottom: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: ColorValue.brightRed,
                           borderRadius: BorderRadius.circular(8),

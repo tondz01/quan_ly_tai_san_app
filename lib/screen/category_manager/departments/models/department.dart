@@ -8,11 +8,9 @@ class PhongBan extends Equatable {
   final String? idCongTy;
   final String? phongCapTren;
   final String? mauSac;
-  final String? tenNhom;
-  final String? hoTenQuanLy;
   final String? nguoiTao;
   final String? nguoiCapNhat;
-  final int? soLuongNhanVien;
+  final bool? isActive;
 
 
   final String? ngayTao;
@@ -26,13 +24,11 @@ class PhongBan extends Equatable {
     this.idCongTy,
     this.phongCapTren,
     this.mauSac,
-    this.tenNhom,
-    this.hoTenQuanLy,
     this.nguoiTao,
     this.nguoiCapNhat,
-    this.soLuongNhanVien,
     this.ngayTao,
     this.ngayCapNhat,
+    this.isActive
   });
 
   factory PhongBan.fromJson(Map<String, dynamic> json) {
@@ -44,13 +40,11 @@ class PhongBan extends Equatable {
       idCongTy: json['idCongTy'],
       phongCapTren: json['phongCapTren'],
       mauSac: json['mauSac'],
-      tenNhom: json['tenNhom'],
-      hoTenQuanLy: json['hoTenQuanLy'],
-      nguoiTao: json['nguoiTao'],
-      nguoiCapNhat: json['nguoiCapNhat'],
-      soLuongNhanVien: json['soLuongNhanVien'],
       ngayTao: json['ngayTao'],
       ngayCapNhat: json['ngayCapNhat'],
+      nguoiTao: json['nguoiTao'],
+      nguoiCapNhat: json['nguoiCapNhat'],
+      isActive: json['isActive'],
     );
   }
 
@@ -63,8 +57,6 @@ class PhongBan extends Equatable {
       'idCongTy': "ct001", // Assuming a default company ID
       'phongCapTren': phongCapTren ?? "",
       'mauSac': mauSac ?? "",
-      'tenNhom': tenNhom ?? "",
-      'hoTenQuanLy': hoTenQuanLy ?? "",
       'nguoiTao': nguoiTao ?? "",
       'nguoiCapNhat': nguoiCapNhat ?? "",
       'ngayTao': ngayTao ?? DateTime.now().toIso8601String(),
@@ -92,13 +84,10 @@ class PhongBan extends Equatable {
       'idCongTy': _nullIfEmpty("ct001"),
       'phongCapTren': _nullIfEmpty(phongCapTren),
       'mauSac': _nullIfEmpty(mauSac),
-      'tenNhom': _nullIfEmpty(tenNhom),
-      'hoTenQuanLy': _nullIfEmpty(hoTenQuanLy),
-      'nguoiTao': _nullIfEmpty(nguoiTao),
-      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
-      'soLuongNhanVien': soLuongNhanVien,
       'ngayTao': _nullIfEmpty(ngayTao),
       'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
+      'nguoiTao': _nullIfEmpty(nguoiTao),
+      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
       'isActive': true,
     };
   }
@@ -112,8 +101,6 @@ class PhongBan extends Equatable {
         idCongTy,
         phongCapTren,
         mauSac,
-        tenNhom,
-        hoTenQuanLy,
         nguoiTao,
         nguoiCapNhat,
         ngayTao,
