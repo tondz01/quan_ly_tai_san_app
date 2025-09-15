@@ -341,14 +341,28 @@ Future<void> _selectDocument({
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx', 'xls'],
-      withData: false,
+      withData: true, // luôn lấy bytes (kể cả không phải Web)
       withReadStream: false,
     );
 
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
-      onFileSelected(file.name, file.path, kIsWeb ? file.bytes : null);
-      log('Selected file: ${file.name}, Path: ${file.path}');
+      final selectedPath = file.path; // Trên Web có thể là null
+      final selectedBytes =
+          file.bytes; // Khi kIsWeb && withData=true sẽ có bytes
+
+      if (selectedPath == null && selectedBytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Không thể đọc tệp đã chọn.'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return;
+      }
+
+      onFileSelected(file.name, selectedPath, selectedBytes);
+      log('Selected file: ${file.name}, Path: $selectedPath');
     }
   } on PlatformException catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -358,7 +372,7 @@ Future<void> _selectDocument({
       ),
     );
   } catch (e) {
-    log('Error selecting file: $e');
+    log('Error _selectDocument file: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Không thể chọn tệp: ${e.toString()}'),

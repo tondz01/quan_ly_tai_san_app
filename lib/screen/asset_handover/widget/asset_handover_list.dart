@@ -77,7 +77,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
-  List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [];
+  List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [
+     {
+      'Ngày bàn giao':
+          (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
+    },
+  ];
 
   @override
   void initState() {
@@ -200,6 +205,22 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Trạng thái ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
+              searchValueGetter: (item) {
+                final status = widget.provider.isCheckSigningStatus(item);
+                return status == 1
+                    ? 'Đã ký'
+                    : status == 0
+                    ? 'Chưa ký'
+                    : status == 2
+                    ? 'Đã ký nháy'
+                    : status == 3
+                    ? 'Đã ký & tạo'
+                    : status == 4
+                    ? 'Chưa ký nháy'
+                    : status == 5
+                    ? 'Chưa ký & tạo'
+                    : 'Người tạo phiếu';
+              },
               searchable: true,
               filterable: true,
             ),
@@ -215,6 +236,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     item.share ?? false,
                     item.nguoiTao == userInfo?.tenDangNhap,
                   ),
+              searchValueGetter: (item) {
+                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -224,7 +249,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Tên phiếu',
               getValue: (item) => item.banGiaoTaiSan ?? '',
               width: 170,
-              filterable: true,
             ),
           );
           break;
@@ -268,6 +292,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Đơn vị giao',
               getValue: (item) => item.tenDonViGiao ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -277,6 +302,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Đơn vị nhận',
               getValue: (item) => item.tenDonViNhan ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -291,6 +317,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           ?.hoTen ??
                       '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -302,6 +329,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                   (item) =>
                       SgCheckbox(value: item.byStep == true, onChanged: null),
               width: 100,
+              searchValueGetter: (item) {
+                return item.byStep == true
+                    ? 'Ký theo lượt'
+                    : 'Không ký theo lượt';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -312,6 +345,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               cellBuilder: (item) => showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -445,8 +479,19 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         child: TableBaseView<AssetHandoverDto>(
                           searchTerm: '',
                           columns: columns,
+                          getters: getters,
                           data: widget.provider.dataPage ?? [],
                           horizontalController: ScrollController(),
+                          startDate: DateTime.tryParse(
+                            widget.provider.filteredData!.isNotEmpty
+                                ? widget
+                                    .provider
+                                    .filteredData!
+                                    .first
+                                    .ngayBanGiao
+                                    .toString()
+                                : '',
+                          ),
                           onRowTap: (item) {
                             isShowPreview = true;
                             widget.provider.onChangeDetail(context, item);

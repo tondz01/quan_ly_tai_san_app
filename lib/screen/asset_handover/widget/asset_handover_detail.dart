@@ -127,6 +127,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     });
   }
 
+  Future<void> _loadPdfFromBytes(Uint8List bytes) async {
+    final document = await PdfDocument.openData(bytes);
+    setState(() {
+      _document = document;
+    });
+  }
+
   Future<void> _loadPdfNetwork(String nameFile) async {
     SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
     try {
@@ -668,7 +675,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
                     if (fileName != null) {
-                      _loadPdf(filePath!);
+                      if (fileBytes != null) {
+                        _loadPdfFromBytes(fileBytes);
+                      } else if (filePath != null) {
+                        _loadPdf(filePath);
+                      }
                     }
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');

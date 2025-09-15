@@ -2,6 +2,7 @@
 
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -9,6 +10,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dar
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetGroupProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -251,5 +254,62 @@ class AssetGroupProvider with ChangeNotifier {
   ) {
     AppUtility.showSnackBar(context, state.message);
     notifyListeners();
+  }
+
+  Future<Map<String, dynamic>?> insertData(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await AssetGroupRepository().insertDataFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await AssetGroupRepository().insertDataFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import dữ liệu thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+          getListAssetGroup(context);
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetGroupProvider", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
   }
 }

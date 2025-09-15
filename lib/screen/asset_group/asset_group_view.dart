@@ -63,7 +63,12 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                     },
                     mainScreen: 'Nhóm tài sản',
                     onFileSelected: (fileName, filePath, fileBytes) {
-                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                      provider.insertData(
+                        context,
+                        fileName!,
+                        filePath!,
+                        fileBytes!,
+                      );
                     },
                     onExportData: () {
                       AppUtility.exportData(

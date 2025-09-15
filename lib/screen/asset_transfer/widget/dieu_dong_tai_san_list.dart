@@ -217,16 +217,23 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               cellBuilder: (item) => showSigningStatus(item),
               searchValueGetter: (item) {
                 final status = widget.provider.isCheckSigningStatus(item);
-                return status == 1 ? 'Đã ký'
-                     : status == 0 ? 'Chưa ký'
-                     : status == 2 ? 'Đã ký nháy'
-                     : status == 3 ? 'Đã ký & tạo'
-                     : status == 4 ? 'Chưa ký nháy'
-                     : status == 5 ? 'Chưa ký & tạo'
-                     : 'Người tạo phiếu';
+                return status == 1
+                    ? 'Đã ký'
+                    : status == 0
+                    ? 'Chưa ký'
+                    : status == 2
+                    ? 'Đã ký nháy'
+                    : status == 3
+                    ? 'Đã ký & tạo'
+                    : status == 4
+                    ? 'Chưa ký nháy'
+                    : status == 5
+                    ? 'Chưa ký & tạo'
+                    : 'Người tạo phiếu';
               },
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -240,6 +247,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     item.share ?? false,
                     item.nguoiTao == userInfo?.tenDangNhap,
                   ),
+              searchValueGetter: (item) {
+                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -357,7 +368,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
+              searchValueGetter: (item) =>
+                  ConfigViewAT.getStatus(item.trangThai ?? 0),
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -895,35 +909,37 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         margin: const EdgeInsets.only(bottom: 2),
         decoration: BoxDecoration(
-          color: widget.provider.isCheckSigningStatus(item) == 1
-              ? Colors.green
-              : widget.provider.isCheckSigningStatus(item) == 0
-              ? Colors.red
-              : widget.provider.isCheckSigningStatus(item) == 2
-              ? Colors.green
-              : widget.provider.isCheckSigningStatus(item) == 3
-              ? Colors.green
-              : widget.provider.isCheckSigningStatus(item) == 4
-              ? Colors.orange
-              : widget.provider.isCheckSigningStatus(item) == 5
-              ? Colors.purple
-              : Colors.blue,
+          color:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? Colors.red
+                  : widget.provider.isCheckSigningStatus(item) == 2
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 4
+                  ? Colors.orange
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? Colors.purple
+                  : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
         child: SGText(
-          text: widget.provider.isCheckSigningStatus(item) == 1
-              ? 'Đã ký'
-              : widget.provider.isCheckSigningStatus(item) == 0
-              ? 'Chưa ký'
-              : widget.provider.isCheckSigningStatus(item) == 2
-              ? 'Đã ký nháy'
-              : widget.provider.isCheckSigningStatus(item) == 3
-              ? 'Đã ký & tạo'
-              : widget.provider.isCheckSigningStatus(item) == 4
-              ? 'Chưa ký nháy'
-              : widget.provider.isCheckSigningStatus(item) == 5
-              ? 'Chưa ký & tạo'
-              : "Người tạo phiếu",
+          text:
+              widget.provider.isCheckSigningStatus(item) == 1
+                  ? 'Đã ký'
+                  : widget.provider.isCheckSigningStatus(item) == 0
+                  ? 'Chưa ký'
+                  : widget.provider.isCheckSigningStatus(item) == 2
+                  ? 'Đã ký nháy'
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? 'Đã ký & tạo'
+                  : widget.provider.isCheckSigningStatus(item) == 4
+                  ? 'Chưa ký nháy'
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? 'Chưa ký & tạo'
+                  : "Người tạo phiếu",
           size: 12,
           style: TextStyle(
             fontWeight: FontWeight.w500,

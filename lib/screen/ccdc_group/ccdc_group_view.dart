@@ -34,8 +34,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
   Widget build(BuildContext context) {
     return BlocConsumer<CcdcGroupBloc, CcdcGroupState>(
       listener: (context, state) {
-        if (state is CcdcGroupLoadingState) {
-        }
+        if (state is CcdcGroupLoadingState) {}
         if (state is GetListCcdcGroupSuccessState) {
           context.read<CcdcGroupProvider>().getListCcdcGroupSuccess(
             context,
@@ -73,10 +72,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
           );
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<CcdcGroupProvider>().putPostDeleteFailed(
-            context,
-            state,
-          );
+          context.read<CcdcGroupProvider>().putPostDeleteFailed(context, state);
         }
       },
       builder: (context, state) {
@@ -103,7 +99,12 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                     },
                     mainScreen: 'Nhóm ccdc',
                     onFileSelected: (fileName, filePath, fileBytes) {
-                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                      CcdcGroupProvider().insertData(
+                        context,
+                        fileName!,
+                        filePath!,
+                        fileBytes!,
+                      );
                     },
                     onExportData: () {
                       AppUtility.exportData(

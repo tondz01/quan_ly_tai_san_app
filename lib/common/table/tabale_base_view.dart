@@ -24,6 +24,7 @@ class TableBaseView<T> extends StatefulWidget {
     this.getters,
     this.startDate,
     this.endDate,
+    this.filterPopupOffset = const Offset(-10, -70),
   });
 
   /// Từ khóa tìm kiếm
@@ -54,6 +55,8 @@ class TableBaseView<T> extends StatefulWidget {
 
   /// Có hiển thị phần filter theo ngày hay không
   final bool isShowFilter;
+
+  final Offset? filterPopupOffset;
 
   final DateTime? startDate;
   final DateTime? endDate;
@@ -465,6 +468,7 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
                     onSelectionChanged: (items) {
                       widget.onSelectionChanged?.call(items);
                     },
+                    filterPopupOffset: widget.filterPopupOffset,
                   ),
                 ),
               ),

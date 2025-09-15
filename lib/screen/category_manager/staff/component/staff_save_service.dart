@@ -128,7 +128,7 @@ class StaffSaveService {
         laQuanLy: laQuanLy,
         boPhan: phongBan?.id,
         phongBanId: phongBan?.id,
-        ngayTao: DateTime.now(),
+        ngayTao: DateTime.now().toIso8601String(),
         nguoiTao: userInfoDTO?.id ?? '',
         kyNhay: kyNhay,
         kyThuong: kyThuong,

@@ -192,7 +192,24 @@ class _ToolAndSuppliesHandoverListState
               title: 'Trạng thái ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
+              searchValueGetter: (item) {
+                final status = widget.provider.isCheckSigningStatus(item);
+                return status == 1
+                    ? 'Đã ký'
+                    : status == 0
+                    ? 'Chưa ký'
+                    : status == 2
+                    ? 'Đã ký nháy'
+                    : status == 3
+                    ? 'Đã ký & tạo'
+                    : status == 4
+                    ? 'Chưa ký nháy'
+                    : status == 5
+                    ? 'Chưa ký & tạo'
+                    : 'Người tạo phiếu';
+              },
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -206,6 +223,10 @@ class _ToolAndSuppliesHandoverListState
                     item.share ?? false,
                     item.nguoiTao == userInfo?.tenDangNhap,
                   ),
+              searchValueGetter: (item) {
+                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -258,6 +279,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Đơn vị giao',
               getValue: (item) => item.tenDonViGiao ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -267,6 +289,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Đơn vị nhận',
               getValue: (item) => item.tenDonViNhan ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -276,6 +299,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Người lập phiếu',
               getValue: (item) => item.nguoiTao ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -287,6 +311,12 @@ class _ToolAndSuppliesHandoverListState
                   (item) =>
                       SgCheckbox(value: item.byStep == true, onChanged: null),
               width: 100,
+              searchValueGetter: (item) {
+                return item.byStep == true
+                    ? 'Ký theo lượt'
+                    : 'Không ký theo lượt';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -297,6 +327,7 @@ class _ToolAndSuppliesHandoverListState
               cellBuilder: (item) => showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;

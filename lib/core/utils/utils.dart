@@ -186,7 +186,6 @@ abstract class AppUtility {
             color: isShare ? Colors.green : Colors.red,
           ),
         ),
-        
       ],
     );
   }

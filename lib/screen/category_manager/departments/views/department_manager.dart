@@ -1,11 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
@@ -123,7 +120,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
         return null;
       }
     } catch (e) {
-      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      SGLog.debug("DepartmentManager", ' Error uploading file: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -29,8 +29,8 @@ class NhanVien extends Equatable {
   final String? phongBanId;
   final String? tenPhongBan;
   final bool? isActive;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
+  final String? ngayTao;
+  final String? ngayCapNhat;
 
   //kiểu ký
   final bool? kyNhay;
@@ -98,6 +98,8 @@ class NhanVien extends Equatable {
       kyNhay: json['kyNhay'],
       kyThuong: json['kyThuong'],
       kySo: json['kySo'],
+      ngayTao: json['ngayTao'],
+      ngayCapNhat: json['ngayCapNhat'],
     );
   }
   NhanVien copyWith({
@@ -165,6 +167,8 @@ class NhanVien extends Equatable {
       kyNhay: kyNhay ?? this.kyNhay,
       kyThuong: kyThuong ?? this.kyThuong,
       kySo: kySo ?? this.kySo,
+      ngayTao: ngayTao ?? this.ngayTao,
+      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
     );
   }
 
@@ -187,11 +191,56 @@ class NhanVien extends Equatable {
       'diaChiLamViec': diaChiLamViec,
       'hinhThucLamViec': hinhThucLamViec,
       'nguoiTao': nguoiTao,
+      'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'phongBanId': phongBanId,
       'kyNhay': kyNhay,
       'kyThuong': kyThuong,
       'kySo': kySo,
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
+    };
+  }
+
+  // Trả về null nếu là chuỗi rỗng hoặc chỉ khoảng trắng; giữ nguyên nếu không phải String
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
+
+  // Map dữ liệu để export: chuyển tất cả chuỗi rỗng "" => null
+  Map<String, dynamic> toExportJson() {
+    return {
+      'id': _nullIfEmpty(id),
+      'hoTen': _nullIfEmpty(hoTen),
+      'diDong': _nullIfEmpty(diDong),
+      'emailCongViec': _nullIfEmpty(emailCongViec),
+      'agreementUUId': _nullIfEmpty(agreementUUId),
+      'pin': _nullIfEmpty(pin),
+      'chuKyNhay': _nullIfEmpty(chuKyNhay),
+      'chuKyThuong': _nullIfEmpty(chuKyThuong),
+      'boPhan': _nullIfEmpty(boPhan),
+      'chucVu': _nullIfEmpty(chucVu),
+      'nguoiQuanLy': _nullIfEmpty(nguoiQuanLy),
+      'laQuanLy': laQuanLy,
+      'avatar': _nullIfEmpty(avatar),
+      'idCongTy': _nullIfEmpty("ct001"),
+      'diaChiLamViec': _nullIfEmpty(diaChiLamViec),
+      'hinhThucLamViec': _nullIfEmpty(hinhThucLamViec),
+      'nguoiTao': _nullIfEmpty(nguoiTao),
+      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
+      'isActive': isActive,
+      'phongBanId': _nullIfEmpty(phongBanId),
+      'kyNhay': kyNhay,
+      'kyThuong': kyThuong,
+      'kySo': kySo,
+      'ngayTao': _nullIfEmpty(ngayTao),
+      'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
     };
   }
 
@@ -226,5 +275,7 @@ class NhanVien extends Equatable {
     kyNhay,
     kyThuong,
     kySo,
+    ngayTao,
+    ngayCapNhat,
   ];
 }

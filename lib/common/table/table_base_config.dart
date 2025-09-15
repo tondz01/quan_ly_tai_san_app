@@ -15,6 +15,7 @@ abstract class TableBaseConfig {
     Function(T item)? onRowTap,
     Function(List<T> items)? onSelectionChanged,
     bool isShowCheckboxes = true,
+    Offset? filterPopupOffset,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -29,7 +30,7 @@ abstract class TableBaseConfig {
         ],
       ),
       child: SgTable<T>(
-        rowHeight: 45.0,
+        // rowHeight: 45.0,
         data: data,
         titleStyleHeader: const TextStyle(
           fontWeight: FontWeight.w600,
@@ -49,7 +50,8 @@ abstract class TableBaseConfig {
         columns: columns,
         onSelectionChanged: onSelectionChanged,
         onRowTap: onRowTap,
-        // enableColumnFilters: true,
+        enableColumnFilters: true,
+        filterPopupOffset: filterPopupOffset ?? const Offset(0, 0),
       ),
     );
   }
@@ -94,6 +96,7 @@ abstract class TableBaseConfig {
     required String title,
     required double width,
     required String Function(T) getValue,
+    String Function(T)? searchValueGetter,
     double fontSize = 12,
     Color textColor = Colors.black87,
     TextAlign? titleAlignment = TextAlign.center,
@@ -107,8 +110,9 @@ abstract class TableBaseConfig {
       fontSize: fontSize,
       width: width,
       searchable: searchable,
+      searchValue: searchValueGetter,
       align: titleAlignment ?? TextAlign.left,
-      // filterable: filterable,
+      filterable: filterable,
     );
   }
 
@@ -140,7 +144,7 @@ abstract class TableBaseConfig {
       titleAlignment: titleAlignment ?? TextAlign.center,
       width: width,
       searchable: searchable ?? false,
-      // filterable: filterable ?? false,
+      filterable: filterable ?? false,
     );
   }
 }

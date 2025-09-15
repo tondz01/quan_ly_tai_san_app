@@ -43,8 +43,8 @@ class DepartmentsProvider extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       SGLog.error(
-        "AssetTransferRepository",
-        "Error at insertDataFile - AssetTransferRepository: $e",
+        "DepartmentsProvider",
+        "Error at insertDataFile - DepartmentsProvider: $e",
       );
     }
 
@@ -72,8 +72,8 @@ class DepartmentsProvider extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       SGLog.error(
-        "AssetTransferRepository",
-        "Error at insertDataFileBytes - AssetTransferRepository: $e",
+        "DepartmentsProvider",
+        "Error at insertDataFileBytes - DepartmentsProvider: $e",
       );
     }
     return result;

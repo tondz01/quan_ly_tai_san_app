@@ -161,10 +161,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
       switch (columnId) {
         case 'code_asset':
           columns.add(
-            TableBaseConfig.columnTable<AssetManagementDto>(
+            TableColumnBuilder.createTextColumn<AssetManagementDto>(
               title: 'Mã tài sản',
               getValue: (item) => item.id ?? '',
               width: 120,
+              // filterable: true,
+              searchValue: (item) => item.id ?? '',
             ),
           );
           break;

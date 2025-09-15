@@ -1,10 +1,13 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_event.dart';
@@ -13,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vi
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class StaffManager extends StatefulWidget {
   const StaffManager({super.key});
@@ -96,6 +100,65 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     context.read<StaffBloc>().add(SearchStaff(value));
   }
 
+  Future<Map<String, dynamic>?> insertData(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await NhanVienProvider().insertDataFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await NhanVienProvider().insertDataFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import dữ liệu thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<StaffBloc>().add(const LoadStaffs());
+          });
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
+  }
+
   void _updatePagination() {
     // Sử dụng _filteredData thay vì _data
     totalEntries = _filteredData.length;
@@ -146,13 +209,13 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 },
                 mainScreen: 'Quản lý nhân viên',
                 onFileSelected: (fileName, filePath, fileBytes) {
-                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                  insertData(context, fileName!, filePath!, fileBytes!);
                 },
                 onExportData: () {
                   AppUtility.exportData(
                     context,
-                    "Danh sách nhân viên",
-                    staffs.map((e) => e.toJson()).toList(),
+                    "nhan_vien",
+                    staffs.map((e) => e.toExportJson()).toList(),
                   );
                 },
               ),

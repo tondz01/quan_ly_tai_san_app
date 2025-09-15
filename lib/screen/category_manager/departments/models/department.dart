@@ -73,6 +73,36 @@ class PhongBan extends Equatable {
     };
   }
 
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
+
+  Map<String, dynamic> toExportJson() {
+    return {
+      'id': _nullIfEmpty(id),
+      'idNhomDonVi': _nullIfEmpty(idNhomDonVi),
+      'tenPhongBan': _nullIfEmpty(tenPhongBan),
+      'idQuanLy': _nullIfEmpty(idQuanLy),
+      'idCongTy': _nullIfEmpty("ct001"),
+      'phongCapTren': _nullIfEmpty(phongCapTren),
+      'mauSac': _nullIfEmpty(mauSac),
+      'tenNhom': _nullIfEmpty(tenNhom),
+      'hoTenQuanLy': _nullIfEmpty(hoTenQuanLy),
+      'nguoiTao': _nullIfEmpty(nguoiTao),
+      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
+      'soLuongNhanVien': soLuongNhanVien,
+      'ngayTao': _nullIfEmpty(ngayTao),
+      'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
+      'isActive': true,
+    };
+  }
+
   @override
   List<Object?> get props => [
         id,

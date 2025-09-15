@@ -114,6 +114,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     });
   }
 
+  Future<void> _loadPdfFromBytes(Uint8List bytes) async {
+    final document = await PdfDocument.openData(bytes);
+    setState(() {
+      _document = document;
+    });
+  }
+
   Future<void> _loadPdfNetwork(String nameFile) async {
     SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
     try {
@@ -721,10 +728,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     state.selectedFileName = fileName;
                     state.selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
-
-                    if (fileName != null) {
-                      _loadPdf(filePath!);
-                    }
+                   if (fileName != null) {
+                     if (fileBytes != null) {
+                       _loadPdfFromBytes(fileBytes);
+                     } else if (filePath != null) {
+                       _loadPdf(filePath);
+                     }
+                   }
 
                     if (validation.hasValidationError('document')) {
                       validation.removeValidationError('document');
