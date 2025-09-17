@@ -1,8 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
@@ -11,7 +8,6 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/index.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -435,7 +431,7 @@ class _RoleListState extends State<RoleList> {
                     children: [
                       SGText(
                         text:
-                            'Danh sách nhân viên đã chọn: ${listSelected.length}',
+                            'Danh sách chức vụ đã chọn: ${listSelected.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -451,9 +447,9 @@ class _RoleListState extends State<RoleList> {
                           showConfirmDialog(
                             context,
                             type: ConfirmType.delete,
-                            title: 'Xóa nhân viên',
+                            title: 'Xóa chức vụ',
                             message:
-                                'Bạn có chắc muốn xóa ${listSelected.length} nhân viên',
+                                'Bạn có chắc muốn xóa ${listSelected.length} chức vụ',
                             highlight: listSelected.length.toString(),
                             cancelText: 'Không',
                             confirmText: 'Xóa',

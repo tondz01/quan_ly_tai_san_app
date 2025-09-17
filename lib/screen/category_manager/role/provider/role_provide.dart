@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,10 +7,8 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/role/repository/role_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class RoleProvider with ChangeNotifier {
   bool get isLoading => _isLoading;

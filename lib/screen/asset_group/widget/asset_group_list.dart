@@ -283,7 +283,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                     children: [
                       SGText(
                         text:
-                            'Danh sách nhân viên đã chọn: ${listSelected.length}',
+                            'Danh sách nhóm đã chọn: ${listSelected.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -299,9 +299,9 @@ class _AssetGroupListState extends State<AssetGroupList> {
                           showConfirmDialog(
                             context,
                             type: ConfirmType.delete,
-                            title: 'Xóa nhân viên',
+                            title: 'Xóa nhân nhóm tài sản',
                             message:
-                                'Bạn có chắc muốn xóa ${listSelected.length} nhân viên',
+                                'Bạn có chắc muốn xóa ${listSelected.length} nhóm tài sản',
                             highlight: listSelected.length.toString(),
                             cancelText: 'Không',
                             confirmText: 'Xóa',
