@@ -25,6 +25,15 @@ class CreateCcdcGroupEvent extends CcdcGroupEvent {
   List<Object?> get props => [context, params];
 }
 
+class CreateCcdcGroupBatchEvent extends CcdcGroupEvent {
+  final List<CcdcGroup> params;
+
+  const CreateCcdcGroupBatchEvent(this.params);
+
+  @override
+  List<Object?> get props => [params];
+}
+
 class UpdateCcdcGroupEvent extends CcdcGroupEvent {
   final BuildContext context;
   final CcdcGroup params;
@@ -44,4 +53,13 @@ class DeleteCcdcGroupEvent extends CcdcGroupEvent {
 
   @override
   List<Object?> get props => [context, id];
+}
+
+class DeleteCcdcGroupBatchEvent extends CcdcGroupEvent {
+  final Map<String, dynamic> id;
+
+  const DeleteCcdcGroupBatchEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }

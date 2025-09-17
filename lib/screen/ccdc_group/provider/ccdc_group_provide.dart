@@ -232,7 +232,7 @@ class CcdcGroupProvider with ChangeNotifier {
     CreateCcdcGroupFailedState state,
   ) {
     _error = state.message;
-    AppUtility.showSnackBar(context, state.message);
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
   }
 
@@ -240,7 +240,7 @@ class CcdcGroupProvider with ChangeNotifier {
     BuildContext context,
     PutPostDeleteFailedState state,
   ) {
-    AppUtility.showSnackBar(context, state.message);
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
   }
 

@@ -48,4 +48,29 @@ class CcdcGroup {
       'nguoiCapNhat': nguoiCapNhat,
     };
   }
+
+  // Helper chuyển null/empty string thành chuỗi rỗng để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "" : value;
+    }
+    return value;
+  }
+
+  /// Dữ liệu export cho Nhóm CCDC
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã nhóm CCDC': _nullIfEmpty(id),
+      'Tên nhóm CCDC': _nullIfEmpty(ten),
+      'Hiệu lực': hieuLuc,
+      'Mã công ty': _nullIfEmpty(idCongTy),
+      'Ngày tạo': _nullIfEmpty(ngayTao?.toIso8601String()),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat?.toIso8601String()),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+    };
+  }
 }

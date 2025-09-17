@@ -66,4 +66,30 @@ class AssetGroupDto {
       (json.decode(categories) as List<dynamic>)
           .map<AssetGroupDto>((item) => AssetGroupDto.fromJson(item))
           .toList();
+
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "" : value;
+    }
+    return value;
+  }
+
+  /// Dữ liệu export cho Nhóm tài sản
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã nhóm': _nullIfEmpty(id),
+      'Tên nhóm': _nullIfEmpty(tenNhom),
+      'Hiệu lực': hieuLuc,
+      'Mã công ty': _nullIfEmpty(idCongTy),
+      'Ngày tạo': _nullIfEmpty(ngayTao?.toIso8601String()),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat?.toIso8601String()),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+      'Kích hoạt': isActive,
+    };
+  }
 }

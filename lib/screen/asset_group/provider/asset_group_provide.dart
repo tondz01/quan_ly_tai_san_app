@@ -244,7 +244,7 @@ class AssetGroupProvider with ChangeNotifier {
     CreateAssetGroupFailedState state,
   ) {
     _error = state.message;
-    AppUtility.showSnackBar(context, state.message);
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
   }
 
@@ -252,7 +252,7 @@ class AssetGroupProvider with ChangeNotifier {
     BuildContext context,
     PutPostDeleteFailedState state,
   ) {
-    AppUtility.showSnackBar(context, state.message);
+    AppUtility.showSnackBar(context, state.message,isError: true);
     notifyListeners();
   }
 

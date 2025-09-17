@@ -9,8 +9,10 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
   RoleBloc() : super(RolesInitialState()) {
     on<GetListRoleEvent>(_getListRole);
     on<CreateRoleEvent>(_createRole);
+    on<CreateRoleBatchEvent>(_createRoleBatch);
     on<UpdateRoleEvent>(_updateRole);
     on<DeleteRoleEvent>(_deleteRole);
+    on<DeleteRoleBatchEvent>(_deleteRoleBatch);
   }
   Future<void> _getListRole(GetListRoleEvent event, Emitter emit) async {
     emit(RolesInitialState());
@@ -37,6 +39,27 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
     emit(RolesLoadingState());
 
     final Map<String, dynamic> result = await RoleRepository().createRole(
+      event.params,
+    );
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+      emit(CreateRoleSuccessState(data: (result['data'] ?? '').toString()));
+    } else {
+      emit(
+        PutPostDeleteFailedState(
+          title: 'Tạo chức vụ',
+          code: statusCode,
+          message: 'Thất bại khi tạo chức vụ',
+        ),
+      );
+    }
+    emit(RolesLoadingDismissState());
+  }
+  Future<void> _createRoleBatch(CreateRoleBatchEvent event, Emitter emit) async {
+    emit(RolesLoadingState());
+
+    final Map<String, dynamic> result = await RoleRepository().saveRoleBatch(
       event.params,
     );
 
@@ -81,6 +104,28 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
     emit(RolesLoadingState());
 
     final Map<String, dynamic> result = await RoleRepository().deleteRole(
+      event.id,
+    );
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+      emit(DeleteRoleSuccessState(data: (result['data'] ?? '').toString()));
+    } else {
+      emit(
+        PutPostDeleteFailedState(
+          title: 'Xóa chức vụ',
+          code: statusCode,
+          message: 'Thất bại khi xóa chức vụ',
+        ),
+      );
+    }
+    emit(RolesLoadingDismissState());
+  }
+
+  Future<void> _deleteRoleBatch(DeleteRoleBatchEvent event, Emitter emit) async {
+    emit(RolesLoadingState());
+
+    final Map<String, dynamic> result = await RoleRepository().deleteRoleBatch(
       event.id,
     );
 

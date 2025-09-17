@@ -189,4 +189,42 @@ abstract class AppUtility {
       ],
     );
   }
+
+  static String s(dynamic v, {String? fallback}) {
+    final str = v?.toString().trim();
+    if (str == null || str.isEmpty) {
+      return (fallback ?? '').trim();
+    }
+    return str;
+  }
+
+  static bool b(dynamic v, {bool fallback = false}) {
+    if (v == null) return fallback;
+    if (v is bool) return v;
+    if (v is num) return v != 0;
+    final str = v.toString().trim().toLowerCase();
+    if (str.isEmpty) return fallback;
+    return str == 'true' || str == '1' || str == 'yes' || str == 'y';
+  }
+
+  static DateTime excelSerialToDate(num serial) {
+    final base = DateTime(1899, 12, 30);
+    return base.add(
+      Duration(
+        days: serial.floor(),
+        milliseconds: (((serial % 1) * 24 * 60 * 60 * 1000)).round(),
+      ),
+    );
+  }
+
+  static String normalizeDateIsoString(dynamic value) {
+    if (value == null) return '';
+    if (value is DateTime) return value.toIso8601String();
+    if (value is num) return excelSerialToDate(value).toIso8601String();
+    final text = value.toString().trim();
+    if (text.isEmpty) return '';
+    final parsed = DateTime.tryParse(text);
+    if (parsed != null) return parsed.toIso8601String();
+    return '';
+  }
 }

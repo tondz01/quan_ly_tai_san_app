@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -193,6 +195,70 @@ class CcdcGroupRepository extends ApiBase {
         "Error at insertDataFileBytes - CcdcGroupRepository: $e",
       );
     }
+    return result;
+  }
+
+    Future<Map<String, dynamic>> saveCcdcGroupBatch(
+    List<CcdcGroup> ccdcGroup,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.CCDC_GROUP}/batch',
+        data: jsonEncode(ccdcGroup),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<CcdcGroup>(
+        response.data,
+        CcdcGroup.fromJson,
+      );
+    } catch (e) {
+      log("Error at saveCcdcGroupBatch - CcdcGroupRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteCcdcGroupBatch(Map<String, dynamic> data) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.CCDC_GROUP}/batch',
+        data: data,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<CcdcGroup>(
+        response.data,
+        CcdcGroup.fromJson,
+      );
+    } catch (e) {
+      log("Error at deleteCcdcGroupBatch - CcdcGroupRepository: $e");
+    }
+
     return result;
   }
 }

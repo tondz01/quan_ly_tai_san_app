@@ -495,10 +495,7 @@ class _RoleDetailState extends State<RoleDetail> {
     if (data == null) {
       final request = chucVuRequest();
       log('CreateRoleEvent request: ${request.toJson()}');
-      bloc.add(CreateRoleEvent(request));
     } else {
-      final request = chucVuRequest();
-      log('controllerNameChucVu: ${controllerNameChucVu.text}');
       ChucVu newRequest = data!.copyWith(
         tenChucVu: controllerNameChucVu.text,
         quanLyNhanVien: isQuanLyNhanVien,
@@ -520,8 +517,6 @@ class _RoleDetailState extends State<RoleDetail> {
         ngayCapNhat: DateTime.now().toString(),
         nguoiCapNhat: widget.provider.userInfo?.id ?? '',
       );
-      log('UpdateRoleEvent request: ${newRequest.toJson()}');
-      log('UpdateRoleEvent request: ${request.toJson()}');
       bloc.add(UpdateRoleEvent(newRequest));
     }
   }

@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:async';
 import 'dart:typed_data';
@@ -7,6 +8,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -32,19 +34,12 @@ class RoleRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      // Parse response data using the common ResponseParser utility
-      log('Raw response data: ${response.data}');
-
       // Lấy phần data từ response
       final List<dynamic> dataList = response.data['data'] ?? [];
-      log('Data list from response: $dataList');
 
       // Parse từng item trong data list
       result['data'] = dataList.map((item) => ChucVu.fromJson(item)).toList();
 
-      log('Parsed data: ${result['data']}');
-      log('response.data: ${response.data}');
-      log('response.dat result: ${result['data']}');
     } catch (e) {
       log("Error at getListRole - RoleRepository: $e");
     }
@@ -185,6 +180,70 @@ class RoleRepository extends ApiBase {
         "Error at insertDataFileBytes - AssetTransferRepository: $e",
       );
     }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> saveRoleBatch(
+    List<ChucVu> nhanViens,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.CHUC_VU}/batch',
+        data: jsonEncode(nhanViens),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ChucVu>(
+        response.data,
+        ChucVu.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteRoleBatch(Map<String, dynamic> data) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.CHUC_VU}/batch',
+        data: data,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ChucVu>(
+        response.data,
+        ChucVu.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
     return result;
   }
 }

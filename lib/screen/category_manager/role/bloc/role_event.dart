@@ -25,6 +25,15 @@ class CreateRoleEvent extends RoleEvent {
   List<Object?> get props => [params];
 }
 
+class CreateRoleBatchEvent extends RoleEvent {
+  final List<ChucVu> params;
+
+  const CreateRoleBatchEvent(this.params);
+
+  @override
+  List<Object?> get props => [params];
+}
+
 class UpdateRoleEvent extends RoleEvent {
   final ChucVu params;
 
@@ -33,10 +42,20 @@ class UpdateRoleEvent extends RoleEvent {
   @override
   List<Object?> get props => [params];
 }
+
 class DeleteRoleEvent extends RoleEvent {
   final String id;
 
   const DeleteRoleEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class DeleteRoleBatchEvent extends RoleEvent {
+  final Map<String, dynamic> id;
+
+  const DeleteRoleBatchEvent(this.id);
 
   @override
   List<Object?> get props => [id];

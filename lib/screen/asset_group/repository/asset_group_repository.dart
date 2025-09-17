@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:async'; // Add this import for unawaited
 import 'dart:typed_data';
@@ -203,6 +204,70 @@ class AssetGroupRepository extends ApiBase {
         "Error at insertDataFileBytes - AssetGroupRepository: $e",
       );
     }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> saveAssetGroupBatch(
+    List<AssetGroupDto> assetGroups,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.ASSET_GROUP}/batch',
+        data: jsonEncode(assetGroups),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetGroupDto>(
+        response.data,
+        AssetGroupDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteAssetGroupBatch(Map<String, dynamic> data) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.ASSET_GROUP}/batch',
+        data: data,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetGroupDto>(
+        response.data,
+        AssetGroupDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
     return result;
   }
 }

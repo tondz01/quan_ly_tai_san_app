@@ -11,10 +11,12 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/index.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/provider/role_provide.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -29,6 +31,7 @@ class RoleList extends StatefulWidget {
 class _RoleListState extends State<RoleList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
+  List<ChucVu> listSelected = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -417,10 +420,53 @@ class _RoleListState extends State<RoleList> {
                       padding: const EdgeInsets.only(top: 4),
                       child: GestureDetector(
                         onTap: _showColumnDisplayPopup,
-                        child: Icon(Icons.settings, color: ColorValue.link, size: 18),
+                        child: Icon(
+                          Icons.settings,
+                          color: ColorValue.link,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
+                ),
+                Visibility(
+                  visible: listSelected.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text:
+                            'Danh sách nhân viên đã chọn: ${listSelected.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      IconButton(
+                        onPressed: () {
+                          Map<String, dynamic> data = {
+                            'id': listSelected.map((e) => e.id).toList(),
+                          };
+                          showConfirmDialog(
+                            context,
+                            type: ConfirmType.delete,
+                            title: 'Xóa nhân viên',
+                            message:
+                                'Bạn có chắc muốn xóa ${listSelected.length} nhân viên',
+                            highlight: listSelected.length.toString(),
+                            cancelText: 'Không',
+                            confirmText: 'Xóa',
+                            onConfirm: () {
+                              final roleBloc = context.read<RoleBloc>();
+                              roleBloc.add(DeleteRoleBatchEvent(data));
+                            },
+                          );
+                        },
+                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
                 ),
                 // FindByStateAssetHandover(provider: widget.provider),
               ],
@@ -433,8 +479,12 @@ class _RoleListState extends State<RoleList> {
               data: widget.provider.filteredData,
               horizontalController: ScrollController(),
               onRowTap: (item) {
-                log('TableBaseView item: ${jsonEncode(item.toJson())}');
                 widget.provider.onChangeDetail(context, item);
+              },
+              onSelectionChanged: (data) {
+                setState(() {
+                  listSelected = data;
+                });
               },
             ),
           ),
