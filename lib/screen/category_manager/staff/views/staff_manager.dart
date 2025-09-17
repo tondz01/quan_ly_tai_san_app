@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -5,7 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/convert_excel_to_staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/widget/staff_list.dart';
@@ -128,7 +131,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
               backgroundColor: Colors.green.shade600,
             ),
           );
-          context.read<StaffBloc>().add(const LoadStaffs());
+          context.read<StaffBloc>().add(LoadStaffs());
         }
         return result['data'];
       } else {
@@ -194,7 +197,6 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
               title: HeaderComponent(
                 controller: searchController,
                 onSearchChanged: (value) {
-                  log('value: $value');
                   setState(() {
                     _searchStaff(value);
                   });
@@ -206,8 +208,39 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                   });
                 },
                 mainScreen: 'Quản lý nhân viên',
-                onFileSelected: (fileName, filePath, fileBytes) {
-                  insertData(context, fileName!, filePath!, fileBytes!);
+                onFileSelected: (fileName, filePath, fileBytes) async {
+                  List<NhanVien> nv = await convertExcelToNhanVien(filePath!);
+                  log('nv: ${jsonEncode(nv)}');
+                  if (nv.isNotEmpty) {
+                    final result = await NhanVienProvider().saveNhanVienBatch(
+                      nv,
+                    );
+                    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Import dữ liệu thành công'),
+                            backgroundColor: Colors.green.shade600,
+                          ),
+                        );
+                        searchController.clear();
+                        currentPage = 1;
+                        rowsPerPage = 10;
+                        _filteredData = [];
+                        dataPage = [];
+                        context.read<StaffBloc>().add(const LoadStaffs());
+                      }
+                    }
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Import dữ liệu thất bại'),
+                          backgroundColor: Colors.red.shade600,
+                        ),
+                      );
+                    }
+                  }
                 },
                 onExportData: () {
                   AppUtility.exportData(
@@ -252,6 +285,9 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                         },
                         onEdit: (item) {
                           _showForm(item);
+                        },
+                        onDeleteBatch: (data) {
+                          context.read<StaffBloc>().add(DeleteStaffBatch(data));
                         },
                       ),
 

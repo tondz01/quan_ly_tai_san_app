@@ -481,7 +481,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                     onChanged: (value) {
                                       setState(() {
                                         // _pinController.text = value;
-                                        log('message: $_pinController.text');
                                       });
                                     },
                                   ),

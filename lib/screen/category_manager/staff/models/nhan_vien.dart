@@ -73,33 +73,43 @@ class NhanVien extends Equatable {
   });
 
   factory NhanVien.fromJson(Map<String, dynamic> json) {
+    String? s(dynamic v) => v == null ? null : v.toString();
+    bool? b(dynamic v) {
+      if (v == null) return null;
+      if (v is bool) return v;
+      if (v is num) return v != 0;
+      final str = v.toString().trim().toLowerCase();
+      if (str.isEmpty) return null;
+      return str == 'true' || str == '1' || str == 'yes' || str == 'y';
+    }
+
     return NhanVien(
-      id: json['id'],
-      hoTen: json['hoTen'],
-      diDong: json['diDong'],
-      emailCongViec: json['emailCongViec'],
-      agreementUUId: json['agreementUUId'],
-      pin: json['pin'],
-      chuKyNhay: json['chuKyNhay'],
-      chuKyThuong: json['chuKyThuong'],
-      boPhan: json['boPhan'],
-      chucVu: json['chucVu'],
-      tenChucVu: json['tenChucVu'],
-      chucVuId: json['chucVuId'],
-      nguoiQuanLy: json['nguoiQuanLy'],
-      quanLyId: json['quanLyId'],
-      tenQuanLy: json['tenQuanLy'],
-      phongBanId: json['phongBanId'],
-      tenPhongBan: json['tenPhongBan'],
-      laQuanLy: json['laQuanLy'],
-      avatar: json['avatar'],
-      idCongTy: json['idCongTy'],
-      active: json['active'],
-      kyNhay: json['kyNhay'],
-      kyThuong: json['kyThuong'],
-      kySo: json['kySo'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      id: s(json['id']),
+      hoTen: s(json['hoTen']),
+      diDong: s(json['diDong']),
+      emailCongViec: s(json['emailCongViec']),
+      agreementUUId: s(json['agreementUUId']),
+      pin: s(json['pin']),
+      chuKyNhay: s(json['chuKyNhay']),
+      chuKyThuong: s(json['chuKyThuong']),
+      boPhan: s(json['boPhan']),
+      chucVu: s(json['chucVu']),
+      tenChucVu: s(json['tenChucVu']),
+      chucVuId: s(json['chucVuId']),
+      nguoiQuanLy: s(json['nguoiQuanLy']),
+      quanLyId: s(json['quanLyId']),
+      tenQuanLy: s(json['tenQuanLy']),
+      phongBanId: s(json['phongBanId']),
+      tenPhongBan: s(json['tenPhongBan']),
+      laQuanLy: b(json['laQuanLy']),
+      avatar: s(json['avatar']),
+      idCongTy: s(json['idCongTy']),
+      active: b(json['active']),
+      kyNhay: b(json['kyNhay']),
+      kyThuong: b(json['kyThuong']),
+      kySo: b(json['kySo']),
+      ngayTao: s(json['ngayTao']),
+      ngayCapNhat: s(json['ngayCapNhat']),
     );
   }
   NhanVien copyWith({
@@ -171,7 +181,7 @@ class NhanVien extends Equatable {
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
     );
   }
-
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -192,13 +202,13 @@ class NhanVien extends Equatable {
       'hinhThucLamViec': hinhThucLamViec,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'active': active,
       'phongBanId': phongBanId,
       'kyNhay': kyNhay,
       'kyThuong': kyThuong,
       'kySo': kySo,
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
+      'active': active,
     };
   }
 
@@ -216,32 +226,31 @@ class NhanVien extends Equatable {
   // Map dữ liệu để export: chuyển tất cả chuỗi rỗng "" => null
   Map<String, dynamic> toExportJson() {
     return {
-      'id': _nullIfEmpty(id),
-      'hoTen': _nullIfEmpty(hoTen),
-      'diDong': _nullIfEmpty(diDong),
-      'emailCongViec': _nullIfEmpty(emailCongViec),
-      'kyNhay': kyNhay,
-      'kyThuong': kyThuong,
-      'kySo': kySo,
-      'chuKyNhay': _nullIfEmpty(chuKyNhay),
-      'chuKyThuong': _nullIfEmpty(chuKyThuong),
-      'agreementUUId': _nullIfEmpty(agreementUUId),
-      'pin': _nullIfEmpty(pin),
-      'boPhan': _nullIfEmpty(boPhan),
-      'chucVu': _nullIfEmpty(chucVu),
-      'nguoiQuanLy': _nullIfEmpty(nguoiQuanLy),
-      'laQuanLy': laQuanLy,
-      'avatar': _nullIfEmpty(avatar),
-      'idCongTy': _nullIfEmpty(idCongTy),
-      'diaChiLamViec': _nullIfEmpty(diaChiLamViec),
-      'hinhThucLamViec': _nullIfEmpty(hinhThucLamViec),
-      'gioLamViec': _nullIfEmpty('PBTM'),
-      'muiGio': _nullIfEmpty('true'),
-      'nguoiTao': _nullIfEmpty(nguoiTao),
-      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
-      'ngayTao': _nullIfEmpty(ngayTao),
-      'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
-      'active': active,
+      'Mã nhân viên': _nullIfEmpty(id),
+      'Họ tên': _nullIfEmpty(hoTen),
+      'Điện thoại': _nullIfEmpty(diDong),
+      'Email': _nullIfEmpty(emailCongViec),
+      'Ký nháy': kyNhay,
+      'Ký thường': kyThuong,
+      'Ký số': kySo,
+      'Chữ ký nháy': _nullIfEmpty(chuKyNhay),
+      'Chữ ký thường': _nullIfEmpty(chuKyThuong),
+      'Agreement UUId': _nullIfEmpty(agreementUUId),
+      'Mã Pin': _nullIfEmpty(pin),
+      'Phòng ban (Mã phòng ban)': _nullIfEmpty(phongBanId),
+      'Tên phòng ban': _nullIfEmpty(boPhan),
+      'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVu),
+      'Người quản lý (Mã người quản lý)': _nullIfEmpty(nguoiQuanLy),
+      'Là quản lý': laQuanLy,
+      'Ảnh đại diện': _nullIfEmpty(avatar),
+      'Công ty (Mã công ty)': _nullIfEmpty(idCongTy),
+      'Địa chỉ làm việc': _nullIfEmpty(diaChiLamViec),
+      'Hình thức làm việc': _nullIfEmpty(hinhThucLamViec),
+      'Người tạo (Mã nhân viên)': _nullIfEmpty(nguoiTao),
+      'Người cập nhật (Mã nhân viên)': _nullIfEmpty(nguoiCapNhat),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Hiển thị': active,
     };
   }
 

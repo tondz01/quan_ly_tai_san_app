@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:io';
 
@@ -149,7 +148,6 @@ class StaffSaveService {
         AppUtility.showSnackBar(context, 'Upload file chữ ký nháy thất bại', isError: true);
         return null;
       }
-      log('message result uploadNhayIfNeeded: ${result['fileName']}');
       return staff.copyWith(chuKyNhay: result['fileName']);
     }
 
@@ -166,7 +164,6 @@ class StaffSaveService {
         AppUtility.showSnackBar(context, 'Upload file chữ ký thường thất bại', isError: true);
         return null;
       }
-      log('message result uploadThuongIfNeeded: ${result['fileName']}');
       return staff.copyWith(chuKyThuong: result['fileName']);
     }
 
@@ -200,7 +197,6 @@ class StaffSaveService {
       NhanVien? candidate = staff;
 
       if (uploadChanged) {
-        log('message uploadChanged');
         // Nếu bật ký nháy nhưng chưa có file cũ và cũng không chọn file mới -> báo lỗi
         if (kyNhay && (s(candidate.chuKyNhay).isEmpty) && !isNewNhaySelected) {
           AppUtility.showSnackBar(context, 'Vui lòng chọn file chữ ký nháy', isError: true);

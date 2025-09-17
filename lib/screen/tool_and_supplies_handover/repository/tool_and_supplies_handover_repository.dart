@@ -372,7 +372,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
             .toList();
 
     try {
-      log('request111: $request');
       final response = await put(
         '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/batch',
         data: jsonEncode(request),

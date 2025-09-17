@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -76,7 +77,7 @@ class NhanVienProvider extends ApiBase {
     String? fileName,
   }) async {
     try {
-      log('message nhanVien: ${nhanVien.toJson()}');
+      log('message nhanVien: ${jsonEncode(nhanVien)}');
       final response = await post(
         EndPointAPI.NHAN_VIEN,
         data: nhanVien.toJson(),
@@ -122,12 +123,10 @@ class NhanVienProvider extends ApiBase {
   }
 
   void logFormData(FormData formData) {
-    print('--- FormData fields ---');
     for (var field in formData.fields) {
       print('${field.key}: ${field.value}');
     }
 
-    print('--- FormData files ---');
     for (var fileEntry in formData.files) {
       final file = fileEntry.value;
       print(
@@ -236,5 +235,67 @@ class NhanVienProvider extends ApiBase {
     return result;
   }
 
-  // Trước khi gọi API
+  Future<Map<String, dynamic>> saveNhanVienBatch(
+    List<NhanVien> nhanViens,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.NHAN_VIEN}/batch',
+        data: jsonEncode(nhanViens),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<NhanVien>(
+        response.data,
+        NhanVien.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteNhanVienBatch(Map<String, dynamic> data) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.NHAN_VIEN}/batch',
+        data: data,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<NhanVien>(
+        response.data,
+        NhanVien.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
 }

@@ -13,12 +13,14 @@ class StaffList extends StatefulWidget {
   final void Function(NhanVien)? onChangeDetail;
   final void Function(NhanVien)? onEdit;
   final void Function(NhanVien)? onDelete;
+  final void Function(Map<String, dynamic>)? onDeleteBatch;
   const StaffList({
     super.key,
     required this.data,
     this.onChangeDetail,
     this.onEdit,
     this.onDelete,
+    this.onDeleteBatch,
   });
 
   @override
@@ -139,12 +141,29 @@ class _StaffListState extends State<StaffList> {
                       ),
                     ),
                     SizedBox(width: 16),
-                    // IconButton(
-                    //   onPressed: () {
-                    //     // TODO: Xóa nhân viên đã chọn
-                    //   },
-                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    // ),
+                    Visibility(
+                      visible: selectedItems.isNotEmpty,
+                      child: IconButton(
+                        onPressed: () {
+                          Map<String, dynamic> data = {
+                            'id': selectedItems.map((e) => e.id).toList(),
+                          };
+                          showConfirmDialog(
+                            context,
+                            type: ConfirmType.delete,
+                            title: 'Xóa nhân viên',
+                            message: 'Bạn có chắc muốn xóa ${selectedItems.length} nhân viên',
+                            highlight: selectedItems.length.toString(),
+                            cancelText: 'Không',
+                            confirmText: 'Xóa',
+                            onConfirm: () {
+                              widget.onDeleteBatch?.call(data);
+                            },
+                          );
+                        },
+                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -184,7 +203,7 @@ class _StaffListState extends State<StaffList> {
               showConfirmDialog(
                 context,
                 type: ConfirmType.delete,
-                title: 'Xóa chức vụ',
+                title: 'Xóa nhân viên',
                 message: 'Bạn có chắc muốn xóa ${item.hoTen}',
                 highlight: item.hoTen ?? '',
                 cancelText: 'Không',

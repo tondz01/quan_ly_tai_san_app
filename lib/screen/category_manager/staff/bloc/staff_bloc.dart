@@ -15,12 +15,13 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
   final NhanVienProvider _provider = NhanVienProvider();
   final provider = DepartmentsProvider();
 
-  StaffBloc() : super(StaffInitial()) {
+  StaffBloc() : super(StaffInitialState()) {
     on<LoadStaffs>((event, emit) async {
+      emit(StaffLoadingState());
       _allStaffs = await _provider.fetchNhanViens();
       _allChucvus = await _provider.fetchChucVus();
       _allDepartments = await provider.fetchDepartments();
-      
+
       emit(StaffLoaded(_allStaffs));
     });
     on<SearchStaff>((event, emit) {
@@ -59,7 +60,7 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       emit(StaffLoaded(filtered));
     });
     on<AddStaff>((event, emit) async {
-      await _provider.addNhanVien(event.staff, event.staff.avatar,);
+      await _provider.addNhanVien(event.staff, event.staff.avatar);
       add(LoadStaffs());
     });
     on<UpdateStaff>((event, emit) async {
@@ -73,6 +74,10 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       } else {
         emit(StaffLoaded([event.staff]));
       }
+    });
+    on<DeleteStaffBatch>((event, emit) async {
+      await _provider.deleteNhanVienBatch(event.data);
+      add(LoadStaffs());
     });
   }
   List<PhongBan> get department => _allDepartments;

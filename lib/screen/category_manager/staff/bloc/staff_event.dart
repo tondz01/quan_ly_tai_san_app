@@ -34,6 +34,13 @@ class DeleteStaff extends StaffEvent {
   List<Object?> get props => [staff];
 }
 
+class DeleteStaffBatch extends StaffEvent {
+  final Map<String, dynamic> data;
+  const DeleteStaffBatch(this.data);
+  @override
+  List<Object?> get props => [data];
+}
+
 class SearchStaff extends StaffEvent {
   final String keyword;
   const SearchStaff(this.keyword);
