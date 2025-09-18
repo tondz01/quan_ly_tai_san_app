@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:excel/excel.dart';
+import 'package:intl/intl.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -19,26 +20,32 @@ DateTime _excelSerialToDate(num serial) {
   final base = DateTime(1899, 12, 30);
   return base.add(Duration(days: serial.floor(), milliseconds: (((serial % 1) * 24 * 60 * 60 * 1000)).round()));
 }
+extension DateTimeToMySQL on DateTime {
+  String toMySQLFormat() {
+    return DateFormat('yyyy-MM-dd HH:mm:ss').format(this.toUtc());
+  }
+}
+
 
 String _normalizeDateIso(dynamic value) {
   if (value == null) {
-    return DateTime.now().toIso8601String();
+    return DateTime.now().toMySQLFormat();
   }
   if (value is DateTime) {
-    return value.toIso8601String();
+    return value.toMySQLFormat();
   }
   if (value is num) {
-    return _excelSerialToDate(value).toIso8601String();
+    return _excelSerialToDate(value).toMySQLFormat();
   }
   final text = value.toString().trim();
   if (text.isEmpty) {
-    return DateTime.now().toIso8601String();
+    return DateTime.now().toMySQLFormat();
   }
   final parsed = DateTime.tryParse(text);
   if (parsed != null) {
-    return parsed.toIso8601String();
+    return parsed.toMySQLFormat();
   }
-  return DateTime.now().toIso8601String();
+  return DateTime.now().toMySQLFormat();
 }
 
 Future<List<NhanVien>> convertExcelToNhanVien(String filePath) async {

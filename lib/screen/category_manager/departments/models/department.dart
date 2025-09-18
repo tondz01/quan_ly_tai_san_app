@@ -67,28 +67,25 @@ class PhongBan extends Equatable {
 
   dynamic _nullIfEmpty(dynamic value) {
     if (value == null) {
-      return "null";
+      return "";
     }
     if (value is String) {
-      return value.trim().isEmpty ? "null" : value;
+      return value.trim().isEmpty ? "" : value;
     }
     return value;
   }
 
   Map<String, dynamic> toExportJson() {
     return {
-      'id': _nullIfEmpty(id),
-      'idNhomDonVi': _nullIfEmpty(idNhomDonVi),
-      'tenPhongBan': _nullIfEmpty(tenPhongBan),
-      'idQuanLy': _nullIfEmpty(idQuanLy),
-      'idCongTy': _nullIfEmpty("ct001"),
-      'phongCapTren': _nullIfEmpty(phongCapTren),
-      'mauSac': _nullIfEmpty(mauSac),
-      'ngayTao': _nullIfEmpty(ngayTao),
-      'ngayCapNhat': _nullIfEmpty(ngayCapNhat),
-      'nguoiTao': _nullIfEmpty(nguoiTao),
-      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
-      'isActive': true,
+      'Mã phòng ban': _nullIfEmpty(id),
+      'Tên phòng ban': _nullIfEmpty(tenPhongBan),
+      'Công ty': _nullIfEmpty("ct001"),
+      'Phòng cấp trên': _nullIfEmpty(phongCapTren),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+      'Hiển thị': isActive,
     };
   }
 

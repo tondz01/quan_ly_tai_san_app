@@ -459,15 +459,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
                               Column(
                                 spacing: 16,
                                 children: [
-                                  SGText(
-                                    textAlign: TextAlign.left,
-                                    text:
-                                        'Hãy nhập mã PIN sau đó click button "Lấy Agreement UUID" để lấy Agreement UUID',
-                                    color: Colors.blue,
-                                  ),
                                   TextFormField(
-                                    readOnly: true,
-                                    enabled: false,
+                                    readOnly: !isEditing,
+                                    enabled: isEditing,
                                     controller: _agreementUUIdController,
                                     decoration: inputDecoration(
                                       'Agreement UUID',
@@ -483,33 +477,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                         // _pinController.text = value;
                                       });
                                     },
-                                  ),
-                                  Visibility(
-                                    visible: isEditing,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed:
-                                              () => _onGetAgreementUUID(),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(
-                                              0xFF2264E5,
-                                            ),
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 32,
-                                              vertical: 16,
-                                            ),
-                                          ),
-                                          child: Text('Lấy Agreement UUID'),
-                                        ),
-                                      ],
-                                    ),
                                   ),
                                 ],
                               ),
@@ -562,7 +529,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                         overflow: TextOverflow.ellipsis,
                       );
                     }
-                    log('message chuky: $chuky');
                     if (chuky.isNotEmpty) {
                       return Row(
                         children: [
@@ -706,63 +672,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
     );
   }
 
-  Future<void> _onGetAgreementUUID() async {
-    final idNhanVien =
-        _staffIdController.text.isNotEmpty
-            ? _staffIdController.text
-            : (_staffDTO?.id ?? '');
-    final pin = _pinController.text.trim();
-
-    if (idNhanVien.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Vui lòng nhập/chọn Mã nhân viên',
-        isError: true,
-      );
-      return;
-    }
-    if (pin.isEmpty) {
-      AppUtility.showSnackBar(context, 'Vui lòng nhập mã PIN', isError: true);
-      return;
-    }
-
-    try {
-      final result = await NhanVienProvider().getAgreementUUID(
-        idNhanVien: idNhanVien,
-        pin: pin,
-      );
-      if (!mounted) return;
-
-      final status = result['status_code'] as int? ?? 0;
-      if (status >= 200 && status < 300) {
-        final data = (result['data'] ?? '').toString();
-        if (data.isNotEmpty) {
-          setState(() {
-            _agreementUUIdController.text = data;
-            _isCanSave = _agreementUUIdController.text.isNotEmpty;
-          });
-          AppUtility.showSnackBar(context, 'Lấy Agreement UUID thành công');
-        } else {
-          AppUtility.showSnackBar(
-            context,
-            'Không nhận được Agreement UUID từ máy chủ',
-            isError: true,
-          );
-        }
-      } else {
-        final message = (result['message'] ?? 'Lỗi khi gọi API').toString();
-        AppUtility.showSnackBar(context, message, isError: true);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      AppUtility.showSnackBar(
-        context,
-        'Lỗi khi gọi API: ${e.toString()}',
-        isError: true,
-      );
-    }
-  }
-
   Widget _buildHeaderDetail() {
     return isEditing
         ? Row(
@@ -774,23 +683,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
               onPressed: () {
-                if (_isCanSave) {
-                  _save();
-                } else {
-                  if (_pinController.text.isEmpty) {
-                    AppUtility.showSnackBar(
-                      context,
-                      'Vui lòng nhập mã PIN để lấy Agreement UUID',
-                      isError: true,
-                    );
-                  } else if (_agreementUUIdController.text.isEmpty) {
-                    AppUtility.showSnackBar(
-                      context,
-                      'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
-                      isError: true,
-                    );
-                  }
-                }
+                _save();
               },
             ),
             const SizedBox(width: 8),

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -12,7 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vi
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class NhanVienProvider extends ApiBase {
   UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
@@ -77,7 +75,6 @@ class NhanVienProvider extends ApiBase {
     String? fileName,
   }) async {
     try {
-      log('message nhanVien: ${jsonEncode(nhanVien)}');
       final response = await post(
         EndPointAPI.NHAN_VIEN,
         data: nhanVien.toJson(),
@@ -175,63 +172,6 @@ class NhanVienProvider extends ApiBase {
       log("Error at getAgreementUUID - AuthRepository: $e");
     }
 
-    return result;
-  }
-
-  Future<Map<String, dynamic>> insertDataFile(String filePath) async {
-    Map<String, dynamic> result = {
-      'data': '',
-      'status_code': Numeral.STATUS_CODE_DEFAULT,
-    };
-
-    try {
-      final fileName = filePath.split(RegExp(r'[\\/]+')).last;
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath, filename: fileName),
-      });
-
-      final response = await post(
-        '${EndPointAPI.NHAN_VIEN}/upload',
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
-      );
-      result['status_code'] = response.statusCode;
-      result['data'] = response.data;
-    } catch (e) {
-      SGLog.error(
-        "NhanVienProvider",
-        "Error at insertDataFile - NhanVienProvider: $e",
-      );
-    }
-
-    return result;
-  }
-
-  Future<Map<String, dynamic>> insertDataFileBytes(
-    String fileName,
-    Uint8List fileBytes,
-  ) async {
-    Map<String, dynamic> result = {
-      'data': '',
-      'status_code': Numeral.STATUS_CODE_DEFAULT,
-    };
-    try {
-      final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
-      });
-      final response = await post(
-        '${EndPointAPI.NHAN_VIEN}/upload',
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
-      );
-      result['status_code'] = response.statusCode;
-      result['data'] = response.data;
-    } catch (e) {
-      SGLog.error(
-        "NhanVienProvider",
-        "Error at insertDataFileBytes - NhanVienProvider: $e",
-      );
-    }
     return result;
   }
 

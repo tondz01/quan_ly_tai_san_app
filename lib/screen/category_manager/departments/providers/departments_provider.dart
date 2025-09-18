@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/nhom_don_vi.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -117,5 +120,71 @@ class DepartmentsProvider extends ApiBase {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<Map<String, dynamic>> saveDepartmentBatch(
+    List<PhongBan> departments,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.PHONG_BAN}/batch',
+        data: jsonEncode(departments),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<PhongBan>(
+        response.data,
+        PhongBan.fromJson,
+      );
+    } catch (e) {
+      log("Error at saveDepartmentBatch - DepartmentsProvider: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteDepartmentBatch(
+    Map<String, dynamic> data,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.PHONG_BAN}/batch',
+        data: data,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<PhongBan>(
+        response.data,
+        PhongBan.fromJson,
+      );
+    } catch (e) {
+      log("Error at deleteDepartmentBatch - DepartmentsProvider: $e");
+    }
+
+    return result;
   }
 }

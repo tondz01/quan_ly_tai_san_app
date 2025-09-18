@@ -102,7 +102,6 @@ class _RoleDetailState extends State<RoleDetail> {
       isBanGiaoCCDCVatTu = false;
       isBaoCao = false;
     }
-    log('isQuanLyNhanVien: $isEditing');
   }
 
   @override
@@ -136,7 +135,7 @@ class _RoleDetailState extends State<RoleDetail> {
                     child: TextFormField(
                       controller: controllerIdChucVu,
                       decoration: inputDecoration('Mã chức vụ', required: true),
-                      enabled: isEditing ? data?.id != null : false, // Read-only khi update
+                      enabled: isEditing ? data == null : false, // Read-only khi update
                       validator:
                           (v) =>
                               v == null || v.isEmpty
@@ -494,7 +493,7 @@ class _RoleDetailState extends State<RoleDetail> {
     final bloc = context.read<RoleBloc>();
     if (data == null) {
       final request = chucVuRequest();
-      log('CreateRoleEvent request: ${request.toJson()}');
+      bloc.add(CreateRoleEvent(request));
     } else {
       ChucVu newRequest = data!.copyWith(
         tenChucVu: controllerNameChucVu.text,
