@@ -423,6 +423,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                     decoration: inputDecoration(
                                       'Agreement UUID',
                                     ),
+                                    validator: (v) =>
+                                        v == null || v.isEmpty
+                                            ? 'Nhập Agreement UUID'
+                                            : null,
                                   ),
                                   TextFormField(
                                     controller: _pinController,
@@ -434,6 +438,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                         // _pinController.text = value;
                                       });
                                     },
+                                    validator: (v) =>
+                                        v == null || v.isEmpty
+                                            ? 'Nhập PIN'
+                                            : null,
                                   ),
                                 ],
                               ),
