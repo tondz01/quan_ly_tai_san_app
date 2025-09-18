@@ -31,7 +31,6 @@ class _AccountViewState extends State<AccountView> {
   @override
   void didUpdateWidget(AccountView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    log('AccountView message didUpdateWidget');
     // if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
     //   currentType = widget.typeAssetTransfer;
     //   _initData();

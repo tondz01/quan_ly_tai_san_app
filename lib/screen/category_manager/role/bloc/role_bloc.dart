@@ -56,6 +56,7 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
     }
     emit(RolesLoadingDismissState());
   }
+  
   Future<void> _createRoleBatch(CreateRoleBatchEvent event, Emitter emit) async {
     emit(RolesLoadingState());
 
@@ -64,14 +65,15 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
     );
 
     final int? statusCode = result['status_code'] as int?;
-    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS || statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
       emit(CreateRoleSuccessState(data: (result['data'] ?? '').toString()));
     } else {
+      String msg = 'Thất bại khi lưu danh sách chức vụ: error ${result['message']}';
       emit(
         PutPostDeleteFailedState(
           title: 'Tạo chức vụ',
           code: statusCode,
-          message: 'Thất bại khi tạo chức vụ',
+          message: msg,
         ),
       );
     }

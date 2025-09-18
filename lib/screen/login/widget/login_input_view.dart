@@ -200,15 +200,15 @@ class _LoginInputViewState extends State<LoginInputView> {
               // colorHover: Colors.blue,
               // activeColor: SGAppColors.primary600,
             ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () {},
-              child: const SGText(
-                text: "Quên mật khẩu?",
-                color: SGAppColors.primary600,
-                textAlign: TextAlign.center,
-              ),
-            ),
+            // const SizedBox(height: 16),
+            // TextButton(
+            //   onPressed: () {},
+            //   child: const SGText(
+            //     text: "Quên mật khẩu?",
+            //     color: SGAppColors.primary600,
+            //     textAlign: TextAlign.center,
+            //   ),
+            // ),
           ],
         ),
       ),

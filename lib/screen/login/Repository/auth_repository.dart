@@ -319,7 +319,6 @@ class AuthRepository extends ApiBase {
         response.data,
         NhanVien.fromJson,
       );
-      log('message Check getListNhanVien: ${jsonEncode(result['data'])}');
     } catch (e) {
       log("Error at getListNhanVien - AuthRepository: $e");
     }

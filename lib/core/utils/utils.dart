@@ -218,13 +218,13 @@ abstract class AppUtility {
   }
 
   static String normalizeDateIsoString(dynamic value) {
-    if (value == null) return '';
+    if (value == null) return DateTime.now().toIso8601String();
     if (value is DateTime) return value.toIso8601String();
     if (value is num) return excelSerialToDate(value).toIso8601String();
     final text = value.toString().trim();
-    if (text.isEmpty) return '';
+    if (text.isEmpty) return DateTime.now().toIso8601String();
     final parsed = DateTime.tryParse(text);
     if (parsed != null) return parsed.toIso8601String();
-    return '';
+    return DateTime.now().toIso8601String();
   }
 }

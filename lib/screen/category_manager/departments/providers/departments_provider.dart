@@ -155,9 +155,7 @@ class DepartmentsProvider extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> deleteDepartmentBatch(
-    Map<String, dynamic> data,
-  ) async {
+  Future<Map<String, dynamic>> deleteDepartmentBatch(List<String> data) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,

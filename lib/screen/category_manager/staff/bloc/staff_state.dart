@@ -8,8 +8,19 @@ abstract class StaffState extends Equatable {
 }
 
 class StaffInitialState extends StaffState {}
+
 class StaffLoadingState extends StaffState {}
+
 class StaffLoadingDismissState extends StaffState {}
+
+class DeleteStaffBatchSuccess extends StaffState {}
+
+class DeleteStaffBatchFailure extends StaffState {
+  final String message;
+  const DeleteStaffBatchFailure(this.message);
+  @override
+  List<Object?> get props => [message];
+}
 
 class StaffLoaded extends StaffState {
   final List<NhanVien> staffs;
@@ -23,4 +34,4 @@ class StaffError extends StaffState {
   const StaffError(this.message);
   @override
   List<Object?> get props => [message];
-} 
+}

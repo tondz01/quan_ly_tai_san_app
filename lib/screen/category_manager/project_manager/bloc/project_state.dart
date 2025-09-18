@@ -7,18 +7,37 @@ abstract class ProjectState extends Equatable {
   List<Object?> get props => [];
 }
 
-class ProjectInitial extends ProjectState {}
+class ProjectInitialState extends ProjectState {}
 
-class ProjectLoaded extends ProjectState {
-  final List<DuAn> projects;
-  const ProjectLoaded(this.projects);
-  @override
-  List<Object?> get props => [projects];
+class ProjectLoadingState extends ProjectState {}
+
+class ProjectLoadingDismissState extends ProjectState {}
+
+class AddProjectSuccessState extends ProjectState {
+  final dynamic data;
+  const AddProjectSuccessState(this.data);
 }
 
-class ProjectError extends ProjectState {
+class UpdateProjectSuccessState extends ProjectState {
+  final dynamic data;
+  const UpdateProjectSuccessState(this.data);
+}
+
+class DeleteProjectSuccessState extends ProjectState {
+  final dynamic data;
+  const DeleteProjectSuccessState(this.data);
+}
+
+class GetListProjectSuccsessState extends ProjectState {
+  final List<DuAn> data;
+  const GetListProjectSuccsessState(this.data);
+  @override
+  List<Object?> get props => [data];
+}
+
+class ProjectErrorState extends ProjectState {
   final String message;
-  const ProjectError(this.message);
+  const ProjectErrorState(this.message);
   @override
   List<Object?> get props => [message];
-} 
+}

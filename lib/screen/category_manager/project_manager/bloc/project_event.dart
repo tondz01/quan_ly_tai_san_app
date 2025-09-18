@@ -7,28 +7,50 @@ abstract class ProjectEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadProjects extends ProjectEvent {
+class GetListProjectEvent extends ProjectEvent {
+  final String idCongTy;
+  const GetListProjectEvent(this.idCongTy);
+  @override
+  List<Object?> get props => [idCongTy];
 }
 
-class AddProject extends ProjectEvent {
+class AddProjectEvent extends ProjectEvent {
   final DuAn project;
-  const AddProject(this.project);
+  const AddProjectEvent(this.project);
   @override
   List<Object?> get props => [project];
 }
 
-class UpdateProject extends ProjectEvent {
+class CreateProjectBatchEvent extends ProjectEvent {
+  final List<DuAn> params;
+
+  const CreateProjectBatchEvent(this.params);
+
+  @override
+  List<Object?> get props => [params];
+}
+
+class UpdateProjectEvent extends ProjectEvent {
   final DuAn project;
-  const UpdateProject(this.project);
+  const UpdateProjectEvent(this.project);
   @override
   List<Object?> get props => [project];
 }
 
-class DeleteProject extends ProjectEvent {
+class DeleteProjectEvent extends ProjectEvent {
   final DuAn project;
-  const DeleteProject(this.project);
+  const DeleteProjectEvent(this.project);
   @override
   List<Object?> get props => [project];
+}
+
+class DeleteProjectBatchEvent extends ProjectEvent {
+  final List<String> id;
+
+  const DeleteProjectBatchEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }
 
 class SearchProject extends ProjectEvent {
@@ -36,4 +58,4 @@ class SearchProject extends ProjectEvent {
   const SearchProject(this.keyword);
   @override
   List<Object?> get props => [keyword];
-} 
+}

@@ -219,4 +219,14 @@ class RoleProvider with ChangeNotifier {
     _isShowCollapse = true;
     notifyListeners();
   }
+
+  void onCallFailled(BuildContext context, String message) {
+    _isLoading = false;
+    _error = message;
+    notifyListeners();
+    if (_isShowInput) {
+      onCloseDetail(context);
+    }
+    AppUtility.showSnackBar(context, message, isError: true);
+  }
 }

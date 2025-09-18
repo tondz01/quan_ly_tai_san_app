@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -41,7 +42,7 @@ class _AccountListState extends State<AccountList> {
     'nguoiCapNhat',
     'idCongTy',
     'rule',
-    'actions'
+    'actions',
     // 'created_at',
     // 'updated_at',
     // 'created_by',
@@ -340,28 +341,33 @@ class _AccountListState extends State<AccountList> {
   }
 
   Widget viewAction(UserInfoDTO item) {
+    UserInfoDTO? currentUser = AccountHelper.instance.getUserInfo();
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.delete,
         tooltip: 'Xóa',
-        iconColor: Colors.red.shade700,
+        iconColor:
+            currentUser!.tenDangNhap == "admin" ? Colors.grey : Colors.red,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
-            () => {
-              showConfirmDialog(
-                context,
-                type: ConfirmType.delete,
-                title: 'Xóa account',
-                message: 'Bạn có chắc muốn xóa tài khoản ${item.tenDangNhap}',
-                highlight: item.tenDangNhap,
-                cancelText: 'Không',
-                confirmText: 'Xóa',
-                onConfirm: () {
-                  context.read<LoginBloc>().add(DeleteUserEvent(item.id));
+            currentUser.tenDangNhap == "admin"
+                ? null
+                : () => {
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa account',
+                    message:
+                        'Bạn có chắc muốn xóa tài khoản ${item.tenDangNhap}',
+                    highlight: item.tenDangNhap,
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      context.read<LoginBloc>().add(DeleteUserEvent(item.id));
+                    },
+                  ),
                 },
-              ),
-            },
       ),
     ]);
   }

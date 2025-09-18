@@ -10,14 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/staff_save_service.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -64,7 +62,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
   String? _chuKyNhayPathExisting;
   String? _chuKyThuongPathExisting;
 
-  bool _isCanSave = true;
   bool _kyNhay = false;
   bool _kyThuong = false;
   bool _kySo = false;
@@ -662,7 +659,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                 onChanged:
                     (value) => setState(() {
                       _kySo = value;
-                      _isCanSave = !value;
                     }),
               ),
             ],

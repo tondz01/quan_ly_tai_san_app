@@ -153,7 +153,7 @@ class _RoleViewState extends State<RoleView> {
           context.read<RoleProvider>().deleteRolesSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
-          AppUtility.showSnackBar(context, state.message, isError: true);
+          context.read<RoleProvider>().onCallFailled(context, state.message);
         }
       },
     );

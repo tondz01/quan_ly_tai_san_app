@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/index.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
@@ -439,27 +440,30 @@ class _RoleListState extends State<RoleList> {
                         ),
                       ),
                       SizedBox(width: 16),
-                      IconButton(
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
                         onPressed: () {
-                          Map<String, dynamic> data = {
-                            'id': listSelected.map((e) => e.id).toList(),
-                          };
-                          showConfirmDialog(
-                            context,
-                            type: ConfirmType.delete,
-                            title: 'Xóa chức vụ',
-                            message:
-                                'Bạn có chắc muốn xóa ${listSelected.length} chức vụ',
-                            highlight: listSelected.length.toString(),
-                            cancelText: 'Không',
-                            confirmText: 'Xóa',
-                            onConfirm: () {
-                              final roleBloc = context.read<RoleBloc>();
-                              roleBloc.add(DeleteRoleBatchEvent(data));
-                            },
-                          );
+                          setState(() {
+                            List<String> data = listSelected.map((e) => e.id).toList();
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa chức vụ',
+                              message:
+                                  'Bạn có chắc muốn xóa ${listSelected.length} chức vụ',
+                              highlight: listSelected.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final roleBloc = context.read<RoleBloc>();
+                                roleBloc.add(DeleteRoleBatchEvent(data));
+                              },
+                            );
+                          });
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
                       ),
                     ],
                   ),

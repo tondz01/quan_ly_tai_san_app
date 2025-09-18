@@ -121,163 +121,173 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
             : [];
   }
 
+  void importDataStaff(String? filePath) async {
+    List<NhanVien> nv = await convertExcelToNhanVien(filePath!);
+    log('nv: ${jsonEncode(nv)}');
+    if (nv.isNotEmpty) {
+      final result = await NhanVienProvider().saveNhanVienBatch(nv);
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
+          result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        if (!mounted) return;
+        AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
+        searchController.clear();
+        currentPage = 1;
+        rowsPerPage = 10;
+        _filteredData = [];
+        dataPage = [];
+        context.read<StaffBloc>().add(const LoadStaffs());
+        context.read<StaffBloc>().add(const LoadStaffs());
+        setState(() {
+          isShowInput = false;
+        });
+      } else {
+        if (!mounted) return;
+        AppUtility.showSnackBar(
+          context,
+          'Import dữ liệu thất bại ${result['message']}',
+        );
+      }
+    } else {
+      if (!mounted) return;
+      AppUtility.showSnackBar(context, 'Import dữ liệu thất bại: File lỗi');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StaffBloc, StaffState>(
-      builder: (context, state) {
-        if (state is StaffLoaded) {
-          List<NhanVien> staffs = state.staffs;
-          _filteredData = staffs;
-          _updatePagination();
-          AccountHelper.instance.clearNhanVien();
-          AccountHelper.instance.setNhanVien(staffs);
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: HeaderComponent(
-                controller: searchController,
-                onSearchChanged: (value) {
-                  setState(() {
-                    _searchStaff(value);
-                  });
-                },
-                onNew: () {
-                  setState(() {
-                    _showForm(null);
-                    isShowInput = true;
-                  });
-                },
-                mainScreen: 'Quản lý nhân viên',
-                onFileSelected: (fileName, filePath, fileBytes) async {
-                  List<NhanVien> nv = await convertExcelToNhanVien(filePath!);
-                  log('nv: ${jsonEncode(nv)}');
-                  if (nv.isNotEmpty) {
-                    final result = await NhanVienProvider().saveNhanVienBatch(
-                      nv,
-                    );
-                    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-                        result['status_code'] ==
-                            Numeral.STATUS_CODE_SUCCESS_CREATE) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Import dữ liệu thành công'),
-                            backgroundColor: Colors.green.shade600,
-                          ),
-                        );
-                        searchController.clear();
-                        currentPage = 1;
-                        rowsPerPage = 10;
-                        _filteredData = [];
-                        dataPage = [];
-                        context.read<StaffBloc>().add(const LoadStaffs());
-                        context.read<StaffBloc>().add(const LoadStaffs());
-                        setState(() {
-                          isShowInput = false;
-                        });
-                      }
-                    } else {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Import dữ liệu thất bại'),
-                            backgroundColor: Colors.red.shade600,
-                          ),
-                        );
-                      }
-                    }
-                  } else {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Import dữ liệu thất bại'),
-                          backgroundColor: Colors.red.shade600,
-                        ),
-                      );
-                    }
-                  }
-                },
-                onExportData: () {
-                  AppUtility.exportData(
-                    context,
-                    "nhan_vien",
-                    staffs.map((e) => e.toExportJson()).toList(),
-                  );
-                },
-              ),
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: CommonPageView(
-                      title: 'Chi tiết nhân viên',
-                      childInput: StaffFormPage(
-                        staff: editingStaff,
-                        staffs: staffs,
-                        onCancel: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                        onSaved:
-                            () => setState(() {
-                              isShowInput = false;
-                            }),
-                      ),
-                      childTableView: StaffList(
-                        data: dataPage,
-                        onChangeDetail: (item) {
-                          _showForm(item);
-                          isShowInput = true;
-                        },
-                        onDelete: (item) {
-                          setState(() {
-                            isShowInput = false;
-                            context.read<StaffBloc>().add(DeleteStaff(item));
-                          });
-                        },
-                        onEdit: (item) {
-                          _showForm(item);
-                        },
-                        onDeleteBatch: (data) {
-                          context.read<StaffBloc>().add(DeleteStaffBatch(data));
-                        },
-                      ),
-
-                      // Container(height: 200,color: Colors.limeAccent,),
-                      isShowInput: isShowInput,
-                      onExpandedChanged: (isExpanded) {
-                        isShowInput = isExpanded;
-                      },
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: (staffs.length) >= 5,
-                  child: SGPaginationControls(
-                    totalPages: totalPages,
-                    currentPage: currentPage,
-                    rowsPerPage: rowsPerPage,
-                    controllerDropdownPage: controller,
-                    items: [
-                      DropdownMenuItem(value: 10, child: Text('10')),
-                      DropdownMenuItem(value: 20, child: Text('20')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                    ],
-                    onPageChanged: onPageChanged,
-                    onRowsPerPageChanged: onRowsPerPageChanged,
-                  ),
-                ),
-              ],
+    return BlocListener<StaffBloc, StaffState>(
+      listener: (context, state) {
+        if (state is DeleteStaffBatchSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa nhân viên thành công'),
+              backgroundColor: Colors.green.shade600,
             ),
           );
-        } else if (state is StaffError) {
-          return Center(child: Text(state.message));
+          context.read<StaffBloc>().add(const LoadStaffs());
+        } else if (state is DeleteStaffBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa nhân viên thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
         }
-        return const Center(child: CircularProgressIndicator());
       },
+      child: BlocBuilder<StaffBloc, StaffState>(
+        builder: (context, state) {
+          if (state is StaffLoaded) {
+            List<NhanVien> staffs = state.staffs;
+            _filteredData = staffs;
+            _updatePagination();
+            AccountHelper.instance.clearNhanVien();
+            AccountHelper.instance.setNhanVien(staffs);
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: HeaderComponent(
+                  controller: searchController,
+                  onSearchChanged: (value) {
+                    setState(() {
+                      _searchStaff(value);
+                    });
+                  },
+                  onNew: () {
+                    setState(() {
+                      _showForm(null);
+                      isShowInput = true;
+                    });
+                  },
+                  mainScreen: 'Quản lý nhân viên',
+                  onFileSelected: (fileName, filePath, fileBytes) {
+                    importDataStaff(filePath);
+                  },
+                  onExportData: () {
+                    AppUtility.exportData(
+                      context,
+                      "nhan_vien",
+                      staffs.map((e) => e.toExportJson()).toList(),
+                    );
+                  },
+                ),
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        title: 'Chi tiết nhân viên',
+                        childInput: StaffFormPage(
+                          staff: editingStaff,
+                          staffs: staffs,
+                          onCancel: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                          onSaved:
+                              () => setState(() {
+                                isShowInput = false;
+                              }),
+                        ),
+                        childTableView: StaffList(
+                          data: dataPage,
+                          onChangeDetail: (item) {
+                            _showForm(item);
+                            isShowInput = true;
+                          },
+                          onDelete: (item) {
+                            setState(() {
+                              isShowInput = false;
+                              context.read<StaffBloc>().add(DeleteStaff(item));
+                            });
+                          },
+                          onEdit: (item) {
+                            _showForm(item);
+                          },
+                          onDeleteBatch:
+                              (p0) => setState(() {
+                                isShowInput = false;
+                                context.read<StaffBloc>().add(
+                                  DeleteStaffBatch(p0),
+                                );
+                              }),
+                        ),
+
+                        // Container(height: 200,color: Colors.limeAccent,),
+                        isShowInput: isShowInput,
+                        onExpandedChanged: (isExpanded) {
+                          isShowInput = isExpanded;
+                        },
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: (staffs.length) >= 5,
+                    child: SGPaginationControls(
+                      totalPages: totalPages,
+                      currentPage: currentPage,
+                      rowsPerPage: rowsPerPage,
+                      controllerDropdownPage: controller,
+                      items: [
+                        DropdownMenuItem(value: 10, child: Text('10')),
+                        DropdownMenuItem(value: 20, child: Text('20')),
+                        DropdownMenuItem(value: 50, child: Text('50')),
+                      ],
+                      onPageChanged: onPageChanged,
+                      onRowsPerPageChanged: onRowsPerPageChanged,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is StaffError) {
+            return Center(child: Text(state.message));
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
   }
 }

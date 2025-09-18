@@ -208,9 +208,10 @@ class NhanVienProvider extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> deleteNhanVienBatch(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> deleteNhanVienBatch(List<String> data) async {
     Map<String, dynamic> result = {
       'data': '',
+      'message': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -222,6 +223,7 @@ class NhanVienProvider extends ApiBase {
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
         return result;
       }
 

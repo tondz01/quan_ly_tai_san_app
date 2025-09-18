@@ -53,7 +53,7 @@ class DeleteRoleEvent extends RoleEvent {
 }
 
 class DeleteRoleBatchEvent extends RoleEvent {
-  final Map<String, dynamic> id;
+  final List<String> id;
 
   const DeleteRoleBatchEvent(this.id);
 

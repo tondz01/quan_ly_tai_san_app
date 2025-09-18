@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -72,7 +70,6 @@ class LoginProvider with ChangeNotifier {
     _error = null;
     _isLoggedIn = true;
     _userInfo = data.data;
-    log('test login: onLoginSuccess: ${jsonEncode(_userInfo)}');
     notifyListeners();
     context.go(AppRoute.dashboard.path);
   }
@@ -111,9 +108,7 @@ class LoginProvider with ChangeNotifier {
         context.go(AppRoute.login.path);
       }
       
-      log('Logout thành công');
     } catch (e) {
-      log('Lỗi khi logout: $e');
       _error = 'Có lỗi xảy ra khi đăng xuất';
       notifyListeners();
     }

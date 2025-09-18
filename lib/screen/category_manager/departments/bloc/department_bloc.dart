@@ -64,6 +64,12 @@ class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
         add(LoadDepartments());
       }
     });
+    on<DeleteDepartmentBatch>((event, emit) async {
+      if (state is DepartmentLoaded) {
+        await provider.deleteDepartmentBatch(event.data);
+        add(LoadDepartments());
+      }
+    });
   }
   List<NhomDonVi> get departmentGroups => _allDepartmentGroups;
   List<PhongBan> get departments => _allDepartments;
