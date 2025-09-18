@@ -53,6 +53,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _agreementUUIdController;
   late TextEditingController _pinController;
   final TextEditingController controllerDepartment = TextEditingController();
+  final TextEditingController controllerChucVu = TextEditingController();
   bool _laQuanLy = false;
   bool isEditing = false;
   PhongBan? _phongBan;
@@ -138,6 +139,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
       _phongBan = context.read<StaffBloc>().department.firstWhere(
         (group) => group.id == widget.staff?.phongBanId,
       );
+      controllerDepartment.text = _phongBan?.tenPhongBan ?? '';
     } catch (e) {
       _phongBan = null;
     }
@@ -154,6 +156,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
       _chucVuDTO = context.read<StaffBloc>().chucvus.firstWhere(
         (chucVu) => chucVu.id == widget.staff?.chucVuId,
       );
+      controllerChucVu.text = _chucVuDTO?.tenChucVu ?? '';
     } catch (e) {
       _chucVuDTO = null;
     }
@@ -353,6 +356,29 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                       v == null || v.isEmpty
                                           ? 'Nhập email'
                                           : null,
+                            ),
+                            const SizedBox(height: 16),
+                            CmFormDropdownObject<ChucVu>(
+                              label: 'Chức vụ',
+                              controller: controllerChucVu,
+                              isEditing: isEditing,
+                              value: _chucVuDTO,
+                              fieldName: 'chucvu',
+                              items: [
+                                ...AccountHelper.instance.getChucVu()!.map(
+                                  (e) => DropdownMenuItem<ChucVu>(
+                                    value: e,
+                                    child: Text(e.tenChucVu),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                _chucVuDTO = value;
+                              },
+                              validationErrors: {
+                                'chucvu': _chucVuDTO == null && isEditing,
+                              },
+                              isRequired: true,
                             ),
                             const SizedBox(height: 16),
                             CmFormDropdownObject<PhongBan>(
