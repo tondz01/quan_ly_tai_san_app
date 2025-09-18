@@ -79,7 +79,6 @@ Widget buildOtherInformation(
         onChanged: onDuAnChanged,
         fieldName: 'duAn',
         validationErrors: validationErrors,
-        isRequired: true,
       ),
 
       CmFormDropdownObject<NguonKinhPhi>(
@@ -97,7 +96,6 @@ Widget buildOtherInformation(
         onChanged: onNguonKinhPhiChanged,
         fieldName: 'nguonKinhPhi',
         validationErrors: validationErrors,
-        isRequired: true,
       ),
 
       CommonFormInput(
@@ -107,7 +105,6 @@ Widget buildOtherInformation(
         textContent: ctrlKyHieu.text,
         fieldName: 'kyHieu',
         validationErrors: validationErrors,
-        isRequired: true,
       ),
 
       CommonFormInput(
@@ -144,7 +141,6 @@ Widget buildOtherInformation(
           // ctrlNuocSanXuat.text = value.name;
           onNuocSanXuatChanged?.call(value);
         },
-        isRequired: true,
       ),
 
       CommonFormInput(
@@ -155,7 +151,6 @@ Widget buildOtherInformation(
         fieldName: 'namSanXuat',
         inputType: TextInputType.number,
         validationErrors: validationErrors,
-        isRequired: true,
       ),
 
       CmFormDropdownObject<LyDoTang>(
@@ -173,7 +168,6 @@ Widget buildOtherInformation(
           // ctrlLyDoTang.text = value.name;
           onLyDoTangChanged?.call(value);
         },
-        isRequired: true,
       ),
 
       CmFormDropdownObject<HienTrang>(
@@ -191,7 +185,6 @@ Widget buildOtherInformation(
           // ctrlHienTrang.text = value.name;
           onHienTrangChanged?.call(value);
         },
-        isRequired: true,
       ),
 
       CommonFormInput(
@@ -211,7 +204,6 @@ Widget buildOtherInformation(
         textContent: ctrlDonViTinh.text,
         fieldName: 'donViTinh',
         validationErrors: validationErrors,
-        isRequired: true,
       ),
 
       CommonFormInput(

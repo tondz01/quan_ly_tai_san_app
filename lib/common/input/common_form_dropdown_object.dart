@@ -44,85 +44,62 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 195,
-            child: Row(
-              children: [
-                Text(
-                  '${widget.label} :',
-                  style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !widget.isEditing
-                        ? Colors.black87.withOpacity(0.6)
-                        : Colors.black,
-                  ),
-                ),
-                Visibility(
-                  visible: widget.isRequired,
-                  child: Text(' *', style: TextStyle(color: Colors.red)),
-                ),
-              ],
+      child: Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SGDropdownInputButton<T>(
+              required: widget.isRequired,
+              label: widget.label,
+              height: 45,
+              controller: widget.controller,
+              textOverflow: TextOverflow.ellipsis,
+              enable: !widget.isEditing,
+              value: widget.value,
+              defaultValue: widget.defaultValue,
+              items: widget.items ?? [],
+              colorBorder:
+                  (widget.validationErrors != null &&
+                          widget.fieldName != null &&
+                          widget.validationErrors![widget.fieldName] ==
+                              true)
+                      ? Colors.red
+                      : SGAppColors.neutral400,
+              // showUnderlineBorderOnly: true,
+              enableSearch: false,
+              isClearController: widget.isEditing,
+              fontSize: 14,
+              inputType: widget.inputType,
+              isShowSuffixIcon: true,
+              hintText: 'Chọn ${widget.label.toLowerCase()}',
+              textAlign: TextAlign.left,
+              textAlignItem: TextAlign.left,
+              sizeBorderCircular: 7,
+              sizeBorderCircularItem: 5,
+              colorLabel: Colors.black.withOpacity(0.7),
+              contentPadding: const EdgeInsets.only(left: 10, top: 8, bottom: 8),
+              onChanged: (value) {
+                if (value != null) {
+                  widget.onChanged?.call(value);
+                  if (hasError) {
+                    setState(() {
+                      widget.validationErrors?.remove(widget.fieldName);
+                    });
+                  }
+                }
+              },
             ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SGDropdownInputButton<T>(
-                  height: 35,
-                  controller: widget.controller,
-                  textOverflow: TextOverflow.ellipsis,
-                  enable: !widget.isEditing,
-                  value: widget.value,
-                  defaultValue: widget.defaultValue,
-                  items: widget.items ?? [],
-                  colorBorder:
-                      (widget.validationErrors != null &&
-                              widget.fieldName != null &&
-                              widget.validationErrors![widget.fieldName] ==
-                                  true)
-                          ? Colors.red
-                          : SGAppColors.neutral400,
-                  showUnderlineBorderOnly: true,
-                  enableSearch: false,
-                  isClearController: widget.isEditing,
-                  fontSize: 16,
-                  inputType: widget.inputType,
-                  isShowSuffixIcon: true,
-                  hintText: 'Chọn ${widget.label.toLowerCase()}',
-                  textAlign: TextAlign.left,
-                  textAlignItem: TextAlign.left,
-                  sizeBorderCircular: 10,
-                  contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
-                  onChanged: (value) {
-                    if (value != null) {
-                      widget.onChanged?.call(value);
-                      if (hasError) {
-                        setState(() {
-                          widget.validationErrors?.remove(widget.fieldName);
-                        });
-                      }
-                    }
-                  },
+      
+            if (hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Trường \'${widget.label}\' không được để trống',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
                 ),
-
-                if (hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Trường \'${widget.label}\' không được để trống',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+              ),
+          ],
+        ),
       ),
     );
   }

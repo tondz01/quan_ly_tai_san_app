@@ -301,7 +301,7 @@ class _HomeState extends State<Home> {
           onPressed: () {
             context.go(AppRoute.account.path);
           },
-          tooltip: 'Quản lý tài khoản',
+          tooltip: 'Quản lý hệ thống',
         ),
         const SizedBox(width: 16),
         // User avatar

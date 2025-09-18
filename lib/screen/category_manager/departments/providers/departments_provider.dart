@@ -25,6 +25,43 @@ class DepartmentsProvider extends ApiBase {
     }
   }
 
+  Future<Map<String, dynamic>> fetchProjects(String idCongTy) async {
+    List<PhongBan> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.DU_AN,
+        queryParameters: {'idcongty': idCongTy},
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      log(
+        "fetchProjects: statusCode=${response.statusCode}, data=${jsonEncode(response.data)}",
+      );
+      result['data'] = ResponseParser.parseToList<PhongBan>(
+        response.data,
+        PhongBan.fromJson,
+      );
+    } catch (e) {
+      log("Error at addProject - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> insertDataFile(String filePath) async {
     Map<String, dynamic> result = {
       'data': '',

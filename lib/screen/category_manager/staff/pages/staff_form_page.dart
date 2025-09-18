@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -51,6 +52,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _staffOwnerController;
   late TextEditingController _agreementUUIdController;
   late TextEditingController _pinController;
+  final TextEditingController controllerDepartment = TextEditingController();
   bool _laQuanLy = false;
   bool isEditing = false;
   PhongBan? _phongBan;
@@ -167,7 +169,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
     selectedFileChuKyNhay =
         widget.staff?.chuKyNhay != null ? File(widget.staff!.chuKyNhay!) : null;
-    log('message selectedFileChuKyNhay: ${widget.staff?.chuKyNhay}');
     selectedFileChuKyThuong =
         widget.staff?.chuKyThuong != null
             ? File(widget.staff!.chuKyThuong!)
@@ -354,94 +355,27 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                           : null,
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _telController,
-                              readOnly: !isEditing,
-                              decoration: inputDecoration(
-                                'Số điện thoại',
-                                required: true,
-                              ),
-                              enabled: isEditing,
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Nhập số điện thoại'
-                                          : null,
-                            ),
-                            const SizedBox(height: 16),
-                            DropdownButtonFormField<ChucVu>(
-                              value: _chucVuDTO,
-                              decoration: inputDecoration('Chức vụ'),
-                              items:
-                                  context
-                                      .read<StaffBloc>()
-                                      .chucvus
-                                      .map(
-                                        (chucVu) => DropdownMenuItem(
-                                          value: chucVu,
-                                          child: Row(
-                                            children: [
-                                              const SizedBox(width: 8),
-                                              Text(chucVu.tenChucVu),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged:
-                                  isEditing
-                                      ? (v) => setState(() => _chucVuDTO = v)
-                                      : null, // Disable dropdown
-                              isExpanded: true,
-                            ),
-                            const SizedBox(height: 16),
-
-                            DropdownButtonFormField<NhanVien>(
-                              value: _staffDTO,
-                              decoration: inputDecoration('Người quản lý'),
-                              items:
-                                  context
-                                      .read<StaffBloc>()
-                                      .staffs
-                                      .map(
-                                        (staff) => DropdownMenuItem(
-                                          value: staff,
-                                          child: Row(
-                                            children: [
-                                              const SizedBox(width: 8),
-                                              Text(staff.hoTen ?? ''),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged:
-                                  isEditing
-                                      ? (v) => setState(() => _staffDTO = v)
-                                      : null,
-                              isExpanded: true,
-                            ),
-                            const SizedBox(height: 16),
-
-                            DropdownButtonFormField<PhongBan>(
+                            CmFormDropdownObject<PhongBan>(
+                              label: 'Phòng ban/Bộ phận',
+                              controller: controllerDepartment,
+                              isEditing: isEditing,
                               value: _phongBan,
-                              decoration: inputDecoration('Phòng/Ban'),
-                              items:
-                                  context
-                                      .read<StaffBloc>()
-                                      .department
-                                      .map(
-                                        (p) => DropdownMenuItem(
-                                          value: p,
-                                          child: Text(p.tenPhongBan ?? ''),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged:
-                                  isEditing
-                                      ? (v) => setState(() => _phongBan = v)
-                                      : null,
-                              isExpanded: true,
+                              fieldName: 'department',
+                              items: [
+                                ...context.read<StaffBloc>().department.map(
+                                  (e) => DropdownMenuItem<PhongBan>(
+                                    value: e,
+                                    child: Text(e.tenPhongBan ?? ''),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                _phongBan = value;
+                              },
+                              validationErrors: {
+                                'department': _phongBan == null && isEditing,
+                              },
+                              isRequired: true,
                             ),
                           ],
                         ),

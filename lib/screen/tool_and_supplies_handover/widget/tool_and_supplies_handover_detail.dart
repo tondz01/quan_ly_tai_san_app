@@ -802,6 +802,7 @@ class _ToolAndSuppliesHandoverDetailState
 
   Widget _buildInfoToolAndSuppliesHandover() {
     return Column(
+      spacing: 10,
       children: [
         CommonFormInput(
           label: 'Số phiếu bàn giao',
@@ -914,6 +915,7 @@ class _ToolAndSuppliesHandoverDetailState
 
   Widget _buildToolAndSuppliesHandoverDetail() {
     return Column(
+      spacing: 10,
       children: [
         CmFormDropdownObject<NhanVien>(
           label: 'Đại diện đơn vị đề nghị',
@@ -933,6 +935,7 @@ class _ToolAndSuppliesHandoverDetailState
           validationErrors: _validationErrors,
           isRequired: true,
         ),
+        SizedBox(height: 1),
         CommonCheckboxInput(
           label: 'Đã xác nhận',
           value: isUnitConfirm,
@@ -944,6 +947,7 @@ class _ToolAndSuppliesHandoverDetailState
             });
           },
         ),
+        SizedBox(height: 1),
         CmFormDropdownObject<NhanVien>(
           label: 'Đơn vị giao',
           controller: controllerDelivererRepresentative,

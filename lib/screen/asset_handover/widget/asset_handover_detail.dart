@@ -739,6 +739,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget _buildInfoAssetHandover() {
     DateTime? ngayBanGiao;
     return Column(
+      spacing: 10,
       children: [
         CommonFormInput(
           label: 'Số phiếu bàn giao',
@@ -857,6 +858,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   Widget _buildAssetHandoverDetail() {
     return Column(
+      spacing: 10,
       children: [
         CmFormDropdownObject<NhanVien>(
           label: 'Đại diện đơn vị đề nghị',
@@ -876,6 +878,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           validationErrors: _validationErrors,
           isRequired: true,
         ),
+        SizedBox(height: 1),
         CommonCheckboxInput(
           label: 'Đã xác nhận',
           value: isUnitConfirm,
@@ -887,6 +890,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             });
           },
         ),
+        SizedBox(height: 1),
         CmFormDropdownObject<NhanVien>(
           label: 'Đơn vị giao',
           controller: controllerDelivererRepresentative,

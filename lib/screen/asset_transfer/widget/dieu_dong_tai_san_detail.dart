@@ -402,6 +402,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 children: [
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CommonFormInput(
                           label: 'Số chứng từ',
@@ -528,6 +529,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CmFormDropdownObject<PhongBan>(
                           label: 'Đơn vị đề nghị'.tr,
@@ -599,6 +601,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             });
                           },
                         ),
+                        SizedBox(height: 6),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
                           value: state.isNguoiLapPhieuKyNhay,
@@ -610,7 +613,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             });
                           },
                         ),
-
+                        SizedBox(height: 6),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người duyệt',
                           controller: controllers.controllerDepartmentApproval,
@@ -728,13 +731,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     state.selectedFileName = fileName;
                     state.selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
-                   if (fileName != null) {
-                     if (fileBytes != null) {
-                       _loadPdfFromBytes(fileBytes);
-                     } else if (filePath != null) {
-                       _loadPdf(filePath);
-                     }
-                   }
+                    if (fileName != null) {
+                      if (fileBytes != null) {
+                        _loadPdfFromBytes(fileBytes);
+                      } else if (filePath != null) {
+                        _loadPdf(filePath);
+                      }
+                    }
 
                     if (validation.hasValidationError('document')) {
                       validation.removeValidationError('document');

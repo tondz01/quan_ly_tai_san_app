@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
@@ -80,7 +81,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
         title: 'Giá trị',
-        getValue: (item) => item.giaTri.toString(),
+        getValue:
+            (item) => NumberFormat.currency(
+              locale: 'vi_VN',
+              symbol: '₫',
+            ).format(item.giaTri),
         width: 120,
       ),
       TableBaseConfig.columnTable<ToolsAndSuppliesDto>(

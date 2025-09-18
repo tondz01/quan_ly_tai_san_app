@@ -134,126 +134,101 @@ class _CommonFormInputState extends State<CommonFormInput> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 195,
-            child: Row(
-              children: [
-                Text(
-                  '${widget.label} : ',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color:
-                        !widget.isEditing
-                            ? Colors.black87.withOpacity(0.6)
-                            : Colors.black,
-                  ),
-                ),
-                Visibility(
-                  visible: widget.isRequired,
-                  child: Text('*', style: TextStyle(color: Colors.red)),
-                ),
-              ],
+          widget.isDropdown && widget.isEditing
+              ? SGDropdownInputButton<String>(
+                required: widget.isRequired,
+                label: widget.label,
+                height: 35,
+                controller: widget.controller,
+                textOverflow: TextOverflow.ellipsis,
+                // Use value directly rather than setting controller.text
+                value: widget.textContent,
+                defaultValue: widget.textContent,
+                items: widget.items ?? [],
+                enable: widget.isEnable,
+                colorBorder:
+                    (widget.validationErrors != null &&
+                            widget.fieldName != null &&
+                            widget.validationErrors![widget.fieldName] ==
+                                true)
+                        ? Colors.red
+                        : SGAppColors.neutral400,
+                // showUnderlineBorderOnly: true,
+                enableSearch: false,
+                isClearController: false,
+                fontSize: 14,
+                inputType: widget.inputType,
+                isShowSuffixIcon: true,
+                hintText: 'Chọn ${widget.label.toLowerCase()}',
+                textAlign: TextAlign.left,
+                textAlignItem: TextAlign.left,
+                sizeBorderCircular: 10,
+                contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
+                onChanged: (value) {
+                  if (value != null) {
+                    widget.onChanged?.call(value);
+                    if (hasError) {
+                      setState(() {
+                        widget.validationErrors?.remove(widget.fieldName);
+                      });
+                    }
+                  }
+                },
+              )
+              : SGInputText(
+                isRequired: widget.isRequired,
+                label: widget.label,
+                height: 45,
+                width: widget.width,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                // expandable: true,
+                maxLines: 2,
+                controller:
+                    widget
+                        .controller, // Remove the ..text = textContent assignment
+                borderRadius: 10,
+                enabled: widget.isEnable ? widget.isEditing : false,
+                textAlign: TextAlign.left,
+                readOnly: !widget.isEditing,
+                inputFormatters:
+                    widget.inputType == TextInputType.number
+                        ? [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[0-9.,]'),
+                          ),
+                        ]
+                        : null,
+                // onlyLine: true,
+                color: Colors.black,
+                showBorder: widget.isEditing,
+                borderColor: hasError ? Colors.red : null,
+                hintText:
+                    !widget.isEditing
+                        ? ''
+                        : '${'common.hint'.tr} ${widget.label}  ${widget.inputType == TextInputType.number ? ' (nhập số)' : ''}',
+                // padding: const EdgeInsets.only(top: 8, bottom: 8),
+                fontSize: 14,
+                onChanged: (value) {
+                  widget.onChanged?.call(value);
+                  // Clear validation error when text changes
+                  if (hasError) {
+                    setState(() {
+                      widget.validationErrors?.remove(widget.fieldName);
+                    });
+                  }
+                },
+              ),
+          if (hasError)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Trường \'${widget.label}\' không được để trống',
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
             ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                widget.isDropdown && widget.isEditing
-                    ? SGDropdownInputButton<String>(
-                      height: 35,
-                      controller: widget.controller,
-                      textOverflow: TextOverflow.ellipsis,
-                      // Use value directly rather than setting controller.text
-                      value: widget.textContent,
-                      defaultValue: widget.textContent,
-                      items: widget.items ?? [],
-                      enable: widget.isEnable,
-                      colorBorder:
-                          (widget.validationErrors != null &&
-                                  widget.fieldName != null &&
-                                  widget.validationErrors![widget.fieldName] ==
-                                      true)
-                              ? Colors.red
-                              : SGAppColors.neutral400,
-                      showUnderlineBorderOnly: true,
-                      enableSearch: false,
-                      isClearController: false,
-                      fontSize: 16,
-                      inputType: widget.inputType,
-                      isShowSuffixIcon: true,
-                      hintText: 'Chọn ${widget.label.toLowerCase()}',
-                      textAlign: TextAlign.left,
-                      textAlignItem: TextAlign.left,
-                      sizeBorderCircular: 10,
-                      contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
-                      onChanged: (value) {
-                        if (value != null) {
-                          widget.onChanged?.call(value);
-                          if (hasError) {
-                            setState(() {
-                              widget.validationErrors?.remove(widget.fieldName);
-                            });
-                          }
-                        }
-                      },
-                    )
-                    : SGInputText(
-                      height: 40,
-                      width: widget.width,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      // expandable: true,
-                      maxLines: 2,
-                      controller:
-                          widget
-                              .controller, // Remove the ..text = textContent assignment
-                      borderRadius: 10,
-                      enabled: widget.isEnable ? widget.isEditing : false,
-                      textAlign: TextAlign.left,
-                      readOnly: !widget.isEditing,
-                      inputFormatters:
-                          widget.inputType == TextInputType.number
-                              ? [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9.,]'),
-                                ),
-                              ]
-                              : null,
-                      onlyLine: true,
-                      color: Colors.black,
-                      showBorder: widget.isEditing,
-                      borderColor: hasError ? Colors.red : null,
-                      hintText:
-                          !widget.isEditing
-                              ? ''
-                              : '${'common.hint'.tr} ${widget.label}  ${widget.inputType == TextInputType.number ? ' (nhập số)' : ''}',
-                      padding: const EdgeInsets.only(top: 8, bottom: 8),
-                      fontSize: 14,
-                      onChanged: (value) {
-                        widget.onChanged?.call(value);
-                        // Clear validation error when text changes
-                        if (hasError) {
-                          setState(() {
-                            widget.validationErrors?.remove(widget.fieldName);
-                          });
-                        }
-                      },
-                    ),
-                if (hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Trường \'${widget.label}\' không được để trống',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
       ),
     );

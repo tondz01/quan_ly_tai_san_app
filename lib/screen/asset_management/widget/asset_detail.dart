@@ -571,15 +571,6 @@ class _AssetDetailState extends State<AssetDetail> {
   bool _validateForm() {
     Map<String, bool> newValidationErrors = {};
     final String tenTaiSan = ctrlTenTaiSan.text.trim();
-    final String donViTinh = ctrlDonViTinh.text.trim();
-
-    final int namSanXuat = int.tryParse(ctrlNamSanXuat.text.trim()) ?? 0;
-
-    final num nguyenGia = AppUtility.parseCurrency(ctrlNguyenGia.text);
-    final num giaTriThanhLy = AppUtility.parseCurrency(ctrlGiaTriThanhLy.text);
-    newValidationErrors['idDonViBanDau'] = false;
-    newValidationErrors['idDonViHienThoi'] = false;
-    newValidationErrors['donViBanDau'] = false;
     // Bắt buộc
     if (tenTaiSan.isEmpty) {
       newValidationErrors['tenTaiSan'] = true;
@@ -587,80 +578,14 @@ class _AssetDetailState extends State<AssetDetail> {
     if (ctrlMaTaiSan.text.isEmpty) {
       newValidationErrors['id'] = true;
     }
-    if (nguyenGia <= 0) {
-      newValidationErrors['nguyenGia'] = true;
-    }
-    if (ctrlGiaTriKhauHaoBanDau.text.isEmpty) {
-      newValidationErrors['giaTriKhauHaoBanDau'] = true;
-    }
-    if (giaTriThanhLy < 0) {
-      newValidationErrors['giaTriThanhLy'] = true;
-    }
-    if (ctrlKyKhauHaoBanDau.text.isEmpty) {
-      newValidationErrors['kyKhauHaoBanDau'] = true;
-    }
-    if (ctrlGiaTriKhauHaoBanDau.text.isEmpty) {
-      newValidationErrors['giaTriKhauHaoBanDau'] = true;
-    }
-    if (ctrlKyKhauHaoBanDau.text.isEmpty) {
-      newValidationErrors['kyKhauHaoBanDau'] = true;
-    }
-    if (idAssetGroup == null) {
-      newValidationErrors['idNhomTaiSan'] = true;
-    }
     if (idAssetCategory == null) {
       newValidationErrors['idMoHinhTaiSan'] = true;
-    }
-    if (duAn == null) {
-      newValidationErrors['duAn'] = true;
-    }
-    if (idNguonKinhPhi == null) {
-      newValidationErrors['nguonKinhPhi'] = true;
-    }
-    if (lyDoTang == null) {
-      newValidationErrors['lyDoTang'] = true;
-    }
-    if (country == null) {
-      newValidationErrors['nuocSanXuat'] = true;
-    }
-    if (hienTrang == null) {
-      newValidationErrors['hienTrang'] = true;
-    }
-    if (ctrlKyHieu.text.isEmpty) {
-      newValidationErrors['kyHieu'] = true;
-    }
-    if (ctrlSoKyHieu.text.isEmpty) {
-      newValidationErrors['soKyHieu'] = true;
-    }
-    if (ctrlCongSuat.text.isEmpty) {
-      newValidationErrors['congSuat'] = true;
-    }
-    if (ctrlNuocSanXuat.text.isEmpty) {
-      newValidationErrors['nuocSanXuat'] = true;
-    }
-    if (ctrlNamSanXuat.text.isEmpty) {
-      newValidationErrors['namSanXuat'] = true;
-    }
-    if (ctrlLyDoTang.text.isEmpty) {
-      newValidationErrors['lyDoTang'] = true;
-    }
-    if (ctrlHienTrang.text.isEmpty) {
-      newValidationErrors['hienTrang'] = true;
-    }
-    if (ctrlSoLuong.text.isEmpty) {
-      newValidationErrors['soLuong'] = true;
     }
     if (ctrlDonViTinh.text.isEmpty) {
       newValidationErrors['donViTinh'] = true;
     }
-    if (ctrlGhiChu.text.isEmpty) {
-      newValidationErrors['ghiChu'] = true;
-    }
     if (ctrlDonViHienThoi.text.isEmpty) {
       newValidationErrors['idDonViHienThoi'] = true;
-    }
-    if (donViTinh.isEmpty) {
-      newValidationErrors['donViTinh'] = true;
     }
 
     // Số lượng, nguyên giá, khấu hao
@@ -668,21 +593,6 @@ class _AssetDetailState extends State<AssetDetail> {
       newValidationErrors['phuongPhapKhauHao'] = true;
     }
 
-    // Năm sản xuất (nếu nhập)
-    if (ctrlNamSanXuat.text.trim().isNotEmpty) {
-      final int currentYear = DateTime.now().year;
-      if (namSanXuat < 1900 || namSanXuat > currentYear) {
-        newValidationErrors['namSanXuat'] = true;
-      }
-    }
-
-    // Ngày (chỉ kiểm tra không rỗng)
-    if (ctrlNgayVaoSo.text.trim().isEmpty) {
-      newValidationErrors['ngayVaoSo'] = true;
-    }
-    if (ctrlNgaySuDung.text.trim().isEmpty) {
-      newValidationErrors['ngaySuDung'] = true;
-    }
     bool hasChanges = !mapEquals(validationErrors, newValidationErrors);
     if (hasChanges) {
       setState(() {

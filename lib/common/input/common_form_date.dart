@@ -53,67 +53,44 @@ class _CmFormDateState extends State<CmFormDate> {
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 195,
-            child: Row(
-              children: [
-                Text(
-                  '${widget.label} :',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color:
-                        !widget.isEditing
-                            ? Colors.black87.withOpacity(0.6)
-                            : Colors.black,
-                  ),
-                ),
-                Visibility(
-                  visible: widget.isRequired,
-                  child: Text(' *', style: TextStyle(color: Colors.red)),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SGDateTimeInputButton(
-                  controller: widget.controller,
-                  value: widget.value,
-                  onChanged: (dt) {
-                    widget.onChanged?.call(dt);
-                  },
-                  width: double.infinity,
-                  height: 40,
-                  initWithNow: widget.initWithNow,
-                  enable: widget.enable,
-                  allowTyping: widget.allowTyping,
-                  showTimeSection: widget.showTimeSection,
-                  timeOptional: widget.timeOptional,
-                  includeSeconds: widget.includeSeconds,
-                  initialIncludeTime: widget.initialIncludeTime,
-                  colorBorder: SGAppColors.colorBorderGray,
-                  colorBorderFocus: SGAppColors.info500,
-                  showUnderlineBorderOnly: true,
-                ),
+      child: Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SGDateTimeInputButton(
+              label: widget.label,
 
-                if (hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Trường \'${widget.label}\' không được để trống',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
-              ],
+              controller: widget.controller,
+              value: widget.value,
+              onChanged: (dt) {
+                widget.onChanged?.call(dt);
+              },
+              width: double.infinity,
+              height: 40,
+              initWithNow: widget.initWithNow,
+              enable: widget.enable,
+              textAlign: TextAlign.left,
+              sizeBorderCircular: 7,
+              allowTyping: widget.allowTyping,
+              showTimeSection: widget.showTimeSection,
+              timeOptional: widget.timeOptional,
+              includeSeconds: widget.includeSeconds,
+              initialIncludeTime: widget.initialIncludeTime,
+              colorBorder: SGAppColors.colorBorderGray,
+              colorBorderFocus: SGAppColors.info500,
+              // showUnderlineBorderOnly: true,
             ),
-          ),
-        ],
+      
+            if (hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Trường \'${widget.label}\' không được để trống',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

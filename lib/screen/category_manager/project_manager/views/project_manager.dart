@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/component/convert_excel_to_project.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/project_manager_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
@@ -32,7 +32,7 @@ class _ProjectManagerState extends State<ProjectManager> {
   List<DuAn> filteredData = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -111,10 +111,15 @@ class _ProjectManagerState extends State<ProjectManager> {
                     });
                   },
                   mainScreen: 'Quản lý dự án',
-                  onFileSelected: (fileName, filePath, fileBytes) {
-                    if (fileName!.isNotEmpty &&
-                        filePath!.isNotEmpty &&
-                        fileBytes != null) {}
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    final roleBloc = context.read<ProjectBloc>();
+                    final List<DuAn> duAnList = await convertExcelToProject(
+                      filePath!,
+                    );
+                    if (!mounted) return;
+                    if (duAnList.isNotEmpty) {
+                      roleBloc.add(CreateProjectBatchEvent(duAnList));
+                    }
                   },
                   onExportData: () {
                     AppUtility.exportData(

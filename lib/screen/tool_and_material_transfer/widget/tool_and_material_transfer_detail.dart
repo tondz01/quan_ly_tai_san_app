@@ -693,6 +693,7 @@ class _ToolAndMaterialTransferDetailState
                 children: [
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CommonFormInput(
                           label: 'Số chứng từ',
@@ -805,6 +806,7 @@ class _ToolAndMaterialTransferDetailState
 
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CmFormDropdownObject<PhongBan>(
                           label: 'Đơn vị đề nghị'.tr,
@@ -863,6 +865,7 @@ class _ToolAndMaterialTransferDetailState
                           },
                           isRequired: true,
                         ),
+                        SizedBox(height: 6),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
                           value: isNguoiLapPhieuKyNhay,
@@ -874,7 +877,7 @@ class _ToolAndMaterialTransferDetailState
                             });
                           },
                         ),
-
+                        SizedBox(height: 6),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người duyệt',
                           controller: controllerDepartmentApproval,
