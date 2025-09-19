@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 
@@ -81,6 +82,7 @@ class GetListDepartmentEvent extends AssetManagementEvent {
   @override
   List<Object?> get props => [context, idCongTy];
 }
+
 // GET ALL TÀI SẢN CON
 class GetAllChildAssetsEvent extends AssetManagementEvent {
   final BuildContext context;
@@ -102,6 +104,16 @@ class CreateAssetEvent extends AssetManagementEvent {
   @override
   List<Object> get props => [context, request];
 }
+
+class CreateAssetBatchEvent extends AssetManagementEvent {
+  final List<AssetManagementDto> params;
+
+  const CreateAssetBatchEvent(this.params);
+
+  @override
+  List<Object?> get props => [params];
+}
+
 class UpdateAssetEvent extends AssetManagementEvent {
   final BuildContext context;
   final AssetRequest request;
@@ -112,6 +124,7 @@ class UpdateAssetEvent extends AssetManagementEvent {
   @override
   List<Object> get props => [context, request];
 }
+
 class DeleteAssetEvent extends AssetManagementEvent {
   final BuildContext context;
   final String id;
@@ -120,4 +133,13 @@ class DeleteAssetEvent extends AssetManagementEvent {
 
   @override
   List<Object> get props => [context, id];
+}
+
+class DeleteAssetBatchEvent extends AssetManagementEvent {
+  final List<String> id;
+
+  const DeleteAssetBatchEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }

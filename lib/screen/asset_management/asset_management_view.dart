@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,14 +6,18 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/convert_excel_to_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetManagementView extends StatefulWidget {
   const AssetManagementView({super.key});
@@ -99,19 +102,21 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     },
                     mainScreen: "Quản lý tài sản",
                     subScreen: provider.subScreen,
-                    onFileSelected: (fileName, filePath, fileBytes) {
-                      provider.onSubmit(
-                        context,
-                        fileName ?? '',
-                        filePath ?? '',
-                        fileBytes ?? Uint8List(0),
-                      );
+                    onFileSelected: (fileName, filePath, fileBytes) async {
+                      final assetBloc = context.read<AssetManagementBloc>();
+                    final List<AssetManagementDto> cv = await convertExcelToAsset(
+                      filePath!,
+                    );
+                    if (!mounted) return;
+                    if (cv.isNotEmpty) {
+                      assetBloc.add(CreateAssetBatchEvent(cv));
+                    }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
-                        "Danh sách tài sản",
-                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                        "tai_san",
+                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
                       );
                     },
                   ),
@@ -155,19 +160,19 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             ),
                           ),
                         ),
-                    // Visibility(
-                    //   visible: (provider.data?.length ?? 0) >= 5,
-                    //   child: SGPaginationControls(
-                    //     totalPages: provider.totalPages,
-                    //     currentPage: provider.currentPage,
-                    //     rowsPerPage: provider.rowsPerPage,
-                    //     controllerDropdownPage:
-                    //         provider.controllerDropdownPage!,
-                    //     items: provider.items,
-                    //     onPageChanged: provider.onPageChanged,
-                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                    //   ),
-                    // ),
+                    Visibility(
+                      visible: (provider.data?.length ?? 0) >= 5,
+                      child: SGPaginationControls(
+                        totalPages: provider.totalPages,
+                        currentPage: provider.currentPage,
+                        rowsPerPage: provider.rowsPerPage,
+                        controllerDropdownPage:
+                            provider.controllerDropdownPage!,
+                        items: provider.items,
+                        onPageChanged: provider.onPageChanged,
+                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -258,7 +263,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
           log('GetAllChildAssetsFailedState');
         }
         if (state is CreateAssetSuccessState) {
-          log('DeleteAssetSuccessState');
           context.read<AssetManagementProvider>().createAssetSuccess(
             context,
             state,

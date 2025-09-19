@@ -59,6 +59,8 @@ class AssetManagementProvider with ChangeNotifier {
   get selectedFilePath => _selectedFilePath;
   get selectedFileBytes => _selectedFileBytes;
 
+  get dataPage => _dataPage;
+
   set isShowInput(bool value) {
     _isShowInput = value;
     notifyListeners();
@@ -101,6 +103,8 @@ class AssetManagementProvider with ChangeNotifier {
   AssetDepreciationDto? _dataDepreciationDetail;
 
   List<AssetManagementDto>? _data;
+  List<AssetManagementDto>? _dataPage;
+
   List<AssetGroupDto>? _dataGroup;
   List<DuAn>? _dataProject;
   List<NguonKinhPhi>? _dataCapitalSource;
@@ -125,6 +129,21 @@ class AssetManagementProvider with ChangeNotifier {
   List<HienTrang> listHienTrang = AppUtility.listHienTrang;
   List<DropdownMenuItem<HienTrang>> _itemsHienTrang = [];
 
+  late int totalEntries;
+  late int totalPages = 1;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = 10;
+  int currentPage = 1;
+  TextEditingController? controllerDropdownPage;
+
+  final List<DropdownMenuItem<int>> items = [
+    const DropdownMenuItem(value: 5, child: Text('5')),
+    const DropdownMenuItem(value: 10, child: Text('10')),
+    const DropdownMenuItem(value: 20, child: Text('20')),
+    const DropdownMenuItem(value: 50, child: Text('50')),
+  ];
+
   //Tài sản con
   HienTrang getHienTrang(int id) {
     return listHienTrang.firstWhere((element) => element.id == id);
@@ -146,10 +165,46 @@ class AssetManagementProvider with ChangeNotifier {
   }
 
   List<Map<String, bool>?> checkBoxAssetGroup = [];
+
+  void _updatePagination() {
+    totalEntries = data?.length ?? 0;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+
+    _dataPage =
+        data.isNotEmpty
+            ? data.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
+  }
+
+  void onPageChanged(int page) {
+    currentPage = page;
+    _updatePagination();
+    notifyListeners();
+  }
+
+  void onRowsPerPageChanged(int? value) {
+    if (value == null) return;
+    rowsPerPage = value;
+    currentPage = 1;
+    _updatePagination();
+    notifyListeners();
+  }
+
   onInit(BuildContext context) {
     reset();
-    log('message onInit');
     _userInfo = AccountHelper.instance.getUserInfo();
+    controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
     onCloseDetail(context);
     isShowInputKhauHao = false;
@@ -253,6 +308,7 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _data = state.data;
       _filteredData = List.from(_data!); // Khởi tạo filteredData
+      _updatePagination();
       _isLoading = false;
     }
     notifyListeners();

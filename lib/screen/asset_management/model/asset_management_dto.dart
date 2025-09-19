@@ -3,6 +3,62 @@ import 'dart:convert';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
 class AssetManagementDto {
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "" : value;
+    }
+    return value;
+  }
+
+  /// Dữ liệu export cho tài sản
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã tài sản': _nullIfEmpty(id),
+      'Tên tài sản': _nullIfEmpty(tenTaiSan),
+      'Nguyên giá': nguyenGia ?? 0.0,
+      'Giá trị khấu hao ban đầu': giaTriKhauHaoBanDau ?? 0.0,
+      'Kỳ khấu hao ban đầu': kyKhauHaoBanDau ?? 0,
+      'Giá trị thanh lý': giaTriThanhLy ?? 0.0,
+      'Mã mô hình tài sản': _nullIfEmpty(idMoHinhTaiSan),
+      'Tên mô hình': _nullIfEmpty(tenMoHinh),
+      'Mã nhóm tài sản': _nullIfEmpty(idNhomTaiSan),
+      'Tên nhóm tài sản': _nullIfEmpty(tenNhom),
+      'Mã dự án': _nullIfEmpty(idDuAn),
+      'Tên dự án': _nullIfEmpty(tenDuAn),
+      'Mã nguồn vốn': _nullIfEmpty(idNguonVon),
+      'Tên nguồn kinh phí': _nullIfEmpty(tenNguonKinhPhi),
+      'Phương pháp khấu hao': phuongPhapKhauHao ?? 0,
+      'Số kỳ khấu hao': soKyKhauHao ?? 0,
+      'TK tài sản': taiKhoanTaiSan ?? 0,
+      'TK khấu hao': taiKhoanKhauHao ?? 0,
+      'TK chi phí': taiKhoanChiPhi ?? 0,
+      'Ngày vào sổ': ngayVaoSo?.toIso8601String() ?? "null",
+      'Ngày sử dụng': ngaySuDung?.toIso8601String() ?? "null",
+      'Ký hiệu': _nullIfEmpty(kyHieu),
+      'Số ký hiệu': _nullIfEmpty(soKyHieu),
+      'Công suất': _nullIfEmpty(congSuat),
+      'Nước sản xuất': _nullIfEmpty(nuocSanXuat),
+      'Năm sản xuất': namSanXuat ?? 0,
+      'Lý do tăng': lyDoTang ?? 0,
+      'Hiện trạng': hienTrang ?? 0,
+      'Số lượng': soLuong ?? 0,
+      'Đơn vị tính': _nullIfEmpty(donViTinh),
+      'Ghi chú': _nullIfEmpty(ghiChu),
+      'Mã đơn vị ban đầu': _nullIfEmpty(idDonViBanDau),
+      'Mã đơn vị hiện thời': _nullIfEmpty(idDonViHienThoi),
+      'Mô tả': _nullIfEmpty(moTa),
+      'Mã công ty': _nullIfEmpty(idCongTy),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+      'Hiển thị': isActive ?? false,
+    };
+  }
   String? id;
   String? tenTaiSan;
   double? nguyenGia;

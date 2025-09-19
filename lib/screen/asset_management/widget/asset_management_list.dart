@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
@@ -27,6 +28,7 @@ class AssetManagementList extends StatefulWidget {
 }
 
 class _AssetManagementListState extends State<AssetManagementList> {
+  List<AssetManagementDto> listSelected = [];
   late List<ColumnDisplayOption> columnOptions;
   ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
@@ -509,18 +511,70 @@ class _AssetManagementListState extends State<AssetManagementList> {
                     ),
                   ],
                 ),
-                Tooltip(
-                  message: 'Chuyển sang trang khấu hao tài sản',
-                  child: InkWell(
-                    onTap: () {
-                      widget.provider.onChangeBody(ShowBody.khauHao);
-                    },
-                    child: SGText(
-                      size: 14,
-                      text: "Khấu hao tài sản",
-                      color: ColorValue.link,
+                Row(
+                  spacing: 16,
+                  children: [
+                    Visibility(
+                      visible: listSelected.isNotEmpty,
+                      child: Row(
+                        children: [
+                          SGText(
+                            text:
+                                'Danh sách chức vụ đã chọn: ${listSelected.length}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          MaterialTextButton(
+                            text: 'Xóa đã chọn',
+                            icon: Icons.delete,
+                            backgroundColor: ColorValue.error,
+                            foregroundColor: Colors.white,
+                            onPressed: () {
+                              setState(() {
+                                List<String> data =
+                                    listSelected
+                                        .map((e) => e.id)
+                                        .whereType<String>()
+                                        .toList();
+                                showConfirmDialog(
+                                  context,
+                                  type: ConfirmType.delete,
+                                  title: 'Xóa tài sản',
+                                  message:
+                                      'Bạn có chắc muốn xóa ${listSelected.length} tài sản đã chọn',
+                                  highlight: listSelected.length.toString(),
+                                  cancelText: 'Không',
+                                  confirmText: 'Xóa',
+                                  onConfirm: () {
+                                    final roleBloc =
+                                        context.read<AssetManagementBloc>();
+                                    roleBloc.add(DeleteAssetBatchEvent(data));
+                                  },
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    Tooltip(
+                      message: 'Chuyển sang trang khấu hao tài sản',
+                      child: InkWell(
+                        onTap: () {
+                          widget.provider.onChangeBody(ShowBody.khauHao);
+                        },
+                        child: SGText(
+                          size: 14,
+                          text: "Khấu hao tài sản",
+                          color: ColorValue.link,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -541,6 +595,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
               },
+              onSelectionChanged:
+                  (items) => setState(() {
+                    listSelected = items;
+                  }),
             ),
           ),
         ],
