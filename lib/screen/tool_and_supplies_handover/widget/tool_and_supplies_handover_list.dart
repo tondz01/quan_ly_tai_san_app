@@ -826,6 +826,19 @@ class _ToolAndSuppliesHandoverListState
         AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
         return;
       }
+      
+      final previousNotSigned = signatureFlow
+          .take(currentIndex)
+          .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+      if (previousNotSigned.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+          isError: true,
+        );
+        return;
+      }
 
       var dieuDongCcdc = widget.provider.dataAssetTransfer
           ?.where((element) => element.trangThai == 3)

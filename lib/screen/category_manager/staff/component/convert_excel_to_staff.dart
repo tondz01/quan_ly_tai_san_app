@@ -127,7 +127,7 @@ Future<List<NhanVien>> convertExcelToNhanVien(String filePath) async {
           "pin": cell(row, 10),
           "phongBanId": cell(row, 11),
           "boPhan": cell(row, 12),
-          "chucVu": cell(row, 13),
+          "chucVuId": cell(row, 13),
           "nguoiQuanLy": cell(row, 14),
           "laQuanLy": cell(row, 15) ?? false,
           "avatar": cell(row, 16),

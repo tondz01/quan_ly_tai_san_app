@@ -11,8 +11,10 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vi
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class NhanVienProvider extends ApiBase {
+
   UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
   Future<List<NhanVien>> fetchNhanViens() async {
     final response = await get(
@@ -112,7 +114,6 @@ class NhanVienProvider extends ApiBase {
     final body = response.data; // ở đây là Map luôn (nếu API trả về JSON)
 
     if (body['success'] == true) {
-      print(body['message']); // "Xóa nhân viên thành công"
       return;
     } else {
       throw Exception(body['message'] ?? "Failed to delete nhân viên");
@@ -121,14 +122,15 @@ class NhanVienProvider extends ApiBase {
 
   void logFormData(FormData formData) {
     for (var field in formData.fields) {
-      print('${field.key}: ${field.value}');
+      SGLog.info("NhanVienProvider", '${field.key}: ${field.value}');
     }
 
     for (var fileEntry in formData.files) {
       final file = fileEntry.value;
-      print(
+      SGLog.info(
+        "NhanVienProvider",
         '${fileEntry.key}: ${file.filename} '
-        '(${file.length} bytes, ${file.contentType})',
+            '(${file.length} bytes, ${file.contentType})',
       );
     }
   }
@@ -189,18 +191,18 @@ class NhanVienProvider extends ApiBase {
         data: jsonEncode(nhanViens),
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        result['data'] = ResponseParser.parseToList<NhanVien>(
+          response.data,
+          NhanVien.fromJson,
+        );
+        return result;
+      } else {
         result['status_code'] = response.statusCode;
         return result;
       }
-
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-      // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<NhanVien>(
-        response.data,
-        NhanVien.fromJson,
-      );
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }

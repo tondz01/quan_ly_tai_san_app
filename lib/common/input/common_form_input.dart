@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 import 'package:se_gay_components/common/sg_input_text.dart';
@@ -152,8 +153,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                 colorBorder:
                     (widget.validationErrors != null &&
                             widget.fieldName != null &&
-                            widget.validationErrors![widget.fieldName] ==
-                                true)
+                            widget.validationErrors![widget.fieldName] == true)
                         ? Colors.red
                         : SGAppColors.neutral400,
                 // showUnderlineBorderOnly: true,
@@ -196,15 +196,13 @@ class _CommonFormInputState extends State<CommonFormInput> {
                 inputFormatters:
                     widget.inputType == TextInputType.number
                         ? [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9.,]'),
-                          ),
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                         ]
                         : null,
                 // onlyLine: true,
                 color: Colors.black,
                 showBorder: widget.isEditing,
-                borderColor: hasError ? Colors.red : null,
+                borderColor: hasError ? Colors.red : ColorValue.darkGrey,
                 hintText:
                     !widget.isEditing
                         ? ''

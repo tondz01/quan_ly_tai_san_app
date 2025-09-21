@@ -514,4 +514,13 @@ class AccountHelper {
     // 🔥 SỬA LẠI: Gọi AppMenuData.refreshAllCounts() thay vì MenuRefreshService
     AppMenuData.refreshAllCounts();
   }
+
+  //Config
+  setConfigTimeExpire(int timeExpire) {
+    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, timeExpire);
+  }
+
+  int? getConfigTimeExpire() {
+    return StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+  }
 }

@@ -1059,6 +1059,10 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   ToolAndSuppliesHandoverDto? getToolAndSuppliesHandoverPreview() {
+    SGLog.debug(
+      "ToolAndSuppliesHandoverDetail",
+      "getToolAndSuppliesHandoverPreview",
+    );
     return ToolAndSuppliesHandoverDto(
       id: controllerHandoverNumber.text,
       banGiaoCCDCVatTu: controllerDocumentName.text,

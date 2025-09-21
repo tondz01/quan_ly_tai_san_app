@@ -8,9 +8,11 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
@@ -69,6 +71,8 @@ class _StaffFormPageState extends State<StaffFormPage> {
   bool _kyThuong = false;
   bool _kySo = false;
   bool _isActive = false;
+  bool _savePin = false;
+  bool _obscurePassword = true;
   String? errorChuKyNhay;
   String? errorChuKyThuong;
 
@@ -125,6 +129,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
       text: widget.staff?.emailCongViec ?? '',
     );
     _isActive = widget.staff?.active ?? false;
+    _savePin = widget.staff?.savePin ?? false;
     _activityController = TextEditingController(
       text: _isActive ? 'Có' : 'Không',
     );
@@ -146,9 +151,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     try {
       if (widget.staff?.quanLyId != null) {
         _staffDTO = getStaffById(widget.staff?.quanLyId ?? '');
-        log('message _staffDTO: ${_staffDTO?.toJson()}');
       }
-      log('message _staffDTO: ${widget.staff?.quanLyId}');
     } catch (e) {
       _staffDTO = null;
     }
@@ -423,25 +426,77 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                     decoration: inputDecoration(
                                       'Agreement UUID',
                                     ),
-                                    validator: (v) =>
-                                        v == null || v.isEmpty
-                                            ? 'Nhập Agreement UUID'
-                                            : null,
+                                    validator:
+                                        (v) =>
+                                            v == null || v.isEmpty
+                                                ? 'Nhập Agreement UUID'
+                                                : null,
                                   ),
                                   TextFormField(
                                     controller: _pinController,
-                                    decoration: inputDecoration('PIN'),
+                                    decoration: InputDecoration(
+                                      labelText: 'PIN',
+                                      hintText: "Nhập mã Pin",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                      suffixIcon:
+                                          isEditing
+                                              ? IconButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _obscurePassword =
+                                                        !_obscurePassword;
+                                                  });
+                                                },
+                                                icon: Icon(
+                                                  _obscurePassword
+                                                      ? Icons.visibility_off
+                                                      : Icons.visibility,
+                                                ),
+                                              )
+                                              : null,
+                                    ),
                                     readOnly: !isEditing,
                                     enabled: isEditing,
+                                    obscureText: _obscurePassword,
                                     onChanged: (value) {
                                       setState(() {
                                         // _pinController.text = value;
                                       });
                                     },
-                                    validator: (v) =>
-                                        v == null || v.isEmpty
-                                            ? 'Nhập PIN'
-                                            : null,
+
+                                    validator:
+                                        (v) =>
+                                            v == null || v.isEmpty
+                                                ? 'Nhập PIN'
+                                                : null,
+                                  ),
+                                  CommonCheckboxInput(
+                                    label: 'Lưu mã PIN',
+                                    value: _savePin,
+                                    isEditing: isEditing,
+                                    isDisabled: !isEditing,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (_pinController.text.isEmpty &&
+                                            value) {
+                                          AppUtility.showSnackBar(
+                                            context,
+                                            'Vui lòng nhập PIN trước khi lưu mã PIN',
+                                            isError: true,
+                                          );
+                                          return;
+                                        }
+                                        _savePin = value;
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -571,11 +626,24 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   ),
                   if (_kyNhay)
                     Expanded(
-                      child: _buildUploadFileChuKy(
-                        _chuKyNhayPathExisting ?? '',
-                        selectedFileChuKyNhay,
-                        1,
-                      ),
+                      child:
+                          isEditing
+                              ? _buildUploadFileChuKy(
+                                _chuKyNhayPathExisting ?? '',
+                                selectedFileChuKyNhay,
+                                1,
+                              )
+                              : (_chuKyNhayPathExisting != null &&
+                                      _chuKyNhayPathExisting!.isNotEmpty
+                                  ? Image.network(
+                                    '${ApiConfig.getBaseURL()}/api/upload/download/${_chuKyNhayPathExisting!.split('/').last}',
+                                    height: 32,
+                                    fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            SizedBox(height: 32),
+                                  )
+                                  : SizedBox()),
                     ),
                 ],
               ),
@@ -602,11 +670,24 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   ),
                   if (_kyThuong)
                     Expanded(
-                      child: _buildUploadFileChuKy(
-                        _chuKyThuongPathExisting ?? '',
-                        selectedFileChuKyThuong,
-                        2,
-                      ),
+                      child:
+                          isEditing
+                              ? _buildUploadFileChuKy(
+                                _chuKyThuongPathExisting ?? '',
+                                selectedFileChuKyThuong,
+                                2,
+                              )
+                              : (_chuKyThuongPathExisting != null &&
+                                      _chuKyThuongPathExisting!.isNotEmpty
+                                  ? Image.network(
+                                    '${ApiConfig.getBaseURL()}/api/upload/download/${_chuKyThuongPathExisting!.split('/').last}',
+                                    height: 32,
+                                    fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            SizedBox(height: 32),
+                                  )
+                                  : SizedBox()),
                     ),
                 ],
               ),

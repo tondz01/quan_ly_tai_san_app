@@ -2,8 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:quan_ly_tai_san_app/common/model/permission_dto.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/permission_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -67,17 +71,21 @@ class AuthRepository extends ApiBase {
 
       final raw = response.data;
       final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
+      log('logged - Raw login data: $rawData');
       final userMap =
           rawData is String
               ? (jsonDecode(rawData) as Map<String, dynamic>)
               : (rawData as Map<String, dynamic>);
-      final user = UserInfoDTO.fromJson(userMap);
+      log('logged - Parsed user data: ${userMap['taiKhoan']}');
+      final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
       AccountHelper.instance.setUserInfo(user);
-
+      log('User logged in: ${jsonEncode(user)}');
       // Gọi các API phụ trợ
       await _loadUserDepartments(user.idCongTy);
       await _loadUserEmployee(user.idCongTy);
       await _loadChucVu(user.idCongTy);
+      List<String> roles = onGetPermission(user.tenDangNhap);
+      PermissionService.instance.saveRoles(roles);
 
       result['data'] = user;
       result['message'] = '';
@@ -185,6 +193,7 @@ class AuthRepository extends ApiBase {
     UserInfoDTO? data;
     Map<String, dynamic> result = {
       'data': data,
+      'idUser': null,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -206,9 +215,31 @@ class AuthRepository extends ApiBase {
 
       // Normalize to success for bloc check
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      final responseLogin = await post(
+        EndPointAPI.LOGIN,
+        queryParameters: {
+          'tenDangNhap': params.username,
+          'matKhau': params.matKhau,
+        },
+        options: Options(
+          // Cho phép nhận response kể cả khi 400/500 thay vì ném exception
+          validateStatus: (status) => true,
+          receiveDataWhenStatusError: true,
+        ),
+      );
+      if (responseLogin.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final raw = responseLogin.data;
+        final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
+        log('logged - Raw login data: $rawData');
+        final userMap =
+            rawData is String
+                ? (jsonDecode(rawData) as Map<String, dynamic>)
+                : (rawData as Map<String, dynamic>);
+        final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
+        await AuthRepository().setPermissionsForNhanVien(user);
+      }
       final resp = response.data;
       if (resp is Map<String, dynamic>) {
-        result['message'] = (resp['message'] ?? '').toString();
         // Prefer affectedRows if provided, fallback to data or 1
         if (resp.containsKey('affectedRows')) {
           result['data'] = resp['affectedRows'];
@@ -220,7 +251,6 @@ class AuthRepository extends ApiBase {
       } else {
         result['data'] = resp ?? 1;
       }
-      print('object result: ${result['data']}');
     } catch (e) {
       log("Error at createAccount - AuthRepository: $e");
     }
@@ -231,8 +261,7 @@ class AuthRepository extends ApiBase {
   Future<Response<UserInfoDTO>> updateUser(String id, UserInfoDTO user) async {
     try {
       final response = await put(
-        EndPointAPI.ACCOUNT,
-        queryParameters: {'id': id},
+        '${EndPointAPI.ACCOUNT}/$id',
         data: user.toJson(),
       );
       final userUpdated = UserInfoDTO.fromJson(
@@ -251,6 +280,23 @@ class AuthRepository extends ApiBase {
   Future<Response<void>> deleteUser(String id) async {
     try {
       final response = await delete('${EndPointAPI.ACCOUNT}/$id');
+      // Don't try to parse response.data if it's empty
+      return Response<void>(
+        data: null,
+        statusCode: response.statusCode,
+        requestOptions: response.requestOptions,
+      );
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  Future<Response<void>> deleteUserBatch(List<String> ids) async {
+    try {
+      final response = await delete(
+        '${EndPointAPI.ACCOUNT}/batch',
+        data: {'ids': ids},
+      );
       // Don't try to parse response.data if it's empty
       return Response<void>(
         data: null,
@@ -323,5 +369,69 @@ class AuthRepository extends ApiBase {
       log("Error at getListNhanVien - AuthRepository: $e");
     }
     return result;
+  }
+
+  List<String> onGetPermission(String idUser) {
+    List<String> roles = [];
+    if (idUser.toLowerCase() == 'admin') {
+      roles = [
+        RoleCode.NHANVIEN,
+        RoleCode.PHONGBAN,
+        RoleCode.DUAN,
+        RoleCode.NGUONVON,
+        RoleCode.MOHINHTAISAN,
+        RoleCode.NHOMTAISAN,
+        RoleCode.TAISAN,
+        RoleCode.CCDCVT,
+        RoleCode.DIEUDONG_TAISAN,
+        RoleCode.DIEUDONG_CCDC,
+        RoleCode.BANGIAO_TAISAN,
+        RoleCode.BANGIAO_CCDC,
+        RoleCode.BAOCAO,
+      ];
+    } else {
+      final nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+      if (nhanVien == null || nhanVien.chucVuId == null) return [];
+      final chucVu = AccountHelper.instance.getChucVuById(nhanVien.chucVuId!);
+      if (chucVu == null) return [];
+      final List<MapEntry<bool, String>> permissionMap = [
+        MapEntry(chucVu.quanLyNhanVien, RoleCode.NHANVIEN),
+        MapEntry(chucVu.quanLyPhongBan, RoleCode.PHONGBAN),
+        MapEntry(chucVu.quanLyDuAn, RoleCode.DUAN),
+        MapEntry(chucVu.quanLyNguonVon, RoleCode.NGUONVON),
+        MapEntry(chucVu.quanLyMoHinhTaiSan, RoleCode.MOHINHTAISAN),
+        MapEntry(chucVu.quanLyNhomTaiSan, RoleCode.NHOMTAISAN),
+        MapEntry(chucVu.quanLyTaiSan, RoleCode.TAISAN),
+        MapEntry(chucVu.quanLyCCDCVatTu, RoleCode.CCDCVT),
+        MapEntry(chucVu.dieuDongTaiSan, RoleCode.DIEUDONG_TAISAN),
+        MapEntry(chucVu.dieuDongCCDCVatTu, RoleCode.DIEUDONG_CCDC),
+        MapEntry(chucVu.banGiaoTaiSan, RoleCode.BANGIAO_TAISAN),
+        MapEntry(chucVu.banGiaoCCDCVatTu, RoleCode.BANGIAO_CCDC),
+        MapEntry(chucVu.baoCao, RoleCode.BAOCAO),
+      ];
+      roles = permissionMap.where((e) => e.key).map((e) => e.value).toList();
+    }
+    if (roles.isNotEmpty) {
+      return roles;
+    }
+    return roles;
+  }
+
+  Future<void> setPermissionsForNhanVien(UserInfoDTO user) async {
+    final List<String> permissionCodes = onGetPermission(user.tenDangNhap);
+    final List<PermissionDto> userPermissions =
+        permissionCodes
+            .map(
+              (code) => PermissionDto(
+                userId: user.id,
+                permissionCode: code,
+                canCreate: true,
+                canRead: true,
+                canUpdate: true,
+                canDelete: true,
+              ),
+            )
+            .toList();
+    await PermissionRepository().setPermissionBatch(userPermissions);
   }
 }

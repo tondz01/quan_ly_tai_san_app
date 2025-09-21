@@ -986,17 +986,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         const SizedBox(height: 10),
-        CommonCheckboxInput(
-          label: 'Ký theo lượt',
-          value: isByStep,
-          isEditing: isEditing,
-          isDisabled: !isEditing,
-          onChanged: (newValue) {
-            setState(() {
-              isByStep = newValue;
-            });
-          },
-        ),
+        // CommonCheckboxInput(
+        //   label: 'Ký theo lượt',
+        //   value: isByStep,
+        //   isEditing: isEditing,
+        //   isDisabled: !isEditing,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isByStep = newValue;
+        //     });
+        //   },
+        // ),
       ],
     );
   }

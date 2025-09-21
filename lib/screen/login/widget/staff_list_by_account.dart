@@ -416,6 +416,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
           final userInfo = UserInfoDTO(
             id: getUuIdAccount(),
             tenDangNhap: item.id ?? '',
+            username: item.id ?? '',
             matKhau: '${item.id}${item.idCongTy}',
             hoTen: item.hoTen ?? '',
             email: item.emailCongViec,

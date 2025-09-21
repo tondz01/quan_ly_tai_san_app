@@ -20,6 +20,12 @@ class HienTrang {
   HienTrang({required this.id, required this.name});
 }
 
+class RoleDto {
+  final String id;
+  final String name;
+  RoleDto({required this.id, required this.name});
+}
+
 abstract class AppUtility {
   static List<LyDoTang> get listLyDoTang => [
     LyDoTang(id: 1, name: 'Dự án'),
@@ -32,6 +38,21 @@ abstract class AppUtility {
     HienTrang(id: 2, name: 'Chờ thanh lý'),
     HienTrang(id: 3, name: 'Không sử dụng'),
     HienTrang(id: 4, name: 'Hỏng'),
+  ];
+
+  static List<RoleDto> get listRoles => [
+    RoleDto(id: '1', name: 'Admin công ty'),
+    RoleDto(id: '2', name: 'Giám đốc'),
+    RoleDto(id: '3', name: 'Quản đốc'),
+    RoleDto(id: '4', name: 'Phó quản đốc'),
+    RoleDto(id: '5', name: 'Phó giám đốc'),
+    RoleDto(id: '6', name: 'Chánh văn phòng'),
+    RoleDto(id: '7', name: 'Kế toán trưởng'),
+    RoleDto(id: '8', name: 'Trưởng phòng'),
+    RoleDto(id: '9', name: 'Phó phòng'),
+    RoleDto(id: '10', name: 'Thống kê'),
+    RoleDto(id: '11', name: 'Nhân viên kỹ thuật'),
+    RoleDto(id: '12', name: 'Nhân viên'),
   ];
 
   static List<Country> get listCountry => countries;

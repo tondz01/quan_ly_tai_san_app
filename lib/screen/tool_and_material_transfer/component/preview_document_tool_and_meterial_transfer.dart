@@ -112,6 +112,8 @@ previewDocumentToolAndMaterial({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo?.tenDangNhap ?? '',
             tenNguoiKy: userInfo?.hoTen ?? '',
+            pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
+            isSavePin: nhanVien.savePin ?? false,
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,
             isKySo: nhanVien.kySo ?? false,

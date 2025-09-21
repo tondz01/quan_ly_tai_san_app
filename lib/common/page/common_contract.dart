@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:quan_ly_tai_san_app/common/components/popup_input_pin.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -21,6 +23,8 @@ class CommonContract extends StatefulWidget {
   final String? idTaiLieu;
   final String? idNguoiKy;
   final String? tenNguoiKy;
+  final int? pin;
+  final bool isSavePin;
   final bool isShowKy;
   final bool isKyNhay;
   final bool isKyThuong;
@@ -41,6 +45,8 @@ class CommonContract extends StatefulWidget {
     this.isKyThuong = true,
     this.isKySo = true,
     this.eventSignature,
+    this.pin,
+    this.isSavePin = false,
   });
 
   @override
@@ -51,10 +57,10 @@ class _CommonContractState extends State<CommonContract> {
   final GlobalKey _contractKey = GlobalKey();
   final List<DraggableImage> images = [];
   bool _submitting = false;
-  
+
   // Danh sách dynamic keys cho các trang
   late List<GlobalKey> _pageKeys;
-  
+
   bool _isDigital = false;
 
   // ===== Helpers UI =====
@@ -145,7 +151,10 @@ class _CommonContractState extends State<CommonContract> {
   void initState() {
     super.initState();
     // Khởi tạo keys cho từng trang
-    _pageKeys = List.generate(widget.contractPages.length, (index) => GlobalKey());
+    _pageKeys = List.generate(
+      widget.contractPages.length,
+      (index) => GlobalKey(),
+    );
     _loadSignatures();
   }
 
@@ -163,7 +172,8 @@ class _CommonContractState extends State<CommonContract> {
       "${ApiConfig.getBaseURL()}/api/chuky/${widget.idTaiLieu}",
     );
     final res = await http.get(url);
-    final List<dynamic> data = jsonDecode(res.body);
+    final decoded = jsonDecode(res.body);
+    final List<dynamic> data = decoded is List ? decoded : (decoded['data'] ?? []);
     setState(() {
       signatures = List<Map<String, dynamic>>.from(data);
     });
@@ -205,15 +215,18 @@ class _CommonContractState extends State<CommonContract> {
 
     try {
       final pdf = pw.Document();
-      
+
       // Ẩn viền chọn trước khi chụp (bỏ chọn tất cả)
-      final selectedStates = images.map((img) {
-        final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
-        return state?.isSelected ?? false;
-      }).toList();
-      
+      final selectedStates =
+          images.map((img) {
+            final state =
+                (img.key as GlobalKey).currentState as _DraggableImageState?;
+            return state?.isSelected ?? false;
+          }).toList();
+
       for (var img in images) {
-        final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
+        final state =
+            (img.key as GlobalKey).currentState as _DraggableImageState?;
         if (state != null && state.isSelected) {
           state.setState(() => state.isSelected = false);
         }
@@ -223,75 +236,90 @@ class _CommonContractState extends State<CommonContract> {
       // Xuất từng trang thành PDF page riêng biệt
       for (int i = 0; i < _pageKeys.length; i++) {
         final pageKey = _pageKeys[i];
-        final boundary = pageKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-        
+        final boundary =
+            pageKey.currentContext?.findRenderObject()
+                as RenderRepaintBoundary?;
+
         if (boundary != null && boundary.debugNeedsPaint == false) {
           final image = await boundary.toImage(pixelRatio: 2.0);
-          final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+          final byteData = await image.toByteData(
+            format: ui.ImageByteFormat.png,
+          );
           final pngBytes = byteData!.buffer.asUint8List();
 
           // Kiểm tra kích thước ảnh
           final imageWidth = image.width.toDouble();
           final imageHeight = image.height.toDouble();
 
-          if (imageWidth.isNaN || imageHeight.isNaN || imageWidth <= 0 || imageHeight <= 0) {
-            throw Exception('Kích thước ảnh không hợp lệ trang ${i + 1}: ${imageWidth}x$imageHeight');
+          if (imageWidth.isNaN ||
+              imageHeight.isNaN ||
+              imageWidth <= 0 ||
+              imageHeight <= 0) {
+            throw Exception(
+              'Kích thước ảnh không hợp lệ trang ${i + 1}: ${imageWidth}x$imageHeight',
+            );
           }
 
           final imageProvider = pw.MemoryImage(pngBytes);
-          
+
           // Lọc chữ ký thuộc trang này (dựa trên vị trí Y)
           final pageHeight = 800 * (297 / 210); // Chiều cao A4Canvas
           final pageSignatures = <DraggableImage>[];
-          
+
           for (var img in images) {
-            final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
+            final state =
+                (img.key as GlobalKey).currentState as _DraggableImageState?;
             if (state != null) {
               final signatureY = state.top;
               final startY = i * pageHeight;
               final endY = (i + 1) * pageHeight;
-              
+
               // Kiểm tra chữ ký thuộc trang nào
               if (signatureY >= startY && signatureY < endY) {
                 pageSignatures.add(img);
               }
             }
           }
-          
+
           pdf.addPage(
             pw.Page(
               pageFormat: PdfPageFormat.a4.portrait,
               margin: pw.EdgeInsets.zero,
-              build: (context) => pw.Stack(
-                children: [
-                  // Nội dung trang
-                  pw.SizedBox.expand(
-                    child: pw.FittedBox(
-                      fit: pw.BoxFit.fill,
-                      child: pw.Image(imageProvider),
-                    ),
-                  ),
-                  // Thêm chữ ký vào đúng vị trí (nếu có)
-                  ...pageSignatures.map((img) {
-                    final state = (img.key as GlobalKey).currentState as _DraggableImageState?;
-                    if (state != null) {
-                      // Tính toán vị trí tương đối cho từng trang
-                      double relativeY = state.top - (i * pageHeight);
-                      
-                      return pw.Positioned(
-                        left: state.left * (PdfPageFormat.a4.width / 800),
-                        top: relativeY * (PdfPageFormat.a4.height / pageHeight),
-                        child: pw.Container(
-                          width: 100 * state.scale,
-                          height: 60 * state.scale,
-                          child: pw.Image(pw.MemoryImage(img.bytes)),
+              build:
+                  (context) => pw.Stack(
+                    children: [
+                      // Nội dung trang
+                      pw.SizedBox.expand(
+                        child: pw.FittedBox(
+                          fit: pw.BoxFit.fill,
+                          child: pw.Image(imageProvider),
                         ),
-                      );
-                    }
-                    return pw.Container();
-                  }),
-                ],
-              ),
+                      ),
+                      // Thêm chữ ký vào đúng vị trí (nếu có)
+                      ...pageSignatures.map((img) {
+                        final state =
+                            (img.key as GlobalKey).currentState
+                                as _DraggableImageState?;
+                        if (state != null) {
+                          // Tính toán vị trí tương đối cho từng trang
+                          double relativeY = state.top - (i * pageHeight);
+
+                          return pw.Positioned(
+                            left: state.left * (PdfPageFormat.a4.width / 800),
+                            top:
+                                relativeY *
+                                (PdfPageFormat.a4.height / pageHeight),
+                            child: pw.Container(
+                              width: 100 * state.scale,
+                              height: 60 * state.scale,
+                              child: pw.Image(pw.MemoryImage(img.bytes)),
+                            ),
+                          );
+                        }
+                        return pw.Container();
+                      }),
+                    ],
+                  ),
             ),
           );
         }
@@ -304,7 +332,8 @@ class _CommonContractState extends State<CommonContract> {
 
       // Khôi phục trạng thái chọn
       for (int i = 0; i < images.length; i++) {
-        final state = (images[i].key as GlobalKey).currentState as _DraggableImageState?;
+        final state =
+            (images[i].key as GlobalKey).currentState as _DraggableImageState?;
         if (state != null && selectedStates[i]) {
           state.setState(() => state.isSelected = true);
         }
@@ -312,7 +341,9 @@ class _CommonContractState extends State<CommonContract> {
     } catch (e) {
       SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
       }
     } finally {
       if (mounted) {
@@ -597,9 +628,7 @@ class _CommonContractState extends State<CommonContract> {
                         const SizedBox(width: 16),
                         Text(
                           '${widget.contractPages.length} trang',
-                          style: const TextStyle(
-                            fontSize: 14,
-                          ),
+                          style: const TextStyle(fontSize: 14),
                         ),
                         const Spacer(),
                         TextButton.icon(
@@ -647,15 +676,19 @@ class _CommonContractState extends State<CommonContract> {
                                   Column(
                                     children: [
                                       // Tạo các trang động từ contractPages
-                                      ...widget.contractPages.asMap().entries.map((entry) {
-                                        final int index = entry.key;
-                                        final Widget pageContent = entry.value;
-                                        
-                                        return RepaintBoundary(
-                                          key: _pageKeys[index],
-                                          child: pageContent
-                                        );
-                                      }),
+                                      ...widget.contractPages
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                            final int index = entry.key;
+                                            final Widget pageContent =
+                                                entry.value;
+
+                                            return RepaintBoundary(
+                                              key: _pageKeys[index],
+                                              child: pageContent,
+                                            );
+                                          }),
                                     ],
                                   ),
                                   // Các chữ ký kéo thả
@@ -687,11 +720,36 @@ class _CommonContractState extends State<CommonContract> {
                                   Icons.edit,
                                   'Ký nháy',
                                   Colors.orange,
-                                  () => _addFirstSignatureFromList(
-                                    1,
-                                    top: screenHeight / 2,
-                                    left: (screenWidth - 200) / 4,
-                                  ),
+                                  () {
+                                    if (widget.isSavePin) {
+                                      showPopupInputPin(
+                                        context: context,
+                                        title: "Xác nhận mã Pin",
+                                        description:
+                                            "Vui lòng nhập mã Pin để xác nhận",
+                                        onConfirm: (value) {
+                                          if (value == widget.pin) {
+                                            _addFirstSignatureFromList(
+                                              1,
+                                              top: screenHeight / 2,
+                                              left: (screenWidth - 200) / 4,
+                                            );
+                                          } else {
+                                            AppUtility.showSnackBar(
+                                              context,
+                                              "Mã pin chứ chính xác, vui lòng nhập lại!",
+                                            );
+                                          }
+                                        },
+                                      );
+                                      return;
+                                    }
+                                    _addFirstSignatureFromList(
+                                      1,
+                                      top: screenHeight / 2,
+                                      left: (screenWidth - 200) / 4,
+                                    );
+                                  },
                                 ),
                               ),
                               Visibility(

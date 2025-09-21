@@ -4,6 +4,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
+import 'package:quan_ly_tai_san_app/core/utils/permission_service.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/main_wrapper/sg_sidebar_horizontal.dart';
@@ -120,143 +122,165 @@ class AppMenuData extends ChangeNotifier {
   }
 
   void _buildMenuItems() {
+    final per = PermissionService.instance;
     menuItems = [
       MenuItem(label: 'Tổng quan', route: AppRoute.dashboard.path),
       MenuItem(
         label: 'Danh mục',
         route: AppRoute.category.path,
         reportSubItems: [
-          SubMenuItem(
-            label: 'Quản lý nhân viên',
-            route: AppRoute.staffManager.path,
-          ),
-          SubMenuItem(
-            label: 'Quản lý phòng ban',
-            route: AppRoute.departmentManager.path,
-          ),
+          if (per.hasPermission(RoleCode.NHANVIEN))
+            SubMenuItem(
+              label: 'Quản lý nhân viên',
+              route: AppRoute.staffManager.path,
+            ),
+          if (per.hasPermission(RoleCode.PHONGBAN))
+            SubMenuItem(
+              label: 'Quản lý phòng ban',
+              route: AppRoute.departmentManager.path,
+            ),
+          // if (per.hasPermission(RoleCode.CHUCVU))
           SubMenuItem(label: 'Quản lý chức vụ', route: AppRoute.role.path),
           SubMenuItem(
             label: 'Quản lý dự án',
             route: AppRoute.projectManager.path,
           ),
-          SubMenuItem(
-            label: 'Quản lý nguồn vốn',
-            route: AppRoute.capitalSource.path,
-          ),
-          SubMenuItem(
-            label: 'Mô hình tài sản',
-            route: AppRoute.assetCategory.path,
-          ),
-          SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path),
+          if (per.hasPermission(RoleCode.NGUONVON))
+            SubMenuItem(
+              label: 'Quản lý nguồn vốn',
+              route: AppRoute.capitalSource.path,
+            ),
+          if (per.hasPermission(RoleCode.MOHINHTAISAN))
+            SubMenuItem(
+              label: 'Mô hình tài sản',
+              route: AppRoute.assetCategory.path,
+            ),
+          if (per.hasPermission(RoleCode.NHOMTAISAN))
+            SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path),
+
+          // if (per.hasPermission(RoleCode.NHOMCCDC))
           SubMenuItem(label: 'Nhóm ccdc', route: AppRoute.ccdcGroup.path),
         ],
       ),
-      MenuItem(label: 'Quản lý tài sản', route: AppRoute.assetManagement.path),
-      MenuItem(
-        label: 'Quản lý CCDC - Vật tư',
-        route: AppRoute.toolsAndSupplies.path,
-      ),
-      MenuItem(
-        label: 'Điều động tài sản ',
-        child: _buildRealtimeCountWidget(
-          () => countAssetTransfer + countAssetTransfer2 + countAssetTransfer3,
+      if (per.hasPermission(RoleCode.TAISAN))
+        MenuItem(
+          label: 'Quản lý tài sản',
+          route: AppRoute.assetManagement.path,
         ),
-        reportSubItems: [
-          SubMenuItem(
-            label: 'Cấp phát tài sản',
-            child: _buildRealtimeCountWidgetInSubMenu(() => countAssetTransfer),
-            route: AppRoute.assetTransfer.path,
-            extra: "1",
-          ),
-          SubMenuItem(
-            label: 'Điều chuyển tài sản',
-            child: _buildRealtimeCountWidgetInSubMenu(
-              () => countAssetTransfer2,
-            ),
-            route: AppRoute.assetTransfer.path,
-            extra: "3",
-          ),
-          SubMenuItem(
-            label: 'Thu hồi tài sản',
-            child: _buildRealtimeCountWidgetInSubMenu(
-              () => countAssetTransfer3,
-            ),
-            route: AppRoute.assetTransfer.path,
-            extra: "2",
-          ),
-        ],
-      ),
-      MenuItem(
-        label: 'Điều động CCDC - Vật tư',
-        child: _buildRealtimeCountWidget(
-          () =>
-              countToolAndSupplies +
-              countToolAndSupplies2 +
-              countToolAndSupplies3,
+      if (per.hasPermission(RoleCode.CCDCVT))
+        MenuItem(
+          label: 'Quản lý CCDC - Vật tư',
+          route: AppRoute.toolsAndSupplies.path,
         ),
-        route: AppRoute.toolAndMaterialTransfer.path,
-        reportSubItems: [
-          SubMenuItem(
-            label: 'Cấp phát CCDC - vật tư',
-            child: _buildRealtimeCountWidgetInSubMenu(
-              () => countToolAndSupplies,
+      if (per.hasPermission(RoleCode.DIEUDONG_TAISAN))
+        MenuItem(
+          label: 'Điều động tài sản ',
+          child: _buildRealtimeCountWidget(
+            () =>
+                countAssetTransfer + countAssetTransfer2 + countAssetTransfer3,
+          ),
+          reportSubItems: [
+            SubMenuItem(
+              label: 'Cấp phát tài sản',
+              child: _buildRealtimeCountWidgetInSubMenu(
+                () => countAssetTransfer,
+              ),
+              route: AppRoute.assetTransfer.path,
+              extra: "1",
             ),
-            route: AppRoute.toolAndMaterialTransfer.path,
-            extra: "1",
-          ),
-          SubMenuItem(
-            label: 'Điều chuyển CCDC - vật tư',
-            child: _buildRealtimeCountWidgetInSubMenu(
-              () => countToolAndSupplies2,
+            SubMenuItem(
+              label: 'Điều chuyển tài sản',
+              child: _buildRealtimeCountWidgetInSubMenu(
+                () => countAssetTransfer2,
+              ),
+              route: AppRoute.assetTransfer.path,
+              extra: "3",
             ),
-            route: AppRoute.toolAndMaterialTransfer.path,
-            extra: "3",
-          ),
-          SubMenuItem(
-            label: 'Thu hồi CCDC - vật tư',
-            child: _buildRealtimeCountWidgetInSubMenu(
-              () => countToolAndSupplies3,
+            SubMenuItem(
+              label: 'Thu hồi tài sản',
+              child: _buildRealtimeCountWidgetInSubMenu(
+                () => countAssetTransfer3,
+              ),
+              route: AppRoute.assetTransfer.path,
+              extra: "2",
             ),
-            route: AppRoute.toolAndMaterialTransfer.path,
-            extra: "2",
+          ],
+        ),
+      if (per.hasPermission(RoleCode.DIEUDONG_CCDC))
+        MenuItem(
+          label: 'Điều động CCDC - Vật tư',
+          child: _buildRealtimeCountWidget(
+            () =>
+                countToolAndSupplies +
+                countToolAndSupplies2 +
+                countToolAndSupplies3,
           ),
-        ],
-      ),
-      MenuItem(
-        label: 'Bàn giao tài sản',
-        child: _buildRealtimeCountWidget(() => countAssetHandover),
-        route: AppRoute.assetHandover.path,
-      ),
-      MenuItem(
-        label: 'Bàn giao CCDC-Vật tư',
-        child: _buildRealtimeCountWidget(() => countToolAndMaterialHandover),
-        route: AppRoute.toolAndSuppliesHandover.path,
-      ),
-      MenuItem(
-        label: 'Báo cáo',
-        reportSubItems: [
-          SubMenuItem(
-            label: "Báo cáo Cấp phát tài sản trong kỳ",
-            route: AppRoute.allocationReport.path,
-          ),
-          SubMenuItem(
-            label: "Báo cáo Điều chuyển tài sản trong kỳ",
-            route: AppRoute.transferReport.path,
-          ),
-          SubMenuItem(
-            label: "Báo cáo Thu hồi tài sản trong kỳ",
-            route: AppRoute.recoveryReport.path,
-          ),
-          SubMenuItem(
-            label: 'Biên bản kiểm kê',
-            route: AppRoute.bienBanKiemKe.path,
-          ),
-          SubMenuItem(
-            label: 'Biên bản kiểm kê CCDC',
-            route: AppRoute.bienBanKiemKeCcdc.path,
-          ),
-        ],
-      ),
+          route: AppRoute.toolAndMaterialTransfer.path,
+          reportSubItems: [
+            SubMenuItem(
+              label: 'Cấp phát CCDC - vật tư',
+              child: _buildRealtimeCountWidgetInSubMenu(
+                () => countToolAndSupplies,
+              ),
+              route: AppRoute.toolAndMaterialTransfer.path,
+              extra: "1",
+            ),
+            SubMenuItem(
+              label: 'Điều chuyển CCDC - vật tư',
+              child: _buildRealtimeCountWidgetInSubMenu(
+                () => countToolAndSupplies2,
+              ),
+              route: AppRoute.toolAndMaterialTransfer.path,
+              extra: "3",
+            ),
+            SubMenuItem(
+              label: 'Thu hồi CCDC - vật tư',
+              child: _buildRealtimeCountWidgetInSubMenu(
+                () => countToolAndSupplies3,
+              ),
+              route: AppRoute.toolAndMaterialTransfer.path,
+              extra: "2",
+            ),
+          ],
+        ),
+      if (per.hasPermission(RoleCode.BANGIAO_TAISAN))
+        MenuItem(
+          label: 'Bàn giao tài sản',
+          child: _buildRealtimeCountWidget(() => countAssetHandover),
+          route: AppRoute.assetHandover.path,
+        ),
+      if (per.hasPermission(RoleCode.BANGIAO_CCDC))
+        MenuItem(
+          label: 'Bàn giao CCDC-Vật tư',
+          child: _buildRealtimeCountWidget(() => countToolAndMaterialHandover),
+          route: AppRoute.toolAndSuppliesHandover.path,
+        ),
+      if (per.hasPermission(RoleCode.BAOCAO))
+        MenuItem(
+          label: 'Báo cáo',
+          reportSubItems: [
+            SubMenuItem(
+              label: "Báo cáo Cấp phát tài sản trong kỳ",
+              route: AppRoute.allocationReport.path,
+            ),
+            SubMenuItem(
+              label: "Báo cáo Điều chuyển tài sản trong kỳ",
+              route: AppRoute.transferReport.path,
+            ),
+            SubMenuItem(
+              label: "Báo cáo Thu hồi tài sản trong kỳ",
+              route: AppRoute.recoveryReport.path,
+            ),
+            SubMenuItem(
+              label: 'Biên bản kiểm kê',
+              route: AppRoute.bienBanKiemKe.path,
+            ),
+            SubMenuItem(
+              label: 'Biên bản kiểm kê CCDC',
+              route: AppRoute.bienBanKiemKeCcdc.path,
+            ),
+          ],
+        ),
     ];
   }
 

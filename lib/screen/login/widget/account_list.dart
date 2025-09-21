@@ -7,12 +7,16 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/widget/account_edit_popup.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -27,6 +31,8 @@ class AccountList extends StatefulWidget {
 class _AccountListState extends State<AccountList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
+
+  List<UserInfoDTO> selectedItems = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -125,7 +131,7 @@ class _AccountListState extends State<AccountList> {
           columns.add(
             TableBaseConfig.columnTable<UserInfoDTO>(
               title: 'Tên đăng nhập',
-              getValue: (item) => item.tenDangNhap,
+              getValue: (item) => item.username ?? '',
               width: 170,
               titleAlignment: TextAlign.left,
             ),
@@ -185,7 +191,7 @@ class _AccountListState extends State<AccountList> {
           columns.add(
             TableBaseConfig.columnTable<UserInfoDTO>(
               title: 'Người tạo',
-              getValue: (item) => item.nguoiTao.toString(),
+              getValue: (item) => widget.provider.getNameUser(item.nguoiTao),
               width: 120,
               titleAlignment: TextAlign.left,
             ),
@@ -214,9 +220,9 @@ class _AccountListState extends State<AccountList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<UserInfoDTO>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
-              width: 120,
+              width: 180,
               searchable: true,
             ),
           );
@@ -317,6 +323,50 @@ class _AccountListState extends State<AccountList> {
                     ),
                   ],
                 ),
+                Visibility(
+                  visible: selectedItems.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text:
+                            'Danh sách tài khoản đã chọn: ${selectedItems.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            List<String> data =
+                                selectedItems.map((e) => e.id).toList();
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa tài khoản',
+                              message:
+                                  'Bạn có chắc muốn xóa ${selectedItems.length} tài khoản',
+                              highlight: selectedItems.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                context.read<LoginBloc>().add(
+                                  DeleteUserBatchEvent(data),
+                                );
+                              },
+                            );
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -324,10 +374,16 @@ class _AccountListState extends State<AccountList> {
             child: TableBaseView<UserInfoDTO>(
               searchTerm: '',
               columns: columns,
-              data: widget.provider.users ?? [],
+              data: widget.provider.filteredData ?? [],
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 // widget.provider.onChangeDetail(item);
+                // showPermissionExample(context, item);
+              },
+              onSelectionChanged: (items) {
+                setState(() {
+                  selectedItems = items;
+                });
               },
             ),
           ),
@@ -344,14 +400,35 @@ class _AccountListState extends State<AccountList> {
     UserInfoDTO? currentUser = AccountHelper.instance.getUserInfo();
     return viewActionButtons([
       ActionButtonConfig(
+        icon: Icons.edit,
+        tooltip: 'Sửa',
+        iconColor: Colors.blue,
+        backgroundColor: Colors.blue.shade50,
+        borderColor: Colors.blue.shade200,
+        onPressed: () {
+          List<RoleDto> roles = AppUtility.listRoles;
+          // showPermissionExample(context, item);
+          showAccountEditPopup(
+            context: context,
+            userInfo: item,
+            roles: roles,
+            onSave: (updatedUser) {
+              context.read<LoginBloc>().add(
+                UpdateUserEvent(updatedUser.id, updatedUser),
+              );
+            },
+          );
+        },
+      ),
+      ActionButtonConfig(
         icon: Icons.delete,
         tooltip: 'Xóa',
         iconColor:
-            currentUser!.tenDangNhap == "admin" ? Colors.grey : Colors.red,
+            currentUser!.tenDangNhap != "admin" ? Colors.grey : Colors.red,
         backgroundColor: Colors.red.shade50,
         borderColor: Colors.red.shade200,
         onPressed:
-            currentUser.tenDangNhap == "admin"
+            currentUser.tenDangNhap != "admin"
                 ? null
                 : () => {
                   showConfirmDialog(
@@ -368,6 +445,16 @@ class _AccountListState extends State<AccountList> {
                     },
                   ),
                 },
+      ),
+      ActionButtonConfig(
+        icon: Icons.security,
+        tooltip: 'Phân quyền',
+        iconColor: Colors.orange,
+        backgroundColor: Colors.orange.shade50,
+        borderColor: Colors.orange.shade200,
+        onPressed: () {
+          widget.provider.showPermission(context, item);
+        },
       ),
     ]);
   }

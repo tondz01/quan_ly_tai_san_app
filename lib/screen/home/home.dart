@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
+import 'package:quan_ly_tai_san_app/screen/home/component/config_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/component/popup_setting_expiration_time.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/menu_prefs.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -54,7 +55,8 @@ class _HomeState extends State<Home> {
       }
     }
     if (savedSubIndex != null) {
-      final hasSubs = _menuData.menuItems[_selectedIndex].reportSubItems.isNotEmpty ||
+      final hasSubs =
+          _menuData.menuItems[_selectedIndex].reportSubItems.isNotEmpty ||
           _menuData.menuItems[_selectedIndex].projectGroups.isNotEmpty;
       if (hasSubs) {
         _selectedSubIndex = savedSubIndex;
@@ -66,7 +68,7 @@ class _HomeState extends State<Home> {
     // Đăng ký lắng nghe thay đổi trạng thái popup
     _popupManager.addGlobalListener(_onPopupStateChanged);
     userInfo = AccountHelper.instance.getUserInfo();
-    if(userInfo == null){
+    if (userInfo == null) {
       context.go(AppRoute.login.path);
     }
   }
@@ -105,7 +107,7 @@ class _HomeState extends State<Home> {
         label: item.label,
         icon: item.icon,
         child: item.child,
-        
+
         isActive: _selectedIndex == item.index,
         popupWidth: calculatePopupWidth(item),
         popupBorderRadius: 4.0,
@@ -229,7 +231,12 @@ class _HomeState extends State<Home> {
         return MainWrapper(
           header: null,
           sidebar: Container(
-            padding: const EdgeInsets.only(top: 8, left: 24, right: 24, bottom: 8),
+            padding: const EdgeInsets.only(
+              top: 8,
+              left: 24,
+              right: 24,
+              bottom: 8,
+            ),
             decoration: BoxDecoration(color: Colors.blue),
             child: Row(
               children: [
@@ -295,19 +302,10 @@ class _HomeState extends State<Home> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         // Settings button
-        if(userInfo.rule == 0 || userInfo.rule == 1)
-        MaterialIconButton(
-          icon: Icons.settings,
-          onPressed: () {
-            context.go(AppRoute.account.path);
-          },
+        PopupMenuButton<String>(
           tooltip: 'Quản lý hệ thống',
-        ),
-        const SizedBox(width: 16),
-        // User avatar
-        Tooltip(
-          message:
-              'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
+          position: PopupMenuPosition.under,
+          color: Colors.white,
           child: CircleAvatar(
             radius: 20,
             backgroundColor: ColorValue.primaryLightBlue,
@@ -317,19 +315,135 @@ class _HomeState extends State<Home> {
               backgroundColor: Colors.white,
             ),
           ),
+          itemBuilder:
+              (context) => [
+                PopupMenuItem(child: _buildInfoAvatar()),
+                PopupMenuItem(
+                  value: 'profile',
+                  child: _buildAvatarMenuOption(
+                    'Quản lý tài khoản',
+                    Icons.person,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'settings',
+                  child: _buildAvatarMenuOption('Thiết lập thời gian hết hạn', Icons.settings),
+                ),
+                PopupMenuItem(
+                  value: 'logout',
+                  child: _buildAvatarMenuOption('Đăng xuất', Icons.logout),
+                ),
+              ],
+          onSelected: (value) {
+            // Xử lý các action tương ứng
+            switch (value) {
+              case 'profile':
+                // Navigate to account page
+                context.go(AppRoute.account.path);
+                break;
+              case 'settings':
+                // Navigate to settings page
+
+                showPopupSettingExpirationTime(
+                  context: context,
+                  title: "Thiết lập thời gian hết hạn",
+                  description:
+                      "Nhập số ngày để thiết lập thời gian hết hạn cho các biên bản",
+                  initialValue:
+                      AccountHelper.instance.getConfigTimeExpire() ?? 0,
+                  minValue: 1,
+                  // maxValue: 365,
+                  step: 1,
+                  onConfirm: (value) async {
+                    int? currentValue =
+                        AccountHelper.instance.getConfigTimeExpire();
+                    if (currentValue == null) {
+                      fetchConfigTimeExpire(context, value);
+                      return;
+                    } else if (currentValue != value) {
+                      updateConfigTimeExpire(context, value);
+                    }
+                  },
+                );
+                break;
+              case 'logout':
+                // Handle logout
+                context.read<LoginProvider>().logout(context);
+                break;
+            }
+          },
         ),
-        const SizedBox(width: 16),
-        Tooltip(
-          message: 'Đăng xuất',
-          child: IconButton(
-            onPressed: () {
-              context.read<LoginProvider>().logout(context);
-            },
-            icon: const Icon(Icons.logout_outlined, size: 24,color: ColorValue.background,),
-          ),
-        ),
+        // User avatar
+        // Tooltip(
+        //   message:
+        //       'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
+        //   child: CircleAvatar(
+        //     radius: 20,
+        //     backgroundColor: ColorValue.primaryLightBlue,
+        //     child: CircleAvatar(
+        //       radius: 18,
+        //       backgroundImage: AssetImage(AppImage.imageUser),
+        //       backgroundColor: Colors.white,
+        //     ),
+        //   ),
+        // ),
+        // const SizedBox(width: 16),
+        // Tooltip(
+        //   message: 'Đăng xuất',
+        //   child: IconButton(
+        //     onPressed: () {
+        //       context.read<LoginProvider>().logout(context);
+        //     },
+        //     icon: const Icon(
+        //       Icons.logout_outlined,
+        //       size: 24,
+        //       color: ColorValue.background,
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
 
+  // Helper method for avatar menu options
+  Widget _buildAvatarMenuOption(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(title),
+        ],
+      ),
+    );
+  }
+
+  // Helper method for avatar menu options
+  Widget _buildInfoAvatar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        spacing: 10,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: ColorValue.primaryLightBlue,
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundImage: AssetImage(AppImage.imageUser),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(userInfo!.hoTen),
+            ],
+          ),
+          const Divider(color: ColorValue.darkGrey, height: 2, thickness: 1),
+        ],
+      ),
+    );
+  }
 }

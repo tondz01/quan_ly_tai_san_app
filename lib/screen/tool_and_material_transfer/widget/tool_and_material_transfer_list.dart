@@ -760,7 +760,7 @@ class _ToolAndMaterialTransferListState
         .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
 
-    if (previousNotSigned.isNotEmpty && item.byStep == true) {
+    if (previousNotSigned.isNotEmpty) {
       AppUtility.showSnackBar(
         context,
         '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',

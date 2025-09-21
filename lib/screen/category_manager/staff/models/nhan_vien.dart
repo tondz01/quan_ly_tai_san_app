@@ -37,6 +37,8 @@ class NhanVien extends Equatable {
   final bool? kyThuong;
   final bool? kySo;
 
+  final bool? savePin;
+
   const NhanVien({
     this.id,
     this.hoTen,
@@ -70,10 +72,11 @@ class NhanVien extends Equatable {
     this.kyNhay,
     this.kyThuong,
     this.kySo,
+    this.savePin,
   });
 
   factory NhanVien.fromJson(Map<String, dynamic> json) {
-    String? s(dynamic v) => v == null ? null : v.toString();
+    String? s(dynamic v) => v?.toString();
     bool? b(dynamic v) {
       if (v == null) return null;
       if (v is bool) return v;
@@ -110,6 +113,7 @@ class NhanVien extends Equatable {
       kySo: b(json['kySo']),
       ngayTao: s(json['ngayTao']),
       ngayCapNhat: s(json['ngayCapNhat']),
+      savePin: b(json['savePin']),
     );
   }
   NhanVien copyWith({
@@ -145,6 +149,7 @@ class NhanVien extends Equatable {
     bool? kyNhay,
     bool? kyThuong,
     bool? kySo,
+    bool? savePin,
   }) {
     return NhanVien(
       id: id ?? this.id,
@@ -179,6 +184,7 @@ class NhanVien extends Equatable {
       kySo: kySo ?? this.kySo,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      savePin: savePin ?? this.savePin
     );
   }
   
@@ -209,6 +215,7 @@ class NhanVien extends Equatable {
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
       'active': active,
+      'savePin': savePin,
     };
   }
 
@@ -251,6 +258,7 @@ class NhanVien extends Equatable {
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
       'Hiển thị': active,
+      'Lưu mã PIN': savePin,
     };
   }
 
@@ -287,5 +295,6 @@ class NhanVien extends Equatable {
     kySo,
     ngayTao,
     ngayCapNhat,
+    savePin
   ];
 }

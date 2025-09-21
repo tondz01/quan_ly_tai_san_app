@@ -30,6 +30,20 @@ class _HeaderState extends State<Header> {
     );
   }
 
+  // Helper method for avatar menu options
+  Widget _buildAvatarMenuOption(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(title),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -149,15 +163,54 @@ class _HeaderState extends State<Header> {
                         },
                       ),
                       const SizedBox(width: 16),
-                      // User avatar
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: ColorValue.primaryLightBlue,
+                      // User avatar with popup
+                      PopupMenuButton<String>(
+                        offset: const Offset(-120, 10),
                         child: CircleAvatar(
-                        radius: 18,
-                          backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=3'),
-                          backgroundColor: Colors.white,
+                          radius: 20,
+                          backgroundColor: ColorValue.primaryLightBlue,
+                          child: CircleAvatar(
+                            radius: 18,
+                            backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=3'),
+                            backgroundColor: Colors.white,
+                          ),
                         ),
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'profile',
+                            child: _buildAvatarMenuOption('Thông tin cá nhân', Icons.person),
+                          ),
+                          PopupMenuItem(
+                            value: 'settings',
+                            child: _buildAvatarMenuOption('Cài đặt', Icons.settings),
+                          ),
+                          PopupMenuItem(
+                            value: 'help',
+                            child: _buildAvatarMenuOption('Trợ giúp', Icons.help),
+                          ),
+                          PopupMenuItem(
+                            value: 'logout',
+                            child: _buildAvatarMenuOption('Đăng xuất', Icons.logout),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          SGLog.debug('Header', 'Avatar menu: $value selected');
+                          // Xử lý các action tương ứng
+                          switch (value) {
+                            case 'profile':
+                              // Navigate to profile page
+                              break;
+                            case 'settings':
+                              // Navigate to settings page
+                              break;
+                            case 'help':
+                              // Show help dialog
+                              break;
+                            case 'logout':
+                              // Handle logout
+                              break;
+                          }
+                        },
                       ),
                     ],
                   ),
