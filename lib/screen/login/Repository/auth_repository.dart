@@ -373,6 +373,7 @@ class AuthRepository extends ApiBase {
 
   List<String> onGetPermission(String idUser) {
     List<String> roles = [];
+    log('Getting permissions for user: $idUser');
     if (idUser.toLowerCase() == 'admin') {
       roles = [
         RoleCode.NHANVIEN,

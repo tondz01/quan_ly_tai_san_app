@@ -4,7 +4,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/convert_excel_to_staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
@@ -17,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vi
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class StaffManager extends StatefulWidget {
   const StaffManager({super.key});
@@ -40,14 +43,20 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   final TextEditingController searchController = TextEditingController();
   List<NhanVien> _filteredData = [];
   List<NhanVien> dataPage = [];
-  bool isFirstLoad = false;
 
+  bool isFirstLoad = false;
   bool isShowInput = false;
+  bool isCanCreate = false;
+  bool isCanUpdate = false;
+  bool isCanDelete = false;
+  bool isNew = false;
 
   void _showForm([NhanVien? staff]) {
     setState(() {
       isShowInput = true;
       editingStaff = staff;
+      isNew = staff == null;
+      log('_checkPermission isNew: $isNew');
     });
   }
 
@@ -75,6 +84,9 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         const LoadStaffs(),
       ); // Sửa LoadStaff thành LoadStaffs
     });
+    setState(() {
+      _checkPermission();
+    });
   }
 
   @override
@@ -85,6 +97,10 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         const LoadStaffs(),
       ); // Sửa LoadStaff thành LoadStaffs
     });
+    setState(() {
+      isShowInput = false;
+      _checkPermission();
+    });
   }
 
   @override
@@ -94,10 +110,29 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         const LoadStaffs(),
       ); // Sửa StaffLoaded() thành LoadStaffs()
     });
+    setState(() {
+      isShowInput = false;
+      _checkPermission();
+    });
   }
 
   void _searchStaff(String value) {
     context.read<StaffBloc>().add(SearchStaff(value));
+  }
+
+  void _checkPermission() async {
+    final repo = PermissionRepository();
+    final userId = AccountHelper.instance.getUserInfo()?.id ?? '';
+    isCanCreate =
+        await repo.checkCanCreatePermission(userId, RoleCode.NHANVIEN) ?? false;
+    isCanUpdate =
+        await repo.checkCanUpdatePermission(userId, RoleCode.NHANVIEN) ?? false;
+    isCanDelete =
+        await repo.checkCanDeletePermission(userId, RoleCode.NHANVIEN) ?? false;
+    SGLog.info(
+      "_checkPermission",
+      'isCanCreate: $isCanCreate -- isCanDelete: $isCanDelete -- isCanUpdate: $isCanUpdate',
+    );
   }
 
   void _updatePagination() {
@@ -193,6 +228,13 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                     });
                   },
                   onNew: () {
+                    if (!isCanCreate) {
+                      AppUtility.showSnackBar(
+                        context,
+                        'Bạn không có quyền tạo nhân viên',
+                      );
+                      return;
+                    }
                     setState(() {
                       _showForm(null);
                       isShowInput = true;
@@ -221,6 +263,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                         childInput: StaffFormPage(
                           staff: editingStaff,
                           staffs: staffs,
+                          isNew: isNew,
                           onCancel: () {
                             setState(() {
                               isShowInput = false;
@@ -233,12 +276,20 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                         ),
                         childTableView: StaffList(
                           data: dataPage,
+                          isCanDelete: isCanDelete,
                           onChangeDetail: (item) {
                             _showForm(item);
                             isShowInput = true;
                           },
                           onDelete: (item) {
                             setState(() {
+                              if (!isCanDelete) {
+                                AppUtility.showSnackBar(
+                                  context,
+                                  'Bạn không có quyền xóa nhân viên',
+                                );
+                                return;
+                              }
                               isShowInput = false;
                               context.read<StaffBloc>().add(DeleteStaff(item));
                             });

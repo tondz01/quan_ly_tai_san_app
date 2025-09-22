@@ -608,30 +608,31 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   Widget viewAction(AssetManagementDto item) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: 'Xóa',
-        iconColor: Colors.red.shade700,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed:
-            () => {
-              showConfirmDialog(
-                context,
-                type: ConfirmType.delete,
-                title: 'Xóa nhóm tài sản',
-                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom ?? '',
-                cancelText: 'Không',
-                confirmText: 'Xóa',
-                onConfirm: () {
-                  context.read<AssetManagementBloc>().add(
-                    DeleteAssetEvent(context, item.id!),
-                  );
-                },
-              ),
-            },
-      ),
+      if (widget.provider.isCanDelete)
+        ActionButtonConfig(
+          icon: Icons.delete,
+          tooltip: 'Xóa',
+          iconColor: Colors.red.shade700,
+          backgroundColor: Colors.red.shade50,
+          borderColor: Colors.red.shade200,
+          onPressed:
+              () => {
+                showConfirmDialog(
+                  context,
+                  type: ConfirmType.delete,
+                  title: 'Xóa nhóm tài sản',
+                  message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
+                  highlight: item.tenNhom ?? '',
+                  cancelText: 'Không',
+                  confirmText: 'Xóa',
+                  onConfirm: () {
+                    context.read<AssetManagementBloc>().add(
+                      DeleteAssetEvent(context, item.id!),
+                    );
+                  },
+                ),
+              },
+        ),
     ]);
   }
 }

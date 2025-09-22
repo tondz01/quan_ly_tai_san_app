@@ -122,6 +122,9 @@ class _AssetDetailState extends State<AssetDetail> {
       data = null;
       isEditing = true;
     }
+    if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
+      isEditing = false;
+    }
     _initController();
   }
 
@@ -179,7 +182,11 @@ class _AssetDetailState extends State<AssetDetail> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeaderDetail(),
+          if (widget.provider.isNew ||
+              (widget.provider.isCanUpdate &&
+                  !widget.provider.isNew &&
+                  data != null))
+            _buildHeaderDetail(),
           const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.all(10),
@@ -217,6 +224,7 @@ class _AssetDetailState extends State<AssetDetail> {
                     fontSize: 24,
                     color: ColorValue.neutral500,
                   ),
+                  padding: EdgeInsets.symmetric(horizontal: 10,vertical: 5),
                 ),
                 Padding(
                   padding: EdgeInsets.only(

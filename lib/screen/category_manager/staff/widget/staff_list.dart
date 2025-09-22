@@ -15,7 +15,8 @@ class StaffList extends StatefulWidget {
   final void Function(NhanVien)? onChangeDetail;
   final void Function(NhanVien)? onEdit;
   final void Function(NhanVien)? onDelete;
-  final void Function(List<String> )? onDeleteBatch;
+  final void Function(List<String>)? onDeleteBatch;
+  final bool isCanDelete;
   const StaffList({
     super.key,
     required this.data,
@@ -23,6 +24,7 @@ class StaffList extends StatefulWidget {
     this.onEdit,
     this.onDelete,
     this.onDeleteBatch,
+    this.isCanDelete = false,
   });
 
   @override
@@ -131,48 +133,49 @@ class _StaffListState extends State<StaffList> {
                     ),
                   ],
                 ),
-                Visibility(
-                  visible: selectedItems.isNotEmpty,
-                  child: Row(
-                    children: [
-                      SGText(
-                        text:
-                            'Danh sách nhân viên đã chọn: ${selectedItems.length}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
+                if (widget.isCanDelete)
+                  Visibility(
+                    visible: selectedItems.isNotEmpty,
+                    child: Row(
+                      children: [
+                        SGText(
+                          text:
+                              'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 16),
-                      MaterialTextButton(
-                        text: 'Xóa đã chọn',
-                        icon: Icons.delete,
-                        backgroundColor: ColorValue.error,
-                        foregroundColor: Colors.white,
-                        onPressed: () {
-                          setState(() {
-                            List<String> data =
-                                selectedItems.map((e) => e.id!).toList();
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa nhân viên',
-                              message:
-                                  'Bạn có chắc muốn xóa ${selectedItems.length} nhân viên',
-                              highlight: selectedItems.length.toString(),
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                widget.onDeleteBatch?.call(data);
-                              },
-                            );
-                          });
-                        },
-                      ),
-                    ],
+                        SizedBox(width: 16),
+                        MaterialTextButton(
+                          text: 'Xóa đã chọn',
+                          icon: Icons.delete,
+                          backgroundColor: ColorValue.error,
+                          foregroundColor: Colors.white,
+                          onPressed: () {
+                            setState(() {
+                              List<String> data =
+                                  selectedItems.map((e) => e.id!).toList();
+                              showConfirmDialog(
+                                context,
+                                type: ConfirmType.delete,
+                                title: 'Xóa nhân viên',
+                                message:
+                                    'Bạn có chắc muốn xóa ${selectedItems.length} nhân viên',
+                                highlight: selectedItems.length.toString(),
+                                cancelText: 'Không',
+                                confirmText: 'Xóa',
+                                onConfirm: () {
+                                  widget.onDeleteBatch?.call(data);
+                                },
+                              );
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -202,23 +205,29 @@ class _StaffListState extends State<StaffList> {
       ActionButtonConfig(
         icon: Icons.delete,
         tooltip: 'Xóa',
-        iconColor: Colors.red.shade700,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
+        iconColor:
+            widget.isCanDelete ? Colors.red.shade700 : Colors.grey.shade700,
+        backgroundColor:
+            widget.isCanDelete ? Colors.red.shade50 : Colors.grey.shade50,
+        borderColor:
+            widget.isCanDelete ? Colors.red.shade200 : Colors.grey.shade200,
         onPressed:
             () => {
-              showConfirmDialog(
-                context,
-                type: ConfirmType.delete,
-                title: 'Xóa nhân viên',
-                message: 'Bạn có chắc muốn xóa ${item.hoTen}',
-                highlight: item.hoTen ?? '',
-                cancelText: 'Không',
-                confirmText: 'Xóa',
-                onConfirm: () {
-                  widget.onDelete?.call(item);
+              if (widget.isCanDelete)
+                {
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa nhân viên',
+                    message: 'Bạn có chắc muốn xóa ${item.hoTen}',
+                    highlight: item.hoTen ?? '',
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      widget.onDelete?.call(item);
+                    },
+                  ),
                 },
-              ),
             },
       ),
     ]);

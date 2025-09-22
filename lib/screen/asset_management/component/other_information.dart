@@ -186,7 +186,7 @@ Widget buildOtherInformation(
           onHienTrangChanged?.call(value);
         },
       ),
-
+      const SizedBox(height: 10),
       CommonFormInput(
         label: 'Số lượng',
         controller: ctrlSoLuong,
@@ -196,7 +196,7 @@ Widget buildOtherInformation(
         inputType: TextInputType.number,
         validationErrors: validationErrors,
       ),
-
+      const SizedBox(height: 5),
       CommonFormInput(
         label: 'Đơn vị tính',
         controller: ctrlDonViTinh,
@@ -204,6 +204,7 @@ Widget buildOtherInformation(
         textContent: ctrlDonViTinh.text,
         fieldName: 'donViTinh',
         validationErrors: validationErrors,
+        isRequired: true,
       ),
 
       CommonFormInput(

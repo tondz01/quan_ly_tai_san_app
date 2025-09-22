@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -30,6 +29,8 @@ class StaffFormPage extends StatefulWidget {
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
+  final bool isCanUpdate;
+  final bool isNew;
   const StaffFormPage({
     super.key,
     this.staff,
@@ -37,6 +38,8 @@ class StaffFormPage extends StatefulWidget {
     this.index,
     this.onCancel,
     this.onSaved,
+    this.isCanUpdate = false,
+    this.isNew = false,
   });
 
   @override
@@ -123,6 +126,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
     } else {
       isEditing = true;
     }
+    if (!widget.isCanUpdate && !widget.isNew) {
+      isEditing = false;
+    }
     _nameController = TextEditingController(text: widget.staff?.hoTen ?? '');
     _telController = TextEditingController(text: widget.staff?.diDong ?? '');
     _emailController = TextEditingController(
@@ -163,7 +169,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
     } catch (e) {
       _chucVuDTO = null;
     }
-    log('message widget.staff?.agreementUUId: ${jsonEncode(widget.staff)}');
     _agreementUUIdController = TextEditingController(
       text: widget.staff?.agreementUUId ?? '',
     );
@@ -291,7 +296,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.staff != null;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
@@ -301,7 +305,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          _buildHeaderDetail(),
+          if (!widget.isCanUpdate && widget.isNew) _buildHeaderDetail(),
           sectionCard(
             child: Form(
               key: _formKey,
@@ -323,7 +327,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 'Mã nhân viên',
                                 required: true,
                               ),
-                              enabled: !isEdit, // Read-only khi update
+                              enabled: isEditing, // Read-only khi update
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty

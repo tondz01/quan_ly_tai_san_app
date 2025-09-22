@@ -96,27 +96,34 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     },
                     onNew: () {
                       // provider.onChangeDetailAssetManagement(null);
+                      if (!provider.isCanCreate) {
+                        AppUtility.showSnackBar(
+                          context,
+                          'Bạn không có quyền tạo tài sản',
+                        );
+                        return;
+                      }
                       if (provider.typeBody == ShowBody.taiSan) {
-                        provider.onChangeDetail(null);
+                        provider.onChangeDetail(null, isNew: true);
                       }
                     },
                     mainScreen: "Quản lý tài sản",
                     subScreen: provider.subScreen,
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetBloc = context.read<AssetManagementBloc>();
-                    final List<AssetManagementDto> cv = await convertExcelToAsset(
-                      filePath!,
-                    );
-                    if (!mounted) return;
-                    if (cv.isNotEmpty) {
-                      assetBloc.add(CreateAssetBatchEvent(cv));
-                    }
+                      final List<AssetManagementDto> cv =
+                          await convertExcelToAsset(filePath!);
+                      if (!mounted) return;
+                      if (cv.isNotEmpty) {
+                        assetBloc.add(CreateAssetBatchEvent(cv));
+                      }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
                         "tai_san",
-                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
+                        provider.data?.map((e) => e.toExportJson()).toList() ??
+                            [],
                       );
                     },
                   ),
@@ -185,7 +192,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
           // Mostrar loading
         }
         if (state is GetListAssetManagementSuccessState) {
-          log('GetListAssetManagementSuccessState ${state.data.length}');
           context.read<AssetManagementProvider>().getListAssetManagementSuccess(
             context,
             state,

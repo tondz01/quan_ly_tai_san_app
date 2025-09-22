@@ -1,9 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
@@ -24,6 +25,11 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 enum ShowBody { taiSan, khauHao }
 
 class AssetManagementProvider with ChangeNotifier {
+  get isCanCreate => _isCanCreate;
+  get isCanUpdate => _isCanUpdate;
+  get isCanDelete => _isCanDelete;
+  get isNew => _isNew;
+
   get error => _error;
   bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
@@ -90,6 +96,12 @@ class AssetManagementProvider with ChangeNotifier {
   bool _isShowCollapse = false;
   bool _isShowInputKhauHao = false;
   bool _isShowCollapseKhauHao = false;
+
+  bool _isCanCreate = false;
+  bool _isCanUpdate = false;
+  bool _isCanDelete = false;
+  bool _isNew = false;
+
   String? _error;
 
   String? _subScreen;
@@ -204,6 +216,7 @@ class AssetManagementProvider with ChangeNotifier {
   onInit(BuildContext context) {
     reset();
     _userInfo = AccountHelper.instance.getUserInfo();
+    checkPermission();
     controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
     onCloseDetail(context);
@@ -260,18 +273,20 @@ class AssetManagementProvider with ChangeNotifier {
     }
   }
 
-  void onChangeDetail(AssetManagementDto? item) {
+  void onChangeDetail(AssetManagementDto? item, {bool isNew = false}) {
     if (item != null) {
       _dataDetail = item;
       _dataDetail = _dataDetail?.copyWith(
         childAssets: getListChildAssetsByIdAsset(item.id ?? ''),
       );
-      log('Check load detail asset: ${jsonEncode(_dataDetail)}');
     } else {
       _dataDetail = null;
+      _isNew = isNew;
     }
     _isShowCollapse = true;
     isShowInput = true;
+    log('message onChangeDetail isNew: $_isNew');
+    notifyListeners();
   }
 
   List<ChildAssetDto> getListChildAssetsByIdAsset(String idTaiSan) {
@@ -311,6 +326,7 @@ class AssetManagementProvider with ChangeNotifier {
       _updatePagination();
       _isLoading = false;
     }
+    onCloseDetail(context);
     notifyListeners();
   }
 
@@ -630,5 +646,25 @@ class AssetManagementProvider with ChangeNotifier {
       }
     }
     return null;
+  }
+
+  // check permission
+  void checkPermission() async {
+    final repo = PermissionRepository();
+    if (_userInfo != null) {
+      _isCanCreate =
+          await repo.checkCanCreatePermission(_userInfo!.id, RoleCode.TAISAN) ??
+          false;
+      _isCanUpdate =
+          await repo.checkCanUpdatePermission(_userInfo!.id, RoleCode.TAISAN) ??
+          false;
+      _isCanDelete =
+          await repo.checkCanDeletePermission(_userInfo!.id, RoleCode.TAISAN) ??
+          false;
+      SGLog.info(
+        "_checkPermission",
+        'isCanCreate: $isCanCreate -- isCanDelete: $isCanDelete -- isCanUpdate: $isCanUpdate',
+      );
+    }
   }
 }

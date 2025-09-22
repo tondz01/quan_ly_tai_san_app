@@ -64,6 +64,7 @@ class RoleProvider with ChangeNotifier {
   bool _isShowCollapse = true;
   bool _hasUnsavedChanges = false;
   bool _isLoading = false;
+
   List<ChucVu>? _data;
   List<ChucVu>? _dataPage;
   ChucVu? _dataDetail;
