@@ -14,13 +14,13 @@ class DetailToolAndMaterialTransferDto {
   final int? namSanXuat;
   final int soLuong;
   final int soLuongXuat;
+  final int soLuongDaBanGiao;
   final String ghiChu;
   final String ngayTao;
   final String ngayCapNhat;
   final String nguoiTao;
   final String nguoiCapNhat;
-  final bool isActive;
-  final int? soLuongConLai;
+  final bool active;
 
   DetailToolAndMaterialTransferDto({
     required this.id,
@@ -38,13 +38,13 @@ class DetailToolAndMaterialTransferDto {
     this.namSanXuat,
     required this.soLuong,
     required this.soLuongXuat,
+    required this.soLuongDaBanGiao,
     required this.ghiChu,
     required this.ngayTao,
     required this.ngayCapNhat,
     required this.nguoiTao,
     required this.nguoiCapNhat,
-    required this.isActive,
-    this.soLuongConLai,
+    required this.active,
   });
 
   factory DetailToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -87,13 +87,13 @@ class DetailToolAndMaterialTransferDto {
       namSanXuat: parseNullableInt(json['namSanXuat']),
       soLuong: parseInt(json['soLuong']),
       soLuongXuat: parseInt(json['soLuongXuat'] ?? 0),
+      soLuongDaBanGiao: parseInt(json['soLuongDaBanGiao'] ?? 0),
       ghiChu: parseString(json['ghiChu']),
       ngayTao: parseString(json['ngayTao']),
       ngayCapNhat: parseString(json['ngayCapNhat']),
       nguoiTao: parseString(json['nguoiTao']),
       nguoiCapNhat: parseString(json['nguoiCapNhat']),
-      isActive: parseBool(json['isActive']),
-      soLuongConLai: parseNullableInt(json['soLuongConLai']),
+      active: parseBool(json['active'] ?? json['isActive']),
     );
   }
 
@@ -117,13 +117,14 @@ class DetailToolAndMaterialTransferDto {
       'namSanXuat': namSanXuat,
       'soLuong': soLuong,
       'soLuongXuat': soLuongXuat,
+      'soLuongDaBanGiao': soLuongDaBanGiao,
       'ghiChu': ghiChu,
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
-      'isActive': isActive,
-      'soLuongConLai': soLuongConLai,
+      'active': active,
+      'isActive': active, // Tương thích ngược
     };
   }
 
@@ -145,13 +146,13 @@ class DetailToolAndMaterialTransferDto {
       namSanXuat: null,
       soLuong: 0,
       soLuongXuat: 0,
+      soLuongDaBanGiao: 0,
       ghiChu: '',
       ngayTao: now.toIso8601String(),
       ngayCapNhat: now.toIso8601String(),
       nguoiTao: '',
       nguoiCapNhat: '',
-      isActive: true,
-      soLuongConLai: 0,
+      active: false,
     );
   }
   
@@ -172,13 +173,13 @@ class DetailToolAndMaterialTransferDto {
     int? namSanXuat,
     int? soLuong,
     int? soLuongXuat,
+    int? soLuongDaBanGiao,
     String? ghiChu,
     String? ngayTao,
     String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
-    bool? isActive,
-    int? soLuongConLai,
+    bool? active,
   }) {
     return DetailToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -196,13 +197,13 @@ class DetailToolAndMaterialTransferDto {
       namSanXuat: namSanXuat ?? this.namSanXuat,
       soLuong: soLuong ?? this.soLuong,
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
+      soLuongDaBanGiao: soLuongDaBanGiao ?? this.soLuongDaBanGiao,
       ghiChu: ghiChu ?? this.ghiChu,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
-      isActive: isActive ?? this.isActive,
-      soLuongConLai: soLuongConLai ?? this.soLuongConLai,
+      active: active ?? this.active,
     );
   }
 }

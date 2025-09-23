@@ -24,6 +24,7 @@ import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/tool_and_material_transfer_table.dart';
@@ -367,8 +368,8 @@ class _ToolAndMaterialTransferDetailState
             [];
         _loadPdfNetwork(item?.tenFile ?? '');
       } else {
-        controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
-          'SCT-************',
+        controllerSoChungTu.text = UUIDGenerator.generateTimestampId(
+          prefix: 'SCT',
         );
         controllerSubject.text = '';
         controllerDocumentName.text = '';
@@ -961,18 +962,6 @@ class _ToolAndMaterialTransferDetailState
                             nguoiKyGiamDoc = value;
                           },
                         ),
-
-                        CommonCheckboxInput(
-                          label: 'Ký theo lượt',
-                          value: isByStep,
-                          isEditing: isEditing,
-                          isDisabled: !isEditing,
-                          onChanged: (newValue) {
-                            setState(() {
-                              isByStep = newValue;
-                            });
-                          },
-                        ),
                       ],
                     ),
                   ),
@@ -1043,8 +1032,9 @@ class _ToolAndMaterialTransferDetailState
                                 nguoiTao: widget.provider.userInfo?.id ?? '',
                                 nguoiCapNhat:
                                     widget.provider.userInfo?.id ?? '',
-                                isActive: true,
+                                active: true,
                                 soLuongXuat: e.soLuongXuat,
+                                soLuongDaBanGiao: 0,
                               ),
                             )
                             .toList();
@@ -1113,6 +1103,12 @@ class _ToolAndMaterialTransferDetailState
     int type,
     int state,
   ) {
+    final int days = AccountHelper.instance.getConfigTimeExpire() ?? 0;
+    final DateTime now = DateTime.now();
+    final DateTime expiredAt = now.add(Duration(days: days));
+    final String expiredAtString = expiredAt.toIso8601String();
+    SGLog.info('expiredAtString', 'Date: $expiredAtString');
+
     return ToolAndMaterialTransferRequest(
       id: controllerSoChungTu.text,
       soQuyetDinh: controllerSoChungTu.text,

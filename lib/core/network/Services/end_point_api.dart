@@ -34,4 +34,5 @@ class EndPointAPI {
   static String DASHBOARD = "/api/dashboard/statistics";
   static String CONFIG = "/api/config";
   static String PERMISSIONS = "/api/userpermission";
+  static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";
 }

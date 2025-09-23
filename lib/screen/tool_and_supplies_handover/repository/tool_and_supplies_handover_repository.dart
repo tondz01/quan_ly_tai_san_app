@@ -72,6 +72,94 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> getListSuppliesHandoverByTransfer(
+    String idTransfer,
+  ) async {
+    List<ToolAndSuppliesHandoverDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        "${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}?idcongty=$idTransfer",
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      List<ToolAndSuppliesHandoverDto> toolAndSuppliesHandover =
+          ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
+            response.data,
+            ToolAndSuppliesHandoverDto.fromJson,
+          );
+      // await Future.wait(
+      //   toolAndSuppliesHandover.map((toolAndSuppliesHandover) async {
+      //     try {
+      //       final detailSuppliesHandover = await getDetailSuppliesHandover(
+      //         toolAndSuppliesHandover.id.toString(),
+      //       );
+      //       toolAndSuppliesHandover.detailSuppliesHandover =
+      //           detailSuppliesHandover;
+      //       log(
+      //         'detailSuppliesHandover: ${jsonEncode(detailSuppliesHandover)}',
+      //       );
+      //     } catch (e) {
+      //       toolAndSuppliesHandover.detailSuppliesHandover = [];
+      //     }
+      //   }),
+      // );
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      result['data'] = toolAndSuppliesHandover;
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getDetailSuppliesHandover(
+    String idbangiaoccdcvattu,
+  ) async {
+    List<ToolAndSuppliesHandoverDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}?idbangiaoccdcvattu=$idbangiaoccdcvattu",
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      List<ToolAndSuppliesHandoverDto> toolAndSuppliesHandover =
+          ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
+            response.data,
+            ToolAndSuppliesHandoverDto.fromJson,
+          );
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      result['data'] = toolAndSuppliesHandover;
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> getListDetailAssetMobilization(String id) async {
     List<ChiTietDieuDongTaiSan> list = [];
     Map<String, dynamic> result = {
