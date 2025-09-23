@@ -20,6 +20,7 @@ class DetailToolAndMaterialTransferDto {
   final String nguoiTao;
   final String nguoiCapNhat;
   final bool isActive;
+  final int? soLuongConLai;
 
   DetailToolAndMaterialTransferDto({
     required this.id,
@@ -43,6 +44,7 @@ class DetailToolAndMaterialTransferDto {
     required this.nguoiTao,
     required this.nguoiCapNhat,
     required this.isActive,
+    this.soLuongConLai,
   });
 
   factory DetailToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
@@ -91,6 +93,7 @@ class DetailToolAndMaterialTransferDto {
       nguoiTao: parseString(json['nguoiTao']),
       nguoiCapNhat: parseString(json['nguoiCapNhat']),
       isActive: parseBool(json['isActive']),
+      soLuongConLai: parseNullableInt(json['soLuongConLai']),
     );
   }
 
@@ -120,6 +123,7 @@ class DetailToolAndMaterialTransferDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'soLuongConLai': soLuongConLai,
     };
   }
 
@@ -147,6 +151,7 @@ class DetailToolAndMaterialTransferDto {
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,
+      soLuongConLai: 0,
     );
   }
   
@@ -173,6 +178,7 @@ class DetailToolAndMaterialTransferDto {
     String? nguoiTao,
     String? nguoiCapNhat,
     bool? isActive,
+    int? soLuongConLai,
   }) {
     return DetailToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -196,6 +202,7 @@ class DetailToolAndMaterialTransferDto {
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
+      soLuongConLai: soLuongConLai ?? this.soLuongConLai,
     );
   }
 }

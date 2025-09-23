@@ -50,23 +50,12 @@ class _ToolAndMaterialTransferViewState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
       currentType = widget.typeAssetTransfer;
-      log('currentType didUpdateWidget ccdc vt: $currentType');
       _initData();
       _reloadData();
     }
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   // Đảm bảo dữ liệu được tải lại khi màn hình được focus lại
-  //   if (ModalRoute.of(context)?.isCurrent == true && _isInitialized) {
-  //     _reloadData();
-  //   }
-  // }
-
   void _initData() {
-    log('currentType _initData ccdc vt: $currentType');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<ToolAndMaterialTransferProvider>(
         context,
@@ -78,7 +67,6 @@ class _ToolAndMaterialTransferViewState
   }
 
   void _reloadData() {
-    log('Reloading data for type: $currentType');
     final provider = Provider.of<ToolAndMaterialTransferProvider>(
       context,
       listen: false,
@@ -131,6 +119,7 @@ class _ToolAndMaterialTransferViewState
                       // provider.onChangeDetailAssetTransfer(null);
                       provider.onChangeDetailToolAndMaterialTransfer(null);
                     },
+                    isShowInput: false,
                     mainScreen: provider.getScreenTitle(),
                     subScreen: provider.subScreen,
                   ),
