@@ -190,22 +190,57 @@ class AuthRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> createAccount(UserInfoDTO params) async {
-    UserInfoDTO? data;
     Map<String, dynamic> result = {
-      'data': data,
+      'data': null,
       'idUser': null,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
-    try {
-      final response = await post(EndPointAPI.ACCOUNT, data: params.toJson());
-
-      final int? status = response.statusCode;
-      final bool isOk =
-          status == Numeral.STATUS_CODE_SUCCESS ||
+    bool isSuccess(int? status) {
+      return status == Numeral.STATUS_CODE_SUCCESS ||
           status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
           status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-      if (!isOk) {
+    }
+
+    dynamic extractResponseData(dynamic resp) {
+      if (resp is Map<String, dynamic>) {
+        if (resp.containsKey('affectedRows')) return resp['affectedRows'];
+        if (resp.containsKey('data')) return resp['data'] ?? 1;
+        return 1;
+      }
+      return resp ?? 1;
+    }
+
+    Future<void> tryLoginAndApplyPermissions() async {
+      try {
+        final responseLogin = await post(
+          EndPointAPI.LOGIN,
+          queryParameters: {
+            'tenDangNhap': params.username,
+            'matKhau': params.matKhau,
+          },
+          options: Options(
+            validateStatus: (status) => true,
+            receiveDataWhenStatusError: true,
+          ),
+        );
+        if (responseLogin.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+          final raw = responseLogin.data;
+          final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
+          final Map<String, dynamic> userMap = rawData is String
+              ? (jsonDecode(rawData) as Map<String, dynamic>)
+              : (rawData as Map<String, dynamic>);
+          final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
+          await AuthRepository().setPermissionsForNhanVien(user);
+        }
+      } catch (_) {}
+    }
+
+    try {
+      final response = await post(EndPointAPI.ACCOUNT, data: params.toJson());
+      final int? status = response.statusCode;
+
+      if (!isSuccess(status)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         if (response.data is Map<String, dynamic>) {
           result['message'] = (response.data['message'] ?? '').toString();
@@ -215,46 +250,11 @@ class AuthRepository extends ApiBase {
 
       // Normalize to success for bloc check
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      final responseLogin = await post(
-        EndPointAPI.LOGIN,
-        queryParameters: {
-          'tenDangNhap': params.username,
-          'matKhau': params.matKhau,
-        },
-        options: Options(
-          // Cho phép nhận response kể cả khi 400/500 thay vì ném exception
-          validateStatus: (status) => true,
-          receiveDataWhenStatusError: true,
-        ),
-      );
-      if (responseLogin.statusCode == Numeral.STATUS_CODE_SUCCESS) {
-        final raw = responseLogin.data;
-        final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
-        log('logged - Raw login data: $rawData');
-        final userMap =
-            rawData is String
-                ? (jsonDecode(rawData) as Map<String, dynamic>)
-                : (rawData as Map<String, dynamic>);
-        final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
-        await AuthRepository().setPermissionsForNhanVien(user);
-      }
-      final resp = response.data;
-      if (resp is Map<String, dynamic>) {
-        // Prefer affectedRows if provided, fallback to data or 1
-        if (resp.containsKey('affectedRows')) {
-          result['data'] = resp['affectedRows'];
-        } else if (resp.containsKey('data')) {
-          result['data'] = resp['data'] ?? 1;
-        } else {
-          result['data'] = 1;
-        }
-      } else {
-        result['data'] = resp ?? 1;
-      }
+      await tryLoginAndApplyPermissions();
+      result['data'] = extractResponseData(response.data);
     } catch (e) {
       log("Error at createAccount - AuthRepository: $e");
     }
-
     return result;
   }
 

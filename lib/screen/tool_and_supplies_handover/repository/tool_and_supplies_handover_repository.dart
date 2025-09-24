@@ -114,7 +114,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     List<DetailSubppliesHandoverDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
-      'dataTransfer': [],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -140,18 +139,13 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
       List<DetailSubppliesHandoverDto> chiTietBanGiao =
           ResponseParser.parseToList<DetailSubppliesHandoverDto>(
-            response.data['ChiTietBanGiao'],
+            response.data,
             DetailSubppliesHandoverDto.fromJson,
           );
-      List<ChiTietDieuDongTaiSan> chiTietDieuDong =
-          ResponseParser.parseToList<ChiTietDieuDongTaiSan>(
-            response.data['ChiTietDieuDong'],
-            ChiTietDieuDongTaiSan.fromJson,
-          );
+   
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = chiTietBanGiao;
-      result['dataTransfer'] = chiTietDieuDong;
     } catch (e) {
       SGLog.error(
         "ToolAndSuppliesHandoverRepository",
@@ -235,7 +229,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       for (var e in requestDetailSubppliesHandover) {
         e['idBanGiaoCCDCVatTu'] = request['id'].toString();
       }
-      log('requestDetailSubppliesHandover: $requestDetailSubppliesHandover');
       final responseDetail = await post(
         "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/batch",
         data: requestDetailSubppliesHandover,
@@ -550,14 +543,24 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         idbangiaoccdcvattu: item.id.toString(),
         iddieudongccdcvattu: item.lenhDieuDong.toString(),
       );
-      item.listDetailSubppliesHandover =
-          ResponseParser.parseToList<DetailSubppliesHandoverDto>(
-            detailSuppliesHandover['data'],
-            DetailSubppliesHandoverDto.fromJson,
-          );
-      log(
-        'detailSuppliesHandover for ID ${item.id}: ${item.listDetailSubppliesHandover?.length ?? 0} items',
-      );
+
+      final dynamic rawData = detailSuppliesHandover['data'];
+      if (rawData is List) {
+        if (rawData.isEmpty) {
+          item.listDetailSubppliesHandover = [];
+        } else if (rawData.first is DetailSubppliesHandoverDto) {
+          item.listDetailSubppliesHandover =
+              List<DetailSubppliesHandoverDto>.from(rawData);
+        } else {
+          item.listDetailSubppliesHandover =
+              ResponseParser.parseToList<DetailSubppliesHandoverDto>(
+                rawData,
+                DetailSubppliesHandoverDto.fromJson,
+              );
+        }
+      } else {
+        item.listDetailSubppliesHandover = [];
+      }
     } catch (e) {
       item.listDetailSubppliesHandover = [];
       SGLog.error(

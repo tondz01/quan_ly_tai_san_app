@@ -195,12 +195,14 @@ class _ToolAndSuppliesHandoverDetailState
 
   DateTime? _parseDate(String dateString) {
     try {
+      if (dateString.isEmpty) return null;
+      final trimmed = dateString.trim();
+      if (trimmed.isEmpty) return null;
       // Thử parse ISO 8601 format trước
-      if (dateString.contains('T')) {
-        return DateTime.parse(dateString);
+      if (trimmed.contains('T')) {
+        return DateTime.tryParse(trimmed);
       }
-      // Nếu không phải ISO format, thử parse dd/MM/yyyy
-      return DateFormat("dd/MM/yyyy").parse(dateString);
+      return DateFormat("dd/MM/yyyy").parseStrict(trimmed);
     } catch (e) {
       log('Error parsing date: $dateString, error: $e');
       return null;
@@ -266,18 +268,23 @@ class _ToolAndSuppliesHandoverDetailState
             : <DropdownMenuItem<ToolAndMaterialTransferDto>>[];
 
     if (item != null) {
+      donViGiao = getPhongBan(
+        listPhongBan: listPhongBan,
+        idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
+      );
       if (widget.isFindNew) {
         isEditing = widget.isFindNew;
-        dieuDongCcdc = listAssetTransfer.firstWhere(
-          (element) => element.id == item?.lenhDieuDong,
-          orElse: () => ToolAndMaterialTransferDto(),
-        );
-        donViGiao = getPhongBan(
-          listPhongBan: listPhongBan,
-          idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
-        );
+
         await widget.provider.getListOwnership(donViGiao!.id.toString());
       }
+      dieuDongCcdc = listAssetTransfer.firstWhere(
+        (element) => element.id == item?.lenhDieuDong,
+        orElse: () => ToolAndMaterialTransferDto(),
+      );
+      log(
+        "check dieuDongCcdc: ${jsonEncode(dieuDongCcdc?.detailToolAndMaterialTransfers)}",
+      );
+      
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
@@ -286,9 +293,7 @@ class _ToolAndSuppliesHandoverDetailState
       _selectedFilePath = item?.duongDanFile ?? '';
 
       ngayBanGiao =
-          item?.ngayBanGiao != null
-              ? _parseDate(item!.ngayBanGiao!.toString())
-              : null;
+          item?.ngayBanGiao != null ? _parseDate(item!.ngayBanGiao!) : null;
       isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
       _additionalSignersDetailed =
@@ -351,7 +356,6 @@ class _ToolAndSuppliesHandoverDetailState
 
   bool _validateForm() {
     Map<String, bool> newValidationErrors = {};
-
     if (controllerHandoverNumber.text.isEmpty) {
       newValidationErrors['handoverNumber'] = true;
     }
@@ -492,7 +496,7 @@ class _ToolAndSuppliesHandoverDetailState
                   "idCCDCVatTu": e.idCCDCVatTu,
                   "soLuong": e.soLuong,
                   "idChiTietCCDCVatTu": e.idChiTietCCDCVatTu,
-                  "idChiTietDieuDong": e.idChiTietDieuDong,
+                  "idChiTietDieuDong": e.iddieudongccdcvattu,
                   "ngayTao": e.ngayTao,
                   "ngayCapNhat": e.ngayCapNhat,
                   "nguoiTao": e.nguoiTao,
@@ -501,7 +505,7 @@ class _ToolAndSuppliesHandoverDetailState
                 },
               )
               .toList();
-
+      log("check requestDetail: ${jsonEncode(requestDetail)}");
       bloc.add(
         CreateToolAndSuppliesHandoverEvent(
           request,
@@ -544,6 +548,15 @@ class _ToolAndSuppliesHandoverDetailState
 
   void _saveChanges() {
     if (!isEditing) return;
+    if (listDetailSubppliesHandover.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        "Vui lòng chọn CCDC vật tư bàn giao",
+        isError: true,
+      );
+      return;
+    }
+
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -631,7 +644,6 @@ class _ToolAndSuppliesHandoverDetailState
   Widget _buildTableDetail() {
     final screenWidth = MediaQuery.of(context).size.width;
     bool isWideScreen = screenWidth > 800;
-    log('message isEditing ${item?.trangThai}');
     return Column(
       children: [
         Row(
@@ -780,6 +792,8 @@ class _ToolAndSuppliesHandoverDetailState
                     isEditing: isEditing,
                     initialDetails:
                         dieuDongCcdc?.detailToolAndMaterialTransfers ?? [],
+                    initialDetailsSuppliesHandover:
+                        item?.listDetailSubppliesHandover ?? [],
                     listOwnershipUnit: widget.provider.listOwnershipUnit,
                     allAssets: widget.provider.dataCcdc,
                     onDataChanged: (data) {
@@ -796,7 +810,7 @@ class _ToolAndSuppliesHandoverDetailState
                                     idCCDCVatTu: e.idCCDCVatTu,
                                     soLuong: e.soLuongXuat,
                                     idChiTietCCDCVatTu: e.idDetaiAsset,
-                                    idChiTietDieuDong: e.idDetaiAsset,
+                                    iddieudongccdcvattu: e.id,
                                     ngayTao: DateTime.now().toIso8601String(),
                                     ngayCapNhat: '',
                                     nguoiTao: currentUser!.tenDangNhap,
@@ -805,9 +819,6 @@ class _ToolAndSuppliesHandoverDetailState
                                   ),
                                 )
                                 .toList();
-                        log(
-                          'listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}',
-                        );
                       });
                     },
                   ),
@@ -884,6 +895,9 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (value) async {
             setState(() {
               dieuDongCcdc = value;
+              log(
+                "check dieuDongCcdc: ${jsonEncode(dieuDongCcdc?.detailToolAndMaterialTransfers)}",
+              );
 
               //change Đơn vị giao
               donViGiao = getPhongBan(

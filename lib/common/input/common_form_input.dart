@@ -199,8 +199,10 @@ class _CommonFormInputState extends State<CommonFormInput> {
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                         ]
                         : null,
+
                 // onlyLine: true,
                 color: Colors.black,
+                enabledBorderColor: ColorValue.darkGrey,
                 showBorder: widget.isEditing,
                 borderColor: hasError ? Colors.red : ColorValue.darkGrey,
                 hintText:

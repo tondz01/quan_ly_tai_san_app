@@ -904,6 +904,7 @@ class _ToolAndMaterialTransferListState
             child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
           ),
         ),
+      ThreadNode(header: 'Chi tiết bàn giao', depth: 0),
     ];
   }
 

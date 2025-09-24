@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -43,7 +41,7 @@ class _AccountEditPopupState extends State<AccountEditPopup> {
   void initState() {
     super.initState();
     final u = widget.userInfo;
-    ctrlIdAccount = TextEditingController(text: u.id);
+    ctrlIdAccount = TextEditingController(text: u.tenDangNhap);
     ctrlTenTk = TextEditingController(text: u.username ?? '');
     ctrlMatKhau = TextEditingController(text: u.matKhau);
     ctrlHoTen = TextEditingController(text: u.hoTen);
@@ -78,6 +76,132 @@ class _AccountEditPopupState extends State<AccountEditPopup> {
     super.dispose();
   }
 
+  Widget _buildAccountInfoSection() {
+    return Column(
+      children: [
+        _buildTitle('Thông tin tài khoản'),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: CommonFormInput(
+                label: 'Tên đăng nhập',
+                controller: ctrlTenTk,
+                isEditing: true,
+                textContent: ctrlTenTk.text,
+                isRequired: true,
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: CommonFormInput(
+                label: 'Mật khẩu',
+                controller: ctrlMatKhau,
+                isEditing: true,
+                textContent: ctrlMatKhau.text,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmployeeInfoSection() {
+    return Column(
+      children: [
+        _buildTitle('Thông tin nhân viên'),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  CommonFormInput(
+                    label: 'Mã nhân viên',
+                    controller: ctrlIdAccount,
+                    isEditing: false,
+                    textContent: ctrlIdAccount.text,
+                  ),
+                  CommonFormInput(
+                    label: 'Họ tên',
+                    controller: ctrlHoTen,
+                    isEditing: false,
+                    textContent: ctrlHoTen.text,
+                  ),
+                  CommonFormInput(
+                    label: 'Email',
+                    controller: ctrlEmail,
+                    isEditing: false,
+                    textContent: ctrlEmail.text,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                children: [
+                  CommonFormInput(
+                    label: 'Số điện thoại',
+                    controller: ctrlPhone,
+                    isEditing: false,
+                    textContent: ctrlPhone.text,
+                  ),
+                  CommonFormInput(
+                    label: 'Người tạo',
+                    controller: ctrlNguoiTao,
+                    isEditing: false,
+                    textContent: ctrlNguoiTao.text,
+                  ),
+                  CommonFormInput(
+                    label: 'Công ty',
+                    controller: ctrlCongTy,
+                    isEditing: false,
+                    textContent: ctrlCongTy.text,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActions() {
+    return SizedBox(
+      width: double.infinity,
+      height: 40,
+      child: ElevatedButton(
+        onPressed: () {
+          final updatedUser = widget.userInfo.copyWith(
+            username: ctrlTenTk.text,
+            matKhau: ctrlMatKhau.text,
+            rule: int.tryParse(ctrlRole.text) ?? widget.userInfo.rule,
+          );
+          widget.onSave?.call(updatedUser);
+          Navigator.of(context).pop();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1976D2),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          'Xác nhận',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -89,132 +213,51 @@ class _AccountEditPopupState extends State<AccountEditPopup> {
           minWidth: 450,
           maxHeight: MediaQuery.of(context).size.height * 0.8,
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        // padding: const EdgeInsets.all(24),
+        child: Stack(
           children: [
-            _buildTitle('Sửa thông tin tài khoản'),
-            SizedBox(width: 16),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 24.0),
-                  child: Column(
-                    children: [
-                      _buildTitle('Thông tin tài khoản'),
-                      SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CommonFormInput(
-                              label: 'Tên đăng nhập',
-                              controller: ctrlTenTk,
-                              isEditing: true,
-                              textContent: ctrlTenTk.text,
-                              isRequired: true,
-                            ),
-                          ),
-                          Expanded(
-                            child: CommonFormInput(
-                              label: 'Mật khẩu',
-                              controller: ctrlMatKhau,
-                              isEditing: true,
-                              textContent: ctrlMatKhau.text,
-                            ),
-                          ),
-                        ],
-                      ),
-                      CmFormDropdownObject<RoleDto>(
-                        label: 'Vai trò',
-                        controller: ctrlRole,
-                        isEditing: true,
-                        items: roleItems,
-                        value: roleSelected,
-                        defaultValue: roleSelected,
-                        onChanged: (value) {
-                          setState(() {
-                            roleSelected = value;
-                            ctrlRole.text = value.id;
-                          });
-                        },
-                      ),
-                      _buildTitle('Thông tin nhân viên'),
-                      SizedBox(height: 16),
-                      CommonFormInput(
-                        label: 'Mã tài khoản',
-                        controller: ctrlIdAccount,
-                        isEditing: false,
-                        textContent: ctrlIdAccount.text,
-                      ),
-
-                      CommonFormInput(
-                        label: 'Họ tên',
-                        controller: ctrlHoTen,
-                        isEditing: false,
-                        textContent: ctrlHoTen.text,
-                      ),
-                      CommonFormInput(
-                        label: 'Email',
-                        controller: ctrlEmail,
-                        isEditing: false,
-                        textContent: ctrlEmail.text,
-                      ),
-                      CommonFormInput(
-                        label: 'Số điện thoại',
-                        controller: ctrlPhone,
-                        isEditing: false,
-                        textContent: ctrlPhone.text,
-                      ),
-
-                      CommonFormInput(
-                        label: 'Người tạo',
-                        controller: ctrlNguoiTao,
-                        isEditing: false,
-                        textContent: ctrlNguoiTao.text,
-                      ),
-                      CommonFormInput(
-                        label: 'Công ty',
-                        controller: ctrlCongTy,
-                        isEditing: false,
-                        textContent: ctrlCongTy.text,
-                      ),
-                    ],
-                  ),
-                ),
+            Positioned(
+              top: 5,
+              right: 8,
+              child: IconButton(
+                tooltip: 'Đóng',
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  widget.onCancel?.call();
+                  Navigator.of(context).pop();
+                },
               ),
             ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                MaterialTextButton(
-                  text: 'Lưu',
-                  icon: Icons.save,
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  onPressed: () {
-                    final updatedUser = widget.userInfo.copyWith(
-                      username: ctrlTenTk.text,
-                      matKhau: ctrlMatKhau.text,
-                      rule: int.tryParse(ctrlRole.text) ?? widget.userInfo.rule,
-                    );
-                    widget.onSave?.call(updatedUser);
-                    Navigator.of(context).pop();
-                  },
-                ),
-                const SizedBox(width: 8),
-                MaterialTextButton(
-                  text: 'Hủy',
-                  icon: Icons.cancel,
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  onPressed: () {
-                    widget.onCancel?.call();
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 24.0,
+                right: 16.0,
+                left: 24,
+                bottom: 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTitle('Sửa thông tin tài khoản'),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 24.0),
+                        child: Column(
+                          children: [
+                            _buildAccountInfoSection(),
+                            _buildEmployeeInfoSection(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildActions(),
+                ],
+              ),
             ),
           ],
         ),

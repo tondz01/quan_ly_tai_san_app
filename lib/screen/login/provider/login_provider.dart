@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -327,9 +326,6 @@ class LoginProvider with ChangeNotifier {
               ),
             ),
           ];
-          log(
-            "=== TOÀN BỘ THÔNG TIN PERMISSIONS ===\n${jsonEncode(updatedPermissions)}",
-          );
           context.read<LoginBloc>().add(
             UpdatePermissionEvent(updatedPermissions),
           );

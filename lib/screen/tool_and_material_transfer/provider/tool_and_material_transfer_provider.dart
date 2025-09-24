@@ -536,6 +536,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       "AssetTransferProvider",
       "result: $result ${result['fileName'] ?? ''} ${result['filePath'] ?? ''}",
     );
+    if (!context.mounted) return;
     final bloc = context.read<ToolAndMaterialTransferBloc>();
     bloc.add(
       CreateToolAndMaterialTransferEvent(

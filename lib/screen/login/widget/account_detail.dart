@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -137,25 +136,25 @@ class _AccountDetailState extends State<AccountDetail> {
                       isEditing: true,
                       textContent: ctrlMatKhau.text,
                     ),
-                    CmFormDropdownObject<RoleDto>(
-                      label: 'Vai trò',
-                      controller: ctrlRole,
-                      isEditing: true,
-                      items: roleItems,
-                      value: roleSelected,
-                      defaultValue:
-                          ctrlRole.text.isNotEmpty
-                              ? role.firstWhere(
-                                (element) => element.id == ctrlRole.text,
-                                orElse: () => role[0],
-                              )
-                              : role[0],
-                      onChanged: (value) {
-                        setState(() {
-                          roleSelected = value;
-                        });
-                      },
-                    ),
+                    // CmFormDropdownObject<RoleDto>(
+                    //   label: 'Vai trò',
+                    //   controller: ctrlRole,
+                    //   isEditing: true,
+                    //   items: roleItems,
+                    //   value: roleSelected,
+                    //   defaultValue:
+                    //       ctrlRole.text.isNotEmpty
+                    //           ? role.firstWhere(
+                    //             (element) => element.id == ctrlRole.text,
+                    //             orElse: () => role[0],
+                    //           )
+                    //           : role[0],
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       roleSelected = value;
+                    //     });
+                    //   },
+                    // ),
                   ],
                 ),
               ),
@@ -245,7 +244,6 @@ class _AccountDetailState extends State<AccountDetail> {
       matKhau: ctrlMatKhau.text,
       rule: int.parse(roleSelected?.id ?? '0'),
     );
-    log('message: userInfo: ${jsonEncode(userInfo.toJson())}');
     showConfirmDialog(
       context,
       type: ConfirmType.add,
