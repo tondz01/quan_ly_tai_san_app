@@ -95,7 +95,7 @@ class DetailToolAndMaterialTransferRepository {
     return res.data;
   }
 
-  Future<int> update(String id, DetailToolAndMaterialTransferDto obj) async {
+  Future<int> update(String id, ChiTietBanGiaoRequest obj) async {
     final res = await _dio.put('/$id', data: obj.toJson());
     return res.data;
   }

@@ -113,3 +113,13 @@ class CancelToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {
   @override
   List<Object?> get props => [context, id];
 }
+
+class UpdateDetailSubppliesTransferEvent extends ToolAndMaterialTransferEvent {
+  final BuildContext context;
+  final List<Map<String, dynamic>> data;
+
+  const UpdateDetailSubppliesTransferEvent(this.context, this.data);
+
+  @override
+  List<Object?> get props => [context, data];
+}

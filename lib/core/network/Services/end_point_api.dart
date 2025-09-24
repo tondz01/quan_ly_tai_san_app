@@ -35,4 +35,5 @@ class EndPointAPI {
   static String CONFIG = "/api/config";
   static String PERMISSIONS = "/api/userpermission";
   static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";
+  static String DETAIL_SUPPLIES_TRANSFER= "/api/chitietdieudongccdcvattu";
 }

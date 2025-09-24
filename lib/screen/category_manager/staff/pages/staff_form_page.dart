@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -120,6 +121,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
+    log('_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}');
     if (widget.staff != null) {
       isEditing = false;
     } else {
@@ -304,7 +306,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          if (!widget.isCanUpdate && widget.isNew) _buildHeaderDetail(),
+          if (widget.isNew ||
+              (widget.isCanUpdate && !widget.isNew && widget.staff != null))
+            _buildHeaderDetail(),
           sectionCard(
             child: Form(
               key: _formKey,

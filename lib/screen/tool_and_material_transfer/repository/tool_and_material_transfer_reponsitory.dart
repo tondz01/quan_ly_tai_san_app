@@ -495,4 +495,34 @@ class ToolAndMaterialTransferRepository extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> updateDetailSubppliesTransfer(
+    List<Map<String, dynamic>> data,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'message': '',
+    };
+    try {
+      final res = await put(
+        '${EndPointAPI.DETAIL_SUPPLIES_TRANSFER}/batch',
+        data: data,
+      );
+      if (res.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+        result['data'] = res.data;
+      } else {
+        result['status_code'] = res.statusCode;
+        result['message'] = res.data['message'];
+      }
+    } catch (e) {
+      log(
+        "Error at updateDetailSubppliesHandover - ToolAndMaterialTransferRepository: $e",
+      );
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+      result['message'] = e.toString();
+    }
+    return result;
+  }
 }

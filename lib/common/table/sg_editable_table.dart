@@ -489,6 +489,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       final currentValue =
           column.getValueWithIndex?.call(item, rowIndex) ??
           column.getValue(item);
+      controller.text = currentValue.toString();
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         child: SGDropdownInputButton<T>(
@@ -596,8 +597,9 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           child: TextField(
             enabled: false,
             controller: TextEditingController(text: value?.toString() ?? ''),
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, overflow: TextOverflow.ellipsis),
             readOnly: true,
+            maxLines: 1,
             decoration: InputDecoration(
               isDense: true,
               filled: true,
@@ -623,7 +625,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
               suffixIcon: null,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 8,
-                vertical: 15,
+                vertical: 5,
               ),
             ),
           ),

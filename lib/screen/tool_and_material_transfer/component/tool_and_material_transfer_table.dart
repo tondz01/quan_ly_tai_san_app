@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
@@ -9,7 +10,6 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/deta
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class DetailToolAndMaterialTransferTable extends StatefulWidget {
   final bool isEditing;
@@ -155,8 +155,10 @@ class _DetailToolAndMaterialTransferTableState
         continue;
       }
       final asset = idToAsset[idAsset.idTaiSan];
+      log('message số lượng xuất: ${jsonEncode(c)}');
       if (asset != null) {
         // Tìm ItemDropdownDetailAsset tương ứng
+        log('message số lượng xuất22: ${c.soLuong}');
         final detailAsset = listItemDropdownDetailAsset.firstWhere(
           (element) => element.idDetaiAsset == id,
           orElse:
@@ -169,7 +171,8 @@ class _DetailToolAndMaterialTransferTableState
                 idDonVi: asset.idDonVi,
                 donViTinh: asset.donViTinh,
                 namSanXuat: 2010,
-                soLuong: asset.soLuong,
+                soLuong: c.soLuong,
+                soLuongXuat: 0,
                 soLuongDaBanGiao: soLuongDaBanGiao,
                 ghiChu: asset.ghiChu,
                 asset: asset,
@@ -226,8 +229,9 @@ class _DetailToolAndMaterialTransferTableState
                 titleAlignment: TextAlign.center,
                 width: 150,
                 getValue: (item) {
+                  log('message item222: $item');
                   return item;
-                }, // Trả về ItemDropdownDetailAsset thay vì String
+                },
                 setValue: (item, value) {
                   // Copy properties
                   item.id = value.id;
@@ -260,7 +264,6 @@ class _DetailToolAndMaterialTransferTableState
                   updateRow('so_luong', newValue.soLuong);
                   updateRow('ghi_chu', newValue.ghiChu);
                   updateRow('so_luong_xuat', newValue.soLuongXuat.toString());
-                  SGLog.info('newValue', 'newValue: ${jsonEncode(item)}');
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),

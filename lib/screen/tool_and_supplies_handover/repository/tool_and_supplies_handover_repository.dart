@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.da
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -39,81 +40,27 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         return result;
       }
 
-      List<ToolAndSuppliesHandoverDto> toolAndSuppliesHandover =
+      List<ToolAndSuppliesHandoverDto> handoverList =
           ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
             response.data,
             ToolAndSuppliesHandoverDto.fromJson,
           );
 
+      // Tối ưu: Gọi song song cả signatory và detail supplies trong cùng một Future.wait
       await Future.wait(
-        toolAndSuppliesHandover.map((toolAndSuppliesHandover) async {
-          try {
-            final signatories = await _signatoryRepository.getAll(
-              toolAndSuppliesHandover.id.toString(),
-            );
-            toolAndSuppliesHandover.listSignatory = signatories;
-            log('signatories: ${jsonEncode(signatories)}');
-          } catch (e) {
-            toolAndSuppliesHandover.listSignatory = [];
-          }
+        handoverList.map((item) async {
+          await Future.wait([
+            // Load signatories
+            _loadSignatories(item),
+            // Load detail supplies handover
+            _loadDetailSupplies(item),
+          ]);
         }),
       );
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = toolAndSuppliesHandover;
-    } catch (e) {
-      SGLog.error(
-        "ToolAndSuppliesHandoverRepository",
-        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
-      );
-    }
-
-    return result;
-  }
-
-  Future<Map<String, dynamic>> getListSuppliesHandoverByTransfer(
-    String idTransfer,
-  ) async {
-    List<ToolAndSuppliesHandoverDto> list = [];
-    Map<String, dynamic> result = {
-      'data': list,
-      'status_code': Numeral.STATUS_CODE_DEFAULT,
-    };
-    try {
-      final response = await get(
-        "${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}?idcongty=$idTransfer",
-      );
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-        result['status_code'] = response.statusCode;
-        return result;
-      }
-
-      List<ToolAndSuppliesHandoverDto> toolAndSuppliesHandover =
-          ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
-            response.data,
-            ToolAndSuppliesHandoverDto.fromJson,
-          );
-      // await Future.wait(
-      //   toolAndSuppliesHandover.map((toolAndSuppliesHandover) async {
-      //     try {
-      //       final detailSuppliesHandover = await getDetailSuppliesHandover(
-      //         toolAndSuppliesHandover.id.toString(),
-      //       );
-      //       toolAndSuppliesHandover.detailSuppliesHandover =
-      //           detailSuppliesHandover;
-      //       log(
-      //         'detailSuppliesHandover: ${jsonEncode(detailSuppliesHandover)}',
-      //       );
-      //     } catch (e) {
-      //       toolAndSuppliesHandover.detailSuppliesHandover = [];
-      //     }
-      //   }),
-      // );
-
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-      result['data'] = toolAndSuppliesHandover;
+      result['data'] = handoverList;
     } catch (e) {
       SGLog.error(
         "ToolAndSuppliesHandoverRepository",
@@ -160,6 +107,61 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> getChiTietBanGiaoCCDCVatTu({
+    String? idbangiaoccdcvattu,
+    String? iddieudongccdcvattu,
+  }) async {
+    List<DetailSubppliesHandoverDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'dataTransfer': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      // Build query parameters
+      Map<String, String> queryParams = {};
+      if (idbangiaoccdcvattu != null && idbangiaoccdcvattu.isNotEmpty) {
+        queryParams['idbangiaoccdcvattu'] = idbangiaoccdcvattu;
+      }
+      if (iddieudongccdcvattu != null && iddieudongccdcvattu.isNotEmpty) {
+        queryParams['iddieudongccdcvattu'] = iddieudongccdcvattu;
+      }
+
+      final response = await get(
+        EndPointAPI.DETAIL_SUPPLIES_HANDOVER,
+        queryParameters: queryParams,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      List<DetailSubppliesHandoverDto> chiTietBanGiao =
+          ResponseParser.parseToList<DetailSubppliesHandoverDto>(
+            response.data['ChiTietBanGiao'],
+            DetailSubppliesHandoverDto.fromJson,
+          );
+      List<ChiTietDieuDongTaiSan> chiTietDieuDong =
+          ResponseParser.parseToList<ChiTietDieuDongTaiSan>(
+            response.data['ChiTietDieuDong'],
+            ChiTietDieuDongTaiSan.fromJson,
+          );
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = chiTietBanGiao;
+      result['dataTransfer'] = chiTietDieuDong;
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at getChiTietBanGiaoCCDCVatTu - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> getListDetailAssetMobilization(String id) async {
     List<ChiTietDieuDongTaiSan> list = [];
     Map<String, dynamic> result = {
@@ -196,6 +198,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
   Future<Map<String, dynamic>> createToolAndSuppliesHandover(
     Map<String, dynamic> request,
     List<SignatoryDto> listSignatory,
+    List<Map<String, dynamic>> requestDetailSubppliesHandover,
   ) async {
     Map<String, dynamic> result = {
       'data': "",
@@ -228,6 +231,19 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
               statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
           return result;
         }
+      }
+      for (var e in requestDetailSubppliesHandover) {
+        e['idBanGiaoCCDCVatTu'] = request['id'].toString();
+      }
+      log('requestDetailSubppliesHandover: $requestDetailSubppliesHandover');
+      final responseDetail = await post(
+        "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/batch",
+        data: requestDetailSubppliesHandover,
+      );
+      final int? statusDetail = responseDetail.statusCode;
+      if (checkStatusCodeFailed(statusDetail ?? 0)) {
+        result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
@@ -512,9 +528,42 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
     return result;
   }
+
+  // Helper methods để tối ưu performance
+  Future<void> _loadSignatories(ToolAndSuppliesHandoverDto item) async {
+    try {
+      final signatories = await _signatoryRepository.getAll(item.id.toString());
+      item.listSignatory = signatories;
+      log('signatories for ID ${item.id}: ${signatories.length} items');
+    } catch (e) {
+      item.listSignatory = [];
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error loading signatories for ID ${item.id}: $e",
+      );
+    }
+  }
+
+  Future<void> _loadDetailSupplies(ToolAndSuppliesHandoverDto item) async {
+    try {
+      final detailSuppliesHandover = await getChiTietBanGiaoCCDCVatTu(
+        idbangiaoccdcvattu: item.id.toString(),
+        iddieudongccdcvattu: item.lenhDieuDong.toString(),
+      );
+      item.listDetailSubppliesHandover =
+          ResponseParser.parseToList<DetailSubppliesHandoverDto>(
+            detailSuppliesHandover['data'],
+            DetailSubppliesHandoverDto.fromJson,
+          );
+      log(
+        'detailSuppliesHandover for ID ${item.id}: ${item.listDetailSubppliesHandover?.length ?? 0} items',
+      );
+    } catch (e) {
+      item.listDetailSubppliesHandover = [];
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error loading detail supplies handover for ID ${item.id}: $e",
+      );
+    }
+  }
 }
-// curl bàn giao ccdc-vt
-// curl -X POST "http://localhost:8080/api/bangiaoccdcvattu/capnhatky/" \
-//      -H "Content-Type: application/x-www-form-urlencoded" \
-//      -d "userId=12345" \
-//      -d "docId=67890"

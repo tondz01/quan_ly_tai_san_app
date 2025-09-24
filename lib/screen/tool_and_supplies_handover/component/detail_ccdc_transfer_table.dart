@@ -31,8 +31,7 @@ class DetailCcdcTransferTable extends StatefulWidget {
       _DetailCcdcTransferTableState();
 }
 
-class _DetailCcdcTransferTableState
-    extends State<DetailCcdcTransferTable> {
+class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   late List<DetailToolAndMaterialTransferDto> movementDetails;
   late List<ItemDropdownDetailCcdc> listAsset; // Thay đổi type
   late List<DetailAssetDto> listDetailAsset;
@@ -170,7 +169,10 @@ class _DetailCcdcTransferTableState
                 asset: asset,
               ),
         );
-        final newDetailAsset = detailAsset.copyWith(soLuongXuat: c.soLuongXuat);
+        final newDetailAsset = detailAsset.copyWith(
+          soLuongXuat: c.soLuongXuat,
+          soLuong: c.soLuongXuat - c.soLuongDaBanGiao,
+        );
         result.add(newDetailAsset);
       }
     }
@@ -205,7 +207,7 @@ class _DetailCcdcTransferTableState
             showVerticalLines: false,
             showHorizontalLines: true,
             addRowText: 'Thêm một dòng',
-            isEditing: false,
+            isEditing: widget.isEditing,
             omittedSize: 130,
             onDataChanged: (data) {
               setState(() {
@@ -219,9 +221,10 @@ class _DetailCcdcTransferTableState
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
                 width: 150,
+                isEditable: false,
                 getValue: (item) {
                   return item;
-                }, 
+                },
                 setValue: (item, value) {
                   item.id = value.id;
                   item.idCCDCVatTu = value.idCCDCVatTu;
@@ -231,9 +234,9 @@ class _DetailCcdcTransferTableState
                   item.idDonVi = value.idDonVi;
                   item.donViTinh = value.donViTinh;
                   item.namSanXuat = value.namSanXuat;
-                  item.soLuong = value.soLuong;
+                  item.soLuong = value.soLuongXuat - value.soLuongDaBanGiao;
                   item.ghiChu = value.ghiChu;
-                  item.soLuongXuat = value.soLuongXuat;
+                  item.soLuongXuat = value.soLuongXuat - value.soLuongDaBanGiao;
                   item.asset = value.asset;
                 },
                 sortValueGetter: (item) => item.tenCCDCVatTu,
@@ -268,7 +271,7 @@ class _DetailCcdcTransferTableState
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong',
-                title: 'Số lượng',
+                title: 'Số lượng cần bàn giao',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue: (item) => item.soLuong,

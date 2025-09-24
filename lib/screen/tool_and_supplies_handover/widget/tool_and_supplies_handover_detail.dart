@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -29,6 +30,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/detail_ccdc_transfer_table.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/preview_document_ccdc_handover.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
@@ -93,6 +95,7 @@ class _ToolAndSuppliesHandoverDetailState
   List<NhanVien> listNhanVienDonViGiao = [];
   List<ToolAndMaterialTransferDto> listAssetTransfer = [];
   List<ChiTietDieuDongTaiSan> listDetailAssetMobilization = [];
+  List<DetailSubppliesHandoverDto> listDetailSubppliesHandover = [];
 
   List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
@@ -385,7 +388,6 @@ class _ToolAndSuppliesHandoverDetailState
 
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
-      SGLog.debug("ToolAndSuppliesHandoverDetail", "hasChanges");
       setState(() {
         _validationErrors = newValidationErrors;
       });
@@ -472,11 +474,6 @@ class _ToolAndSuppliesHandoverDetailState
             )
             .toList();
     if (provider.isFindNewItem ? true : item == null) {
-      SGLog.debug(
-        "AssetTransferRepository",
-        "uploadFileBytes - fileName: $_selectedFileName, fileBytes length: ${_selectedFileBytes?.length}, filePath: $_selectedFilePath",
-      );
-
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
         _selectedFileName ?? '',
@@ -486,8 +483,32 @@ class _ToolAndSuppliesHandoverDetailState
 
       request['duongDanFile'] = result!['filePath'] ?? '';
       request['tenFile'] = result['fileName'] ?? '';
+      List<Map<String, dynamic>> requestDetail =
+          listDetailSubppliesHandover
+              .map(
+                (e) => {
+                  "id": e.id,
+                  "idBanGiaoCCDCVatTu": e.idBanGiaoCCDCVatTu,
+                  "idCCDCVatTu": e.idCCDCVatTu,
+                  "soLuong": e.soLuong,
+                  "idChiTietCCDCVatTu": e.idChiTietCCDCVatTu,
+                  "idChiTietDieuDong": e.idChiTietDieuDong,
+                  "ngayTao": e.ngayTao,
+                  "ngayCapNhat": e.ngayCapNhat,
+                  "nguoiTao": e.nguoiTao,
+                  "nguoiCapNhat": e.nguoiCapNhat,
+                  "isActive": e.isActive,
+                },
+              )
+              .toList();
 
-      bloc.add(CreateToolAndSuppliesHandoverEvent(request, listSignatory));
+      bloc.add(
+        CreateToolAndSuppliesHandoverEvent(
+          request,
+          listSignatory,
+          requestDetail,
+        ),
+      );
     } else {
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
@@ -761,7 +782,34 @@ class _ToolAndSuppliesHandoverDetailState
                         dieuDongCcdc?.detailToolAndMaterialTransfers ?? [],
                     listOwnershipUnit: widget.provider.listOwnershipUnit,
                     allAssets: widget.provider.dataCcdc,
-                    onDataChanged: (data) {},
+                    onDataChanged: (data) {
+                      setState(() {
+                        listDetailSubppliesHandover =
+                            data
+                                .map(
+                                  (e) => DetailSubppliesHandoverDto(
+                                    id: UUIDGenerator.generateWithFormat(
+                                      "CTBGCCDC-******",
+                                    ),
+                                    idBanGiaoCCDCVatTu:
+                                        controllerHandoverNumber.text,
+                                    idCCDCVatTu: e.idCCDCVatTu,
+                                    soLuong: e.soLuongXuat,
+                                    idChiTietCCDCVatTu: e.idDetaiAsset,
+                                    idChiTietDieuDong: e.idDetaiAsset,
+                                    ngayTao: DateTime.now().toIso8601String(),
+                                    ngayCapNhat: '',
+                                    nguoiTao: currentUser!.tenDangNhap,
+                                    nguoiCapNhat: '',
+                                    isActive: true,
+                                  ),
+                                )
+                                .toList();
+                        log(
+                          'listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}',
+                        );
+                      });
+                    },
                   ),
                 ),
               ),
@@ -1043,26 +1091,22 @@ class _ToolAndSuppliesHandoverDetailState
           },
         ),
         const SizedBox(height: 10),
-        CommonCheckboxInput(
-          label: 'Ký theo lượt',
-          value: isByStep,
-          isEditing: isEditing,
-          isDisabled: !isEditing,
-          onChanged: (newValue) {
-            setState(() {
-              isByStep = newValue;
-            });
-          },
-        ),
+        // CommonCheckboxInput(
+        //   label: 'Ký theo lượt',
+        //   value: isByStep,
+        //   isEditing: isEditing,
+        //   isDisabled: !isEditing,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isByStep = newValue;
+        //     });
+        //   },
+        // ),
       ],
     );
   }
 
   ToolAndSuppliesHandoverDto? getToolAndSuppliesHandoverPreview() {
-    SGLog.debug(
-      "ToolAndSuppliesHandoverDetail",
-      "getToolAndSuppliesHandoverPreview",
-    );
     return ToolAndSuppliesHandoverDto(
       id: controllerHandoverNumber.text,
       banGiaoCCDCVatTu: controllerDocumentName.text,

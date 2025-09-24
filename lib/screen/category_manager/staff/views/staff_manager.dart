@@ -264,6 +264,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                           staff: editingStaff,
                           staffs: staffs,
                           isNew: isNew,
+                          isCanUpdate: isCanUpdate,
                           onCancel: () {
                             setState(() {
                               isShowInput = false;
