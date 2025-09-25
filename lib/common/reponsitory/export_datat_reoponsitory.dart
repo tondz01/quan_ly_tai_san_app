@@ -33,7 +33,7 @@ class ExportDataReponsitory extends ApiBase {
 
       // Lưu file ra máy (ví dụ Excel)
       final bytes = Uint8List.fromList(response.data);
-      final savedPath = await saveExportFile(bytes, '$fileName.csv');
+      final savedPath = await saveExportFile(bytes, '$fileName.xlsx');
 
       // Sửa logic kiểm tra lỗi
       if (savedPath.startsWith("404/")) {

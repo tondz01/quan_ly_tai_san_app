@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -676,14 +675,25 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       (s) => s["id"] == userInfo.tenDangNhap,
     );
 
-    // Kiểm tra nếu không tìm thấy user trong signatureFlow
     if (currentIndex == -1 || currentIndex >= signatureFlow.length) {
-      return -1; // User không có trong danh sách ký
+      return -1;
     }
 
     final currentSigner = signatureFlow[currentIndex];
+    
+    if (item.nguoiLapPhieuKyNhay == true && 
+        item.idNguoiKyNhay == userInfo.tenDangNhap) {
+      return item.trangThaiKyNhay == true ? 2 : 4; 
+    }
+    
+    if (item.nguoiTao == userInfo.tenDangNhap && 
+        currentSigner["signed"] != -1) {
+      return currentSigner["signed"] == true ? 3 : 5; 
+    }
+    
+    // Logic cũ
     if (currentSigner["signed"] == -1) {
-      return -1;
+      return -1; 
     }
 
     return currentSigner["signed"] == true ? 1 : 0;

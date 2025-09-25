@@ -22,6 +22,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -64,10 +65,10 @@ class _ToolAndSuppliesHandoverListState
     'decision_number',
     'transfer_order',
     'transfer_date',
-    'movement_details',
     'sender_unit',
     'receiver_unit',
     'created_by',
+    'by_step',
     'status',
     'actions',
   ];
@@ -128,7 +129,7 @@ class _ToolAndSuppliesHandoverListState
       ),
       ColumnDisplayOption(
         id: 'name',
-        label: 'Bàn giao ccdc-vật tư',
+        label: 'Tên phiếu',
         isChecked: visibleColumnIds.contains('name'),
       ),
       ColumnDisplayOption(
@@ -147,11 +148,6 @@ class _ToolAndSuppliesHandoverListState
         isChecked: visibleColumnIds.contains('transfer_date'),
       ),
       ColumnDisplayOption(
-        id: 'movement_details',
-        label: 'Chi tiết bàn giao',
-        isChecked: visibleColumnIds.contains('movement_details'),
-      ),
-      ColumnDisplayOption(
         id: 'sender_unit',
         label: 'Đơn vị giao',
         isChecked: visibleColumnIds.contains('sender_unit'),
@@ -165,6 +161,11 @@ class _ToolAndSuppliesHandoverListState
         id: 'created_by',
         label: 'Người lập phiếu',
         isChecked: visibleColumnIds.contains('created_by'),
+      ),
+      ColumnDisplayOption(
+        id: 'by_step',
+        label: 'Ký theo lượt',
+        isChecked: visibleColumnIds.contains('by_step'),
       ),
       ColumnDisplayOption(
         id: 'status',
@@ -191,7 +192,24 @@ class _ToolAndSuppliesHandoverListState
               title: 'Trạng thái ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
+              searchValueGetter: (item) {
+                final status = widget.provider.isCheckSigningStatus(item);
+                return status == 1
+                    ? 'Đã ký'
+                    : status == 0
+                    ? 'Chưa ký'
+                    : status == 2
+                    ? 'Đã ký nháy'
+                    : status == 3
+                    ? 'Đã ký & tạo'
+                    : status == 4
+                    ? 'Chưa ký nháy'
+                    : status == 5
+                    ? 'Chưa ký & tạo'
+                    : 'Người tạo phiếu';
+              },
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -205,13 +223,17 @@ class _ToolAndSuppliesHandoverListState
                     item.share ?? false,
                     item.nguoiTao == userInfo?.tenDangNhap,
                   ),
+              searchValueGetter: (item) {
+                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+              },
+              filterable: true,
             ),
           );
           break;
         case 'name':
           columns.add(
             TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
-              title: 'Bàn giao tài sản',
+              title: 'Tên phiếu',
               getValue: (item) => item.banGiaoCCDCVatTu ?? '',
               width: 170,
             ),
@@ -251,24 +273,13 @@ class _ToolAndSuppliesHandoverListState
             ),
           );
           break;
-        case 'movement_details':
-          columns.add(
-            SgTableColumn<ToolAndSuppliesHandoverDto>(
-              title: 'Chi tiết bàn giao',
-              cellBuilder: (item) => showMovementDetails([]),
-              cellAlignment: TextAlign.center,
-              titleAlignment: TextAlign.center,
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
         case 'sender_unit':
           columns.add(
             TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
               title: 'Đơn vị giao',
               getValue: (item) => item.tenDonViGiao ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -278,6 +289,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Đơn vị nhận',
               getValue: (item) => item.tenDonViNhan ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -287,6 +299,24 @@ class _ToolAndSuppliesHandoverListState
               title: 'Người lập phiếu',
               getValue: (item) => item.nguoiTao ?? '',
               width: 120,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'by_step':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+              title: 'Ký theo lượt',
+              cellBuilder:
+                  (item) =>
+                      SgCheckbox(value: item.byStep == true, onChanged: null),
+              width: 100,
+              searchValueGetter: (item) {
+                return item.byStep == true
+                    ? 'Ký theo lượt'
+                    : 'Không ký theo lượt';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -297,6 +327,7 @@ class _ToolAndSuppliesHandoverListState
               cellBuilder: (item) => showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -688,6 +719,10 @@ class _ToolAndSuppliesHandoverListState
                   ? Colors.green
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? Colors.red
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? Colors.purple
                   : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
@@ -697,6 +732,10 @@ class _ToolAndSuppliesHandoverListState
                   ? 'Đã ký'
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? 'Chưa ký'
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? 'Đã ký & tạo'
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? 'Chưa ký & tạo'
                   : "Người tạo phiếu",
           size: 12,
           style: TextStyle(
@@ -785,6 +824,19 @@ class _ToolAndSuppliesHandoverListState
       }
       if (signatureFlow[currentIndex]["signed"] == true) {
         AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
+        return;
+      }
+      
+      final previousNotSigned = signatureFlow
+          .take(currentIndex)
+          .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
+      if (previousNotSigned.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
+          isError: true,
+        );
         return;
       }
 

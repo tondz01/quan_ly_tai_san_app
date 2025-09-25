@@ -357,7 +357,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   Widget _buildHeaderRow(Map<String, double> newWidths) {
     return Container(
-      height: widget.rowHeight,
+      height: widget.rowHeight + 10,
       decoration: BoxDecoration(
         color: widget.headerBackgroundColor,
         border: Border(
@@ -378,24 +378,21 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             return _buildCell(
               child: InkWell(
                 onTap: hasSort ? () => _onSortColumn(index) : null,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SGText(
-                          text: column.title,
-                          fontWeight: FontWeight.bold,
-                          textAlign: column.titleAlignment,
-                          color: widget.textHeaderColor ?? Colors.black,
-                        ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SGText(
+                        text: column.title,
+                        fontWeight: FontWeight.bold,
+                        textAlign: column.titleAlignment,
+                        color: widget.textHeaderColor ?? Colors.black,
                       ),
-                      if (hasSort &&
-                          _sortColumnIndex == index &&
-                          _sortDirection != SortDirection.none)
-                        _buildSortIcon(index),
-                    ],
-                  ),
+                    ),
+                    if (hasSort &&
+                        _sortColumnIndex == index &&
+                        _sortDirection != SortDirection.none)
+                      _buildSortIcon(index),
+                  ],
                 ),
               ),
               width: newWidths[column.title] ?? column.width,
@@ -428,7 +425,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
             : widget.oddRowBackgroundColor;
 
     return Container(
-      height: widget.rowHeight,
+      height: widget.rowHeight + 10,
       decoration: BoxDecoration(
         color: backgroundColor,
         border:
@@ -492,15 +489,16 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       final currentValue =
           column.getValueWithIndex?.call(item, rowIndex) ??
           column.getValue(item);
+      controller.text = currentValue.toString();
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         child: SGDropdownInputButton<T>(
           height: 40,
           controller: controller,
           value: currentValue,
           defaultValue: currentValue,
           items: column.dropdownItems ?? [],
-          showUnderlineBorderOnly: true,
+          // showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
@@ -510,10 +508,10 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           textAlignItem: TextAlign.left,
           sizeBorderCircular: 6,
           contentPadding: const EdgeInsets.only(
-            top: 4,
-            bottom: 4,
+            top: 0,
+            bottom: 6,
             left: 6,
-            right: 6,
+            right: 2,
           ),
           onChanged: (value) {
             if (value != null) {
@@ -539,15 +537,15 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
       children: [
         SGInputText(
           controller: controller,
-          height: 32,
+          height: 40,
           inputFormatters:
               column.inputType == TextInputType.number
                   ? [FilteringTextInputFormatter.digitsOnly]
                   : null,
           borderRadius: 10,
           enabled: widget.isEditing,
-          onlyLine: true,
-          showBorder: false,
+          // onlyLine: true,
+          showBorder: true,
           hintText: 'Nhập thông tin',
           onChanged: (value) {
             setState(() {
@@ -599,10 +597,11 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
           child: TextField(
             enabled: false,
             controller: TextEditingController(text: value?.toString() ?? ''),
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, overflow: TextOverflow.ellipsis),
             readOnly: true,
+            maxLines: 1,
             decoration: InputDecoration(
-              isDense: false,
+              isDense: true,
               filled: true,
               fillColor: Colors.transparent,
               border: UnderlineInputBorder(
@@ -626,7 +625,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
               suffixIcon: null,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 8,
-                vertical: 15,
+                vertical: 5,
               ),
             ),
           ),
@@ -642,7 +641,8 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   }) {
     return Container(
       width: width,
-      height: widget.rowHeight,
+      height: widget.rowHeight + 10,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration:
           widget.showVerticalLines && !isLast
               ? BoxDecoration(
@@ -660,7 +660,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
 
   Widget _buildAddRowButton() {
     if (!widget.isEditing) {
-      return const SizedBox.shrink(); 
+      return const SizedBox.shrink();
     }
 
     return SizedBox(

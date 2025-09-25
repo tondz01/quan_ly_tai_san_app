@@ -5,13 +5,16 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class NhanVienProvider extends ApiBase {
+
   UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
   Future<List<NhanVien>> fetchNhanViens() async {
     final response = await get(
@@ -22,8 +25,9 @@ class NhanVienProvider extends ApiBase {
       // Kiểm tra cấu trúc response và lấy data phù hợp
       final responseData = response.data;
       List<dynamic> data;
-      
-      if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('data')) {
         // Nếu response có cấu trúc {success: true, data: [...], ...}
         data = responseData['data'] ?? [];
       } else if (responseData is List) {
@@ -33,7 +37,7 @@ class NhanVienProvider extends ApiBase {
         // Fallback
         data = [];
       }
-      
+
       return data.map((item) => NhanVien.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load nhân viên');
@@ -48,8 +52,9 @@ class NhanVienProvider extends ApiBase {
       // Kiểm tra cấu trúc response và lấy data phù hợp
       final responseData = response.data;
       List<dynamic> data;
-      
-      if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+
+      if (responseData is Map<String, dynamic> &&
+          responseData.containsKey('data')) {
         // Nếu response có cấu trúc {success: true, data: [...], ...}
         data = responseData['data'] ?? [];
       } else if (responseData is List) {
@@ -59,7 +64,7 @@ class NhanVienProvider extends ApiBase {
         // Fallback
         data = [];
       }
-      
+
       return data.map((item) => ChucVu.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load chức vụ');
@@ -72,7 +77,6 @@ class NhanVienProvider extends ApiBase {
     String? fileName,
   }) async {
     try {
-      log('message nhanVien: ${nhanVien.toJson()}');
       final response = await post(
         EndPointAPI.NHAN_VIEN,
         data: nhanVien.toJson(),
@@ -110,7 +114,6 @@ class NhanVienProvider extends ApiBase {
     final body = response.data; // ở đây là Map luôn (nếu API trả về JSON)
 
     if (body['success'] == true) {
-      print(body['message']); // "Xóa nhân viên thành công"
       return;
     } else {
       throw Exception(body['message'] ?? "Failed to delete nhân viên");
@@ -118,17 +121,16 @@ class NhanVienProvider extends ApiBase {
   }
 
   void logFormData(FormData formData) {
-    print('--- FormData fields ---');
     for (var field in formData.fields) {
-      print('${field.key}: ${field.value}');
+      SGLog.info("NhanVienProvider", '${field.key}: ${field.value}');
     }
 
-    print('--- FormData files ---');
     for (var fileEntry in formData.files) {
       final file = fileEntry.value;
-      print(
+      SGLog.info(
+        "NhanVienProvider",
         '${fileEntry.key}: ${file.filename} '
-        '(${file.length} bytes, ${file.contentType})',
+            '(${file.length} bytes, ${file.contentType})',
       );
     }
   }
@@ -175,5 +177,69 @@ class NhanVienProvider extends ApiBase {
     return result;
   }
 
-  // Trước khi gọi API
+  Future<Map<String, dynamic>> saveNhanVienBatch(
+    List<NhanVien> nhanViens,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.NHAN_VIEN}/batch',
+        data: jsonEncode(nhanViens),
+      );
+
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        result['data'] = ResponseParser.parseToList<NhanVien>(
+          response.data,
+          NhanVien.fromJson,
+        );
+        return result;
+      } else {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteNhanVienBatch(List<String> data) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.NHAN_VIEN}/batch',
+        data: data,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<NhanVien>(
+        response.data,
+        NhanVien.fromJson,
+      );
+    } catch (e) {
+      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
 }

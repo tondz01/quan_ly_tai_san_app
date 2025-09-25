@@ -5,6 +5,8 @@ import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -13,12 +15,16 @@ class StaffList extends StatefulWidget {
   final void Function(NhanVien)? onChangeDetail;
   final void Function(NhanVien)? onEdit;
   final void Function(NhanVien)? onDelete;
+  final void Function(List<String>)? onDeleteBatch;
+  final bool isCanDelete;
   const StaffList({
     super.key,
     required this.data,
     this.onChangeDetail,
     this.onEdit,
     this.onDelete,
+    this.onDeleteBatch,
+    this.isCanDelete = false,
   });
 
   @override
@@ -127,26 +133,49 @@ class _StaffListState extends State<StaffList> {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    SGText(
-                      text:
-                          'Danh sách nhân viên đã chọn: ${selectedItems.length}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
+                if (widget.isCanDelete)
+                  Visibility(
+                    visible: selectedItems.isNotEmpty,
+                    child: Row(
+                      children: [
+                        SGText(
+                          text:
+                              'Danh sách nhân viên đã chọn: ${selectedItems.length}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        MaterialTextButton(
+                          text: 'Xóa đã chọn',
+                          icon: Icons.delete,
+                          backgroundColor: ColorValue.error,
+                          foregroundColor: Colors.white,
+                          onPressed: () {
+                            setState(() {
+                              List<String> data =
+                                  selectedItems.map((e) => e.id!).toList();
+                              showConfirmDialog(
+                                context,
+                                type: ConfirmType.delete,
+                                title: 'Xóa nhân viên',
+                                message:
+                                    'Bạn có chắc muốn xóa ${selectedItems.length} nhân viên',
+                                highlight: selectedItems.length.toString(),
+                                cancelText: 'Không',
+                                confirmText: 'Xóa',
+                                onConfirm: () {
+                                  widget.onDeleteBatch?.call(data);
+                                },
+                              );
+                            });
+                          },
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 16),
-                    // IconButton(
-                    //   onPressed: () {
-                    //     // TODO: Xóa nhân viên đã chọn
-                    //   },
-                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    // ),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
@@ -176,23 +205,29 @@ class _StaffListState extends State<StaffList> {
       ActionButtonConfig(
         icon: Icons.delete,
         tooltip: 'Xóa',
-        iconColor: Colors.red.shade700,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
+        iconColor:
+            widget.isCanDelete ? Colors.red.shade700 : Colors.grey.shade700,
+        backgroundColor:
+            widget.isCanDelete ? Colors.red.shade50 : Colors.grey.shade50,
+        borderColor:
+            widget.isCanDelete ? Colors.red.shade200 : Colors.grey.shade200,
         onPressed:
             () => {
-              showConfirmDialog(
-                context,
-                type: ConfirmType.delete,
-                title: 'Xóa chức vụ',
-                message: 'Bạn có chắc muốn xóa ${item.hoTen}',
-                highlight: item.hoTen ?? '',
-                cancelText: 'Không',
-                confirmText: 'Xóa',
-                onConfirm: () {
-                  widget.onDelete?.call(item);
+              if (widget.isCanDelete)
+                {
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa nhân viên',
+                    message: 'Bạn có chắc muốn xóa ${item.hoTen}',
+                    highlight: item.hoTen ?? '',
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      widget.onDelete?.call(item);
+                    },
+                  ),
                 },
-              ),
             },
       ),
     ]);

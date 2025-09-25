@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/component/conver_excecl_to_asset_group.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
@@ -62,14 +65,21 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                       provider.onChangeDetail(null);
                     },
                     mainScreen: 'Nhóm tài sản',
-                    onFileSelected: (fileName, filePath, fileBytes) {
-                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    onFileSelected: (fileName, filePath, fileBytes) async {
+                      final assetGroubBloc = context.read<AssetGroupBloc>();
+                      final List<AssetGroupDto> cv =
+                          await convertExcelToAssetGroup(filePath!);
+                      if (!mounted) return;
+                      if (cv.isNotEmpty) {
+                        assetGroubBloc.add(CreateAssetGroupBatchEvent(cv));
+                      }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
-                        "Danh sách nhóm tài sản",
-                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                        "nhom_tai_san",
+                        provider.data?.map((e) => e.toExportJson()).toList() ??
+                            [],
                       );
                     },
                   ),
@@ -87,9 +97,6 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                           isShowCollapse: provider.isShowCollapse,
                           onExpandedChanged: (isExpanded) {
                             provider.isShowCollapse = isExpanded;
-                            log(
-                              'message isShowCollapse: ${provider.isShowCollapse}',
-                            );
                           },
                         ),
                       ),
@@ -127,14 +134,12 @@ class _AssetGroupViewState extends State<AssetGroupView> {
           );
         }
         if (state is CreateAssetGroupSuccessState) {
-          log('CreateAssetGroupSuccessState');
           context.read<AssetGroupProvider>().createAssetGroupSuccess(
             context,
             state,
           );
         }
         if (state is CreateAssetGroupFailedState) {
-          log('CreateAssetGroupFailedState');
           context.read<AssetGroupProvider>().createAssetGroupFailed(
             context,
             state,
@@ -142,28 +147,24 @@ class _AssetGroupViewState extends State<AssetGroupView> {
         }
         if (state is GetListAssetGroupFailedState) {
           // Manejar error
-          log('GetListAssetGroupFailedState');
           context.read<AssetGroupProvider>().getListAssetGroupFailed(
             context,
             state,
           );
         }
         if (state is UpdateAssetGroupSuccessState) {
-          log('UpdateAssetGroupSuccessState');
           context.read<AssetGroupProvider>().updateAssetGroupSuccess(
             context,
             state,
           );
         }
         if (state is DeleteAssetGroupSuccessState) {
-          log('DeleteAssetGroupSuccessState');
           context.read<AssetGroupProvider>().deleteAssetGroupSuccess(
             context,
             state,
           );
         }
         if (state is PutPostDeleteFailedState) {
-          log('PutPostDeleteFailedState');
           context.read<AssetGroupProvider>().putPostDeleteFailed(
             context,
             state,

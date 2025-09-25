@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:get_storage/get_storage.dart';
 
 
@@ -48,5 +50,6 @@ class StorageKey {
   static const ASSET_HANDOVER = 'asset_handover';
   static const TOOL_AND_MATERIAL_TRANSFER = 'tool_and_material_transfer';
   static const TOOL_AND_MATERIAL_TRANSFER_HANDOVER = 'tool_and_material_transfer_handover';
-
+  static const CONFIG_TIME_EXPIRE = 'config_time_expire';
+  static const ROLES_KEY = "USER_ROLES";
 }

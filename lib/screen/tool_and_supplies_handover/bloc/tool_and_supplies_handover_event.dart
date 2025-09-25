@@ -29,11 +29,20 @@ class SendToSignerAsetHandoverEvent extends ToolAndSuppliesHandoverEvent {
 class CreateToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {
   final Map<String, dynamic> request;
   final List<SignatoryDto> listSignatory;
+  final List<Map<String, dynamic>> requestDetailSubppliesHandover;
 
-  const CreateToolAndSuppliesHandoverEvent(this.request, this.listSignatory);
+  const CreateToolAndSuppliesHandoverEvent(
+    this.request,
+    this.listSignatory,
+    this.requestDetailSubppliesHandover,
+  );
 
   @override
-  List<Object?> get props => [request, listSignatory];
+  List<Object?> get props => [
+    request,
+    listSignatory,
+    requestDetailSubppliesHandover,
+  ];
 }
 
 class UpdateToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {
@@ -65,10 +74,24 @@ class UpdateSigningStatusCcdcEvent extends ToolAndSuppliesHandoverEvent {
   final List<Map<String, dynamic>> requestQuantity;
   final String idDieuChuyen;
 
-  const UpdateSigningStatusCcdcEvent(this.context, this.id, this.userId, this.request, this.requestQuantity, this.idDieuChuyen);
+  const UpdateSigningStatusCcdcEvent(
+    this.context,
+    this.id,
+    this.userId,
+    this.request,
+    this.requestQuantity,
+    this.idDieuChuyen,
+  );
 
   @override
-  List<Object?> get props => [context, id, userId, request, requestQuantity, idDieuChuyen];
+  List<Object?> get props => [
+    context,
+    id,
+    userId,
+    request,
+    requestQuantity,
+    idDieuChuyen,
+  ];
 }
 
 //Hủy phiếu ký nội sinh

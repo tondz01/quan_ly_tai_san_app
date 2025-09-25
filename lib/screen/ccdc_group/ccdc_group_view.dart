@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/component/convert_excel_to_ccdc_group.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
@@ -34,8 +37,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
   Widget build(BuildContext context) {
     return BlocConsumer<CcdcGroupBloc, CcdcGroupState>(
       listener: (context, state) {
-        if (state is CcdcGroupLoadingState) {
-        }
+        if (state is CcdcGroupLoadingState) {}
         if (state is GetListCcdcGroupSuccessState) {
           context.read<CcdcGroupProvider>().getListCcdcGroupSuccess(
             context,
@@ -73,10 +75,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
           );
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<CcdcGroupProvider>().putPostDeleteFailed(
-            context,
-            state,
-          );
+          context.read<CcdcGroupProvider>().putPostDeleteFailed(context, state);
         }
       },
       builder: (context, state) {
@@ -102,14 +101,20 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                       provider.onChangeDetail(null);
                     },
                     mainScreen: 'Nhóm ccdc',
-                    onFileSelected: (fileName, filePath, fileBytes) {
-                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    onFileSelected: (fileName, filePath, fileBytes) async {
+                      final assetGroubBloc = context.read<CcdcGroupBloc>();
+                      final List<CcdcGroup> ccdc =
+                          await convertExcelToCcdcGroup(filePath!);
+                      if (!mounted) return;
+                      if (ccdc.isNotEmpty) {
+                        assetGroubBloc.add(CreateCcdcGroupBatchEvent(ccdc));
+                      }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
-                        "Danh sách nhóm CCDC - Vật tư",
-                        provider.data?.map((e) => e.toJson()).toList() ?? [],
+                        "ccdc_vt",
+                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
                       );
                     },
                   ),

@@ -51,35 +51,6 @@ class AssetManagementRepository extends ApiBase {
   }
 
   //get list child assets
-  // Future<Map<String, dynamic>> getListChildAssets(String idTaiSan) async {
-  //   List<ChildAssetDto> list = [];
-  //   Map<String, dynamic> result = {
-  //     'data': list,
-  //     'status_code': Numeral.STATUS_CODE_DEFAULT,
-  //   };
-
-  //   try {
-  //     String url = '${EndPointAPI.CHILD_ASSETS}/$idTaiSan';
-  //     final response = await get(url);
-  //     if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-  //       result['status_code'] = response.statusCode;
-  //       return result;
-  //     }
-
-  //     result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-  //     // Parse response data using the common ResponseParser utility
-  //     result['data'] = ResponseParser.parseToList<ChildAssetDto>(
-  //       response.data,
-  //       ChildAssetDto.fromJson,
-  //     );
-  //   } catch (e) {
-  //     log("Error at getListChildAssets - AssetManagementRepository: $e");
-  //   }
-
-  //   return result;
-  // }
-  //get list child assets
   Future<Map<String, dynamic>> getAllChildAssets(String idCongTy) async {
     List<ChildAssetDto> list = [];
     Map<String, dynamic> result = {
@@ -467,6 +438,71 @@ class AssetManagementRepository extends ApiBase {
         "AssetTransferRepository",
         "Error at insertDataFile - AssetTransferRepository: $e",
       );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> createAssetBatch(List<AssetManagementDto> assets) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.ASSET_MANAGEMENT}/batch',
+        data: jsonEncode(assets),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] =
+            response.data['message'] ?? 'Lưu danh sách chức vụ thất bại';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+        response.data,
+        AssetManagementDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at createAssetBatch - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteAssetBatch(List<String> data) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        '${EndPointAPI.ASSET_MANAGEMENT}/batch',
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+        response.data,
+        AssetManagementDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at deleteAssetBatch - AssetTransferRepository: $e");
     }
 
     return result;

@@ -1,5 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' show PdfDocument, PdfPageView;
@@ -31,10 +33,11 @@ Widget previewDocumentCcdcHandover({
 }) {
   return InkWell(
     onTap: () {
-      if (item == null) return;
+      log('item: $item');
+      if (dieuDongCcdc == null) return;
       prevDocumentCcdcHandover(
         context: context,
-        item: item,
+        item: item ?? ToolAndMaterialTransferDto.empty(),
         provider: provider,
         isShowKy: isShowKy,
         dieuDongCcdc: dieuDongCcdc,
@@ -170,6 +173,8 @@ prevDocumentCcdcHandover({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
+            isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,

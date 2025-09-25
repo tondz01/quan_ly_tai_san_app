@@ -114,6 +114,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
     });
   }
 
+  Future<void> _loadPdfFromBytes(Uint8List bytes) async {
+    final document = await PdfDocument.openData(bytes);
+    setState(() {
+      _document = document;
+    });
+  }
+
   Future<void> _loadPdfNetwork(String nameFile) async {
     SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
     try {
@@ -395,6 +402,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                 children: [
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CommonFormInput(
                           label: 'Số chứng từ',
@@ -403,6 +411,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           textContent: controllers.controllerSoChungTu.text,
                           fieldName: 'soChungTu',
                           validationErrors: validation.validationErrors,
+                          isRequired: true,
                         ),
                         CommonFormInput(
                           label: 'at.document_name'.tr,
@@ -411,6 +420,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           textContent: state.item?.tenPhieu ?? '',
                           fieldName: 'documentName',
                           validationErrors: validation.validationErrors,
+                          isRequired: true,
                         ),
                         CommonFormInput(
                           label: 'Trích yêu',
@@ -419,6 +429,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           textContent: state.item?.trichYeu ?? '',
                           fieldName: 'subject',
                           validationErrors: validation.validationErrors,
+                          isRequired: true,
                         ),
 
                         CmFormDropdownObject<PhongBan>(
@@ -427,6 +438,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: state.isEditing,
                           value: state.donViGiao,
                           items: widget.provider.itemsDDPhongBan,
+                          isRequired: true,
                           defaultValue:
                               controllers
                                       .controllerDeliveringUnit
@@ -463,6 +475,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: state.isEditing,
                           value: state.donViNhan,
                           items: widget.provider.itemsDDPhongBan,
+                          isRequired: true,
                           defaultValue:
                               controllers
                                       .controllerReceivingUnit
@@ -492,6 +505,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                     controllers.controllerEffectiveDate.text,
                                   )
                                   : DateTime.now(),
+                          isRequired: true,
                         ),
                         CmFormDate(
                           label: 'at.effective_date_to'.tr,
@@ -507,6 +521,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                     controllers.controllerEffectiveDateTo.text,
                                   )
                                   : DateTime.now(),
+                          isRequired: true,
                         ),
                       ],
                     ),
@@ -514,6 +529,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CmFormDropdownObject<PhongBan>(
                           label: 'Đơn vị đề nghị'.tr,
@@ -521,6 +537,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           isEditing: state.isEditing,
                           value: state.donViDeNghi,
                           items: widget.provider.itemsDDPhongBan,
+                          isRequired: true,
                           defaultValue:
                               controllers
                                       .controllerProposingUnit
@@ -563,6 +580,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ),
                           ],
+                          isRequired: true,
                           defaultValue:
                               controllers.controllerRequester.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
@@ -583,6 +601,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             });
                           },
                         ),
+                        SizedBox(height: 6),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
                           value: state.isNguoiLapPhieuKyNhay,
@@ -594,7 +613,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             });
                           },
                         ),
-
+                        SizedBox(height: 6),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người duyệt',
                           controller: controllers.controllerDepartmentApproval,
@@ -609,6 +628,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ),
                           ],
+                          isRequired: true,
                           defaultValue:
                               controllers
                                       .controllerDepartmentApproval
@@ -672,6 +692,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               ),
                             ),
                           ],
+                          isRequired: true,
                           defaultValue:
                               controllers.controllerApprover.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
@@ -710,9 +731,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                     state.selectedFileName = fileName;
                     state.selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
-
                     if (fileName != null) {
-                      _loadPdf(filePath!);
+                      if (fileBytes != null) {
+                        _loadPdfFromBytes(fileBytes);
+                      } else if (filePath != null) {
+                        _loadPdf(filePath);
+                      }
                     }
 
                     if (validation.hasValidationError('document')) {

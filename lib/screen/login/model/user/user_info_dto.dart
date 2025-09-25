@@ -14,6 +14,7 @@ class UserInfoDTO {
   final String? ngayTao;
   final String? ngayCapNhat;
   final String? chuKy;
+  final String? username;
 
   const UserInfoDTO({
     required this.id,
@@ -31,11 +32,10 @@ class UserInfoDTO {
     this.ngayTao,
     this.ngayCapNhat,
     this.chuKy,
+    this.username,
   });
 
   factory UserInfoDTO.fromJson(Map<String, dynamic> json) {
-
-
     return UserInfoDTO(
       id: json['id'] as String? ?? '',
       tenDangNhap: json['tenDangNhap'] as String? ?? '',
@@ -47,11 +47,18 @@ class UserInfoDTO {
       nguoiTao: json['nguoiTao'] as String? ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] as String?,
       idCongTy: json['idCongTy'] as String? ?? '',
-      rule: json['rule'] is int ? json['rule'] as int : int.tryParse('${json['rule']}') ?? 0,
-      isActive: json['isActive'] is bool ? json['isActive'] as bool : json['isActive'] == 1,
+      rule:
+          json['rule'] is int
+              ? json['rule'] as int
+              : int.tryParse('${json['rule']}') ?? 0,
+      isActive:
+          json['isActive'] is bool
+              ? json['isActive'] as bool
+              : json['isActive'] == 1,
       ngayTao: json['ngayTao'] as String?,
       ngayCapNhat: json['ngayCapNhat'] as String?,
       chuKy: json['chuKy'] as String?,
+      username: json['username'] as String?,
     );
   }
 
@@ -72,9 +79,10 @@ class UserInfoDTO {
       'ngayTao': ngayTao,
       'ngayCapNhat': ngayCapNhat,
       'chuKy': chuKy,
+      'username': username,
     };
   }
-  
+
   UserInfoDTO copyWith({
     String? id,
     String? tenDangNhap,
@@ -91,6 +99,7 @@ class UserInfoDTO {
     String? ngayTao,
     String? ngayCapNhat,
     String? chuKy,
+    String? username,
   }) {
     return UserInfoDTO(
       id: id ?? this.id,
@@ -108,6 +117,28 @@ class UserInfoDTO {
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
       chuKy: chuKy ?? this.chuKy,
+      username: username ?? this.username,
+    );
+  }
+
+  static UserInfoDTO empty() {
+    return UserInfoDTO(
+      id: '',
+      tenDangNhap: '',
+      matKhau: '',
+      hoTen: '',
+      email: '',
+      soDienThoai: '',
+      hinhAnh: '',
+      nguoiTao: '',
+      nguoiCapNhat: '',
+      idCongTy: '',
+      rule: 0,
+      isActive: false,
+      ngayTao: '',
+      ngayCapNhat: '',
+      chuKy: '',
+      username: '',
     );
   }
 }

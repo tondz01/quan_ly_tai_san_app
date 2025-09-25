@@ -32,4 +32,8 @@ class EndPointAPI {
   static String OWNERSHIP_UNIT_DETAIL = "/chitietdonvisohuu";
   static String EXPORT_DATA = "/api/upload/export";
   static String DASHBOARD = "/api/dashboard/statistics";
+  static String CONFIG = "/api/config";
+  static String PERMISSIONS = "/api/userpermission";
+  static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";
+  static String DETAIL_SUPPLIES_TRANSFER= "/api/chitietdieudongccdcvattu";
 }

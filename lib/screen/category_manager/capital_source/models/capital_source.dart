@@ -55,6 +55,36 @@ class NguonKinhPhi extends Equatable {
     };
   }
 
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
+
+  String? _formatDate(DateTime? dateTime) {
+    return dateTime?.toIso8601String();
+  }
+
+  Map<String, dynamic> toExportJson() {
+    return {
+      'id': _nullIfEmpty(id),
+      'tenNguonKinhPhi': _nullIfEmpty(tenNguonKinhPhi),
+      'ghiChu': _nullIfEmpty(ghiChu),
+      'hieuLuc': hieuLuc ?? false,
+      'idCongTy': _nullIfEmpty("ct001"),
+      'ngayTao': _nullIfEmpty(_formatDate(ngayTao)),
+      'ngayCapNhat': _nullIfEmpty(_formatDate(ngayCapNhat)),
+      'nguoiTao': _nullIfEmpty(nguoiTao),
+      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
+      'isActive': true,
+    };
+  }
+
   @override
   List<Object?> get props => [
         id,

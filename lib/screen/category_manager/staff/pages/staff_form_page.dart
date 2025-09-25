@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -8,6 +7,8 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -17,7 +18,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_blo
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/staff_save_service.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -29,6 +29,8 @@ class StaffFormPage extends StatefulWidget {
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
+  final bool isCanUpdate;
+  final bool isNew;
   const StaffFormPage({
     super.key,
     this.staff,
@@ -36,6 +38,8 @@ class StaffFormPage extends StatefulWidget {
     this.index,
     this.onCancel,
     this.onSaved,
+    this.isCanUpdate = false,
+    this.isNew = false,
   });
 
   @override
@@ -53,6 +57,8 @@ class _StaffFormPageState extends State<StaffFormPage> {
   late TextEditingController _staffOwnerController;
   late TextEditingController _agreementUUIdController;
   late TextEditingController _pinController;
+  final TextEditingController controllerDepartment = TextEditingController();
+  final TextEditingController controllerChucVu = TextEditingController();
   bool _laQuanLy = false;
   bool isEditing = false;
   PhongBan? _phongBan;
@@ -64,11 +70,12 @@ class _StaffFormPageState extends State<StaffFormPage> {
   String? _chuKyNhayPathExisting;
   String? _chuKyThuongPathExisting;
 
-  bool _isCanSave = true;
   bool _kyNhay = false;
   bool _kyThuong = false;
   bool _kySo = false;
   bool _isActive = false;
+  bool _savePin = false;
+  bool _obscurePassword = true;
   String? errorChuKyNhay;
   String? errorChuKyThuong;
 
@@ -114,17 +121,22 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
+    log('_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}');
     if (widget.staff != null) {
       isEditing = false;
     } else {
       isEditing = true;
+    }
+    if (!widget.isCanUpdate && !widget.isNew) {
+      isEditing = false;
     }
     _nameController = TextEditingController(text: widget.staff?.hoTen ?? '');
     _telController = TextEditingController(text: widget.staff?.diDong ?? '');
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
-    _isActive = widget.staff?.isActive ?? false;
+    _isActive = widget.staff?.active ?? false;
+    _savePin = widget.staff?.savePin ?? false;
     _activityController = TextEditingController(
       text: _isActive ? 'Có' : 'Không',
     );
@@ -139,15 +151,14 @@ class _StaffFormPageState extends State<StaffFormPage> {
       _phongBan = context.read<StaffBloc>().department.firstWhere(
         (group) => group.id == widget.staff?.phongBanId,
       );
+      controllerDepartment.text = _phongBan?.tenPhongBan ?? '';
     } catch (e) {
       _phongBan = null;
     }
     try {
       if (widget.staff?.quanLyId != null) {
         _staffDTO = getStaffById(widget.staff?.quanLyId ?? '');
-        log('message _staffDTO: ${_staffDTO?.toJson()}');
       }
-      log('message _staffDTO: ${widget.staff?.quanLyId}');
     } catch (e) {
       _staffDTO = null;
     }
@@ -155,10 +166,10 @@ class _StaffFormPageState extends State<StaffFormPage> {
       _chucVuDTO = context.read<StaffBloc>().chucvus.firstWhere(
         (chucVu) => chucVu.id == widget.staff?.chucVuId,
       );
+      controllerChucVu.text = _chucVuDTO?.tenChucVu ?? '';
     } catch (e) {
       _chucVuDTO = null;
     }
-    log('message widget.staff?.agreementUUId: ${jsonEncode(widget.staff)}');
     _agreementUUIdController = TextEditingController(
       text: widget.staff?.agreementUUId ?? '',
     );
@@ -170,7 +181,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
     selectedFileChuKyNhay =
         widget.staff?.chuKyNhay != null ? File(widget.staff!.chuKyNhay!) : null;
-    log('message selectedFileChuKyNhay: ${widget.staff?.chuKyNhay}');
     selectedFileChuKyThuong =
         widget.staff?.chuKyThuong != null
             ? File(widget.staff!.chuKyThuong!)
@@ -287,7 +297,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.staff != null;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FC),
@@ -297,7 +306,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          _buildHeaderDetail(),
+          if (widget.isNew ||
+              (widget.isCanUpdate && !widget.isNew && widget.staff != null))
+            _buildHeaderDetail(),
           sectionCard(
             child: Form(
               key: _formKey,
@@ -319,7 +330,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 'Mã nhân viên',
                                 required: true,
                               ),
-                              enabled: !isEdit, // Read-only khi update
+                              enabled: isEditing, // Read-only khi update
                               validator:
                                   (v) =>
                                       v == null || v.isEmpty
@@ -357,94 +368,50 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                           : null,
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _telController,
-                              readOnly: !isEditing,
-                              decoration: inputDecoration(
-                                'Số điện thoại',
-                                required: true,
-                              ),
-                              enabled: isEditing,
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Nhập số điện thoại'
-                                          : null,
-                            ),
-                            const SizedBox(height: 16),
-                            DropdownButtonFormField<ChucVu>(
+                            CmFormDropdownObject<ChucVu>(
+                              label: 'Chức vụ',
+                              controller: controllerChucVu,
+                              isEditing: isEditing,
                               value: _chucVuDTO,
-                              decoration: inputDecoration('Chức vụ'),
-                              items:
-                                  context
-                                      .read<StaffBloc>()
-                                      .chucvus
-                                      .map(
-                                        (chucVu) => DropdownMenuItem(
-                                          value: chucVu,
-                                          child: Row(
-                                            children: [
-                                              const SizedBox(width: 8),
-                                              Text(chucVu.tenChucVu),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged:
-                                  isEditing
-                                      ? (v) => setState(() => _chucVuDTO = v)
-                                      : null, // Disable dropdown
-                              isExpanded: true,
+                              fieldName: 'chucvu',
+                              items: [
+                                ...AccountHelper.instance.getChucVu()!.map(
+                                  (e) => DropdownMenuItem<ChucVu>(
+                                    value: e,
+                                    child: Text(e.tenChucVu),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                _chucVuDTO = value;
+                              },
+                              validationErrors: {
+                                'chucvu': _chucVuDTO == null && isEditing,
+                              },
+                              isRequired: true,
                             ),
                             const SizedBox(height: 16),
-
-                            DropdownButtonFormField<NhanVien>(
-                              value: _staffDTO,
-                              decoration: inputDecoration('Người quản lý'),
-                              items:
-                                  context
-                                      .read<StaffBloc>()
-                                      .staffs
-                                      .map(
-                                        (staff) => DropdownMenuItem(
-                                          value: staff,
-                                          child: Row(
-                                            children: [
-                                              const SizedBox(width: 8),
-                                              Text(staff.hoTen ?? ''),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged:
-                                  isEditing
-                                      ? (v) => setState(() => _staffDTO = v)
-                                      : null,
-                              isExpanded: true,
-                            ),
-                            const SizedBox(height: 16),
-
-                            DropdownButtonFormField<PhongBan>(
+                            CmFormDropdownObject<PhongBan>(
+                              label: 'Phòng ban/Bộ phận',
+                              controller: controllerDepartment,
+                              isEditing: isEditing,
                               value: _phongBan,
-                              decoration: inputDecoration('Phòng/Ban'),
-                              items:
-                                  context
-                                      .read<StaffBloc>()
-                                      .department
-                                      .map(
-                                        (p) => DropdownMenuItem(
-                                          value: p,
-                                          child: Text(p.tenPhongBan ?? ''),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged:
-                                  isEditing
-                                      ? (v) => setState(() => _phongBan = v)
-                                      : null,
-                              isExpanded: true,
+                              fieldName: 'department',
+                              items: [
+                                ...context.read<StaffBloc>().department.map(
+                                  (e) => DropdownMenuItem<PhongBan>(
+                                    value: e,
+                                    child: Text(e.tenPhongBan ?? ''),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                _phongBan = value;
+                              },
+                              validationErrors: {
+                                'department': _phongBan == null && isEditing,
+                              },
+                              isRequired: true,
                             ),
                           ],
                         ),
@@ -459,58 +426,84 @@ class _StaffFormPageState extends State<StaffFormPage> {
                               Column(
                                 spacing: 16,
                                 children: [
-                                  SGText(
-                                    textAlign: TextAlign.left,
-                                    text:
-                                        'Hãy nhập mã PIN sau đó click button "Lấy Agreement UUID" để lấy Agreement UUID',
-                                    color: Colors.blue,
-                                  ),
                                   TextFormField(
-                                    readOnly: true,
-                                    enabled: false,
+                                    readOnly: !isEditing,
+                                    enabled: isEditing,
                                     controller: _agreementUUIdController,
                                     decoration: inputDecoration(
                                       'Agreement UUID',
                                     ),
+                                    validator:
+                                        (v) =>
+                                            v == null || v.isEmpty
+                                                ? 'Nhập Agreement UUID'
+                                                : null,
                                   ),
                                   TextFormField(
                                     controller: _pinController,
-                                    decoration: inputDecoration('PIN'),
+                                    decoration: InputDecoration(
+                                      labelText: 'PIN',
+                                      hintText: "Nhập mã Pin",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                      suffixIcon:
+                                          isEditing
+                                              ? IconButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _obscurePassword =
+                                                        !_obscurePassword;
+                                                  });
+                                                },
+                                                icon: Icon(
+                                                  _obscurePassword
+                                                      ? Icons.visibility_off
+                                                      : Icons.visibility,
+                                                ),
+                                              )
+                                              : null,
+                                    ),
                                     readOnly: !isEditing,
                                     enabled: isEditing,
+                                    obscureText: _obscurePassword,
                                     onChanged: (value) {
                                       setState(() {
                                         // _pinController.text = value;
-                                        log('message: $_pinController.text');
                                       });
                                     },
+
+                                    validator:
+                                        (v) =>
+                                            v == null || v.isEmpty
+                                                ? 'Nhập PIN'
+                                                : null,
                                   ),
-                                  Visibility(
-                                    visible: isEditing,
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        ElevatedButton(
-                                          onPressed:
-                                              () => _onGetAgreementUUID(),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(
-                                              0xFF2264E5,
-                                            ),
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 32,
-                                              vertical: 16,
-                                            ),
-                                          ),
-                                          child: Text('Lấy Agreement UUID'),
-                                        ),
-                                      ],
-                                    ),
+                                  CommonCheckboxInput(
+                                    label: 'Lưu mã PIN',
+                                    value: _savePin,
+                                    isEditing: isEditing,
+                                    isDisabled: !isEditing,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        if (_pinController.text.isEmpty &&
+                                            value) {
+                                          AppUtility.showSnackBar(
+                                            context,
+                                            'Vui lòng nhập PIN trước khi lưu mã PIN',
+                                            isError: true,
+                                          );
+                                          return;
+                                        }
+                                        _savePin = value;
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
@@ -563,7 +556,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                         overflow: TextOverflow.ellipsis,
                       );
                     }
-                    log('message chuky: $chuky');
                     if (chuky.isNotEmpty) {
                       return Row(
                         children: [
@@ -641,11 +633,24 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   ),
                   if (_kyNhay)
                     Expanded(
-                      child: _buildUploadFileChuKy(
-                        _chuKyNhayPathExisting ?? '',
-                        selectedFileChuKyNhay,
-                        1,
-                      ),
+                      child:
+                          isEditing
+                              ? _buildUploadFileChuKy(
+                                _chuKyNhayPathExisting ?? '',
+                                selectedFileChuKyNhay,
+                                1,
+                              )
+                              : (_chuKyNhayPathExisting != null &&
+                                      _chuKyNhayPathExisting!.isNotEmpty
+                                  ? Image.network(
+                                    '${ApiConfig.getBaseURL()}/api/upload/download/${_chuKyNhayPathExisting!.split('/').last}',
+                                    height: 32,
+                                    fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            SizedBox(height: 32),
+                                  )
+                                  : SizedBox()),
                     ),
                 ],
               ),
@@ -672,11 +677,24 @@ class _StaffFormPageState extends State<StaffFormPage> {
                   ),
                   if (_kyThuong)
                     Expanded(
-                      child: _buildUploadFileChuKy(
-                        _chuKyThuongPathExisting ?? '',
-                        selectedFileChuKyThuong,
-                        2,
-                      ),
+                      child:
+                          isEditing
+                              ? _buildUploadFileChuKy(
+                                _chuKyThuongPathExisting ?? '',
+                                selectedFileChuKyThuong,
+                                2,
+                              )
+                              : (_chuKyThuongPathExisting != null &&
+                                      _chuKyThuongPathExisting!.isNotEmpty
+                                  ? Image.network(
+                                    '${ApiConfig.getBaseURL()}/api/upload/download/${_chuKyThuongPathExisting!.split('/').last}',
+                                    height: 32,
+                                    fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            SizedBox(height: 32),
+                                  )
+                                  : SizedBox()),
                     ),
                 ],
               ),
@@ -697,7 +715,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
                 onChanged:
                     (value) => setState(() {
                       _kySo = value;
-                      _isCanSave = !value;
                     }),
               ),
             ],
@@ -705,63 +722,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
         ),
       ],
     );
-  }
-
-  Future<void> _onGetAgreementUUID() async {
-    final idNhanVien =
-        _staffIdController.text.isNotEmpty
-            ? _staffIdController.text
-            : (_staffDTO?.id ?? '');
-    final pin = _pinController.text.trim();
-
-    if (idNhanVien.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Vui lòng nhập/chọn Mã nhân viên',
-        isError: true,
-      );
-      return;
-    }
-    if (pin.isEmpty) {
-      AppUtility.showSnackBar(context, 'Vui lòng nhập mã PIN', isError: true);
-      return;
-    }
-
-    try {
-      final result = await NhanVienProvider().getAgreementUUID(
-        idNhanVien: idNhanVien,
-        pin: pin,
-      );
-      if (!mounted) return;
-
-      final status = result['status_code'] as int? ?? 0;
-      if (status >= 200 && status < 300) {
-        final data = (result['data'] ?? '').toString();
-        if (data.isNotEmpty) {
-          setState(() {
-            _agreementUUIdController.text = data;
-            _isCanSave = _agreementUUIdController.text.isNotEmpty;
-          });
-          AppUtility.showSnackBar(context, 'Lấy Agreement UUID thành công');
-        } else {
-          AppUtility.showSnackBar(
-            context,
-            'Không nhận được Agreement UUID từ máy chủ',
-            isError: true,
-          );
-        }
-      } else {
-        final message = (result['message'] ?? 'Lỗi khi gọi API').toString();
-        AppUtility.showSnackBar(context, message, isError: true);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      AppUtility.showSnackBar(
-        context,
-        'Lỗi khi gọi API: ${e.toString()}',
-        isError: true,
-      );
-    }
   }
 
   Widget _buildHeaderDetail() {
@@ -775,23 +735,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
               onPressed: () {
-                if (_isCanSave) {
-                  _save();
-                } else {
-                  if (_pinController.text.isEmpty) {
-                    AppUtility.showSnackBar(
-                      context,
-                      'Vui lòng nhập mã PIN để lấy Agreement UUID',
-                      isError: true,
-                    );
-                  } else if (_agreementUUIdController.text.isEmpty) {
-                    AppUtility.showSnackBar(
-                      context,
-                      'Vui lòng nhập nhấn "Lấy Agreement UUID" để lấy Agreement UUID dùng cho chữ ký số',
-                      isError: true,
-                    );
-                  }
-                }
+                _save();
               },
             ),
             const SizedBox(width: 8),

@@ -91,9 +91,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     },
                     mainScreen: provider.getScreenTitle(),
                     subScreen: provider.subScreen,
-                    onFileSelected: (fileName, filePath, fileBytes) {
-                      AppUtility.showSnackBar(context, "Chức năng đang phát triển");
-                    },
+                    // onFileSelected: (fileName, filePath, fileBytes) {
+                    //   AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                    // },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
@@ -214,7 +214,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
         }
         if (state is CancelDieuDongTaiSanSuccessState) {
           context.read<DieuDongTaiSanProvider>().onCloseDetail(context);
-          AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
+          AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
           context.read<DieuDongTaiSanProvider>().getDataAll(context);
         }
         if (state is UpdateSigningStatusFailedState) {

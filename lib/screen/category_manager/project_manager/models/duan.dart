@@ -43,6 +43,30 @@ class DuAn extends Equatable {
     };
   }
 
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "" : value;
+    }
+    return value;
+  }
+
+  /// Dữ liệu export cho Dự án
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã dự án': _nullIfEmpty(id),
+      'Tên dự án': _nullIfEmpty(tenDuAn),
+      'Ghi chú': _nullIfEmpty(ghiChu),
+      'Hiệu lực': hieuLuc ?? false,
+      'ID công ty': _nullIfEmpty(idCongTy),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Hiển thị': isActive,
+    };
+  }
+
   @override
   List<Object?> get props => [
         id,

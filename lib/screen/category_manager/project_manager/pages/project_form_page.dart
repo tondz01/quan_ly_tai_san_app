@@ -85,9 +85,9 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
         hieuLuc: _isActive,
       );
       if (widget.duAn == null) {
-        context.read<ProjectBloc>().add(AddProject(project));
+        context.read<ProjectBloc>().add(AddProjectEvent(project));
       } else {
-        context.read<ProjectBloc>().add(UpdateProject(project));
+        context.read<ProjectBloc>().add(UpdateProjectEvent(project));
       }
       if (widget.onSaved != null) {
         widget.onSaved!();

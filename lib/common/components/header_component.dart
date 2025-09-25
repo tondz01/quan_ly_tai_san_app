@@ -3,7 +3,6 @@
 import 'dart:developer';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -26,6 +25,7 @@ class HeaderComponent extends StatefulWidget {
     this.child,
     this.onFileSelected,
     this.onExportData,
+    this.isShowInput = true,
   });
   final TextEditingController controller;
   final Function(String) onSearchChanged;
@@ -38,6 +38,7 @@ class HeaderComponent extends StatefulWidget {
   final Function(String? fileName, String? filePath, Uint8List? fileBytes)?
   onFileSelected;
   final Function()? onExportData;
+  final bool isShowInput;
   @override
   State<HeaderComponent> createState() => _HeaderComponentState();
 }
@@ -59,6 +60,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
       onFileSelected:
           widget.onFileSelected ?? (fileName, filePath, fileBytes) {},
       onExportData: widget.onExportData ?? () {},
+      isShowInput: widget.isShowInput,
     );
   }
 }
@@ -72,6 +74,7 @@ Widget buildHeader(
   Function()? onNew,
   String? mainScreen,
   bool? isShowSearch,
+  bool isShowInput = true,
   Widget? child,
   required BuildContext context,
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
@@ -90,6 +93,7 @@ Widget buildHeader(
         onNew,
         onTap,
         isShowSearch,
+        isShowInput,
         child,
         context,
         onFileSelected: onFileSelected,
@@ -104,6 +108,7 @@ Widget buildHeader(
         onNew,
         onTap,
         isShowSearch,
+        isShowInput,
         child,
         context,
         onFileSelected: onFileSelected,
@@ -120,6 +125,7 @@ Widget _buildHeaderScreenLarge(
   Function()? onNew,
   Function()? onTap,
   bool? isShowSearch,
+  bool isShowInput,
   Widget? child,
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
@@ -135,6 +141,7 @@ Widget _buildHeaderScreenLarge(
         subScreen,
         onNew,
         onTap,
+        isShowInput,
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
@@ -157,6 +164,7 @@ Widget _buildHeaderScreenSmall(
   Function()? onNew,
   Function()? onTap,
   bool? isShowSearch,
+  bool isShowInput,
   Widget? child,
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
@@ -172,6 +180,7 @@ Widget _buildHeaderScreenSmall(
         subScreen,
         onNew,
         onTap,
+        isShowInput,
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
@@ -191,6 +200,7 @@ Widget _buildHeaderNameScreen(
   String? subScreen,
   Function()? onNew,
   Function()? onTap,
+  bool isShowInput,
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
@@ -233,19 +243,22 @@ Widget _buildHeaderNameScreen(
             ],
           ),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTapDown: (TapDownDetails details) {
-              _showCustomMenu(
-                context,
-                details.globalPosition,
-                onFileSelected: onFileSelected,
-                onExportData: onExportData,
-              );
-            },
-            child: Icon(
-              Icons.settings,
-              size: 20,
-              color: ColorValue.primaryBlue,
+          Visibility(
+            visible: isShowInput,
+            child: GestureDetector(
+              onTapDown: (TapDownDetails details) {
+                _showCustomMenu(
+                  context,
+                  details.globalPosition,
+                  onFileSelected: onFileSelected,
+                  onExportData: onExportData,
+                );
+              },
+              child: Icon(
+                Icons.settings,
+                size: 20,
+                color: ColorValue.primaryBlue,
+              ),
             ),
           ),
         ],
@@ -341,14 +354,28 @@ Future<void> _selectDocument({
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx', 'xls'],
-      withData: false,
+      withData: true, // luôn lấy bytes (kể cả không phải Web)
       withReadStream: false,
     );
 
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
-      onFileSelected(file.name, file.path, kIsWeb ? file.bytes : null);
-      log('Selected file: ${file.name}, Path: ${file.path}');
+      final selectedPath = file.path; // Trên Web có thể là null
+      final selectedBytes =
+          file.bytes; // Khi kIsWeb && withData=true sẽ có bytes
+
+      if (selectedPath == null && selectedBytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Không thể đọc tệp đã chọn.'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return;
+      }
+
+      onFileSelected(file.name, selectedPath, selectedBytes);
+      log('Selected file: ${file.name}, Path: $selectedPath');
     }
   } on PlatformException catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -358,7 +385,7 @@ Future<void> _selectDocument({
       ),
     );
   } catch (e) {
-    log('Error selecting file: $e');
+    log('Error _selectDocument file: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Không thể chọn tệp: ${e.toString()}'),

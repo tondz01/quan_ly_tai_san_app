@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -124,6 +122,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   Future<void> _loadPdf(String path) async {
     final document = await PdfDocument.openFile(path);
+    setState(() {
+      _document = document;
+    });
+  }
+
+  Future<void> _loadPdfFromBytes(Uint8List bytes) async {
+    final document = await PdfDocument.openData(bytes);
     setState(() {
       _document = document;
     });
@@ -670,7 +675,11 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
                     if (fileName != null) {
-                      _loadPdf(filePath!);
+                      if (fileBytes != null) {
+                        _loadPdfFromBytes(fileBytes);
+                      } else if (filePath != null) {
+                        _loadPdf(filePath);
+                      }
                     }
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');
@@ -730,6 +739,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   Widget _buildInfoAssetHandover() {
     DateTime? ngayBanGiao;
     return Column(
+      spacing: 10,
       children: [
         CommonFormInput(
           label: 'Số phiếu bàn giao',
@@ -738,6 +748,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           fieldName: 'handoverNumber',
           textContent: item?.id ?? '',
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'Bàn giao tài sản',
@@ -746,6 +757,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           textContent: item?.banGiaoTaiSan ?? '',
           fieldName: 'documentName',
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
 
         CmFormDropdownObject<DieuDongTaiSanDto>(
@@ -790,6 +802,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             });
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CmFormDropdownObject<PhongBan>(
           label: 'Đơn vị giao',
@@ -837,6 +850,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           onChanged: (dt) {},
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
+          isRequired: true,
         ),
       ],
     );
@@ -844,6 +858,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   Widget _buildAssetHandoverDetail() {
     return Column(
+      spacing: 10,
       children: [
         CmFormDropdownObject<NhanVien>(
           label: 'Đại diện đơn vị đề nghị',
@@ -861,7 +876,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             nguoiDaiDienBanHanhQD = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
+        SizedBox(height: 1),
         CommonCheckboxInput(
           label: 'Đã xác nhận',
           value: isUnitConfirm,
@@ -873,6 +890,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             });
           },
         ),
+        SizedBox(height: 1),
         CmFormDropdownObject<NhanVien>(
           label: 'Đơn vị giao',
           controller: controllerDelivererRepresentative,
@@ -896,6 +914,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             nguoiDaiDienBenGiao = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonCheckboxInput(
           label: 'Đại diện bên giao đã xác nhận',
@@ -931,6 +950,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
             nguoiDaiDienBenNhan = value;
           },
           validationErrors: _validationErrors,
+          isRequired: true,
         ),
         CommonCheckboxInput(
           label: 'Đại diện bên nhận đã xác nhận',
@@ -944,8 +964,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         AdditionalSignersSelector(
-          addButtonText: "Thêm đơn bị đại diện",
-          labelDepartment: "Đơn vị đại diện",
+          addButtonText: "Thêm người đại diện",
+          labelDepartment: "Người đại diện",
           isEditing: isEditing,
           itemsNhanVien: itemsNhanVien,
           phongBan: widget.provider.dataDepartment,
@@ -966,17 +986,17 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         const SizedBox(height: 10),
-        CommonCheckboxInput(
-          label: 'Ký theo lượt',
-          value: isByStep,
-          isEditing: isEditing,
-          isDisabled: !isEditing,
-          onChanged: (newValue) {
-            setState(() {
-              isByStep = newValue;
-            });
-          },
-        ),
+        // CommonCheckboxInput(
+        //   label: 'Ký theo lượt',
+        //   value: isByStep,
+        //   isEditing: isEditing,
+        //   isDisabled: !isEditing,
+        //   onChanged: (newValue) {
+        //     setState(() {
+        //       isByStep = newValue;
+        //     });
+        //   },
+        // ),
       ],
     );
   }

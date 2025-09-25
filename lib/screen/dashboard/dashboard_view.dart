@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:graphic/graphic.dart';
 import 'package:intl/intl.dart';
@@ -11,74 +9,10 @@ import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/pie_with_legend.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/scrollable_bar_chart.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/group_line_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_state.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_event.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
-
-const basicData = [
-  {'genre': 'Đang sử dụng', 'sold': 275},
-  {'genre': 'Bảo trì', 'sold': 115},
-  {'genre': 'Hỏng', 'sold': 120},
-  {'genre': 'Thanh lý', 'sold': 150},
-];
-
-const basicData2 = [
-  {'genre': 'Đang sử dụng', 'sold': 275},
-  {'genre': 'Bảo trì', 'sold': 115},
-  {'genre': 'Hỏng', 'sold': 120},
-  {'genre': 'Thanh lý', 'sold': 150},
-  {'genre': 'Thanh lý 2', 'sold': 150},
-  {'genre': 'Thanh lý 3', 'sold': 150},
-  {'genre': 'Thanh lý 4', 'sold': 150},
-  {'genre': 'Thanh lý 5', 'sold': 150},
-  {'genre': 'Thanh lý 6', 'sold': 150},
-  {'genre': 'Thanh lý 7', 'sold': 150},
-  {'genre': 'Thanh lý 8', 'sold': 150},
-  {'genre': 'Thanh lý 9', 'sold': 150},
-  {'genre': 'Thanh lý 10', 'sold': 150},
-  {'genre': 'Thanh lý 11', 'sold': 150},
-  {'genre': 'Thanh lý 12', 'sold': 150},
-  {'genre': 'Thanh lý 13', 'sold': 150},
-  {'genre': 'Thanh lý 14', 'sold': 150},
-  {'genre': 'Thanh lý 15', 'sold': 150},
-  {'genre': 'Thanh lý 16', 'sold': 150},
-  {'genre': 'Thanh lý 17', 'sold': 150},
-  {'genre': 'Thanh lý 18', 'sold': 150},
-  {'genre': 'Thanh lý 19', 'sold': 150},
-  {'genre': 'Thanh lý 20', 'sold': 150},
-  {'genre': 'Thanh lý 21', 'sold': 150},
-  {'genre': 'Thanh lý 22', 'sold': 150},
-  {'genre': 'Thanh lý 23', 'sold': 150},
-  {'genre': 'Thanh lý 24', 'sold': 150},
-  {'genre': 'Thanh lý 25', 'sold': 150},
-];
-
-const complexGroupData = [
-  {'date': '2021-10-02', 'name': 'Noah', 'points': 1492},
-  {'date': '2021-10-03', 'name': 'Noah', 'points': 1465},
-  {'date': '2021-10-04', 'name': 'Noah', 'points': 1504},
-  {'date': '2021-10-06', 'name': 'Noah', 'points': 1463},
-  {'date': '2021-10-07', 'name': 'Noah', 'points': 1539},
-  {'date': '2021-10-08', 'name': 'Noah', 'points': 1483},
-  {'date': '2021-10-09', 'name': 'Noah', 'points': 1519},
-  {'date': '2021-10-10', 'name': 'Noah', 'points': 1518},
-  {'date': '2021-10-11', 'name': 'Noah', 'points': 1478},
-  {'date': '2021-10-12', 'name': 'Noah', 'points': 1537},
-  {'date': '2021-10-15', 'name': 'Noah', 'points': 1509},
-  {'date': '2021-10-17', 'name': 'Noah', 'points': 1515},
-  {'date': '2021-10-20', 'name': 'Noah', 'points': 1533},
-  {'date': '2021-10-21', 'name': 'Noah', 'points': 1477},
-  {'date': '2021-10-22', 'name': 'Noah', 'points': 1476},
-  {'date': '2021-10-24', 'name': 'Noah', 'points': 1532},
-  {'date': '2021-10-25', 'name': 'Noah', 'points': 1504},
-  {'date': '2021-10-26', 'name': 'Noah', 'points': 1503},
-  {'date': '2021-10-27', 'name': 'Noah', 'points': 1530},
-  {'date': '2021-10-29', 'name': 'Noah', 'points': 1499},
-  {'date': '2021-10-30', 'name': 'Noah', 'points': 1460},
-];
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});

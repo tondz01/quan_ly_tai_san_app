@@ -343,7 +343,6 @@ class AssetTransferRepository extends ApiBase {
           ChiTietDieuDongTaiSan.fromJson,
         );
       }
-      log('message test13: ${jsonEncode(result)}');
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");
     }

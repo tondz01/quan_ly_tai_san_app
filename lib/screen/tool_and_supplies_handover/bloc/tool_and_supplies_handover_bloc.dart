@@ -102,6 +102,7 @@ class ToolAndSuppliesHandoverBloc
         await ToolAndSuppliesHandoverRepository().createToolAndSuppliesHandover(
           event.request,
           event.listSignatory,
+          event.requestDetailSubppliesHandover,
         );
 
     final int? statusCode = result['status_code'] as int?;

@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
@@ -102,7 +100,6 @@ class _RoleDetailState extends State<RoleDetail> {
       isBanGiaoCCDCVatTu = false;
       isBaoCao = false;
     }
-    log('isQuanLyNhanVien: $isEditing');
   }
 
   @override
@@ -136,7 +133,7 @@ class _RoleDetailState extends State<RoleDetail> {
                     child: TextFormField(
                       controller: controllerIdChucVu,
                       decoration: inputDecoration('Mã chức vụ', required: true),
-                      enabled: isEditing ? data?.id != null : false, // Read-only khi update
+                      enabled: isEditing ? data == null : false, // Read-only khi update
                       validator:
                           (v) =>
                               v == null || v.isEmpty
@@ -494,11 +491,8 @@ class _RoleDetailState extends State<RoleDetail> {
     final bloc = context.read<RoleBloc>();
     if (data == null) {
       final request = chucVuRequest();
-      log('CreateRoleEvent request: ${request.toJson()}');
       bloc.add(CreateRoleEvent(request));
     } else {
-      final request = chucVuRequest();
-      log('controllerNameChucVu: ${controllerNameChucVu.text}');
       ChucVu newRequest = data!.copyWith(
         tenChucVu: controllerNameChucVu.text,
         quanLyNhanVien: isQuanLyNhanVien,
@@ -520,8 +514,6 @@ class _RoleDetailState extends State<RoleDetail> {
         ngayCapNhat: DateTime.now().toString(),
         nguoiCapNhat: widget.provider.userInfo?.id ?? '',
       );
-      log('UpdateRoleEvent request: ${newRequest.toJson()}');
-      log('UpdateRoleEvent request: ${request.toJson()}');
       bloc.add(UpdateRoleEvent(newRequest));
     }
   }

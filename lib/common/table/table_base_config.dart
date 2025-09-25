@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 abstract class TableBaseConfig {
   static Widget tableBase<T>({
@@ -14,6 +15,7 @@ abstract class TableBaseConfig {
     Function(T item)? onRowTap,
     Function(List<T> items)? onSelectionChanged,
     bool isShowCheckboxes = true,
+    Offset? filterPopupOffset,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -28,7 +30,7 @@ abstract class TableBaseConfig {
         ],
       ),
       child: SgTable<T>(
-        rowHeight: 45.0,
+        // rowHeight: 45.0,
         data: data,
         titleStyleHeader: const TextStyle(
           fontWeight: FontWeight.w600,
@@ -48,6 +50,8 @@ abstract class TableBaseConfig {
         columns: columns,
         onSelectionChanged: onSelectionChanged,
         onRowTap: onRowTap,
+        enableColumnFilters: true,
+        filterPopupOffset: filterPopupOffset ?? const Offset(0, 0),
       ),
     );
   }
@@ -92,10 +96,12 @@ abstract class TableBaseConfig {
     required String title,
     required double width,
     required String Function(T) getValue,
+    String Function(T)? searchValueGetter,
     double fontSize = 12,
     Color textColor = Colors.black87,
     TextAlign? titleAlignment = TextAlign.center,
     bool searchable = false,
+    bool filterable = false,
   }) {
     return TableColumnBuilder.createTextColumn<T>(
       title: title,
@@ -104,7 +110,9 @@ abstract class TableBaseConfig {
       fontSize: fontSize,
       width: width,
       searchable: searchable,
+      searchValue: searchValueGetter,
       align: titleAlignment ?? TextAlign.left,
+      filterable: filterable,
     );
   }
 
@@ -117,7 +125,16 @@ abstract class TableBaseConfig {
     TextAlign? cellAlignment,
     TextAlign? titleAlignment,
     bool? searchable = false,
+    bool? filterable = false,
   }) {
+    // 🔥 SỬA: Log với title để phân biệt
+    if (filterable == true) {
+      SGLog.info(
+        'filterable buildColumnFilter --',
+        'Column: [$title] \n filterable: $filterable \n searchValueGetter: $searchValueGetter',
+      );
+    }
+
     return SgTableColumn<T>(
       title: title,
       cellBuilder: cellBuilder,
@@ -127,6 +144,7 @@ abstract class TableBaseConfig {
       titleAlignment: titleAlignment ?? TextAlign.center,
       width: width,
       searchable: searchable ?? false,
+      filterable: filterable ?? false,
     );
   }
 }

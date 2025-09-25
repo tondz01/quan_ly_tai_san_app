@@ -20,6 +20,12 @@ class HienTrang {
   HienTrang({required this.id, required this.name});
 }
 
+class RoleDto {
+  final String id;
+  final String name;
+  RoleDto({required this.id, required this.name});
+}
+
 abstract class AppUtility {
   static List<LyDoTang> get listLyDoTang => [
     LyDoTang(id: 1, name: 'Dự án'),
@@ -32,6 +38,21 @@ abstract class AppUtility {
     HienTrang(id: 2, name: 'Chờ thanh lý'),
     HienTrang(id: 3, name: 'Không sử dụng'),
     HienTrang(id: 4, name: 'Hỏng'),
+  ];
+
+  static List<RoleDto> get listRoles => [
+    RoleDto(id: '1', name: 'Admin công ty'),
+    RoleDto(id: '2', name: 'Giám đốc'),
+    RoleDto(id: '3', name: 'Quản đốc'),
+    RoleDto(id: '4', name: 'Phó quản đốc'),
+    RoleDto(id: '5', name: 'Phó giám đốc'),
+    RoleDto(id: '6', name: 'Chánh văn phòng'),
+    RoleDto(id: '7', name: 'Kế toán trưởng'),
+    RoleDto(id: '8', name: 'Trưởng phòng'),
+    RoleDto(id: '9', name: 'Phó phòng'),
+    RoleDto(id: '10', name: 'Thống kê'),
+    RoleDto(id: '11', name: 'Nhân viên kỹ thuật'),
+    RoleDto(id: '12', name: 'Nhân viên'),
   ];
 
   static List<Country> get listCountry => countries;
@@ -186,8 +207,45 @@ abstract class AppUtility {
             color: isShare ? Colors.green : Colors.red,
           ),
         ),
-        
       ],
     );
+  }
+
+  static String s(dynamic v, {String? fallback}) {
+    final str = v?.toString().trim();
+    if (str == null || str.isEmpty) {
+      return (fallback ?? '').trim();
+    }
+    return str;
+  }
+
+  static bool b(dynamic v, {bool fallback = false}) {
+    if (v == null) return fallback;
+    if (v is bool) return v;
+    if (v is num) return v != 0;
+    final str = v.toString().trim().toLowerCase();
+    if (str.isEmpty) return fallback;
+    return str == 'true' || str == '1' || str == 'yes' || str == 'y';
+  }
+
+  static DateTime excelSerialToDate(num serial) {
+    final base = DateTime(1899, 12, 30);
+    return base.add(
+      Duration(
+        days: serial.floor(),
+        milliseconds: (((serial % 1) * 24 * 60 * 60 * 1000)).round(),
+      ),
+    );
+  }
+
+  static String normalizeDateIsoString(dynamic value) {
+    if (value == null) return DateTime.now().toIso8601String();
+    if (value is DateTime) return value.toIso8601String();
+    if (value is num) return excelSerialToDate(value).toIso8601String();
+    final text = value.toString().trim();
+    if (text.isEmpty) return DateTime.now().toIso8601String();
+    final parsed = DateTime.tryParse(text);
+    if (parsed != null) return parsed.toIso8601String();
+    return DateTime.now().toIso8601String();
   }
 }

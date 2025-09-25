@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/common/model/permission_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
@@ -80,6 +81,14 @@ class UpdateUserSuccessState extends LoginState {
   List<Object> get props => [user];
 }
 
+class UpdatePermissionSuccessState extends LoginState {
+  final List<PermissionDto> permissions;
+  const UpdatePermissionSuccessState(this.permissions);
+
+  @override
+  List<Object> get props => [permissions];
+}
+
 class CreateAccountFailedState extends LoginState {
   final String title;
   final int code;
@@ -113,12 +122,28 @@ class GetUsersFailedState extends LoginState {
   @override
   List<Object> get props => [title, code, message];
 }
+
 class GetNhanVienFailedState extends LoginState {
   final String title;
   final int code;
   final String message;
 
   const GetNhanVienFailedState({
+    required this.title,
+    required this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code, message];
+}
+
+class UpdatePermissionFailedState extends LoginState {
+  final String title;
+  final int code;
+  final String message;
+
+  const UpdatePermissionFailedState({
     required this.title,
     required this.code,
     required this.message,

@@ -75,6 +75,10 @@ class AccountHelper {
     StorageService.write(StorageKey.DEPARTMENT, department);
   }
 
+  void clearDepartment() {
+    StorageService.remove(StorageKey.DEPARTMENT);
+  }
+
   List<PhongBan>? getDepartment() {
     return StorageService.read(StorageKey.DEPARTMENT);
   }
@@ -88,6 +92,10 @@ class AccountHelper {
   //NHÂN VIÊN
   setNhanVien(nhanVien) {
     StorageService.write(StorageKey.NHAN_VIEN, nhanVien);
+  }
+
+  void clearNhanVien() {
+    StorageService.remove(StorageKey.NHAN_VIEN);
   }
 
   List<NhanVien>? getNhanVien() {
@@ -104,6 +112,10 @@ class AccountHelper {
   //CHỨC VỤ
   setChucVu(chucVu) {
     StorageService.write(StorageKey.CHUC_VU, chucVu);
+  }
+
+  void clearChucVu() {
+    StorageService.remove(StorageKey.CHUC_VU);
   }
 
   List<ChucVu>? getChucVu() {
@@ -453,7 +465,6 @@ class AccountHelper {
                   userSignature["signed"] == false;
             })
             .toList();
-            log('message listToolAndSuppliesHandover: $listToolAndSuppliesHandover');
     return listToolAndSuppliesHandover?.length ?? 0;
   }
 
@@ -502,5 +513,14 @@ class AccountHelper {
   static void refreshAllCounts() {
     // 🔥 SỬA LẠI: Gọi AppMenuData.refreshAllCounts() thay vì MenuRefreshService
     AppMenuData.refreshAllCounts();
+  }
+
+  //Config
+  setConfigTimeExpire(int timeExpire) {
+    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, timeExpire);
+  }
+
+  int? getConfigTimeExpire() {
+    return StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
   }
 }

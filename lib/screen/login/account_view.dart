@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_list.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/staff_list_by_account.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({super.key});
@@ -31,7 +30,6 @@ class _AccountViewState extends State<AccountView> {
   @override
   void didUpdateWidget(AccountView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    log('AccountView message didUpdateWidget');
     // if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
     //   currentType = widget.typeAssetTransfer;
     //   _initData();
@@ -87,15 +85,6 @@ class _AccountViewState extends State<AccountView> {
                           mainScreen: 'User',
                         ),
                       ),
-                      Tooltip(
-                        message: 'Đăng xuất',
-                        child: IconButton(
-                          onPressed: () {
-                            context.read<LoginProvider>().logout(context);
-                          },
-                          icon: const Icon(Icons.logout_outlined, size: 24),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -114,19 +103,19 @@ class _AccountViewState extends State<AccountView> {
                         ),
                       ),
                     ),
-                    // Visibility(
-                    //   visible: (provider.data?.length ?? 0) >= 5,
-                    //   child: SGPaginationControls(
-                    //     totalPages: provider.totalPages,
-                    //     currentPage: provider.currentPage,
-                    //     rowsPerPage: provider.rowsPerPage,
-                    //     controllerDropdownPage:
-                    //         provider.controllerDropdownPage!,
-                    //     items: provider.items,
-                    //     onPageChanged: provider.onPageChanged,
-                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                    //   ),
-                    // ),
+                    Visibility(
+                      visible: (provider.users?.length ?? 0) >= 5,
+                      child: SGPaginationControls(
+                        totalPages: provider.totalPages,
+                        currentPage: provider.currentPage,
+                        rowsPerPage: provider.rowsPerPage,
+                        controllerDropdownPage:
+                            provider.controllerDropdownPage!,
+                        items: provider.items,
+                        onPageChanged: provider.onPageChanged,
+                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -140,35 +129,44 @@ class _AccountViewState extends State<AccountView> {
           // Mostrar loading
         }
         if (state is GetUsersSuccessState) {
-          log('GetUsersSuccessState ${state.data.length}');
           context.read<LoginProvider>().getUsersSuccess(context, state);
         }
         if (state is GetUsersFailedState) {
-          log('GetUsersFailedState');
           context.read<LoginProvider>().getUsersFailed(context, state);
         }
         if (state is CreateAccountSuccessState) {
-          log('CreateUserSuccessState');
           context.read<LoginProvider>().createUserSuccess(context, state);
         }
+        if (state is UpdateUserSuccessState) {
+          context.read<LoginProvider>().updateUserSuccess(context, state);
+        }
+        if (state is UpdatePermissionSuccessState) {
+          AppUtility.showSnackBar(context, 'Cập nhật phân quyền thành công');
+        }
+        if (state is UpdatePermissionFailedState) {
+          AppUtility.showSnackBar(
+            context,
+            'Cập nhật phân quyền thất bại\nLỗi: ${state.message}',
+            isError: true,
+          );
+        }
         if (state is DeleteUserSuccessState) {
-          log('DeleteUserSuccessState');
           context.read<LoginProvider>().deleteUserSuccess(context, state);
         }
         if (state is GetNhanVienSuccessState) {
-          log('GetNhanVienSuccessState');
           context.read<LoginProvider>().getNhanVienSuccess(context, state);
         }
         if (state is GetNhanVienFailedState) {
-          log('GetNhanVienFailedState');
           // context.read<LoginProvider>().getNhanVienFailed(context, state);
         }
         if (state is CreateAccountFailedState) {
-          log('CreateAccountFailedState');
           AppUtility.showSnackBar(
             context,
             'Tạo account thất bại\nLỗi: ${state.message}',
           );
+        }
+        if (state is PostLoginFailedState) {
+          AppUtility.showSnackBar(context, state.message, isError: true);
         }
       },
     );

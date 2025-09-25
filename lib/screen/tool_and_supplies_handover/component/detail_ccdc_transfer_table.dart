@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -11,6 +12,7 @@ import 'package:se_gay_components/common/sg_text.dart';
 class DetailCcdcTransferTable extends StatefulWidget {
   final bool isEditing;
   final List<DetailToolAndMaterialTransferDto> initialDetails;
+  final List<DetailSubppliesHandoverDto> initialDetailsSuppliesHandover;
   final List<OwnershipUnitDetailDto> listOwnershipUnit;
   final List<ToolsAndSuppliesDto> allAssets;
   // Thay đổi callback type
@@ -24,6 +26,7 @@ class DetailCcdcTransferTable extends StatefulWidget {
     required this.allAssets,
     required this.onDataChanged,
     required this.listOwnershipUnit,
+    this.initialDetailsSuppliesHandover = const [],
   });
 
   @override
@@ -31,8 +34,7 @@ class DetailCcdcTransferTable extends StatefulWidget {
       _DetailCcdcTransferTableState();
 }
 
-class _DetailCcdcTransferTableState
-    extends State<DetailCcdcTransferTable> {
+class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   late List<DetailToolAndMaterialTransferDto> movementDetails;
   late List<ItemDropdownDetailCcdc> listAsset; // Thay đổi type
   late List<DetailAssetDto> listDetailAsset;
@@ -67,27 +69,39 @@ class _DetailCcdcTransferTableState
   }
 
   void _syncDetailAssets() {
+    if (widget.initialDetailsSuppliesHandover.isNotEmpty) {
+      listAsset = getAssetsByHandoverDetails(
+        widget.initialDetailsSuppliesHandover,
+        movementDetails,
+      );
+    } else if (widget.initialDetails.isNotEmpty) {
+      listAsset = getAssetsByChildAssets(
+        widget.allAssets,
+        widget.initialDetails,
+      );
+    } else {
+      listAsset = [];
+    }
     listDetailAsset =
         widget.allAssets
             .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
             .toList();
-
     listItemDropdownDetailAsset =
-        widget.listOwnershipUnit.map<ItemDropdownDetailCcdc>((e) {
-          final asset = getAssetByID(e.idCCDCVT);
-          final detailAsset = getDetailAssetByID(e.idTsCon);
-
+        movementDetails.map<ItemDropdownDetailCcdc>((e) {
+          final asset = getAssetByID(e.idCCDCVatTu);
+          final detailAsset = getDetailAssetByID(e.idChiTietCCDCVatTu);
           return ItemDropdownDetailCcdc(
             id: e.id,
-            idCCDCVatTu: e.idCCDCVT,
+            idCCDCVatTu: e.idCCDCVatTu,
             tenCCDCVatTu: asset.ten,
             idDetaiAsset: detailAsset.id ?? '',
             tenDetailAsset:
                 '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
-            idDonVi: e.idDonViSoHuu,
+            idDonVi: asset.idDonVi,
             donViTinh: asset.donViTinh,
             namSanXuat: detailAsset.namSanXuat ?? 2010,
-            soLuong: e.soLuong,
+            soLuong: e.soLuongXuat,
+            soLuongXuat: 0,
             ghiChu: asset.ghiChu,
             asset: asset,
           );
@@ -106,29 +120,45 @@ class _DetailCcdcTransferTableState
 
     // Đồng bộ dữ liệu chi tiết tài sản
     _syncDetailAssets();
-
-    if (widget.initialDetails.isNotEmpty) {
-      listAsset = getAssetsByChildAssets(
-        widget.allAssets,
-        widget.initialDetails,
-      );
-    } else {
-      listAsset = [];
-    }
   }
 
   @override
   void didUpdateWidget(DetailCcdcTransferTable oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Khi danh sách ownership hoặc assets thay đổi, đồng bộ lại dữ liệu dropdown
+    final ownershipChanged =
+        oldWidget.listOwnershipUnit != widget.listOwnershipUnit;
+    final assetsChanged = oldWidget.allAssets != widget.allAssets;
+    if (ownershipChanged || assetsChanged) {
+      _syncDetailAssets();
+    }
+
+    // Ưu tiên dữ liệu từ initialDetailsSuppliesHandover nếu có
+    if (oldWidget.initialDetailsSuppliesHandover !=
+        widget.initialDetailsSuppliesHandover) {
+      if (widget.initialDetailsSuppliesHandover.isNotEmpty) {
+        _syncDetailAssets();
+        listAsset = getAssetsByHandoverDetails(
+          widget.initialDetailsSuppliesHandover,
+          movementDetails,
+        );
+        setState(() {});
+        return;
+      }
+    }
+
     if (oldWidget.initialDetails != widget.initialDetails &&
         widget.initialDetails.isNotEmpty) {
       movementDetails = List.from(widget.initialDetails);
-      listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
       _syncDetailAssets();
+      listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
+      setState(() {});
+      return;
     }
     if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
-      listAsset = [];
       _syncDetailAssets();
+      listAsset = [];
+      setState(() {});
     }
   }
 
@@ -164,15 +194,63 @@ class _DetailCcdcTransferTableState
                 idDonVi: asset.idDonVi,
                 donViTinh: asset.donViTinh,
                 namSanXuat: 2010,
-                soLuong: asset.soLuong,
+                soLuong: c.soLuongXuat - c.soLuongDaBanGiao,
                 soLuongXuat: 0,
                 ghiChu: asset.ghiChu,
                 asset: asset,
               ),
         );
-        final newDetailAsset = detailAsset.copyWith(soLuongXuat: c.soLuongXuat);
+        final newDetailAsset = detailAsset.copyWith(soLuongXuat: 0);
         result.add(newDetailAsset);
       }
+    }
+    return result;
+  }
+
+  // Map dữ liệu từ danh sách bàn giao (DetailSubppliesHandoverDto) sang dữ liệu bảng
+  List<ItemDropdownDetailCcdc> getAssetsByHandoverDetails(
+    List<DetailSubppliesHandoverDto> details,
+    List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
+  ) {
+    final result = <ItemDropdownDetailCcdc>[];
+    for (final d in details) {
+      final detail = chiTietDieuDong.firstWhere(
+        (element) => element.id == d.idChiTietDieuDong,
+        orElse: () => DetailToolAndMaterialTransferDto.empty(),
+      );
+
+      // Tìm item dropdown theo id chi tiết CCDC VT đã lưu trong bàn giao
+      final dropdownItem = listItemDropdownDetailAsset.firstWhere(
+        (element) => element.id == d.iddieudongccdcvattu,
+        orElse: () {
+          // Nếu không tìm thấy trong dropdown, cố gắng dựng từ dữ liệu gốc
+          final asset = getAssetByID(detail.idCCDCVatTu);
+          return ItemDropdownDetailCcdc(
+            id: d.id,
+            idCCDCVatTu: d.idCCDCVatTu,
+            tenCCDCVatTu: asset.ten,
+            idDetaiAsset: d.idChiTietCCDCVatTu,
+            tenDetailAsset:
+                asset.ten.isNotEmpty
+                    ? '${asset.ten}(${detail.soKyHieu}) - ${detail.namSanXuat}'
+                    : d.idChiTietCCDCVatTu,
+            idDonVi: asset.idDonVi,
+            donViTinh: asset.donViTinh,
+            namSanXuat: detail.namSanXuat ?? 2010,
+            soLuong: detail.soLuongXuat - detail.soLuongDaBanGiao,
+            ghiChu: asset.ghiChu,
+            asset: asset,
+          );
+        },
+      );
+
+      // Cập nhật số lượng theo dữ liệu bàn giao
+      final mapped = dropdownItem.copyWith(
+        donViTinh: detail.donViTinh,
+        soLuongXuat: d.soLuong,
+        // soLuongDaBanGiao: d.soLuong,
+      );
+      result.add(mapped);
     }
     return result;
   }
@@ -205,7 +283,7 @@ class _DetailCcdcTransferTableState
             showVerticalLines: false,
             showHorizontalLines: true,
             addRowText: 'Thêm một dòng',
-            isEditing: false,
+            isEditing: widget.isEditing,
             omittedSize: 130,
             onDataChanged: (data) {
               setState(() {
@@ -219,9 +297,26 @@ class _DetailCcdcTransferTableState
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
                 width: 150,
+                isEditable: widget.isEditing,
                 getValue: (item) {
-                  return item;
-                }, 
+                  // Fallback: return the matching dropdown item if possible
+                  final match = listItemDropdownDetailAsset.firstWhere(
+                    (e) => e.idDetaiAsset == item.idDetaiAsset,
+                    orElse: () => item,
+                  );
+                  return match;
+                },
+                getValueWithIndex: (item, rowIndex) {
+                  // When viewing, display the readable text. When editing, return the dropdown value
+                  if (widget.isEditing) {
+                    final match = listItemDropdownDetailAsset.firstWhere(
+                      (e) => e.idDetaiAsset == item.idDetaiAsset,
+                      orElse: () => item,
+                    );
+                    return match;
+                  }
+                  return item.tenDetailAsset;
+                },
                 setValue: (item, value) {
                   item.id = value.id;
                   item.idCCDCVatTu = value.idCCDCVatTu;
@@ -231,7 +326,7 @@ class _DetailCcdcTransferTableState
                   item.idDonVi = value.idDonVi;
                   item.donViTinh = value.donViTinh;
                   item.namSanXuat = value.namSanXuat;
-                  item.soLuong = value.soLuong;
+                  item.soLuong = value.soLuongXuat - value.soLuongDaBanGiao;
                   item.ghiChu = value.ghiChu;
                   item.soLuongXuat = value.soLuongXuat;
                   item.asset = value.asset;
@@ -247,7 +342,6 @@ class _DetailCcdcTransferTableState
                     ),
                 ],
                 onValueChanged: (item, rowIndex, newValue, updateRow) {
-                  updateRow('asset', item.tenCCDCVatTu);
                   updateRow('don_vi_tinh', newValue.donViTinh);
                   updateRow('so_luong', newValue.soLuong);
                   updateRow('ghi_chu', newValue.ghiChu);
@@ -268,7 +362,7 @@ class _DetailCcdcTransferTableState
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong',
-                title: 'Số lượng',
+                title: 'Số lượng cần bàn giao',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue: (item) => item.soLuong,

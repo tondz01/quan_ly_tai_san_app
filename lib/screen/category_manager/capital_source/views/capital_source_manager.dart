@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
@@ -10,7 +11,9 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/pages/capital_source_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/providers/capital_source_provider.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class CapitalSourceManager extends StatefulWidget {
   const CapitalSourceManager({super.key});
@@ -68,6 +71,64 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
     context.read<CapitalSourceBloc>().add(SearchCapitalSource(value));
   }
 
+  Future<Map<String, dynamic>?> insertData(
+    BuildContext context,
+    String fileName,
+    String filePath,
+    Uint8List fileBytes,
+  ) async {
+    if (kIsWeb) {
+      if (fileName.isEmpty || filePath.isEmpty) return null;
+    } else {
+      if (filePath.isEmpty) return null;
+    }
+    try {
+      final result =
+          kIsWeb
+              ? await CapitalSourceProvider().insertDataFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await CapitalSourceProvider().insertDataFile(filePath);
+      final statusCode = result['status_code'] as int? ?? 0;
+      if (statusCode >= 200 && statusCode < 300) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import dữ liệu thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+          // Reload list after successful import
+          context.read<CapitalSourceBloc>().add(LoadCapitalSources());
+        }
+        return result['data'];
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên thất bại (mã $statusCode)'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      SGLog.debug("DepartmentManager", ' Error uploading file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+        return null;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CapitalSourceBloc, CapitalSourceState>(
@@ -94,13 +155,13 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                 },
                 mainScreen: 'Quản lý nguồn vốn',
                 onFileSelected: (fileName, filePath, fileBytes) {
-                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                  insertData(context, fileName!, filePath!, fileBytes!);
                 },
                 onExportData: () {
                   AppUtility.exportData(
                     context,
-                    "Danh sách nguồn vốn",
-                    data.map((e) => e.toJson()).toList(),
+                    "nguon_von",
+                    data.map((e) => e.toExportJson()).toList(),
                   );
                 },
               ),

@@ -8,8 +8,10 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
   AssetGroupBloc() : super(AssetGroupInitialState()) {
     on<GetListAssetGroupEvent>(_getListAssetTransfer);
     on<CreateAssetGroupEvent>(_createAssetGroup);
+    on<CreateAssetGroupBatchEvent>(_createAssetGroupBatch);
     on<UpdateAssetGroupEvent>(_updateAssetGroup);
     on<DeleteAssetGroupEvent>(_deleteAssetGroup);
+    on<DeleteAssetGroupBatchEvent>(_deleteAssetGroupBatch);
   }
 
   Future<void> _getListAssetTransfer(
@@ -50,6 +52,31 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
       emit(CreateAssetGroupSuccessState());
     } else {
       String msg = "Lỗi khi tạo nhóm tài sản ${result['message']}";
+      emit(
+        CreateAssetGroupFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _createAssetGroupBatch(
+    CreateAssetGroupBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetGroupInitialState());
+    emit(AssetGroupLoadingState());
+    Map<String, dynamic> result = await AssetGroupRepository().saveAssetGroupBatch(
+      event.params,
+    );
+    emit(AssetGroupLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
+        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      emit(CreateAssetGroupSuccessState());
+    } else {
+      String msg = "Lỗi khi tạo import nhóm tài sản ${result['message']}";
       emit(
         CreateAssetGroupFailedState(
           title: "notice",
@@ -102,6 +129,27 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
           title: 'notice',
           code: result['status_code'],
           message: 'Lỗi khi xóa nhóm tài sản',
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteAssetGroupBatch(
+    DeleteAssetGroupBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetGroupInitialState());
+    emit(AssetGroupLoadingState());
+    final result = await AssetGroupRepository().deleteAssetGroupBatch(event.id);
+    emit(AssetGroupLoadingDismissState());
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      emit(DeleteAssetGroupSuccessState(data: result['data'].toString()));
+    } else {
+      emit(
+        PutPostDeleteFailedState(
+          title: 'notice',
+          code: result['status_code'],
+          message: 'Lỗi khi xóa danh sách nhóm tài sản',
         ),
       );
     }

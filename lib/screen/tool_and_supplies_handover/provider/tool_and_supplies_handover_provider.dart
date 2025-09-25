@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -392,28 +395,26 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _dataStaff = state.dataStaff;
     _dataAssetTransfer = state.dataCcdcransfer;
     _dataCcdc = state.dataCcdc;
+    _filteredData.clear();
+    _data?.clear();
     if (state.data.isEmpty) {
+      log("check state.data: ${jsonEncode(state.data)}");
+
       _data = [];
       _filteredData = [];
       _item = null;
     } else {
-      _filteredData.clear();
-      _data?.clear();
       AccountHelper.instance.clearToolAndSuppliesHandover();
       AccountHelper.instance.setToolAndMaterialHandover(state.data);
       AccountHelper.refreshAllCounts();
       _data =
-          state.data
-              .where(
-                (item) =>
-                    item.share == true ||
-                    item.nguoiTao == userInfo?.tenDangNhap,
-              )
-              .toList();
+          state.data.where((item) {
+            return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
+          }).toList();
 
       _filteredData = List.from(_data!);
-      _updatePagination();
     }
+    _updatePagination();
     _isLoading = false;
     notifyListeners();
   }
@@ -515,7 +516,20 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       return -1;
     }
 
-    return signatureFlow[currentIndex]["signed"] == true ? 1 : 0;
+    final currentSigner = signatureFlow[currentIndex];
+
+    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap &&
+        currentSigner["signed"] != -1) {
+      return currentSigner["signed"] == true
+          ? 3
+          : 5; // 3: Đã ký & tạo, 5: Chưa ký & tạo
+    }
+
+    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap) {
+      return -1; // Chỉ là người tạo, không phải người ký
+    }
+
+    return currentSigner["signed"] == true ? 1 : 0;
   }
 
   NhanVien getNhanVienByID(String idNhanVien) {

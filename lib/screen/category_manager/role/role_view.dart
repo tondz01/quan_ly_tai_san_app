@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/component/convert_excel_to_chucvu.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_list.dart';
 
@@ -72,14 +75,22 @@ class _RoleViewState extends State<RoleView> {
                   },
                   mainScreen: 'Quản lý chức vụ',
                   subScreen: provider.subScreen,
-                  onFileSelected: (fileName, filePath, fileBytes) {
-                    AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    final roleBloc = context.read<RoleBloc>();
+                    final List<ChucVu> cv = await convertExcelToChucVu(
+                      filePath!,
+                    );
+                    if (!mounted) return;
+                    if (cv.isNotEmpty) {
+                      roleBloc.add(CreateRoleBatchEvent(cv));
+                    }
                   },
                   onExportData: () {
                     AppUtility.exportData(
                       context,
-                      "Danh sách chức vụ",
-                      provider.data?.map((e) => e.toJson()).toList() ?? [],
+                      "chuc_vu",
+                      provider.data?.map((e) => e.toExportJson()).toList() ??
+                          [],
                     );
                   },
                 ),
@@ -133,13 +144,7 @@ class _RoleViewState extends State<RoleView> {
           context.read<RoleProvider>().createRolesSuccess(context, state);
         }
         if (state is CreateRoleFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          AppUtility.showSnackBar(context, state.message, isError: true);
         }
         if (state is UpdateRoleSuccessState) {
           context.read<RoleProvider>().updateRolesSuccess(context, state);
@@ -148,13 +153,7 @@ class _RoleViewState extends State<RoleView> {
           context.read<RoleProvider>().deleteRolesSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+          context.read<RoleProvider>().onCallFailled(context, state.message);
         }
       },
     );

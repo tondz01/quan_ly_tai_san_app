@@ -8,11 +8,9 @@ class PhongBan extends Equatable {
   final String? idCongTy;
   final String? phongCapTren;
   final String? mauSac;
-  final String? tenNhom;
-  final String? hoTenQuanLy;
   final String? nguoiTao;
   final String? nguoiCapNhat;
-  final int? soLuongNhanVien;
+  final bool? isActive;
 
 
   final String? ngayTao;
@@ -26,13 +24,11 @@ class PhongBan extends Equatable {
     this.idCongTy,
     this.phongCapTren,
     this.mauSac,
-    this.tenNhom,
-    this.hoTenQuanLy,
     this.nguoiTao,
     this.nguoiCapNhat,
-    this.soLuongNhanVien,
     this.ngayTao,
     this.ngayCapNhat,
+    this.isActive
   });
 
   factory PhongBan.fromJson(Map<String, dynamic> json) {
@@ -44,13 +40,11 @@ class PhongBan extends Equatable {
       idCongTy: json['idCongTy'],
       phongCapTren: json['phongCapTren'],
       mauSac: json['mauSac'],
-      tenNhom: json['tenNhom'],
-      hoTenQuanLy: json['hoTenQuanLy'],
-      nguoiTao: json['nguoiTao'],
-      nguoiCapNhat: json['nguoiCapNhat'],
-      soLuongNhanVien: json['soLuongNhanVien'],
       ngayTao: json['ngayTao'],
       ngayCapNhat: json['ngayCapNhat'],
+      nguoiTao: json['nguoiTao'],
+      nguoiCapNhat: json['nguoiCapNhat'],
+      isActive: json['isActive'],
     );
   }
 
@@ -63,13 +57,35 @@ class PhongBan extends Equatable {
       'idCongTy': "ct001", // Assuming a default company ID
       'phongCapTren': phongCapTren ?? "",
       'mauSac': mauSac ?? "",
-      'tenNhom': tenNhom ?? "",
-      'hoTenQuanLy': hoTenQuanLy ?? "",
       'nguoiTao': nguoiTao ?? "",
       'nguoiCapNhat': nguoiCapNhat ?? "",
       'ngayTao': ngayTao ?? DateTime.now().toIso8601String(),
       'ngayCapNhat': ngayCapNhat ?? DateTime.now().toIso8601String(),
       'isActive': true,
+    };
+  }
+
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "" : value;
+    }
+    return value;
+  }
+
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã phòng ban': _nullIfEmpty(id),
+      'Tên phòng ban': _nullIfEmpty(tenPhongBan),
+      'Công ty': _nullIfEmpty("ct001"),
+      'Phòng cấp trên': _nullIfEmpty(phongCapTren),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+      'Hiển thị': isActive,
     };
   }
 
@@ -82,8 +98,6 @@ class PhongBan extends Equatable {
         idCongTy,
         phongCapTren,
         mauSac,
-        tenNhom,
-        hoTenQuanLy,
         nguoiTao,
         nguoiCapNhat,
         ngayTao,

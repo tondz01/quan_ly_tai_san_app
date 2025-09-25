@@ -1,11 +1,17 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class DepartmentList extends StatefulWidget {
@@ -42,8 +48,13 @@ class _DepartmentListState extends State<DepartmentList> {
         width: 150,
       ),
       TableBaseConfig.columnTable<PhongBan>(
-        title: 'Nhân viên',
-        getValue: (item) => item.soLuongNhanVien.toString(),
+        title: 'Sô lượng nhân viên',
+        getValue:
+            (item) =>
+                ((AccountHelper.instance.getNhanVien() ?? const [])
+                        .where((e) => e.phongBanId == item.id)
+                        .length)
+                    .toString(),
         width: 150,
       ),
       TableBaseConfig.columnTable<PhongBan>(
@@ -59,7 +70,12 @@ class _DepartmentListState extends State<DepartmentList> {
                     ? Tooltip(
                       message: 'Đơn vị/phòng ban này là mặc định',
                       child: Container(
-                        padding: EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                        padding: EdgeInsets.only(
+                          left: 8,
+                          right: 8,
+                          top: 4,
+                          bottom: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: ColorValue.brightRed,
                           borderRadius: BorderRadius.circular(8),
@@ -143,24 +159,55 @@ class _DepartmentListState extends State<DepartmentList> {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    SGText(
-                      text:
-                          'Danh sách đơn vị/phòng ban đã chọn: ${selectedItems.length}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                Visibility(
+                  visible: selectedItems.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text:
+                            'Danh sách đơn vị/phòng ban đã chọn: ${selectedItems.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 16),
-                    // IconButton(
-                    //   onPressed: () {
-                    //   },
-                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    // ),
-                  ],
+                      SizedBox(width: 16),
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            List<String> data =
+                                selectedItems.map((e) => e.id!).toList();
+
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa chức vụ',
+                              message:
+                                  'Bạn có chắc muốn xóa ${selectedItems.length} chức vụ',
+                              highlight: selectedItems.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final departmentBloc =
+                                    context.read<DepartmentBloc>();
+                                departmentBloc.add(DeleteDepartmentBatch(data));
+                              },
+                            );
+                          });
+                        },
+                      ),
+                      // IconButton(
+                      //   onPressed: () {
+                      //   },
+                      //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                      // ),
+                    ],
+                  ),
                 ),
               ],
             ),

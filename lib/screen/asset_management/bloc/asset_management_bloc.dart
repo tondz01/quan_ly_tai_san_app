@@ -36,11 +36,17 @@ class AssetManagementBloc
     on<CreateAssetEvent>((event, emit) async {
       await _createAsset(event, emit);
     });
+    on<CreateAssetBatchEvent>((event, emit) async {
+      await _createAssetBatch(event, emit);
+    });
     on<UpdateAssetEvent>((event, emit) async {
       await _updateAsset(event, emit);
     });
     on<DeleteAssetEvent>((event, emit) async {
       await _deleteAsset(event, emit);
+    });
+    on<DeleteAssetBatchEvent>((event, emit) async {
+      await _deleteAssetBatch(event, emit);
     });
   }
 
@@ -88,29 +94,6 @@ class AssetManagementBloc
       );
     }
   }
-
-  // Future<void> _getListChildAssets(
-  //   GetListChildAssetsEvent event,
-  //   Emitter emit,
-  // ) async {
-  //   emit(AssetManagementInitialState());
-  //   emit(AssetManagementLoadingState());
-  //   Map<String, dynamic> result = await AssetManagementRepository()
-  //       .getListChildAssets(event.idTaiSan);
-  //   emit(AssetManagementLoadingDismissState());
-  //   if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-  //     emit(GetListAssetManagementSuccessState(data: result['data']));
-  //   } else {
-  //     String msg = "Lỗi khi lấy dữ liệu";
-  //     emit(
-  //       GetListAssetManagementFailedState(
-  //         title: "notice",
-  //         code: result['status_code'],
-  //         message: msg,
-  //       ),
-  //     );
-  //   }
-  // }
 
   Future<void> _getListAssetGroup(
     GetListAssetGroupEvent event,
@@ -248,6 +231,35 @@ class AssetManagementBloc
     }
   }
 
+  ///CREATE BATCH
+  Future<void> _createAssetBatch(
+    CreateAssetBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(AssetManagementInitialState());
+    emit(AssetManagementLoadingState());
+
+    final Map<String, dynamic> result = await AssetManagementRepository()
+        .createAssetBatch(event.params);
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS ||
+        statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      emit(CreateAssetSuccessState());
+    } else {
+      String msg =
+          'Thất bại khi lưu danh sách tài sản: error ${result['message']}';
+      emit(
+        CreateAssetFailedState(
+          title: 'Tạo tài sản',
+          code: statusCode,
+          message: msg,
+        ),
+      );
+    }
+    emit(AssetManagementLoadingDismissState());
+  }
+
   ///UPDATE
   Future<void> _updateAsset(UpdateAssetEvent event, Emitter emit) async {
     emit(AssetManagementInitialState());
@@ -290,5 +302,27 @@ class AssetManagementBloc
         ),
       );
     }
+  }
+
+  Future<void> _deleteAssetBatch(DeleteAssetBatchEvent event, Emitter emit) async {
+    emit(AssetManagementLoadingState());
+
+    final Map<String, dynamic> result = await AssetManagementRepository().deleteAssetBatch(
+      event.id,
+    );
+
+    final int? statusCode = result['status_code'] as int?;
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+      emit(DeleteAssetSuccessState());
+    } else {
+      emit(
+        UpdateAndDeleteAssetFailedState(
+          title: 'Xóa tài sản',
+          code: statusCode,
+          message: 'Thất bại khi xóa tài sản',
+        ),
+      );
+    }
+    emit(AssetManagementLoadingDismissState());
   }
 }

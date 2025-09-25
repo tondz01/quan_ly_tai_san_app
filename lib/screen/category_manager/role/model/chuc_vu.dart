@@ -120,6 +120,43 @@ class ChucVu extends Equatable {
     };
   }
 
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
+
+  /// Dữ liệu export (tương tự phòng ban)
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã chức vụ': _nullIfEmpty(id),
+      'Tên chức vụ': _nullIfEmpty(tenChucVu),
+      'Quản lý Nhân viên': quanLyNhanVien,
+      'Quản lý Phòng ban': quanLyPhongBan,
+      'Quản lý Dự án': quanLyDuAn,
+      'Quản lý Nguồn vốn': quanLyNguonVon,
+      'Quản lý Mô hình tài sản': quanLyMoHinhTaiSan,
+      'Quản lý Nhóm tài sản': quanLyNhomTaiSan,
+      'Quản lý Tài sản': quanLyTaiSan,
+      'Quản lý CCDC - Vật tư': quanLyCCDCVatTu,
+      'Có quyên Điều động tài sản': dieuDongTaiSan,
+      'Có quyền Điều động CCDC - Vật tư': dieuDongCCDCVatTu,
+      'Có quyền Bàn giao tài sản': banGiaoTaiSan,
+      'Có quyền Bàn giao CCDC - VT': banGiaoCCDCVatTu,
+      'Quản lý Báo cáo': baoCao,
+      'Mã công ty': _nullIfEmpty("ct001"),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhập': _nullIfEmpty(ngayCapNhat),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhập': _nullIfEmpty(nguoiCapNhat),
+    };
+  }
+
   /// copyWith để dễ dàng cập nhật field
   ChucVu copyWith({
     String? id,

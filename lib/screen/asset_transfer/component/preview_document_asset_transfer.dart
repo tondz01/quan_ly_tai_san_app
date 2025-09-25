@@ -1,8 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
 
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' as pdfrx;
@@ -32,7 +29,6 @@ Widget previewDocumentAssetTransfer({
   return InkWell(
     onTap: () {
       if (isDisabled) return;
-      log('item: ${jsonEncode(item)}');
       callBack?.call();
       if (item == null) return;
       previewDocument(
@@ -116,6 +112,8 @@ previewDocument({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
+            isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,
@@ -182,6 +180,8 @@ previewDocumentView({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            pin: int.parse(nhanVien.pin ?? '0'),
+            isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,

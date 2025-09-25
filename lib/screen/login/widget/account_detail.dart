@@ -3,21 +3,17 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-
-class RoleDto {
-  final String id;
-  final String name;
-  RoleDto({required this.id, required this.name});
-}
+import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AccountDetail extends StatefulWidget {
   final UserInfoDTO userInfo;
@@ -77,26 +73,14 @@ class _AccountDetailState extends State<AccountDetail> {
   }
 
   _initData() {
-    role = [
-      RoleDto(id: '1', name: 'Admin công ty'),
-      RoleDto(id: '2', name: 'Giám đốc'),
-      RoleDto(id: '3', name: 'Quản đốc'),
-      RoleDto(id: '4', name: 'Phó quản đốc'),
-      RoleDto(id: '5', name: 'Phó giám đốc'),
-      RoleDto(id: '6', name: 'Chánh văn phòng'),
-      RoleDto(id: '7', name: 'Kế toán trưởng'),
-      RoleDto(id: '8', name: 'Trưởng phòng'),
-      RoleDto(id: '9', name: 'Phó phòng'),
-      RoleDto(id: '10', name: 'Thống kê'),
-      RoleDto(id: '11', name: 'Nhân viên kỹ thuật'),
-      RoleDto(id: '12', name: 'Nhân viên'),
-    ];
+    role = AppUtility.listRoles;
     roleItems = [
       for (var item in role)
         DropdownMenuItem(value: item, child: Text(item.name)),
     ];
-    ctrlIdAccount.text = widget.userInfo.id;
-    ctrlTenTk.text = widget.userInfo.tenDangNhap;
+    SGLog.info('User Info', 'User: ${jsonEncode(widget.userInfo)}');
+    ctrlIdAccount.text = widget.userInfo.tenDangNhap;
+    ctrlTenTk.text = widget.userInfo.username ?? '';
     ctrlMatKhau.text = widget.userInfo.matKhau;
     ctrlHoTen.text = widget.userInfo.hoTen;
     ctrlEmail.text = widget.userInfo.email ?? '';
@@ -125,76 +109,98 @@ class _AccountDetailState extends State<AccountDetail> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300),
           ),
-          child: Column(
+          child: Row(
+            spacing: 25,
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // detail
-              CommonFormInput(
-                label: 'Mã tài khoản',
-                controller: ctrlIdAccount,
-                isEditing: false,
-                textContent: ctrlIdAccount.text,
-                onChanged: (value) {
-                  // _checkForChanges();
-                },
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTitle('Thông tin tài khoản'),
+                    SizedBox(height: 16),
+                    CommonFormInput(
+                      label: 'Tên đăng nhập',
+                      controller: ctrlTenTk,
+                      isEditing: true,
+                      textContent: ctrlTenTk.text,
+                      onChanged: (value) {
+                        // _checkForChanges();
+                      },
+                    ),
+                    CommonFormInput(
+                      label: 'Mật khẩu',
+                      controller: ctrlMatKhau,
+                      isEditing: true,
+                      textContent: ctrlMatKhau.text,
+                    ),
+                    // CmFormDropdownObject<RoleDto>(
+                    //   label: 'Vai trò',
+                    //   controller: ctrlRole,
+                    //   isEditing: true,
+                    //   items: roleItems,
+                    //   value: roleSelected,
+                    //   defaultValue:
+                    //       ctrlRole.text.isNotEmpty
+                    //           ? role.firstWhere(
+                    //             (element) => element.id == ctrlRole.text,
+                    //             orElse: () => role[0],
+                    //           )
+                    //           : role[0],
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       roleSelected = value;
+                    //     });
+                    //   },
+                    // ),
+                  ],
+                ),
               ),
-              CommonFormInput(
-                label: 'Tên đăng nhập',
-                controller: ctrlTenTk,
-                isEditing: false,
-                textContent: ctrlTenTk.text,
-                onChanged: (value) {
-                  // _checkForChanges();
-                },
-              ),
-              CommonFormInput(
-                label: 'Mật khẩu',
-                controller: ctrlMatKhau,
-                isEditing: true,
-                textContent: ctrlMatKhau.text,
-              ),
-              CommonFormInput(
-                label: 'Họ tên',
-                controller: ctrlHoTen,
-                isEditing: false,
-                textContent: ctrlHoTen.text,
-              ),
-              CommonFormInput(
-                label: 'Email',
-                controller: ctrlEmail,
-                isEditing: false,
-                textContent: ctrlEmail.text,
-              ),
-              CommonFormInput(
-                label: 'Số điện thoại',
-                controller: ctrlPhone,
-                isEditing: false,
-                textContent: ctrlPhone.text,
-              ),
-              CommonFormInput(
-                label: 'Số điện thoại',
-                controller: ctrlPhone,
-                isEditing: false,
-                textContent: ctrlPhone.text,
-              ),
-              CmFormDropdownObject<RoleDto>(
-                label: 'Vai trò',
-                controller: ctrlRole,
-                isEditing: true,
-                items: roleItems,
-                value: roleSelected,
-                defaultValue:
-                    ctrlRole.text.isNotEmpty
-                        ? role.firstWhere(
-                          (element) => element.id == ctrlRole.text,
-                          orElse: () => role[0],
-                        )
-                        : role[0],
-                onChanged: (value) {
-                  setState(() {
-                    roleSelected = value;
-                  });
-                },
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // detail
+                    _buildTitle('Thông tin nhân viên '),
+                    SizedBox(height: 16),
+                    CommonFormInput(
+                      label: 'Mã nhân viên',
+                      controller: ctrlIdAccount,
+                      isEditing: false,
+                      textContent: ctrlIdAccount.text,
+                      onChanged: (value) {
+                        // _checkForChanges();
+                      },
+                    ),
+
+                    CommonFormInput(
+                      label: 'Họ tên',
+                      controller: ctrlHoTen,
+                      isEditing: false,
+                      textContent: ctrlHoTen.text,
+                    ),
+                    CommonFormInput(
+                      label: 'Email',
+                      controller: ctrlEmail,
+                      isEditing: false,
+                      textContent: ctrlEmail.text,
+                    ),
+                    CommonFormInput(
+                      label: 'Số điện thoại',
+                      controller: ctrlPhone,
+                      isEditing: false,
+                      textContent: ctrlPhone.text,
+                    ),
+                    CommonFormInput(
+                      label: 'Số điện thoại',
+                      controller: ctrlPhone,
+                      isEditing: false,
+                      textContent: ctrlPhone.text,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -234,10 +240,10 @@ class _AccountDetailState extends State<AccountDetail> {
   void _saveChanges() {
     log('message: _saveChanges');
     final userInfo = widget.userInfo.copyWith(
+      username: ctrlTenTk.text,
       matKhau: ctrlMatKhau.text,
       rule: int.parse(roleSelected?.id ?? '0'),
     );
-    log('message: userInfo: ${jsonEncode(userInfo.toJson())}');
     showConfirmDialog(
       context,
       type: ConfirmType.add,
@@ -265,4 +271,21 @@ class _AccountDetailState extends State<AccountDetail> {
   //   ctrlMatKhau.text = '${ctrlIdAccount.text} - ${ctrlTenTk.text}';
   //   // return;
   // }
+
+  Widget _buildTitle(String title) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SGText(
+          text: title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: ColorValue.oceanBlue,
+          ),
+        ),
+        Divider(color: Colors.grey.shade300),
+      ],
+    );
+  }
 }

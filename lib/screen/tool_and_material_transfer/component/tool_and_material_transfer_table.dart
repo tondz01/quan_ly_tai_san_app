@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -88,6 +91,7 @@ class _DetailToolAndMaterialTransferTableState
             namSanXuat: detailAsset.namSanXuat ?? 2010,
             soLuong: e.soLuong,
             ghiChu: asset.ghiChu,
+            soLuongDaBanGiao: 0,
             asset: asset,
           );
         }).toList();
@@ -144,14 +148,17 @@ class _DetailToolAndMaterialTransferTableState
 
     for (final c in chiTietDieuDong) {
       final id = c.idChiTietCCDCVatTu;
+      final soLuongDaBanGiao = c.soLuongDaBanGiao;
 
       final idAsset = getDetailAssetByID(id);
       if (idAsset.idTaiSan == null) {
         continue;
       }
       final asset = idToAsset[idAsset.idTaiSan];
+      log('message số lượng xuất: ${jsonEncode(c)}');
       if (asset != null) {
         // Tìm ItemDropdownDetailAsset tương ứng
+        log('message số lượng xuất22: ${c.soLuong}');
         final detailAsset = listItemDropdownDetailAsset.firstWhere(
           (element) => element.idDetaiAsset == id,
           orElse:
@@ -164,8 +171,9 @@ class _DetailToolAndMaterialTransferTableState
                 idDonVi: asset.idDonVi,
                 donViTinh: asset.donViTinh,
                 namSanXuat: 2010,
-                soLuong: asset.soLuong,
+                soLuong: c.soLuong,
                 soLuongXuat: 0,
+                soLuongDaBanGiao: soLuongDaBanGiao,
                 ghiChu: asset.ghiChu,
                 asset: asset,
               ),
@@ -221,8 +229,9 @@ class _DetailToolAndMaterialTransferTableState
                 titleAlignment: TextAlign.center,
                 width: 150,
                 getValue: (item) {
+                  log('message item222: $item');
                   return item;
-                }, // Trả về ItemDropdownDetailAsset thay vì String
+                },
                 setValue: (item, value) {
                   // Copy properties
                   item.id = value.id;
@@ -236,6 +245,7 @@ class _DetailToolAndMaterialTransferTableState
                   item.soLuong = value.soLuong;
                   item.ghiChu = value.ghiChu;
                   item.soLuongXuat = value.soLuongXuat;
+                  item.soLuongDaBanGiao = value.soLuongDaBanGiao;
                   item.asset = value.asset;
                 },
                 sortValueGetter: (item) => item.tenCCDCVatTu,
@@ -254,7 +264,6 @@ class _DetailToolAndMaterialTransferTableState
                   updateRow('so_luong', newValue.soLuong);
                   updateRow('ghi_chu', newValue.ghiChu);
                   updateRow('so_luong_xuat', newValue.soLuongXuat.toString());
-
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),
@@ -270,7 +279,7 @@ class _DetailToolAndMaterialTransferTableState
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong',
-                title: 'Số lượng',
+                title: 'Số lượng có sẵn',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue: (item) => item.soLuong,
@@ -318,6 +327,16 @@ class _DetailToolAndMaterialTransferTableState
                 },
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,
+              ),
+              SgEditableColumn<ItemDropdownDetailCcdc>(
+                field: 'so_luong_da_ban_giao',
+                title: 'Số lượng đã ban giao',
+                titleAlignment: TextAlign.center,
+                width: 100,
+                getValue: (item) => item.soLuongDaBanGiao,
+                setValue: (item, value) => item.soLuongDaBanGiao = value,
+                sortValueGetter: (item) => item.soLuongDaBanGiao,
+                isEditable: false,
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'ghi_chu',

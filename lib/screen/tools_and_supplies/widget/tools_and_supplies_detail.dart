@@ -191,7 +191,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                 // Cập nhật tổng số lượng
                 final totalQuantity = newDetailAssetDto
                     .map((e) => e.soLuong ?? 0)
-                    .fold(0, (sum, quantity) => sum + quantity);
+                    .fold(0.0, (sum, quantity) => sum + quantity);
 
                 controllerQuantity.text = totalQuantity.toString();
               });

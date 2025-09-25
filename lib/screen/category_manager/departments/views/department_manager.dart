@@ -1,7 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/convert_excel_to_department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
@@ -9,6 +16,8 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/dep
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class DepartmentManager extends StatefulWidget {
@@ -41,7 +50,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   @override
   void initState() {
     super.initState();
-    // Reload dữ liệu mỗi khi vào màn hình này
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DepartmentBloc>().add(const LoadDepartments());
     });
@@ -50,7 +58,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Reload dữ liệu khi màn hình được focus lại
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DepartmentBloc>().add(const LoadDepartments());
     });
@@ -58,7 +65,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
 
   @override
   void didPopNext() {
-    // Khi quay lại màn hình này từ màn hình khác
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DepartmentBloc>().add(const LoadDepartments());
     });
@@ -69,6 +75,73 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
       isShowInput = true;
       editingDepartment = department;
     });
+  }
+
+  void _updatePagination() {
+    // Sử dụng _filteredData thay vì _data
+    totalEntries = filteredData.length;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+    dataPage =
+        filteredData.isNotEmpty
+            ? filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
+  }
+
+  void _importData(List<PhongBan> departments) async {
+    if (departments.isNotEmpty) {
+      final result = await DepartmentsProvider().saveDepartmentBatch(
+        departments,
+      );
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
+          result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Import dữ liệu thành công'),
+              backgroundColor: Colors.green.shade600,
+            ),
+          );
+          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
+          searchController.clear();
+          currentPage = 1;
+          rowsPerPage = 10;
+          filteredData = [];
+          dataPage = [];
+          context.read<DepartmentBloc>().add(const LoadDepartments());
+          setState(() {
+            isShowInput = false;
+          });
+        }
+      } else {
+        if (context.mounted) {
+          
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu thất bại',
+            isError: true,
+          );
+        }
+      }
+    } else {
+      if (context.mounted) {
+        AppUtility.showSnackBar(
+          context,
+          'Import dữ liệu thất bại',
+          isError: true,
+        );
+      }
+    }
   }
 
   void _showDeleteDialog(BuildContext context, PhongBan department) {
@@ -117,27 +190,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
     });
   }
 
-  void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
-
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-    dataPage =
-        filteredData.isNotEmpty
-            ? filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DepartmentBloc, DepartmentState>(
@@ -145,6 +197,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
         if (state is DepartmentLoaded) {
           List<PhongBan> departments = state.departments;
           data = departments;
+          AccountHelper.instance.clearDepartment();
+          AccountHelper.instance.setDepartment(departments);
           filteredData = data;
           _updatePagination();
 
@@ -165,14 +219,16 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                   });
                 },
                 mainScreen: 'Quản lý phòng ban',
-                onFileSelected: (fileName, filePath, fileBytes) {
-                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
+                onFileSelected: (fileName, filePath, fileBytes) async {
+                  List<PhongBan> nv = await convertExcelToPhongBan(filePath!);
+                  log('nv: ${jsonEncode(nv)}');
+                  _importData(nv);
                 },
                 onExportData: () {
                   AppUtility.exportData(
                     context,
-                    "Danh sách phòng ban",
-                    departments.map((e) => e.toJson()).toList(),
+                    "phong_ban",
+                    departments.map((e) => e.toExportJson()).toList(),
                   );
                 },
               ),

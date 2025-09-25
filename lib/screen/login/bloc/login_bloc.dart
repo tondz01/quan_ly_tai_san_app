@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
@@ -16,7 +17,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<CreateAccountEvent>(_createAccount);
     on<UpdateUserEvent>(_updateUser);
     on<DeleteUserEvent>(_deleteUser);
+    on<DeleteUserBatchEvent>(_deleteUserBatch);
     on<GetNhanVienEvent>(_getListNhanVien);
+    on<UpdatePermissionEvent>(_updatePermission);
   }
 
   // Handle PostLoginEvent.
@@ -35,17 +38,22 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         final data = reponse['data'];
         AccountHelper.instance.setAssetTransfer(data);
       }
-      final reponseToolsHandover = await ToolAndSuppliesHandoverRepository().getListToolAndSuppliesHandover();
+      final reponseToolsHandover =
+          await ToolAndSuppliesHandoverRepository()
+              .getListToolAndSuppliesHandover();
       if (reponseToolsHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final data = reponseToolsHandover['data'];
         AccountHelper.instance.setToolAndMaterialHandover(data);
       }
-      final reponseAssetHandover = await AssetHandoverRepository().getListAssetHandover();
+      final reponseAssetHandover =
+          await AssetHandoverRepository().getListAssetHandover();
       if (reponseAssetHandover['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final data = reponseAssetHandover['data'];
         AccountHelper.instance.setAssetHandover(data);
       }
-      final reponseToolAndMaterialTransfer = await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransferByCT();
+      final reponseToolAndMaterialTransfer =
+          await ToolAndMaterialTransferRepository()
+              .getAllToolAndMeterialTransferByCT();
       if (reponseToolAndMaterialTransfer.isNotEmpty) {
         final data = reponseToolAndMaterialTransfer;
         AccountHelper.instance.setToolAndMaterialHandover(data);
@@ -116,6 +124,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginLoadingState());
     try {
       final result = await AuthRepository().createAccount(event.user);
+
       emit(LoginLoadingDismissState());
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         emit(CreateAccountSuccessState(result['data'].toString()));
@@ -158,6 +167,36 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       }
     } catch (e) {
       emit(LoginLoadingDismissState());
+      String errorMessage = "Cập nhập tài khoản thất bại";
+      emit(
+        PostLoginFailedState(title: "error", code: -1, message: errorMessage),
+      );
+    }
+  }
+
+  Future<void> _updatePermission(
+    UpdatePermissionEvent event,
+    Emitter emit,
+  ) async {
+    emit(LoginLoadingState());
+    try {
+      final result = await PermissionRepository().updatePermissionBatch(
+        event.permissions,
+      );
+      emit(LoginLoadingDismissState());
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        emit(UpdatePermissionSuccessState(result['data']));
+      } else {
+        emit(
+          PostLoginFailedState(
+            title: "notice",
+            code: result['status_code'] ?? -1,
+            message: result['message'] ?? 'Lỗi hệ thống',
+          ),
+        );
+      }
+    } catch (e) {
+      emit(LoginLoadingDismissState());
       emit(
         PostLoginFailedState(title: "error", code: -1, message: e.toString()),
       );
@@ -168,6 +207,33 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginLoadingState());
     try {
       final result = await AuthRepository().deleteUser(event.id);
+      emit(LoginLoadingDismissState());
+      if (result.statusCode == 200) {
+        emit(DeleteUserSuccessState());
+      } else {
+        emit(
+          PostLoginFailedState(
+            title: "notice",
+            code: result.statusCode ?? -1,
+            message: result.statusMessage ?? '',
+          ),
+        );
+      }
+    } catch (e) {
+      emit(LoginLoadingDismissState());
+      emit(
+        PostLoginFailedState(title: "error", code: -1, message: e.toString()),
+      );
+    }
+  }
+
+  Future<void> _deleteUserBatch(
+    DeleteUserBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(LoginLoadingState());
+    try {
+      final result = await AuthRepository().deleteUserBatch(event.ids);
       emit(LoginLoadingDismissState());
       if (result.statusCode == 200) {
         emit(DeleteUserSuccessState());

@@ -8,8 +8,10 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   CcdcGroupBloc() : super(CcdcGroupInitialState()) {
     on<GetListCcdcGroupEvent>(_getListCcdcTransfer);
     on<CreateCcdcGroupEvent>(_createCcdcGroup);
+    on<CreateCcdcGroupBatchEvent>(_createCcdcGroupBatch);
     on<UpdateCcdcGroupEvent>(_updateCcdcGroup);
     on<DeleteCcdcGroupEvent>(_deleteCcdcGroup);
+    on<DeleteCcdcGroupBatchEvent>(_deleteCcdcGroupBatch);
   }
 
   Future<void> _getListCcdcTransfer(
@@ -48,6 +50,29 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
       emit(CreateCcdcGroupSuccessState(data: result['data'].toString()));
     } else {
       String msg = "Lỗi khi tạo nhóm tài sản";
+      emit(
+        CreateCcdcGroupFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
+  Future<void> _createCcdcGroupBatch(
+    CreateCcdcGroupBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(CcdcGroupInitialState());
+    emit(CcdcGroupLoadingState());
+    Map<String, dynamic> result = await CcdcGroupRepository()
+        .saveCcdcGroupBatch(event.params);
+    emit(CcdcGroupLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(CreateCcdcGroupSuccessState(data: result['data'].toString()));
+    } else {
+      String msg = "Lỗi khi tạo danh sách nhóm tài sản";
       emit(
         CreateCcdcGroupFailedState(
           title: "notice",
@@ -102,6 +127,27 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
           title: 'notice',
           code: result['status_code'],
           message: 'Lỗi khi xóa nhóm tài sản',
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteCcdcGroupBatch(
+    DeleteCcdcGroupBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(CcdcGroupInitialState());
+    emit(CcdcGroupLoadingState());
+    final result = await CcdcGroupRepository().deleteCcdcGroupBatch(event.id);
+    emit(CcdcGroupLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(DeleteCcdcGroupSuccessState(data: result['data'].toString()));
+    } else {
+      emit(
+        PutPostDeleteFailedState(
+          title: 'notice',
+          code: result['status_code'],
+          message: 'Lỗi khi xóa danh sách nhóm CCDC',
         ),
       );
     }

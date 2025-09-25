@@ -1,9 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/component/convert_excel_to_project.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/project_manager_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/pages/project_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/providers/project_provider.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class ProjectManager extends StatefulWidget {
@@ -31,6 +32,18 @@ class _ProjectManagerState extends State<ProjectManager> {
   List<DuAn> filteredData = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<ProjectProvider>(context, listen: false).onInit(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Provider.of<ProjectProvider>(context, listen: false).onInit(context);
+  }
 
   void _showForm([DuAn? duAn]) {
     setState(() {
@@ -53,7 +66,7 @@ class _ProjectManagerState extends State<ProjectManager> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  context.read<ProjectBloc>().add(DeleteProject(duAn!));
+                  context.read<ProjectBloc>().add(DeleteProjectEvent(duAn!));
                   Navigator.of(ctx).pop();
                 },
                 child: const Text('Xóa'),
@@ -63,131 +76,138 @@ class _ProjectManagerState extends State<ProjectManager> {
     );
   }
 
-  void _searchProjectManger(String value) {
-    context.read<ProjectBloc>().add(SearchProject(value));
-  }
+  // void _searchProjectManger(String value) {
+  //   context.read<ProjectBloc>().add(SearchProject(value));
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProjectBloc, ProjectState>(
+    return BlocConsumer<ProjectBloc, ProjectState>(
       builder: (context, state) {
-        if (state is ProjectLoaded) {
-          List<DuAn> projects = state.projects;
-          data = projects;
-          filteredData = data;
+        return Consumer<ProjectProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            // if (provider.data == null) {
+            //   return const Center(child: Text('Không có dữ liệu'));
+            // }
+            provider.controllerDropdownPage ??= TextEditingController(
+              text: provider.rowsPerPage.toString(),
+            );
 
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: HeaderComponent(
-                controller: searchController,
-                onSearchChanged: (value) {
-                  log('value: $value');
-                  setState(() {
-                    _searchProjectManger(value);
-                  });
-                },
-                onNew: () {
-                  setState(() {
-                    _showForm(null);
-                    isShowInput = true;
-                  });
-                },
-                mainScreen: 'Quản lý dự án',
-                onFileSelected: (fileName, filePath, fileBytes) {
-                  AppUtility.showSnackBar(context, "Chức năng đang phát triển");
-                },
-                onExportData: () {
-                  AppUtility.exportData(
-                    context,
-                    "Danh sách dự án",
-                    data.map((e) => e.toJson()).toList(),
-                  );
-                },
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: HeaderComponent(
+                  controller: searchController,
+                  onSearchChanged: (value) {
+                    provider.onSearchRoles(value);
+                  },
+                  onNew: () {
+                    setState(() {
+                      _showForm(null);
+                      isShowInput = true;
+                    });
+                  },
+                  mainScreen: 'Quản lý dự án',
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    final roleBloc = context.read<ProjectBloc>();
+                    final List<DuAn> duAnList = await convertExcelToProject(
+                      filePath!,
+                    );
+                    if (!mounted) return;
+                    if (duAnList.isNotEmpty) {
+                      roleBloc.add(CreateProjectBatchEvent(duAnList));
+                    }
+                  },
+                  onExportData: () {
+                    AppUtility.exportData(
+                      context,
+                      "du_an",
+                      provider.data.map((e) => e.toExportJson()).toList(),
+                    );
+                  },
+                ),
               ),
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: CommonPageView(
-                      childInput: ProjectFormPage(
-                        duAn: editingProject,
-                        onCancel: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                        onSaved: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
+              body: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        childInput: ProjectFormPage(
+                          duAn: editingProject,
+                          onCancel: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                          onSaved: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                        ),
+                        childTableView: ProjectManagerList(
+                          data: provider.filteredData,
+                          onChangeDetail: (item) {
+                            _showForm(item as DuAn?);
+                          },
+                          onDelete: (item) {
+                            _showDeleteDialog(context, item as DuAn?);
+                          },
+                          onEdit: (item) {
+                            _showForm(item as DuAn?);
+                          },
+                        ),
+                        isShowInput: isShowInput,
+                        onExpandedChanged: (isExpanded) {
+                          isShowInput = isExpanded;
                         },
                       ),
-                      childTableView: ProjectManagerList(
-                        data: filteredData,
-                        onChangeDetail: (item) {
-                          _showForm(item as DuAn?);
-                        },
-                        onDelete: (item) {
-                          _showDeleteDialog(context, item as DuAn?);
-                        },
-                        onEdit: (item) {
-                          _showForm(item as DuAn?);
-                        },
-                      ),
-
-                      // Container(height: 200,color: Colors.limeAccent,),
-                      isShowInput: isShowInput,
-                      onExpandedChanged: (isExpanded) {
-                        isShowInput = isExpanded;
-                      },
                     ),
                   ),
-                ),
-                Visibility(
-                  visible: (projects.length) >= 5,
-                  child: SGPaginationControls(
-                    totalPages: 1,
-                    currentPage: 1,
-                    rowsPerPage: 10,
-                    controllerDropdownPage: controller,
-                    items: [
-                      DropdownMenuItem(value: 10, child: Text('10')),
-                      DropdownMenuItem(value: 20, child: Text('20')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                    ],
-                    onPageChanged: (page) {},
-                    onRowsPerPageChanged: (rows) {},
+                  Visibility(
+                    visible: (provider.data?.length ?? 0) >= 5,
+                    child: SGPaginationControls(
+                      totalPages: provider.totalPages,
+                      currentPage: provider.currentPage,
+                      rowsPerPage: provider.rowsPerPage,
+                      controllerDropdownPage: provider.controllerDropdownPage!,
+                      items: provider.itemsPagination,
+                      onPageChanged: provider.onPageChanged,
+                      onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        } else if (state is ProjectError) {
-          return Center(child: Text(state.message));
+                ],
+              ),
+            );
+          },
+        );
+      },
+      listener: (context, state) {
+        if (state is ProjectInitialState) {}
+        if (state is ProjectLoadingState) {}
+        if (state is ProjectLoadingDismissState) {}
+        if (state is GetListProjectSuccsessState) {
+          context.read<ProjectProvider>().getListProjectSuccess(context, state);
         }
-        return const Center(child: CircularProgressIndicator());
+        if (state is AddProjectSuccessState) {
+          // Refresh list
+          context.read<ProjectProvider>().createRolesSuccess(context, state);
+        }
+
+        if (state is UpdateProjectSuccessState) {
+          context.read<ProjectProvider>().updateRolesSuccess(context, state);
+        }
+        if (state is DeleteProjectSuccessState) {
+          context.read<ProjectProvider>().deleteRolesSuccess(context, state);
+        }
+        if (state is ProjectErrorState) {
+          context.read<ProjectProvider>().onCallFailled(context, state);
+        }
       },
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   if (showForm) {
-  //     return ProjectFormPage(
-  //       project: editingProject,
-  //       // Khi bấm Hủy hoặc Lưu sẽ quay lại danh sách
-  //       key: ValueKey(editingProject?.code ?? 'new'),
-  //       onCancel: _showList,
-  //       onSaved: _showList,
-  //     );
-  //   } else {
-  //     return ProjectListPage(
-  //       onAdd: () => _showForm(),
-  //       onEdit: (project) => _showForm(project),
-  //     );
-  //   }
-  // }
 }

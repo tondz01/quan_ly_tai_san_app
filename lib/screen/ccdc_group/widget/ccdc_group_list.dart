@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart'
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -26,6 +27,8 @@ class CcdcGroupList extends StatefulWidget {
 class _CcdcGroupListState extends State<CcdcGroupList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
+
+  List<CcdcGroup> listSelected = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -267,6 +270,44 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                     ),
                   ],
                 ),
+                Visibility(
+                  visible: listSelected.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text: 'Danh sách nhóm đã chọn: ${listSelected.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      IconButton(
+                        onPressed: () {
+                          Map<String, dynamic> data = {
+                            'id': listSelected.map((e) => e.id).toList(),
+                          };
+                          showConfirmDialog(
+                            context,
+                            type: ConfirmType.delete,
+                            title: 'Xóa nhân nhóm CCDC - Vật tư',
+                            message:
+                                'Bạn có chắc muốn xóa ${listSelected.length} nhóm CCDC - Vật tư',
+                            highlight: listSelected.length.toString(),
+                            cancelText: 'Không',
+                            confirmText: 'Xóa',
+                            onConfirm: () {
+                              final roleBloc = context.read<CcdcGroupBloc>();
+                              roleBloc.add(DeleteCcdcGroupBatchEvent(data));
+                            },
+                          );
+                        },
+                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -278,6 +319,11 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
+              },
+              onSelectionChanged: (items) {
+                setState(() {
+                  listSelected = items;
+                });
               },
             ),
           ),

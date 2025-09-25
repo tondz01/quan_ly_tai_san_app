@@ -32,15 +32,14 @@ class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
 
             bool staffIdMatch =
                 item.id?.toLowerCase().contains(searchLower) ?? false;
-            bool departmentGroup =
-                item.tenNhom?.toLowerCase().contains(searchLower) ?? false;
+           
 
             bool parentRoom = AppUtility.fuzzySearch(
               item.phongCapTren?.toLowerCase() ?? '',
               searchLower,
             );
 
-            return nameMatch || staffIdMatch || parentRoom || departmentGroup;
+            return nameMatch || staffIdMatch || parentRoom;
           }).toList();
       if (state is DepartmentLoaded) {
         final currentState = state as DepartmentLoaded;
@@ -62,6 +61,12 @@ class DepartmentBloc extends Bloc<DepartmentEvent, DepartmentState> {
     on<DeleteDepartment>((event, emit) async {
       if (state is DepartmentLoaded) {
         await provider.deleteDepartment(event.department.id ?? '');
+        add(LoadDepartments());
+      }
+    });
+    on<DeleteDepartmentBatch>((event, emit) async {
+      if (state is DepartmentLoaded) {
+        await provider.deleteDepartmentBatch(event.data);
         add(LoadDepartments());
       }
     });

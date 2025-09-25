@@ -1,4 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -33,6 +34,7 @@ Widget previewDocumentAssetHandover({
   return InkWell(
     onTap: () {
       if (item == null) return;
+      log('item: ${item.toString()}');
       previewDocumentHandover(
         context: context,
         item: item,
@@ -78,7 +80,6 @@ previewDocumentHandover({
   PdfDocument? document,
 }) {
   UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
-  log('message UserInfoDTO userInfo: ${userInfo.tenDangNhap}');
   NhanVien nhanVien = provider.getNhanVien(idNhanVien: userInfo.tenDangNhap);
   String tenFileChuKyNhay = path.basename(nhanVien.chuKyNhay.toString());
   String tenFileChuKyThuong = path.basename(nhanVien.chuKyThuong.toString());
@@ -172,6 +173,8 @@ previewDocumentHandover({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
+            isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,
             isKyNhay: nhanVien.kyNhay ?? false,
             isKyThuong: nhanVien.kyThuong ?? false,

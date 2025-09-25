@@ -12,6 +12,7 @@ class ItemDropdownDetailCcdc {
   int soLuong;
   String ghiChu;
   int soLuongXuat; // Thêm field này
+  int soLuongDaBanGiao;
   ToolsAndSuppliesDto? asset;
 
   ItemDropdownDetailCcdc({
@@ -26,6 +27,7 @@ class ItemDropdownDetailCcdc {
     required this.soLuong,
     required this.ghiChu,
     this.soLuongXuat = 0, // Thêm parameter này
+    this.soLuongDaBanGiao = 0,
     this.asset,
   });
 
@@ -42,6 +44,7 @@ class ItemDropdownDetailCcdc {
       soLuong: json['soLuong'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       soLuongXuat: json['soLuongXuat'] ?? 0,
+      soLuongDaBanGiao: json['soLuongDaBanGiao'] ?? 0,
       asset:
           json['asset'] != null
               ? ToolsAndSuppliesDto.fromJson(json['asset'])
@@ -62,6 +65,7 @@ class ItemDropdownDetailCcdc {
       'soLuong': soLuong,
       'ghiChu': ghiChu,
       'soLuongXuat': soLuongXuat,
+      'soLuongDaBanGiao': soLuongDaBanGiao,
       'asset': asset?.toJson(),
     };
   }
@@ -82,6 +86,7 @@ class ItemDropdownDetailCcdc {
     int? namSanXuat,
     int? soLuong,
     String? ghiChu,
+    int? soLuongDaBanGiao,
     ToolsAndSuppliesDto? asset,
   }) {
     return ItemDropdownDetailCcdc(
@@ -96,6 +101,7 @@ class ItemDropdownDetailCcdc {
       soLuong: soLuong ?? this.soLuong,
       ghiChu: ghiChu ?? this.ghiChu,
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
+      soLuongDaBanGiao: soLuongDaBanGiao ?? this.soLuongDaBanGiao,
       asset: asset ?? this.asset,
     );
   }
@@ -113,6 +119,7 @@ class ItemDropdownDetailCcdc {
       soLuong: 0,
       ghiChu: '',
       soLuongXuat: 0,
+      soLuongDaBanGiao: 0,
       asset: null,
     );
   }

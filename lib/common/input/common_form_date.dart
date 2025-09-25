@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_datetime_input_button.dart';
@@ -19,6 +21,7 @@ class CmFormDate extends StatefulWidget {
     this.timeOptional = true,
     this.includeSeconds = true,
     this.initialIncludeTime = false,
+    this.isRequired = false,
   });
   final String label;
   final TextEditingController controller;
@@ -34,7 +37,7 @@ class CmFormDate extends StatefulWidget {
   final Function(DateTime?)? onChanged;
   final String? fieldName;
   final Map<String, bool>? validationErrors;
-
+  final bool isRequired;
   @override
   State<CmFormDate> createState() => _CmFormDateState();
 }
@@ -50,58 +53,41 @@ class _CmFormDateState extends State<CmFormDate> {
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 180,
-            child: Text(
-              '${widget.label} :',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color:
-                    !widget.isEditing
-                        ? Colors.black87.withValues(alpha: 0.6)
-                        : Colors.black,
+          SGDateTimeInputButton(
+            label: widget.label,
+      
+            controller: widget.controller,
+            value: widget.value,
+            onChanged: (dt) {
+              widget.onChanged?.call(dt);
+            },
+            width: double.infinity,
+            height: 40,
+            initWithNow: widget.initWithNow,
+            enable: widget.enable,
+            textAlign: TextAlign.left,
+            sizeBorderCircular: 7,
+            allowTyping: widget.allowTyping,
+            showTimeSection: widget.showTimeSection,
+            timeOptional: widget.timeOptional,
+            includeSeconds: widget.includeSeconds,
+            initialIncludeTime: widget.initialIncludeTime,
+            colorBorder: SGAppColors.colorBorderGray,
+            colorBorderFocus: SGAppColors.info500,
+            // showUnderlineBorderOnly: true,
+          ),
+            
+          if (hasError)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Trường \'${widget.label}\' không được để trống',
+                style: TextStyle(color: Colors.red, fontSize: 12),
               ),
             ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SGDateTimeInputButton(
-                  controller: widget.controller,
-                  value: widget.value,
-                  onChanged: (dt) {
-                    widget.onChanged?.call(dt);
-                  },
-                  width: double.infinity,
-                  height: 40,
-                  initWithNow: widget.initWithNow,
-                  enable: widget.enable,
-                  allowTyping: widget.allowTyping,
-                  showTimeSection: widget.showTimeSection,
-                  timeOptional: widget.timeOptional,
-                  includeSeconds: widget.includeSeconds,
-                  initialIncludeTime: widget.initialIncludeTime,
-                  colorBorder: SGAppColors.colorBorderGray,
-                  colorBorderFocus: SGAppColors.info500,
-                  showUnderlineBorderOnly: true,
-                ),
-
-                if (hasError)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Trường \'${widget.label}\' không được để trống',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
       ),
     );

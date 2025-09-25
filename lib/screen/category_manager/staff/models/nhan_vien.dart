@@ -28,14 +28,16 @@ class NhanVien extends Equatable {
   final String? nguoiCapNhat;
   final String? phongBanId;
   final String? tenPhongBan;
-  final bool? isActive;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
+  final bool? active;
+  final String? ngayTao;
+  final String? ngayCapNhat;
 
   //kiểu ký
   final bool? kyNhay;
   final bool? kyThuong;
   final bool? kySo;
+
+  final bool? savePin;
 
   const NhanVien({
     this.id,
@@ -62,7 +64,7 @@ class NhanVien extends Equatable {
     this.muiGio,
     this.nguoiTao,
     this.nguoiCapNhat,
-    this.isActive,
+    this.active,
     this.ngayTao,
     this.ngayCapNhat,
     this.phongBanId,
@@ -70,34 +72,48 @@ class NhanVien extends Equatable {
     this.kyNhay,
     this.kyThuong,
     this.kySo,
+    this.savePin,
   });
 
   factory NhanVien.fromJson(Map<String, dynamic> json) {
+    String? s(dynamic v) => v?.toString();
+    bool? b(dynamic v) {
+      if (v == null) return null;
+      if (v is bool) return v;
+      if (v is num) return v != 0;
+      final str = v.toString().trim().toLowerCase();
+      if (str.isEmpty) return null;
+      return str == 'true' || str == '1' || str == 'yes' || str == 'y';
+    }
+
     return NhanVien(
-      id: json['id'],
-      hoTen: json['hoTen'],
-      diDong: json['diDong'],
-      emailCongViec: json['emailCongViec'],
-      agreementUUId: json['agreementUUId'],
-      pin: json['pin'],
-      chuKyNhay: json['chuKyNhay'],
-      chuKyThuong: json['chuKyThuong'],
-      boPhan: json['boPhan'],
-      chucVu: json['chucVu'],
-      tenChucVu: json['tenChucVu'],
-      chucVuId: json['chucVuId'],
-      nguoiQuanLy: json['nguoiQuanLy'],
-      quanLyId: json['quanLyId'],
-      tenQuanLy: json['tenQuanLy'],
-      phongBanId: json['phongBanId'],
-      tenPhongBan: json['tenPhongBan'],
-      laQuanLy: json['laQuanLy'],
-      avatar: json['avatar'],
-      idCongTy: json['idCongTy'],
-      isActive: json['isActive'],
-      kyNhay: json['kyNhay'],
-      kyThuong: json['kyThuong'],
-      kySo: json['kySo'],
+      id: s(json['id']),
+      hoTen: s(json['hoTen']),
+      diDong: s(json['diDong']),
+      emailCongViec: s(json['emailCongViec']),
+      agreementUUId: s(json['agreementUUId']),
+      pin: s(json['pin']),
+      chuKyNhay: s(json['chuKyNhay']),
+      chuKyThuong: s(json['chuKyThuong']),
+      boPhan: s(json['boPhan']),
+      chucVu: s(json['chucVu']),
+      tenChucVu: s(json['tenChucVu']),
+      chucVuId: s(json['chucVuId']),
+      nguoiQuanLy: s(json['nguoiQuanLy']),
+      quanLyId: s(json['quanLyId']),
+      tenQuanLy: s(json['tenQuanLy']),
+      phongBanId: s(json['phongBanId']),
+      tenPhongBan: s(json['tenPhongBan']),
+      laQuanLy: b(json['laQuanLy']),
+      avatar: s(json['avatar']),
+      idCongTy: s(json['idCongTy']),
+      active: b(json['active']),
+      kyNhay: b(json['kyNhay']),
+      kyThuong: b(json['kyThuong']),
+      kySo: b(json['kySo']),
+      ngayTao: s(json['ngayTao']),
+      ngayCapNhat: s(json['ngayCapNhat']),
+      savePin: b(json['savePin']),
     );
   }
   NhanVien copyWith({
@@ -133,6 +149,7 @@ class NhanVien extends Equatable {
     bool? kyNhay,
     bool? kyThuong,
     bool? kySo,
+    bool? savePin,
   }) {
     return NhanVien(
       id: id ?? this.id,
@@ -159,15 +176,18 @@ class NhanVien extends Equatable {
       muiGio: muiGio ?? this.muiGio,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
-      isActive: isActive ?? this.isActive,
+      active: isActive ?? this.active,
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
       kyNhay: kyNhay ?? this.kyNhay,
       kyThuong: kyThuong ?? this.kyThuong,
       kySo: kySo ?? this.kySo,
+      ngayTao: ngayTao ?? this.ngayTao,
+      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      savePin: savePin ?? this.savePin
     );
   }
-
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -187,11 +207,58 @@ class NhanVien extends Equatable {
       'diaChiLamViec': diaChiLamViec,
       'hinhThucLamViec': hinhThucLamViec,
       'nguoiTao': nguoiTao,
-      'isActive': isActive,
+      'nguoiCapNhat': nguoiCapNhat,
       'phongBanId': phongBanId,
       'kyNhay': kyNhay,
       'kyThuong': kyThuong,
       'kySo': kySo,
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
+      'active': active,
+      'savePin': savePin,
+    };
+  }
+
+  // Trả về null nếu là chuỗi rỗng hoặc chỉ khoảng trắng; giữ nguyên nếu không phải String
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "" : value;
+    }
+    return value;
+  }
+
+  // Map dữ liệu để export: chuyển tất cả chuỗi rỗng "" => null
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Mã nhân viên': _nullIfEmpty(id),
+      'Họ tên': _nullIfEmpty(hoTen),
+      'Điện thoại': _nullIfEmpty(diDong),
+      'Email': _nullIfEmpty(emailCongViec),
+      'Ký nháy': kyNhay,
+      'Ký thường': kyThuong,
+      'Ký số': kySo,
+      'Chữ ký nháy': _nullIfEmpty(chuKyNhay),
+      'Chữ ký thường': _nullIfEmpty(chuKyThuong),
+      'Agreement UUId': _nullIfEmpty(agreementUUId),
+      'Mã Pin': _nullIfEmpty(pin),
+      'Phòng ban (Mã phòng ban)': _nullIfEmpty(phongBanId),
+      'Tên phòng ban': _nullIfEmpty(boPhan),
+      'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVu),
+      'Người quản lý (Mã người quản lý)': _nullIfEmpty(nguoiQuanLy),
+      'Là quản lý': laQuanLy,
+      'Ảnh đại diện': _nullIfEmpty(avatar),
+      'Công ty (Mã công ty)': _nullIfEmpty(idCongTy),
+      'Địa chỉ làm việc': _nullIfEmpty(diaChiLamViec),
+      'Hình thức làm việc': _nullIfEmpty(hinhThucLamViec),
+      'Người tạo (Mã nhân viên)': _nullIfEmpty(nguoiTao),
+      'Người cập nhật (Mã nhân viên)': _nullIfEmpty(nguoiCapNhat),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Hiển thị': active,
+      'Lưu mã PIN': savePin,
     };
   }
 
@@ -220,11 +287,14 @@ class NhanVien extends Equatable {
     muiGio,
     nguoiTao,
     nguoiCapNhat,
-    isActive,
+    active,
     ngayTao,
     ngayCapNhat,
     kyNhay,
     kyThuong,
     kySo,
+    ngayTao,
+    ngayCapNhat,
+    savePin
   ];
 }

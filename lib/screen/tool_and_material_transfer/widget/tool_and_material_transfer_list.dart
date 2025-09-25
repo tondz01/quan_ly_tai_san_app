@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -76,6 +74,8 @@ class _ToolAndMaterialTransferListState
     'id',
     'decision_date',
     'to_date',
+    'don_vi_giao',
+    'don_vi_nhan',
     'status',
     'actions',
   ];
@@ -179,6 +179,16 @@ class _ToolAndMaterialTransferListState
         isChecked: visibleColumnIds.contains('to_date'),
       ),
       ColumnDisplayOption(
+        id: 'don_vi_giao',
+        label: 'Đơn vị giao',
+        isChecked: visibleColumnIds.contains('don_vi_giao'),
+      ),
+      ColumnDisplayOption(
+        id: 'don_vi_nhan',
+        label: 'Đơn vị nhận',
+        isChecked: visibleColumnIds.contains('don_vi_nhan'),
+      ),
+      ColumnDisplayOption(
         id: 'status',
         label: 'Trạng thái phiếu',
         isChecked: visibleColumnIds.contains('status'),
@@ -203,7 +213,24 @@ class _ToolAndMaterialTransferListState
               title: 'Trạng thái ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
+              searchValueGetter: (item) {
+                final status = widget.provider.isCheckSigningStatus(item);
+                return status == 1
+                    ? 'Đã ký'
+                    : status == 0
+                    ? 'Chưa ký'
+                    : status == 2
+                    ? 'Đã ký nháy'
+                    : status == 3
+                    ? 'Đã ký & tạo'
+                    : status == 4
+                    ? 'Chưa ký nháy'
+                    : status == 5
+                    ? 'Chưa ký & tạo'
+                    : 'Người tạo phiếu';
+              },
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -217,6 +244,10 @@ class _ToolAndMaterialTransferListState
                     item.share ?? false,
                     item.nguoiTao == userInfo?.tenDangNhap,
                   ),
+              searchValueGetter: (item) {
+                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+              },
+              filterable: true,
             ),
           );
           break;
@@ -297,6 +328,36 @@ class _ToolAndMaterialTransferListState
             ),
           );
           break;
+        case 'don_vi_giao':
+          columns.add(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
+              title: 'Đơn vị giao',
+              width: 150,
+              getValue:
+                  (item) =>
+                      AccountHelper.instance
+                          .getDepartmentById(item.idDonViGiao ?? '')
+                          ?.tenPhongBan ??
+                      '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'don_vi_nhan':
+          columns.add(
+            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
+              title: 'Đơn vị nhận',
+              width: 150,
+              getValue:
+                  (item) =>
+                      AccountHelper.instance
+                          .getDepartmentById(item.idDonViNhan ?? '')
+                          ?.tenPhongBan ??
+                      '',
+              filterable: true,
+            ),
+          );
+          break;
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
@@ -305,6 +366,7 @@ class _ToolAndMaterialTransferListState
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -447,7 +509,6 @@ class _ToolAndMaterialTransferListState
                   onHiden: () {
                     setState(() {
                       isShowDetailDepartmentTree = false;
-                      log('message');
                     });
                   },
                 ),
@@ -699,7 +760,7 @@ class _ToolAndMaterialTransferListState
         .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
 
-    if (previousNotSigned.isNotEmpty && item.byStep == true) {
+    if (previousNotSigned.isNotEmpty) {
       AppUtility.showSnackBar(
         context,
         '${previousNotSigned["label"]} chưa ký xác nhận, bạn chưa thể ký.',
@@ -734,6 +795,14 @@ class _ToolAndMaterialTransferListState
                   ? Colors.green
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? Colors.red
+                  : widget.provider.isCheckSigningStatus(item) == 2
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? Colors.green
+                  : widget.provider.isCheckSigningStatus(item) == 4
+                  ? Colors.orange
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? Colors.purple
                   : Colors.blue,
           borderRadius: BorderRadius.circular(4),
         ),
@@ -743,6 +812,14 @@ class _ToolAndMaterialTransferListState
                   ? 'Đã ký'
                   : widget.provider.isCheckSigningStatus(item) == 0
                   ? 'Chưa ký'
+                  : widget.provider.isCheckSigningStatus(item) == 2
+                  ? 'Đã ký nháy'
+                  : widget.provider.isCheckSigningStatus(item) == 3
+                  ? 'Đã ký & tạo'
+                  : widget.provider.isCheckSigningStatus(item) == 4
+                  ? 'Chưa ký nháy'
+                  : widget.provider.isCheckSigningStatus(item) == 5
+                  ? 'Chưa ký & tạo'
                   : "Người tạo phiếu",
           size: 12,
           style: TextStyle(
@@ -827,6 +904,7 @@ class _ToolAndMaterialTransferListState
             child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
           ),
         ),
+      ThreadNode(header: 'Chi tiết bàn giao', depth: 0),
     ];
   }
 

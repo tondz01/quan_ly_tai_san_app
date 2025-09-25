@@ -77,9 +77,6 @@ Widget buildOriginalAssetInfomation(
                     child: Text(element.tenMoHinh ?? ''),
                   ),
               ]);
-              log(
-                'Asset category data loaded successfully: ${itemsAssetCategory.length}',
-              );
             });
           } else if (state is GetListAssetCategoryFailedState) {
             log('message GetListAssetCategoryFailedState');
@@ -122,7 +119,6 @@ Widget buildOriginalAssetInfomation(
           inputType: TextInputType.number,
           isMoney: true,
           validationErrors: validationErrors,
-          isRequired: true,
         ),
         CommonFormInput(
           label: 'Giá trị Khấu hao ban đầu',
@@ -133,7 +129,6 @@ Widget buildOriginalAssetInfomation(
           inputType: TextInputType.number,
           isMoney: true,
           validationErrors: validationErrors,
-          isRequired: true,
         ),
         CommonFormInput(
           label: 'Kỳ khấu hao ban đầu',
@@ -143,7 +138,6 @@ Widget buildOriginalAssetInfomation(
           fieldName: 'kyKhauHaoBanDau',
           inputType: TextInputType.number,
           validationErrors: validationErrors,
-          isRequired: true,
         ),
         CommonFormInput(
           label: 'Giá trị thanh lý',
@@ -154,7 +148,6 @@ Widget buildOriginalAssetInfomation(
           inputType: TextInputType.number,
           isMoney: true,
           validationErrors: validationErrors,
-          isRequired: true,
         ),
 
         CmFormDropdownObject<AssetCategoryDto>(
@@ -163,7 +156,6 @@ Widget buildOriginalAssetInfomation(
           isEditing: isEditing,
           fieldName: 'idMoHinhTaiSan',
           items: itemsAssetCategory,
-
           defaultValue:
               ctrlTenMoHinh.text.isNotEmpty
                   ? getAssetCategory(

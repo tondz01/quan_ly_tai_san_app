@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dar
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -26,6 +27,8 @@ class AssetGroupList extends StatefulWidget {
 class _AssetGroupListState extends State<AssetGroupList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
+
+  List<AssetGroupDto> listSelected = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -274,6 +277,45 @@ class _AssetGroupListState extends State<AssetGroupList> {
                     ),
                   ],
                 ),
+                Visibility(
+                  visible: listSelected.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text:
+                            'Danh sách nhóm đã chọn: ${listSelected.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      IconButton(
+                        onPressed: () {
+                          Map<String, dynamic> data = {
+                            'id': listSelected.map((e) => e.id).toList(),
+                          };
+                          showConfirmDialog(
+                            context,
+                            type: ConfirmType.delete,
+                            title: 'Xóa nhân nhóm tài sản',
+                            message:
+                                'Bạn có chắc muốn xóa ${listSelected.length} nhóm tài sản',
+                            highlight: listSelected.length.toString(),
+                            cancelText: 'Không',
+                            confirmText: 'Xóa',
+                            onConfirm: () {
+                              final roleBloc = context.read<AssetGroupBloc>();
+                              roleBloc.add(DeleteAssetGroupBatchEvent(data));
+                            },
+                          );
+                        },
+                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -285,6 +327,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
+              },
+              onSelectionChanged: (items) {
+                setState(() {
+                  listSelected = items;
+                });
               },
             ),
           ),

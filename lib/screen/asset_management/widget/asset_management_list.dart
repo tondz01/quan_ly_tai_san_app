@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -27,6 +29,7 @@ class AssetManagementList extends StatefulWidget {
 }
 
 class _AssetManagementListState extends State<AssetManagementList> {
+  List<AssetManagementDto> listSelected = [];
   late List<ColumnDisplayOption> columnOptions;
   ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
@@ -161,10 +164,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
       switch (columnId) {
         case 'code_asset':
           columns.add(
-            TableBaseConfig.columnTable<AssetManagementDto>(
+            TableColumnBuilder.createTextColumn<AssetManagementDto>(
               title: 'Mã tài sản',
               getValue: (item) => item.id ?? '',
               width: 120,
+              // filterable: true,
+              searchValue: (item) => item.id ?? '',
             ),
           );
           break;
@@ -322,6 +327,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   @override
   Widget build(BuildContext context) {
+    final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
+    final data = widget.provider.data ?? const <AssetManagementDto>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -345,11 +352,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 ),
               ),
               Visibility(
-                visible: widget.provider.dataGroup?.isNotEmpty ?? false,
+                visible: groups.isNotEmpty,
                 child: Divider(),
               ),
               Visibility(
-                visible: widget.provider.dataGroup?.isEmpty ?? true,
+                visible: groups.isEmpty,
                 child: Center(
                   child: SGText(
                     text: 'Không có loại tài sản nào',
@@ -358,48 +365,49 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   ),
                 ),
               ),
-              Scrollbar(
-                controller: horizontalController,
-                thumbVisibility: true,
-                thickness: 4,
-                notificationPredicate:
-                    (notification) =>
-                        notification.metrics.axis == Axis.horizontal,
-                child: SingleChildScrollView(
+              if (groups.isNotEmpty)
+                Scrollbar(
                   controller: horizontalController,
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 13.0),
-                    child: Row(
-                      spacing: 16,
-                      children: [
-                        ...widget.provider.dataGroup!.map(
-                          (item) => ItemAssetGroup(
-                            titleName: item.tenNhom,
-                            numberAsset: getCountAssetByAssetManagement(
-                              widget.provider.data!,
-                              '${item.id}',
-                            ),
-                            image: "assets/images/assets.png",
-                            onTap: () {
-                              context.go(AppRoute.staffManager.path);
-                            },
-                            valueCheckBox: widget.provider.getCheckBoxStatus(
-                              item.id,
-                            ),
-                            onChange: (value) {
-                              widget.provider.updateCheckBoxStatus(
+                  thumbVisibility: true,
+                  thickness: 4,
+                  notificationPredicate:
+                      (notification) =>
+                          notification.metrics.axis == Axis.horizontal,
+                  child: SingleChildScrollView(
+                    controller: horizontalController,
+                    scrollDirection: Axis.horizontal,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 13.0),
+                      child: Row(
+                        spacing: 16,
+                        children: [
+                          ...groups.map(
+                            (item) => ItemAssetGroup(
+                              titleName: item.tenNhom,
+                              numberAsset: getCountAssetByAssetManagement(
+                                data,
+                                '${item.id}',
+                              ),
+                              image: "assets/images/assets.png",
+                              onTap: () {
+                                context.go(AppRoute.staffManager.path);
+                              },
+                              valueCheckBox: widget.provider.getCheckBoxStatus(
                                 item.id,
-                                value,
-                              );
-                            },
+                              ),
+                              onChange: (value) {
+                                widget.provider.updateCheckBoxStatus(
+                                  item.id,
+                                  value,
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -507,18 +515,70 @@ class _AssetManagementListState extends State<AssetManagementList> {
                     ),
                   ],
                 ),
-                Tooltip(
-                  message: 'Chuyển sang trang khấu hao tài sản',
-                  child: InkWell(
-                    onTap: () {
-                      widget.provider.onChangeBody(ShowBody.khauHao);
-                    },
-                    child: SGText(
-                      size: 14,
-                      text: "Khấu hao tài sản",
-                      color: ColorValue.link,
+                Row(
+                  spacing: 16,
+                  children: [
+                    Visibility(
+                      visible: listSelected.isNotEmpty,
+                      child: Row(
+                        children: [
+                          SGText(
+                            text:
+                                'Danh sách chức vụ đã chọn: ${listSelected.length}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          MaterialTextButton(
+                            text: 'Xóa đã chọn',
+                            icon: Icons.delete,
+                            backgroundColor: ColorValue.error,
+                            foregroundColor: Colors.white,
+                            onPressed: () {
+                              setState(() {
+                                List<String> data =
+                                    listSelected
+                                        .map((e) => e.id)
+                                        .whereType<String>()
+                                        .toList();
+                                showConfirmDialog(
+                                  context,
+                                  type: ConfirmType.delete,
+                                  title: 'Xóa tài sản',
+                                  message:
+                                      'Bạn có chắc muốn xóa ${listSelected.length} tài sản đã chọn',
+                                  highlight: listSelected.length.toString(),
+                                  cancelText: 'Không',
+                                  confirmText: 'Xóa',
+                                  onConfirm: () {
+                                    final roleBloc =
+                                        context.read<AssetManagementBloc>();
+                                    roleBloc.add(DeleteAssetBatchEvent(data));
+                                  },
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    Tooltip(
+                      message: 'Chuyển sang trang khấu hao tài sản',
+                      child: InkWell(
+                        onTap: () {
+                          widget.provider.onChangeBody(ShowBody.khauHao);
+                        },
+                        child: SGText(
+                          size: 14,
+                          text: "Khấu hao tài sản",
+                          color: ColorValue.link,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -539,6 +599,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
               onRowTap: (item) {
                 widget.provider.onChangeDetail(item);
               },
+              onSelectionChanged:
+                  (items) => setState(() {
+                    listSelected = items;
+                  }),
             ),
           ),
         ],
@@ -548,30 +612,31 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   Widget viewAction(AssetManagementDto item) {
     return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: 'Xóa',
-        iconColor: Colors.red.shade700,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed:
-            () => {
-              showConfirmDialog(
-                context,
-                type: ConfirmType.delete,
-                title: 'Xóa nhóm tài sản',
-                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom ?? '',
-                cancelText: 'Không',
-                confirmText: 'Xóa',
-                onConfirm: () {
-                  context.read<AssetManagementBloc>().add(
-                    DeleteAssetEvent(context, item.id!),
-                  );
-                },
-              ),
-            },
-      ),
+      if (widget.provider.isCanDelete)
+        ActionButtonConfig(
+          icon: Icons.delete,
+          tooltip: 'Xóa',
+          iconColor: Colors.red.shade700,
+          backgroundColor: Colors.red.shade50,
+          borderColor: Colors.red.shade200,
+          onPressed:
+              () => {
+                showConfirmDialog(
+                  context,
+                  type: ConfirmType.delete,
+                  title: 'Xóa nhóm tài sản',
+                  message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
+                  highlight: item.tenNhom ?? '',
+                  cancelText: 'Không',
+                  confirmText: 'Xóa',
+                  onConfirm: () {
+                    context.read<AssetManagementBloc>().add(
+                      DeleteAssetEvent(context, item.id!),
+                    );
+                  },
+                ),
+              },
+        ),
     ]);
   }
 }

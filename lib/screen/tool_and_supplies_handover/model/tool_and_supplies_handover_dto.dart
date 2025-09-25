@@ -1,4 +1,5 @@
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 
 class ToolAndSuppliesHandoverDto {
   final String? id;
@@ -32,6 +33,7 @@ class ToolAndSuppliesHandoverDto {
   final String? tenFile;
   final bool? active;
   List<SignatoryDto>? listSignatory;
+  List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover;
   bool? byStep;
 
   ToolAndSuppliesHandoverDto({
@@ -67,6 +69,7 @@ class ToolAndSuppliesHandoverDto {
     this.active,
     this.listSignatory,
     this.byStep,
+    this.listDetailSubppliesHandover,
   });
 
   factory ToolAndSuppliesHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -108,6 +111,14 @@ class ToolAndSuppliesHandoverDto {
               )
               : null,
       byStep: json['byStep'],
+      listDetailSubppliesHandover:
+          json['listDetailSubppliesHandover'] != null
+              ? List<DetailSubppliesHandoverDto>.from(
+                json['listDetailSubppliesHandover'].map(
+                  (x) => DetailSubppliesHandoverDto.fromJson(x),
+                ),
+              )
+              : null,
     );
   }
 
@@ -145,6 +156,7 @@ class ToolAndSuppliesHandoverDto {
       'active': active,
       'listSignatory': listSignatory,
       'byStep': byStep,
+      'listDetailSubppliesHandover': listDetailSubppliesHandover,
     };
   }
 
@@ -181,6 +193,7 @@ class ToolAndSuppliesHandoverDto {
     bool? active,
     List<SignatoryDto>? listSignatory,
     bool? byStep,
+    List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover,
   }) {
     return ToolAndSuppliesHandoverDto(
       id: id ?? this.id,
@@ -194,15 +207,18 @@ class ToolAndSuppliesHandoverDto {
       ngayBanGiao: ngayBanGiao ?? this.ngayBanGiao,
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
-      idDaiDiendonviBanHanhQD: idDaiDiendonviBanHanhQD ?? this.idDaiDiendonviBanHanhQD,
+      idDaiDiendonviBanHanhQD:
+          idDaiDiendonviBanHanhQD ?? this.idDaiDiendonviBanHanhQD,
       tenDaiDienBanHanhQD: tenDaiDienBanHanhQD ?? this.tenDaiDienBanHanhQD,
       daXacNhan: daXacNhan ?? this.daXacNhan,
       idDaiDienBenGiao: idDaiDienBenGiao ?? this.idDaiDienBenGiao,
       tenDaiDienBenGiao: tenDaiDienBenGiao ?? this.tenDaiDienBenGiao,
-      daiDienBenGiaoXacNhan: daiDienBenGiaoXacNhan ?? this.daiDienBenGiaoXacNhan,
+      daiDienBenGiaoXacNhan:
+          daiDienBenGiaoXacNhan ?? this.daiDienBenGiaoXacNhan,
       idDaiDienBenNhan: idDaiDienBenNhan ?? this.idDaiDienBenNhan,
       tenDaiDienBenNhan: tenDaiDienBenNhan ?? this.tenDaiDienBenNhan,
-      daiDienBenNhanXacNhan: daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
+      daiDienBenNhanXacNhan:
+          daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
       trangThai: trangThai ?? this.trangThai,
       note: note ?? this.note,
       ngayTao: ngayTao ?? this.ngayTao,
@@ -215,6 +231,8 @@ class ToolAndSuppliesHandoverDto {
       active: active ?? this.active,
       listSignatory: listSignatory ?? this.listSignatory,
       byStep: byStep ?? this.byStep,
+      listDetailSubppliesHandover:
+          listDetailSubppliesHandover ?? this.listDetailSubppliesHandover,
     );
   }
 }

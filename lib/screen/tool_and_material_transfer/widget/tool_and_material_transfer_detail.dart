@@ -100,6 +100,7 @@ class _ToolAndMaterialTransferDetailState
   bool isRefreshing = false;
   bool isNew = false;
   bool isByStep = false;
+  bool isShowPreview = false;
 
   String? proposingUnit;
   bool controllersInitialized = false;
@@ -204,6 +205,13 @@ class _ToolAndMaterialTransferDetailState
 
   Future<void> _loadPdf(String path) async {
     final document = await PdfDocument.openFile(path);
+    setState(() {
+      _document = document;
+    });
+  }
+
+  Future<void> _loadPdfFromBytes(Uint8List bytes) async {
+    final document = await PdfDocument.openData(bytes);
     setState(() {
       _document = document;
     });
@@ -340,7 +348,10 @@ class _ToolAndMaterialTransferDetailState
           item?.detailToolAndMaterialTransfers ??
               <DetailToolAndMaterialTransferDto>[],
         );
-
+        if (_initialDetails.isNotEmpty) {
+          isShowPreview = true;
+          log('message isShowPreview: $isShowPreview');
+        }
         controllersInitialized = true;
 
         additionalSignersDetailed =
@@ -360,8 +371,8 @@ class _ToolAndMaterialTransferDetailState
             [];
         _loadPdfNetwork(item?.tenFile ?? '');
       } else {
-        controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
-          'SCT-************',
+        controllerSoChungTu.text = UUIDGenerator.generateTimestampId(
+          prefix: 'SCT',
         );
         controllerSubject.text = '';
         controllerDocumentName.text = '';
@@ -400,14 +411,8 @@ class _ToolAndMaterialTransferDetailState
         additionalSigners.clear();
         additionalSignerControllers.clear();
         additionalSignersDetailed.clear();
+        isShowPreview = false;
       }
-
-      // if (proposingUnit != null &&
-      //     proposingUnit!.isNotEmpty &&
-      //     !_controllersInitialized) {
-      //   controllerProposingUnit.text = proposingUnit!;
-      // }
-
       // Reset các biến trạng thái
       isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
       proposingUnit = item?.tenDonViDeNghi;
@@ -432,7 +437,6 @@ class _ToolAndMaterialTransferDetailState
 
   @override
   void dispose() {
-    // Giải phóng các controller
     controllerSubject.dispose();
     controllerDocumentName.dispose();
     controllerDeliveringUnit.dispose();
@@ -501,29 +505,85 @@ class _ToolAndMaterialTransferDetailState
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = DetailToolAndMaterialTransferRepository();
-      for (final d in _initialDetails) {
-        if (d.id.isNotEmpty) {
-          await repo.delete(d.id);
+
+      String keyOf(String idCCDCVatTu, String idChiTietCCDCVatTu) =>
+          '$idCCDCVatTu|$idChiTietCCDCVatTu';
+
+      final initialByKey = {
+        for (final d in _initialDetails)
+          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+      };
+      final newByKey = {
+        for (final d in listNewDetails)
+          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+      };
+
+      bool changed(
+        DetailToolAndMaterialTransferDto a,
+        DetailToolAndMaterialTransferDto b,
+      ) =>
+          a.soLuong != b.soLuong ||
+          a.soLuongXuat != b.soLuongXuat ||
+          a.ghiChu != b.ghiChu ||
+          a.idCCDCVatTu != b.idCCDCVatTu ||
+          a.idChiTietCCDCVatTu != b.idChiTietCCDCVatTu;
+
+      // Delete
+      for (final k in initialByKey.keys.where(
+        (k) => !newByKey.containsKey(k),
+      )) {
+        final id = initialByKey[k]!.id;
+        if (id.isEmpty) continue;
+        try {
+          await repo.delete(id);
+        } catch (e) {
+          if (!e.toString().contains('404')) rethrow;
         }
       }
-      await repo.create(
-        listNewDetails
-            .map(
-              (e) => ChiTietBanGiaoRequest(
-                id: UUIDGenerator.generateWithFormat('CTBG-************'),
-                idDieuDongCCDCVatTu: e.idDieuDongCCDCVatTu,
-                idCCDCVatTu: e.idCCDCVatTu,
-                soLuong: e.soLuong,
-                idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
-                soLuongXuat: e.soLuongXuat,
-                ghiChu: e.ghiChu,
-                nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
-                nguoiCapNhat: '',
-                isActive: true,
-              ),
-            )
-            .toList(),
-      );
+
+      // Update
+      for (final k in newByKey.keys.where(initialByKey.containsKey)) {
+        final oldVal = initialByKey[k]!;
+        final newVal = newByKey[k]!;
+        if (!changed(oldVal, newVal) || oldVal.id.isEmpty) continue;
+        await repo.update(
+          oldVal.id,
+          ChiTietBanGiaoRequest(
+            id: oldVal.id,
+            idDieuDongCCDCVatTu: newVal.idDieuDongCCDCVatTu,
+            idCCDCVatTu: newVal.idCCDCVatTu,
+            soLuong: newVal.soLuong,
+            idChiTietCCDCVatTu: newVal.idChiTietCCDCVatTu,
+            soLuongXuat: newVal.soLuongXuat,
+            ghiChu: newVal.ghiChu,
+            nguoiTao: newVal.nguoiTao,
+            nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
+            isActive: true,
+          ),
+        );
+      }
+
+      // Create
+      final creates =
+          newByKey.keys
+              .where((k) => !initialByKey.containsKey(k))
+              .map((k) => newByKey[k]!)
+              .map(
+                (d) => ChiTietBanGiaoRequest(
+                  id: UUIDGenerator.generateWithFormat('CTBG-************'),
+                  idDieuDongCCDCVatTu: d.idDieuDongCCDCVatTu,
+                  idCCDCVatTu: d.idCCDCVatTu,
+                  soLuong: d.soLuong,
+                  idChiTietCCDCVatTu: d.idChiTietCCDCVatTu,
+                  soLuongXuat: d.soLuongXuat,
+                  ghiChu: d.ghiChu,
+                  nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
+                  nguoiCapNhat: '',
+                  isActive: true,
+                ),
+              )
+              .toList();
+      if (creates.isNotEmpty) await repo.create(creates);
     } catch (e) {
       log('Sync details error: $e');
     }
@@ -686,6 +746,7 @@ class _ToolAndMaterialTransferDetailState
                 children: [
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CommonFormInput(
                           label: 'Số chứng từ',
@@ -694,6 +755,7 @@ class _ToolAndMaterialTransferDetailState
                           textContent: controllerSoChungTu.text,
                           fieldName: 'soChungTu',
                           validationErrors: _validationErrors,
+                          isRequired: true,
                         ),
                         CommonFormInput(
                           label: 'Tên phiếu',
@@ -702,6 +764,7 @@ class _ToolAndMaterialTransferDetailState
                           textContent: item?.tenPhieu ?? '',
                           fieldName: 'documentName',
                           validationErrors: _validationErrors,
+                          isRequired: true,
                         ),
                         CommonFormInput(
                           label: 'Trích yêu',
@@ -710,6 +773,7 @@ class _ToolAndMaterialTransferDetailState
                           textContent: item?.trichYeu ?? '',
                           fieldName: 'subject',
                           validationErrors: _validationErrors,
+                          isRequired: true,
                         ),
 
                         CmFormDropdownObject<PhongBan>(
@@ -742,6 +806,7 @@ class _ToolAndMaterialTransferDetailState
                               donViGiao!.id.toString(),
                             );
                           },
+                          isRequired: true,
                         ),
                         CmFormDropdownObject<PhongBan>(
                           label: 'at.receiving_unit'.tr,
@@ -760,6 +825,7 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             donViNhan = value;
                           },
+                          isRequired: true,
                         ),
                         CmFormDate(
                           label: 'at.effective_date'.tr,
@@ -772,6 +838,7 @@ class _ToolAndMaterialTransferDetailState
                                     controllerEffectiveDate.text,
                                   )
                                   : DateTime.now(),
+                          isRequired: true,
                         ),
                         CmFormDate(
                           label: 'at.effective_date_to'.tr,
@@ -784,6 +851,7 @@ class _ToolAndMaterialTransferDetailState
                                     controllerEffectiveDateTo.text,
                                   )
                                   : DateTime.now(),
+                          isRequired: true,
                         ),
                       ],
                     ),
@@ -791,6 +859,7 @@ class _ToolAndMaterialTransferDetailState
 
                   Expanded(
                     child: Column(
+                      spacing: 5,
                       children: [
                         CmFormDropdownObject<PhongBan>(
                           label: 'Đơn vị đề nghị'.tr,
@@ -819,6 +888,7 @@ class _ToolAndMaterialTransferDetailState
                                       .toList();
                             });
                           },
+                          isRequired: true,
                         ),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người lập phiếu',
@@ -846,7 +916,9 @@ class _ToolAndMaterialTransferDetailState
                               nguoiKyNhay = value;
                             });
                           },
+                          isRequired: true,
                         ),
+                        SizedBox(height: 6),
                         CommonCheckboxInput(
                           label: 'at.preparer_initialed'.tr,
                           value: isNguoiLapPhieuKyNhay,
@@ -858,7 +930,7 @@ class _ToolAndMaterialTransferDetailState
                             });
                           },
                         ),
-
+                        SizedBox(height: 6),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người duyệt',
                           controller: controllerDepartmentApproval,
@@ -883,6 +955,7 @@ class _ToolAndMaterialTransferDetailState
                           onChanged: (value) {
                             nguoiKyCapPhong = value;
                           },
+                          isRequired: true,
                         ),
                         AdditionalSignersSelector(
                           addButtonText: "Thêm đơn bị đại diện",
@@ -928,6 +1001,7 @@ class _ToolAndMaterialTransferDetailState
                               ),
                             ),
                           ],
+                          isRequired: true,
                           defaultValue:
                               controllerApprover.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
@@ -938,18 +1012,6 @@ class _ToolAndMaterialTransferDetailState
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             nguoiKyGiamDoc = value;
-                          },
-                        ),
-
-                        CommonCheckboxInput(
-                          label: 'Ký theo lượt',
-                          value: isByStep,
-                          isEditing: isEditing,
-                          isDisabled: !isEditing,
-                          onChanged: (newValue) {
-                            setState(() {
-                              isByStep = newValue;
-                            });
                           },
                         ),
                       ],
@@ -968,7 +1030,11 @@ class _ToolAndMaterialTransferDetailState
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
                     if (fileName != null) {
-                      _loadPdf(filePath!);
+                      if (fileBytes != null) {
+                        _loadPdfFromBytes(fileBytes);
+                      } else if (filePath != null) {
+                        _loadPdf(filePath);
+                      }
                     }
                     if (_validationErrors.containsKey('document')) {
                       _validationErrors.remove('document');
@@ -992,39 +1058,58 @@ class _ToolAndMaterialTransferDetailState
                 listOwnershipUnit: widget.provider.listOwnershipUnit,
                 onDataChanged: (data) {
                   setState(() {
+                    String keyOf(
+                      String idCCDCVatTu,
+                      String idChiTietCCDCVatTu,
+                    ) => '$idCCDCVatTu|$idChiTietCCDCVatTu';
+                    final initialByKey = {
+                      for (final d in _initialDetails)
+                        keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+                    };
+
                     listNewDetails =
-                        data
-                            .map(
-                              (e) => DetailToolAndMaterialTransferDto(
-                                id: UUIDGenerator.generateWithFormat(
-                                  'CTDD-****',
-                                ),
-                                idDieuDongCCDCVatTu: controllerSoChungTu.text,
-                                soQuyetDinh: item?.soQuyetDinh ?? '',
-                                tenPhieu: controllerDocumentName.text,
-                                tenCCDCVatTu: e.asset?.ten ?? '',
-                                congSuat: e.asset?.congSuat ?? '0',
-                                nuocSanXuat: e.asset?.nuocSanXuat ?? '',
-                                soKyHieu: e.asset?.soKyHieu ?? '',
-                                kyHieu: e.asset?.kyHieu ?? '',
-                                namSanXuat: e.namSanXuat,
-                                idCCDCVatTu: e.asset?.id ?? '',
-                                idChiTietCCDCVatTu: e.idDetaiAsset,
-                                donViTinh: e.donViTinh,
-                                soLuong: e.soLuong,
-                                ghiChu: e.ghiChu,
-                                ngayTao: DateTime.now().toIso8601String(),
-                                ngayCapNhat: DateTime.now().toIso8601String(),
-                                nguoiTao: widget.provider.userInfo?.id ?? '',
-                                nguoiCapNhat:
-                                    widget.provider.userInfo?.id ?? '',
-                                isActive: true,
-                                soLuongXuat: e.soLuongXuat,
-                              ),
-                            )
-                            .toList();
+                        data.map((e) {
+                          final idCCDC = e.asset?.id ?? '';
+                          final idChiTiet = e.idDetaiAsset;
+                          final key = keyOf(idCCDC, idChiTiet);
+                          final preservedId = initialByKey[key]?.id;
+                          return DetailToolAndMaterialTransferDto(
+                            id:
+                                (preservedId != null && preservedId.isNotEmpty)
+                                    ? preservedId
+                                    : UUIDGenerator.generateWithFormat(
+                                      'CTDD-****',
+                                    ),
+                            idDieuDongCCDCVatTu: controllerSoChungTu.text,
+                            soQuyetDinh: item?.soQuyetDinh ?? '',
+                            tenPhieu: controllerDocumentName.text,
+                            tenCCDCVatTu: e.asset?.ten ?? '',
+                            congSuat: e.asset?.congSuat ?? '0',
+                            nuocSanXuat: e.asset?.nuocSanXuat ?? '',
+                            soKyHieu: e.asset?.soKyHieu ?? '',
+                            kyHieu: e.asset?.kyHieu ?? '',
+                            namSanXuat: e.namSanXuat,
+                            idCCDCVatTu: idCCDC,
+                            idChiTietCCDCVatTu: idChiTiet,
+                            donViTinh: e.donViTinh,
+                            soLuong: e.soLuong,
+                            ghiChu: e.ghiChu,
+                            ngayTao: DateTime.now().toIso8601String(),
+                            ngayCapNhat: DateTime.now().toIso8601String(),
+                            nguoiTao: widget.provider.userInfo?.id ?? '',
+                            nguoiCapNhat: widget.provider.userInfo?.id ?? '',
+                            active: true,
+                            soLuongXuat: e.soLuongXuat,
+                            soLuongDaBanGiao: 0,
+                          );
+                        }).toList();
+                    if (listNewDetails.isNotEmpty) {
+                      isShowPreview = true;
+                    } else {
+                      isShowPreview = false;
+                    }
                     itemPreview = _createToolAndMaterialTransPreview(
-                      widget.type,
+                      typeTransfer,
                     );
                   });
                 },
@@ -1037,7 +1122,7 @@ class _ToolAndMaterialTransferDetailState
                 nhanVien: widget.provider.getNhanVienByID(
                   widget.provider.userInfo?.tenDangNhap ?? '',
                 ),
-                isDisabled: listNewDetails.isEmpty,
+                isDisabled: !isShowPreview,
                 document: _document,
                 isShowKy: false,
               ),
