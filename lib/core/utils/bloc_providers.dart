@@ -18,6 +18,8 @@ import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_bloc.dart';
 
 import '../../screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 
@@ -45,5 +47,7 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<LoginBloc>(create: (_) => LoginBloc()),
     BlocProvider<RoleBloc>(create: (_) => RoleBloc()),
     BlocProvider<DashboardBloc>(create: (_) => DashboardBloc()),
+    BlocProvider<TypeAssetBloc>(create: (_) => TypeAssetBloc()),
+    BlocProvider<TypeCcdcBloc>(create: (_) => TypeCcdcBloc()),
   ];
 }
