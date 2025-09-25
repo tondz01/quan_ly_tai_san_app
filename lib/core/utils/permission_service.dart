@@ -20,6 +20,10 @@ class PermissionService {
     StorageService.remove(StorageKey.ROLES_KEY);
   }
 
+  List<String> getRoles() {
+    return StorageService.read(StorageKey.ROLES_KEY) ?? [];
+  }
+
   /// Kiểm tra 1 quyền
   bool hasPermission(String roleCode) {
     return StorageService.read(StorageKey.ROLES_KEY)?.contains(roleCode) ??

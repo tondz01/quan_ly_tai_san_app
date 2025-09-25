@@ -31,8 +31,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginInitialState());
     emit(LoginLoadingState());
     Map<String, dynamic> result = await AuthRepository().login(event.params);
-    emit(LoginLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      // Chạy lần lượt các request liên quan sau đăng nhập
       final reponse = await AssetTransferRepository().getListDieuDongTaiSan();
       if (reponse['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final data = reponse['data'];
@@ -59,8 +59,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         AccountHelper.instance.setToolAndMaterialHandover(data);
       }
       if (result['data'] != null) {
+        emit(LoginLoadingDismissState());
         emit(PostLoginSuccessState(data: result['data']));
       } else {
+        emit(LoginLoadingDismissState());
         emit(
           PostLoginFailedState(
             title: "notice",
@@ -70,6 +72,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         );
       }
     } else {
+      emit(LoginLoadingDismissState());
       emit(
         PostLoginFailedState(
           title: "notice",

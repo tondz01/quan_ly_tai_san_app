@@ -71,21 +71,19 @@ class AuthRepository extends ApiBase {
 
       final raw = response.data;
       final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
-      log('logged - Raw login data: $rawData');
       final userMap =
           rawData is String
               ? (jsonDecode(rawData) as Map<String, dynamic>)
               : (rawData as Map<String, dynamic>);
-      log('logged - Parsed user data: ${userMap['taiKhoan']}');
       final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
       AccountHelper.instance.setUserInfo(user);
-      log('User logged in: ${jsonEncode(user)}');
       // Gọi các API phụ trợ
       await _loadUserDepartments(user.idCongTy);
       await _loadUserEmployee(user.idCongTy);
       await _loadChucVu(user.idCongTy);
       List<String> roles = onGetPermission(user.tenDangNhap);
       PermissionService.instance.saveRoles(roles);
+      log("check roles: ${jsonEncode(PermissionService.instance.getRoles())}");
 
       result['data'] = user;
       result['message'] = '';
@@ -412,9 +410,11 @@ class AuthRepository extends ApiBase {
       ];
       roles = permissionMap.where((e) => e.key).map((e) => e.value).toList();
     }
+    log("check roles11: ${jsonEncode(roles)}");
     if (roles.isNotEmpty) {
       return roles;
     }
+    log("check roles: ${jsonEncode(roles)}");
     return roles;
   }
 

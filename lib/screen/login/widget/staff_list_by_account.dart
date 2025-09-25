@@ -354,7 +354,12 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
       return 'TK001';
     }
 
-    final existingIds = users.map((u) => u.id).toSet();
+    // Lọc bỏ id null/rỗng để tránh lỗi khi xử lý
+    final Set<String> existingIds = users
+        .map((u) => (u.id ?? '').trim())
+        .where((id) => id.isNotEmpty)
+        .toSet();
+
     final reg = RegExp(r'^TK(\d+)$');
     int maxNum = 0;
     for (final id in existingIds) {
@@ -422,8 +427,8 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
             email: item.emailCongViec,
             soDienThoai: item.diDong,
             hinhAnh: item.avatar,
-            nguoiTao: widget.provider.userInfo.id,
-            nguoiCapNhat: widget.provider.userInfo.id,
+            nguoiTao: widget.provider.userInfo?.id ?? '',
+            nguoiCapNhat: widget.provider.userInfo?.id ?? '',
             idCongTy: item.idCongTy ?? 'CT001',
             rule: 0,
             isActive: true,
@@ -466,16 +471,17 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
 
   /// Kiểm tra xem nhân viên đã có tài khoản chưa
   bool _hasExistingAccount(NhanVien item) {
-    if (widget.provider.users == null || widget.provider.users!.isEmpty) {
+    final users = widget.provider.users;
+    if (users == null || users.isEmpty) {
       return false;
     }
 
-    // So sánh tenDangNhap của user với id của nhân viên
-    return widget.provider.users!.any(
-      (user) =>
-          user.tenDangNhap.trim().toLowerCase() ==
-          (item.id ?? '').trim().toLowerCase(),
-    );
+    // So sánh tenDangNhap (có thể null) với id nhân viên (có thể null)
+    final target = (item.id ?? '').trim().toLowerCase();
+    return users.any((user) {
+      final username = (user.tenDangNhap ?? '').trim().toLowerCase();
+      return username == target;
+    });
   }
 
   /// Lấy trạng thái tài khoản của nhân viên

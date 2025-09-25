@@ -477,6 +477,7 @@ class _ToolAndMaterialTransferListState
                         widget.provider.onChangeDetailToolAndMaterialTransfer(
                           item,
                         );
+
                         setState(() {
                           nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
                           isShowDetailDepartmentTree = true;
@@ -905,6 +906,8 @@ class _ToolAndMaterialTransferListState
           ),
         ),
       ThreadNode(header: 'Chi tiết bàn giao', depth: 0),
+      if (widget.provider.listSignatoryDetail.isNotEmpty)
+        ...widget.provider.listSignatoryDetail,
     ];
   }
 

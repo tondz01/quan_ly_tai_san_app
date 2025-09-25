@@ -14,7 +14,6 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class NhanVienProvider extends ApiBase {
-
   UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
   Future<List<NhanVien>> fetchNhanViens() async {
     final response = await get(
@@ -109,15 +108,22 @@ class NhanVienProvider extends ApiBase {
     }
   }
 
-  deleteNhanVien(String id) async {
+  Future<Map<String, dynamic>> deleteNhanVien(String id) async {
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
     final response = await delete('${EndPointAPI.NHAN_VIEN}/$id');
     final body = response.data; // ở đây là Map luôn (nếu API trả về JSON)
 
     if (body['success'] == true) {
-      return;
+      result['status_code'] = response.statusCode;
+      return result;
     } else {
-      throw Exception(body['message'] ?? "Failed to delete nhân viên");
+      result['status_code'] = response.statusCode;
+      result['message'] = body['message'] ?? "Failed to delete nhân viên";
     }
+    return result;
   }
 
   void logFormData(FormData formData) {

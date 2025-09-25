@@ -464,7 +464,7 @@ class _ToolAndSuppliesHandoverListState
                           columns: columns,
                           data: widget.provider.dataPage ?? [],
                           horizontalController: ScrollController(),
-                          onRowTap: (item) {
+                          onRowTap: (item) async {
                             isShowPreview = true;
                             widget.provider.onChangeDetail(
                               context,
