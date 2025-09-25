@@ -211,7 +211,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     } catch (e) {
       SGLog.error(
         "ToolAndSuppliesHandoverRepository",
-        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
+        "Error at getListDetailAssetByTransfer - ToolAndSuppliesHandoverRepository: $e",
       );
     }
 
