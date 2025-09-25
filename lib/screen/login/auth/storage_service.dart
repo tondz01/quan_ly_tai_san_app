@@ -52,4 +52,6 @@ class StorageKey {
   static const TOOL_AND_MATERIAL_TRANSFER_HANDOVER = 'tool_and_material_transfer_handover';
   static const CONFIG_TIME_EXPIRE = 'config_time_expire';
   static const ROLES_KEY = "USER_ROLES";
+  static const ASSET_GROUP = "ASSET_GROUP";
+  static const CCDC_GROUP = "CCDC_GROUP";
 }

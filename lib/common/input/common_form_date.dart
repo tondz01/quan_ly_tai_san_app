@@ -58,7 +58,6 @@ class _CmFormDateState extends State<CmFormDate> {
         children: [
           SGDateTimeInputButton(
             label: widget.label,
-      
             controller: widget.controller,
             value: widget.value,
             onChanged: (dt) {

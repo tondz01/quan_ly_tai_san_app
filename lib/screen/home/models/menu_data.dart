@@ -155,8 +155,13 @@ class AppMenuData extends ChangeNotifier {
               label: 'Mô hình tài sản',
               route: AppRoute.assetCategory.path,
             ),
+
+          SubMenuItem(label: 'Loại tài sản', route: AppRoute.loaiTaiSan.path),
+
           if (per.hasPermission(RoleCode.NHOMTAISAN))
             SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path),
+
+          SubMenuItem(label: 'Loại ccdc', route: AppRoute.loaiCcdc.path),
 
           // if (per.hasPermission(RoleCode.NHOMCCDC))
           SubMenuItem(label: 'Nhóm ccdc', route: AppRoute.ccdcGroup.path),

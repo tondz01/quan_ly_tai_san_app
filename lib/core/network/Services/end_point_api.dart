@@ -36,4 +36,6 @@ class EndPointAPI {
   static String PERMISSIONS = "/api/userpermission";
   static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";
   static String DETAIL_SUPPLIES_TRANSFER= "/api/chitietdieudongccdcvattu";
+  static String TYPE_ASSET = "/api/loaitaisancon";
+  static String TYPE_CCDC = "/api/loaiccdccon";
 }
