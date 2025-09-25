@@ -295,7 +295,7 @@ class AuthRepository extends ApiBase {
     try {
       final response = await delete(
         '${EndPointAPI.ACCOUNT}/batch',
-        data: {'ids': ids},
+        data: ids,
       );
       // Don't try to parse response.data if it's empty
       return Response<void>(

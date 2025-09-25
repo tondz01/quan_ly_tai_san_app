@@ -189,6 +189,39 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> getListDetailAssetByTransfer(String id) async {
+    List<ChiTietDieuDongTaiSan> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
+        queryParameters: {'iddieudongtaisan': id},
+      );
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+      
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      result['data'] = ResponseParser.parseToList<ChiTietDieuDongTaiSan>(
+        response.data,
+        ChiTietDieuDongTaiSan.fromJson,
+      );
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> createToolAndSuppliesHandover(
     Map<String, dynamic> request,
     List<SignatoryDto> listSignatory,

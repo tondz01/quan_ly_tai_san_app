@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -326,6 +327,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   @override
   Widget build(BuildContext context) {
+    final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
+    final data = widget.provider.data ?? const <AssetManagementDto>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -349,11 +352,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 ),
               ),
               Visibility(
-                visible: widget.provider.dataGroup?.isNotEmpty ?? false,
+                visible: groups.isNotEmpty,
                 child: Divider(),
               ),
               Visibility(
-                visible: widget.provider.dataGroup?.isEmpty ?? true,
+                visible: groups.isEmpty,
                 child: Center(
                   child: SGText(
                     text: 'Không có loại tài sản nào',
@@ -362,48 +365,49 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   ),
                 ),
               ),
-              Scrollbar(
-                controller: horizontalController,
-                thumbVisibility: true,
-                thickness: 4,
-                notificationPredicate:
-                    (notification) =>
-                        notification.metrics.axis == Axis.horizontal,
-                child: SingleChildScrollView(
+              if (groups.isNotEmpty)
+                Scrollbar(
                   controller: horizontalController,
-                  scrollDirection: Axis.horizontal,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 13.0),
-                    child: Row(
-                      spacing: 16,
-                      children: [
-                        ...widget.provider.dataGroup!.map(
-                          (item) => ItemAssetGroup(
-                            titleName: item.tenNhom,
-                            numberAsset: getCountAssetByAssetManagement(
-                              widget.provider.data!,
-                              '${item.id}',
-                            ),
-                            image: "assets/images/assets.png",
-                            onTap: () {
-                              context.go(AppRoute.staffManager.path);
-                            },
-                            valueCheckBox: widget.provider.getCheckBoxStatus(
-                              item.id,
-                            ),
-                            onChange: (value) {
-                              widget.provider.updateCheckBoxStatus(
+                  thumbVisibility: true,
+                  thickness: 4,
+                  notificationPredicate:
+                      (notification) =>
+                          notification.metrics.axis == Axis.horizontal,
+                  child: SingleChildScrollView(
+                    controller: horizontalController,
+                    scrollDirection: Axis.horizontal,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 13.0),
+                      child: Row(
+                        spacing: 16,
+                        children: [
+                          ...groups.map(
+                            (item) => ItemAssetGroup(
+                              titleName: item.tenNhom,
+                              numberAsset: getCountAssetByAssetManagement(
+                                data,
+                                '${item.id}',
+                              ),
+                              image: "assets/images/assets.png",
+                              onTap: () {
+                                context.go(AppRoute.staffManager.path);
+                              },
+                              valueCheckBox: widget.provider.getCheckBoxStatus(
                                 item.id,
-                                value,
-                              );
-                            },
+                              ),
+                              onChange: (value) {
+                                widget.provider.updateCheckBoxStatus(
+                                  item.id,
+                                  value,
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
