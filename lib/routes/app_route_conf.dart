@@ -247,6 +247,24 @@ class AppRouteConf {
                   child: CcdcGroupView(),
                 ),
           ),
+          GoRoute(
+            path: AppRoute.loaiCcdc.path,
+            name: AppRoute.loaiCcdc.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: TypeCcdcView(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.loaiTaiSan.path,
+            name: AppRoute.loaiTaiSan.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: TypeAssetView(),
+                ),
+          ),
         ],
       ),
     ],

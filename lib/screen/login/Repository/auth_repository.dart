@@ -9,9 +9,11 @@ import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/permission_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
@@ -83,6 +85,8 @@ class AuthRepository extends ApiBase {
       // Gọi các API phụ trợ
       await _loadUserDepartments(user.idCongTy);
       await _loadUserEmployee(user.idCongTy);
+      await _loadAssetGroup(user.idCongTy);
+      await _loadCCDCGroup(user.idCongTy);
       await _loadChucVu(user.idCongTy);
       List<String> roles = onGetPermission(user.tenDangNhap);
       PermissionService.instance.saveRoles(roles);
@@ -169,6 +173,52 @@ class AuthRepository extends ApiBase {
     }
   }
 
+  /// Load thông tin nhóm tài sản của user và lưu vào AccountHelper
+  Future<void> _loadAssetGroup(String idCongTy) async {
+    try {
+      final response = await get(
+        EndPointAPI.ASSET_GROUP,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final rawAssetGroup = response.data;
+
+        // API trả về mảng JSON luôn
+        final assetGroupList =
+            (rawAssetGroup as List<dynamic>)
+                .map((e) => AssetGroupDto.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        AccountHelper.instance.setAssetGroup(assetGroupList);
+      }
+    } catch (e) {
+      log('Error calling API ASSET_GROUP: $e');
+    }
+  }
+
+  /// Load thông tin nhóm CCDC của user và lưu vào AccountHelper
+  Future<void> _loadCCDCGroup(String idCongTy) async {
+    try {
+      final response = await get(
+        EndPointAPI.CCDC_GROUP,
+        queryParameters: {'idcongty': idCongTy},
+      );
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final rawCCDCGroup = response.data;
+
+        // API trả về mảng JSON luôn
+        final ccdcGroupList =
+            (rawCCDCGroup as List<dynamic>)
+                .map((e) => CcdcGroup.fromJson(e as Map<String, dynamic>))
+                .toList();
+
+        AccountHelper.instance.setCcdcGroup(ccdcGroupList);
+      }
+    } catch (e) {
+      log('Error calling API CCDC_GROUP: $e');
+    }
+  }
+
   /// Load thông tin chức vụ của user và lưu vào AccountHelper
   Future<void> _loadChucVu(String idCongTy) async {
     try {
@@ -227,9 +277,10 @@ class AuthRepository extends ApiBase {
         if (responseLogin.statusCode == Numeral.STATUS_CODE_SUCCESS) {
           final raw = responseLogin.data;
           final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
-          final Map<String, dynamic> userMap = rawData is String
-              ? (jsonDecode(rawData) as Map<String, dynamic>)
-              : (rawData as Map<String, dynamic>);
+          final Map<String, dynamic> userMap =
+              rawData is String
+                  ? (jsonDecode(rawData) as Map<String, dynamic>)
+                  : (rawData as Map<String, dynamic>);
           final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
           await AuthRepository().setPermissionsForNhanVien(user);
         }
@@ -293,10 +344,7 @@ class AuthRepository extends ApiBase {
 
   Future<Response<void>> deleteUserBatch(List<String> ids) async {
     try {
-      final response = await delete(
-        '${EndPointAPI.ACCOUNT}/batch',
-        data: ids,
-      );
+      final response = await delete('${EndPointAPI.ACCOUNT}/batch', data: ids);
       // Don't try to parse response.data if it's empty
       return Response<void>(
         data: null,

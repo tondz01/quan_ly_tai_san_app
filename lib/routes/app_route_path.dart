@@ -47,6 +47,8 @@ enum AppRoute {
   bienBanKiemKeCcdc(path: "/kiem-ke-ccdc", name: 'kiem-ke-ccdc'),
   bienBanDoiChieu(path: "/doi-cheiu-kiem-ke", name: 'doi-cheiu-kiem-ke'),
   ccdcGroup(path: "/ccdc-group", name: 'ccdc-group'),
+  loaiCcdc(path: "/loai-ccdc", name: 'loai-ccdc'),
+  loaiTaiSan(path: "/loai-tai-san", name: 'loai-tai-san'),
   toolAndSuppliesHandover(path: "/tool-and-supplies-handover", name: 'tool-and-supplies-handover');
 
   final String path;

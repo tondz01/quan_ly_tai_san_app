@@ -6,6 +6,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/storage_service.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/auth_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
@@ -126,6 +128,60 @@ class AccountHelper {
     return StorageService.read(
       StorageKey.CHUC_VU,
     ).firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
+  }
+
+  //ASSET GROUP
+  setAssetGroup(List<AssetGroupDto> assetGroups) {
+    StorageService.write(StorageKey.ASSET_GROUP, assetGroups);
+  }
+
+  void clearAssetGroup() {
+    StorageService.remove(StorageKey.ASSET_GROUP);
+  }
+
+  List<AssetGroupDto>? getAssetGroup() {
+    final raw = StorageService.read(StorageKey.ASSET_GROUP);
+    if (raw == null) return null;
+    if (raw is List<AssetGroupDto>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => AssetGroupDto.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        log('Error at getAssetGroup: $e');
+        return null;
+      }
+    }
+    log('Error at getAssetGroup: $raw');
+    return null;
+  }
+
+  //CCDC GROUP
+  setCcdcGroup(List<CcdcGroup> ccdcGroups) {
+    StorageService.write(StorageKey.CCDC_GROUP, ccdcGroups);
+  }
+
+  void clearCcdcGroup() {
+    StorageService.remove(StorageKey.CCDC_GROUP);
+  }
+
+  List<CcdcGroup>? getCcdcGroup() {
+    final raw = StorageService.read(StorageKey.CCDC_GROUP);
+    if (raw == null) return null;
+    if (raw is List<CcdcGroup>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => CcdcGroup.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
   }
 
   //ASSET TRANSFER
