@@ -348,39 +348,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
     return SgCheckbox(value: isActive);
   }
 
-  String getUuIdAccount() {
-    final users = widget.provider.users;
-    if (users == null || users.isEmpty) {
-      return 'TK001';
-    }
-
-    // Lọc bỏ id null/rỗng để tránh lỗi khi xử lý
-    final Set<String> existingIds = users
-        .map((u) => (u.id ?? '').trim())
-        .where((id) => id.isNotEmpty)
-        .toSet();
-
-    final reg = RegExp(r'^TK(\d+)$');
-    int maxNum = 0;
-    for (final id in existingIds) {
-      final m = reg.firstMatch(id);
-      if (m != null) {
-        final n = int.tryParse(m.group(1) ?? '') ?? 0;
-        if (n > maxNum) maxNum = n;
-      }
-    }
-
-    int nextNum = maxNum + 1;
-    String candidate = 'TK${nextNum.toString().padLeft(3, '0')}';
-    while (existingIds.contains(candidate)) {
-      nextNum += 1;
-      candidate = 'TK${nextNum.toString().padLeft(3, '0')}';
-    }
-
-    return candidate.isNotEmpty
-        ? candidate
-        : UUIDGenerator.generateWithFormat('TK***');
-  }
+  
 
   /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
   String getDateNow() {
@@ -419,7 +387,9 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
           }
 
           final userInfo = UserInfoDTO(
-            id: getUuIdAccount(),
+            id: UUIDGenerator.generateTimestampId(
+              prefix: 'USR',
+            ),
             tenDangNhap: item.id ?? '',
             username: item.id ?? '',
             matKhau: '${item.id}${item.idCongTy}',

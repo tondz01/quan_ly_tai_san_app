@@ -250,11 +250,7 @@ class AuthRepository extends ApiBase {
         idCongTy,
       );
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final rawTypeAsset = response['data'];
-        final typeAssetList =
-            (rawTypeAsset as List<dynamic>)
-                .map((e) => TypeAsset.fromJson(e as Map<String, dynamic>))
-                .toList();
+        final typeAssetList = response['data'] as List<TypeAsset>;
         AccountHelper.instance.setTypeAsset(typeAssetList);
       }
     } catch (e) {

@@ -291,9 +291,11 @@ class AssetManagementProvider with ChangeNotifier {
 
   List<ChildAssetDto> getListChildAssetsByIdAsset(String idTaiSan) {
     List<ChildAssetDto> list = [];
-    for (var element in _dataChildAssets!) {
-      if (element.idTaiSanCha == idTaiSan) {
-        list.add(element);
+    if (_dataChildAssets != null) {
+      for (var element in _dataChildAssets!) {
+        if (element.idTaiSanCha == idTaiSan) {
+          list.add(element);
+        }
       }
     }
     return list;

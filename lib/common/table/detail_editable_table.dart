@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -551,7 +550,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
             : widget.oddRowBackgroundColor;
 
     final rowWidget = Container(
-      height: widget.rowHeight,
+      height: widget.rowHeight  + 10,
       decoration: BoxDecoration(
         color: backgroundColor,
         border:
@@ -565,6 +564,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
                 : null,
       ),
       child: Row(
+        spacing: 8,
         children: [
           // Data cells
           ...widget.columns.map(
@@ -676,20 +676,19 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
       children: [
         SGInputText(
           controller: controller,
-          height: 32,
+          height: 40,
           inputFormatters:
               column.inputType == TextInputType.number
                   ? [FilteringTextInputFormatter.digitsOnly]
                   : null,
           borderRadius: 10,
           enabled: widget.isEditing,
-          onlyLine: true,
-          showBorder: false,
+          // onlyLine: true,
+          showBorder: true,
           hintText: 'Nhập thông tin',
           onChanged: (value) {
             setState(() {
               controller.text = value;
-              log('message onChanged: $value');
               _updateCellValue(rowIndex, column.field, value);
               // cascade updates
               final updater = column.onValueChanged;

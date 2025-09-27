@@ -21,11 +21,7 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
   final TextEditingController controllerImportDate;
   final TextEditingController controllerUnit;
 
-  final bool isNameValid;
-  final bool isImportUnitValid;
-  final bool isCodeValid;
-  final bool isImportDateValid;
-  final bool isUnitValid;
+  final Map<String, bool>? validationErrors;
 
   const ToolsAndSuppliesFormLeft({
     super.key,
@@ -41,11 +37,7 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
     required this.controllerCode,
     required this.controllerImportDate,
     required this.controllerUnit,
-    required this.isNameValid,
-    required this.isImportUnitValid,
-    required this.isCodeValid,
-    required this.isImportDateValid,
-    required this.isUnitValid,
+    required this.validationErrors,
   });
 
   @override
@@ -64,22 +56,27 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
             idPhongBan: item?.idDonVi ?? '',
           ),
           onChanged: onPhongBanChanged,
-          fieldName: 'idPhongBan',
-          validationErrors: {'importUnit': !isImportUnitValid && isEditing},
+          fieldName: 'idDonVi',
+          validationErrors: validationErrors,
+          isRequired: true
         ),
         CommonFormInput(
           label: 'tas.name'.tr,
           controller: controllerName,
           isEditing: isEditing,
           textContent: item?.ten ?? '',
-          validationErrors: {'name': !isNameValid && isEditing},
+          fieldName: 'ten',
+          validationErrors: validationErrors,
+          isRequired: true
         ),
         CommonFormInput(
           label: 'tas.code'.tr,
           controller: controllerCode,
           isEditing: item != null ? false : isEditing,
           textContent: item?.id ?? '',
-          validationErrors: {'code': !isCodeValid && isEditing},
+          fieldName: 'id',
+          validationErrors: validationErrors,
+          isRequired: true
         ),
         CmFormDate(
           label: 'tas.import_date'.tr,
@@ -87,14 +84,18 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
           isEditing: isEditing,
           onChanged: onImportDateChanged,
           value: selected,
-          validationErrors: {'importDate': !isImportDateValid && isEditing},
+          fieldName: 'ngayNhap',
+          validationErrors: validationErrors,
+          isRequired: true
         ),
         CommonFormInput(
           label: 'tas.unit'.tr,
           controller: controllerUnit,
           isEditing: isEditing,
           textContent: item?.donViTinh ?? '',
-          validationErrors: {'unit': !isUnitValid && isEditing},
+          fieldName: 'donViTinh',
+          validationErrors: validationErrors,
+          isRequired: true
         ),
       ],
     );

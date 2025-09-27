@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
@@ -12,66 +13,10 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 class ToolsAndSuppliesController {
   // Callback để update UI
   final VoidCallback? onStateChanged;
-  final Function(String, List<String>)? onShowValidationErrors;
-  final Function(String)? onShowErrorMessage;
 
   ToolsAndSuppliesController({
     this.onStateChanged,
-    this.onShowValidationErrors,
-    this.onShowErrorMessage,
   });
-
-  /// Validate chi tiết tài sản và trả về danh sách lỗi
-  List<String> validateDetailAssets(
-    List<DetailAssetDto> detailAssets,
-    List<DetailAssetDto> listDetailAssets,
-    String assetCode,
-  ) {
-    List<String> errors = [];
-
-    // Cập nhật ID cho tất cả các detail assets trước khi validate
-    updateDetailAssetIds(detailAssets, listDetailAssets, assetCode);
-
-    for (int i = 0; i < detailAssets.length; i++) {
-      final detail = detailAssets[i];
-      final stt = i + 1;
-
-      // Validate các trường bắt buộc với null safety
-      if ((detail.soKyHieu?.trim().isEmpty ?? true)) {
-        errors.add('STT $stt: Số ký hiệu không được để trống');
-      }
-
-      if ((detail.congSuat?.trim().isEmpty ?? true)) {
-        errors.add('STT $stt: Công suất không được để trống');
-      }
-
-      if ((detail.nuocSanXuat?.trim().isEmpty ?? true)) {
-        errors.add('STT $stt: Nước sản xuất không được để trống');
-      }
-
-      // Validate số lượng
-      if ((detail.soLuong ?? 0) <= 0) {
-        errors.add('STT $stt: Số lượng phải lớn hơn 0');
-      }
-
-      // Validate năm sản xuất nếu có
-      final currentYear = DateTime.now().year;
-      if (detail.namSanXuat != null && detail.namSanXuat! > currentYear) {
-        errors.add(
-          'STT $stt: Năm sản xuất không được lớn hơn năm hiện tại ($currentYear)',
-        );
-      }
-
-      // Validate năm sản xuất không quá cũ
-      if (detail.namSanXuat != null &&
-          detail.namSanXuat! > 0 &&
-          detail.namSanXuat! < 1900) {
-        errors.add('STT $stt: Năm sản xuất không hợp lệ (phải >= 1900)');
-      }
-    }
-
-    return errors;
-  }
 
   /// Kiểm tra những item nào đã bị xóa so với danh sách cũ
   /// Trả về danh sách các item đã bị xóa
@@ -190,137 +135,6 @@ class ToolsAndSuppliesController {
     );
   }
 
-  /// Validate form và trả về kết quả
-  FormValidationResult validateForm({
-    required String nameText,
-    required String codeText,
-    required String importDateText,
-    required String unitText,
-    required String quantityText,
-    required String valueText,
-    PhongBan? selectedPhongBan,
-    required String importUnitText,
-  }) {
-    List<String> errors = [];
-
-    final validationStates = FormValidationStates();
-
-    // Validate tên công cụ dụng cụ
-    validationStates.isNameValid = nameText.trim().isNotEmpty;
-    if (!validationStates.isNameValid) {
-      errors.add('Tên công cụ dụng cụ không được để trống');
-    }
-
-    // Validate đơn vị nhập
-    final String idDonVi = (selectedPhongBan?.id ?? importUnitText).trim();
-    validationStates.isImportUnitValid = idDonVi.isNotEmpty;
-    if (!validationStates.isImportUnitValid) {
-      errors.add('Đơn vị nhập không được để trống');
-    }
-
-    // Validate nhóm CCDC
-    final String idGroupCCDC = (selectedPhongBan?.id ?? importUnitText).trim();
-    validationStates.isGroupCCDCValid = idGroupCCDC.isNotEmpty;
-    if (!validationStates.isGroupCCDCValid) {
-      errors.add('Nhóm CCDC không được để trống');
-    }
-
-    // Validate mã công cụ dụng cụ
-    final String code = codeText.trim();
-    validationStates.isCodeValid = code.isNotEmpty && !code.contains(' ');
-    if (code.isEmpty) {
-      errors.add('Mã công cụ dụng cụ không được để trống');
-    } else if (code.contains(' ')) {
-      errors.add('Mã công cụ dụng cụ không được chứa khoảng trắng');
-    }
-
-    // Validate ngày nhập
-    validationStates.isImportDateValid = _validateImportDate(importDateText);
-    if (!validationStates.isImportDateValid) {
-      errors.add('Ngày nhập không hợp lệ (định dạng: dd/MM/yyyy)');
-    }
-
-    // Validate đơn vị tính
-    validationStates.isUnitValid = unitText.trim().isNotEmpty;
-    if (!validationStates.isUnitValid) {
-      errors.add('Đơn vị tính không được để trống');
-    }
-
-    // Validate số lượng
-    validationStates.isQuantityValid = _validateQuantity(quantityText);
-    if (!validationStates.isQuantityValid) {
-      errors.add(
-        'Số lượng phải là số nguyên dương và lớn hơn 0 (tối đa 999,999)',
-      );
-    }
-
-    // Validate giá trị
-    validationStates.isValueValid = _validateValue(valueText);
-    if (!validationStates.isValueValid) {
-      errors.add(
-        'Giá trị phải là số nguyên dương và lớn hơn 0 (tối đa 999,999,999,999)',
-      );
-    }
-
-    return FormValidationResult(
-      isValid: errors.isEmpty,
-      errors: errors,
-      validationStates: validationStates,
-    );
-  }
-
-  /// Validate ngày nhập
-  bool _validateImportDate(String dateText) {
-    if (dateText.trim().isEmpty) {
-      return false;
-    }
-
-    final formats = [
-      DateFormat('dd/MM/yyyy'),
-      DateFormat('dd/MM/yyyy HH:mm:ss'),
-    ];
-
-    for (var format in formats) {
-      try {
-        final date = format.parseStrict(dateText.trim());
-        // Kiểm tra ngày không được trong tương lai quá xa
-        if (date.isAfter(DateTime.now().add(Duration(days: 365)))) {
-          return false;
-        }
-        // Kiểm tra ngày không được quá cũ
-        if (date.isBefore(DateTime(1900))) {
-          return false;
-        }
-        return true;
-      } catch (_) {
-        continue;
-      }
-    }
-    return false;
-  }
-
-  /// Validate số lượng
-  bool _validateQuantity(String quantityText) {
-    if (quantityText.trim().isEmpty) {
-      return false;
-    }
-
-    final sanitized = quantityText.replaceAll(RegExp(r'[^0-9]'), '');
-    final quantity = int.tryParse(sanitized);
-    return quantity != null && quantity > 0 && quantity <= 999999;
-  }
-
-  /// Validate giá trị
-  bool _validateValue(String valueText) {
-    final trimmed = valueText.trim();
-    if (trimmed.isEmpty || trimmed.replaceAll('.', '').isEmpty) {
-      return false;
-    }
-
-    final sanitized = trimmed.replaceAll('.', '').replaceAll(',', '.');
-    final value = double.tryParse(sanitized);
-    return value != null && value >= 0 && value <= 999999999999;
-  }
 
   /// Khởi tạo dropdown items cho phòng ban
   List<DropdownMenuItem<PhongBan>> buildPhongBanDropdownItems(

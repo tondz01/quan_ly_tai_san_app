@@ -177,6 +177,33 @@ class _ToolAndMaterialTransferDetailState
       newValidationErrors['document'] = true;
     }
 
+    if (nguoiKyGiamDoc == null || controllerApprover.text.isEmpty) {
+      newValidationErrors['approver'] = true;
+    }
+
+    if (nguoiKyNhay == null || controllerNguoiKyNhay.text.isEmpty) {
+      newValidationErrors['nguoiKyNhay'] = true;
+    }
+
+    if (nguoiKyCapPhong == null || controllerDepartmentApproval.text.isEmpty) {
+      newValidationErrors['nguoiKyCapPhong'] = true;
+    }
+
+    if (donViDeNghi == null || controllerProposingUnit.text.isEmpty) {
+      newValidationErrors['proposingUnit'] = true;
+    }
+
+    if (donViNhan == null || controllerReceivingUnit.text.isEmpty) {
+      newValidationErrors['receivingUnit'] = true;
+    }
+
+    if (donViDeNghi == null || controllerRequester.text.isEmpty) {
+      newValidationErrors['requester'] = true;
+    }
+    
+    if (donViGiao == null || controllerDeliveringUnit.text.isEmpty) {
+      newValidationErrors['deliveringUnit'] = true;
+    }
     // Only update state if validation errors have changed
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {

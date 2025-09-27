@@ -61,7 +61,6 @@ class AssetTransferRepository extends ApiBase {
           dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
         }),
       );
-      log('message test15: ${jsonEncode(dieuDongTaiSans)}');
       result['data'] = dieuDongTaiSans;
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");

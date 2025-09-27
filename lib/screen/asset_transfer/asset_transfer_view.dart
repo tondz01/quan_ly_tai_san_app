@@ -94,13 +94,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     // onFileSelected: (fileName, filePath, fileBytes) {
                     //   AppUtility.showSnackBar(context, "Chức năng đang phát triển");
                     // },
-                    onExportData: () {
-                      AppUtility.exportData(
-                        context,
-                        "Danh sách điều chuyển tài sản",
-                        provider.data?.map((e) => e.toJson()).toList() ?? [],
-                      );
-                    },
+                    isShowInput: false,
                   ),
                 ),
                 body: Column(

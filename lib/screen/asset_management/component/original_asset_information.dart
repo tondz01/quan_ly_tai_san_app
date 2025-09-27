@@ -14,6 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_ev
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 Widget buildOriginalAssetInfomation(
@@ -32,11 +34,13 @@ Widget buildOriginalAssetInfomation(
   required TextEditingController ctrlTaiKhoanKhauHao,
   required TextEditingController ctrlTaiKhoanChiPhi,
   required TextEditingController ctrlTenNhom,
+  required TextEditingController ctrlTenLoaiTaiSan,
   required TextEditingController ctrlNgayVaoSo,
   required TextEditingController ctrlNgaySuDung,
   Map<String, bool>? validationErrors,
   bool isEditing = false,
   Function(String)? onDepreciationMethodChanged,
+  required List<TypeAsset> listTypeAsset,
   Function(AssetCategoryDto)? onAssetCategoryChanged,
   Function(AssetGroupDto)? onAssetGroupChanged,
   required List<AssetCategoryDto> listAssetCategory,
@@ -45,6 +49,7 @@ Widget buildOriginalAssetInfomation(
   required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
   required Function(DateTime?)? onChangedNgayVaoSo,
   required Function(DateTime?)? onChangedNgaySuDung,
+  required Function(TypeAsset)? onTypeAssetChanged,
 }) {
   if (listAssetCategory.isEmpty) {
     try {
@@ -237,6 +242,23 @@ Widget buildOriginalAssetInfomation(
                   : null,
           onChanged: onAssetGroupChanged,
           fieldName: 'idNhomTaiSan',
+          validationErrors: validationErrors,
+          isRequired: true,
+        ),
+        CmFormDropdownObject<TypeAsset>(
+          label: 'Loại tài sản',
+          controller: ctrlTenLoaiTaiSan,
+          isEditing: isEditing,
+          items: [
+            ...listTypeAsset.map(
+              (e) => DropdownMenuItem<TypeAsset>(
+                value: e,
+                child: Text(e.tenLoai ?? ''),
+              ),
+            ),
+          ],
+          onChanged: onTypeAssetChanged,
+          fieldName: 'tenLoaiTaiSan',
           validationErrors: validationErrors,
           isRequired: true,
         ),

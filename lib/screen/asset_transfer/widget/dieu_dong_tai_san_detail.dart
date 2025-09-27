@@ -79,17 +79,26 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   List<AssetManagementDto> assetByDepartment = [];
 
   bool _validateForm() {
-    return validation.validateForm(
-      documentNameController: controllers.controllerDocumentName,
-      subjectController: controllers.controllerSubject,
-      deliveringUnitController: controllers.controllerDeliveringUnit,
-      receivingUnitController: controllers.controllerReceivingUnit,
-      effectiveDateController: controllers.controllerEffectiveDate,
-      effectiveDateToController: controllers.controllerEffectiveDateTo,
-      requesterController: controllers.controllerRequester,
-      item: state.item,
-      selectedFileName: state.selectedFileName,
-    );
+    setState(() {
+      validation.validateForm(
+        soChungTuController: controllers.controllerSoChungTu,
+        documentNameController: controllers.controllerDocumentName,
+        subjectController: controllers.controllerSubject,
+        deliveringUnitController: controllers.controllerDeliveringUnit,
+        receivingUnitController: controllers.controllerReceivingUnit,
+        effectiveDateController: controllers.controllerEffectiveDate,
+        effectiveDateToController: controllers.controllerEffectiveDateTo,
+        requesterController: controllers.controllerRequester,
+        approverController: controllers.controllerApprover,
+        controllerDepartmentApproval: controllers.controllerDepartmentApproval,
+        nguoiKyNhay: state.nguoiDeNghi,
+        nguoiDeNghi: state.nguoiKyCapPhong,
+        nguoiDaiDienBanHanhQD: state.nguoiKyGiamDoc,
+        item: state.item,
+        selectedFileName: state.selectedFileName,
+      );
+    });
+    return validation.validationErrors.isEmpty;
   }
 
   @override
@@ -122,7 +131,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
-    SGLog.info("LoadPdfNetwork", "Loading PDF from network: $nameFile");
     try {
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
@@ -673,7 +681,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           onChangedDetailed: (list) {
                             setState(() {
                               state.additionalSignersDetailed = list;
-                              log('message test1 list: ${jsonEncode(list)}');
                             });
                           },
                         ),
@@ -705,17 +712,17 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             state.nguoiKyGiamDoc = value;
                           },
                         ),
-                        CommonCheckboxInput(
-                          label: 'Ký theo lượt',
-                          value: state.isByStep,
-                          isEditing: state.isEditing,
-                          isDisabled: !state.isEditing,
-                          onChanged: (newValue) {
-                            setState(() {
-                              state.isByStep = newValue;
-                            });
-                          },
-                        ),
+                        // CommonCheckboxInput(
+                        //   label: 'Ký theo lượt',
+                        //   value: state.isByStep,
+                        //   isEditing: state.isEditing,
+                        //   isDisabled: !state.isEditing,
+                        //   onChanged: (newValue) {
+                        //     setState(() {
+                        //       state.isByStep = newValue;
+                        //     });
+                        //   },
+                        // ),
                       ],
                     ),
                   ),
@@ -1156,8 +1163,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             [];
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
-        controllers.controllerSoChungTu.text = UUIDGenerator.generateWithFormat(
-          'SCT-************',
+        controllers.controllerSoChungTu.text =
+            UUIDGenerator.generateTimestampId(
+          prefix: 'SCT-TS',
         );
         controllers.controllerSubject.text = '';
         controllers.controllerDocumentName.text = '';

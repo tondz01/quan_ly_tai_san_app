@@ -27,6 +27,7 @@ class AssetManagementDto {
       'Tên mô hình': _nullIfEmpty(tenMoHinh),
       'Mã nhóm tài sản': _nullIfEmpty(idNhomTaiSan),
       'Tên nhóm tài sản': _nullIfEmpty(tenNhom),
+      'Mã loại tài sản': _nullIfEmpty(idLoaiTaiSanCon),
       'Mã dự án': _nullIfEmpty(idDuAn),
       'Tên dự án': _nullIfEmpty(tenDuAn),
       'Mã nguồn vốn': _nullIfEmpty(idNguonVon),
@@ -102,6 +103,7 @@ class AssetManagementDto {
   bool? isActive;
   List<ChildAssetDto>? childAssets;
   bool? taiSanCon;
+  String? idLoaiTaiSanCon;
 
   AssetManagementDto({
     this.id,
@@ -146,6 +148,7 @@ class AssetManagementDto {
     this.isActive,
     this.childAssets,
     this.taiSanCon,
+    this.idLoaiTaiSanCon,
   });
 
   factory AssetManagementDto.fromJson(Map<String, dynamic> json) {
@@ -206,6 +209,7 @@ class AssetManagementDto {
                   .toList()
               : [],
       taiSanCon: json['taiSanCon'],
+      idLoaiTaiSanCon: json['idLoaiTaiSanCon'],
     );
   }
 
@@ -253,6 +257,7 @@ class AssetManagementDto {
       'isActive': isActive,
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
       'taiSanCon': taiSanCon,
+      'idLoaiTaiSanCon': idLoaiTaiSanCon,
     };
   }
 
@@ -312,6 +317,7 @@ class AssetManagementDto {
       isActive: true,
       childAssets: [],
       taiSanCon: false,
+      idLoaiTaiSanCon: '',
     );
   }
 
@@ -363,6 +369,7 @@ class AssetManagementDto {
     bool? isActive,
     List<ChildAssetDto>? childAssets,
     bool? taiSanCon,
+    String? idLoaiTaiSanCon,
   }) {
     return AssetManagementDto(
       id: id ?? this.id,
@@ -407,6 +414,7 @@ class AssetManagementDto {
       isActive: isActive ?? this.isActive,
       childAssets: childAssets ?? this.childAssets,
       taiSanCon: taiSanCon ?? this.taiSanCon,
+      idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
     );
   }
 }

@@ -17,9 +17,7 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
   final Function(CcdcGroup?) onGroupCCDCChanged;
   final List<CcdcGroup> listGroupCCDC;
 
-  final bool isQuantityValid;
-  final bool isValueValid;
-  final bool isCCDCGroupValid;
+  final Map<String, bool>? validationErrors;
 
   const ToolsAndSuppliesFormRight({
     super.key,
@@ -30,11 +28,9 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
     required this.controllerQuantity,
     required this.controllerValue,
     required this.controllerGroupCCDC,
-    required this.isQuantityValid,
-    required this.isValueValid,
     required this.itemsGroupCCDC,
     required this.onGroupCCDCChanged,
-    required this.isCCDCGroupValid,
+    required this.validationErrors,
     required this.listGroupCCDC,
   });
 
@@ -54,7 +50,8 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           ),
           onChanged: onGroupCCDCChanged,
           fieldName: 'idNhomCcdc',
-          validationErrors: {'importUnit': !isCCDCGroupValid && isEditing},
+          validationErrors: validationErrors,
+          isRequired: true
         ),
         CommonFormInput(
           label: 'tas.quantity'.tr,
@@ -62,7 +59,8 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           isEditing: false,
           textContent: item?.soLuong.toString() ?? '0',
           inputType: TextInputType.number,
-          validationErrors: {'quantity': !isQuantityValid && isEditing},
+          fieldName: 'soLuong',
+          validationErrors: validationErrors,
         ),
         CommonFormInput(
           label: 'tas.value'.tr,
@@ -70,19 +68,25 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           isEditing: isEditing,
           textContent: item?.giaTri.toString() ?? '0.0',
           inputType: TextInputType.number,
-          validationErrors: {'value': !isValueValid && isEditing},
+          fieldName: 'giaTri',
+          validationErrors: validationErrors,
+          isRequired: true
         ),
         CommonFormInput(
           label: 'tas.symbol'.tr,
           controller: controllerSymbol,
           isEditing: isEditing,
           textContent: item?.kyHieu ?? '',
+          fieldName: 'kyHieu',
+          validationErrors: validationErrors,
         ),
         CommonFormInput(
           label: 'tas.note'.tr,
           controller: controllerNote,
           isEditing: isEditing,
           textContent: item?.ghiChu ?? '',
+          fieldName: 'ghiChu',
+          validationErrors: validationErrors,
         ),
       ],
     );

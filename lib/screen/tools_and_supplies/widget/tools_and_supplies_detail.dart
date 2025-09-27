@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -48,16 +50,15 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   // Business logic controller
   late ToolsAndSuppliesController _controller;
 
-  // Form validation states
-  final FormValidationStates _validationStates = FormValidationStates();
-
   // Data
   ToolsAndSuppliesDto? data;
   PhongBan? selectedPhongBan;
   CcdcGroup? selectedGroupCCDC;
+
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
   List<DropdownMenuItem<CcdcGroup>> itemsGroupCCDC = [];
   List<DetailAssetDto> newDetailAssetDto = [];
+  Map<String, bool> validationErrors = {};
 
   @override
   void initState() {
@@ -66,8 +67,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     // Khởi tạo controller với callbacks
     _controller = ToolsAndSuppliesController(
       onStateChanged: () => setState(() {}),
-      onShowValidationErrors: _showValidationErrors,
-      onShowErrorMessage: _showErrorSnackBar,
     );
 
     initData();
@@ -86,6 +85,58 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   void dispose() {
     newDetailAssetDto.clear();
     super.dispose();
+  }
+
+  bool validateForm() {
+    Map<String, bool> newValidationErrors = {};
+    if (controllerImportUnit.text.trim().isEmpty) {
+      newValidationErrors['idPhongBan'] = true;
+    }
+    // Validate tên công cụ dụng cụ
+    if (controllerName.text.trim().isEmpty) {
+      newValidationErrors['ten'] = true;
+    }
+
+    // Validate mã công cụ dụng cụ
+    final String code = controllerCode.text.trim();
+    if (code.isEmpty || code.contains(' ')) {
+      newValidationErrors['id'] = true;
+    }
+
+    // Validate đơn vị nhập
+    final String idDonVi =
+        (selectedPhongBan?.id ?? controllerImportUnit.text).trim();
+    if (idDonVi.isEmpty) {
+      newValidationErrors['idDonVi'] = true;
+    }
+
+    // Validate nhóm CCDC
+    final String idGroupCCDC =
+        (selectedGroupCCDC?.id ?? controllerGroupCCDC.text).trim();
+    if (idGroupCCDC.isEmpty) {
+      newValidationErrors['idNhomCcdc'] = true;
+    }
+    // Validate đơn vị tính
+    if (controllerUnit.text.trim().isEmpty) {
+      newValidationErrors['donViTinh'] = true;
+    }
+
+    // Validate giá trị
+    double? value = double.tryParse(controllerValue.text.trim());
+    if (value == null || value <= 0) {
+      newValidationErrors['giaTri'] = true;
+    }
+
+    // Check if validation errors have changed
+    bool hasChanges = !mapEquals(validationErrors, newValidationErrors);
+    if (hasChanges) {
+      setState(() {
+        validationErrors = newValidationErrors;
+      });
+    }
+    SGLog.debug('validateForm', 'validationErrors: $validationErrors');
+    SGLog.debug('validateForm', 'newValidationErrors: $newValidationErrors');
+    return newValidationErrors.isEmpty;
   }
 
   @override
@@ -132,11 +183,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                     controllerCode: controllerCode,
                     controllerImportDate: controllerImportDate,
                     controllerUnit: controllerUnit,
-                    isNameValid: _validationStates.isNameValid,
-                    isImportUnitValid: _validationStates.isImportUnitValid,
-                    isCodeValid: _validationStates.isCodeValid,
-                    isImportDateValid: _validationStates.isImportDateValid,
-                    isUnitValid: _validationStates.isUnitValid,
+                    validationErrors: validationErrors,
                   ),
                 ),
                 SizedBox(width: 20),
@@ -149,9 +196,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                     controllerNote: controllerNote,
                     controllerQuantity: controllerQuantity,
                     controllerValue: controllerValue,
-                    isQuantityValid: _validationStates.isQuantityValid,
-                    isValueValid: _validationStates.isValueValid,
-                    isCCDCGroupValid: _validationStates.isGroupCCDCValid,
+                    validationErrors: validationErrors,
                     onGroupCCDCChanged: (value) {
                       setState(() {
                         selectedGroupCCDC = value;
@@ -204,55 +249,31 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   void _saveItem() {
     // Validate form trước khi lưu thông qua controller
-    final validationResult = _controller.validateForm(
-      nameText: controllerName.text,
-      codeText: controllerCode.text,
-      importDateText: controllerImportDate.text,
-      unitText: controllerUnit.text,
-      quantityText: controllerQuantity.text,
-      valueText: controllerValue.text,
-      selectedPhongBan: selectedPhongBan,
-      importUnitText: controllerImportUnit.text,
-    );
-
-    // Cập nhật validation states
-    _validationStates.isNameValid =
-        validationResult.validationStates.isNameValid;
-    _validationStates.isImportUnitValid =
-        validationResult.validationStates.isImportUnitValid;
-    _validationStates.isGroupCCDCValid =
-        validationResult.validationStates.isGroupCCDCValid;
-    _validationStates.isCodeValid =
-        validationResult.validationStates.isCodeValid;
-    _validationStates.isImportDateValid =
-        validationResult.validationStates.isImportDateValid;
-    _validationStates.isUnitValid =
-        validationResult.validationStates.isUnitValid;
-    _validationStates.isQuantityValid =
-        validationResult.validationStates.isQuantityValid;
-    _validationStates.isValueValid =
-        validationResult.validationStates.isValueValid;
 
     setState(() {});
 
-    if (!validationResult.isValid) {
-      _showValidationErrors(
-        'Vui lòng sửa các lỗi sau:',
-        validationResult.errors,
+    if (!validateForm()) {
+      AppUtility.showSnackBar(
+        context,
+        'Vui lòng nhập đầy đủ thông tin (*)',
+        isError: true,
       );
       return;
     }
 
     // Validate chi tiết tài sản nếu có
     if (newDetailAssetDto.isNotEmpty) {
-      final detailErrors = _controller.validateDetailAssets(
-        newDetailAssetDto,
-        data?.chiTietTaiSanList ??
-            [], // Sử dụng safe navigation và fallback về empty list
-        controllerCode.text.trim(),
+      final detailErrors = _controller.getDeletedItems(
+        oldList: data?.chiTietTaiSanList ?? [],
+        newList: newDetailAssetDto,
       );
+
       if (detailErrors.isNotEmpty) {
-        _showValidationErrors('Chi tiết tài sản có lỗi:', detailErrors);
+        AppUtility.showSnackBar(
+          context,
+          'Chi tiết tài sản có lỗi. Vui lòng kiểm tra lại',
+          isError: true,
+        );
         return;
       }
     }
@@ -311,7 +332,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       }
     } catch (e) {
       SGLog.error('_saveItem', 'Error saving item: $e');
-      _showErrorSnackBar('Có lỗi xảy ra khi lưu dữ liệu. Vui lòng thử lại.');
+      AppUtility.showSnackBar(
+        context,
+        'Có lỗi xảy ra khi lưu dữ liệu. Vui lòng thử lại.',
+        isError: true,
+      );
     }
   }
 
@@ -406,51 +431,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   /// Reset tất cả validation states về true
   void _resetValidationStates() {
-    _validationStates.resetAll();
-  }
-
-  /// Hiển thị lỗi validation
-  void _showValidationErrors(String title, List<String> errors) {
-    if (errors.isEmpty) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            ...errors.map((error) => Text('• $error')),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Đóng',
-          textColor: Colors.white,
-          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-        ),
-      ),
-    );
-  }
-
-  /// Hiển thị lỗi chung
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'Đóng',
-          textColor: Colors.white,
-          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-        ),
-      ),
-    );
+    validationErrors.clear();
   }
 
   void _cancelEdit() {

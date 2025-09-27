@@ -284,7 +284,7 @@ class _ToolAndSuppliesHandoverDetailState
       log(
         "check dieuDongCcdc: ${jsonEncode(dieuDongCcdc?.detailToolAndMaterialTransfers)}",
       );
-      
+
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
@@ -362,13 +362,13 @@ class _ToolAndSuppliesHandoverDetailState
     if (controllerDocumentName.text.isEmpty) {
       newValidationErrors['documentName'] = true;
     }
-    if (controllerOrder.text.isEmpty) {
+    if (dieuDongCcdc == null || controllerOrder.text.isEmpty) {
       newValidationErrors['order'] = true;
     }
-    if (controllerSenderUnit.text.isEmpty) {
+    if (donViGiao == null || controllerSenderUnit.text.isEmpty) {
       newValidationErrors['senderUnit'] = true;
     }
-    if (controllerReceiverUnit.text.isEmpty) {
+    if (donViNhan == null || controllerReceiverUnit.text.isEmpty) {
       newValidationErrors['receiverUnit'] = true;
     }
     if (controllerTransferDate.text.isEmpty) {
@@ -386,9 +386,18 @@ class _ToolAndSuppliesHandoverDetailState
     if (controllerReceiverRepresentative.text.isEmpty) {
       newValidationErrors['receiverRepresentative'] = true;
     }
-    // if (controllerRepresentativeUnit.text.isEmpty) {
-    //   newValidationErrors['representativeUnit'] = true;
-    // }
+    if (nguoiDaiDienBanHanhQD == null ||
+        controllerIssuingUnitRepresentative.text.isEmpty) {
+      newValidationErrors['issuingUnitRepresentative'] = true;
+    }
+    if (nguoiDaiDienBenGiao == null ||
+        controllerDelivererRepresentative.text.isEmpty) {
+      newValidationErrors['delivererRepresentative'] = true;
+    }
+    if (nguoiDaiDienBenNhan == null ||
+        controllerReceiverRepresentative.text.isEmpty) {
+      newValidationErrors['receiverRepresentative'] = true;
+    }
 
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
@@ -895,10 +904,6 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (value) async {
             setState(() {
               dieuDongCcdc = value;
-              log(
-                "check dieuDongCcdc: ${jsonEncode(dieuDongCcdc?.detailToolAndMaterialTransfers)}",
-              );
-
               //change Đơn vị giao
               donViGiao = getPhongBan(
                 listPhongBan: listPhongBan,

@@ -204,12 +204,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Đơn vị sử dụng',
-              getValue:
-                  (item) =>
-                      AccountHelper.instance
-                          .getDepartmentById(item.idDonViHienThoi ?? '')
-                          ?.tenPhongBan ??
-                      '',
+              getValue: (item) {
+                final department = AccountHelper.instance
+                    .getDepartmentById(item.idDonViHienThoi ?? '');
+                return department?.tenPhongBan ?? '';
+              },
               width: 150,
             ),
           );

@@ -23,6 +23,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 
 class AssetDetail extends StatefulWidget {
   const AssetDetail({super.key, required this.provider});
@@ -59,6 +61,7 @@ class _AssetDetailState extends State<AssetDetail> {
   TextEditingController ctrlTaiKhoanKhauHao = TextEditingController();
   TextEditingController ctrlTaiKhoanChiPhi = TextEditingController();
   TextEditingController ctrlTenNhom = TextEditingController();
+  TextEditingController ctrlTenLoaiTaiSan = TextEditingController();
   TextEditingController ctrlNgayVaoSo = TextEditingController();
   TextEditingController ctrlNgaySuDung = TextEditingController();
 
@@ -91,9 +94,11 @@ class _AssetDetailState extends State<AssetDetail> {
   DuAn? duAn;
   PhongBan? phongBanBanDau;
   PhongBan? phongBanHienThoi;
+  TypeAsset? typeAsset;
 
   List<ChildAssetDto> newChildAssets = [];
   List<ChildAssetDto> initialChildAssets = [];
+  List<TypeAsset> listTypeAsset = [];
 
   Map<String, bool> validationErrors = {};
 
@@ -215,6 +220,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
                         ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
                         ctrlTenNhom: ctrlTenNhom,
+                        ctrlTenLoaiTaiSan: ctrlTenLoaiTaiSan,
                         ctrlNgayVaoSo: ctrlNgayVaoSo,
                         ctrlNgaySuDung: ctrlNgaySuDung,
                         listAssetCategory: listAssetCategory,
@@ -222,6 +228,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         itemsAssetCategory: itemsAssetCategory,
                         itemsAssetGroup: widget.provider.itemsAssetGroup!,
                         validationErrors: validationErrors,
+                        listTypeAsset: listTypeAsset,
                         onAssetCategoryChanged: (value) {
                           setState(() {
                             idAssetCategory = value.id;
@@ -242,6 +249,9 @@ class _AssetDetailState extends State<AssetDetail> {
                         onAssetGroupChanged: (value) {
                           setState(() {
                             idAssetGroup = value.id;
+                            listTypeAsset = AccountHelper.instance.getTypeAsset(
+                              value.id ?? '',
+                            );
                           });
                         },
                         onDepreciationMethodChanged: (value) {
@@ -252,6 +262,11 @@ class _AssetDetailState extends State<AssetDetail> {
                         },
                         onChangedNgayVaoSo: (value) {},
                         onChangedNgaySuDung: (value) {},
+                        onTypeAssetChanged: (value) {
+                          setState(() {
+                            typeAsset = value;
+                          });
+                        },
                       ),
                     ),
                     SizedBox(width: 30),
@@ -447,7 +462,12 @@ class _AssetDetailState extends State<AssetDetail> {
           data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlKyKhauHaoBanDau.text = data!.kyKhauHaoBanDau?.toString() ?? '';
       ctrlGiaTriThanhLy.text = data!.giaTriThanhLy?.toString() ?? '';
-      ctrlTenMoHinh.text = data!.idMoHinhTaiSan ?? '';
+      ctrlTenMoHinh.text =
+          listAssetCategory
+              .firstWhere((element) => element.id == data!.idMoHinhTaiSan)
+              .tenMoHinh ??
+          '';
+      idAssetCategory = data!.idMoHinhTaiSan;
       ctrlPhuongPhapKhauHao.text = data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlSoKyKhauHao.text = data!.soKyKhauHao?.toString() ?? '';
       ctrlTaiKhoanTaiSan.text = data!.taiKhoanTaiSan?.toString() ?? '';
@@ -472,6 +492,9 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
       valueKhoiTaoDonVi = data!.idDonViBanDau != null;
       ctrlTenTaiSan.text = data!.tenTaiSan ?? '';
+      typeAsset = AccountHelper.instance.getTypeAssetObject(
+        data!.idLoaiTaiSanCon ?? '',
+      );
     }
   }
 
@@ -518,16 +541,13 @@ class _AssetDetailState extends State<AssetDetail> {
       nguoiTao: 'current_user', // Cần lấy từ auth
       nguoiCapNhat: 'current_user', // Cần lấy từ auth
       active: true,
+      idLoaiTaiSanCon: typeAsset?.id ?? '',
     );
   }
 
-  List<String> errorMessage = [];
-
-  // Thêm: Hàm validate form trước khi lưu
   bool _validateForm() {
     Map<String, bool> newValidationErrors = {};
     final String tenTaiSan = ctrlTenTaiSan.text.trim();
-    // Bắt buộc
     if (tenTaiSan.isEmpty) {
       newValidationErrors['tenTaiSan'] = true;
     }
@@ -543,7 +563,9 @@ class _AssetDetailState extends State<AssetDetail> {
     if (ctrlDonViHienThoi.text.isEmpty) {
       newValidationErrors['idDonViHienThoi'] = true;
     }
-
+    if (typeAsset == null) {
+      newValidationErrors['idLoaiTaiSanCon'] = true;
+    }
     // Số lượng, nguyên giá, khấu hao
     if ((phuongPhapKhauHao ?? 0) == 0) {
       newValidationErrors['phuongPhapKhauHao'] = true;
@@ -612,13 +634,11 @@ class _AssetDetailState extends State<AssetDetail> {
   Future<void> _handleSave() async {
     if (!isEditing) return;
 
-    // Validate trước khi lưu
     if (!_validateForm()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc (*)'),
-          backgroundColor: Colors.red,
-        ),
+      AppUtility.showSnackBar(
+        context,
+        'Vui lòng điền đầy đủ thông tin bắt buộc (*)',
+        isError: true,
       );
       return;
     }

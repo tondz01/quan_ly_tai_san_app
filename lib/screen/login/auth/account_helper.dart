@@ -88,9 +88,14 @@ class AccountHelper {
   }
 
   PhongBan? getDepartmentById(String id) {
-    return StorageService.read(
-      StorageKey.DEPARTMENT,
-    ).firstWhere((department) => department.id == id, orElse: () => PhongBan());
+    final departments = StorageService.read(StorageKey.DEPARTMENT);
+    if (departments == null) return null;
+    
+    try {
+      return departments.firstWhere((department) => department.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   //NHÂN VIÊN
@@ -623,11 +628,11 @@ class AccountHelper {
   }
 
   List<TypeAsset> getTypeAsset(String idAssetGroup) {
-    final raw = StorageService.read(
-      StorageKey.TYPE_ASSET,
-    )?.where((element) => element.idLoaiTs == idAssetGroup, orElse: () => []);
+    final raw = StorageService.read(StorageKey.TYPE_ASSET);
     if (raw == null) return [];
-    if (raw is List<TypeAsset>) return raw;
+    if (raw is List<TypeAsset>) {
+      return raw.where((element) => element.idLoaiTs == idAssetGroup).toList();
+    }
     return [];
   }
 
@@ -658,11 +663,11 @@ class AccountHelper {
   }
 
   List<TypeCcdc> getTypeCcdc(String idCcdcGroup) {
-    final raw = StorageService.read(
-      StorageKey.TYPE_CCDCV,
-    )?.where((element) => element.idLoaiCCDC == idCcdcGroup, orElse: () => []);
+    final raw = StorageService.read(StorageKey.TYPE_CCDCV);
     if (raw == null) return [];
-    if (raw is List<TypeCcdc>) return raw;
+    if (raw is List<TypeCcdc>) {
+      return raw.where((element) => element.idLoaiCCDC == idCcdcGroup).toList();
+    }
     return [];
   }
 
