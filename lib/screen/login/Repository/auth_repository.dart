@@ -17,6 +17,10 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/repository/type_ccdc_repository.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AuthRepository extends ApiBase {
@@ -85,6 +89,8 @@ class AuthRepository extends ApiBase {
       await _loadAssetGroup(user.idCongTy);
       await _loadCCDCGroup(user.idCongTy);
       await _loadChucVu(user.idCongTy);
+      await _loadTypeAsset(user.idCongTy);
+      await _loadTypeCcdc(user.idCongTy);
       List<String> roles = onGetPermission(user.tenDangNhap);
       PermissionService.instance.saveRoles(roles);
       log("check roles: ${jsonEncode(PermissionService.instance.getRoles())}");
@@ -128,6 +134,7 @@ class AuthRepository extends ApiBase {
     return result;
   }
 
+  //------LOAD DATA------------------------------------------------------------------------------------///
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
   Future<void> _loadUserDepartments(String idCongTy) async {
     try {
@@ -237,6 +244,43 @@ class AuthRepository extends ApiBase {
     }
   }
 
+  Future<void> _loadTypeAsset(String idCongTy) async {
+    try {
+      final response = await TypeAssetRepository().getListTypeAssetRepository(
+        idCongTy,
+      );
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final rawTypeAsset = response['data'];
+        final typeAssetList =
+            (rawTypeAsset as List<dynamic>)
+                .map((e) => TypeAsset.fromJson(e as Map<String, dynamic>))
+                .toList();
+        AccountHelper.instance.setTypeAsset(typeAssetList);
+      }
+    } catch (e) {
+      log('Error calling API TYPE_ASSET: $e');
+    }
+  }
+
+  Future<void> _loadTypeCcdc(String idCongTy) async {
+    try {
+      final response = await TypeCcdcRepository().getListTypeCcdcRepository(
+        idCongTy,
+      );
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final rawTypeCcdc = response['data'];
+        final typeCcdcList =
+            (rawTypeCcdc as List<dynamic>)
+                .map((e) => TypeCcdc.fromJson(e as Map<String, dynamic>))
+                .toList();
+        AccountHelper.instance.setTypeCcdc(typeCcdcList);
+      }
+    } catch (e) {
+      log('Error calling API TYPE_CCDC: $e');
+    }
+  }
+
+  //------------------------------------------------------------------------------------------///
   Future<Map<String, dynamic>> createAccount(UserInfoDTO params) async {
     Map<String, dynamic> result = {
       'data': null,

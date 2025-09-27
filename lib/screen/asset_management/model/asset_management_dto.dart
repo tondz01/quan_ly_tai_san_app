@@ -59,6 +59,7 @@ class AssetManagementDto {
       'Hiển thị': isActive ?? false,
     };
   }
+
   String? id;
   String? tenTaiSan;
   double? nguyenGia;
@@ -100,6 +101,7 @@ class AssetManagementDto {
   String? nguoiCapNhat;
   bool? isActive;
   List<ChildAssetDto>? childAssets;
+  bool? taiSanCon;
 
   AssetManagementDto({
     this.id,
@@ -143,6 +145,7 @@ class AssetManagementDto {
     this.nguoiCapNhat,
     this.isActive,
     this.childAssets,
+    this.taiSanCon,
   });
 
   factory AssetManagementDto.fromJson(Map<String, dynamic> json) {
@@ -193,11 +196,16 @@ class AssetManagementDto {
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
-      childAssets: json['childAssets'] != null 
-          ? (json['childAssets'] as List<dynamic>)
-              .map<ChildAssetDto>((item) => ChildAssetDto.fromJson(item as Map<String, dynamic>))
-              .toList()
-          : [],
+      childAssets:
+          json['childAssets'] != null
+              ? (json['childAssets'] as List<dynamic>)
+                  .map<ChildAssetDto>(
+                    (item) =>
+                        ChildAssetDto.fromJson(item as Map<String, dynamic>),
+                  )
+                  .toList()
+              : [],
+      taiSanCon: json['taiSanCon'],
     );
   }
 
@@ -244,6 +252,7 @@ class AssetManagementDto {
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
+      'taiSanCon': taiSanCon,
     };
   }
 
@@ -282,7 +291,7 @@ class AssetManagementDto {
       taiKhoanChiPhi: null,
       ngayVaoSo: DateTime.now(),
       ngaySuDung: DateTime.now(),
-      kyHieu : '',
+      kyHieu: '',
       soKyHieu: '',
       congSuat: '',
       nuocSanXuat: '',
@@ -302,14 +311,15 @@ class AssetManagementDto {
       nguoiCapNhat: '',
       isActive: true,
       childAssets: [],
+      taiSanCon: false,
     );
   }
-  
+
   @override
   String toString() {
     return tenTaiSan ?? '';
   }
-  
+
   AssetManagementDto copyWith({
     String? id,
     String? tenTaiSan,
@@ -352,6 +362,7 @@ class AssetManagementDto {
     String? nguoiCapNhat,
     bool? isActive,
     List<ChildAssetDto>? childAssets,
+    bool? taiSanCon,
   }) {
     return AssetManagementDto(
       id: id ?? this.id,
@@ -395,6 +406,7 @@ class AssetManagementDto {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
       childAssets: childAssets ?? this.childAssets,
+      taiSanCon: taiSanCon ?? this.taiSanCon,
     );
   }
 }

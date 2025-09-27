@@ -280,61 +280,72 @@ class AssetManagementRepository extends ApiBase {
     AssetRequest request,
     List<ChildAssetDto> requestDetail,
   ) async {
-    AssetManagementDto? data;
-    Map<String, dynamic> result = {
-      'data': data,
+    final Map<String, dynamic> result = {
+      'data': null,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
     try {
+      // Tạo tài sản chính
       final response = await post(
         EndPointAPI.ASSET_MANAGEMENT,
         data: request.toJson(),
       );
 
       final int? status = response.statusCode;
-      final bool isOk =
-          status == Numeral.STATUS_CODE_SUCCESS ||
-          status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-          status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-      if (!isOk) {
+      if (!_isSuccessStatus(status)) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
 
       final dynamic respData = response.data;
-      String idTaiSan = request.id;
-      log('message String idTaiSan = respData: $idTaiSan');
+      final String idTaiSan = request.id;
+      log('Created asset with id: $idTaiSan');
 
-      for (var detail in requestDetail) {
-        detail.copyWith(idTaiSanCha: idTaiSan);
-        log('message /api/taisancon/: ${jsonEncode(detail)}');
-        final responseDetail = await post(
-          '${EndPointAPI.CHILD_ASSETS}/',
-          data: detail.toJson(),
-        );
-        final int? statusDetail = responseDetail.statusCode;
-        final bool isOkDetail =
-            statusDetail == Numeral.STATUS_CODE_SUCCESS ||
-            statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
-            statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
-        if (!isOkDetail) {
-          result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
-          return result;
+      // Tạo tài sản con nếu có
+      if (requestDetail.isNotEmpty) {
+        final List<Map<String, dynamic>> requestStatus = [];
+
+        for (final detail in requestDetail) {
+          final updatedDetail = detail.copyWith(idTaiSanCha: idTaiSan);
+          final responseDetail = await post(
+            '${EndPointAPI.CHILD_ASSETS}/',
+            data: updatedDetail.toJson(),
+          );
+
+          final int? statusDetail = responseDetail.statusCode;
+          if (!_isSuccessStatus(statusDetail)) {
+            result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
+            return result;
+          }
+
+          requestStatus.add({
+            'idTaiSan': detail.idTaiSanCon,
+            'isTaiSanCon': true,
+          });
         }
+
+        await updateStatusAsset(requestStatus);
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      if (respData is Map<String, dynamic>) {
-        result['data'] = AssetManagementDto.fromJson(respData);
-      } else {
-        result['data'] = AssetManagementDto();
-      }
+      result['data'] =
+          respData is Map<String, dynamic>
+              ? AssetManagementDto.fromJson(respData)
+              : AssetManagementDto();
     } catch (e) {
       log("Error at createAsset - AssetManagementRepository: $e");
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
     }
 
     return result;
+  }
+
+  // Helper method để kiểm tra status code thành công
+  bool _isSuccessStatus(int? status) {
+    return status == Numeral.STATUS_CODE_SUCCESS ||
+        status == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+        status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
   }
 
   Future<Map<String, dynamic>> updateAsset(
@@ -351,6 +362,35 @@ class AssetManagementRepository extends ApiBase {
       final response = await put(
         '${EndPointAPI.ASSET_MANAGEMENT}/$id',
         data: params.toJson(),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      log("Error at updateAsset - UdateAsset: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateStatusAsset(
+    List<Map<String, dynamic>> data,
+  ) async {
+    Map<String, dynamic>? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await put(
+        '${EndPointAPI.ASSET_MANAGEMENT}/update-tai-san-con',
+        data: data,
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -443,7 +483,9 @@ class AssetManagementRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> createAssetBatch(List<AssetManagementDto> assets) async {
+  Future<Map<String, dynamic>> createAssetBatch(
+    List<AssetManagementDto> assets,
+  ) async {
     Map<String, dynamic> result = {
       'data': '',
       'message': '',

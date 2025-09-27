@@ -14,6 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 
 class AccountHelper {
   //create private constructor
@@ -147,7 +149,10 @@ class AccountHelper {
       try {
         return raw
             .whereType()
-            .map((e) => AssetGroupDto.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) =>
+                  AssetGroupDto.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
       } catch (e) {
         log('Error at getAssetGroup: $e');
@@ -578,5 +583,74 @@ class AccountHelper {
 
   int? getConfigTimeExpire() {
     return StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+  }
+
+  // Global type asset
+  setTypeAsset(List<TypeAsset> typeAsset) {
+    if (typeAsset.isNotEmpty) {
+      StorageService.write(StorageKey.TYPE_ASSET, typeAsset);
+    }
+  }
+
+  List<TypeAsset> getTypeAsset(String idAssetGroup) {
+    final raw = StorageService.read(
+      StorageKey.TYPE_ASSET,
+    )?.where((element) => element.idLoaiTs == idAssetGroup, orElse: () => []);
+    if (raw == null) return [];
+    if (raw is List<TypeAsset>) return raw;
+    return [];
+  }
+
+  TypeAsset? getTypeAssetObject(String idAssetGroup) {
+    try {
+      final raw = StorageService.read(StorageKey.TYPE_ASSET)?.firstWhere(
+        (element) => element.id == idAssetGroup,
+        orElse: () => null,
+      );
+      if (raw == null) return null;
+      return raw is TypeAsset
+          ? raw
+          : TypeAsset.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  clearTypeAsset() {
+    StorageService.remove(StorageKey.TYPE_ASSET);
+  }
+
+  // Global type ccdc
+  setTypeCcdc(List<TypeCcdc> typeCcdc) {
+    if (typeCcdc.isNotEmpty) {
+      StorageService.write(StorageKey.TYPE_CCDCV, typeCcdc);
+    }
+  }
+
+  List<TypeCcdc> getTypeCcdc(String idCcdcGroup) {
+    final raw = StorageService.read(
+      StorageKey.TYPE_CCDCV,
+    )?.where((element) => element.idLoaiCCDC == idCcdcGroup, orElse: () => []);
+    if (raw == null) return [];
+    if (raw is List<TypeCcdc>) return raw;
+    return [];
+  }
+
+  TypeCcdc? getTypeCcdcObject(String idCcdcGroup) {
+    try {
+      final raw = StorageService.read(
+        StorageKey.TYPE_CCDCV,
+      )?.firstWhere((element) => element.id == idCcdcGroup, orElse: () => null);
+      if (raw == null) return null;
+      if (raw is TypeCcdc) return raw;
+      if (raw is Map) return TypeCcdc.fromJson(Map<String, dynamic>.from(raw));
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  clearTypeCcdc() {
+    StorageService.remove(StorageKey.TYPE_CCDCV);
   }
 }

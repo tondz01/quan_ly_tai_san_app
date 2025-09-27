@@ -23,8 +23,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:se_gay_components/common/sg_input_text.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 
 class AssetDetail extends StatefulWidget {
   const AssetDetail({super.key, required this.provider});
@@ -151,7 +149,6 @@ class _AssetDetailState extends State<AssetDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return BlocListener<AssetManagementBloc, AssetManagementState>(
       listener: (context, state) {
         if (state is GetListChildAssetsSuccessState) {
@@ -187,7 +184,6 @@ class _AssetDetailState extends State<AssetDetail> {
                   !widget.provider.isNew &&
                   data != null))
             _buildHeaderDetail(),
-          const SizedBox(height: 5),
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -199,58 +195,13 @@ class _AssetDetailState extends State<AssetDetail> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: [
-                    SGText(
-                      text: 'Tên Tài sản',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: isEditing ? Colors.black : ColorValue.neutral500,
-                      ),
-                      // fontWeight: FontWeight.w800,
-                    ),
-                    Text(' *', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-                const SizedBox(width: 10),
-                SGInputText(
-                  controller: ctrlTenTaiSan,
-                  borderRadius: 10,
-                  enabled: isEditing,
-                  onlyLine: true,
-                  showBorder: false,
-                  fontSize: 24,
-                  hintText: 'Tên tài sản',
-                  hintStyle: TextStyle(
-                    fontSize: 24,
-                    color: ColorValue.neutral500,
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 10,vertical: 5),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: size.width * 0.1,
-                    right: size.width * 0.1,
-                    top: 10,
-                    bottom: 10,
-                  ),
-                  child: Divider(color: ColorValue.neutral300, height: 1),
-                ),
-                Visibility(
-                  visible: validationErrors['tenTaiSan'] == true,
-                  child: Text(
-                    'Trường "Tên tài sản" không được để trống',
-                    style: TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: buildOriginalAssetInfomation(
                         context,
                         isEditing: isEditing,
+                        ctrlTenTaiSan: ctrlTenTaiSan,
                         ctrlMaTaiSan: ctrlMaTaiSan,
                         ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
                         ctrlNguyenGia: ctrlNguyenGia,
@@ -345,7 +296,6 @@ class _AssetDetailState extends State<AssetDetail> {
                         onDuAnChanged: (value) {
                           setState(() {
                             duAn = value;
-                            log('message duAn: ${duAn!.id}');
                           });
                         },
                         onKhoiTaoDonViChanged: (value) {
@@ -404,7 +354,6 @@ class _AssetDetailState extends State<AssetDetail> {
                               ),
                             )
                             .toList();
-                    log('message newChildAssets: ${jsonEncode(dataChange)}');
                     // setState(() {
                     // });
                     // });
@@ -524,7 +473,6 @@ class _AssetDetailState extends State<AssetDetail> {
       valueKhoiTaoDonVi = data!.idDonViBanDau != null;
       ctrlTenTaiSan.text = data!.tenTaiSan ?? '';
     }
-    log('message _initController: ${ctrlLyDoTang.text}');
   }
 
   AssetRequest _createAssetRequest() {

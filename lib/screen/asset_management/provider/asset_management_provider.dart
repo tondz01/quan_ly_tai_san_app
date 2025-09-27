@@ -321,7 +321,7 @@ class AssetManagementProvider with ChangeNotifier {
       // _filteredData = [];
       _isLoading = false;
     } else {
-      _data = state.data;
+      _data = state.data.where((element) => element.taiSanCon == false).toList();
       _filteredData = List.from(_data!); // Khởi tạo filteredData
       _updatePagination();
       _isLoading = false;
@@ -338,7 +338,6 @@ class AssetManagementProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _dataChildAssets = [];
       // _filteredData = [];
-      log('message getListChildAssetsSuccess: ${state.data}');
     } else {
       _dataChildAssets = state.data;
       _filteredData = List.from(_dataChildAssets!); // Khởi tạo filteredData

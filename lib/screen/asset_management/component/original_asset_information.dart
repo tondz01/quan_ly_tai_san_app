@@ -18,6 +18,7 @@ import 'package:se_gay_components/common/sg_text.dart';
 
 Widget buildOriginalAssetInfomation(
   BuildContext context, {
+  required TextEditingController ctrlTenTaiSan,
   required TextEditingController ctrlMaTaiSan,
   required TextEditingController ctrlIdNhomTaiSan,
   required TextEditingController ctrlNguyenGia,
@@ -39,7 +40,7 @@ Widget buildOriginalAssetInfomation(
   Function(AssetCategoryDto)? onAssetCategoryChanged,
   Function(AssetGroupDto)? onAssetGroupChanged,
   required List<AssetCategoryDto> listAssetCategory,
-  required List<AssetGroupDto> listAssetGroup, 
+  required List<AssetGroupDto> listAssetGroup,
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
   required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
   required Function(DateTime?)? onChangedNgayVaoSo,
@@ -100,6 +101,16 @@ Widget buildOriginalAssetInfomation(
         const SizedBox(height: 10),
         Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
         SizedBox(height: 8),
+
+        CommonFormInput(
+          label: 'Tên tài sản',
+          controller: ctrlTenTaiSan,
+          isEditing: isEditing,
+          textContent: ctrlTenTaiSan.text,
+          fieldName: 'tenTaiSan',
+          validationErrors: validationErrors,
+          isRequired: true,
+        ),
 
         CommonFormInput(
           label: 'Mã tài sản',
@@ -165,6 +176,7 @@ Widget buildOriginalAssetInfomation(
                   : null,
           onChanged: onAssetCategoryChanged,
           isRequired: true,
+          validationErrors: validationErrors,
         ),
 
         CommonFormInput(
@@ -228,6 +240,7 @@ Widget buildOriginalAssetInfomation(
           validationErrors: validationErrors,
           isRequired: true,
         ),
+        const SizedBox(height: 10),
         CmFormDate(
           label: 'Ngày vào sổ',
           controller: ctrlNgayVaoSo,
@@ -239,6 +252,7 @@ Widget buildOriginalAssetInfomation(
                   ? AppUtility.parseFlexibleDateTime(ctrlNgayVaoSo.text)
                   : DateTime.now(),
         ),
+        const SizedBox(height: 10),
         CmFormDate(
           label: 'Ngày sử dụng',
           controller: ctrlNgaySuDung,
