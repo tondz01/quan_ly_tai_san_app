@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/captital_source_list.dart';
@@ -12,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/model
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/pages/capital_source_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/providers/capital_source_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -33,6 +36,10 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
   List<NguonKinhPhi> filteredData = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
+  bool isCanCreate = false;
+  bool isCanUpdate = false;
+  bool isCanDelete = false;
+  bool isNew = false;
 
   void _showForm([NguonKinhPhi? capitalSource]) {
     setState(() {
@@ -40,6 +47,13 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
       editingCapitalSource = capitalSource;
     });
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+  
 
   void _showDeleteDialog(BuildContext context, NguonKinhPhi capitalSource) {
     showDialog(
@@ -69,6 +83,21 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
 
   void _searchCapitalSource(String value) {
     context.read<CapitalSourceBloc>().add(SearchCapitalSource(value));
+  }
+
+  void _checkPermission() async {
+    final repo = PermissionRepository();
+    final userId = AccountHelper.instance.getUserInfo()?.id ?? '';
+    isCanCreate =
+        await repo.checkCanCreatePermission(userId, RoleCode.NHANVIEN) ?? false;
+    isCanUpdate =
+        await repo.checkCanUpdatePermission(userId, RoleCode.NHANVIEN) ?? false;
+    isCanDelete =
+        await repo.checkCanDeletePermission(userId, RoleCode.NHANVIEN) ?? false;
+    SGLog.info(
+      "_checkPermission",
+      'isCanCreate: $isCanCreate -- isCanDelete: $isCanDelete -- isCanUpdate: $isCanUpdate',
+    );
   }
 
   Future<Map<String, dynamic>?> insertData(
@@ -174,6 +203,8 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
                     child: CommonPageView(
                       title: 'Chi tiết nguồn vốn',
                       childInput: CapitalSourceFormPage(
+                        isNew: isNew = true,
+                        isCanUpdate: isCanUpdate = true,
                         capitalSource: editingCapitalSource,
                         onCancel: () {
                           setState(() {

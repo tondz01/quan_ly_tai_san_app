@@ -196,7 +196,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     };
 
     try {
-      final response = await get('${EndPointAPI.DETAIL_SUPPLIES_TRANSFER}/$id');
+      final response = await get('${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/by-dieu-dong/$id');
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
