@@ -135,6 +135,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
+    log('savePin: ${widget.staff?.savePin}');
     _isActive = widget.staff?.active ?? false;
     _savePin = widget.staff?.savePin ?? false;
     _activityController = TextEditingController(
@@ -231,7 +232,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     if (validateChuKyNhay() || validateChuKyThuong()) {
       return;
     }
-
+    log('savePin: $_savePin');
     final bool ok = await StaffSaveService.save(
       context: context,
       existingStaff: widget.staff,
@@ -255,6 +256,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
       chuKyNhayData: _chuKyNhayData,
       chuKyThuongData: _chuKyThuongData,
       isActive: _isActive,
+      savePin: _savePin,
     );
 
     if (ok && widget.onSaved != null) {

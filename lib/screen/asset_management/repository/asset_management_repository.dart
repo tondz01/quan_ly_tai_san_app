@@ -228,52 +228,16 @@ class AssetManagementRepository extends ApiBase {
     return result;
   }
 
-  // Future<Map<String, dynamic>> createAsset(
-  //   AssetRequest request,
-  //   List<ChildAssetDto> childAssets,
-  // ) async {
-  //   AssetManagementDto? data;
-  //   Map<String, dynamic> result = {
-  //     'data': data,
-  //     'status_code': Numeral.STATUS_CODE_DEFAULT,
-  //   };
-
-  //   try {
-  //     final response = await post(
-  //       EndPointAPI.ASSET_MANAGEMENT,
-  //       data: request.toJson(),
-  //     );
-
-  //     if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
-  //       result['status_code'] = response.statusCode;
-  //       return result;
-  //     }
-
-  //     result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-  //     final resp = response.data;
-  //     if (resp is Map<String, dynamic>) {
-  //       result['message'] = (resp['message'] ?? '').toString();
-  //       // Prefer affectedRows if provided, fallback to data or 1
-  //       if (resp.containsKey('affectedRows')) {
-  //         result['data'] = resp['affectedRows'];
-  //       } else if (resp.containsKey('data')) {
-  //         result['data'] = resp['data'] ?? 1;
-  //       } else {
-  //         result['data'] = 1;
-  //       }
-  //     } else {
-  //       result['data'] = resp ?? 1;
-  //     }
-  //     // result['data'] = AssetManagementDto.fromJson(response.data);
-  //   } catch (e) {
-  //     log("Error at createAsset - AssetManagementRepository: $e");
-  //   }
-
-  //   return result;
-  // }
   Future<int> create(ChildAssetDto obj) async {
     final res = await post(EndPointAPI.CHILD_ASSETS, data: obj.toJson());
-    return res.data;
+    if (res.statusCode == Numeral.STATUS_CODE_SUCCESS ||
+        res.statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      await updateStatusAsset([
+        {'idTaiSan': obj.idTaiSanCon, 'isTaiSanCon': true},
+      ]);
+      return 1;
+    }
+    return 0;
   }
 
   Future<Map<String, dynamic>> createAsset(

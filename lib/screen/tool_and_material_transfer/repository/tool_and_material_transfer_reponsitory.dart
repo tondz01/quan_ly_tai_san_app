@@ -281,47 +281,59 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   Future<List<ToolAndMaterialTransferDto>> getAllToolAndMeterialTransfer(
     int? type,
   ) async {
-    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
+    try {
+      UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
-    final res = await get(
-      '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}',
-    );
+      final res = await get(
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}',
+      );
 
-    List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
-        type == null
-            ? (res.data as List)
-                .map((e) => ToolAndMaterialTransferDto.fromJson(e))
-                .toList()
-            : (res.data as List)
-                .map((e) => ToolAndMaterialTransferDto.fromJson(e))
-                .where((e) => e.loai == type)
-                .toList();
-    await Future.wait(
-      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
-        toolAndMaterialTransfer.detailToolAndMaterialTransfers =
-            await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
-        log(
-          'toolAndMaterialTransfer.detailToolAndMaterialTransfers: ${jsonEncode(toolAndMaterialTransfers)}',
-        );
-      }),
-    );
-    await Future.wait(
-      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
-        try {
-          final signatories = await _signatoryRepository.getAll(
-            toolAndMaterialTransfer.id.toString(),
-          );
-          toolAndMaterialTransfer.listSignatory = signatories;
-        } catch (e) {
-          log(
-            "Error loading signatories for ${toolAndMaterialTransfer.id}: $e",
-          );
-          toolAndMaterialTransfer.listSignatory = [];
-        }
-      }),
-    );
+      // Check if the response is successful
+      if (res.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        log('API returned error status: ${res.statusCode}');
+        return []; // Return empty list on error
+      }
 
-    return toolAndMaterialTransfers;
+      List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
+          type == null
+              ? (res.data as List)
+                  .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+                  .toList()
+              : (res.data as List)
+                  .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+                  .where((e) => e.loai == type)
+                  .toList();
+
+      await Future.wait(
+        toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+          try {
+            toolAndMaterialTransfer
+                .detailToolAndMaterialTransfers = await _detailCcdcVt.getAll(
+              toolAndMaterialTransfer.id.toString(),
+            );
+          } catch (e) {
+            toolAndMaterialTransfer.detailToolAndMaterialTransfers = [];
+          }
+        }),
+      );
+
+      await Future.wait(
+        toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+          try {
+            final signatories = await _signatoryRepository.getAll(
+              toolAndMaterialTransfer.id.toString(),
+            );
+            toolAndMaterialTransfer.listSignatory = signatories;
+          } catch (e) {
+            toolAndMaterialTransfer.listSignatory = [];
+          }
+        }),
+      );
+
+      return toolAndMaterialTransfers;
+    } catch (e) {
+      return []; // Return empty list on error
+    }
   }
 
   Future<List<ToolAndMaterialTransferDto>>

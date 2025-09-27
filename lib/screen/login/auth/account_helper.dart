@@ -103,7 +103,22 @@ class AccountHelper {
   }
 
   List<NhanVien>? getNhanVien() {
-    return StorageService.read(StorageKey.NHAN_VIEN);
+    final raw = StorageService.read(StorageKey.NHAN_VIEN);
+    if (raw == null) return null;
+    if (raw is List<NhanVien>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => NhanVien.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        log('Error at getNhanVien: $e');
+        return null;
+      }
+    }
+    log('Error at getNhanVien: $raw');
+    return null;
   }
 
   NhanVien? getNhanVienById(String id) {
@@ -123,7 +138,22 @@ class AccountHelper {
   }
 
   List<ChucVu>? getChucVu() {
-    return StorageService.read(StorageKey.CHUC_VU);
+    final raw = StorageService.read(StorageKey.CHUC_VU);
+    if (raw == null) return null;
+    if (raw is List<ChucVu>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => ChucVu.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        log('Error at getChucVu: $e');
+        return null;
+      }
+    }
+    log('Error at getChucVu: $raw');
+    return null;
   }
 
   ChucVu? getChucVuById(String id) {

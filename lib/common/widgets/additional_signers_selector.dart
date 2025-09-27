@@ -275,34 +275,41 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                         child: Column(
                           children: [
                             if (_hasDepartment) ...[
-                              SizedBox(
-                                width: double.infinity,
-                                child: CmFormDropdownObject<PhongBan>(
-                                  label: widget.labelDepartment,
-                                  controller: _deptControllers[index],
-                                  isEditing: widget.isEditing,
-                                  value: _signersData[index].department,
-                                  defaultValue: _signersData[index].department,
-                                  fieldName: 'additionalSigner_dept_$index',
-                                  items: [
-                                    ...widget.phongBan!.map(
-                                      (e) => DropdownMenuItem(
-                                        value: e,
-                                        child: Text(e.tenPhongBan ?? ''),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 8.0,
+                                  bottom: 7.0,
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: CmFormDropdownObject<PhongBan>(
+                                    label: widget.labelDepartment,
+                                    controller: _deptControllers[index],
+                                    isEditing: widget.isEditing,
+                                    value: _signersData[index].department,
+                                    defaultValue:
+                                        _signersData[index].department,
+                                    fieldName: 'additionalSigner_dept_$index',
+                                    items: [
+                                      ...widget.phongBan!.map(
+                                        (e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(e.tenPhongBan ?? ''),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _signersData[index] = _signersData[index]
-                                          .copyWith(
-                                            department: value,
-                                            employee: null,
-                                          );
-                                    });
-                                    _emitChanges();
-                                  },
-                                  validationErrors: const {},
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _signersData[index] =
+                                            _signersData[index].copyWith(
+                                              department: value,
+                                              employee: null,
+                                            );
+                                      });
+                                      _emitChanges();
+                                    },
+                                    validationErrors: const {},
+                                  ),
                                 ),
                               ),
                             ],

@@ -388,7 +388,7 @@ class LoginProvider with ChangeNotifier {
       (element) => element.id == userInfo.tenDangNhap,
       orElse: () => NhanVien(),
     );
-    if (user.id!.isEmpty) {
+    if (user.id == null || user.id!.isEmpty) {
       return "Không xác định";
     }
     return user.hoTen ?? "";
