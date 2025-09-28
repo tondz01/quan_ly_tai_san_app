@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/constants/project_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 
 class ProjectFormPage extends StatefulWidget {
@@ -65,7 +66,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
     _codeController.text = widget.duAn?.id ?? '';
     _nameController.text = widget.duAn?.tenDuAn ?? '';
     _noteController.text = widget.duAn?.ghiChu ?? '';
-    _isActive = widget.duAn?.hieuLuc ?? true;
+    _isActive = widget.duAn?.hieuLuc ?? ProjectConstants.defaultHieuLuc;
   }
 
   @override
@@ -92,6 +93,13 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
       if (widget.onSaved != null) {
         widget.onSaved!();
       }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ProjectConstants.validationFormIncomplete),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -113,7 +121,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  sectionTitle(Icons.info_outline, 'Thông tin dự án'),
+                  sectionTitle(Icons.info_outline, ProjectConstants.sectionProjectInfo),
                   const SizedBox(height: 16),
                   Row(
                     children: [
@@ -122,13 +130,13 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                           controller: _codeController,
                           enabled: widget.duAn != null ? false : isEditing, // Read-only khi update
                           decoration: inputDecoration(
-                            'Mã dự án',
+                            ProjectConstants.labelProjectId,
                             required: true,
                           ),
                           validator:
                               (v) =>
                                   v == null || v.isEmpty
-                                      ? 'Nhập mã dự án'
+                                      ? ProjectConstants.validationProjectIdRequired
                                       : null,
                         ),
                       ),
@@ -137,14 +145,14 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                         child: TextFormField(
                           controller: _nameController,
                           decoration: inputDecoration(
-                            'Tên dự án',
+                            ProjectConstants.labelProjectName,
                             required: true,
                           ),
                           enabled: isEditing,
                           validator:
                               (v) =>
                                   v == null || v.isEmpty
-                                      ? 'Nhập tên dự án'
+                                      ? ProjectConstants.validationProjectNameRequired
                                       : null,
                         ),
                       ),
@@ -153,10 +161,10 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _noteController,
-                    decoration: inputDecoration('Ghi chú', required: true),
+                    decoration: inputDecoration(ProjectConstants.labelProjectNote, required: false),
                     enabled: isEditing,
-                    validator:
-                        (v) => v == null || v.isEmpty ? 'Nhập ghi chú' : null,
+                    // validator:
+                    //     (v) => v == null || v.isEmpty ? ProjectConstants.validationProjectNoteRequired : null,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -165,7 +173,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                         value: _isActive,
                         onChanged: (v) => !isEditing ? null : setState(() => _isActive = v ?? true),
                       ),
-                      const Text('Có hiệu lực', style: TextStyle(fontSize: 16)),
+                      Text(ProjectConstants.labelIsActive, style: const TextStyle(fontSize: 16)),
                     ],
                   ),
                 ],
@@ -183,7 +191,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             MaterialTextButton(
-              text: 'Lưu',
+              text: ProjectConstants.saveText,
               icon: Icons.save,
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
@@ -193,7 +201,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
             ),
             const SizedBox(width: 8),
             MaterialTextButton(
-              text: 'Hủy',
+              text: ProjectConstants.cancelText,
               icon: Icons.cancel,
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
@@ -206,7 +214,7 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa dự án',
+          text: ProjectConstants.editText,
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,

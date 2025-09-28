@@ -406,7 +406,7 @@ class _RoleListState extends State<RoleList> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Quản lý chức vụ (${widget.provider.data.length})',
+                      'Quản lý chức vụ (${widget.provider.filteredData?.length ?? 0})',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -476,7 +476,7 @@ class _RoleListState extends State<RoleList> {
             child: TableBaseView<ChucVu>(
               searchTerm: '',
               columns: _buildColumns(),
-              data: widget.provider.filteredData,
+              data: widget.provider.dataPage,
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(context, item);

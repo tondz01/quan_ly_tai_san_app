@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/constants/project_constants.dart';
 
 class DuAn extends Equatable {
   final String? id;
@@ -37,9 +38,9 @@ class DuAn extends Equatable {
       'tenDuAn': tenDuAn,
       'ghiChu': ghiChu,
       'hieuLuc': hieuLuc,
-      'idCongTy': "ct001",
+      'idCongTy': idCongTy ?? ProjectConstants.defaultCompanyId,
       'nguoiTao': nguoiTao,
-      'isActive': true,
+      'isActive': isActive ?? ProjectConstants.defaultIsActive,
     };
   }
 
@@ -57,13 +58,13 @@ class DuAn extends Equatable {
   /// Dữ liệu export cho Dự án
   Map<String, dynamic> toExportJson() {
     return {
-      'Mã dự án': _nullIfEmpty(id),
-      'Tên dự án': _nullIfEmpty(tenDuAn),
-      'Ghi chú': _nullIfEmpty(ghiChu),
-      'Hiệu lực': hieuLuc ?? false,
-      'ID công ty': _nullIfEmpty(idCongTy),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Hiển thị': isActive,
+      ProjectConstants.exportProjectId: _nullIfEmpty(id),
+      ProjectConstants.exportProjectName: _nullIfEmpty(tenDuAn),
+      ProjectConstants.exportProjectNote: _nullIfEmpty(ghiChu),
+      ProjectConstants.exportIsActive: hieuLuc ?? ProjectConstants.defaultHieuLuc,
+      ProjectConstants.exportCompanyId: _nullIfEmpty(idCongTy ?? ProjectConstants.defaultCompanyId),
+      ProjectConstants.exportCreator: _nullIfEmpty(nguoiTao),
+      ProjectConstants.exportDisplay: isActive ?? ProjectConstants.defaultIsActive,
     };
   }
 

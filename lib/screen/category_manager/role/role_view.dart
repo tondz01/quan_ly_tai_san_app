@@ -55,9 +55,6 @@ class _RoleViewState extends State<RoleView> {
             if (provider.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            // if (provider.data == null) {
-            //   return const Center(child: Text('Không có dữ liệu'));
-            // }
             provider.controllerDropdownPage ??= TextEditingController(
               text: provider.rowsPerPage.toString(),
             );
@@ -68,9 +65,6 @@ class _RoleViewState extends State<RoleView> {
                   controller: _searchController,
                   onSearchChanged: (value) {
                     provider.onSearchRoles(value);
-                  },
-                  onTap: () {
-                    // provider.onChangeDetailAssetTransfer(null);
                   },
                   onNew: () {
                     provider.onChangeDetail(context, null);

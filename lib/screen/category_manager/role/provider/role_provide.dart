@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:flutter/foundation.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class RoleProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -77,7 +77,7 @@ class RoleProvider with ChangeNotifier {
 
   void onInit(BuildContext context) {
     _userInfo = AccountHelper.instance.getUserInfo();
-    controllerDropdownPage = TextEditingController(text: '10');
+    controllerDropdownPage = TextEditingController(text: RoleConstants.defaultRowsPerPage.toString());
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
@@ -105,32 +105,34 @@ class RoleProvider with ChangeNotifier {
   }
 
   void onSearchRoles(String value) {
+    currentPage = 1;
+    
     if (value.isEmpty) {
       _filteredData = data;
+      _updatePagination();
+      notifyListeners();
       return;
     }
 
     String searchLower = value.toLowerCase().trim();
-    _filteredData =
-        data.where((item) {
-          bool name = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
-            searchLower,
-          );
-          bool importUnit = item.importUnit.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.importUnit.toLowerCase().contains(
-            searchLower,
-          );
-          bool unit = item.unit.toLowerCase().contains(searchLower);
-          bool value = item.value.toString().contains(searchLower);
 
-          return name || importUnit || departmentGroup || unit || value;
-        }).toList();
+    _filteredData =
+        data?.where((item) {
+          bool name = AppUtility.fuzzySearch(
+            item.tenChucVu?.toLowerCase() ?? '',
+            searchLower,
+          );
+          bool idMatch = item.id?.toLowerCase().contains(searchLower) ?? false;
+
+          return name || idMatch;
+        }).toList() ?? [];
+    
+    _updatePagination();
     notifyListeners();
   }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
+    totalEntries = _filteredData?.length ?? 0;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(
       1,
       RoleConstants.maxPaginationPages,
@@ -145,12 +147,17 @@ class RoleProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        _filteredData?.isNotEmpty == true
+            ? _filteredData!.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
+
+    SGLog.debug(
+      'RoleProvider',
+      'Pagination - totalEntries: $totalEntries, currentPage: $currentPage, totalPages: $totalPages, dataPage length: ${_dataPage?.length ?? 0}',
+    );
   }
 
   void onCloseDetail(BuildContext context) {
@@ -184,6 +191,7 @@ class RoleProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       _data = state.data;
       AccountHelper.instance.clearChucVu();
