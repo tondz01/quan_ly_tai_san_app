@@ -16,7 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_chil
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';

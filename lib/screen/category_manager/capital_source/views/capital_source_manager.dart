@@ -4,12 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/captital_source_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/component/convert_excel_to_capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/constants/capital_source_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/pages/capital_source_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
@@ -25,15 +28,24 @@ class CapitalSourceManager extends StatefulWidget {
   State<CapitalSourceManager> createState() => _CapitalSourceManagerState();
 }
 
-class _CapitalSourceManagerState extends State<CapitalSourceManager> {
+class _CapitalSourceManagerState extends State<CapitalSourceManager>
+    with RouteAware {
   bool showForm = false;
   NguonKinhPhi? editingCapitalSource;
+
+  late int totalEntries;
+  late int totalPages = 0;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = CapitalSourceConstants.defaultRowsPerPage;
+  int currentPage = 1;
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
   List<NguonKinhPhi> data = [];
   List<NguonKinhPhi> filteredData = [];
+  List<NguonKinhPhi> dataPage = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
   bool isCanCreate = false;
@@ -52,8 +64,23 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
   void initState() {
     super.initState();
     _checkPermission();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CapitalSourceBloc>().add(const LoadCapitalSources());
+    });
   }
-  
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Removed duplicate LoadCapitalSources call
+  }
+
+  @override
+  void didPopNext() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CapitalSourceBloc>().add(const LoadCapitalSources());
+    });
+  }
 
   void _showDeleteDialog(BuildContext context, NguonKinhPhi capitalSource) {
     showDialog(
@@ -85,6 +112,46 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
     context.read<CapitalSourceBloc>().add(SearchCapitalSource(value));
   }
 
+  void _updatePagination() {
+    // Sử dụng filteredData thay vì data
+    totalEntries = filteredData.length;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
+      1,
+      CapitalSourceConstants.maxPaginationPages,
+    );
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+    dataPage =
+        filteredData.isNotEmpty
+            ? filteredData.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
+  }
+
+  void onPageChanged(int page) {
+    setState(() {
+      currentPage = page;
+      _updatePagination();
+    });
+  }
+
+  void onRowsPerPageChanged(int? value) {
+    setState(() {
+      if (value == null) return;
+      rowsPerPage = value;
+      currentPage = 1;
+      _updatePagination();
+    });
+  }
+
   void _checkPermission() async {
     final repo = PermissionRepository();
     final userId = AccountHelper.instance.getUserInfo()?.id ?? '';
@@ -100,186 +167,227 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager> {
     );
   }
 
-  Future<Map<String, dynamic>?> insertData(
-    BuildContext context,
-    String fileName,
-    String filePath,
-    Uint8List fileBytes,
-  ) async {
-    if (kIsWeb) {
-      if (fileName.isEmpty || filePath.isEmpty) return null;
-    } else {
-      if (filePath.isEmpty) return null;
-    }
-    try {
-      final result =
-          kIsWeb
-              ? await CapitalSourceProvider().insertDataFileBytes(
-                fileName,
-                fileBytes,
-              )
-              : await CapitalSourceProvider().insertDataFile(filePath);
-      final statusCode = result['status_code'] as int? ?? 0;
-      if (statusCode >= 200 && statusCode < 300) {
+  void _importData(List<NguonKinhPhi> capitalSources) async {
+    if (capitalSources.isNotEmpty) {
+      final result = await CapitalSourceProvider().saveCapitalSourceBatch(
+        capitalSources,
+      );
+      if (checkStatusCodeDone(result)) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Import dữ liệu thành công'),
-              backgroundColor: Colors.green.shade600,
-            ),
-          );
+          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
           // Reload list after successful import
           context.read<CapitalSourceBloc>().add(LoadCapitalSources());
         }
-        return result['data'];
       } else {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tải lên thất bại (mã $statusCode)'),
-              backgroundColor: Colors.red.shade600,
-            ),
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu thất bại',
+            isError: true,
           );
         }
-        return null;
       }
-    } catch (e) {
-      SGLog.debug("DepartmentManager", ' Error uploading file: $e');
+    } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
-        return null;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Import dữ liệu thất bại')));
       }
     }
-    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CapitalSourceBloc, CapitalSourceState>(
-      builder: (context, state) {
-        if (state is CapitalSourceLoaded) {
-          List<NguonKinhPhi> capitalSources = state.capitalSources;
-          data = capitalSources;
-          filteredData = data;
-
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: HeaderComponent(
-                controller: searchController,
-                onSearchChanged: (value) {
-                  setState(() {
-                    _searchCapitalSource(value);
-                  });
-                },
-                onNew: () {
-                  setState(() {
-                    _showForm(null);
-                  });
-                },
-                mainScreen: 'Quản lý nguồn vốn',
-                onFileSelected: (fileName, filePath, fileBytes) {
-                  insertData(context, fileName!, filePath!, fileBytes!);
-                },
-                onExportData: () {
-                  AppUtility.exportData(
-                    context,
-                    "nguon_von",
-                    data.map((e) => e.toExportJson()).toList(),
-                  );
-                },
-              ),
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: CommonPageView(
-                      title: 'Chi tiết nguồn vốn',
-                      childInput: CapitalSourceFormPage(
-                        isNew: isNew = true,
-                        isCanUpdate: isCanUpdate = true,
-                        capitalSource: editingCapitalSource,
-                        onCancel: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                        onSaved: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                      ),
-                      childTableView: CapitalSourceList(
-                        data: filteredData,
-                        onChangeDetail: (item) {
-                          _showForm(item);
-                        },
-                        onDelete: (item) {
-                          _showDeleteDialog(context, item);
-                        },
-                        onEdit: (item) {
-                          _showForm(item);
-                        },
-                      ),
-
-                      // Container(height: 200,color: Colors.limeAccent,),
-                      isShowInput: isShowInput,
-                      onExpandedChanged: (isExpanded) {
-                        isShowInput = isExpanded;
-                      },
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: (capitalSources.length) >= 5,
-                  child: SGPaginationControls(
-                    totalPages: 1,
-                    currentPage: 1,
-                    rowsPerPage: 10,
-                    controllerDropdownPage: controller,
-                    items: [
-                      DropdownMenuItem(value: 10, child: Text('10')),
-                      DropdownMenuItem(value: 20, child: Text('20')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                    ],
-                    onPageChanged: (page) {},
-                    onRowsPerPageChanged: (rows) {},
-                  ),
-                ),
-              ],
+    return BlocListener<CapitalSourceBloc, CapitalSourceState>(
+      listener: (context, state) {
+        isShowInput = false;
+        if (state is AddCapitalSourceSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? CapitalSourceConstants.webSnackBarDuration
+                      : CapitalSourceConstants.mobileSnackBarDuration,
             ),
           );
-        } else if (state is CapitalSourceError) {
-          return Center(child: Text(state.message));
         }
-        return const Center(child: CircularProgressIndicator());
+        if (state is UpdateCapitalSourceSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? CapitalSourceConstants.webSnackBarDuration
+                      : CapitalSourceConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteCapitalSourceSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? CapitalSourceConstants.webSnackBarDuration
+                      : CapitalSourceConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is CapitalSourceError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? CapitalSourceConstants.webSnackBarDuration
+                      : CapitalSourceConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteCapitalSourceBatchSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa nguồn vốn thành công'),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? CapitalSourceConstants.webSnackBarDuration
+                      : CapitalSourceConstants.mobileSnackBarDuration,
+            ),
+          );
+        } else if (state is DeleteCapitalSourceBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa nguồn vốn thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? CapitalSourceConstants.webSnackBarDuration
+                      : CapitalSourceConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
       },
+      child: BlocBuilder<CapitalSourceBloc, CapitalSourceState>(
+        builder: (context, state) {
+          if (state is CapitalSourceLoaded) {
+            List<NguonKinhPhi> capitalSources = state.capitalSources;
+            data = capitalSources;
+            filteredData = data;
+            _updatePagination();
+
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: HeaderComponent(
+                  controller: searchController,
+                  onSearchChanged: (value) {
+                    setState(() {
+                      _searchCapitalSource(value);
+                    });
+                  },
+                  onNew: () {
+                    setState(() {
+                      _showForm(null);
+                    });
+                  },
+                  mainScreen: 'Quản lý nguồn vốn',
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    List<NguonKinhPhi> nguonKinhPhi =
+                        await convertExcelToCapitalSource(
+                          filePath!,
+                          fileBytes: fileBytes,
+                        );
+                    _importData(nguonKinhPhi);
+                  },
+                  onExportData: () {
+                    AppUtility.exportData(
+                      context,
+                      "nguon_von",
+                      data.map((e) => e.toExportJson()).toList(),
+                    );
+                  },
+                ),
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        title: 'Chi tiết nguồn vốn',
+                        childInput: CapitalSourceFormPage(
+                          isNew: isNew = true,
+                          isCanUpdate: isCanUpdate = true,
+                          capitalSource: editingCapitalSource,
+                          onCancel: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                          onSaved: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                        ),
+                        childTableView: CapitalSourceList(
+                          data: dataPage,
+                          onChangeDetail: (item) {
+                            _showForm(item);
+                          },
+                          onDelete: (item) {
+                            _showDeleteDialog(context, item);
+                          },
+                          onEdit: (item) {
+                            _showForm(item);
+                          },
+                        ),
+
+                        // Container(height: 200,color: Colors.limeAccent,),
+                        isShowInput: isShowInput,
+                        onExpandedChanged: (isExpanded) {
+                          isShowInput = isExpanded;
+                        },
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible:
+                        capitalSources.length >=
+                        CapitalSourceConstants.minPaginationThreshold,
+                    child: SGPaginationControls(
+                      totalPages: totalPages,
+                      currentPage: currentPage,
+                      rowsPerPage: rowsPerPage,
+                      controllerDropdownPage: controller,
+                      items:
+                          (CapitalSourceConstants.mobilePaginationOptions)
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.toString()),
+                                ),
+                              )
+                              .toList(),
+                      onPageChanged: onPageChanged,
+                      onRowsPerPageChanged: onRowsPerPageChanged,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is CapitalSourceError) {
+            return Center(child: Text(state.message));
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   if (showForm) {
-  //     return CapitalSourceFormPage(
-  //       capitalSource: editingCapitalSource,
-  //       // Khi bấm Hủy hoặc Lưu sẽ quay lại danh sách
-  //       key: ValueKey(editingCapitalSource?.code ?? 'new'),
-  //       onCancel: _showList,
-  //       onSaved: _showList,
-  //     );
-  //   } else {
-  //     return CapitalSourceListPage(
-  //       onAdd: () => _showForm(),
-  //       onEdit: (capitalSource) => _showForm(capitalSource),
-  //     );
-  //   }
-  // }
 }

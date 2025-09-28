@@ -9,7 +9,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/provider
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'staff_event.dart';
 

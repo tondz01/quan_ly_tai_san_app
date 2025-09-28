@@ -11,7 +11,7 @@ import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/convert_excel_to_staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_event.dart';

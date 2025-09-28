@@ -1,49 +1,48 @@
-import 'dart:convert';
-import 'dart:developer';
+// ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/convert_excel_to_department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_state.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:flutter/foundation.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/component/convert_excel_to_asset_category.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/constants/asset_category_constants.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/pages/asset_category_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
-class DepartmentManager extends StatefulWidget {
-  const DepartmentManager({super.key});
+class AssetCategoryManager extends StatefulWidget {
+  const AssetCategoryManager({super.key});
 
   @override
-  State<DepartmentManager> createState() => _DepartmentManagerState();
+  State<AssetCategoryManager> createState() => _AssetCategoryManagerState();
 }
 
-class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
+class _AssetCategoryManagerState extends State<AssetCategoryManager>
+    with RouteAware {
   bool showForm = false;
-  PhongBan? editingDepartment;
+  AssetCategoryDto? editingAssetCategory;
 
   late int totalEntries;
   late int totalPages = 0;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage = DepartmentConstants.defaultRowsPerPage;
+  int rowsPerPage = AssetCategoryConstants.defaultRowsPerPage;
   int currentPage = 1;
 
   final ScrollController horizontalController = ScrollController();
   final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
-  List<PhongBan> data = [];
-  List<PhongBan> filteredData = [];
-  List<PhongBan> dataPage = [];
+  List<AssetCategoryDto> data = [];
+  List<AssetCategoryDto> filteredData = [];
+  List<AssetCategoryDto> dataPage = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
 
@@ -51,36 +50,40 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DepartmentBloc>().add(const LoadDepartments());
+      context.read<AssetCategoryBloc>().add(
+        GetListAssetCategoryEvent(context, 'ct001'),
+      );
     });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Removed duplicate LoadDepartments call
+    // Removed duplicate LoadAssetCategories call
   }
 
   @override
   void didPopNext() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DepartmentBloc>().add(const LoadDepartments());
+      context.read<AssetCategoryBloc>().add(
+        GetListAssetCategoryEvent(context, 'ct001'),
+      );
     });
   }
 
-  void _showForm([PhongBan? department]) {
+  void _showForm([AssetCategoryDto? assetCategory]) {
     setState(() {
       isShowInput = true;
-      editingDepartment = department;
+      editingAssetCategory = assetCategory;
     });
   }
 
   void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
+    // Sử dụng filteredData thay vì data
     totalEntries = filteredData.length;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(
       1,
-      DepartmentConstants.maxPaginationPages,
+      AssetCategoryConstants.maxPaginationPages,
     );
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
@@ -99,20 +102,22 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             : [];
   }
 
-  void _importData(List<PhongBan> departments) async {
-    if (departments.isNotEmpty) {
-      final result = await DepartmentsProvider().saveDepartmentBatch(
-        departments,
+  void _importData(List<AssetCategoryDto> assetCategories) async {
+    if (assetCategories.isNotEmpty) {
+      final result = await AssetCategoryRepository().saveAssetCategoryBatch(
+        assetCategories,
       );
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
           AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
           searchController.clear();
           currentPage = 1;
-          rowsPerPage = DepartmentConstants.defaultRowsPerPage;
+          rowsPerPage = AssetCategoryConstants.defaultRowsPerPage;
           filteredData = [];
           dataPage = [];
-          context.read<DepartmentBloc>().add(const LoadDepartments());
+          context.read<AssetCategoryBloc>().add(
+            GetListAssetCategoryEvent(context, 'ct001'),
+          );
           setState(() {
             isShowInput = false;
           });
@@ -137,13 +142,15 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
     }
   }
 
-  void _showDeleteDialog(BuildContext context, PhongBan department) {
+  void _showDeleteDialog(BuildContext context, AssetCategoryDto assetCategory) {
     showDialog(
       context: context,
       builder:
           (ctx) => AlertDialog(
             title: const Text('Xác nhận xóa'),
-            content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
+            content: const Text(
+              'Bạn có chắc chắn muốn xóa mô hình tài sản này?',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
@@ -151,8 +158,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
               ),
               ElevatedButton(
                 onPressed: () {
-                  context.read<DepartmentBloc>().add(
-                    DeleteDepartment(department),
+                  context.read<AssetCategoryBloc>().add(
+                    DeleteAssetCategoryEvent(context, assetCategory.id ?? ''),
                   );
                   Navigator.of(ctx).pop();
                 },
@@ -163,8 +170,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
     );
   }
 
-  void _searchDepartment(String value) {
-    context.read<DepartmentBloc>().add(SearchDepartment(value));
+  void _searchAssetCategory(String value) {
+    context.read<AssetCategoryBloc>().add(SearchAssetCategoryEvent(value));
   }
 
   void onPageChanged(int page) {
@@ -185,88 +192,86 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<DepartmentBloc, DepartmentState>(
+    return BlocListener<AssetCategoryBloc, AssetCategoryState>(
       listener: (context, state) {
         isShowInput = false;
-        if (state is AddDepartmentSuccess) {
+        if (state is AddAssetCategorySuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green.shade600,
               duration:
                   kIsWeb
-                      ? DepartmentConstants.webSnackBarDuration
-                      : DepartmentConstants.mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
-        if (state is UpdateDepartmentSuccess) {
+        if (state is UpdateAssetCategorySuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green.shade600,
               duration:
                   kIsWeb
-                      ? DepartmentConstants.webSnackBarDuration
-                      : DepartmentConstants.mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
-        if (state is DeleteDepartmentSuccess) {
+        if (state is DeleteAssetCategorySuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green.shade600,
               duration:
                   kIsWeb
-                      ? DepartmentConstants.webSnackBarDuration
-                      : DepartmentConstants.mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
-        if (state is DepartmentError) {
+        if (state is AssetCategoryError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Lỗi: ${state.message}'),
               backgroundColor: Colors.red.shade600,
               duration:
                   kIsWeb
-                      ? DepartmentConstants.webSnackBarDuration
-                      : DepartmentConstants.mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
-        if (state is DeleteDepartmentBatchSuccess) {
+        if (state is DeleteAssetCategoryBatchSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Xóa phòng ban thành công'),
+              content: Text('Xóa mô hình tài sản thành công'),
               backgroundColor: Colors.green.shade600,
               duration:
                   kIsWeb
-                      ? DepartmentConstants.webSnackBarDuration
-                      : DepartmentConstants.mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
-        } else if (state is DeleteDepartmentBatchFailure) {
+        } else if (state is DeleteAssetCategoryBatchFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Xóa phòng ban thất bại: ${state.message}'),
+              content: Text('Xóa mô hình tài sản thất bại: ${state.message}'),
               backgroundColor: Colors.red.shade600,
               duration:
                   kIsWeb
-                      ? DepartmentConstants.webSnackBarDuration
-                      : DepartmentConstants.mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
       },
-      child: BlocBuilder<DepartmentBloc, DepartmentState>(
+      child: BlocBuilder<AssetCategoryBloc, AssetCategoryState>(
         builder: (context, state) {
-          if (state is DepartmentLoaded) {
-            List<PhongBan> departments = state.departments;
-            data = departments;
-            AccountHelper.instance.clearDepartment();
-            AccountHelper.instance.setDepartment(departments);
+          if (state is AssetCategoryLoaded) {
+            List<AssetCategoryDto> assetCategories = state.assetCategories;
+            data = assetCategories;
             filteredData = data;
             _updatePagination();
 
@@ -277,29 +282,55 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                   controller: searchController,
                   onSearchChanged: (value) {
                     setState(() {
-                      _searchDepartment(value);
+                      _searchAssetCategory(value);
                     });
                   },
                   onNew: () {
                     setState(() {
                       _showForm(null);
                       isShowInput = true;
+                      editingAssetCategory = null;
                     });
                   },
-                  mainScreen: 'Quản lý phòng ban',
+                  mainScreen: 'Quản lý mô hình tài sản',
                   onFileSelected: (fileName, filePath, fileBytes) async {
-                    List<PhongBan> nv = await convertExcelToPhongBan(
+                    final result = await convertExcelToAssetCategory(
                       filePath!,
                       fileBytes: fileBytes,
                     );
-                    log('nv: ${jsonEncode(nv)}');
-                    _importData(nv);
+
+                    if (result['success']) {
+                      List<AssetCategoryDto> assetCategories = result['data'];
+                      _importData(assetCategories);
+                    } else {
+                      List<dynamic> errors = result['errors'];
+
+                      // Tạo danh sách lỗi dạng list
+                      List<String> errorMessages = [];
+                      for (var error in errors) {
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
+                        );
+                        String errorText =
+                            'Dòng $rowNumber: ${rowErrors.join(', ')}';
+                        errorMessages.add(errorText);
+                      }
+                      // Hiển thị thông báo tổng quan
+                      AppUtility.showSnackBar(
+                        context,
+                        'Import dữ liệu thất bại: \n $errorMessages',
+                        isError: true,
+                        timeDuration: 4,
+                      );
+                    }
                   },
+
                   onExportData: () {
                     AppUtility.exportData(
                       context,
-                      "phong_ban",
-                      departments.map((e) => e.toExportJson()).toList(),
+                      "mo_hinh_tai_san",
+                      assetCategories.map((e) => e.toExportJson()).toList(),
                     );
                   },
                 ),
@@ -310,21 +341,35 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.vertical,
                       child: CommonPageView(
-                        title: 'Chi tiết phòng ban',
-                        childInput: DepartmentFormPage(
-                          department: editingDepartment,
+                        title: 'Chi tiết mô hình tài sản',
+                        childInput: AssetCategoryFormPage(
+                          data: editingAssetCategory,
+                          onSave: (assetCategory) {
+                            if (editingAssetCategory != null) {
+                              context.read<AssetCategoryBloc>().add(
+                                UpdateAssetCategoryEvent(
+                                  context,
+                                  assetCategory,
+                                  editingAssetCategory!.id ?? '',
+                                ),
+                              );
+                            } else {
+                              context.read<AssetCategoryBloc>().add(
+                                CreateAssetCategoryEvent(
+                                  context,
+                                  assetCategory,
+                                ),
+                              );
+                            }
+                          },
                           onCancel: () {
                             setState(() {
                               isShowInput = false;
-                            });
-                          },
-                          onSaved: () {
-                            setState(() {
-                              isShowInput = false;
+                              editingAssetCategory = null;
                             });
                           },
                         ),
-                        childTableView: DepartmentList(
+                        childTableView: AssetCategoryList(
                           data: dataPage,
                           onChangeDetail: (item) {
                             _showForm(item);
@@ -336,7 +381,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                             _showForm(item);
                           },
                         ),
-
                         isShowInput: isShowInput,
                         onExpandedChanged: (isExpanded) {
                           isShowInput = isExpanded;
@@ -346,15 +390,15 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                   ),
                   Visibility(
                     visible:
-                        departments.length >=
-                        DepartmentConstants.minPaginationThreshold,
+                        assetCategories.length >=
+                        AssetCategoryConstants.minPaginationThreshold,
                     child: SGPaginationControls(
                       totalPages: totalPages,
                       currentPage: currentPage,
                       rowsPerPage: rowsPerPage,
                       controllerDropdownPage: controller,
                       items:
-                          (DepartmentConstants.mobilePaginationOptions)
+                          (AssetCategoryConstants.mobilePaginationOptions)
                               .map(
                                 (value) => DropdownMenuItem(
                                   value: value,
@@ -369,7 +413,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                 ],
               ),
             );
-          } else if (state is DepartmentError) {
+          } else if (state is AssetCategoryError) {
             return Center(child: Text(state.message));
           }
           return const Center(child: CircularProgressIndicator());

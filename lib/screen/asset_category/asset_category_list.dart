@@ -7,17 +7,17 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class CapitalSourceList extends StatefulWidget {
-  final List<NguonKinhPhi> data;
-  final void Function(NguonKinhPhi)? onChangeDetail;
-  final void Function(NguonKinhPhi)? onEdit;
-  final void Function(NguonKinhPhi)? onDelete;
-  const CapitalSourceList({
+class AssetCategoryList extends StatefulWidget {
+  final List<AssetCategoryDto> data;
+  final void Function(AssetCategoryDto)? onChangeDetail;
+  final void Function(AssetCategoryDto)? onEdit;
+  final void Function(AssetCategoryDto)? onDelete;
+  const AssetCategoryList({
     super.key,
     required this.data,
     this.onChangeDetail,
@@ -26,53 +26,71 @@ class CapitalSourceList extends StatefulWidget {
   });
 
   @override
-  State<CapitalSourceList> createState() => _CapitalSourceListState();
+  State<AssetCategoryList> createState() => _AssetCategoryListState();
 }
 
-class _CapitalSourceListState extends State<CapitalSourceList> {
-  List<NguonKinhPhi> selectedItems = [];
+class _AssetCategoryListState extends State<AssetCategoryList> {
+  List<AssetCategoryDto> selectedItems = [];
 
   @override
   Widget build(BuildContext context) {
     final columns = [
-      
-      TableBaseConfig.columnTable<NguonKinhPhi>(
-        title: 'Mã nguồn kinh phí',
-        getValue: (item) => item.id ?? "", width: 100,
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Mã mô hình',
+        getValue: (item) => item.id ?? "",
+        width: 100,
       ),
-      TableBaseConfig.columnTable<NguonKinhPhi>(
-        title: 'Tên nguồn kinh phí',
-        getValue: (item) => item.tenNguonKinhPhi ?? "",
-        width: 150,
-        titleAlignment: TextAlign.start,
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Tên mô hình tài sản',
+        getValue: (item) => item.tenMoHinh ?? "",
+        width: 200,
       ),
-      TableBaseConfig.columnTable<NguonKinhPhi>(
-        title: 'Ghi chú',
-        getValue: (item) => item.ghiChu ?? "",
-        width: MediaQuery.of(context).size.width / 4,
-        titleAlignment: TextAlign.start,
-      ),
-      TableBaseConfig.columnTable<NguonKinhPhi>(
-        title: 'Có hiệu lực',
-        getValue: (item) => item.isActive ?? false ? 'Có' : 'Không',
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Phương pháp khấu hao',
+        getValue: (item) => item.phuongPhapKhauHao == 1 ? 'Đường thẳng' : 'Khác',
         width: 150,
       ),
-      TableBaseConfig.columnWidgetBase<NguonKinhPhi>(
-        title: '',
-        cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<NguonKinhPhi>(
-              item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
-              onDelete: (item) {
-                widget.onDelete?.call(item);
-              },
-            ),
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Kỳ khấu hao',
+        getValue: (item) => item.kyKhauHao?.toString() ?? "",
+        width: 100,
+      ),
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Loại kỳ khấu hao',
+        getValue: (item) => item.loaiKyKhauHao == '1' ? 'Tháng' : item.loaiKyKhauHao == '2' ? 'Năm' : item.loaiKyKhauHao ?? "",
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Tài khoản tài sản',
+        getValue: (item) => item.taiKhoanTaiSan ?? "",
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Tài khoản khấu hao',
+        getValue: (item) => item.taiKhoanKhauHao ?? "",
+        width: 120,
+      ),
+      TableBaseConfig.columnTable<AssetCategoryDto>(
+        title: 'Tài khoản chi phí',
+        getValue: (item) => item.taiKhoanChiPhi ?? "",
+        width: 120,
+      ),
+      TableBaseConfig.columnWidgetBase<AssetCategoryDto>(
+        title: 'Thao tác',
+        cellBuilder: (item) => TableBaseConfig.viewActionBase<AssetCategoryDto>(
+          item: item,
+          onEdit: (item) {
+            widget.onEdit?.call(item);
+          },
+          onDelete: (item) {
+            widget.onDelete?.call(item);
+          },
+        ),
         width: 120,
         searchable: true,
       ),
     ];
+    
     return Container(
       height: MediaQuery.of(context).size.height - 200,
       decoration: BoxDecoration(
@@ -88,7 +106,6 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
         ],
       ),
       child: Column(
-        // mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -111,7 +128,7 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                     ),
                     SizedBox(width: 8),
                     SGText(
-                      text: 'Danh sách nguồn vốn',
+                      text: 'Danh sách mô hình tài sản',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -126,7 +143,7 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                     children: [
                       SGText(
                         text:
-                            'Danh sách nguồn vốn đã chọn: ${selectedItems.length}',
+                            'Danh sách mô hình tài sản đã chọn: ${selectedItems.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -147,16 +164,16 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                             showConfirmDialog(
                               context,
                               type: ConfirmType.delete,
-                              title: 'Xóa nguồn vốn',
+                              title: 'Xóa mô hình tài sản',
                               message:
-                                  'Bạn có chắc muốn xóa ${selectedItems.length} nguồn vốn',
+                                  'Bạn có chắc muốn xóa ${selectedItems.length} mô hình tài sản',
                               highlight: selectedItems.length.toString(),
                               cancelText: 'Không',
                               confirmText: 'Xóa',
                               onConfirm: () {
-                                final capitalSourceBloc =
-                                    context.read<CapitalSourceBloc>();
-                                capitalSourceBloc.add(DeleteCapitalSourceBatch(data));
+                                final assetCategoryBloc =
+                                    context.read<AssetCategoryBloc>();
+                                assetCategoryBloc.add(DeleteAssetCategoryBatchEvent(context, data));
                               },
                             );
                           });
@@ -169,7 +186,7 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
             ),
           ),
           Expanded(
-            child: TableBaseView<NguonKinhPhi>(
+            child: TableBaseView<AssetCategoryDto>(
               searchTerm: '',
               columns: columns,
               data: widget.data,
