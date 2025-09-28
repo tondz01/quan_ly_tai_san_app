@@ -375,7 +375,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
-      SGLog.debug('getListToolAnd ___', 'data null: $_data');
       _filteredData = [];
     } else {
       AccountHelper.instance.clearToolAndMaterialTransfer();
@@ -406,8 +405,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
                 return inGroup;
               })
               .toList();
-      SGLog.debug('getListToolAnd ___', 'data: $_data');
-      SGLog.debug('getListToolAnd ____', 'state.data: ${state.data}');
       _filteredData = List.from(_data!);
     }
     _updatePagination();

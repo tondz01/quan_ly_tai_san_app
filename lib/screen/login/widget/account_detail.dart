@@ -193,12 +193,6 @@ class _AccountDetailState extends State<AccountDetail> {
                       isEditing: false,
                       textContent: ctrlPhone.text,
                     ),
-                    CommonFormInput(
-                      label: 'Số điện thoại',
-                      controller: ctrlPhone,
-                      isEditing: false,
-                      textContent: ctrlPhone.text,
-                    ),
                   ],
                 ),
               ),

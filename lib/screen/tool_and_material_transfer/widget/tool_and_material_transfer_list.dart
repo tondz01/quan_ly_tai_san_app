@@ -1,5 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -111,6 +114,14 @@ class _ToolAndMaterialTransferListState
         if (selected!.id != null) {
           _buildDetailDepartmentTree(selected!);
         }
+
+        log(
+          '[Log didUpdateWidget] nguoikyNhay: ${jsonEncode(widget.provider.dataPage)}',
+        );
+      } else {
+        log(
+          '[Log didUpdateWidget] nguoikyNhay null: ${jsonEncode(widget.provider.dataPage)}',
+        );
       }
     });
   }
@@ -487,6 +498,7 @@ class _ToolAndMaterialTransferListState
                       onSelectionChanged: (items) {
                         setState(() {
                           listItemSelected.clear();
+                          log('[Log didUpdateWidget listItemSelected] Chia sẻ với người ký items: ${jsonEncode(items)}');
                           listItemSelected = items;
                         });
                       },
@@ -952,6 +964,7 @@ class _ToolAndMaterialTransferListState
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        log('[Log didUpdateWidget listItemSelected] Chia sẻ với người ký items: ${jsonEncode(items)}');
         context.read<ToolAndMaterialTransferBloc>().add(
           SendToSignerTAMTEvent(context, items),
         );

@@ -70,7 +70,7 @@ class _ToolAndMaterialTransferDetailState
   late TextEditingController controllerDocumentName = TextEditingController();
   late TextEditingController controllerDeliveringUnit = TextEditingController();
   late TextEditingController controllerReceivingUnit = TextEditingController();
-  late TextEditingController controllerRequester = TextEditingController();
+  // late TextEditingController controllerRequester = TextEditingController();
   late TextEditingController controllerProposingUnit = TextEditingController();
   late TextEditingController controllerQuantity = TextEditingController();
   late TextEditingController controllerDepartmentApproval =
@@ -108,7 +108,7 @@ class _ToolAndMaterialTransferDetailState
   String? _selectedFilePath;
   Uint8List? _selectedFileBytes;
   String idCongTy = 'CT001';
-  int typeTransfer = 1;
+  int get typeTransfer => widget.type;
   List<DetailToolAndMaterialTransferDto> listNewDetails = [];
   List<DetailToolAndMaterialTransferDto> _initialDetails = [];
   List<NhanVien> listStaffByDepartment = [];
@@ -168,9 +168,9 @@ class _ToolAndMaterialTransferDetailState
       newValidationErrors['effectiveDateTo'] = true;
     }
 
-    if (controllerRequester.text.isEmpty) {
-      newValidationErrors['requester'] = true;
-    }
+    // if (controllerRequester.text.isEmpty) {
+    //   newValidationErrors['requester'] = true;
+    // }
 
     // If it's a new item, document is required
     if (item == null && _selectedFileName == null) {
@@ -197,9 +197,9 @@ class _ToolAndMaterialTransferDetailState
       newValidationErrors['receivingUnit'] = true;
     }
 
-    if (donViDeNghi == null || controllerRequester.text.isEmpty) {
-      newValidationErrors['requester'] = true;
-    }
+    // if (donViDeNghi == null || controllerRequester.text.isEmpty) {
+    //   newValidationErrors['requester'] = true;
+    // }
     
     if (donViGiao == null || controllerDeliveringUnit.text.isEmpty) {
       newValidationErrors['deliveringUnit'] = true;
@@ -221,7 +221,7 @@ class _ToolAndMaterialTransferDetailState
   void initState() {
     super.initState();
     item = widget.provider.item;
-    _callGetListAssetHandover();
+    // _callGetListAssetHandover(); // Không cần gọi lại API khi xem chi tiết
     isEditing = widget.isEditing;
 
     if (item != null && item!.trangThai == 0) {
@@ -296,6 +296,7 @@ class _ToolAndMaterialTransferDetailState
       item = widget.provider.item;
       isNew = item == null;
       listNhanVien = widget.provider.dataNhanVien;
+
       nvPhongGD = listNhanVien.where((e) => e.phongBanId == 'P21').toList();
       // Reset editing state
       isEditing = widget.isEditing;
@@ -311,12 +312,13 @@ class _ToolAndMaterialTransferDetailState
         controllerDocumentName.text = item?.tenPhieu ?? '';
         controllerDeliveringUnit.text = item?.tenDonViGiao ?? '';
         controllerReceivingUnit.text = item?.tenDonViNhan ?? '';
-        controllerRequester.text = item?.tenNguoiDeNghi ?? '';
+        // controllerRequester.text = item?.tenNguoiDeNghi ?? '';
         controllerDepartmentApproval.text = item?.tenTrinhDuyetCapPhong ?? '';
         controllerEffectiveDate.text = item?.tggnTuNgay ?? '';
         controllerEffectiveDateTo.text = item?.tggnDenNgay ?? '';
         controllerApprover.text = item?.tenTrinhDuyetGiamDoc ?? '';
         controllerDeliveryLocation.text = item?.diaDiemGiaoNhan ?? '';
+        controllerNguoiKyNhay.text = item?.tenNguoiDeNghi ?? '';
 
         // Initialize selected file if available
         _selectedFileName = item?.tenFile;
@@ -350,7 +352,7 @@ class _ToolAndMaterialTransferDetailState
         nguoiKyGiamDoc = widget.provider.getNhanVienByID(
           item?.idTrinhDuyetGiamDoc ?? '',
         );
-        controllerNguoiKyNhay.text = item?.idNguoiKyNhay ?? '';
+        // controllerNguoiKyNhay.text = item?.idNguoiKyNhay ?? '';
 
         isNguoiLapPhieuKyNhay = item?.nguoiLapPhieuKyNhay ?? false;
         proposingUnit = item?.tenDonViDeNghi;
@@ -405,7 +407,7 @@ class _ToolAndMaterialTransferDetailState
         controllerDocumentName.text = '';
         controllerDeliveringUnit.text = '';
         controllerReceivingUnit.text = '';
-        controllerRequester.text = '';
+        // controllerRequester.text = '';
         controllerDepartmentApproval.text = '';
         controllerEffectiveDate.text = '';
         controllerEffectiveDateTo.text = '';
@@ -434,7 +436,8 @@ class _ToolAndMaterialTransferDetailState
                 .toList();
         controllerProposingUnit.text = donViDeNghi?.tenPhongBan ?? '';
         nguoiKyNhay = nhanVienLogin;
-        controllerRequester.text = nguoiKyNhay!.hoTen ?? '';
+        // controllerRequester.text = nguoiKyNhay!.hoTen ?? '';
+        controllerNguoiKyNhay.text = nguoiKyNhay!.hoTen ?? '';
         additionalSigners.clear();
         additionalSignerControllers.clear();
         additionalSignersDetailed.clear();
@@ -468,7 +471,8 @@ class _ToolAndMaterialTransferDetailState
     controllerDocumentName.dispose();
     controllerDeliveringUnit.dispose();
     controllerReceivingUnit.dispose();
-    controllerRequester.dispose();
+    // controllerRequester.dispose();
+    controllerNguoiKyNhay.dispose();
     controllerProposingUnit.dispose();
     controllerQuantity.dispose();
     controllerDepartmentApproval.dispose();
@@ -802,9 +806,8 @@ class _ToolAndMaterialTransferDetailState
                           validationErrors: _validationErrors,
                           isRequired: true,
                         ),
-
                         CmFormDropdownObject<PhongBan>(
-                          label: 'at.delivering_unit'.tr,
+                          label: 'Đơn vị giao',
                           controller: controllerDeliveringUnit,
                           isEditing: isEditing,
                           value: donViGiao,
@@ -919,7 +922,7 @@ class _ToolAndMaterialTransferDetailState
                         ),
                         CmFormDropdownObject<NhanVien>(
                           label: 'Người lập phiếu',
-                          controller: controllerRequester,
+                          controller: controllerNguoiKyNhay,
                           isEditing: isEditing,
                           value: nguoiKyNhay,
                           items: [
@@ -931,12 +934,12 @@ class _ToolAndMaterialTransferDetailState
                             ),
                           ],
                           defaultValue:
-                              controllerRequester.text.isNotEmpty
+                              controllerNguoiKyNhay.text.isNotEmpty
                                   ? widget.provider.getNhanVienByID(
-                                    controllerRequester.text,
+                                    controllerNguoiKyNhay.text,
                                   )
                                   : null,
-                          fieldName: 'requester',
+                          fieldName: 'nguoiKyNhay',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
                             setState(() {
