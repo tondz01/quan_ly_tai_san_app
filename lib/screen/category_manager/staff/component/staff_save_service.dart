@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/upload_file_signature.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -155,7 +156,7 @@ class StaffSaveService {
         if (!context.mounted) return null;
         AppUtility.showSnackBar(
           context,
-          'Upload file chữ ký nháy thất bại',
+          StaffConstants.errorUploadSignature,
           isError: true,
         );
         return null;
@@ -177,7 +178,7 @@ class StaffSaveService {
         if (!context.mounted) return null;
         AppUtility.showSnackBar(
           context,
-          'Upload file chữ ký thường thất bại',
+          StaffConstants.errorUploadSignature,
           isError: true,
         );
         return null;
@@ -191,7 +192,7 @@ class StaffSaveService {
       if (kySo && (staff.pin?.isEmpty ?? true)) {
         AppUtility.showSnackBar(
           context,
-          'Vui lòng nhập mã PIN để lấy Agreement UUID',
+          StaffConstants.errorPinRequired,
           isError: true,
         );
       }
@@ -216,7 +217,7 @@ class StaffSaveService {
       if (kySo && (staff.pin?.isEmpty ?? true)) {
         AppUtility.showSnackBar(
           context,
-          'Vui lòng nhập mã PIN để lấy Agreement UUID',
+          StaffConstants.errorPinRequired,
           isError: true,
         );
       }
@@ -228,7 +229,7 @@ class StaffSaveService {
         if (kyNhay && (s(candidate.chuKyNhay).isEmpty) && !isNewNhaySelected) {
           AppUtility.showSnackBar(
             context,
-            'Vui lòng chọn file chữ ký nháy',
+            StaffConstants.errorSelectSignatureFile,
             isError: true,
           );
           return false;
@@ -239,7 +240,7 @@ class StaffSaveService {
             !isNewThuongSelected) {
           AppUtility.showSnackBar(
             context,
-            'Vui lòng chọn file chữ ký thường',
+            StaffConstants.errorSelectSignatureFile,
             isError: true,
           );
           return false;

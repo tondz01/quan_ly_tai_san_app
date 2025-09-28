@@ -115,6 +115,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                     final roleBloc = context.read<ProjectBloc>();
                     final List<DuAn> duAnList = await convertExcelToProject(
                       filePath!,
+                      fileBytes: fileBytes,
                     );
                     if (!mounted) return;
                     if (duAnList.isNotEmpty) {

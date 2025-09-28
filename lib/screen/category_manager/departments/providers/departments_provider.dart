@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/nhom_don_vi.dart';
@@ -39,7 +40,7 @@ class DepartmentsProvider extends ApiBase {
         queryParameters: {'idcongty': idCongTy},
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         result['message'] = response.data['message'];
         return result;
@@ -173,7 +174,7 @@ class DepartmentsProvider extends ApiBase {
         data: jsonEncode(departments),
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
@@ -204,7 +205,7 @@ class DepartmentsProvider extends ApiBase {
         data: data,
       );
 
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }

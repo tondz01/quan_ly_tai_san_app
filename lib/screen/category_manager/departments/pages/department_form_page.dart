@@ -98,7 +98,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         phongCapTren: _parentDepartment?.id ?? '',
       );
       if (widget.department == null) {
-        context.read<DepartmentBloc>().add(AddDepartment(department));
+         context.read<DepartmentBloc>().add(AddDepartment(department));
       } else {
         context.read<DepartmentBloc>().add(UpdateDepartment(department));
       }

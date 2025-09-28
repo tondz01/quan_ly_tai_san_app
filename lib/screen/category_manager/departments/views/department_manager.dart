@@ -6,7 +6,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/convert_excel_to_department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
@@ -103,8 +103,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
       final result = await DepartmentsProvider().saveDepartmentBatch(
         departments,
       );
-      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-          result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      if (checkStatusCodeDone(result)) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -220,7 +219,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                 },
                 mainScreen: 'Quản lý phòng ban',
                 onFileSelected: (fileName, filePath, fileBytes) async {
-                  List<PhongBan> nv = await convertExcelToPhongBan(filePath!);
+                  List<PhongBan> nv = await convertExcelToPhongBan(filePath!, fileBytes: fileBytes);
                   log('nv: ${jsonEncode(nv)}');
                   _importData(nv);
                 },

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,8 +9,8 @@ import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
-Future<List<DuAn>> convertExcelToProject(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+Future<List<DuAn>> convertExcelToProject(String filePath, {Uint8List? fileBytes}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
   final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
 
   List<DuAn> duAnList = [];
