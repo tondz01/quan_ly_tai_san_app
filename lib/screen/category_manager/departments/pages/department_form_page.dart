@@ -261,7 +261,7 @@ InputDecoration inputDecoration(
 
 Widget sectionTitle(IconData icon, String title, [String? desc]) {
   return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Container(
         margin: const EdgeInsets.only(right: 12, top: 2),

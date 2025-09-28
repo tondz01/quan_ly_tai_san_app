@@ -5,7 +5,6 @@ class DepartmentConstants {
   static const int maxPaginationPages = 9999;
   
   // Web-specific pagination options
-  static const List<int> webPaginationOptions = [10, 20, 50, 100];
   static const List<int> mobilePaginationOptions = [10, 20, 50];
   
   // Default values

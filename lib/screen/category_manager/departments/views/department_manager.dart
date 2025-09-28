@@ -80,7 +80,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   void _updatePagination() {
     // Sử dụng _filteredData thay vì _data
     totalEntries = filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, DepartmentConstants.maxPaginationPages);
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
+      1,
+      DepartmentConstants.maxPaginationPages,
+    );
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
@@ -124,7 +127,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
         }
       } else {
         if (context.mounted) {
-          
           AppUtility.showSnackBar(
             context,
             'Import dữ liệu thất bại',
@@ -193,13 +195,16 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   Widget build(BuildContext context) {
     return BlocListener<DepartmentBloc, DepartmentState>(
       listener: (context, state) {
-        isShowInput=false;
+        isShowInput = false;
         if (state is AddDepartmentSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green.shade600,
-              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -208,7 +213,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green.shade600,
-              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -217,7 +225,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.green.shade600,
-              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -226,7 +237,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             SnackBar(
               content: Text('Lỗi: ${state.message}'),
               backgroundColor: Colors.red.shade600,
-              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -235,7 +249,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             SnackBar(
               content: Text('Xóa phòng ban thành công'),
               backgroundColor: Colors.green.shade600,
-              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
         } else if (state is DeleteDepartmentBatchFailure) {
@@ -243,117 +260,127 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             SnackBar(
               content: Text('Xóa phòng ban thất bại: ${state.message}'),
               backgroundColor: Colors.red.shade600,
-              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
         }
       },
       child: BlocBuilder<DepartmentBloc, DepartmentState>(
         builder: (context, state) {
-        if (state is DepartmentLoaded) {
-          List<PhongBan> departments = state.departments;
-          data = departments;
-          AccountHelper.instance.clearDepartment();
-          AccountHelper.instance.setDepartment(departments);
-          filteredData = data;
-          _updatePagination();
+          if (state is DepartmentLoaded) {
+            List<PhongBan> departments = state.departments;
+            data = departments;
+            AccountHelper.instance.clearDepartment();
+            AccountHelper.instance.setDepartment(departments);
+            filteredData = data;
+            _updatePagination();
 
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: HeaderComponent(
-                controller: searchController,
-                onSearchChanged: (value) {
-                  setState(() {
-                    _searchDepartment(value);
-                  });
-                },
-                onNew: () {
-                  setState(() {
-                    _showForm(null);
-                    isShowInput = true;
-                  });
-                },
-                mainScreen: 'Quản lý phòng ban',
-                onFileSelected: (fileName, filePath, fileBytes) async {
-                  List<PhongBan> nv = await convertExcelToPhongBan(filePath!, fileBytes: fileBytes);
-                  log('nv: ${jsonEncode(nv)}');
-                  _importData(nv);
-                },
-                onExportData: () {
-                  AppUtility.exportData(
-                    context,
-                    "phong_ban",
-                    departments.map((e) => e.toExportJson()).toList(),
-                  );
-                },
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: HeaderComponent(
+                  controller: searchController,
+                  onSearchChanged: (value) {
+                    setState(() {
+                      _searchDepartment(value);
+                    });
+                  },
+                  onNew: () {
+                    setState(() {
+                      _showForm(null);
+                      isShowInput = true;
+                    });
+                  },
+                  mainScreen: 'Quản lý phòng ban',
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    List<PhongBan> nv = await convertExcelToPhongBan(
+                      filePath!,
+                      fileBytes: fileBytes,
+                    );
+                    log('nv: ${jsonEncode(nv)}');
+                    _importData(nv);
+                  },
+                  onExportData: () {
+                    AppUtility.exportData(
+                      context,
+                      "phong_ban",
+                      departments.map((e) => e.toExportJson()).toList(),
+                    );
+                  },
+                ),
               ),
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: CommonPageView(
-                      title: 'Chi tiết phòng ban',
-                      childInput: DepartmentFormPage(
-                        department: editingDepartment,
-                        onCancel: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                        onSaved: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                      ),
-                      childTableView: DepartmentList(
-                        data: dataPage,
-                        onChangeDetail: (item) {
-                          _showForm(item);
-                        },
-                        onDelete: (item) {
-                          _showDeleteDialog(context, item);
-                        },
-                        onEdit: (item) {
-                          _showForm(item);
-                        },
-                      ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        title: 'Chi tiết phòng ban',
+                        childInput: DepartmentFormPage(
+                          department: editingDepartment,
+                          onCancel: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                          onSaved: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                        ),
+                        childTableView: DepartmentList(
+                          data: dataPage,
+                          onChangeDetail: (item) {
+                            _showForm(item);
+                          },
+                          onDelete: (item) {
+                            _showDeleteDialog(context, item);
+                          },
+                          onEdit: (item) {
+                            _showForm(item);
+                          },
+                        ),
 
-                      isShowInput: isShowInput,
-                      onExpandedChanged: (isExpanded) {
-                        isShowInput = isExpanded;
-                      },
+                        isShowInput: isShowInput,
+                        onExpandedChanged: (isExpanded) {
+                          isShowInput = isExpanded;
+                        },
+                      ),
                     ),
                   ),
-                ),
-                Visibility(
-                  visible: departments.length >= DepartmentConstants.minPaginationThreshold,
-                  child: SGPaginationControls(
-                    totalPages: totalPages,
-                    currentPage: currentPage,
-                    rowsPerPage: rowsPerPage,
-                    controllerDropdownPage: controller,
-                    items: (kIsWeb 
-                      ? DepartmentConstants.webPaginationOptions 
-                      : DepartmentConstants.mobilePaginationOptions
-                    ).map((value) => DropdownMenuItem(
-                      value: value, 
-                      child: Text(value.toString())
-                    )).toList(),
-                    onPageChanged: onPageChanged,
-                    onRowsPerPageChanged: onRowsPerPageChanged,
+                  Visibility(
+                    visible:
+                        departments.length >=
+                        DepartmentConstants.minPaginationThreshold,
+                    child: SGPaginationControls(
+                      totalPages: totalPages,
+                      currentPage: currentPage,
+                      rowsPerPage: rowsPerPage,
+                      controllerDropdownPage: controller,
+                      items:
+                          (DepartmentConstants.mobilePaginationOptions)
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.toString()),
+                                ),
+                              )
+                              .toList(),
+                      onPageChanged: onPageChanged,
+                      onRowsPerPageChanged: onRowsPerPageChanged,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        } else if (state is DepartmentError) {
-          return Center(child: Text(state.message));
-        }
-        return const Center(child: CircularProgressIndicator());
+                ],
+              ),
+            );
+          } else if (state is DepartmentError) {
+            return Center(child: Text(state.message));
+          }
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
