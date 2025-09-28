@@ -169,10 +169,12 @@ prevDocumentCcdcHandover({
                 ),
               ),
             ],
+            
             signatureList: [urlChuKyNhay, urlChuKyThuong],
-            idTaiLieu: item.id.toString(),
+            idTaiLieu: dieuDongCcdc.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            nhanVien: nhanVien,
             pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
             isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,

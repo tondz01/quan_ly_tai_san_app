@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -155,10 +152,8 @@ class _DetailToolAndMaterialTransferTableState
         continue;
       }
       final asset = idToAsset[idAsset.idTaiSan];
-      log('message số lượng xuất: ${jsonEncode(c)}');
       if (asset != null) {
         // Tìm ItemDropdownDetailAsset tương ứng
-        log('message số lượng xuất22: ${c.soLuong}');
         final detailAsset = listItemDropdownDetailAsset.firstWhere(
           (element) => element.idDetaiAsset == id,
           orElse:
@@ -173,12 +168,14 @@ class _DetailToolAndMaterialTransferTableState
                 namSanXuat: 2010,
                 soLuong: c.soLuong,
                 soLuongXuat: 0,
-                soLuongDaBanGiao: soLuongDaBanGiao,
                 ghiChu: asset.ghiChu,
                 asset: asset,
               ),
         );
-        final newDetailAsset = detailAsset.copyWith(soLuongXuat: c.soLuongXuat);
+        final newDetailAsset = detailAsset.copyWith(
+          soLuongXuat: c.soLuongXuat,
+          soLuongDaBanGiao: soLuongDaBanGiao,
+        );
         result.add(newDetailAsset);
       }
     }
@@ -229,7 +226,6 @@ class _DetailToolAndMaterialTransferTableState
                 titleAlignment: TextAlign.center,
                 width: 150,
                 getValue: (item) {
-                  log('message item222: $item');
                   return item;
                 },
                 setValue: (item, value) {

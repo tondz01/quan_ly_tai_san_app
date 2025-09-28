@@ -324,7 +324,10 @@ class _AccountListState extends State<AccountList> {
                   ],
                 ),
                 Visibility(
-                  visible: selectedItems.isNotEmpty,
+                  visible:
+                      selectedItems.isNotEmpty &&
+                      AccountHelper.instance.getUserInfo()?.tenDangNhap ==
+                          "admin",
                   child: Row(
                     children: [
                       SGText(
@@ -337,6 +340,7 @@ class _AccountListState extends State<AccountList> {
                         ),
                       ),
                       SizedBox(width: 16),
+
                       MaterialTextButton(
                         text: 'Xóa đã chọn',
                         icon: Icons.delete,
@@ -408,16 +412,25 @@ class _AccountListState extends State<AccountList> {
         onPressed: () {
           List<RoleDto> roles = AppUtility.listRoles;
           // showPermissionExample(context, item);
-          showAccountEditPopup(
-            context: context,
-            userInfo: item,
-            roles: roles,
-            onSave: (updatedUser) {
-              context.read<LoginBloc>().add(
-                UpdateUserEvent(updatedUser.id, updatedUser),
-              );
-            },
-          );
+          if (currentUser?.tenDangNhap == "admin" ||
+              currentUser?.tenDangNhap == item.tenDangNhap) {
+            showAccountEditPopup(
+              context: context,
+              userInfo: item,
+              roles: roles,
+              onSave: (updatedUser) {
+                context.read<LoginBloc>().add(
+                  UpdateUserEvent(updatedUser.id, updatedUser),
+                );
+              },
+            );
+          } else {
+            AppUtility.showSnackBar(
+              context,
+              'Bạn chỉ có thể sửa thông tin của chính mình',
+              isError: true,
+            );
+          }
         },
       ),
       ActionButtonConfig(
@@ -446,16 +459,17 @@ class _AccountListState extends State<AccountList> {
                   ),
                 },
       ),
-      ActionButtonConfig(
-        icon: Icons.security,
-        tooltip: 'Phân quyền',
-        iconColor: Colors.orange,
-        backgroundColor: Colors.orange.shade50,
-        borderColor: Colors.orange.shade200,
-        onPressed: () {
-          widget.provider.showPermission(context, item);
-        },
-      ),
+      if (currentUser.tenDangNhap == "admin")
+        ActionButtonConfig(
+          icon: Icons.security,
+          tooltip: 'Phân quyền',
+          iconColor: Colors.orange,
+          backgroundColor: Colors.orange.shade50,
+          borderColor: Colors.orange.shade200,
+          onPressed: () {
+            widget.provider.showPermission(context, item);
+          },
+        ),
     ]);
   }
 }

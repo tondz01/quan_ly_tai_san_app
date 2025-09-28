@@ -462,11 +462,13 @@ class _AssetDetailState extends State<AssetDetail> {
           data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlKyKhauHaoBanDau.text = data!.kyKhauHaoBanDau?.toString() ?? '';
       ctrlGiaTriThanhLy.text = data!.giaTriThanhLy?.toString() ?? '';
-      ctrlTenMoHinh.text =
-          listAssetCategory
-              .firstWhere((element) => element.id == data!.idMoHinhTaiSan)
-              .tenMoHinh ??
-          '';
+      log('data!.idMoHinhTaiSan: ${data!.idMoHinhTaiSan}');
+      log('listAssetCategory: ${listAssetCategory}');
+      // ctrlTenMoHinh.text =
+      //     listAssetCategory
+      //         .firstWhere((element) => element.id == data!.idMoHinhTaiSan)
+      //         .tenMoHinh ??
+      //     '';
       idAssetCategory = data!.idMoHinhTaiSan;
       ctrlPhuongPhapKhauHao.text = data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlSoKyKhauHao.text = data!.soKyKhauHao?.toString() ?? '';

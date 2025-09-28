@@ -14,6 +14,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/components/popup_input_pin.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -23,6 +24,7 @@ class CommonContract extends StatefulWidget {
   final String? idTaiLieu;
   final String? idNguoiKy;
   final String? tenNguoiKy;
+  final NhanVien? nhanVien;
   final int? pin;
   final bool isSavePin;
   final bool isShowKy;
@@ -40,6 +42,7 @@ class CommonContract extends StatefulWidget {
     this.showTitle,
     this.idNguoiKy,
     this.tenNguoiKy,
+    this.nhanVien,
     this.isShowKy = true,
     this.isKyNhay = true,
     this.isKyThuong = true,
@@ -173,7 +176,8 @@ class _CommonContractState extends State<CommonContract> {
     );
     final res = await http.get(url);
     final decoded = jsonDecode(res.body);
-    final List<dynamic> data = decoded is List ? decoded : (decoded['data'] ?? []);
+    final List<dynamic> data =
+        decoded is List ? decoded : (decoded['data'] ?? []);
     setState(() {
       signatures = List<Map<String, dynamic>>.from(data);
     });
@@ -183,11 +187,12 @@ class _CommonContractState extends State<CommonContract> {
 
   Future<void> _fillSignatures() async {
     if (widget.signatureList.isEmpty) return;
-    final url = widget.signatureList.first;
     for (var sig in signatures) {
       final double x = sig["x"]?.toDouble() ?? 0;
       final double y = sig["y"]?.toDouble() ?? 0;
       final int loaiKy = sig["loaiKy"] ?? 1;
+      final String? idNguoiKy = sig["idNguoiKy"]?.toString();
+      final String? signatureUrl = sig["signatureUrl"]?.toString();
       if (loaiKy == 3) {
         setState(() {
           _isDigital = true;
@@ -197,9 +202,49 @@ class _CommonContractState extends State<CommonContract> {
           _addSignature(imgBytes, loaiKy, y, x, false);
         }
       } else {
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          _addSignature(response.bodyBytes, loaiKy, y, x, false);
+         // Sử dụng URL chữ ký từ API response nếu có
+        String? urlToUse = signatureUrl;
+
+        // Nếu không có signatureUrl từ API, fallback về signatureList
+        if (urlToUse == null || urlToUse.isEmpty) {
+          if (widget.signatureList.isNotEmpty) {
+            // Tìm URL tương ứng với người ký trong signatureList
+            if (idNguoiKy != null && widget.signatureList.length > 1) {
+              // Sử dụng index dựa trên idNguoiKy hoặc logic mapping
+              final index = int.tryParse(idNguoiKy) ?? 0;
+              if (index < widget.signatureList.length) {
+                urlToUse = widget.signatureList[index];
+              } else {
+                urlToUse = widget.signatureList.first; // fallback
+              }
+            } else {
+              urlToUse = widget.signatureList.first;
+            }
+          }
+        }
+
+        if (urlToUse != null && urlToUse.isNotEmpty) {
+          try {
+            final response = await http.get(Uri.parse(urlToUse));
+            if (response.statusCode == 200) {
+              _addSignature(response.bodyBytes, loaiKy, y, x, false);
+            } else {
+              SGLog.error(
+                'Load signature',
+                'Failed to load signature for user $idNguoiKy: HTTP ${response.statusCode}',
+              );
+            }
+          } catch (e) {
+            SGLog.error(
+              'Load signature',
+              'Error loading signature for user $idNguoiKy: $e',
+            );
+          }
+        } else {
+          SGLog.warning(
+            'Load signature',
+            'No signature URL found for user $idNguoiKy',
+          );
         }
       }
     }
@@ -497,10 +542,15 @@ class _CommonContractState extends State<CommonContract> {
   }
 
   // ===== Ký hash =====
-  Future<void> signing({double top = 500, double left = 500}) async {
+  Future<void> signing(
+    NhanVien nhanVien, {
+    double top = 500,
+    double left = 500,
+  }) async {
     if (widget.idNguoiKy == null || widget.idTaiLieu == null) {
       return;
     }
+
     String value = widget.idNguoiKy! + widget.idTaiLieu!;
     String hash = generateSha256(value);
     SGLog.info('Chu ky', 'Chu ky SHA-256: $hash');
@@ -703,7 +753,7 @@ class _CommonContractState extends State<CommonContract> {
                   ),
 
                   // Thanh nút ký & xác nhận
-                  if (widget.isShowKy)
+                  if (widget.isShowKy && widget.nhanVien != null)
                     Container(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                       color: Colors.white,
@@ -721,29 +771,6 @@ class _CommonContractState extends State<CommonContract> {
                                   'Ký nháy',
                                   Colors.orange,
                                   () {
-                                    if (widget.isSavePin) {
-                                      showPopupInputPin(
-                                        context: context,
-                                        title: "Xác nhận mã Pin",
-                                        description:
-                                            "Vui lòng nhập mã Pin để xác nhận",
-                                        onConfirm: (value) {
-                                          if (value == widget.pin) {
-                                            _addFirstSignatureFromList(
-                                              1,
-                                              top: screenHeight / 2,
-                                              left: (screenWidth - 200) / 4,
-                                            );
-                                          } else {
-                                            AppUtility.showSnackBar(
-                                              context,
-                                              "Mã pin chứ chính xác, vui lòng nhập lại!",
-                                            );
-                                          }
-                                        },
-                                      );
-                                      return;
-                                    }
                                     _addFirstSignatureFromList(
                                       1,
                                       top: screenHeight / 2,
@@ -771,10 +798,45 @@ class _CommonContractState extends State<CommonContract> {
                                   Icons.vpn_key,
                                   'Ký số',
                                   Colors.blue,
-                                  () async => await signing(
-                                    top: screenHeight / 2,
-                                    left: (screenWidth - 200) / 4,
-                                  ),
+                                  () async {
+                                    if (widget.nhanVien == null) {
+                                      AppUtility.showSnackBar(
+                                        context,
+                                        "Không tìm thấy thông tin nhân viên",
+                                      );
+                                      return;
+                                    }
+                                    log("widget.nhanVien!.savePin: ${widget.nhanVien!.savePin}");
+                                    if (!(widget.nhanVien!.savePin ?? false)) {
+                                      showPopupInputPin(
+                                        context: context,
+                                        title: "Xác nhận mã Pin",
+                                        description:
+                                            "Vui lòng nhập mã Pin để xác nhận",
+                                        onConfirm: (value) async {
+                                          if (value == widget.pin) {
+                                            await signing(
+                                              widget.nhanVien!,
+                                              top: screenHeight / 2,
+                                              left: (screenWidth - 200) / 4,
+                                            );
+                                          } else {
+                                            AppUtility.showSnackBar(
+                                              context,
+                                              "Mã pin chưa chính xác, vui lòng nhập lại!",
+                                              isError: true,
+                                            );
+                                          }
+                                        },
+                                      );
+                                      return;
+                                    }
+                                    await signing(
+                                      widget.nhanVien!,
+                                      top: screenHeight / 2,
+                                      left: (screenWidth - 200) / 4,
+                                    );
+                                  },
                                 ),
                               ),
                             ],

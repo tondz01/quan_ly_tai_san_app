@@ -186,7 +186,7 @@ class _ToolAndMaterialTransferDetailState
     }
 
     if (nguoiKyCapPhong == null || controllerDepartmentApproval.text.isEmpty) {
-      newValidationErrors['nguoiKyCapPhong'] = true;
+      newValidationErrors['departmentApproval'] = true;
     }
 
     if (donViDeNghi == null || controllerProposingUnit.text.isEmpty) {
@@ -200,7 +200,7 @@ class _ToolAndMaterialTransferDetailState
     // if (donViDeNghi == null || controllerRequester.text.isEmpty) {
     //   newValidationErrors['requester'] = true;
     // }
-    
+
     if (donViGiao == null || controllerDeliveringUnit.text.isEmpty) {
       newValidationErrors['deliveringUnit'] = true;
     }
@@ -558,7 +558,6 @@ class _ToolAndMaterialTransferDetailState
           a.ghiChu != b.ghiChu ||
           a.idCCDCVatTu != b.idCCDCVatTu ||
           a.idChiTietCCDCVatTu != b.idChiTietCCDCVatTu;
-
       // Delete
       for (final k in initialByKey.keys.where(
         (k) => !newByKey.containsKey(k),
@@ -576,7 +575,14 @@ class _ToolAndMaterialTransferDetailState
       for (final k in newByKey.keys.where(initialByKey.containsKey)) {
         final oldVal = initialByKey[k]!;
         final newVal = newByKey[k]!;
-        if (!changed(oldVal, newVal) || oldVal.id.isEmpty) continue;
+        if (!changed(oldVal, newVal)) {
+          continue;
+        }
+        
+        if (oldVal.id.isEmpty) {
+          continue;
+        }
+        
         await repo.update(
           oldVal.id,
           ChiTietBanGiaoRequest(
@@ -853,7 +859,10 @@ class _ToolAndMaterialTransferDetailState
                           fieldName: 'receivingUnit',
                           validationErrors: _validationErrors,
                           onChanged: (value) {
-                            donViNhan = value;
+                            setState(() {
+                              donViNhan = value;
+                              log("check donViNhan: ${jsonEncode(donViNhan)}");
+                            });
                           },
                           isRequired: true,
                         ),
@@ -1133,6 +1142,7 @@ class _ToolAndMaterialTransferDetailState
                             soLuongDaBanGiao: 0,
                           );
                         }).toList();
+                    log("check listNewDetails: ${jsonEncode(listNewDetails)}");
                     if (listNewDetails.isNotEmpty) {
                       isShowPreview = true;
                     } else {
@@ -1181,23 +1191,23 @@ class _ToolAndMaterialTransferDetailState
     }
   }
 
-  void _callGetListAssetHandover() {
-    try {
-      final assetHandoverBloc = BlocProvider.of<ToolAndMaterialTransferBloc>(
-        context,
-      );
-      assetHandoverBloc.add(
-        GetListToolAndMaterialTransferEvent(context, typeTransfer, idCongTy),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+  // void _callGetListAssetHandover() {
+  //   try {
+  //     final assetHandoverBloc = BlocProvider.of<ToolAndMaterialTransferBloc>(
+  //       context,
+  //     );
+  //     assetHandoverBloc.add(
+  //       GetListToolAndMaterialTransferEvent(context, typeTransfer, idCongTy),
+  //     );
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
 
   ToolAndMaterialTransferRequest _createToolAndMaterialTransRequest(
     int type,

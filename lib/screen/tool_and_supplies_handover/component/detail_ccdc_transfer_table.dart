@@ -374,7 +374,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong_xuat',
-                title: 'Số lượng xuất',
+                title: 'Số lượng bàn giao',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue:

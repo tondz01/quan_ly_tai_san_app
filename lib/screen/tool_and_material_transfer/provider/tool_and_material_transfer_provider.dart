@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -342,7 +343,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _item = item;
     isShowInput = true;
     isShowCollapse = true;
-    await getListDetailTransferCCDC(item!.id!);
+    _listDetailTransferCCDC = await getListDetailTransferCCDC(item!.id!);
+    log(
+      "check result listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
+    );
     buildThreadNodes(item);
     notifyListeners();
   }
@@ -734,13 +738,16 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (id.isEmpty) return [];
     Map<String, dynamic> result = await ToolAndSuppliesHandoverRepository()
         .getListDetailAssetByTransfer(id);
+    log("check result: ${jsonEncode(result)}");
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
-      final list =
-          rawData
-              .map((item) => DetailSubppliesHandoverDto.fromJson(item))
-              .toList();
+      log("check result rawData: ${jsonEncode(rawData)}");
+      // The repository already returns parsed DTOs, so we can cast directly
+      final list = rawData.cast<DetailSubppliesHandoverDto>();
       _listDetailTransferCCDC = list;
+      log(
+        "check result _listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
+      );
       notifyListeners();
       return list;
     } else {
@@ -757,25 +764,31 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       // Thêm ThreadNode cho chiTietTaiSanList
       nodes.add(
         ThreadNode(
-          header: '${chiTiet.tenCCDCVatTu} -- NSX: ${chiTiet.namSanXuat}',
-          colorHeader: ColorValue.brightRed,
-          depth: 0,
-          child: Container(),
+          header: '${chiTiet.tenCCDCVatTu} -- SLX: ${chiTiet.soLuongXuat}',
+          colorHeader: ColorValue.pink,
+          depth: 1,
+          child: SGText(
+            text: 'Số lượng đã bàn giao: ${chiTiet.soLuongDaBanGiao}',
+            size: 13,
+            color: ColorValue.cyan,
+          ),
         ),
       );
 
       // Tìm các detailOwnershipUnit tương ứng với chiTietTaiSanList này
       var relatedOwnershipUnits =
-          _listDetailTransferCCDC.where((e) => e.id == chiTiet.id).toList();
+          _listDetailTransferCCDC
+              .where((e) => e.idChiTietDieuDong == chiTiet.id)
+              .toList();
 
       // Thêm các ThreadNode cho detailOwnershipUnit tương ứng
       if (relatedOwnershipUnits.isNotEmpty) {
-        for (var ownershipUnit in relatedOwnershipUnits) {
+        for (var detailHandover in relatedOwnershipUnits) {
           nodes.add(
             ThreadNode(
-              header: 'Số phiếu bán giao: ${ownershipUnit.idBanGiaoCCDCVatTu}',
-              depth: 1,
-              child: Container(),
+              header: 'Số phiếu bán giao: ${detailHandover.idBanGiaoCCDCVatTu}',
+              depth: 2,
+              child: _buildDetailHandover(detailHandover),
             ),
           );
         }
@@ -791,7 +804,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
           ThreadNode(
             header: 'Số phiếu bán giao: ${ownershipUnit.idBanGiaoCCDCVatTu}',
             depth: 1,
-            child: _buildInfoOwnershipUnit(ownershipUnit),
+            child: _buildDetailHandover(ownershipUnit),
           ),
         );
       }
@@ -801,7 +814,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Widget _buildInfoOwnershipUnit(DetailSubppliesHandoverDto item) {
+  Widget _buildDetailHandover(DetailSubppliesHandoverDto item) {
     return Padding(
       padding: const EdgeInsets.only(left: 10.0),
       child: Column(

@@ -539,11 +539,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   }
 
   NhanVien getNhanVienByID(String idNhanVien) {
-    if (_dataStaff != null && _dataStaff!.isNotEmpty) {
-      return _dataStaff!.firstWhere(
-        (item) => item.id == idNhanVien,
-        orElse: () => const NhanVien(),
-      );
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idNhanVien);
+    if (nhanVien != null) {
+      return nhanVien;
     } else {
       return const NhanVien();
     }
