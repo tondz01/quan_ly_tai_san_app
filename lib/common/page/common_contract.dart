@@ -121,8 +121,14 @@ class _CommonContractState extends State<CommonContract> {
       return;
     }
     try {
-      final url =
-          loaiKy == 2 ? widget.signatureList[1] : widget.signatureList.first;
+      // Sử dụng URL tương ứng với loại ký
+      String url;
+      if (loaiKy == 2 && widget.signatureList.length > 1) {
+        url = widget.signatureList[1];
+      } else {
+        url = widget.signatureList.first;
+      }
+
       log('Check link chữ ký: $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -173,7 +179,8 @@ class _CommonContractState extends State<CommonContract> {
     );
     final res = await http.get(url);
     final decoded = jsonDecode(res.body);
-    final List<dynamic> data = decoded is List ? decoded : (decoded['data'] ?? []);
+    final List<dynamic> data =
+        decoded is List ? decoded : (decoded['data'] ?? []);
     setState(() {
       signatures = List<Map<String, dynamic>>.from(data);
     });
@@ -182,12 +189,13 @@ class _CommonContractState extends State<CommonContract> {
   }
 
   Future<void> _fillSignatures() async {
-    if (widget.signatureList.isEmpty) return;
-    final url = widget.signatureList.first;
     for (var sig in signatures) {
       final double x = sig["x"]?.toDouble() ?? 0;
       final double y = sig["y"]?.toDouble() ?? 0;
       final int loaiKy = sig["loaiKy"] ?? 1;
+      final String? idNguoiKy = sig["idNguoiKy"]?.toString();
+      final String? signatureUrl = sig["signatureUrl"]?.toString();
+
       if (loaiKy == 3) {
         setState(() {
           _isDigital = true;
@@ -197,9 +205,49 @@ class _CommonContractState extends State<CommonContract> {
           _addSignature(imgBytes, loaiKy, y, x, false);
         }
       } else {
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          _addSignature(response.bodyBytes, loaiKy, y, x, false);
+        // Sử dụng URL chữ ký từ API response nếu có
+        String? urlToUse = signatureUrl;
+
+        // Nếu không có signatureUrl từ API, fallback về signatureList
+        if (urlToUse == null || urlToUse.isEmpty) {
+          if (widget.signatureList.isNotEmpty) {
+            // Tìm URL tương ứng với người ký trong signatureList
+            if (idNguoiKy != null && widget.signatureList.length > 1) {
+              // Sử dụng index dựa trên idNguoiKy hoặc logic mapping
+              final index = int.tryParse(idNguoiKy) ?? 0;
+              if (index < widget.signatureList.length) {
+                urlToUse = widget.signatureList[index];
+              } else {
+                urlToUse = widget.signatureList.first; // fallback
+              }
+            } else {
+              urlToUse = widget.signatureList.first;
+            }
+          }
+        }
+
+        if (urlToUse != null && urlToUse.isNotEmpty) {
+          try {
+            final response = await http.get(Uri.parse(urlToUse));
+            if (response.statusCode == 200) {
+              _addSignature(response.bodyBytes, loaiKy, y, x, false);
+            } else {
+              SGLog.error(
+                'Load signature',
+                'Failed to load signature for user $idNguoiKy: HTTP ${response.statusCode}',
+              );
+            }
+          } catch (e) {
+            SGLog.error(
+              'Load signature',
+              'Error loading signature for user $idNguoiKy: $e',
+            );
+          }
+        } else {
+          SGLog.warning(
+            'Load signature',
+            'No signature URL found for user $idNguoiKy',
+          );
         }
       }
     }
