@@ -8,7 +8,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/component/conver_excecl_to_asset_group.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/component/convert_excel_to_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
@@ -39,8 +39,7 @@ class _AssetGroupViewState extends State<AssetGroupView> {
   Widget build(BuildContext context) {
     return BlocConsumer<AssetGroupBloc, AssetGroupState>(
       builder: (context, state) {
-        // Usar el ChangeNotifierProvider.value en lugar de Consumer
-        // Esto asegura que todos los cambios en el provider actualizan la UI
+        // Sử dụng ChangeNotifierProvider.value để đảm bảo tất cả thay đổi trong provider cập nhật UI
         return ChangeNotifierProvider.value(
           value: context.read<AssetGroupProvider>(),
           child: Consumer<AssetGroupProvider>(
@@ -57,7 +56,6 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                   title: HeaderComponent(
                     controller: _searchController,
                     onSearchChanged: (value) {
-                      // Cập nhật trạng thái tìm kiếm trong provider
                       provider.searchTerm = value;
                     },
                     onTap: () {},
@@ -68,7 +66,10 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetGroubBloc = context.read<AssetGroupBloc>();
                       final List<AssetGroupDto> cv =
-                          await convertExcelToAssetGroup(filePath!);
+                          await convertExcelToAssetGroup(
+                            filePath!,
+                            fileBytes: fileBytes,
+                          );
                       if (!mounted) return;
                       if (cv.isNotEmpty) {
                         assetGroubBloc.add(CreateAssetGroupBatchEvent(cv));
@@ -124,7 +125,7 @@ class _AssetGroupViewState extends State<AssetGroupView> {
 
       listener: (context, state) {
         if (state is AssetGroupLoadingState) {
-          // Mostrar loading
+          // Hiển thị loading
         }
         if (state is GetListAssetGroupSuccessState) {
           log('GetListAssetGroupSuccessState ${state.data.length}');
@@ -146,7 +147,7 @@ class _AssetGroupViewState extends State<AssetGroupView> {
           );
         }
         if (state is GetListAssetGroupFailedState) {
-          // Manejar error
+          // Xử lý lỗi
           context.read<AssetGroupProvider>().getListAssetGroupFailed(
             context,
             state,

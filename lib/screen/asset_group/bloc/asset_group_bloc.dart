@@ -140,7 +140,7 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
   ) async {
     emit(AssetGroupInitialState());
     emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().deleteAssetGroupBatch(event.id);
+    final result = await AssetGroupRepository().deleteAssetGroupBatch(event.ids);
     emit(AssetGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(DeleteAssetGroupSuccessState(data: result['data'].toString()));

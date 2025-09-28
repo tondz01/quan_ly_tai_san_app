@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,13 +9,43 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dar
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
+extension DateTimeToISO on DateTime {
+  String toISOFormat() {
+    return toUtc().toIso8601String();
+  }
+}
 
+/// Helper function to normalize date to ISO format with UTC timezone
+String _normalizeDateToISO(dynamic value) {
+  if (value == null) return DateTime.now().toISOFormat();
+  if (value is DateTime) return value.toISOFormat();
+  if (value is num) return AppUtility.excelSerialToDate(value).toISOFormat();
+  
+  final text = value.toString().trim();
+  if (text.isEmpty) return DateTime.now().toISOFormat();
+  
+  // Try to parse the date
+  final parsed = DateTime.tryParse(text);
+  if (parsed != null) return parsed.toISOFormat();
+  
+  // If parsing fails, return current date
+  return DateTime.now().toISOFormat();
+}
 
-Future<List<AssetGroupDto>> convertExcelToAssetGroup(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+Future<List<AssetGroupDto>> convertExcelToAssetGroup(
+  String filePath, {
+  Uint8List? fileBytes,
+}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
   final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
 
   final List<AssetGroupDto> groups = [];
+
+  // Validate input
+  if (bytes.isEmpty) {
+    log('Error: File is empty');
+    return groups;
+  }
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -31,13 +62,14 @@ Future<List<AssetGroupDto>> convertExcelToAssetGroup(String filePath) async {
           'tenNhom': AppUtility.s(row[1]?.value),
           'hieuLuc': AppUtility.b(row[2]?.value),
           'idCongTy': AppUtility.s(row[3]?.value),
-          'ngayTao': AppUtility.normalizeDateIsoString(row[4]?.value),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(row[5]?.value),
+          'ngayTao': _normalizeDateToISO(row[4]?.value),
+          'ngayCapNhat': _normalizeDateToISO(row[5]?.value),
           'nguoiTao': AppUtility.s(row[6]?.value, fallback: fallbackUser),
           'nguoiCapNhat': AppUtility.s(row[7]?.value, fallback: fallbackUser),
           'isActive': AppUtility.b(row[8]?.value),
         };
         log('asset_group json: ${jsonEncode(json)}');
+        log('Date format check - ngayTao: ${json['ngayTao']}, ngayCapNhat: ${json['ngayCapNhat']}');
         groups.add(AssetGroupDto.fromJson(json));
       }
     }
@@ -57,13 +89,14 @@ Future<List<AssetGroupDto>> convertExcelToAssetGroup(String filePath) async {
           'tenNhom': AppUtility.s(cell(row, 1)),
           'hieuLuc': AppUtility.b(cell(row, 2)),
           'idCongTy': AppUtility.s(cell(row, 3)),
-          'ngayTao': AppUtility.normalizeDateIsoString(cell(row, 4)),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(cell(row, 5)),
+          'ngayTao': _normalizeDateToISO(cell(row, 4)),
+          'ngayCapNhat': _normalizeDateToISO(cell(row, 5)),
           'nguoiTao': AppUtility.s(cell(row, 6), fallback: fallbackUser),
           'nguoiCapNhat': AppUtility.s(cell(row, 7), fallback: fallbackUser),
           'isActive': AppUtility.b(cell(row, 8)),
         };
         log('asset_group json2: ${jsonEncode(json)}');
+        log('Date format check - ngayTao: ${json['ngayTao']}, ngayCapNhat: ${json['ngayCapNhat']}');
         groups.add(AssetGroupDto.fromJson(json));
       }
     }

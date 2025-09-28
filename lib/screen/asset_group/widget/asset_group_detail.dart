@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
@@ -11,6 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
@@ -27,11 +27,13 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   bool isEditing = false;
   bool isActive = false;
   String? nameAssetGroup;
-  String idCongTy = 'ct001';
+  String idCongTy = 'CT001';
   DateTime? createdAt;
 
   TextEditingController controllerIdAssetGroup = TextEditingController();
   TextEditingController controllerNameAssetGroup = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -109,33 +111,54 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CommonFormInput(
-                label: 'Mã nhóm tài sản',
-                controller: controllerIdAssetGroup,
-                isEditing: data != null ? false : isEditing,
-                textContent: controllerIdAssetGroup.text,
-              ),
-              CommonFormInput(
-                label: 'Tên nhóm tài sản',
-                controller: controllerNameAssetGroup,
-                isEditing: isEditing,
-                textContent: controllerNameAssetGroup.text,
-              ),
-              CommonCheckboxInput(
-                label: 'Có hiệu lực',
-                value: isActive,
-                isEditing: isEditing,
-                isDisabled: !isEditing,
-                onChanged: (value) {
-                  setState(() {
-                    isActive = value;
-                  });
-                },
-              ),
-            ],
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: controllerIdAssetGroup,
+                  enabled: data != null ? false : isEditing,
+                  decoration: inputDecoration(
+                    'Mã nhóm tài sản',
+                    required: true,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Nhập mã nhóm tài sản';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: controllerNameAssetGroup,
+                  enabled: isEditing,
+                  decoration: inputDecoration(
+                    'Tên nhóm tài sản',
+                    required: true,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Nhập tên nhóm tài sản';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                CommonCheckboxInput(
+                  label: 'Có hiệu lực',
+                  value: isActive,
+                  isEditing: isEditing,
+                  isDisabled: !isEditing,
+                  onChanged: (value) {
+                    setState(() {
+                      isActive = value;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -165,6 +188,9 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
               onPressed: () {
                 setState(() {
                   isEditing = false;
+                  if (widget.provider.dataDetail == null) {
+                    widget.provider.onCloseDetail(context);
+                  }
                 });
               },
             ),
@@ -185,37 +211,38 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
 
   void _saveChanges() {
     UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
-    log('message: _saveChanges');
-    if (data == null) {
-      AssetGroupRequest request = AssetGroupRequest(
-        id: controllerIdAssetGroup.text,
-        tenNhom: controllerNameAssetGroup.text,
-        isActive: isActive,
-        hieuLuc: isActive,
-        idCongTy: 'CT001',
-        ngayTao: DateTime.parse(getDateNow()),
-        ngayCapNhat: DateTime.parse(getDateNow()),
-        nguoiTao: userInfo?.id ?? '',
-      );
+    if (_formKey.currentState!.validate()) {
+      if (data == null) {
+        AssetGroupRequest request = AssetGroupRequest(
+          id: controllerIdAssetGroup.text,
+          tenNhom: controllerNameAssetGroup.text,
+          isActive: isActive,
+          hieuLuc: isActive,
+          idCongTy: idCongTy,
+          ngayTao: DateTime.parse(getDateNow()),
+          ngayCapNhat: DateTime.parse(getDateNow()),
+          nguoiTao: userInfo?.id ?? '',
+        );
 
-      context.read<AssetGroupBloc>().add(
-        CreateAssetGroupEvent(context, request),
-      );
-    } else {
-      AssetGroupRequest request = AssetGroupRequest(
-        id: controllerIdAssetGroup.text,
-        tenNhom: controllerNameAssetGroup.text,
-        isActive: isActive,
-        hieuLuc: isActive,
-        idCongTy: 'CT001',
-        ngayTao: DateTime.parse(getDateNow()),
-        ngayCapNhat: DateTime.parse(getDateNow()),
-        nguoiCapNhat: userInfo?.id ?? '',
-      );
+        context.read<AssetGroupBloc>().add(
+          CreateAssetGroupEvent(context, request),
+        );
+      } else {
+        AssetGroupRequest request = AssetGroupRequest(
+          id: controllerIdAssetGroup.text,
+          tenNhom: controllerNameAssetGroup.text,
+          isActive: isActive,
+          hieuLuc: isActive,
+          idCongTy: idCongTy,
+          ngayTao: DateTime.parse(getDateNow()),
+          ngayCapNhat: DateTime.parse(getDateNow()),
+          nguoiCapNhat: userInfo?.id ?? '',
+        );
 
-      context.read<AssetGroupBloc>().add(
-        UpdateAssetGroupEvent(context, request, data!.id!),
-      );
+        context.read<AssetGroupBloc>().add(
+          UpdateAssetGroupEvent(context, request, data!.id!),
+        );
+      }
     }
   }
 }
