@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
 
 class PhongBan extends Equatable {
   final String? id;
@@ -54,14 +55,14 @@ class PhongBan extends Equatable {
       'idNhomDonvi': idNhomDonVi ?? "",
       'tenPhongBan': tenPhongBan ?? "",
       'idQuanLy': idQuanLy ?? "",
-      'idCongTy': "ct001", // Assuming a default company ID
+      'idCongTy': idCongTy ?? DepartmentConstants.defaultCompanyId,
       'phongCapTren': phongCapTren ?? "",
       'mauSac': mauSac ?? "",
       'nguoiTao': nguoiTao ?? "",
       'nguoiCapNhat': nguoiCapNhat ?? "",
       'ngayTao': ngayTao ?? DateTime.now().toIso8601String(),
       'ngayCapNhat': ngayCapNhat ?? DateTime.now().toIso8601String(),
-      'isActive': true,
+      'isActive': isActive ?? DepartmentConstants.defaultIsActive,
     };
   }
 
@@ -79,7 +80,7 @@ class PhongBan extends Equatable {
     return {
       'Mã phòng ban': _nullIfEmpty(id),
       'Tên phòng ban': _nullIfEmpty(tenPhongBan),
-      'Công ty': _nullIfEmpty("ct001"),
+      'Công ty': _nullIfEmpty(idCongTy ?? DepartmentConstants.defaultCompanyId),
       'Phòng cấp trên': _nullIfEmpty(phongCapTren),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),

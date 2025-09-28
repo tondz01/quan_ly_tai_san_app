@@ -13,7 +13,9 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/departme
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
@@ -35,7 +37,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   late int totalPages = 0;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage = 10;
+  int rowsPerPage = DepartmentConstants.defaultRowsPerPage;
   int currentPage = 1;
 
   final ScrollController horizontalController = ScrollController();
@@ -58,9 +60,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DepartmentBloc>().add(const LoadDepartments());
-    });
+    // Removed duplicate LoadDepartments call
   }
 
   @override
@@ -80,7 +80,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   void _updatePagination() {
     // Sử dụng _filteredData thay vì _data
     totalEntries = filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, DepartmentConstants.maxPaginationPages);
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
@@ -114,7 +114,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
           AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
           searchController.clear();
           currentPage = 1;
-          rowsPerPage = 10;
+          rowsPerPage = DepartmentConstants.defaultRowsPerPage;
           filteredData = [];
           dataPage = [];
           context.read<DepartmentBloc>().add(const LoadDepartments());
@@ -191,8 +191,65 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DepartmentBloc, DepartmentState>(
-      builder: (context, state) {
+    return BlocListener<DepartmentBloc, DepartmentState>(
+      listener: (context, state) {
+        isShowInput=false;
+        if (state is AddDepartmentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is UpdateDepartmentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteDepartmentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DepartmentError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteDepartmentBatchSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa phòng ban thành công'),
+              backgroundColor: Colors.green.shade600,
+              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        } else if (state is DeleteDepartmentBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa phòng ban thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration: kIsWeb ? DepartmentConstants.webSnackBarDuration : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+      },
+      child: BlocBuilder<DepartmentBloc, DepartmentState>(
+        builder: (context, state) {
         if (state is DepartmentLoaded) {
           List<PhongBan> departments = state.departments;
           data = departments;
@@ -273,17 +330,19 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                   ),
                 ),
                 Visibility(
-                  visible: (departments.length) >= 5,
+                  visible: departments.length >= DepartmentConstants.minPaginationThreshold,
                   child: SGPaginationControls(
                     totalPages: totalPages,
                     currentPage: currentPage,
                     rowsPerPage: rowsPerPage,
                     controllerDropdownPage: controller,
-                    items: [
-                      DropdownMenuItem(value: 10, child: Text('10')),
-                      DropdownMenuItem(value: 20, child: Text('20')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                    ],
+                    items: (kIsWeb 
+                      ? DepartmentConstants.webPaginationOptions 
+                      : DepartmentConstants.mobilePaginationOptions
+                    ).map((value) => DropdownMenuItem(
+                      value: value, 
+                      child: Text(value.toString())
+                    )).toList(),
                     onPageChanged: onPageChanged,
                     onRowsPerPageChanged: onRowsPerPageChanged,
                   ),
@@ -295,7 +354,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
           return Center(child: Text(state.message));
         }
         return const Center(child: CircularProgressIndicator());
-      },
+        },
+      ),
     );
   }
 }

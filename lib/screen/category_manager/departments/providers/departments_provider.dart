@@ -120,31 +120,76 @@ class DepartmentsProvider extends ApiBase {
     return result;
   }
 
-  Future<void> addDepartment(PhongBan department) async {
+  Future<Map<String, dynamic>> addDepartment(PhongBan department) async {
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
     try {
-      await post(EndPointAPI.PHONG_BAN, data: department.toJson());
+      final response = await post(EndPointAPI.PHONG_BAN, data: department.toJson());
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
+        return result;
+      }
+      result['status_code'] = response.statusCode;
+      result['data'] = response.data;
     } catch (e) {
-      rethrow;
+      SGLog.error("DepartmentsProvider", "Error at addDepartment: $e");
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+      result['message'] = e.toString();
     }
+    return result;
   }
 
-  Future<void> updateDepartment(PhongBan department) async {
+  Future<Map<String, dynamic>> updateDepartment(PhongBan department) async {
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
     try {
-      await put(
+      final response = await put(
         '${EndPointAPI.PHONG_BAN}/${department.id}',
         data: department.toJson(),
       );
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
+        return result;
+      }
+      result['status_code'] = response.statusCode;
+      result['data'] = response.data;
     } catch (e) {
-      rethrow;
+      SGLog.error("DepartmentsProvider", "Error at updateDepartment: $e");
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+      result['message'] = e.toString();
     }
+    return result;
   }
 
-  Future<void> deleteDepartment(String departmentId) async {
+  Future<Map<String, dynamic>> deleteDepartment(String departmentId) async {
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
     try {
-      await delete('${EndPointAPI.PHONG_BAN}/$departmentId');
+      final response = await delete('${EndPointAPI.PHONG_BAN}/$departmentId');
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'];
+        return result;
+      }
+      result['status_code'] = response.statusCode;
+      result['data'] = response.data;
     } catch (e) {
-      rethrow;
+      SGLog.error("DepartmentsProvider", "Error at deleteDepartment: $e");
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+      result['message'] = e.toString();
     }
+    return result;
   }
 
   Future<List<NhomDonVi>> fetchDepartmentGroups() async {
