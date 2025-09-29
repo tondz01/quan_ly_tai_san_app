@@ -25,18 +25,18 @@ class AssetGroupDto {
 
   factory AssetGroupDto.fromJson(Map<String, dynamic> json) {
     return AssetGroupDto(
-      id: json['id'],
+      id: json['id']?.toString(),
       tenNhom: json['tenNhom'],
       hieuLuc: json['hieuLuc'],
-      idCongTy: json['idCongTy'],
+      idCongTy: json['idCongTy']?.toString(),
       ngayTao: json['ngayTao'] != null
           ? DateTime.tryParse(json['ngayTao'])
           : null,
       ngayCapNhat: json['ngayCapNhat'] != null
           ? DateTime.tryParse(json['ngayCapNhat'])
           : null,
-      nguoiTao: json['nguoiTao'],
-      nguoiCapNhat: json['nguoiCapNhat'],
+      nguoiTao: json['nguoiTao']?.toString(),
+      nguoiCapNhat: json['nguoiCapNhat']?.toString(),
       isActive: json['isActive'],
     );
   }

@@ -24,6 +24,7 @@ import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repo
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/repository/type_ccdc_repository.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AuthRepository extends ApiBase {
   Future<Map<String, dynamic>> login(AuthRequest params) async {
@@ -85,10 +86,12 @@ class AuthRepository extends ApiBase {
               : (rawData as Map<String, dynamic>);
       final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
       AccountHelper.instance.setUserInfo(user);
-      await _loadData(user.idCongTy);
+
       // Gọi các API phụ trợ
+      await loadData(user.idCongTy);
 
       List<String> roles = onGetPermission(user.tenDangNhap);
+      log("check roles: ${jsonEncode(roles)}");
       PermissionService.instance.saveRoles(roles);
       log("check roles: ${jsonEncode(PermissionService.instance.getRoles())}");
 
@@ -132,15 +135,40 @@ class AuthRepository extends ApiBase {
   }
 
   //------LOAD DATA------------------------------------------------------------------------------------///
-  Future<void> _loadData(String idCongTy) async {
-    await _loadUserDepartments(idCongTy);
-    await _loadUserEmployee(idCongTy);
-    await _loadAssetGroup(idCongTy);
-    await _loadCCDCGroup(idCongTy);
-    await _loadChucVu(idCongTy);
-    await _loadTypeAsset(idCongTy);
-    await _loadTypeCcdc(idCongTy);
-    await _loadAssetCategory(idCongTy);
+  Future<void> loadData(String idCongTy) async {
+    if (AccountHelper.instance.getDepartment()?.isEmpty ?? true) {
+      SGLog.info('_loadData', 'loadUserDepartments');
+      await _loadUserDepartments(idCongTy);
+    }
+    if (AccountHelper.instance.getNhanVien()?.isEmpty ?? true) {
+      SGLog.info('_loadData', 'loadUserEmployee');
+      await _loadUserEmployee(idCongTy);
+    }
+    if (AccountHelper.instance.getAssetGroup()?.isEmpty ?? true) {
+      SGLog.info('_loadData', 'loadAssetGroup');
+      await _loadAssetGroup(idCongTy);
+    }
+    if (AccountHelper.instance.getCcdcGroup()?.isEmpty ?? true) {
+      SGLog.info('_loadData', 'loadCCDCGroup');
+      await _loadCCDCGroup(idCongTy);
+    }
+    if (AccountHelper.instance.getChucVu()?.isEmpty ?? true) {
+      SGLog.info('_loadData', 'loadChucVu');
+      await _loadChucVu(idCongTy);
+    }
+    if (AccountHelper.instance.getAllTypeAsset().isEmpty) {
+      SGLog.info('_loadData', 'loadTypeAsset');
+      await _loadTypeAsset(idCongTy);
+    }
+    if (AccountHelper.instance.getAllTypeCcdc().isEmpty) {
+      SGLog.info('_loadData', 'loadTypeCcdc');
+      await _loadTypeCcdc(idCongTy);
+    }
+    log('check loadData assetCategory: ${AccountHelper.instance.getAssetCategory()}');
+    if (AccountHelper.instance.getAssetCategory()?.isEmpty ?? true) {
+      SGLog.info('_loadData', 'loadAssetCategory');
+      await _loadAssetCategory(idCongTy);
+    }
   }
 
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
@@ -203,6 +231,7 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setAssetGroup(assetGroupList);
+        log('assetGroupList: $assetGroupList');
       }
     } catch (e) {
       log('Error calling API ASSET_GROUP: $e');
@@ -272,11 +301,7 @@ class AuthRepository extends ApiBase {
         idCongTy,
       );
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final rawTypeCcdc = response['data'];
-        final typeCcdcList =
-            (rawTypeCcdc as List<dynamic>)
-                .map((e) => TypeCcdc.fromJson(e as Map<String, dynamic>))
-                .toList();
+        final typeCcdcList = response['data'] as List<TypeCcdc>;
         AccountHelper.instance.setTypeCcdc(typeCcdcList);
       }
     } catch (e) {
@@ -289,14 +314,9 @@ class AuthRepository extends ApiBase {
       final response = await AssetCategoryRepository().getListAssetCategory(
         idCongTy,
       );
+      log('response AssetCategory: $response');
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final rawAssetCategory = response['data'];
-        final assetCategoryList =
-            (rawAssetCategory as List<dynamic>)
-                .map(
-                  (e) => AssetCategoryDto.fromJson(e as Map<String, dynamic>),
-                )
-                .toList();
+        final assetCategoryList = response['data'] as List<AssetCategoryDto>;
         AccountHelper.instance.setAssetCategory(assetCategoryList);
       }
     } catch (e) {
@@ -486,6 +506,7 @@ class AuthRepository extends ApiBase {
   }
 
   List<String> onGetPermission(String idUser) {
+    log("check onGetPermission: $idUser");
     List<String> roles = [];
     log('Getting permissions for user: $idUser');
     if (idUser.toLowerCase() == 'admin') {
@@ -506,9 +527,13 @@ class AuthRepository extends ApiBase {
       ];
     } else {
       final nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+      log("check nhanVien: ${jsonEncode(nhanVien)}");
       if (nhanVien == null || nhanVien.chucVuId == null) return [];
+      log("check nhanVien2: ${jsonEncode(nhanVien)}");
       final chucVu = AccountHelper.instance.getChucVuById(nhanVien.chucVuId!);
+      log("check chucVu: ${jsonEncode(chucVu)}");
       if (chucVu == null) return [];
+      log("check chucVu2: ${jsonEncode(chucVu)}");
       final List<MapEntry<bool, String>> permissionMap = [
         MapEntry(chucVu.quanLyNhanVien, RoleCode.NHANVIEN),
         MapEntry(chucVu.quanLyPhongBan, RoleCode.PHONGBAN),

@@ -85,7 +85,17 @@ class AccountHelper {
   }
 
   List<PhongBan>? getDepartment() {
-    return StorageService.read(StorageKey.DEPARTMENT);
+    final data = StorageService.read(StorageKey.DEPARTMENT);
+    if (data == null) return null;
+    
+    try {
+      return (data as List<dynamic>)
+          .map((json) => PhongBan.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error parsing department data: $e');
+      return null;
+    }
   }
 
   PhongBan? getDepartmentById(String id) {
@@ -115,23 +125,29 @@ class AccountHelper {
     if (raw is List) {
       try {
         return raw
-            .whereType()
-            .map((e) => NhanVien.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map((e) => e is NhanVien ? e : NhanVien.fromJson(e as Map<String, dynamic>))
             .toList();
       } catch (e) {
         log('Error at getNhanVien: $e');
         return null;
       }
     }
-    log('Error at getNhanVien: $raw');
     return null;
   }
 
   NhanVien? getNhanVienById(String id) {
-    log('message id getNhanVienById: $id');
-    return StorageService.read(
-      StorageKey.NHAN_VIEN,
-    ).firstWhere((nhanVien) => nhanVien.id == id, orElse: () => NhanVien());
+    final nhanVienList = getNhanVien();
+    if (nhanVienList == null) return null;
+    
+    try {
+      return nhanVienList.firstWhere(
+        (nhanVien) => nhanVien.id == id, 
+        orElse: () => NhanVien()
+      );
+    } catch (e) {
+      print('Error parsing nhanVien data: $e');
+      return NhanVien();
+    }
   }
 
   //CHỨC VỤ
@@ -665,6 +681,13 @@ class AccountHelper {
     }
   }
 
+  List<TypeAsset> getAllTypeAsset() {
+    final raw = StorageService.read(StorageKey.TYPE_ASSET);
+    if (raw == null) return [];
+    if (raw is List<TypeAsset>) return raw;
+    return [];
+  }
+
   List<TypeAsset> getTypeAsset(String idAssetGroup) {
     final raw = StorageService.read(StorageKey.TYPE_ASSET);
     if (raw == null) return [];
@@ -698,6 +721,13 @@ class AccountHelper {
     if (typeCcdc.isNotEmpty) {
       StorageService.write(StorageKey.TYPE_CCDCV, typeCcdc);
     }
+  }
+
+  List<TypeCcdc> getAllTypeCcdc() {
+    final raw = StorageService.read(StorageKey.TYPE_CCDCV);
+    if (raw == null) return [];
+    if (raw is List<TypeCcdc>) return raw;
+    return [];
   }
 
   List<TypeCcdc> getTypeCcdc(String idCcdcGroup) {
