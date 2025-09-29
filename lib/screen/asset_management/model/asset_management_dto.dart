@@ -52,12 +52,12 @@ class AssetManagementDto {
       'Mã đơn vị ban đầu': _nullIfEmpty(idDonViBanDau),
       'Mã đơn vị hiện thời': _nullIfEmpty(idDonViHienThoi),
       'Mô tả': _nullIfEmpty(moTa),
-      'Mã công ty': _nullIfEmpty(idCongTy),
+      // 'Mã công ty': _nullIfEmpty(idCongTy),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
       'Người tạo': _nullIfEmpty(nguoiTao),
       'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
-      'Hiển thị': isActive ?? false,
+      // 'Hiển thị': isActive ?? false,
     };
   }
 
@@ -102,7 +102,7 @@ class AssetManagementDto {
   String? nguoiCapNhat;
   bool? isActive;
   List<ChildAssetDto>? childAssets;
-  bool? taiSanCon;
+  bool? isTaiSanCon;
   String? idLoaiTaiSanCon;
 
   AssetManagementDto({
@@ -147,7 +147,7 @@ class AssetManagementDto {
     this.nguoiCapNhat,
     this.isActive,
     this.childAssets,
-    this.taiSanCon,
+    this.isTaiSanCon,
     this.idLoaiTaiSanCon,
   });
 
@@ -208,7 +208,7 @@ class AssetManagementDto {
                   )
                   .toList()
               : [],
-      taiSanCon: json['taiSanCon'],
+      isTaiSanCon: json['isTaiSanCon'],
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'],
     );
   }
@@ -256,7 +256,7 @@ class AssetManagementDto {
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
-      'taiSanCon': taiSanCon,
+      'isTaiSanCon': isTaiSanCon,
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
     };
   }
@@ -316,7 +316,7 @@ class AssetManagementDto {
       nguoiCapNhat: '',
       isActive: true,
       childAssets: [],
-      taiSanCon: false,
+      isTaiSanCon: false,
       idLoaiTaiSanCon: '',
     );
   }
@@ -368,7 +368,7 @@ class AssetManagementDto {
     String? nguoiCapNhat,
     bool? isActive,
     List<ChildAssetDto>? childAssets,
-    bool? taiSanCon,
+    bool? isTaiSanCon,
     String? idLoaiTaiSanCon,
   }) {
     return AssetManagementDto(
@@ -413,7 +413,7 @@ class AssetManagementDto {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
       childAssets: childAssets ?? this.childAssets,
-      taiSanCon: taiSanCon ?? this.taiSanCon,
+      isTaiSanCon: isTaiSanCon ?? this.isTaiSanCon,
       idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
     );
   }

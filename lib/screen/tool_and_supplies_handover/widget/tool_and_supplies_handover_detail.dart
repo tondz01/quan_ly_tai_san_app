@@ -404,7 +404,9 @@ class _ToolAndSuppliesHandoverDetailState
         controllerReceiverRepresentative.text.isEmpty) {
       newValidationErrors['receiverRepresentative'] = true;
     }
-
+    if (item == null && _selectedFileName == null) {
+      newValidationErrors['document'] = true;
+    }
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
       setState(() {
@@ -501,6 +503,8 @@ class _ToolAndSuppliesHandoverDetailState
 
       request['duongDanFile'] = result!['filePath'] ?? '';
       request['tenFile'] = result['fileName'] ?? '';
+      log('check request: ${jsonEncode(listDetailSubppliesHandover)}');
+      // return;
       List<Map<String, dynamic>> requestDetail =
           listDetailSubppliesHandover
               .map(
@@ -510,7 +514,7 @@ class _ToolAndSuppliesHandoverDetailState
                   "idCCDCVatTu": e.idCCDCVatTu,
                   "soLuong": e.soLuong,
                   "idChiTietCCDCVatTu": e.idChiTietCCDCVatTu,
-                  "idChiTietDieuDong": e.idChiTietDieuDong,
+                  "idChiTietDieuDong": e.idChiTietDieuDong ?? e.iddieudongccdcvattu,
                   "ngayTao": e.ngayTao,
                   "ngayCapNhat": e.ngayCapNhat,
                   "nguoiTao": e.nguoiTao,
@@ -574,7 +578,7 @@ class _ToolAndSuppliesHandoverDetailState
     if (listDetailSubppliesHandover.isEmpty) {
       AppUtility.showSnackBar(
         context,
-        "Vui lòng chọn CCDC vật tư bàn giao",
+        "Vui lòng chọn Số lượng bàn giao",
         isError: true,
       );
       return;
@@ -586,15 +590,6 @@ class _ToolAndSuppliesHandoverDetailState
           content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
           backgroundColor: Colors.red,
         ),
-      );
-      return;
-    }
-    if ((_selectedFileName ?? '').isEmpty ||
-        (_selectedFilePath ?? '').isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        "Vui lòng chon file trước khi lưu",
-        isError: true,
       );
       return;
     }
@@ -842,7 +837,6 @@ class _ToolAndSuppliesHandoverDetailState
                                   ),
                                 )
                                 .toList();
-                        log('Check số lượng listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}');
                       });
                     },
                   ),
@@ -1363,7 +1357,7 @@ class _ToolAndSuppliesHandoverDetailState
                     "idCCDCVatTu": d.idCCDCVatTu,
                     "soLuong": d.soLuong,
                     "idChiTietCCDCVatTu": d.idChiTietCCDCVatTu,
-                    "iddieudongccdcvattu": d.iddieudongccdcvattu,
+                    "idChiTietDieuDong": d.iddieudongccdcvattu,
                     "ngayTao": d.ngayTao,
                     "ngayCapNhat": d.ngayCapNhat,
                     "nguoiTao": d.nguoiTao,

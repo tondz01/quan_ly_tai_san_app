@@ -37,6 +37,7 @@ class AssetRequest {
   final String nguoiCapNhat;
   final bool active;
   final String idLoaiTaiSanCon;
+  final bool isTaiSanCon;
 
   AssetRequest({
     required this.id,
@@ -77,6 +78,7 @@ class AssetRequest {
     required this.nguoiCapNhat,
     required this.active,
     required this.idLoaiTaiSanCon,
+    required this.isTaiSanCon,
   });
 
   factory AssetRequest.fromJson(Map<String, dynamic> json) {
@@ -119,6 +121,7 @@ class AssetRequest {
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       active: json['isActive'] ?? true,
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'] ?? '',
+      isTaiSanCon: json['isTaiSanCon'] ?? false,
     );
   }
 
@@ -162,6 +165,7 @@ class AssetRequest {
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': active,
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
+      'isTaiSanCon': isTaiSanCon,
     };
   }
 
@@ -205,6 +209,7 @@ class AssetRequest {
     String? nguoiCapNhat,
     bool? active,
     String? idLoaiTaiSanCon,
+    bool? isTaiSanCon,
   }) {
     return AssetRequest(
       id: id ?? this.id,
@@ -245,6 +250,7 @@ class AssetRequest {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       active: active ?? this.active,
       idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
+      isTaiSanCon: isTaiSanCon ?? this.isTaiSanCon,
     );
   }
 }

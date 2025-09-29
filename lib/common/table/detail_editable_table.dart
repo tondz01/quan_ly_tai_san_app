@@ -637,7 +637,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
           value: currentValue,
           defaultValue: currentValue,
           items: column.dropdownItems ?? [],
-          showUnderlineBorderOnly: true,
+          // showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
@@ -647,10 +647,10 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
           textAlignItem: TextAlign.left,
           sizeBorderCircular: 6,
           contentPadding: const EdgeInsets.only(
-            top: 4,
-            bottom: 4,
+            top: 0,
+            bottom: 6,
             left: 6,
-            right: 6,
+            right: 2,
           ),
           onChanged: (value) {
             if (value != null) {

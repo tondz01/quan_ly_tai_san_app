@@ -1,8 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -489,10 +486,6 @@ class _ToolAndMaterialTransferListState
                       },
                       onSelectionChanged: (items) {
                         setState(() {
-                          log('items: ${jsonEncode(items)}');
-                          log(
-                            '[Log didUpdateWidget listItemSelected] Chia sẻ với người ký items: ${jsonEncode(items)}',
-                          );
                           listItemSelected = items;
                         });
                       },
@@ -940,6 +933,57 @@ class _ToolAndMaterialTransferListState
     );
   }
 
+  List<ToolAndMaterialTransferDto> _getNotSharedAndNotify(
+    List<ToolAndMaterialTransferDto> items,
+  ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<ToolAndMaterialTransferDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<ToolAndMaterialTransferDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.tenPhieu?.trim().isNotEmpty == true
+                    ? e.tenPhieu!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
   void _handleSendToSigner(List<ToolAndMaterialTransferDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
@@ -958,9 +1002,8 @@ class _ToolAndMaterialTransferListState
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
-        log(
-          '[Log didUpdateWidget listItemSelected] Chia sẻ với người ký items: ${jsonEncode(items)}',
-        );
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<ToolAndMaterialTransferBloc>().add(
           SendToSignerTAMTEvent(context, items),
         );

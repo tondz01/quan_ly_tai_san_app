@@ -7,9 +7,6 @@ import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/injection.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_conf.dart';
-import 'package:quan_ly_tai_san_app/screen/login/Repository/auth_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -19,8 +16,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = locator<AppRouteConf>().router;
-    UserInfoDTO userInfo =
-        AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
+    // UserInfoDTO userInfo =
+    //     AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
     // _loadDataIfNeeded(userInfo);
 
     return MultiBlocProvider(
@@ -55,9 +52,9 @@ class App extends StatelessWidget {
     );
   }
 
-  Future<void> _loadDataIfNeeded(UserInfoDTO userInfo) async {
-    if (userInfo.idCongTy.isNotEmpty) {
-      await AuthRepository().loadData(userInfo.idCongTy);
-    }
-  }
+  // Future<void> _loadDataIfNeeded(UserInfoDTO userInfo) async {
+  //   if (userInfo.idCongTy.isNotEmpty) {
+  //     await AuthRepository().loadData(userInfo.idCongTy);
+  //   }
+  // }
 }

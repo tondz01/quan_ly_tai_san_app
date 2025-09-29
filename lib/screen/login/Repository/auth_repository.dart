@@ -136,39 +136,27 @@ class AuthRepository extends ApiBase {
 
   //------LOAD DATA------------------------------------------------------------------------------------///
   Future<void> loadData(String idCongTy) async {
-    if (AccountHelper.instance.getDepartment()?.isEmpty ?? true) {
-      SGLog.info('_loadData', 'loadUserDepartments');
-      await _loadUserDepartments(idCongTy);
-    }
-    if (AccountHelper.instance.getNhanVien()?.isEmpty ?? true) {
-      SGLog.info('_loadData', 'loadUserEmployee');
-      await _loadUserEmployee(idCongTy);
-    }
-    if (AccountHelper.instance.getAssetGroup()?.isEmpty ?? true) {
-      SGLog.info('_loadData', 'loadAssetGroup');
-      await _loadAssetGroup(idCongTy);
-    }
-    if (AccountHelper.instance.getCcdcGroup()?.isEmpty ?? true) {
-      SGLog.info('_loadData', 'loadCCDCGroup');
-      await _loadCCDCGroup(idCongTy);
-    }
-    if (AccountHelper.instance.getChucVu()?.isEmpty ?? true) {
-      SGLog.info('_loadData', 'loadChucVu');
-      await _loadChucVu(idCongTy);
-    }
-    if (AccountHelper.instance.getAllTypeAsset().isEmpty) {
-      SGLog.info('_loadData', 'loadTypeAsset');
-      await _loadTypeAsset(idCongTy);
-    }
-    if (AccountHelper.instance.getAllTypeCcdc().isEmpty) {
-      SGLog.info('_loadData', 'loadTypeCcdc');
-      await _loadTypeCcdc(idCongTy);
-    }
-    log('check loadData assetCategory: ${AccountHelper.instance.getAssetCategory()}');
-    if (AccountHelper.instance.getAssetCategory()?.isEmpty ?? true) {
-      SGLog.info('_loadData', 'loadAssetCategory');
-      await _loadAssetCategory(idCongTy);
-    }
+    log(
+      '[check loadData] loadUserDepartments: ${AccountHelper.instance.getDepartment()}',
+    );
+    // if (AccountHelper.instance.getDepartment()?.isEmpty ?? true) {
+    SGLog.info('[check loadData] _loadData', 'loadUserDepartments');
+    await _loadUserDepartments(idCongTy);
+    // }
+    SGLog.info('_loadData', 'loadUserEmployee');
+    await _loadUserEmployee(idCongTy);
+    SGLog.info('_loadData', 'loadAssetGroup');
+    await _loadAssetGroup(idCongTy);
+    SGLog.info('_loadData', 'loadCCDCGroup');
+    await _loadCCDCGroup(idCongTy);
+    SGLog.info('_loadData', 'loadChucVu');
+    await _loadChucVu(idCongTy);
+    SGLog.info('_loadData', 'loadTypeAsset');
+    await _loadTypeAsset(idCongTy);
+    SGLog.info('_loadData', 'loadTypeCcdc');
+    await _loadTypeCcdc(idCongTy);
+    SGLog.info('_loadData', 'loadAssetCategory');
+    await _loadAssetCategory(idCongTy);
   }
 
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
@@ -288,7 +276,11 @@ class AuthRepository extends ApiBase {
       );
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final typeAssetList = response['data'] as List<TypeAsset>;
+        log('[check _loadTypeAsset] typeAssetList: $typeAssetList');
         AccountHelper.instance.setTypeAsset(typeAssetList);
+        log(
+          'check _loadTypeAsset: ${AccountHelper.instance.getAllTypeAsset()}',
+        );
       }
     } catch (e) {
       log('Error calling API TYPE_ASSET: $e');
@@ -527,13 +519,18 @@ class AuthRepository extends ApiBase {
       ];
     } else {
       final nhanVien = AccountHelper.instance.getNhanVienById(idUser);
-      log("check nhanVien: ${jsonEncode(nhanVien)}");
+      log(
+        "[check onGetPermission] 1 - check nhanVien: ${jsonEncode(nhanVien)}",
+      );
       if (nhanVien == null || nhanVien.chucVuId == null) return [];
-      log("check nhanVien2: ${jsonEncode(nhanVien)}");
+      log(
+        "[check onGetPermission] 2 - check nhanVien: ${jsonEncode(nhanVien)}",
+      );
       final chucVu = AccountHelper.instance.getChucVuById(nhanVien.chucVuId!);
-      log("check chucVu: ${jsonEncode(chucVu)}");
+      log('[check onGetPermission] 3 - chucVu: ${jsonEncode(chucVu)}');
+      log("[check onGetPermission] 4 - check chucVu: ${jsonEncode(chucVu)}");
       if (chucVu == null) return [];
-      log("check chucVu2: ${jsonEncode(chucVu)}");
+      log("[check onGetPermission] 5 - check chucVu2: ${jsonEncode(chucVu)}");
       final List<MapEntry<bool, String>> permissionMap = [
         MapEntry(chucVu.quanLyNhanVien, RoleCode.NHANVIEN),
         MapEntry(chucVu.quanLyPhongBan, RoleCode.PHONGBAN),

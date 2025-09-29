@@ -100,7 +100,7 @@ class MenuDataNotifier extends ChangeNotifier {
 
 /// Class quản lý toàn bộ dữ liệu menu
 class AppMenuData extends ChangeNotifier {
-  late final List<MenuItem> menuItems;
+  late List<MenuItem> menuItems;
   final MenuDataNotifier _notifier = MenuDataNotifier();
 
   final ValueNotifier<int> _countTrigger = ValueNotifier<int>(0);
@@ -307,6 +307,14 @@ class AppMenuData extends ChangeNotifier {
   /// Method để refresh counts và rebuild menu items
   void refreshCounts() {
     _countTrigger.value++;
+    notifyListeners();
+  }
+
+  /// Public method để rebuild lại menu khi quyền thay đổi (ví dụ sau khi login)
+  void rebuildMenuItems() {
+    MenuItem._nextIndex = 0;
+    _buildMenuItems();
+    log('message rebuildMenuItems MenuDataNotifier');
     notifyListeners();
   }
 

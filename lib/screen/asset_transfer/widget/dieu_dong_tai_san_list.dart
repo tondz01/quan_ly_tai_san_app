@@ -368,8 +368,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
-              searchValueGetter: (item) =>
-                  ConfigViewAT.getStatus(item.trangThai ?? 0),
+              searchValueGetter:
+                  (item) => ConfigViewAT.getStatus(item.trangThai ?? 0),
               searchable: true,
               filterable: true,
             ),
@@ -951,6 +951,57 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     );
   }
 
+  List<DieuDongTaiSanDto> _getNotSharedAndNotify(
+    List<DieuDongTaiSanDto> items,
+  ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<DieuDongTaiSanDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<DieuDongTaiSanDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.tenPhieu?.trim().isNotEmpty == true
+                    ? e.tenPhieu!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
   void _handleSendToSigner(List<DieuDongTaiSanDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
@@ -960,18 +1011,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       );
       return;
     }
-    // bool hasNonZero = items.any(
-    //   (item) => item.trangThai != 0 && item.trangThai != 2,
-    // );
-    // if (hasNonZero) {
-    //   AppUtility.showSnackBar(
-    //     context,
-    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-    //     isError: true,
-    //   );
-    //   return;
-    // }
-
     showConfirmDialog(
       context,
       type: ConfirmType.delete,
@@ -980,8 +1019,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<DieuDongTaiSanBloc>().add(
-          SendToSignerEvent(context, items),
+          SendToSignerEvent(context, notShared),
         );
       },
     );

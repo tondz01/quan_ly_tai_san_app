@@ -112,7 +112,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetBloc = context.read<AssetManagementBloc>();
                       final List<AssetManagementDto> cv =
-                          await convertExcelToAsset(filePath!);
+                          await convertExcelToAsset(bytes: fileBytes, filePath: filePath);
                       if (!mounted) return;
                       if (cv.isNotEmpty) {
                         assetBloc.add(CreateAssetBatchEvent(cv));

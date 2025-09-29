@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,14 +9,22 @@ import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
-Future<List<AssetManagementDto>> convertExcelToAsset(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+Future<List<AssetManagementDto>> convertExcelToAsset({Uint8List? bytes, String? filePath}) async {
+  final Uint8List fileBytes;
+  if (bytes != null) {
+    fileBytes = bytes;
+  } else if (filePath != null && filePath.isNotEmpty) {
+    // Only used on non-web platforms
+    fileBytes = File(filePath).readAsBytesSync();
+  } else {
+    throw ArgumentError('Either bytes or filePath must be provided');
+  }
   final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
 
   List<AssetManagementDto> assetList = [];
 
   try {
-    final excel = Excel.decodeBytes(bytes);
+    final excel = Excel.decodeBytes(fileBytes);
 
     for (final table in excel.tables.keys) {
       final sheet = excel.tables[table];
@@ -60,12 +69,13 @@ Future<List<AssetManagementDto>> convertExcelToAsset(String filePath) async {
           'idDonViBanDau': AppUtility.s(row[32]?.value),
           'idDonViHienThoi': AppUtility.s(row[33]?.value),
           'moTa': AppUtility.s(row[34]?.value),
-          'idCongTy': AppUtility.s(row[35]?.value),
-          'ngayTao': AppUtility.normalizeDateIsoString(row[36]?.value),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(row[37]?.value),
-          'nguoiTao': AppUtility.s(row[38]?.value, fallback: fallbackUser),
-          'nguoiCapNhat': AppUtility.s(row[39]?.value, fallback: fallbackUser),
-          'isActive': AppUtility.b(row[40]?.value),
+          'idCongTy': 'ct001',
+          'ngayTao': AppUtility.normalizeDateIsoString(row[35]?.value),
+          'ngayCapNhat': AppUtility.normalizeDateIsoString(row[36]?.value),
+          'nguoiTao': AppUtility.s(row[37]?.value, fallback: fallbackUser),
+          'nguoiCapNhat': AppUtility.s(row[38]?.value, fallback: fallbackUser),
+          'isActive': true,
+          'isTaiSanCon': false,
         };
         log('asset json: ${jsonEncode(json)}');
         assetList.add(AssetManagementDto.fromJson(json));
@@ -73,7 +83,7 @@ Future<List<AssetManagementDto>> convertExcelToAsset(String filePath) async {
     }
   } catch (e) {
     // Fallback for tricky files
-    final decoder = SpreadsheetDecoder.decodeBytes(bytes, update: false);
+    final decoder = SpreadsheetDecoder.decodeBytes(fileBytes, update: false);
     for (final t in decoder.tables.keys) {
       final sheet = decoder.tables[t];
       if (sheet == null) continue;
@@ -118,12 +128,13 @@ Future<List<AssetManagementDto>> convertExcelToAsset(String filePath) async {
           'idDonViBanDau': AppUtility.s(cell(row, 32)),
           'idDonViHienThoi': AppUtility.s(cell(row, 33)),
           'moTa': AppUtility.s(cell(row, 34)),
-          'idCongTy': AppUtility.s(cell(row, 35)),
+          'idCongTy': 'ct001',
           'ngayTao': AppUtility.normalizeDateIsoString(cell(row, 36)),
           'ngayCapNhat': AppUtility.normalizeDateIsoString(cell(row, 37)),
           'nguoiTao': AppUtility.s(cell(row, 38), fallback: fallbackUser),
           'nguoiCapNhat': AppUtility.s(cell(row, 39), fallback: fallbackUser),
-          'isActive': AppUtility.b(cell(row, 40)),
+          'isActive': true,
+          'isTaiSanCon': false,
         };
         log('asset json2: ${jsonEncode(json)}');
         assetList.add(AssetManagementDto.fromJson(json));

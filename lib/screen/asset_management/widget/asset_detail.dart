@@ -19,13 +19,10 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_manag
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/login/Repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 
 class AssetDetail extends StatefulWidget {
@@ -106,49 +103,22 @@ class _AssetDetailState extends State<AssetDetail> {
 
   @override
   void initState() {
+    setState(() {
+      _initController();
+      ();
+    });
     super.initState();
-    _initData();
   }
 
   @override
   void didUpdateWidget(covariant AssetDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.provider.dataDetail != data) {
-      _initData();
+      setState(() {
+        _initController();
+        ();
+      });
     }
-  }
-
-  _initData() async {
-    UserInfoDTO? user = AccountHelper.instance.getUserInfo();
-    if (user != null) {
-      await AuthRepository().loadData(user.idCongTy);
-    }
-    // newChildAssets.clear();
-    if (widget.provider.dataDetail != null) {
-      data = widget.provider.dataDetail;
-      isEditing = false;
-    } else {
-      data = null;
-      isEditing = true;
-    }
-    if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
-      isEditing = false;
-    }
-    _clearValidationErrors();
-    listAssetCategory = AccountHelper.instance.getAssetCategory() ?? [];
-    if (listAssetCategory.isNotEmpty) {
-      itemsAssetCategory.clear();
-      itemsAssetCategory.addAll([
-        ...listAssetCategory.map(
-          (e) => DropdownMenuItem<AssetCategoryDto>(
-            value: e,
-            child: Text(e.tenMoHinh ?? ''),
-          ),
-        ),
-      ]);
-    }
-    log('check listAssetCategory: ${jsonEncode(listAssetCategory)}');
-    _initController();
   }
 
   List<Map<String, dynamic>> _normalizeDetails(List<ChildAssetDto> list) {
@@ -174,240 +144,202 @@ class _AssetDetailState extends State<AssetDetail> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AssetManagementBloc, AssetManagementState>(
-      listener: (context, state) {
-        if (state is GetListChildAssetsSuccessState) {
-          setState(() {
-            // newChildAssets = state.data;
-          });
-        }
-        if (state is GetListChildAssetsFailedState) {
-          log('GetListChildAssetsFailedState');
-        }
-        if (state is CreateAssetSuccessState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tạo tài sản thành công'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          widget.provider.getDataAll(context);
-          setState(() {
-            isEditing = false;
-          });
-        } else if (state is CreateAssetFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.provider.isNew ||
-              (widget.provider.isCanUpdate &&
-                  !widget.provider.isNew &&
-                  data != null))
-            _buildHeaderDetail(),
-          SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: buildOriginalAssetInfomation(
-                        context,
-                        isEditing: isEditing,
-                        ctrlTenTaiSan: ctrlTenTaiSan,
-                        ctrlMaTaiSan: ctrlMaTaiSan,
-                        ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
-                        ctrlNguyenGia: ctrlNguyenGia,
-                        ctrlGiaTriKhauHaoBanDau: ctrlGiaTriKhauHaoBanDau,
-                        ctrlKyKhauHaoBanDau: ctrlKyKhauHaoBanDau,
-                        ctrlGiaTriThanhLy: ctrlGiaTriThanhLy,
-                        ctrlTenMoHinh: ctrlTenMoHinh,
-                        ctrlPhuongPhapKhauHao: ctrlPhuongPhapKhauHao,
-                        ctrlSoKyKhauHao: ctrlSoKyKhauHao,
-                        ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
-                        ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
-                        ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
-                        ctrlTenNhom: ctrlTenNhom,
-                        ctrlTenLoaiTaiSan: ctrlTenLoaiTaiSan,
-                        ctrlNgayVaoSo: ctrlNgayVaoSo,
-                        ctrlNgaySuDung: ctrlNgaySuDung,
-                        listAssetCategory: listAssetCategory,
-                        listAssetGroup: widget.provider.dataGroup!,
-                        itemsAssetCategory: itemsAssetCategory,
-                        itemsAssetGroup: widget.provider.itemsAssetGroup!,
-                        validationErrors: validationErrors,
-                        listTypeAsset: listTypeAsset,
-                        onAssetCategoryChanged: (value) {
-                          setState(() {
-                            idAssetCategory = value.id;
-                            phuongPhapKhauHao = value.phuongPhapKhauHao;
-                            ctrlPhuongPhapKhauHao.text =
-                                value.phuongPhapKhauHao == 1
-                                    ? 'Đường thẳng'
-                                    : '';
-                            ctrlTaiKhoanTaiSan.text =
-                                value.taiKhoanTaiSan.toString();
-                            ctrlSoKyKhauHao.text = value.kyKhauHao.toString();
-                            ctrlTaiKhoanKhauHao.text =
-                                value.taiKhoanKhauHao.toString();
-                            ctrlTaiKhoanChiPhi.text =
-                                value.taiKhoanChiPhi.toString();
-                          });
-                        },
-                        onAssetGroupChanged: (value) {
-                          setState(() {
-                            idAssetGroup = value.id;
-                            log('Check listTypeAsset: ${jsonEncode(value)}');
-                            listTypeAsset = AccountHelper.instance.getTypeAsset(
-                              value.id ?? '',
-                            );
-                            log(
-                              'Check listTypeAsset getAllTypeAsset: ${AccountHelper.instance.getAllTypeAsset()}',
-                            );
-
-                            log(
-                              'Check listTypeAsset222: ${jsonEncode(listTypeAsset)}',
-                            );
-                          });
-                        },
-                        onDepreciationMethodChanged: (value) {
-                          setState(() {
-                            ctrlPhuongPhapKhauHao.text = value;
-                            phuongPhapKhauHao = int.tryParse(value) ?? 0;
-                          });
-                        },
-                        onChangedNgayVaoSo: (value) {},
-                        onChangedNgaySuDung: (value) {},
-                        onTypeAssetChanged: (value) {
-                          setState(() {
-                            typeAsset = value;
-                          });
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 30),
-                    Expanded(
-                      child: buildOtherInformation(
-                        context,
-                        isEditing: isEditing,
-                        ctrlDuAn: ctrlDuAn,
-                        ctrlNguonKinhPhi: ctrlNguonKinhPhi,
-                        ctrlKyHieu: ctrlKyHieu,
-                        ctrlSoKyHieu: ctrlSoKyHieu,
-                        ctrlCongSuat: ctrlCongSuat,
-                        ctrlNuocSanXuat: ctrlNuocSanXuat,
-                        ctrlNamSanXuat: ctrlNamSanXuat,
-                        ctrlLyDoTang: ctrlLyDoTang,
-                        ctrlHienTrang: ctrlHienTrang,
-                        ctrlSoLuong: ctrlSoLuong,
-                        ctrlDonViTinh: ctrlDonViTinh,
-                        ctrlGhiChu: ctrlGhiChu,
-                        ctrlDonViBanDau: ctrlDonViBanDau,
-                        ctrlDonViHienThoi: ctrlDonViHienThoi,
-                        valueKhoiTaoDonVi: valueKhoiTaoDonVi,
-                        listPhongBan: widget.provider.dataDepartment!,
-                        listDuAn: widget.provider.dataProject!,
-                        listNguonKinhPhi: widget.provider.dataCapitalSource!,
-                        itemsPhongBan: widget.provider.itemsPhongBan!,
-                        itemsDuAn: widget.provider.itemsDuAn!,
-                        itemsNguonKinhPhi: widget.provider.itemsNguonKinhPhi!,
-                        provider: widget.provider,
-                        duAn: duAn,
-                        hienTrang: hienTrang,
-                        lyDoTang: lyDoTang,
-                        country: country,
-                        phongBanBanDau: phongBanBanDau,
-                        phongBanHienThoi: phongBanHienThoi,
-                        validationErrors: validationErrors,
-                        onNuocSanXuatChanged: (value) {
-                          setState(() {
-                            country = value;
-                          });
-                        },
-                        onDuAnChanged: (value) {
-                          setState(() {
-                            duAn = value;
-                          });
-                        },
-                        onKhoiTaoDonViChanged: (value) {
-                          setState(() {
-                            valueKhoiTaoDonVi = value;
-                          });
-                        },
-                        onNguonKinhPhiChanged: (value) {
-                          setState(() {
-                            idNguonKinhPhi = value.id;
-                          });
-                        },
-                        onLyDoTangChanged: (value) {
-                          setState(() {
-                            lyDoTang = value;
-                          });
-                        },
-                        onHienTrangChanged: (value) {
-                          setState(() {
-                            hienTrang = value;
-                          });
-                        },
-                        onChangeInitialUsage: (value) {
-                          setState(() {
-                            phongBanBanDau = value;
-                          });
-                        },
-                        onChangeCurrentUnit: (value) {
-                          setState(() {
-                            phongBanHienThoi = value;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                TableChildAssets(
-                  context,
-                  isEditing: isEditing,
-                  initialDetails: data?.childAssets ?? [],
-                  allAssets: widget.provider.data ?? [],
-                  onDataChanged: (dataChange) {
-                    // setState(() {
-                    newChildAssets =
-                        dataChange
-                            .map(
-                              (e) => ChildAssetDto(
-                                id: e.id,
-                                idTaiSanCha: data?.id ?? '',
-                                idTaiSanCon: e.id,
-                                ngayTao: DateTime.now().toIso8601String(),
-                                ngayCapNhat: DateTime.now().toIso8601String(),
-                                nguoiTao: e.nguoiTao,
-                                nguoiCapNhat: e.nguoiCapNhat,
-                                isActive: e.isActive,
-                              ),
-                            )
-                            .toList();
-                    // setState(() {
-                    // });
-                    // });
-                  },
-                ),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.provider.isNew ||
+            (widget.provider.isCanUpdate &&
+                !widget.provider.isNew &&
+                data != null))
+          _buildHeaderDetail(),
+        SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: buildOriginalAssetInfomation(
+                      context,
+                      isEditing: isEditing,
+                      ctrlTenTaiSan: ctrlTenTaiSan,
+                      ctrlMaTaiSan: ctrlMaTaiSan,
+                      ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
+                      ctrlNguyenGia: ctrlNguyenGia,
+                      ctrlGiaTriKhauHaoBanDau: ctrlGiaTriKhauHaoBanDau,
+                      ctrlKyKhauHaoBanDau: ctrlKyKhauHaoBanDau,
+                      ctrlGiaTriThanhLy: ctrlGiaTriThanhLy,
+                      ctrlTenMoHinh: ctrlTenMoHinh,
+                      ctrlPhuongPhapKhauHao: ctrlPhuongPhapKhauHao,
+                      ctrlSoKyKhauHao: ctrlSoKyKhauHao,
+                      ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
+                      ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
+                      ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
+                      ctrlTenNhom: ctrlTenNhom,
+                      ctrlTenLoaiTaiSan: ctrlTenLoaiTaiSan,
+                      ctrlNgayVaoSo: ctrlNgayVaoSo,
+                      ctrlNgaySuDung: ctrlNgaySuDung,
+                      listAssetCategory: listAssetCategory,
+                      listAssetGroup: widget.provider.dataGroup!,
+                      itemsAssetCategory: itemsAssetCategory,
+                      itemsAssetGroup: widget.provider.itemsAssetGroup!,
+                      validationErrors: validationErrors,
+                      listTypeAsset: listTypeAsset,
+                      onAssetCategoryChanged: (value) {
+                        setState(() {
+                          idAssetCategory = value.id;
+                          phuongPhapKhauHao = value.phuongPhapKhauHao;
+                          ctrlPhuongPhapKhauHao.text =
+                              value.phuongPhapKhauHao == 1 ? 'Đường thẳng' : '';
+                          ctrlTaiKhoanTaiSan.text =
+                              value.taiKhoanTaiSan.toString();
+                          ctrlSoKyKhauHao.text = value.kyKhauHao.toString();
+                          ctrlTaiKhoanKhauHao.text =
+                              value.taiKhoanKhauHao.toString();
+                          ctrlTaiKhoanChiPhi.text =
+                              value.taiKhoanChiPhi.toString();
+                        });
+                      },
+                      onAssetGroupChanged: (value) {
+                        setState(() {
+                          idAssetGroup = value.id;
+                          listTypeAsset = AccountHelper.instance.getTypeAsset(
+                            value.id ?? '',
+                          );
+                        });
+                      },
+                      onDepreciationMethodChanged: (value) {
+                        setState(() {
+                          ctrlPhuongPhapKhauHao.text = value;
+                          phuongPhapKhauHao = int.tryParse(value) ?? 0;
+                        });
+                      },
+                      onChangedNgayVaoSo: (value) {},
+                      onChangedNgaySuDung: (value) {},
+                      onTypeAssetChanged: (value) {
+                        setState(() {
+                          typeAsset = value;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 30),
+                  Expanded(
+                    child: buildOtherInformation(
+                      context,
+                      isEditing: isEditing,
+                      ctrlDuAn: ctrlDuAn,
+                      ctrlNguonKinhPhi: ctrlNguonKinhPhi,
+                      ctrlKyHieu: ctrlKyHieu,
+                      ctrlSoKyHieu: ctrlSoKyHieu,
+                      ctrlCongSuat: ctrlCongSuat,
+                      ctrlNuocSanXuat: ctrlNuocSanXuat,
+                      ctrlNamSanXuat: ctrlNamSanXuat,
+                      ctrlLyDoTang: ctrlLyDoTang,
+                      ctrlHienTrang: ctrlHienTrang,
+                      ctrlSoLuong: ctrlSoLuong,
+                      ctrlDonViTinh: ctrlDonViTinh,
+                      ctrlGhiChu: ctrlGhiChu,
+                      ctrlDonViBanDau: ctrlDonViBanDau,
+                      ctrlDonViHienThoi: ctrlDonViHienThoi,
+                      valueKhoiTaoDonVi: valueKhoiTaoDonVi,
+                      listPhongBan: widget.provider.dataDepartment!,
+                      listDuAn: widget.provider.dataProject!,
+                      listNguonKinhPhi: widget.provider.dataCapitalSource!,
+                      itemsPhongBan: widget.provider.itemsPhongBan!,
+                      itemsDuAn: widget.provider.itemsDuAn!,
+                      itemsNguonKinhPhi: widget.provider.itemsNguonKinhPhi!,
+                      provider: widget.provider,
+                      duAn: duAn,
+                      hienTrang: hienTrang,
+                      lyDoTang: lyDoTang,
+                      country: country,
+                      phongBanBanDau: phongBanBanDau,
+                      phongBanHienThoi: phongBanHienThoi,
+                      validationErrors: validationErrors,
+                      onNuocSanXuatChanged: (value) {
+                        setState(() {
+                          country = value;
+                        });
+                      },
+                      onDuAnChanged: (value) {
+                        setState(() {
+                          duAn = value;
+                        });
+                      },
+                      onKhoiTaoDonViChanged: (value) {
+                        setState(() {
+                          valueKhoiTaoDonVi = value;
+                        });
+                      },
+                      onNguonKinhPhiChanged: (value) {
+                        setState(() {
+                          idNguonKinhPhi = value.id;
+                        });
+                      },
+                      onLyDoTangChanged: (value) {
+                        setState(() {
+                          lyDoTang = value;
+                        });
+                      },
+                      onHienTrangChanged: (value) {
+                        setState(() {
+                          hienTrang = value;
+                        });
+                      },
+                      onChangeInitialUsage: (value) {
+                        setState(() {
+                          phongBanBanDau = value;
+                        });
+                      },
+                      onChangeCurrentUnit: (value) {
+                        setState(() {
+                          phongBanHienThoi = value;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              TableChildAssets(
+                context,
+                isEditing: isEditing,
+                initialDetails: data?.childAssets ?? [],
+                allAssets: widget.provider.data ?? [],
+                onDataChanged: (dataChange) {
+                  // setState(() {
+                  newChildAssets =
+                      dataChange
+                          .map(
+                            (e) => ChildAssetDto(
+                              id: e.id,
+                              idTaiSanCha: data?.id ?? '',
+                              idTaiSanCon: e.id,
+                              ngayTao: DateTime.now().toIso8601String(),
+                              ngayCapNhat: DateTime.now().toIso8601String(),
+                              nguoiTao: e.nguoiTao,
+                              nguoiCapNhat: e.nguoiCapNhat,
+                              isActive: e.isActive,
+                            ),
+                          )
+                          .toList();
+                  // setState(() {
+                  // });
+                  // });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -450,7 +382,23 @@ class _AssetDetailState extends State<AssetDetail> {
 
   void _initController() {
     // If data is null, set all controllers to empty string
-    if (data == null) {
+    _clearValidationErrors();
+    listAssetCategory = AccountHelper.instance.getAssetCategory() ?? [];
+    if (listAssetCategory.isNotEmpty) {
+      itemsAssetCategory.clear();
+      itemsAssetCategory.addAll([
+        ...listAssetCategory.map(
+          (e) => DropdownMenuItem<AssetCategoryDto>(
+            value: e,
+            child: Text(e.tenMoHinh ?? ''),
+          ),
+        ),
+      ]);
+    }
+    if (widget.provider.dataDetail == null) {
+      isEditing = true;
+      log('check isEditing: $isEditing');
+
       ctrlMaTaiSan.text = '';
       ctrlIdNhomTaiSan.text = '';
       ctrlNguyenGia.text = '';
@@ -483,6 +431,15 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlTenTaiSan.text = '';
       valueKhoiTaoDonVi = false;
     } else {
+      if (widget.provider.dataDetail != null) {
+        data = widget.provider.dataDetail;
+        isEditing = false;
+        log('check isEditing: $isEditing');
+      }
+      if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
+        isEditing = false;
+        log('check isEditing: $isEditing');
+      }
       // If data is not null, set controllers with data values
       ctrlMaTaiSan.text = data!.id ?? '';
       ctrlIdNhomTaiSan.text = data!.tenNhom ?? '';
@@ -578,9 +535,10 @@ class _AssetDetailState extends State<AssetDetail> {
       idCongTy: 'ct001', // Cần lấy từ context hoặc config
       ngayTao: DateTime.now().toIso8601String(),
       ngayCapNhat: DateTime.now().toIso8601String(),
-      nguoiTao: 'current_user', // Cần lấy từ auth
-      nguoiCapNhat: 'current_user', // Cần lấy từ auth
+      nguoiTao: AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '',
+      nguoiCapNhat: '',
       active: true,
+      isTaiSanCon: false,
       idLoaiTaiSanCon: typeAsset?.id ?? '',
     );
   }
@@ -594,9 +552,9 @@ class _AssetDetailState extends State<AssetDetail> {
     if (ctrlMaTaiSan.text.isEmpty) {
       newValidationErrors['id'] = true;
     }
-    if (idAssetCategory == null) {
-      newValidationErrors['idMoHinhTaiSan'] = true;
-    }
+    // if (idAssetCategory == null) {
+    //   newValidationErrors['idMoHinhTaiSan'] = true;
+    // }
     if (idAssetGroup == null) {
       newValidationErrors['idNhomTaiSan'] = true;
     }
@@ -606,10 +564,10 @@ class _AssetDetailState extends State<AssetDetail> {
     if (ctrlDonViHienThoi.text.isEmpty) {
       newValidationErrors['idDonViHienThoi'] = true;
     }
-    if (typeAsset == null) {
-      log('typeAsset: $typeAsset');
-      newValidationErrors['idLoaiTaiSanCon'] = true;
-    }
+    // if (typeAsset == null) {
+    //   log('typeAsset: $typeAsset');
+    //   newValidationErrors['idLoaiTaiSanCon'] = true;
+    // }
 
     // Số lượng, nguyên giá, khấu hao
 
@@ -712,6 +670,11 @@ class _AssetDetailState extends State<AssetDetail> {
       if (_detailsChanged()) {
         await _syncDetails(data!.id!);
       }
+      final request = _createAssetRequest().copyWith(
+        nguoiCapNhat: AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '',
+        ngayCapNhat: DateTime.now().toIso8601String(),
+      );
+
       bloc.add(UpdateAssetEvent(context, request, data!.id!));
     }
   }

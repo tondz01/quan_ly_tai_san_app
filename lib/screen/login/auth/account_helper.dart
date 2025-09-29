@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
@@ -86,13 +85,24 @@ class AccountHelper {
   }
 
   List<PhongBan>? getDepartment() {
-    final data = StorageService.read(StorageKey.DEPARTMENT);
-    if (data == null) return null;
+    final raw = StorageService.read(StorageKey.DEPARTMENT);
+    if (raw == null) return null;
 
     try {
-      return (data as List<dynamic>)
-          .map((json) => PhongBan.fromJson(json as Map<String, dynamic>))
-          .toList();
+      if (raw is List<PhongBan>) return raw;
+      if (raw is List) {
+        return raw
+            .map((e) {
+              if (e is PhongBan) return e;
+              if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
+              if (e is Map)
+                return PhongBan.fromJson(Map<String, dynamic>.from(e));
+              return null;
+            })
+            .whereType<PhongBan>()
+            .toList();
+      }
+      return null;
     } catch (e) {
       print('Error parsing department data: $e');
       return null;
@@ -100,11 +110,14 @@ class AccountHelper {
   }
 
   PhongBan? getDepartmentById(String id) {
-    final departments = StorageService.read(StorageKey.DEPARTMENT);
+    final departments = getDepartment();
     if (departments == null) return null;
 
     try {
-      return departments.firstWhere((department) => department.id == id);
+      for (final d in departments) {
+        if (d.id == id) return d;
+      }
+      return null;
     } catch (e) {
       return null;
     }
@@ -687,16 +700,34 @@ class AccountHelper {
     }
   }
 
+  // List<TypeAsset> getAllTypeAsset() {
+  //   final raw = StorageService.read(StorageKey.TYPE_ASSET);
+  //   if (raw == null) return [];
+  //   if (raw is List<TypeAsset>) return raw;
+  //   return [];
+  // }
   List<TypeAsset> getAllTypeAsset() {
     final raw = StorageService.read(StorageKey.TYPE_ASSET);
     if (raw == null) return [];
     if (raw is List<TypeAsset>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => TypeAsset.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
     return [];
   }
 
   List<TypeAsset> getTypeAsset(String idTypeAsset) {
-    final raw = getAllTypeAsset();
-    return raw.where((element) => element.id == idTypeAsset).toList();
+    final List<TypeAsset> all = getAllTypeAsset();
+    final List<TypeAsset> filtered =
+        all.where((element) => element.idLoaiTs == idTypeAsset).toList();
+    return filtered;
   }
 
   TypeAsset? getTypeAssetObject(String idAssetGroup) {

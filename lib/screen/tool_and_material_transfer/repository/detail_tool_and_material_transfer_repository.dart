@@ -66,11 +66,7 @@ class DetailToolAndMaterialTransferRepository {
   Future<List<DetailToolAndMaterialTransferDto>> getAll(
     String idToolAndMaterialTransfer,
   ) async {
-    final queryParams = {"iddieudongccdcvattu": idToolAndMaterialTransfer};
-    
     // Log cURL command
-    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
-    log('cURL command: $curlCommand');
     final res = await _dio.get(
       '',
       queryParameters: {"iddieudongccdcvattu": idToolAndMaterialTransfer},

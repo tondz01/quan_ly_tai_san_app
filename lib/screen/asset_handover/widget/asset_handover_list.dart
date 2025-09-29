@@ -78,7 +78,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
   List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [
-     {
+    {
       'Ngày bàn giao':
           (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
     },
@@ -931,6 +931,57 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     }
   }
 
+  List<AssetHandoverDto> _getNotSharedAndNotify(
+    List<AssetHandoverDto> items,
+  ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<AssetHandoverDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<AssetHandoverDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.quyetDinhDieuDongSo?.trim().isNotEmpty == true
+                    ? e.quyetDinhDieuDongSo!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
   void _handleSendToSigner(List<AssetHandoverDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
@@ -958,8 +1009,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<AssetHandoverBloc>().add(
-          SendToSignerAsetHandoverEvent(context, items),
+          SendToSignerAsetHandoverEvent(context, notShared),
         );
       },
     );
