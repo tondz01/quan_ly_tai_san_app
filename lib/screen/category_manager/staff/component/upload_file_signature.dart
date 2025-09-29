@@ -9,10 +9,18 @@ Future<Map<String, dynamic>?> uploadFileSignature(
   String filePath,
   Uint8List fileBytes,
 ) async {
+  // Web platform validation
   if (kIsWeb) {
-    if (fileName.isEmpty || filePath.isEmpty) return null;
+    if (fileName.isEmpty || fileBytes.isEmpty) {
+      SGLog.warning("Upload chữ ký", "Web: fileName or fileBytes is empty");
+      return null;
+    }
   } else {
-    if (filePath.isEmpty) return null;
+    // Mobile/Desktop platform validation
+    if (filePath.isEmpty) {
+      SGLog.warning("Upload chữ ký", "Mobile: filePath is empty");
+      return null;
+    }
   }
   try {
     final result =
@@ -45,7 +53,7 @@ Future<Map<String, dynamic>?> uploadFileSignature(
       return null;
     }
   } catch (e) {
-    SGLog.debug("Upload chữ ký", ' Error uploading file: $e');
+    SGLog.error("Upload chữ ký", 'Error uploading file: $e');
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

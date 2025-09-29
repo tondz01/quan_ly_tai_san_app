@@ -40,7 +40,7 @@ class RoleRepository extends ApiBase {
       // Parse từng item trong data list
       result['data'] = dataList.map((item) => ChucVu.fromJson(item)).toList();
     } catch (e) {
-      log("Error at getListRole - RoleRepository: $e");
+      SGLog.error("RoleRepository", "Error at getListRole: $e");
     }
 
     return result;
@@ -66,7 +66,7 @@ class RoleRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;
     } catch (e) {
-      log("Error at createRole - RoleRepository: $e");
+      SGLog.error("RoleRepository", "Error at createRole: $e");
     }
 
     return result;
@@ -95,7 +95,7 @@ class RoleRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;
     } catch (e) {
-      log("Error at updateRole - RoleRepository: $e");
+      SGLog.error("RoleRepository", "Error at updateRole: $e");
     }
 
     return result;
@@ -119,7 +119,7 @@ class RoleRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;
     } catch (e) {
-      log("Error at deleteRole - RoleRepository: $e");
+      SGLog.error("RoleRepository", "Error at deleteRole: $e");
     }
 
     return result;
@@ -209,7 +209,7 @@ class RoleRepository extends ApiBase {
         ChucVu.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("RoleRepository", "Error at saveRoleBatch: $e");
     }
 
     return result;
@@ -239,7 +239,7 @@ class RoleRepository extends ApiBase {
         ChucVu.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("RoleRepository", "Error at deleteRoleBatch: $e");
     }
 
     return result;

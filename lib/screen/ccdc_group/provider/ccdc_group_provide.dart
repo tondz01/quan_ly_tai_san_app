@@ -198,6 +198,24 @@ class CcdcGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void createCcdcGroupBatchSuccess(
+    BuildContext context,
+    CreateCcdcGroupBatchSuccessState state,
+  ) {
+    onCloseDetail(context);
+    AppUtility.showSnackBar(context, 'Thêm danh sách nhóm tài sản thành công!');
+    refresh(context);
+    notifyListeners();
+  }
+
+  void createCcdcGroupBatchFailed(
+    BuildContext context,
+    CreateCcdcGroupBatchFailedState state,
+  ) {
+    AppUtility.showSnackBar(context, state.message, isError: true);
+    notifyListeners();
+  }
+
   void updateCcdcGroupSuccess(
     BuildContext context,
     UpdateCcdcGroupSuccessState state,

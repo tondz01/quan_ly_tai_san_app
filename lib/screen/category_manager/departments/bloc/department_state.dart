@@ -10,10 +10,15 @@ abstract class DepartmentState extends Equatable {
 
 class DepartmentInitial extends DepartmentState {}
 
+class DepartmentLoading extends DepartmentState {}
+
 class DepartmentLoaded extends DepartmentState {
   final List<PhongBan> departments;
   final List<NhomDonVi> departmentGroups;
-  copyWith({
+  
+  const DepartmentLoaded(this.departments, this.departmentGroups);
+  
+  DepartmentLoaded copyWith({
     List<PhongBan>? departments,
     List<NhomDonVi>? departmentGroups,
   }) {
@@ -22,7 +27,7 @@ class DepartmentLoaded extends DepartmentState {
       departmentGroups ?? this.departmentGroups,
     );
   }
-  const DepartmentLoaded(this.departments, this.departmentGroups);
+  
   @override
   List<Object?> get props => [departments, departmentGroups];
 }
@@ -30,6 +35,36 @@ class DepartmentLoaded extends DepartmentState {
 class DepartmentError extends DepartmentState {
   final String message;
   const DepartmentError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class AddDepartmentSuccess extends DepartmentState {
+  final String message;
+  const AddDepartmentSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateDepartmentSuccess extends DepartmentState {
+  final String message;
+  const UpdateDepartmentSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteDepartmentSuccess extends DepartmentState {
+  final String message;
+  const DeleteDepartmentSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteDepartmentBatchSuccess extends DepartmentState {}
+
+class DeleteDepartmentBatchFailure extends DepartmentState {
+  final String message;
+  const DeleteDepartmentBatchFailure(this.message);
   @override
   List<Object?> get props => [message];
 } 

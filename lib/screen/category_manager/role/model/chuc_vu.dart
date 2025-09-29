@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_constants.dart';
 
 class ChucVu extends Equatable {
   final String id;
@@ -149,7 +150,7 @@ class ChucVu extends Equatable {
       'Có quyền Bàn giao tài sản': banGiaoTaiSan,
       'Có quyền Bàn giao CCDC - VT': banGiaoCCDCVatTu,
       'Quản lý Báo cáo': baoCao,
-      'Mã công ty': _nullIfEmpty("ct001"),
+      'Mã công ty': _nullIfEmpty(idCongTy.isEmpty ? RoleConstants.defaultCompanyId : idCongTy),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhập': _nullIfEmpty(ngayCapNhat),
       'Người tạo': _nullIfEmpty(nguoiTao),

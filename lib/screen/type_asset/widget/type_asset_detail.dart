@@ -30,7 +30,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
   TextEditingController controllerId = TextEditingController();
   TextEditingController controllerIdLoaiTs = TextEditingController();
   TextEditingController controllerName = TextEditingController();
-  
+
   Map<String, bool> validationErrors = {};
   List<AssetGroupDto> listAssetGroup = [];
   AssetGroupDto? assetGroup;
@@ -147,7 +147,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CommonFormInput(
-                label: 'Mã loại tài sản',
+                label: 'Mã loại tài sản *',
                 controller: controllerId,
                 isEditing: data == null ? isEditing : false,
                 textContent: controllerId.text,
@@ -156,7 +156,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
                 fieldName: 'id',
               ),
               CmFormDropdownObject<AssetGroupDto>(
-                label: 'Mã loại tài sản cha',
+                label: 'Mã loại tài sản cha *',
                 value: assetGroup,
                 controller: controllerIdLoaiTs,
                 isEditing: isEditing,
@@ -174,7 +174,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
                 validationErrors: validationErrors,
               ),
               CommonFormInput(
-                label: 'Tên loại tài sản',
+                label: 'Tên loại tài sản *',
                 controller: controllerName,
                 isEditing: isEditing,
                 textContent: controllerName.text,
@@ -212,6 +212,9 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
               onPressed: () {
                 setState(() {
                   isEditing = false;
+                  if (widget.provider.dataDetail == null) {
+                    widget.provider.onCloseDetail(context);
+                  }
                 });
               },
             ),

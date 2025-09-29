@@ -104,12 +104,13 @@ abstract class AppUtility {
     String message, {
     bool isError = false,
     TextAlign? textAlign = TextAlign.left,
+    int? timeDuration = 2,
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, textAlign: textAlign),
         backgroundColor: isError ? Colors.red : Colors.green,
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: timeDuration ?? 2),
       ),
     );
   }

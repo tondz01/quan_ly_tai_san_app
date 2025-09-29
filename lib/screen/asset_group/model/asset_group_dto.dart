@@ -28,15 +28,15 @@ class AssetGroupDto {
       id: json['id']?.toString(),
       tenNhom: json['tenNhom'],
       hieuLuc: json['hieuLuc'],
-      idCongTy: json['idCongTy']?.toString(),
-      ngayTao: json['ngayTao'] != null
-          ? DateTime.tryParse(json['ngayTao'])
-          : null,
-      ngayCapNhat: json['ngayCapNhat'] != null
-          ? DateTime.tryParse(json['ngayCapNhat'])
-          : null,
-      nguoiTao: json['nguoiTao']?.toString(),
-      nguoiCapNhat: json['nguoiCapNhat']?.toString(),
+      idCongTy: json['idCongTy'],
+      ngayTao:
+          json['ngayTao'] != null ? DateTime.tryParse(json['ngayTao']) : null,
+      ngayCapNhat:
+          json['ngayCapNhat'] != null
+              ? DateTime.tryParse(json['ngayCapNhat'])
+              : null,
+      nguoiTao: json['nguoiTao'],
+      nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
     );
   }
@@ -47,8 +47,21 @@ class AssetGroupDto {
       'tenNhom': tenNhom,
       'hieuLuc': hieuLuc,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.millisecondsSinceEpoch,
-      'ngayCapNhat': ngayCapNhat?.millisecondsSinceEpoch,
+      'ngayTao': ngayTao?.toUtc().toIso8601String(),
+      'ngayCapNhat': ngayCapNhat?.toUtc().toIso8601String(),
+      'nguoiTao': nguoiTao,
+      'nguoiCapNhat': nguoiCapNhat,
+      'isActive': isActive,
+    };
+  }
+
+  Map<String, dynamic> toLoaiTaisanJson() {
+    return {
+      'id': id,
+      'tenLoaiTaiSan': tenNhom,
+      'idCongTy': idCongTy,
+      'ngayTao': ngayTao?.toIso8601String().replaceAll('Z', ''),
+      'ngayCapNhat': ngayCapNhat?.toIso8601String().replaceAll('Z', ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,

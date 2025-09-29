@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 
 abstract class ToolsAndSuppliesState extends Equatable {
   const ToolsAndSuppliesState();
@@ -35,6 +36,31 @@ class GetListToolsAndSuppliesFailedState extends ToolsAndSuppliesState {
   final String message;
 
   const GetListToolsAndSuppliesFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+//GET LIST TYPE CCDC
+class GetListTypeCcdcSuccessState extends ToolsAndSuppliesState {
+  final List<TypeCcdc> data;
+
+  const GetListTypeCcdcSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class GetListTypeCcdcFailedState extends ToolsAndSuppliesState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListTypeCcdcFailedState({
     required this.title,
     this.code,
     required this.message,
@@ -127,4 +153,25 @@ class PutPostDeleteFailedState extends ToolsAndSuppliesState {
 
   @override
   List<Object> get props => [title, code!, message];
+}
+
+class DeleteToolsAndSuppliesBatchSuccessState extends ToolsAndSuppliesState {
+  final String data;
+
+  const DeleteToolsAndSuppliesBatchSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class DeleteToolsAndSuppliesBatchFailedState extends ToolsAndSuppliesState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const DeleteToolsAndSuppliesBatchFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
 }

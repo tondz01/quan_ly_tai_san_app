@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 
 class NhanVien extends Equatable {
   final String? id;
@@ -203,7 +204,7 @@ class NhanVien extends Equatable {
       'nguoiQuanLy': nguoiQuanLy,
       'laQuanLy': laQuanLy,
       'avatar': avatar,
-      'idCongTy': "ct001",
+      'idCongTy': idCongTy ?? StaffConstants.defaultCompanyId,
       'diaChiLamViec': diaChiLamViec,
       'hinhThucLamViec': hinhThucLamViec,
       'nguoiTao': nguoiTao,
@@ -293,8 +294,6 @@ class NhanVien extends Equatable {
     kyNhay,
     kyThuong,
     kySo,
-    ngayTao,
-    ngayCapNhat,
     savePin
   ];
 }

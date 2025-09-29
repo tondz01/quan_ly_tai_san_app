@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -15,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form_left.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesDetail extends StatefulWidget {
@@ -35,6 +37,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   // Các controller để quản lý dữ liệu nhập liệu
   late TextEditingController controllerImportUnit = TextEditingController();
   late TextEditingController controllerGroupCCDC = TextEditingController();
+  late TextEditingController controllerTypeCCDC = TextEditingController();
   late TextEditingController controllerName = TextEditingController();
   late TextEditingController controllerCode = TextEditingController();
   late TextEditingController controllerImportDate = TextEditingController();
@@ -54,9 +57,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   ToolsAndSuppliesDto? data;
   PhongBan? selectedPhongBan;
   CcdcGroup? selectedGroupCCDC;
+  TypeCcdc? selectedTypeCCDC;
 
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
   List<DropdownMenuItem<CcdcGroup>> itemsGroupCCDC = [];
+  List<DropdownMenuItem<TypeCcdc>> itemsTypeCCDC = [];
   List<DetailAssetDto> newDetailAssetDto = [];
   Map<String, bool> validationErrors = {};
 
@@ -83,6 +88,18 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   @override
   void dispose() {
+    controllerImportUnit.dispose();
+    controllerGroupCCDC.dispose();
+    controllerTypeCCDC.dispose();
+    controllerName.dispose();
+    controllerCode.dispose();
+    controllerImportDate.dispose();
+    controllerUnit.dispose();
+    controllerQuantity.dispose();
+    controllerValue.dispose();
+    controllerSymbol.dispose();
+    controllerNote.dispose();
+    controllerDropdown.dispose();
     newDetailAssetDto.clear();
     super.dispose();
   }
@@ -116,6 +133,14 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     if (idGroupCCDC.isEmpty) {
       newValidationErrors['idNhomCcdc'] = true;
     }
+
+    // Validate loại CCDC
+    final String idTypeCCDC =
+        (selectedTypeCCDC?.id ?? controllerTypeCCDC.text).trim();
+    if (idTypeCCDC.isEmpty) {
+      newValidationErrors['idLoaiCCDCCon'] = true;
+    }
+
     // Validate đơn vị tính
     if (controllerUnit.text.trim().isEmpty) {
       newValidationErrors['donViTinh'] = true;
@@ -161,54 +186,76 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade300),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
               children: [
-                Expanded(
-                  child: ToolsAndSuppliesFormLeft(
-                    isEditing: isEditing,
-                    item: data,
-                    provider: widget.provider,
-                    onPhongBanChanged: (value) {
-                      setState(() {
-                        selectedPhongBan = value;
-                      });
-                    },
-                    onImportDateChanged: (value) {},
-                    listPhongBan: widget.provider.dataPhongBan,
-                    itemsPhongBan: itemsPhongBan,
-                    controllerImportUnit: controllerImportUnit,
-                    controllerName: controllerName,
-                    controllerCode: controllerCode,
-                    controllerImportDate: controllerImportDate,
-                    controllerUnit: controllerUnit,
-                    validationErrors: validationErrors,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ToolsAndSuppliesFormLeft(
+                        isEditing: isEditing,
+                        item: data,
+                        provider: widget.provider,
+                        onPhongBanChanged: (value) {
+                          setState(() {
+                            selectedPhongBan = value;
+                          });
+                        },
+                        onImportDateChanged: (value) {},
+                        listPhongBan: widget.provider.dataPhongBan,
+                        itemsPhongBan: itemsPhongBan,
+                        controllerImportUnit: controllerImportUnit,
+                        controllerName: controllerName,
+                        controllerCode: controllerCode,
+                        controllerImportDate: controllerImportDate,
+                        controllerUnit: controllerUnit,
+                        validationErrors: validationErrors,
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: ToolsAndSuppliesFormRight(
+                        isEditing: isEditing,
+                        item: data,
+                        controllerGroupCCDC: controllerGroupCCDC,
+                        controllerTypeCCDC: controllerTypeCCDC,
+                        controllerSymbol: controllerSymbol,
+                        controllerQuantity: controllerQuantity,
+                        controllerValue: controllerValue,
+                        validationErrors: validationErrors,
+                        itemsTypeCCDC: itemsTypeCCDC,
+                        listTypeCCDC: widget.provider.dataTypeCCDC,
+                        onTypeCCDCChanged: (value) {
+                          setState(() {
+                            selectedTypeCCDC = value;
+                          });
+                        },
+                        onGroupCCDCChanged: (value) {
+                          setState(() {
+                            selectedGroupCCDC = value;
+                          });
+                        },
+                        itemsGroupCCDC: itemsGroupCCDC,
+                        listGroupCCDC: widget.provider.dataGroupCCDC,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 20),
-                Expanded(
-                  child: ToolsAndSuppliesFormRight(
-                    isEditing: isEditing,
-                    item: data,
-                    controllerGroupCCDC: controllerGroupCCDC,
-                    controllerSymbol: controllerSymbol,
-                    controllerNote: controllerNote,
-                    controllerQuantity: controllerQuantity,
-                    controllerValue: controllerValue,
-                    validationErrors: validationErrors,
-                    onGroupCCDCChanged: (value) {
-                      setState(() {
-                        selectedGroupCCDC = value;
-                      });
-                    },
-                    itemsGroupCCDC: itemsGroupCCDC,
-                    listGroupCCDC: widget.provider.dataGroupCCDC,
-                  ),
+
+                CommonFormInput(
+                  label: 'Ghi chú',
+                  controller: controllerNote,
+                  isEditing: isEditing,
+                  textContent: data?.ghiChu ?? '',
+                  fieldName: 'ghiChu',
+                  validationErrors: validationErrors,
+                  width: double.infinity,
                 ),
               ],
             ),
           ),
+
           TableChildCcdc(
             context,
             isEditing: isEditing,
@@ -286,6 +333,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         valueText: controllerValue.text,
         selectedPhongBan: selectedPhongBan,
         selectedGroupCCDC: selectedGroupCCDC,
+        selectedTypeCCDC: selectedTypeCCDC,
       );
 
       // Tạo request object thông qua controller
@@ -306,7 +354,10 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       // Gọi API thông qua Bloc
       if (data == null) {
         context.read<ToolsAndSuppliesBloc>().add(
-          CreateToolsAndSuppliesEvent(request, jsonEncode(newDetailAssetDto)),
+          CreateToolsAndSuppliesEvent(
+            request,
+            newDetailAssetDto.isNotEmpty ? jsonEncode(newDetailAssetDto) : '',
+          ),
         );
       } else {
         final deletedItems = _controller.getDeletedItems(
@@ -320,13 +371,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                 .map((detail) => detail.id!)
                 .toList();
 
-        final jsonIdAssetDetail = jsonEncode(listIdAssetDetail);
-
         context.read<ToolsAndSuppliesBloc>().add(
           UpdateToolsAndSuppliesEvent(
             request,
-            jsonEncode(newDetailAssetDto),
-            jsonIdAssetDetail,
+            newDetailAssetDto.isNotEmpty ? jsonEncode(newDetailAssetDto) : '',
+            listIdAssetDetail.isNotEmpty ? jsonEncode(listIdAssetDetail) : '',
           ),
         );
       }
@@ -348,6 +397,10 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
     itemsGroupCCDC = _controller.buildGroupCcdcDropdownItems(
       widget.provider.dataGroupCCDC,
+    );
+
+    itemsTypeCCDC = _controller.buildTypeCcdcDropdownItems(
+      widget.provider.dataTypeCCDC,
     );
 
     if (widget.provider.dataDetail != null) {
@@ -373,6 +426,24 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerImportUnit.text = data?.tenDonVi ?? '';
 
       controllerGroupCCDC.text = data?.tenNhomCCDC ?? '';
+      if (data?.idLoaiCCDCCon != null && data?.idLoaiCCDCCon != '') {
+        SGLog.debug(
+          '_cancelEdit',
+          'data?.idLoaiCCDCCon initData: ${data?.idLoaiCCDCCon}',
+        );
+        try {
+          controllerTypeCCDC.text =
+              widget.provider.dataTypeCCDC
+                  .firstWhere((element) => element.id == data?.idLoaiCCDCCon)
+                  .tenLoai ??
+              '';
+        } catch (e) {
+          SGLog.debug('_cancelEdit', 'Error initData: $e');
+          controllerTypeCCDC.text = '';
+        }
+      } else {
+        controllerTypeCCDC.text = '';
+      }
 
       // Copy danh sách chi tiết tài sản với null safety
       if (data?.chiTietTaiSanList != null &&
@@ -419,6 +490,8 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   /// Clear tất cả controllers
   void _clearAllControllers() {
     controllerImportUnit.clear();
+    controllerGroupCCDC.clear();
+    controllerTypeCCDC.clear();
     controllerName.clear();
     controllerCode.clear();
     controllerImportDate.clear();
@@ -458,6 +531,24 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerImportUnit.text = data?.tenDonVi ?? '';
       controllerGroupCCDC.text = data?.tenNhomCCDC ?? '';
 
+      if (data?.idLoaiCCDCCon != null && data?.idLoaiCCDCCon != '') {
+        SGLog.debug(
+          '_cancelEdit',
+          'data?.idLoaiCCDCCon: ${data?.idLoaiCCDCCon}',
+        );
+        try {
+          controllerTypeCCDC.text =
+              widget.provider.dataTypeCCDC
+                  .firstWhere((element) => element.id == data?.idLoaiCCDCCon)
+                  .tenLoai ??
+              '';
+        } catch (e) {
+          SGLog.debug('_cancelEdit', 'Error _cancelEdit: $e');
+          controllerTypeCCDC.text = '';
+        }
+      } else {
+        controllerTypeCCDC.text = '';
+      }
       // Reset danh sách chi tiết
       newDetailAssetDto =
           data?.chiTietTaiSanList != null

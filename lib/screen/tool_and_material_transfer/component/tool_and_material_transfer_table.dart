@@ -374,6 +374,7 @@ class _DetailToolAndMaterialTransferTableState
       tenDonVi: '',
       idNhomCCDC: '',
       tenNhomCCDC: '',
+      idLoaiCCDCCon: '',
       ngayNhap: DateTime.now(),
       donViTinh: '',
       soLuong: 0,

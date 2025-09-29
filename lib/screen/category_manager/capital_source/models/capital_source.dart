@@ -72,16 +72,16 @@ class NguonKinhPhi extends Equatable {
 
   Map<String, dynamic> toExportJson() {
     return {
-      'id': _nullIfEmpty(id),
-      'tenNguonKinhPhi': _nullIfEmpty(tenNguonKinhPhi),
-      'ghiChu': _nullIfEmpty(ghiChu),
-      'hieuLuc': hieuLuc ?? false,
-      'idCongTy': _nullIfEmpty("ct001"),
-      'ngayTao': _nullIfEmpty(_formatDate(ngayTao)),
-      'ngayCapNhat': _nullIfEmpty(_formatDate(ngayCapNhat)),
-      'nguoiTao': _nullIfEmpty(nguoiTao),
-      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
-      'isActive': true,
+      'Id': _nullIfEmpty(id),
+      'Tên nguồn kinh phí': _nullIfEmpty(tenNguonKinhPhi),
+      'Ghi chú': _nullIfEmpty(ghiChu),
+      'Hiệu lực': hieuLuc ?? false,
+      'Id Công ty': _nullIfEmpty("ct001"),
+      'Ngày tạo': _nullIfEmpty(_formatDate(ngayTao)),
+      'Ngày cập nhật': _nullIfEmpty(_formatDate(ngayCapNhat)),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+      'Hiển thị': isActive ?? true,
     };
   }
 

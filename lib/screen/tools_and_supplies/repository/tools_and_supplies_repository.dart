@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:async';
 
@@ -184,6 +185,75 @@ class ToolsAndSuppliesRepository extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       log("Error at updateToolsAndSupplies - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> saveToolsAndSuppliesBatch(
+    List<ToolsAndSuppliesDto> toolsAndSupplies,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/batch',
+        data: jsonEncode(toolsAndSupplies),
+      );
+
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+        response.data,
+        ToolsAndSuppliesDto.fromJson,
+      );
+    } catch (e) {
+      log(
+        "Error at saveToolsAndSuppliesBatch - ToolsAndSuppliesRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteToolsAndSuppliesBatch(
+    List<String> data,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await delete(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/batch',
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+        response.data,
+        ToolsAndSuppliesDto.fromJson,
+      );
+    } catch (e) {
+      log(
+        "Error at deleteToolsAndSuppliesBatch - ToolsAndSuppliesRepository: $e",
+      );
     }
 
     return result;

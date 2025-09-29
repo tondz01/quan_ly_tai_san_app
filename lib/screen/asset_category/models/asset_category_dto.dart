@@ -88,4 +88,34 @@ class AssetCategoryDto {
       (json.decode(categories) as List<dynamic>)
           .map<AssetCategoryDto>((item) => AssetCategoryDto.fromJson(item))
           .toList();
+
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Id': _nullIfEmpty(id),
+      'Tên mô hình': _nullIfEmpty(tenMoHinh),
+      'Phương pháp khấu hao': _nullIfEmpty(phuongPhapKhauHao),
+      'Kỳ khấu hao': _nullIfEmpty(kyKhauHao),
+      'Loại kỳ khấu hao': _nullIfEmpty(loaiKyKhauHao),
+      'Tài khoản tài sản': _nullIfEmpty(taiKhoanTaiSan),
+      'Tài khoản khấu hao': _nullIfEmpty(taiKhoanKhauHao),
+      'Tài khoản chi phí': _nullIfEmpty(taiKhoanChiPhi),
+      'Id Công ty': _nullIfEmpty("ct001"),
+      'Ngày tạo': _nullIfEmpty(ngayTao),
+      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Người tạo': _nullIfEmpty(nguoiTao),
+      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
+      'Hiển thị': isActive ?? true,
+    };
+  }
+
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
 }

@@ -32,6 +32,22 @@ class CreateCcdcGroupSuccessState extends CcdcGroupState {
   List<Object> get props => [data];
 }
 
+class CreateCcdcGroupBatchSuccessState extends CcdcGroupState {
+  final String message;
+  const CreateCcdcGroupBatchSuccessState({required this.message});
+  @override
+  List<Object> get props => [message];
+}
+
+class CreateCcdcGroupBatchFailedState extends CcdcGroupState {
+  final String title;
+  final int? code;
+  final String message;
+  const CreateCcdcGroupBatchFailedState({required this.title, required this.code, required this.message});
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
 class GetListCcdcGroupFailedState extends CcdcGroupState {
   final String title;
   final int? code;

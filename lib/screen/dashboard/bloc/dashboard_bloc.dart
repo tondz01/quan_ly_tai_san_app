@@ -6,7 +6,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_event.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_state.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/model/dashboard_report.dart';

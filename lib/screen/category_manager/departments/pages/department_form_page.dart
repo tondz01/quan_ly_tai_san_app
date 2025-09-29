@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/nhom_don_vi.dart';
 
@@ -141,11 +142,15 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             'Mã đơn vị',
                             required: true,
                           ),
-                          enabled: !isEdit, // Read-only khi update
+                          enabled:
+                              widget.department?.id != null
+                                  ? false
+                                  : !isEdit, // Read-only khi update
                           validator:
                               (v) =>
                                   v == null || v.isEmpty
-                                      ? 'Nhập mã đơn vị'
+                                      ? DepartmentConstants
+                                          .validationDepartmentIdRequired
                                       : null,
                         ),
                       ),
@@ -157,10 +162,12 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             'Tên phòng/ban',
                             required: true,
                           ),
+                          enabled: !isEdit,
                           validator:
                               (v) =>
                                   v == null || v.isEmpty
-                                      ? 'Nhập tên phòng/ban'
+                                      ? DepartmentConstants
+                                          .validationDepartmentNameRequired
                                       : null,
                         ),
                       ),
@@ -183,7 +190,10 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                               ),
                             )
                             .toList(),
-                    onChanged: (v) => setState(() => _parentDepartment = v),
+                    onChanged:
+                        isEdit
+                            ? null
+                            : (v) => setState(() => _parentDepartment = v),
                   ),
                 ],
               ),
@@ -200,7 +210,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             MaterialTextButton(
-              text: 'Lưu',
+              text: DepartmentConstants.saveText,
               icon: Icons.save,
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
@@ -210,7 +220,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
             ),
             const SizedBox(width: 8),
             MaterialTextButton(
-              text: 'Hủy',
+              text: DepartmentConstants.cancelText,
               icon: Icons.cancel,
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
@@ -223,7 +233,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa đơn vị/phòng ban',
+          text: DepartmentConstants.editText,
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,
@@ -251,7 +261,7 @@ InputDecoration inputDecoration(
 
 Widget sectionTitle(IconData icon, String title, [String? desc]) {
   return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Container(
         margin: const EdgeInsets.only(right: 12, top: 2),

@@ -8,11 +8,16 @@ import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/ownership_unit_details.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
+import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class ToolsAndSuppliesList extends StatefulWidget {
   final ToolsAndSuppliesProvider provider;
@@ -26,6 +31,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   final ScrollController horizontalController = ScrollController();
 
   ToolsAndSuppliesDto? selectedItem;
+  List<ToolsAndSuppliesDto> selectedItems = [];
 
   String searchTerm = "";
   String titleDetailDepartmentTree = "";
@@ -34,6 +40,20 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
     {'Ngày tạo': (item) => item.ngayTao},
     {'Ngày cập nhật': (item) => item.ngayCapNhat},
     {'Ngày nhập': (item) => item.ngayNhap},
+  ];
+
+  // Column display options
+  late List<ColumnDisplayOption> columnOptions;
+  List<String> visibleColumnIds = [
+    'id',
+    'ten',
+    'idDonVi',
+    'ngayNhap',
+    'donViTinh',
+    'soLuong',
+    'giaTri',
+    'kyHieu',
+    'actions',
   ];
 
   void _showDetailDepartmentTree(ToolsAndSuppliesDto item) {
@@ -47,90 +67,243 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final columns = [
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Công cụ dụng cụ',
-        getValue: (item) => item.ten,
-        width: 170,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Đơn vị nhập',
-        getValue: (item) => item.idDonVi,
-        width: 170,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Mã công cụ dụng cụ',
-        getValue: (item) => item.id,
-        width: 170,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Ngày nhập',
-        getValue: (item) => item.ngayNhap.toString(),
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Đơn vị tính',
-        getValue: (item) => item.donViTinh,
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Số lượng',
-        getValue: (item) => item.soLuong.toString(),
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Giá trị',
-        getValue:
-            (item) => NumberFormat.currency(
-              locale: 'vi_VN',
-              symbol: '₫',
-            ).format(item.giaTri),
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-        title: 'Ký hiệu',
-        getValue: (item) => item.kyHieu,
-        width: 120,
-      ),
-      TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
-        title: '',
-        cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<ToolsAndSuppliesDto>(
-              item: item,
-              onDelete: (item) {
-                // widget.onDelete?.call(item);
-                showConfirmDialog(
-                  context,
-                  type: ConfirmType.delete,
-                  title: 'Xóa CCDC - Vật Tư?',
-                  message: 'Bạn có chắc muốn xóa ${item.ten}',
-                  highlight: item.ten,
-                  cancelText: 'Không',
-                  confirmText: 'Xóa',
-                  onConfirm: () {
-                    List<String> listIdAssetDetail =
-                        item.chiTietTaiSanList
-                            .where(
-                              (detail) =>
-                                  detail.id != null && detail.id!.isNotEmpty,
-                            )
-                            .map((detail) => detail.id!)
-                            .toList();
+  void initState() {
+    super.initState();
+    _initializeColumnOptions();
+  }
 
-                    final jsonIdAssetDetail = jsonEncode(listIdAssetDetail);
-
-                    context.read<ToolsAndSuppliesBloc>().add(
-                      DeleteToolsAndSuppliesEvent(item.id, jsonIdAssetDetail),
-                    );
-                  },
-                );
-              },
-            ),
-        width: 120,
-        searchable: true,
+  void _initializeColumnOptions() {
+    columnOptions = [
+      ColumnDisplayOption(
+        id: 'id',
+        label: 'Mã công cụ dụng cụ',
+        isChecked: visibleColumnIds.contains('id'),
+      ),
+      ColumnDisplayOption(
+        id: 'ten',
+        label: 'Công cụ dụng cụ',
+        isChecked: visibleColumnIds.contains('ten'),
+      ),
+      ColumnDisplayOption(
+        id: 'idDonVi',
+        label: 'Đơn vị nhập',
+        isChecked: visibleColumnIds.contains('idDonVi'),
+      ),
+      ColumnDisplayOption(
+        id: 'ngayNhap',
+        label: 'Ngày nhập',
+        isChecked: visibleColumnIds.contains('ngayNhap'),
+      ),
+      ColumnDisplayOption(
+        id: 'donViTinh',
+        label: 'Đơn vị tính',
+        isChecked: visibleColumnIds.contains('donViTinh'),
+      ),
+      ColumnDisplayOption(
+        id: 'soLuong',
+        label: 'Số lượng',
+        isChecked: visibleColumnIds.contains('soLuong'),
+      ),
+      ColumnDisplayOption(
+        id: 'giaTri',
+        label: 'Giá trị',
+        isChecked: visibleColumnIds.contains('giaTri'),
+      ),
+      ColumnDisplayOption(
+        id: 'kyHieu',
+        label: 'Ký hiệu',
+        isChecked: visibleColumnIds.contains('kyHieu'),
+      ),
+      ColumnDisplayOption(
+        id: 'actions',
+        label: 'Thao tác',
+        isChecked: visibleColumnIds.contains('actions'),
       ),
     ];
+  }
+
+  void _showColumnDisplayPopup() async {
+    await showColumnDisplayPopup(
+      context: context,
+      columns: columnOptions,
+      onSave: (selectedColumns) {
+        setState(() {
+          visibleColumnIds = selectedColumns;
+          _updateColumnOptions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã cập nhật hiển thị cột'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      },
+      onCancel: () {
+        // Reset về trạng thái ban đầu
+        _updateColumnOptions();
+      },
+    );
+  }
+
+  void _updateColumnOptions() {
+    for (var option in columnOptions) {
+      option.isChecked = visibleColumnIds.contains(option.id);
+    }
+  }
+
+  List<SgTableColumn<ToolsAndSuppliesDto>> _buildColumns() {
+    final List<SgTableColumn<ToolsAndSuppliesDto>> columns = [];
+
+    // Thêm cột dựa trên visibleColumnIds
+    for (String columnId in visibleColumnIds) {
+      switch (columnId) {
+        case 'id':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Mã công cụ dụng cụ',
+              getValue: (item) => item.id,
+              width: 170,
+              searchValueGetter: (item) => item.id,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'ten':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Công cụ dụng cụ',
+              getValue: (item) => item.ten,
+              width: 170,
+              searchValueGetter: (item) => item.ten,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'idDonVi':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Đơn vị nhập',
+              getValue: (item) => item.idDonVi,
+              width: 170,
+              searchValueGetter: (item) => item.idDonVi,
+              filterable: true,
+            ),
+          );
+          break;
+
+        case 'ngayNhap':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Ngày nhập',
+              getValue: (item) => item.ngayNhap.toString(),
+              width: 120,
+            ),
+          );
+          break;
+        case 'donViTinh':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Đơn vị tính',
+              getValue: (item) => item.donViTinh,
+              width: 120,
+              searchValueGetter: (item) => item.donViTinh,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'soLuong':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Số lượng',
+              getValue: (item) => item.soLuong.toString(),
+              width: 120,
+              searchValueGetter: (item) => item.soLuong.toString(),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'giaTri':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Giá trị',
+              getValue:
+                  (item) => NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '₫',
+                  ).format(item.giaTri),
+              width: 120,
+              searchValueGetter: (item) => item.giaTri.toString(),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'kyHieu':
+          columns.add(
+            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
+              title: 'Ký hiệu',
+              getValue: (item) => item.kyHieu,
+              width: 120,
+              searchValueGetter: (item) => item.kyHieu,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'actions':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
+              title: '',
+              cellBuilder:
+                  (item) => TableBaseConfig.viewActionBase<ToolsAndSuppliesDto>(
+                    item: item,
+                    onDelete: (item) {
+                      // widget.onDelete?.call(item);
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xóa CCDC - Vật Tư?',
+                        message: 'Bạn có chắc muốn xóa ${item.ten}',
+                        highlight: item.ten,
+                        cancelText: 'Không',
+                        confirmText: 'Xóa',
+                        onConfirm: () {
+                          List<String> listIdAssetDetail =
+                              item.chiTietTaiSanList
+                                  .where(
+                                    (detail) =>
+                                        detail.id != null &&
+                                        detail.id!.isNotEmpty,
+                                  )
+                                  .map((detail) => detail.id!)
+                                  .toList();
+
+                          final jsonIdAssetDetail = jsonEncode(
+                            listIdAssetDetail,
+                          );
+
+                          context.read<ToolsAndSuppliesBloc>().add(
+                            DeleteToolsAndSuppliesEvent(
+                              item.id,
+                              jsonIdAssetDetail,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+              width: 120,
+              searchable: true,
+            ),
+          );
+          break;
+      }
+    }
+
+    return columns;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final columns = _buildColumns();
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -179,6 +352,72 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                               color: Colors.grey.shade700,
                             ),
                           ),
+                          SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _showColumnDisplayPopup,
+                            child: Icon(
+                              Icons.settings,
+                              color: ColorValue.link,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      Row(
+                        spacing: 16,
+                        children: [
+                          Visibility(
+                            visible: selectedItems.isNotEmpty,
+                            child: Row(
+                              children: [
+                                SGText(
+                                  text:
+                                      'Danh sách CCDC - Vật tư đã chọn: ${selectedItems.length}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                SizedBox(width: 16),
+                                MaterialTextButton(
+                                  text: 'Xóa đã chọn',
+                                  icon: Icons.delete,
+                                  backgroundColor: ColorValue.error,
+                                  foregroundColor: Colors.white,
+                                  onPressed: () {
+                                    List<String> data =
+                                        selectedItems
+                                            .map((e) => e.id)
+                                            .whereType<String>()
+                                            .toList();
+                                    showConfirmDialog(
+                                      context,
+                                      type: ConfirmType.delete,
+                                      title: 'Xóa CCDC - Vật tư',
+                                      message:
+                                          'Bạn có chắc muốn xóa ${selectedItems.length} CCDC - Vật tư đã chọn',
+                                      highlight:
+                                          selectedItems.length.toString(),
+                                      cancelText: 'Không',
+                                      confirmText: 'Xóa',
+                                      onConfirm: () {
+                                        final roleBloc =
+                                            context
+                                                .read<
+                                                  ToolsAndSuppliesBloc
+                                                >();
+                                        roleBloc.add(
+                                          DeleteAssetBatchEvent(data),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                       // FindByStateAssetHandover(provider: widget.provider),
@@ -187,16 +426,16 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                 ),
                 Expanded(
                   child:
-                      widget.provider.filteredData != null
+                      widget.provider.dataPage != null
                           ? TableBaseView<ToolsAndSuppliesDto>(
                             searchTerm: '',
                             columns: columns,
-                            data: widget.provider.filteredData!,
+                            data: widget.provider.dataPage!,
                             horizontalController: ScrollController(),
                             getters: getters,
                             startDate: DateTime.tryParse(
-                              widget.provider.filteredData!.isNotEmpty
-                                  ? widget.provider.filteredData!.first.ngayTao
+                              widget.provider.dataPage!.isNotEmpty
+                                  ? widget.provider.dataPage!.first.ngayTao
                                       .toString()
                                   : '',
                             ),
@@ -204,6 +443,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                               widget.provider.onChangeDetail(context, item);
                               setState(() {
                                 _showDetailDepartmentTree(item);
+                              });
+                            },
+                            onSelectionChanged: (items) {
+                              setState(() {
+                                selectedItems = items;
                               });
                             },
                           )

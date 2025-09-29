@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_sup
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
@@ -22,6 +23,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   get data => _data;
   get dataPhongBan => _dataPhongBan;
   get dataGroupCCDC => _dataGroupCCDC;
+  get dataTypeCCDC => _dataTypeCCDC;
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
@@ -83,6 +85,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   List<ToolsAndSuppliesDto>? _filteredData;
   List<PhongBan>? _dataPhongBan;
   List<CcdcGroup>? _dataGroupCCDC;
+  List<TypeCcdc>? _dataTypeCCDC;
+
   void onInit(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
     _isShowInput = false;
@@ -106,6 +110,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       final bloc = context.read<ToolsAndSuppliesBloc>();
       bloc.add(GetListToolsAndSuppliesEvent(context, 'CT001'));
       bloc.add(GetListPhongBanEvent(context, 'CT001'));
+      bloc.add(GetListTypeCcdcEvent(context));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -121,25 +126,50 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     String searchLower = value.toLowerCase().trim();
     _filteredData =
         data.where((item) {
-          bool name = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
+          bool ten = AppUtility.fuzzySearch(
+            item.ten.toLowerCase(),
             searchLower,
           );
-          bool importUnit = item.importUnit.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.importUnit.toLowerCase().contains(
+          bool idDonVi = AppUtility.fuzzySearch(
+            item.idDonVi.toLowerCase(),
             searchLower,
           );
-          bool unit = item.unit.toLowerCase().contains(searchLower);
-          bool value = item.value.toString().contains(searchLower);
+          bool idNhomCCDC = AppUtility.fuzzySearch(
+            item.idNhomCCDC.toLowerCase(),
+            searchLower,
+          );
+          bool idLoaiCCDCCon = AppUtility.fuzzySearch(
+            item.idLoaiCCDCCon.toLowerCase(),
+            searchLower,
+          );
+          bool id = AppUtility.fuzzySearch(item.id.toLowerCase(), searchLower);
+          bool kyHieu = AppUtility.fuzzySearch(
+            item.kyHieu.toLowerCase(),
+            searchLower,
+          );
+          bool donViTinh = AppUtility.fuzzySearch(
+            item.donViTinh.toLowerCase(),
+            searchLower,
+          );
 
-          return name || importUnit || departmentGroup || unit || value;
+          return ten ||
+              idDonVi ||
+              idNhomCCDC ||
+              idLoaiCCDCCon ||
+              id ||
+              kyHieu ||
+              donViTinh;
         }).toList();
-    log('message _filteredData: $_filteredData');
+    
+    // Cập nhật phân trang sau khi search
+    _updatePagination();
     notifyListeners();
   }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
+    // Sử dụng filteredData thay vì data để phân trang đúng khi có search
+    List<ToolsAndSuppliesDto> dataToPaginate = filteredData ?? data ?? [];
+    totalEntries = dataToPaginate.length;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
@@ -151,8 +181,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        dataToPaginate.isNotEmpty
+            ? dataToPaginate.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
@@ -220,6 +250,15 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  getListTypeCcdcSuccess(
+    BuildContext context,
+    GetListTypeCcdcSuccessState state,
+  ) {
+    _error = null;
+    _dataTypeCCDC = state.data;
+    notifyListeners();
+  }
+
   void createToolsAndSuppliesSuccess(
     BuildContext context,
     CreateToolsAndSuppliesSuccessState state,
@@ -251,6 +290,16 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
     // Close input panel if open
     AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
+  }
+
+  void deleteToolsAndSuppliesBatchSuccess(
+    BuildContext context,
+    DeleteToolsAndSuppliesBatchSuccessState state,
+  ) {
+    onCloseDetail(context);
+    getListToolsAndSupplies(context);
+
+    AppUtility.showSnackBar(context, 'Xóa danh sách CCDC - Vật tư thành công!');
   }
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {

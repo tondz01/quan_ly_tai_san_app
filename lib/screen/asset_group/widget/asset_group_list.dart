@@ -64,7 +64,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
       ),
       ColumnDisplayOption(
         id: 'is_active',
-        label: 'Ngày bàn giao',
+        label: 'Có hiệu lực',
         isChecked: visibleColumnIds.contains('is_active'),
       ),
       ColumnDisplayOption(
@@ -282,8 +282,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                   child: Row(
                     children: [
                       SGText(
-                        text:
-                            'Danh sách nhóm đã chọn: ${listSelected.length}',
+                        text: 'Danh sách nhóm đã chọn: ${listSelected.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -293,9 +292,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                       SizedBox(width: 16),
                       IconButton(
                         onPressed: () {
-                          Map<String, dynamic> data = {
-                            'id': listSelected.map((e) => e.id).toList(),
-                          };
+                          final ids = listSelected.map((e) => e.id!).toList();
                           showConfirmDialog(
                             context,
                             type: ConfirmType.delete,
@@ -307,11 +304,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
                             confirmText: 'Xóa',
                             onConfirm: () {
                               final roleBloc = context.read<AssetGroupBloc>();
-                              roleBloc.add(DeleteAssetGroupBatchEvent(data));
+                              roleBloc.add(DeleteAssetGroupBatchEvent(ids));
                             },
                           );
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                        icon: Icon(Icons.delete, color: Colors.redAccent),
                       ),
                     ],
                   ),

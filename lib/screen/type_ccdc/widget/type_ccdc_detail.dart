@@ -144,7 +144,7 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CommonFormInput(
-                label: 'Mã loại CCDC',
+                label: 'Mã loại CCDC *',
                 controller: controllerId,
                 isEditing: data == null ? isEditing : false,
                 textContent: controllerId.text,
@@ -153,7 +153,7 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
                 fieldName: 'id',
               ),
               CmFormDropdownObject<CcdcGroup>(
-                label: 'Mã loại CCDC cha',
+                label: 'Mã loại CCDC cha *',
                 value: ccdcGroup,
                 controller: controllerIdLoaiCCDC,
                 isEditing: isEditing,
@@ -171,7 +171,7 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
                 validationErrors: validationErrors,
               ),
               CommonFormInput(
-                label: 'Tên loại CCDC',
+                label: 'Tên loại CCDC *',
                 controller: controllerName,
                 isEditing: isEditing,
                 textContent: controllerName.text,

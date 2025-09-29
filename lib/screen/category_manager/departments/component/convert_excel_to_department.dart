@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -22,10 +23,8 @@ extension DateTimeToMySQL on DateTime {
   }
 }
 
-
-
-Future<List<PhongBan>> convertExcelToPhongBan(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+Future<List<PhongBan>> convertExcelToPhongBan(String filePath, {Uint8List? fileBytes}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
   List<PhongBan> phongBanList = [];
 
   try {

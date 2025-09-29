@@ -1,14 +1,15 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/constants/project_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ProjectProvider with ChangeNotifier {
   get isLoading => _isLoading;
@@ -37,20 +38,23 @@ class ProjectProvider with ChangeNotifier {
   late int totalPages = 1;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage = 10;
+  int rowsPerPage = ProjectConstants.defaultRowsPerPage;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
 
-  final List<DropdownMenuItem<int>> itemsPagination = [
-    const DropdownMenuItem(value: 5, child: Text('5')),
-    const DropdownMenuItem(value: 10, child: Text('10')),
-    const DropdownMenuItem(value: 20, child: Text('20')),
-    const DropdownMenuItem(value: 50, child: Text('50')),
-  ];
+  final List<DropdownMenuItem<int>> items =
+      (ProjectConstants.mobilePaginationOptions)
+          .map(
+            (value) =>
+                DropdownMenuItem(value: value, child: Text(value.toString())),
+          )
+          .toList();
 
   void onInit(BuildContext context) {
     _userInfo = AccountHelper.instance.getUserInfo();
-    controllerDropdownPage = TextEditingController(text: '10');
+    controllerDropdownPage = TextEditingController(
+      text: ProjectConstants.defaultRowsPerPage.toString(),
+    );
     _isShowInput = false;
     _isShowCollapse = true;
     getListRoles(context);
@@ -62,38 +66,51 @@ class ProjectProvider with ChangeNotifier {
       final bloc = context.read<ProjectBloc>();
       bloc.add(GetListProjectEvent(userInfo?.idCongTy ?? ''));
     } catch (e) {
-      log('Error adding Role events: $e');
+      SGLog.error('ProjectProvider', 'Error adding Project events: $e');
     }
   }
 
   void onSearchRoles(String value) {
+    currentPage = 1;
+    
     if (value.isEmpty) {
       _filteredData = data;
+      _updatePagination();
+      notifyListeners();
       return;
     }
 
     String searchLower = value.toLowerCase().trim();
-    _filteredData =
-        data.where((item) {
-          bool name = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
-            searchLower,
-          );
-          bool importUnit = item.importUnit.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.importUnit.toLowerCase().contains(
-            searchLower,
-          );
-          bool unit = item.unit.toLowerCase().contains(searchLower);
-          bool value = item.value.toString().contains(searchLower);
 
-          return name || importUnit || departmentGroup || unit || value;
-        }).toList();
+    _filteredData =
+        data?.where((item) {
+          bool name = AppUtility.fuzzySearch(
+            item.tenDuAn?.toLowerCase() ?? '',
+            searchLower,
+          );
+          bool idMatch = item.id?.toLowerCase().contains(searchLower) ?? false;
+          bool ghiChuMatch = AppUtility.fuzzySearch(
+            item.ghiChu?.toLowerCase() ?? '',
+            searchLower,
+          );
+
+          bool matches = name || idMatch || ghiChuMatch;
+          if (matches) {
+          }
+          return matches;
+        }).toList() ??
+        [];
+
+    _updatePagination();
     notifyListeners();
   }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    totalEntries = _filteredData?.length ?? 0;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
+      1,
+      ProjectConstants.maxPaginationPages,
+    );
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
@@ -104,12 +121,14 @@ class ProjectProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        _filteredData?.isNotEmpty == true
+            ? _filteredData!.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
+
+    SGLog.debug('ProjectProvider', 'Pagination - totalEntries: $totalEntries, currentPage: $currentPage, dataPage length: ${_dataPage?.length ?? 0}');
   }
 
   void onCloseDetail(BuildContext context) {
@@ -139,13 +158,14 @@ class ProjectProvider with ChangeNotifier {
 
   void getListProjectSuccess(
     BuildContext context,
-    GetListProjectSuccsessState state,
+    GetListProjectSuccessState state,
   ) {
     _error = null;
     _isLoading = false;
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       _data = state.data;
       _filteredData = state.data;
@@ -154,12 +174,15 @@ class ProjectProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void createRolesSuccess(BuildContext context, AddProjectSuccessState state) {
+  void createRolesSuccess(
+    BuildContext context,
+    CreateProjectSuccessState state,
+  ) {
     _isLoading = false;
     onCloseDetail(context);
     getListRoles(context);
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Thêm "Dự án" tư thành công!');
+    AppUtility.showSnackBar(context, ProjectConstants.successCreateProject);
   }
 
   void updateRolesSuccess(
@@ -171,7 +194,7 @@ class ProjectProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Cập nhập "Dự án" tư thành công!');
+    AppUtility.showSnackBar(context, ProjectConstants.successUpdateProject);
   }
 
   void deleteRolesSuccess(
@@ -183,7 +206,17 @@ class ProjectProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Xóa "Dự án" tư thành công!');
+    AppUtility.showSnackBar(context, ProjectConstants.successDeleteProject);
+  }
+
+  void deleteProjectBatchSuccess(
+    BuildContext context,
+    DeleteProjectBatchSuccess state,
+  ) {
+    _isLoading = false;
+    onCloseDetail(context);
+    getListRoles(context);
+    AppUtility.showSnackBar(context, state.message);
   }
 
   void onChangeDetail(BuildContext context, DuAn? item) {
@@ -193,17 +226,13 @@ class ProjectProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onCallFailled(BuildContext context, ProjectErrorState state) {
+  void onCallFailled(BuildContext context, String message) {
     _isLoading = false;
-    _error = state.message;
+    _error = message;
     notifyListeners();
     if (_isShowInput) {
       onCloseDetail(context);
     }
-    AppUtility.showSnackBar(
-      context,
-      _error ?? 'Lỗi không xác định',
-      isError: true,
-    );
+    AppUtility.showSnackBar(context, message, isError: true);
   }
 }

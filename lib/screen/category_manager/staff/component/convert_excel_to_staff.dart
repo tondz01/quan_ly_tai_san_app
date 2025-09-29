@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
@@ -18,14 +19,19 @@ String _sanitizeString(dynamic value, {String? fallback}) {
 /// Convert excel serial date (days since 1899-12-30) to DateTime
 DateTime _excelSerialToDate(num serial) {
   final base = DateTime(1899, 12, 30);
-  return base.add(Duration(days: serial.floor(), milliseconds: (((serial % 1) * 24 * 60 * 60 * 1000)).round()));
+  return base.add(
+    Duration(
+      days: serial.floor(),
+      milliseconds: (((serial % 1) * 24 * 60 * 60 * 1000)).round(),
+    ),
+  );
 }
+
 extension DateTimeToMySQL on DateTime {
   String toMySQLFormat() {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(this.toUtc());
   }
 }
-
 
 String _normalizeDateIso(dynamic value) {
   if (value == null) {
@@ -48,8 +54,11 @@ String _normalizeDateIso(dynamic value) {
   return DateTime.now().toMySQLFormat();
 }
 
-Future<List<NhanVien>> convertExcelToNhanVien(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+Future<List<NhanVien>> convertExcelToNhanVien(
+  String filePath, {
+  Uint8List? fileBytes,
+}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
 
   List<NhanVien> nhanVienList = [];
 

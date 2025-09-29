@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,8 +9,11 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
-Future<List<CcdcGroup>> convertExcelToCcdcGroup(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+Future<List<CcdcGroup>> convertExcelToCcdcGroup(
+  String filePath, {
+  Uint8List? fileBytes,
+}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
   final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
 
   final List<CcdcGroup> list = [];

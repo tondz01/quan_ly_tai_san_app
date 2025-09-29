@@ -10,6 +10,7 @@ class ToolsAndSuppliesDto {
   String tenDonVi;
   String idNhomCCDC;
   String tenNhomCCDC;
+  String idLoaiCCDCCon;
   DateTime ngayNhap;
   String donViTinh;
   int soLuong;
@@ -37,6 +38,7 @@ class ToolsAndSuppliesDto {
     required this.tenDonVi,
     required this.idNhomCCDC,
     required this.tenNhomCCDC,
+    required this.idLoaiCCDCCon,
     required this.ngayNhap,
     required this.donViTinh,
     required this.soLuong,
@@ -66,6 +68,7 @@ class ToolsAndSuppliesDto {
       tenDonVi: json['tenDonVi'] ?? '',
       idNhomCCDC: json['idNhomCCDC'] ?? '',
       tenNhomCCDC: json['tenNhomCCDC'] ?? '',
+      idLoaiCCDCCon: json['idLoaiCCDCCon'] ?? '',
       ngayNhap:
           json['ngayNhap'] != null
               ? DateTime.parse(json['ngayNhap'].toString())
@@ -111,8 +114,10 @@ class ToolsAndSuppliesDto {
     return {
       'id': id,
       'idDonVi': idDonVi,
+      'idLoaiCCDCCon': idLoaiCCDCCon,
+      'idNhomCCDC': idNhomCCDC,
       'ten': ten,
-      'ngayNhap': ngayNhap.toIso8601String(),
+      'ngayNhap': ngayNhap.toIso8601String().replaceAll('Z', ''),
       'donViTinh': donViTinh,
       'soLuong': soLuong,
       'giaTri': giaTri,
@@ -123,14 +128,36 @@ class ToolsAndSuppliesDto {
       'namSanXuat': namSanXuat,
       'ghiChu': ghiChu,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat.toIso8601String(),
+      'ngayTao': ngayTao.toIso8601String().replaceAll('Z', ''),
+      'ngayCapNhat': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'soLuongXuat': soLuongXuat.toString(),
       'chiTietTaiSanList': chiTietTaiSanList.map((e) => e.toJson()).toList(),
       'detailOwnershipUnit': detailOwnershipUnit.map((e) => e.toJson()).toList(),
+    };
+  }
+
+  
+  Map<String, dynamic> toJsonExport() {
+    return {
+      'Id': id,
+      'Id đơn vị': idDonVi,
+      'Tên': ten,
+      'Ngày nhập': ngayNhap.toIso8601String(),
+      'Đơn vị tính': donViTinh,
+      'Id nhóm CCDC': idNhomCCDC,
+      'Id loại CCDC con': idLoaiCCDCCon,
+      'Giá trị': giaTri,
+      'Ký hiệu': kyHieu,
+      'Ghi chú': ghiChu,
+      'Id công ty': idCongTy,
+      'Ngày tạo': ngayTao.toIso8601String().replaceAll('Z', ''),
+      'Ngày cập nhật': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
+      'Người tạo': nguoiTao,
+      'Người cập nhật': nguoiCapNhat,
+      'Hiển thị': isActive,
     };
   }
 
@@ -142,6 +169,7 @@ class ToolsAndSuppliesDto {
       tenDonVi: '',
       idNhomCCDC: '',
       tenNhomCCDC: '',
+      idLoaiCCDCCon: '',
       ngayNhap: DateTime.now(),
       donViTinh: '',
       soLuong: 0,
@@ -187,6 +215,7 @@ class ToolsAndSuppliesDto {
     String? id,
     String? idDonVi,
     String? ten,
+    String? idLoaiCCDCCon,
     DateTime? ngayNhap,
     String? donViTinh,
     int? soLuong,
@@ -213,6 +242,7 @@ class ToolsAndSuppliesDto {
       tenDonVi: idDonVi ?? this.idDonVi,
       idNhomCCDC: idDonVi ?? this.idDonVi,
       tenNhomCCDC: idDonVi ?? this.idDonVi,
+      idLoaiCCDCCon: idLoaiCCDCCon ?? this.idLoaiCCDCCon,
       ngayNhap: ngayNhap ?? this.ngayNhap,
       donViTinh: donViTinh ?? this.donViTinh,
       soLuong: soLuong ?? this.soLuong,

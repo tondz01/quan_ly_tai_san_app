@@ -234,7 +234,7 @@ class _TypeAssetListState extends State<TypeAssetList> {
                             },
                           );
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                        icon: Icon(Icons.delete, color: Colors.redAccent),
                       ),
                     ],
                   ),

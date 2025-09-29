@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/component/convert_excel_to_project.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/constants/project_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/project_manager_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
@@ -42,7 +44,7 @@ class _ProjectManagerState extends State<ProjectManager> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<ProjectProvider>(context, listen: false).onInit(context);
+    // Removed duplicate onInit call - already called in initState
   }
 
   void _showForm([DuAn? duAn]) {
@@ -57,19 +59,19 @@ class _ProjectManagerState extends State<ProjectManager> {
       context: context,
       builder:
           (ctx) => AlertDialog(
-            title: const Text('Xác nhận xóa'),
-            content: const Text('Bạn có chắc chắn muốn xóa dự án này?'),
+            title: Text(ProjectConstants.confirmDeleteTitle),
+            content: Text(ProjectConstants.confirmDeleteMessage),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Hủy'),
+                child: Text(ProjectConstants.cancelText),
               ),
               ElevatedButton(
                 onPressed: () {
                   context.read<ProjectBloc>().add(DeleteProjectEvent(duAn!));
                   Navigator.of(ctx).pop();
                 },
-                child: const Text('Xóa'),
+                child: Text(ProjectConstants.deleteText),
               ),
             ],
           ),
@@ -89,9 +91,6 @@ class _ProjectManagerState extends State<ProjectManager> {
             if (provider.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            // if (provider.data == null) {
-            //   return const Center(child: Text('Không có dữ liệu'));
-            // }
             provider.controllerDropdownPage ??= TextEditingController(
               text: provider.rowsPerPage.toString(),
             );
@@ -115,6 +114,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                     final roleBloc = context.read<ProjectBloc>();
                     final List<DuAn> duAnList = await convertExcelToProject(
                       filePath!,
+                      fileBytes: fileBytes,
                     );
                     if (!mounted) return;
                     if (duAnList.isNotEmpty) {
@@ -124,7 +124,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                   onExportData: () {
                     AppUtility.exportData(
                       context,
-                      "du_an",
+                      ProjectConstants.exportFileName,
                       provider.data.map((e) => e.toExportJson()).toList(),
                     );
                   },
@@ -150,7 +150,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                           },
                         ),
                         childTableView: ProjectManagerList(
-                          data: provider.filteredData,
+                          data: provider.dataPage,
                           onChangeDetail: (item) {
                             _showForm(item as DuAn?);
                           },
@@ -169,13 +169,15 @@ class _ProjectManagerState extends State<ProjectManager> {
                     ),
                   ),
                   Visibility(
-                    visible: (provider.data?.length ?? 0) >= 5,
+                    visible:
+                        (provider.data?.length ?? 0) >=
+                        ProjectConstants.minPaginationThreshold,
                     child: SGPaginationControls(
                       totalPages: provider.totalPages,
                       currentPage: provider.currentPage,
                       rowsPerPage: provider.rowsPerPage,
                       controllerDropdownPage: provider.controllerDropdownPage!,
-                      items: provider.itemsPagination,
+                      items: provider.items,
                       onPageChanged: provider.onPageChanged,
                       onRowsPerPageChanged: provider.onRowsPerPageChanged,
                     ),
@@ -187,25 +189,64 @@ class _ProjectManagerState extends State<ProjectManager> {
         );
       },
       listener: (context, state) {
+        isShowInput = false;
         if (state is ProjectInitialState) {}
         if (state is ProjectLoadingState) {}
         if (state is ProjectLoadingDismissState) {}
-        if (state is GetListProjectSuccsessState) {
+        if (state is GetListProjectSuccessState) {
           context.read<ProjectProvider>().getListProjectSuccess(context, state);
         }
-        if (state is AddProjectSuccessState) {
+        if (state is GetListProjectFailedState) {}
+        if (state is CreateProjectSuccessState) {
           // Refresh list
           context.read<ProjectProvider>().createRolesSuccess(context, state);
         }
-
+        if (state is CreateProjectFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? ProjectConstants.webSnackBarDuration
+                      : ProjectConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
         if (state is UpdateProjectSuccessState) {
           context.read<ProjectProvider>().updateRolesSuccess(context, state);
         }
         if (state is DeleteProjectSuccessState) {
           context.read<ProjectProvider>().deleteRolesSuccess(context, state);
         }
-        if (state is ProjectErrorState) {
-          context.read<ProjectProvider>().onCallFailled(context, state);
+        if (state is PutPostDeleteFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? ProjectConstants.webSnackBarDuration
+                      : ProjectConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteProjectBatchSuccess) {
+          context.read<ProjectProvider>().deleteProjectBatchSuccess(
+            context,
+            state,
+          );
+        } else if (state is DeleteProjectBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa dự án thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? ProjectConstants.webSnackBarDuration
+                      : ProjectConstants.mobileSnackBarDuration,
+            ),
+          );
         }
       },
     );

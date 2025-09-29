@@ -1,8 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/staff_save_service.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -275,22 +274,22 @@ class _StaffFormPageState extends State<StaffFormPage> {
     if (result != null && result.files.single.path != null) {
       setState(() {
         selectedFile = File(result.files.single.path!);
-        if (typeKy == 1) {
+          if (typeKy == 1) {
           selectedFileChuKyNhay = selectedFile;
           fileNameChuKyNhay = result.files.single.name;
-          if (selectedFileChuKyNhay != null) {
-            validateChuKyNhay();
-          }
-        } else if (typeKy == 2) {
-          selectedFileChuKyThuong = selectedFile;
-          if (selectedFileChuKyThuong != null) {
-            validateChuKyThuong();
-          }
+            if (selectedFileChuKyNhay != null) {
+              validateChuKyNhay();
+            }
+          } else if (typeKy == 2) {
+            selectedFileChuKyThuong = selectedFile;
+            if (selectedFileChuKyThuong != null) {
+              validateChuKyThuong();
+            }
           fileNameChuKyThuong = result.files.single.name;
-        }
-        if (typeKy == 1) {
+          }
+          if (typeKy == 1) {
           _chuKyNhayData = result.files.single.bytes;
-        } else if (typeKy == 2) {
+          } else if (typeKy == 2) {
           _chuKyThuongData = result.files.single.bytes;
         }
       });
@@ -363,11 +362,16 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 required: true,
                               ),
                               enabled: isEditing,
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Nhập email'
-                                          : null,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return StaffConstants.errorRequiredField;
+                                }
+                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                                  return StaffConstants.errorEmailFormat;
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 16),
                             CmFormDropdownObject<ChucVu>(

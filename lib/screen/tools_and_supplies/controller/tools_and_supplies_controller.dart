@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 /// Controller xử lý logic nghiệp vụ cho Tools and Supplies Detail
@@ -62,6 +63,7 @@ class ToolsAndSuppliesController {
     required String valueText,
     PhongBan? selectedPhongBan,
     CcdcGroup? selectedGroupCCDC,
+    TypeCcdc? selectedTypeCCDC,
   }) {
     // Parse ngày nhập
     DateTime importDate = DateTime.now();
@@ -88,13 +90,15 @@ class ToolsAndSuppliesController {
     final idDonVi = (selectedPhongBan?.id ?? '').trim();
     // Lấy ID nhóm CCDC
     final idGroupCCDC = (selectedGroupCCDC?.id ?? '').trim();
-
+    // Lấy ID loại CCDC
+    final idTypeCCDC = (selectedTypeCCDC?.id ?? '').trim();
     return {
       'importDate': importDate,
       'quantity': quantity,
       'value': value,
       'idDonVi': idDonVi,
       'idGroupCCDC': idGroupCCDC,
+      'idTypeCCDC': idTypeCCDC,
     };
   }
 
@@ -115,6 +119,7 @@ class ToolsAndSuppliesController {
       id: existingData?.id ?? codeText.trim(),
       idDonVi: processedData['idDonVi'],
       idNhomCCDC: processedData['idGroupCCDC'],
+      idLoaiCCDCCon: processedData['idTypeCCDC'],
       ten: nameText.trim(),
       ngayNhap: processedData['importDate'],
       donViTinh: unitText.trim(),
@@ -127,7 +132,7 @@ class ToolsAndSuppliesController {
       namSanXuat: 0,
       ghiChu: noteText.trim(),
       idCongTy: existingData?.idCongTy ?? currentUser?.idCongTy ?? "CT001",
-      ngayTao: existingData?.ngayTao ?? now,
+      ngayTao: existingData?.ngayTao  ?? now,
       ngayCapNhat: now,
       nguoiTao: existingData?.nguoiTao ?? currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
@@ -162,6 +167,22 @@ class ToolsAndSuppliesController {
           DropdownMenuItem<CcdcGroup>(
             value: element,
             child: Text(element.ten ?? ''),
+          ),
+      ];
+    }
+    return [];
+  }
+
+  /// Khởi tạo dropdown items cho loại CCDC
+  List<DropdownMenuItem<TypeCcdc>> buildTypeCcdcDropdownItems(
+    List<TypeCcdc>? dataTypeCCDC,
+  ) {
+    if (dataTypeCCDC != null && dataTypeCCDC.isNotEmpty) {
+      return [
+        for (var element in dataTypeCCDC)
+          DropdownMenuItem<TypeCcdc>(
+            value: element,
+            child: Text(element.tenLoai ?? ''),
           ),
       ];
     }
@@ -354,6 +375,7 @@ class FormValidationStates {
   bool isNameValid = true;
   bool isImportUnitValid = true;
   bool isGroupCCDCValid = true;
+  bool isTypeCCDCValid = true;
   bool isCodeValid = true;
   bool isImportDateValid = true;
   bool isUnitValid = true;
@@ -365,6 +387,7 @@ class FormValidationStates {
     isNameValid = true;
     isImportUnitValid = true;
     isGroupCCDCValid = true;
+    isTypeCCDCValid = true;
     isCodeValid = true;
     isImportDateValid = true;
     isUnitValid = true;
