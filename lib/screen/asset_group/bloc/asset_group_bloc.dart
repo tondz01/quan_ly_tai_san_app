@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'asset_group_event.dart';
 import 'asset_group_state.dart';
 
@@ -22,9 +23,11 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
     emit(AssetGroupLoadingState());
     Map<String, dynamic> result =
         await AssetGroupRepository().getListAssetGroup();
+
     emit(AssetGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListAssetGroupSuccessState(data: result['data']));
+      AccountHelper.instance.setAssetGroup(result['data']);
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
       emit(
@@ -68,9 +71,8 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
   ) async {
     emit(AssetGroupInitialState());
     emit(AssetGroupLoadingState());
-    Map<String, dynamic> result = await AssetGroupRepository().saveAssetGroupBatch(
-      event.params,
-    );
+    Map<String, dynamic> result = await AssetGroupRepository()
+        .saveAssetGroupBatch(event.params);
     emit(AssetGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
         result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
@@ -140,7 +142,9 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
   ) async {
     emit(AssetGroupInitialState());
     emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().deleteAssetGroupBatch(event.ids);
+    final result = await AssetGroupRepository().deleteAssetGroupBatch(
+      event.ids,
+    );
     emit(AssetGroupLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(DeleteAssetGroupSuccessState(data: result['data'].toString()));

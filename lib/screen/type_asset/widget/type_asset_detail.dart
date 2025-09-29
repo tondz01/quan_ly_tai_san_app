@@ -30,7 +30,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
   TextEditingController controllerId = TextEditingController();
   TextEditingController controllerIdLoaiTs = TextEditingController();
   TextEditingController controllerName = TextEditingController();
-  
+
   Map<String, bool> validationErrors = {};
   List<AssetGroupDto> listAssetGroup = [];
   AssetGroupDto? assetGroup;
@@ -212,6 +212,9 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
               onPressed: () {
                 setState(() {
                   isEditing = false;
+                  if (widget.provider.dataDetail == null) {
+                    widget.provider.onCloseDetail(context);
+                  }
                 });
               },
             ),

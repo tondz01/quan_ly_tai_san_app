@@ -50,6 +50,18 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
             state,
           );
         }
+        if (state is CreateCcdcGroupBatchSuccessState) {
+          context.read<CcdcGroupProvider>().createCcdcGroupBatchSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CreateCcdcGroupBatchFailedState) {
+          context.read<CcdcGroupProvider>().createCcdcGroupBatchFailed(
+            context,
+            state,
+          );
+        }
         if (state is CreateCcdcGroupFailedState) {
           context.read<CcdcGroupProvider>().createCcdcGroupFailed(
             context,
@@ -104,7 +116,10 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetGroubBloc = context.read<CcdcGroupBloc>();
                       final List<CcdcGroup> ccdc =
-                          await convertExcelToCcdcGroup(filePath!);
+                          await convertExcelToCcdcGroup(
+                            filePath!,
+                            fileBytes: fileBytes,
+                          );
                       if (!mounted) return;
                       if (ccdc.isNotEmpty) {
                         assetGroubBloc.add(CreateCcdcGroupBatchEvent(ccdc));
@@ -114,7 +129,8 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                       AppUtility.exportData(
                         context,
                         "ccdc_vt",
-                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
+                        provider.data?.map((e) => e.toExportJson()).toList() ??
+                            [],
                       );
                     },
                   ),

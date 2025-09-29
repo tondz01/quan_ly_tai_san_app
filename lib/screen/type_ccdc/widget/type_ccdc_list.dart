@@ -240,7 +240,7 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                             },
                           );
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                        icon: Icon(Icons.delete, color: Colors.redAccent),
                       ),
                     ],
                   ),
