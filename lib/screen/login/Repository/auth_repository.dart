@@ -9,6 +9,8 @@ import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/permission_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -83,14 +85,9 @@ class AuthRepository extends ApiBase {
               : (rawData as Map<String, dynamic>);
       final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
       AccountHelper.instance.setUserInfo(user);
+      await _loadData(user.idCongTy);
       // Gọi các API phụ trợ
-      await _loadUserDepartments(user.idCongTy);
-      await _loadUserEmployee(user.idCongTy);
-      await _loadAssetGroup(user.idCongTy);
-      await _loadCCDCGroup(user.idCongTy);
-      await _loadChucVu(user.idCongTy);
-      await _loadTypeAsset(user.idCongTy);
-      await _loadTypeCcdc(user.idCongTy);
+
       List<String> roles = onGetPermission(user.tenDangNhap);
       PermissionService.instance.saveRoles(roles);
       log("check roles: ${jsonEncode(PermissionService.instance.getRoles())}");
@@ -135,6 +132,17 @@ class AuthRepository extends ApiBase {
   }
 
   //------LOAD DATA------------------------------------------------------------------------------------///
+  Future<void> _loadData(String idCongTy) async {
+    await _loadUserDepartments(idCongTy);
+    await _loadUserEmployee(idCongTy);
+    await _loadAssetGroup(idCongTy);
+    await _loadCCDCGroup(idCongTy);
+    await _loadChucVu(idCongTy);
+    await _loadTypeAsset(idCongTy);
+    await _loadTypeCcdc(idCongTy);
+    await _loadAssetCategory(idCongTy);
+  }
+
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
   Future<void> _loadUserDepartments(String idCongTy) async {
     try {
@@ -273,6 +281,26 @@ class AuthRepository extends ApiBase {
       }
     } catch (e) {
       log('Error calling API TYPE_CCDC: $e');
+    }
+  }
+
+  Future<void> _loadAssetCategory(String idCongTy) async {
+    try {
+      final response = await AssetCategoryRepository().getListAssetCategory(
+        idCongTy,
+      );
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final rawAssetCategory = response['data'];
+        final assetCategoryList =
+            (rawAssetCategory as List<dynamic>)
+                .map(
+                  (e) => AssetCategoryDto.fromJson(e as Map<String, dynamic>),
+                )
+                .toList();
+        AccountHelper.instance.setAssetCategory(assetCategoryList);
+      }
+    } catch (e) {
+      log('Error calling API ASSET_CATEGORY: $e');
     }
   }
 

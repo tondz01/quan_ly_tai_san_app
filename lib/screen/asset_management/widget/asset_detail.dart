@@ -128,6 +128,7 @@ class _AssetDetailState extends State<AssetDetail> {
     if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
       isEditing = false;
     }
+    listAssetCategory = AccountHelper.instance.getAssetCategory() ?? [];
     _initController();
   }
 
@@ -462,6 +463,8 @@ class _AssetDetailState extends State<AssetDetail> {
           data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlKyKhauHaoBanDau.text = data!.kyKhauHaoBanDau?.toString() ?? '';
       ctrlGiaTriThanhLy.text = data!.giaTriThanhLy?.toString() ?? '';
+      log('data!.idMoHinhTaiSan: ${data!.idMoHinhTaiSan}');
+      log('listAssetCategory: ${listAssetCategory}');
       ctrlTenMoHinh.text =
           listAssetCategory
               .firstWhere((element) => element.id == data!.idMoHinhTaiSan)

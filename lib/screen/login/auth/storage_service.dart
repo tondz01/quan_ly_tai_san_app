@@ -56,4 +56,5 @@ class StorageKey {
   static const CCDC_GROUP = "CCDC_GROUP";
   static const TYPE_ASSET = "TYPE_ASSET";
   static const TYPE_CCDCV = "TYPE_CCDCV";
+  static const ASSET_CATEGORY = "ASSET_CATEGORY";
 }
