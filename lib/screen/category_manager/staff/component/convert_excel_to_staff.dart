@@ -146,10 +146,6 @@ Future<Map<String, dynamic>> convertExcelToNhanVien(
       // Bỏ dòng header => bắt đầu từ rowIndex = 1
       for (int rowIndex = 1; rowIndex < sheet.rows.length; rowIndex++) {
         var row = sheet.rows[rowIndex];
-
-        log('row[6]?.value: ${jsonEncode(row[6]?.value)}');
-        log('row[7]?.value: ${jsonEncode(row[7]?.value)}');
-
         // Map từng cột vào json
         Map<String, dynamic> json = {
           "id": row[0]?.value,
@@ -162,6 +158,7 @@ Future<Map<String, dynamic>> convertExcelToNhanVien(
           "phongBanId": row[6]?.value,
           "chucVu": row[7]?.value,
           "chucVuId": row[7]?.value,
+          "idCongTy":"ct001",
           "nguoiTao": AccountHelper.instance.getUserInfo()!.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()!.tenDangNhap,
           "ngayTao": _normalizeDateIso(row[8]?.value ?? DateTime.now()),
@@ -202,9 +199,6 @@ Future<Map<String, dynamic>> convertExcelToNhanVien(
         final row = sheet.rows[rowIndex];
         dynamic cell(List row, int idx) => idx < row.length ? row[idx] : null;
 
-        log('cell(row, 6): ${jsonEncode(cell(row, 6))}');
-        log('cell(row, 7): ${jsonEncode(cell(row, 7))}');
-
         Map<String, dynamic> json = {
           "id": cell(row, 0),
           "hoTen": cell(row, 1),
@@ -214,6 +208,7 @@ Future<Map<String, dynamic>> convertExcelToNhanVien(
           "pin": cell(row, 5) ?? '',
           "phongBanId": cell(row, 6),
           "chucVuId": cell(row, 7),
+          "idCongTy": "ct001",
           "nguoiTao": AccountHelper.instance.getUserInfo()!.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()!.tenDangNhap,
           "ngayTao": _normalizeDateIso(cell(row, 8) ?? DateTime.now()),

@@ -190,6 +190,7 @@ class _StaffListState extends State<StaffList> {
               },
               onSelectionChanged: (items) {
                 setState(() {
+                  
                   selectedItems = items;
                 });
               },

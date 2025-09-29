@@ -180,9 +180,6 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     List<ChucVu> chucVus = context.read<StaffBloc>().chucvus;
     List<PhongBan> phongBans = context.read<StaffBloc>().department;
 
-    log('importDataStaff chucVus: ${jsonEncode(chucVus)}');
-    log('importDataStaff phongBans: ${jsonEncode(phongBans)}');
-
     final result = await convertExcelToNhanVien(
       filePath!,
       fileBytes: fileBytes,
@@ -193,8 +190,6 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     if (result['success']) {
       List<NhanVien> nhanViens = result['data'];
 
-      log('importDataStaff nhanViens: ${jsonEncode(nhanViens)}');
-      
       final resultSave = await NhanVienProvider().saveNhanVienBatch(nhanViens);
       if (checkStatusCodeDone(resultSave)) {
         if (!mounted) return;
@@ -216,6 +211,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         AppUtility.showSnackBar(
           context,
           'Import dữ liệu thất bại ${resultSave['message']}',
+          isError: true,
         );
       }
     } else {
