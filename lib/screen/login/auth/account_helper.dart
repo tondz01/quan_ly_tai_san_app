@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -90,7 +91,7 @@ class AccountHelper {
   PhongBan? getDepartmentById(String id) {
     final departments = StorageService.read(StorageKey.DEPARTMENT);
     if (departments == null) return null;
-    
+
     try {
       return departments.firstWhere((department) => department.id == id);
     } catch (e) {
@@ -254,6 +255,43 @@ class AccountHelper {
   void clearAssetTransfer() {
     StorageService.remove(StorageKey.ASSET_TRANSFER);
     refreshAllCounts();
+  }
+
+  // ASSET CATEGORY
+  setAssetCategory(List<AssetCategoryDto> assetCategory) {
+    StorageService.write(StorageKey.ASSET_CATEGORY, assetCategory);
+  }
+
+  List<AssetCategoryDto>? getAssetCategory() {
+    final raw = StorageService.read(StorageKey.ASSET_CATEGORY);
+    if (raw == null) return null;
+    if (raw is List<AssetCategoryDto>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map(
+              (e) => AssetCategoryDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
+            .toList();
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  void clearAssetCategory() {
+    StorageService.remove(StorageKey.ASSET_CATEGORY);
+  }
+
+  AssetCategoryDto? getAssetCategoryById(String id) {
+    return StorageService.read(StorageKey.ASSET_CATEGORY).firstWhere(
+      (assetCategory) => assetCategory.id == id,
+      orElse: () => AssetCategoryDto(),
+    );
   }
 
   int getAssetTransferCount(int type) {

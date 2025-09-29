@@ -133,6 +133,8 @@ class AssetCategoryProvider with ChangeNotifier {
       _isLoading = false;
     } else {
       _data = state.data;
+      AccountHelper.instance.clearAssetCategory();
+      AccountHelper.instance.setAssetCategory(_data!);
       _filteredData = List.from(_data!);
       _isLoading = false;
       _updatePagination();
