@@ -128,7 +128,9 @@ class _AssetDetailState extends State<AssetDetail> {
     if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
       isEditing = false;
     }
+    _clearValidationErrors();
     listAssetCategory = AccountHelper.instance.getAssetCategory() ?? [];
+    log('check listAssetCategory: ${jsonEncode(listAssetCategory)}');
     _initController();
   }
 
@@ -190,6 +192,7 @@ class _AssetDetailState extends State<AssetDetail> {
                   !widget.provider.isNew &&
                   data != null))
             _buildHeaderDetail(),
+          SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -463,8 +466,6 @@ class _AssetDetailState extends State<AssetDetail> {
           data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlKyKhauHaoBanDau.text = data!.kyKhauHaoBanDau?.toString() ?? '';
       ctrlGiaTriThanhLy.text = data!.giaTriThanhLy?.toString() ?? '';
-      log('data!.idMoHinhTaiSan: ${data!.idMoHinhTaiSan}');
-      log('listAssetCategory: ${listAssetCategory}');
       ctrlTenMoHinh.text =
           listAssetCategory
               .firstWhere((element) => element.id == data!.idMoHinhTaiSan)
@@ -495,9 +496,9 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
       valueKhoiTaoDonVi = data!.idDonViBanDau != null;
       ctrlTenTaiSan.text = data!.tenTaiSan ?? '';
-      typeAsset = AccountHelper.instance.getTypeAssetObject(
-        data!.idLoaiTaiSanCon ?? '',
-      );
+      List<TypeAsset> listTypeAsset = AccountHelper.instance.getTypeAsset(data!.idNhomTaiSan ?? '');
+      typeAsset = listTypeAsset.firstWhere((element) => element.id == data!.idLoaiTaiSanCon);
+      ctrlTenLoaiTaiSan.text = typeAsset?.tenLoai ?? '';
     }
   }
 
@@ -560,6 +561,9 @@ class _AssetDetailState extends State<AssetDetail> {
     if (idAssetCategory == null) {
       newValidationErrors['idMoHinhTaiSan'] = true;
     }
+    if (idAssetGroup == null) {
+      newValidationErrors['idNhomTaiSan'] = true;
+    }
     if (ctrlDonViTinh.text.isEmpty) {
       newValidationErrors['donViTinh'] = true;
     }
@@ -567,12 +571,11 @@ class _AssetDetailState extends State<AssetDetail> {
       newValidationErrors['idDonViHienThoi'] = true;
     }
     if (typeAsset == null) {
+      log('typeAsset: $typeAsset');
       newValidationErrors['idLoaiTaiSanCon'] = true;
     }
+
     // Số lượng, nguyên giá, khấu hao
-    if ((phuongPhapKhauHao ?? 0) == 0) {
-      newValidationErrors['phuongPhapKhauHao'] = true;
-    }
 
     bool hasChanges = !mapEquals(validationErrors, newValidationErrors);
     if (hasChanges) {
@@ -581,6 +584,14 @@ class _AssetDetailState extends State<AssetDetail> {
       });
     }
     return newValidationErrors.isEmpty;
+  }
+
+  void _clearValidationErrors() {
+    if (validationErrors.isNotEmpty) {
+      setState(() {
+        validationErrors = {};
+      });
+    }
   }
 
   List<ChildAssetDto> _createChildAssets() {

@@ -46,13 +46,12 @@ class CreateToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {
 }
 
 class UpdateToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {
-  final BuildContext context;
   final Map<String, dynamic> request;
 
-  const UpdateToolAndSuppliesHandoverEvent(this.context, this.request);
+  const UpdateToolAndSuppliesHandoverEvent(this.request);
 
   @override
-  List<Object?> get props => [context, request];
+  List<Object?> get props => [request];
 }
 
 class DeleteToolAndSuppliesHandoverEvent extends ToolAndSuppliesHandoverEvent {

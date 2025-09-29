@@ -25,7 +25,7 @@ class AssetGroupDto {
 
   factory AssetGroupDto.fromJson(Map<String, dynamic> json) {
     return AssetGroupDto(
-      id: json['id'],
+      id: json['id']?.toString(),
       tenNhom: json['tenNhom'],
       hieuLuc: json['hieuLuc'],
       idCongTy: json['idCongTy'],

@@ -257,7 +257,7 @@ Widget buildOriginalAssetInfomation(
             ),
           ],
           onChanged: onTypeAssetChanged,
-          fieldName: 'tenLoaiTaiSan',
+          fieldName: 'idLoaiTaiSanCon',
           validationErrors: validationErrors,
           isRequired: true,
         ),

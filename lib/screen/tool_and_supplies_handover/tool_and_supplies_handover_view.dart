@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -145,6 +148,7 @@ class _ToolAndSuppliesHandoverViewState
           AccountHelper.refreshAllCounts();
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is UpdateToolAndSuppliesHandoverSuccessState) {
+          log("check state: ${jsonEncode(state)}");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Cập nhật biên bản bàn giao thành công'),
