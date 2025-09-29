@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
@@ -87,7 +88,7 @@ class AccountHelper {
   List<PhongBan>? getDepartment() {
     final data = StorageService.read(StorageKey.DEPARTMENT);
     if (data == null) return null;
-    
+
     try {
       return (data as List<dynamic>)
           .map((json) => PhongBan.fromJson(json as Map<String, dynamic>))
@@ -125,7 +126,12 @@ class AccountHelper {
     if (raw is List) {
       try {
         return raw
-            .map((e) => e is NhanVien ? e : NhanVien.fromJson(e as Map<String, dynamic>))
+            .map(
+              (e) =>
+                  e is NhanVien
+                      ? e
+                      : NhanVien.fromJson(e as Map<String, dynamic>),
+            )
             .toList();
       } catch (e) {
         log('Error at getNhanVien: $e');
@@ -138,11 +144,11 @@ class AccountHelper {
   NhanVien? getNhanVienById(String id) {
     final nhanVienList = getNhanVien();
     if (nhanVienList == null) return null;
-    
+
     try {
       return nhanVienList.firstWhere(
-        (nhanVien) => nhanVien.id == id, 
-        orElse: () => NhanVien()
+        (nhanVien) => nhanVien.id == id,
+        orElse: () => NhanVien(),
       );
     } catch (e) {
       print('Error parsing nhanVien data: $e');
@@ -688,13 +694,9 @@ class AccountHelper {
     return [];
   }
 
-  List<TypeAsset> getTypeAsset(String idAssetGroup) {
-    final raw = StorageService.read(StorageKey.TYPE_ASSET);
-    if (raw == null) return [];
-    if (raw is List<TypeAsset>) {
-      return raw.where((element) => element.idLoaiTs == idAssetGroup).toList();
-    }
-    return [];
+  List<TypeAsset> getTypeAsset(String idTypeAsset) {
+    final raw = getAllTypeAsset();
+    return raw.where((element) => element.id == idTypeAsset).toList();
   }
 
   TypeAsset? getTypeAssetObject(String idAssetGroup) {

@@ -216,17 +216,20 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     List<DetailSubppliesHandoverDto> details,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
-    log('Check số lượng: ${chiTietDieuDong}');
+    log('Check số lượng [getAssetsByHandoverDetails]: ${chiTietDieuDong}');
     final result = <ItemDropdownDetailCcdc>[];
     for (final d in details) {
       final detail = chiTietDieuDong.firstWhere(
-        (element) => element.id == d.idChiTietDieuDong,
+        (element) {
+          log('Check số lượng [getAssetsByHandoverDetails]: ${element.id} - ${d.idChiTietDieuDong}');
+          return element.id == d.idChiTietDieuDong;
+        },
         orElse: () => DetailToolAndMaterialTransferDto.empty(),
       );
-      log('Check số lượng: ${jsonEncode(detail)}');
+      log('Check số lượng [getAssetsByHandoverDetails]: ${jsonEncode(detail)}');
 
       log(
-        'Check số lượng: ${detail.soLuongXuat} - ${detail.soLuongDaBanGiao} = ${detail.soLuongXuat - detail.soLuongDaBanGiao}',
+        'Check số lượng [getAssetsByHandoverDetails]: ${detail.soLuongXuat} - ${detail.soLuongDaBanGiao} = ${detail.soLuongXuat - detail.soLuongDaBanGiao}',
       );
       // Tìm item dropdown theo id chi tiết CCDC VT đã lưu trong bàn giao
       final dropdownItem = listItemDropdownDetailAsset.firstWhere(
