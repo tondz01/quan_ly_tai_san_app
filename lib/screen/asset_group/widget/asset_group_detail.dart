@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 

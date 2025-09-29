@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class StaffList extends StatefulWidget {
@@ -71,12 +72,6 @@ class _StaffListState extends State<StaffList> {
         getValue: (item) => item.tenChucVu ?? '',
         titleAlignment: TextAlign.center,
         width: 100,
-      ),
-      TableBaseConfig.columnTable<NhanVien>(
-        title: 'Người quản lý',
-        getValue: (item) => item.tenQuanLy ?? '',
-        titleAlignment: TextAlign.start,
-        width: 150,
       ),
       TableBaseConfig.columnWidgetBase<NhanVien>(
         title: 'Thao tác',
@@ -178,6 +173,11 @@ class _StaffListState extends State<StaffList> {
                   ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<NhanVien>(

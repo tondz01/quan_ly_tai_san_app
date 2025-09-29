@@ -60,6 +60,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           .saveToolsAndSuppliesBatch(assetCategories);
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
+          if (!mounted) return;
           AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
           _searchController.clear();
           context.read<ToolsAndSuppliesBloc>().add(
@@ -68,6 +69,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
         }
       } else {
         if (context.mounted) {
+          if (!mounted) return;
           AppUtility.showSnackBar(
             context,
             'Import dữ liệu thất bại',

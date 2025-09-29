@@ -185,10 +185,10 @@ class NhanVien extends Equatable {
       kySo: kySo ?? this.kySo,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
-      savePin: savePin ?? this.savePin
+      savePin: savePin ?? this.savePin,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -235,31 +235,15 @@ class NhanVien extends Equatable {
   Map<String, dynamic> toExportJson() {
     return {
       'Mã nhân viên': _nullIfEmpty(id),
-      'Họ tên': _nullIfEmpty(hoTen),
-      'Điện thoại': _nullIfEmpty(diDong),
+      'Tên nhân viên': _nullIfEmpty(hoTen),
+      'Số điện thoại': _nullIfEmpty(diDong),
       'Email': _nullIfEmpty(emailCongViec),
-      'Ký nháy': kyNhay,
-      'Ký thường': kyThuong,
-      'Ký số': kySo,
-      'Chữ ký nháy': _nullIfEmpty(chuKyNhay),
-      'Chữ ký thường': _nullIfEmpty(chuKyThuong),
       'Agreement UUId': _nullIfEmpty(agreementUUId),
       'Mã Pin': _nullIfEmpty(pin),
       'Phòng ban (Mã phòng ban)': _nullIfEmpty(phongBanId),
-      'Tên phòng ban': _nullIfEmpty(boPhan),
-      'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVu),
-      'Người quản lý (Mã người quản lý)': _nullIfEmpty(nguoiQuanLy),
-      'Là quản lý': laQuanLy,
-      'Ảnh đại diện': _nullIfEmpty(avatar),
-      'Công ty (Mã công ty)': _nullIfEmpty(idCongTy),
-      'Địa chỉ làm việc': _nullIfEmpty(diaChiLamViec),
-      'Hình thức làm việc': _nullIfEmpty(hinhThucLamViec),
-      'Người tạo (Mã nhân viên)': _nullIfEmpty(nguoiTao),
-      'Người cập nhật (Mã nhân viên)': _nullIfEmpty(nguoiCapNhat),
+      'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVuId),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
-      'Hiển thị': active,
-      'Lưu mã PIN': savePin,
     };
   }
 
@@ -294,6 +278,6 @@ class NhanVien extends Equatable {
     kyNhay,
     kyThuong,
     kySo,
-    savePin
+    savePin,
   ];
 }
