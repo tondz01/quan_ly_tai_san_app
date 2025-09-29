@@ -144,7 +144,7 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   ) async {
     emit(CcdcGroupInitialState());
     emit(CcdcGroupLoadingState());
-    final result = await CcdcGroupRepository().deleteCcdcGroupBatch(event.id);
+    final result = await CcdcGroupRepository().deleteCcdcGroupBatch(event.ids);
     emit(CcdcGroupLoadingDismissState());
     if (checkStatusCodeDone(result)) {
       emit(DeleteCcdcGroupSuccessState(data: result['data'].toString()));

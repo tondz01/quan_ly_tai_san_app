@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_sup
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
@@ -22,6 +23,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   get data => _data;
   get dataPhongBan => _dataPhongBan;
   get dataGroupCCDC => _dataGroupCCDC;
+  get dataTypeCCDC => _dataTypeCCDC;
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
@@ -83,6 +85,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   List<ToolsAndSuppliesDto>? _filteredData;
   List<PhongBan>? _dataPhongBan;
   List<CcdcGroup>? _dataGroupCCDC;
+  List<TypeCcdc>? _dataTypeCCDC;
+
   void onInit(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
     _isShowInput = false;
@@ -106,6 +110,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       final bloc = context.read<ToolsAndSuppliesBloc>();
       bloc.add(GetListToolsAndSuppliesEvent(context, 'CT001'));
       bloc.add(GetListPhongBanEvent(context, 'CT001'));
+      bloc.add(GetListTypeCcdcEvent(context));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -220,6 +225,15 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  getListTypeCcdcSuccess(
+    BuildContext context,
+    GetListTypeCcdcSuccessState state,
+  ) {
+    _error = null;
+    _dataTypeCCDC = state.data;
+    notifyListeners();
+  }
+
   void createToolsAndSuppliesSuccess(
     BuildContext context,
     CreateToolsAndSuppliesSuccessState state,
@@ -251,6 +265,16 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
     // Close input panel if open
     AppUtility.showSnackBar(context, 'Xóa CCDC - Vật tư thành công!');
+  }
+
+  void deleteToolsAndSuppliesBatchSuccess(
+    BuildContext context,
+    DeleteToolsAndSuppliesBatchSuccessState state,
+  ) {
+    onCloseDetail(context);
+    getListToolsAndSupplies(context);
+
+    AppUtility.showSnackBar(context, 'Xóa danh sách CCDC - Vật tư thành công!');
   }
 
   void onChangeDetail(BuildContext context, ToolsAndSuppliesDto? item) {

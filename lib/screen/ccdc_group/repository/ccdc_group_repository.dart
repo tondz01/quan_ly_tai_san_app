@@ -231,7 +231,7 @@ class CcdcGroupRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> deleteCcdcGroupBatch(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> deleteCcdcGroupBatch(List<String> ids) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -240,7 +240,7 @@ class CcdcGroupRepository extends ApiBase {
     try {
       final response = await delete(
         '${EndPointAPI.CCDC_GROUP}/batch',
-        data: data,
+        data: ids,
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {

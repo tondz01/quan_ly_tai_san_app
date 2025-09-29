@@ -451,6 +451,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
       tenDonVi: '',
       idNhomCCDC: '',
       tenNhomCCDC: '',
+      idLoaiCCDCCon: '',
       ngayNhap: DateTime.now(),
       donViTinh: '',
       soLuong: 0,

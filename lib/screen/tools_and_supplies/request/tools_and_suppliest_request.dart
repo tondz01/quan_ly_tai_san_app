@@ -2,6 +2,7 @@ class ToolsAndSuppliesRequest {
   final String id;
   final String idDonVi;
   final String idNhomCCDC;
+  final String idLoaiCCDCCon;
   final String ten;
   final DateTime ngayNhap;
   final String donViTinh;
@@ -24,6 +25,7 @@ class ToolsAndSuppliesRequest {
     required this.id,
     required this.idDonVi,
     required this.idNhomCCDC,
+    required this.idLoaiCCDCCon,
     required this.ten,
     required this.ngayNhap,
     required this.donViTinh,
@@ -48,10 +50,11 @@ class ToolsAndSuppliesRequest {
       id: json['id'] ?? '',
       idDonVi: json['idDonVi'] ?? '',
       idNhomCCDC: json['idNhomCCDC'] ?? '',
+      idLoaiCCDCCon: json['idLoaiCCDCCon'] ?? '',
       ten: json['ten'] ?? '',
       ngayNhap:
           json['ngayNhap'] != null
-              ? DateTime.parse(json['ngayNhap'].toString())
+              ? DateTime.parse(json['ngayNhap'].toString().replaceAll('Z', ''))
               : DateTime.now(),
       donViTinh: json['donViTinh'] ?? '',
       soLuong: json['soLuong'] ?? 0,
@@ -65,11 +68,13 @@ class ToolsAndSuppliesRequest {
       idCongTy: json['idCongTy'] ?? '',
       ngayTao:
           json['ngayTao'] != null
-              ? DateTime.parse(json['ngayTao'].toString())
+              ? DateTime.parse(json['ngayTao'].toString().replaceAll('Z', ''))
               : DateTime.now(),
       ngayCapNhat:
           json['ngayCapNhat'] != null
-              ? DateTime.parse(json['ngayCapNhat'].toString())
+              ? DateTime.parse(
+                json['ngayCapNhat'].toString().replaceAll('Z', ''),
+              )
               : DateTime.now(),
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
@@ -82,8 +87,9 @@ class ToolsAndSuppliesRequest {
       'id': id,
       'idDonVi': idDonVi,
       'idNhomCCDC': idNhomCCDC,
+      'idLoaiCCDCCon': idLoaiCCDCCon,
       'ten': ten,
-      'ngayNhap': ngayNhap.toIso8601String(),
+      'ngayNhap': ngayNhap.toIso8601String().replaceAll('Z', ''),
       'donViTinh': donViTinh,
       'soLuong': soLuong,
       'giaTri': giaTri,
@@ -94,8 +100,8 @@ class ToolsAndSuppliesRequest {
       'namSanXuat': namSanXuat,
       'ghiChu': ghiChu,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat.toIso8601String(),
+      'ngayTao': ngayTao.toIso8601String().replaceAll('Z', ''),
+      'ngayCapNhat': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,

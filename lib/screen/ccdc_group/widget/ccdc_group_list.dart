@@ -285,9 +285,8 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                       SizedBox(width: 16),
                       IconButton(
                         onPressed: () {
-                          Map<String, dynamic> data = {
-                            'id': listSelected.map((e) => e.id).toList(),
-                          };
+                          List<String> ids =
+                              listSelected.map((e) => e.id!).toList();
                           showConfirmDialog(
                             context,
                             type: ConfirmType.delete,
@@ -299,11 +298,11 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                             confirmText: 'Xóa',
                             onConfirm: () {
                               final roleBloc = context.read<CcdcGroupBloc>();
-                              roleBloc.add(DeleteCcdcGroupBatchEvent(data));
+                              roleBloc.add(DeleteCcdcGroupBatchEvent(ids));
                             },
                           );
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
+                        icon: Icon(Icons.delete, color: Colors.redAccent),
                       ),
                     ],
                   ),

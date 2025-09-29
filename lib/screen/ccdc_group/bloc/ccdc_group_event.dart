@@ -56,10 +56,10 @@ class DeleteCcdcGroupEvent extends CcdcGroupEvent {
 }
 
 class DeleteCcdcGroupBatchEvent extends CcdcGroupEvent {
-  final Map<String, dynamic> id;
+  final List<String> ids;
 
-  const DeleteCcdcGroupBatchEvent(this.id);
+  const DeleteCcdcGroupBatchEvent(this.ids);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [ids];
 }
