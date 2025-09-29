@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -174,7 +176,10 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
       );
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
-          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu thành công ${capitalSources.length} nguồn vốn',
+          );
           // Reload list after successful import
           context.read<CapitalSourceBloc>().add(LoadCapitalSources());
         }
@@ -182,16 +187,18 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
         if (context.mounted) {
           AppUtility.showSnackBar(
             context,
-            'Import dữ liệu thất bại',
+            'Import dữ liệu thất bại ${result['message']}',
             isError: true,
           );
         }
       }
     } else {
       if (context.mounted) {
-        ScaffoldMessenger.of(
+        AppUtility.showSnackBar(
           context,
-        ).showSnackBar(SnackBar(content: Text('Import dữ liệu thất bại')));
+          'Import dữ liệu thất bại}',
+          isError: true,
+        );
       }
     }
   }
@@ -298,12 +305,41 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
                   },
                   mainScreen: 'Quản lý nguồn vốn',
                   onFileSelected: (fileName, filePath, fileBytes) async {
-                    List<NguonKinhPhi> nguonKinhPhi =
-                        await convertExcelToCapitalSource(
-                          filePath!,
-                          fileBytes: fileBytes,
+                    final result = await convertExcelToCapitalSource(
+                      filePath!,
+                      fileBytes: fileBytes,
+                    );
+                    if (result['success']) {
+                      List<NguonKinhPhi> nguonKinhPhi = result['data'];
+                      _importData(nguonKinhPhi);
+                    } else {
+                      List<dynamic> errors = result['errors'];
+
+                      // Tạo danh sách lỗi dạng list
+                      List<String> errorMessages = [];
+                      for (var error in errors) {
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
                         );
-                    _importData(nguonKinhPhi);
+                        String errorText =
+                            'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                        errorMessages.add(errorText);
+                      }
+
+                      log(
+                        '[ToolsAndSuppliesView] errorMessages: $errorMessages',
+                      );
+                      if (!mounted) return;
+
+                      // Hiển thị thông báo tổng quan
+                      AppUtility.showSnackBar(
+                        context,
+                        'Import dữ liệu thất bại: \n $errorMessages',
+                        isError: true,
+                        timeDuration: 4,
+                      );
+                    }
                   },
                   onExportData: () {
                     AppUtility.exportData(

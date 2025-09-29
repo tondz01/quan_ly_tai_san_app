@@ -76,7 +76,7 @@ class _StaffListState extends State<StaffList> {
       TableBaseConfig.columnWidgetBase<NhanVien>(
         title: 'Thao tác',
         cellBuilder: (item) => viewAction(item),
-        width: 120,
+        width: 60,
         searchable: true,
       ),
     ];

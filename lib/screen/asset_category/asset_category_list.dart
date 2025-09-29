@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class AssetCategoryList extends StatefulWidget {
@@ -47,7 +48,8 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
       ),
       TableBaseConfig.columnTable<AssetCategoryDto>(
         title: 'Phương pháp khấu hao',
-        getValue: (item) => item.phuongPhapKhauHao == 1 ? 'Đường thẳng' : 'Khác',
+        getValue:
+            (item) => item.phuongPhapKhauHao == 1 ? 'Đường thẳng' : 'Khác',
         width: 150,
       ),
       TableBaseConfig.columnTable<AssetCategoryDto>(
@@ -57,7 +59,13 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
       ),
       TableBaseConfig.columnTable<AssetCategoryDto>(
         title: 'Loại kỳ khấu hao',
-        getValue: (item) => item.loaiKyKhauHao == '1' ? 'Tháng' : item.loaiKyKhauHao == '2' ? 'Năm' : item.loaiKyKhauHao ?? "",
+        getValue:
+            (item) =>
+                item.loaiKyKhauHao == '1'
+                    ? 'Tháng'
+                    : item.loaiKyKhauHao == '2'
+                    ? 'Năm'
+                    : item.loaiKyKhauHao ?? "",
         width: 120,
       ),
       TableBaseConfig.columnTable<AssetCategoryDto>(
@@ -77,20 +85,17 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
       ),
       TableBaseConfig.columnWidgetBase<AssetCategoryDto>(
         title: 'Thao tác',
-        cellBuilder: (item) => TableBaseConfig.viewActionBase<AssetCategoryDto>(
-          item: item,
-          onEdit: (item) {
-            widget.onEdit?.call(item);
-          },
-          onDelete: (item) {
-            widget.onDelete?.call(item);
-          },
-        ),
+        cellBuilder:
+            (item) => TableBaseConfig.viewActionBase<AssetCategoryDto>(
+              item: item,
+              onDelete: (item) {
+                widget.onDelete?.call(item);
+              },
+            ),
         width: 120,
-        searchable: true,
       ),
     ];
-    
+
     return Container(
       height: MediaQuery.of(context).size.height - 200,
       decoration: BoxDecoration(
@@ -173,7 +178,9 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
                               onConfirm: () {
                                 final assetCategoryBloc =
                                     context.read<AssetCategoryBloc>();
-                                assetCategoryBloc.add(DeleteAssetCategoryBatchEvent(context, data));
+                                assetCategoryBloc.add(
+                                  DeleteAssetCategoryBatchEvent(context, data),
+                                );
                               },
                             );
                           });
@@ -184,6 +191,11 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<AssetCategoryDto>(

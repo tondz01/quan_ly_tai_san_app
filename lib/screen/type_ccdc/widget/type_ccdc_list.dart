@@ -7,11 +7,13 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_event.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/provider/type_ccdc_provider.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -120,34 +122,6 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
     return columns;
   }
 
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<TypeCcdc>> columns = _buildColumns();
@@ -199,14 +173,6 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: _showColumnDisplayPopup,
-                      child: Icon(
-                        Icons.settings,
-                        color: ColorValue.link,
-                        size: 18,
-                      ),
-                    ),
                   ],
                 ),
                 Visibility(
@@ -222,31 +188,41 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                         ),
                       ),
                       SizedBox(width: 16),
-                      IconButton(
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
                         onPressed: () {
-                          final ids = listSelected.map((e) => e.id!).toList();
-                          showConfirmDialog(
-                            context,
-                            type: ConfirmType.delete,
-                            title: 'Xóa loại CCDC',
-                            message:
-                                'Bạn có chắc muốn xóa ${listSelected.length} loại CCDC',
-                            highlight: listSelected.length.toString(),
-                            cancelText: 'Không',
-                            confirmText: 'Xóa',
-                            onConfirm: () {
-                              final bloc = context.read<TypeCcdcBloc>();
-                              bloc.add(DeleteTypeCcdcBatchEvent(ids));
-                            },
-                          );
+                          setState(() {
+                            final ids = listSelected.map((e) => e.id!).toList();
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa dự án',
+                              message:
+                                  'Bạn có chắc muốn xóa ${listSelected.length} dự án',
+                              highlight: listSelected.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final bloc = context.read<TypeCcdcBloc>();
+                                bloc.add(DeleteTypeCcdcBatchEvent(ids));
+                              },
+                            );
+                          });
                         },
-                        icon: Icon(Icons.delete, color: Colors.redAccent),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<TypeCcdc>(

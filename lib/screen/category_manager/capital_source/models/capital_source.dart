@@ -76,12 +76,8 @@ class NguonKinhPhi extends Equatable {
       'Tên nguồn kinh phí': _nullIfEmpty(tenNguonKinhPhi),
       'Ghi chú': _nullIfEmpty(ghiChu),
       'Hiệu lực': hieuLuc ?? false,
-      'Id Công ty': _nullIfEmpty("ct001"),
       'Ngày tạo': _nullIfEmpty(_formatDate(ngayTao)),
       'Ngày cập nhật': _nullIfEmpty(_formatDate(ngayCapNhat)),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
-      'Hiển thị': isActive ?? true,
     };
   }
 

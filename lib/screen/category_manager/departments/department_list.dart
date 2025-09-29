@@ -109,7 +109,7 @@ class _DepartmentListState extends State<DepartmentList> {
                                 widget.onDelete?.call(item);
                               },
                     ),
-        width: 120,
+        width: 60,
         searchable: true,
       ),
     ];

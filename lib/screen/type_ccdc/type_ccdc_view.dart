@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -39,40 +41,22 @@ class _TypeCcdcViewState extends State<TypeCcdcView> {
       listener: (context, state) {
         if (state is TypeCcdcLoadingState) {}
         if (state is GetListTypeCcdcSuccessState) {
-          context.read<TypeCcdcProvider>().getListSuccess(
-            context,
-            state,
-          );
+          context.read<TypeCcdcProvider>().getListSuccess(context, state);
         }
         if (state is CreateTypeCcdcSuccessState) {
-          context.read<TypeCcdcProvider>().createSuccess(
-            context,
-            state,
-          );
+          context.read<TypeCcdcProvider>().createSuccess(context, state);
         }
         if (state is CreateTypeCcdcFailedState) {
-          context.read<TypeCcdcProvider>().createFailed(
-            context,
-            state,
-          );
+          context.read<TypeCcdcProvider>().createFailed(context, state);
         }
         if (state is GetListTypeCcdcFailedState) {
-          context.read<TypeCcdcProvider>().getListFailed(
-            context,
-            state,
-          );
+          context.read<TypeCcdcProvider>().getListFailed(context, state);
         }
         if (state is UpdateTypeCcdcSuccessState) {
-          context.read<TypeCcdcProvider>().updateSuccess(
-            context,
-            state,
-          );
+          context.read<TypeCcdcProvider>().updateSuccess(context, state);
         }
         if (state is DeleteTypeCcdcSuccessState) {
-          context.read<TypeCcdcProvider>().deleteSuccess(
-            context,
-            state,
-          );
+          context.read<TypeCcdcProvider>().deleteSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
           context.read<TypeCcdcProvider>().putPostDeleteFailed(context, state);
@@ -103,19 +87,48 @@ class _TypeCcdcViewState extends State<TypeCcdcView> {
                     mainScreen: 'Loại CCDC',
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final bloc = context.read<TypeCcdcBloc>();
-                      final List<TypeCcdc> list = fileBytes != null
-                          ? await convertExcelToTypeCcdcBytes(fileBytes)
-                          : await convertExcelToTypeCcdc(filePath!);
+                      final result = await convertExcelToTypeCcdc(
+                        filePath!,
+                        fileBytes: fileBytes,
+                      );
                       if (!mounted) return;
-                      if (list.isNotEmpty) {
+
+                      if (result['success']) {
+                        List<TypeCcdc> list = result['data'];
                         bloc.add(CreateTypeCcdcBatchEvent(list));
+                      } else {
+                        List<dynamic> errors = result['errors'];
+
+                        // Tạo danh sách lỗi dạng list
+                        List<String> errorMessages = [];
+                        for (var error in errors) {
+                          String rowNumber = error['row'].toString();
+                          List<String> rowErrors = List<String>.from(
+                            error['errors'],
+                          );
+                          String errorText =
+                              'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                          errorMessages.add(errorText);
+                        }
+
+                        log('[TypeCcdcView] errorMessages: $errorMessages');
+                        if (!mounted) return;
+
+                        // Hiển thị thông báo tổng quan
+                        AppUtility.showSnackBar(
+                          context,
+                          'Import dữ liệu thất bại: \n $errorMessages',
+                          isError: true,
+                          timeDuration: 4,
+                        );
                       }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
                         "type_ccdc",
-                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
+                        provider.data?.map((e) => e.toExportJson()).toList() ??
+                            [],
                       );
                     },
                   ),
@@ -160,5 +173,3 @@ class _TypeCcdcViewState extends State<TypeCcdcView> {
     );
   }
 }
-
-

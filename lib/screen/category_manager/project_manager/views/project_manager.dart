@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -112,13 +114,42 @@ class _ProjectManagerState extends State<ProjectManager> {
                   mainScreen: 'Quản lý dự án',
                   onFileSelected: (fileName, filePath, fileBytes) async {
                     final roleBloc = context.read<ProjectBloc>();
-                    final List<DuAn> duAnList = await convertExcelToProject(
+
+                    final result = await convertExcelToProject(
                       filePath!,
                       fileBytes: fileBytes,
                     );
                     if (!mounted) return;
-                    if (duAnList.isNotEmpty) {
+                    if (result['success']) {
+                      List<DuAn> duAnList = result['data'];
                       roleBloc.add(CreateProjectBatchEvent(duAnList));
+                    } else {
+                      List<dynamic> errors = result['errors'];
+
+                      // Tạo danh sách lỗi dạng list
+                      List<String> errorMessages = [];
+                      for (var error in errors) {
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
+                        );
+                        String errorText =
+                            'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                        errorMessages.add(errorText);
+                      }
+
+                      log(
+                        '[ToolsAndSuppliesView] errorMessages: $errorMessages',
+                      );
+                      if (!mounted) return;
+
+                      // Hiển thị thông báo tổng quan
+                      AppUtility.showSnackBar(
+                        context,
+                        'Import dữ liệu thất bại: \n $errorMessages',
+                        isError: true,
+                        timeDuration: 4,
+                      );
                     }
                   },
                   onExportData: () {

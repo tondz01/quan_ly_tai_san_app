@@ -91,8 +91,7 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
       );
 
       final int? statusCode = result['status_code'] as int?;
-      if (checkStatusCodeDone(result) ||
-          statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      if (checkStatusCodeDone(result)) {
         emit(CreateRoleSuccessState(data: (result['data'] ?? '').toString()));
       } else {
         String msg =

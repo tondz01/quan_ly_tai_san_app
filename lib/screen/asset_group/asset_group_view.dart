@@ -65,14 +65,43 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                     mainScreen: 'Nhóm tài sản',
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetGroubBloc = context.read<AssetGroupBloc>();
-                      final List<AssetGroupDto> cv =
-                          await convertExcelToAssetGroup(
-                            filePath!,
-                            fileBytes: fileBytes,
-                          );
+                      final result = await convertExcelToAssetGroup(
+                        filePath!,
+                        fileBytes: fileBytes,
+                      );
                       if (!mounted) return;
-                      if (cv.isNotEmpty) {
-                        assetGroubBloc.add(CreateAssetGroupBatchEvent(cv));
+                      if (result['success']) {
+                        List<AssetGroupDto> assetGroupList = result['data'];
+                        assetGroubBloc.add(
+                          CreateAssetGroupBatchEvent(assetGroupList),
+                        );
+                      } else {
+                        List<dynamic> errors = result['errors'];
+
+                        // Tạo danh sách lỗi dạng list
+                        List<String> errorMessages = [];
+                        for (var error in errors) {
+                          String rowNumber = error['row'].toString();
+                          List<String> rowErrors = List<String>.from(
+                            error['errors'],
+                          );
+                          String errorText =
+                              'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                          errorMessages.add(errorText);
+                        }
+
+                        log(
+                          '[AssetGroupView] errorMessages: $errorMessages',
+                        );
+                        if (!mounted) return;
+
+                        // Hiển thị thông báo tổng quan
+                        AppUtility.showSnackBar(
+                          context,
+                          'Import dữ liệu thất bại: \n $errorMessages',
+                          isError: true,
+                          timeDuration: 4,
+                        );
                       }
                     },
                     onExportData: () {

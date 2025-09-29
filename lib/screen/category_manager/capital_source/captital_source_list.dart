@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class CapitalSourceList extends StatefulWidget {
@@ -35,10 +36,10 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
   @override
   Widget build(BuildContext context) {
     final columns = [
-      
       TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Mã nguồn kinh phí',
-        getValue: (item) => item.id ?? "", width: 100,
+        getValue: (item) => item.id ?? "",
+        width: 100,
       ),
       TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Tên nguồn kinh phí',
@@ -58,13 +59,10 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
         width: 150,
       ),
       TableBaseConfig.columnWidgetBase<NguonKinhPhi>(
-        title: '',
+        title: 'Thao tác',
         cellBuilder:
             (item) => TableBaseConfig.viewActionBase<NguonKinhPhi>(
               item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
               onDelete: (item) {
                 widget.onDelete?.call(item);
               },
@@ -156,7 +154,9 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                               onConfirm: () {
                                 final capitalSourceBloc =
                                     context.read<CapitalSourceBloc>();
-                                capitalSourceBloc.add(DeleteCapitalSourceBatch(data));
+                                capitalSourceBloc.add(
+                                  DeleteCapitalSourceBatch(data),
+                                );
                               },
                             );
                           });
@@ -167,6 +167,11 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<NguonKinhPhi>(

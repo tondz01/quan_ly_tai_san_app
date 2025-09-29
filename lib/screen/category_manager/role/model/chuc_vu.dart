@@ -150,11 +150,8 @@ class ChucVu extends Equatable {
       'Có quyền Bàn giao tài sản': banGiaoTaiSan,
       'Có quyền Bàn giao CCDC - VT': banGiaoCCDCVatTu,
       'Quản lý Báo cáo': baoCao,
-      'Mã công ty': _nullIfEmpty(idCongTy.isEmpty ? RoleConstants.defaultCompanyId : idCongTy),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhập': _nullIfEmpty(ngayCapNhat),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhập': _nullIfEmpty(nguoiCapNhat),
     };
   }
 

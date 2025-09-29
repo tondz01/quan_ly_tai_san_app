@@ -64,7 +64,4 @@ class ProjectConstants {
   static const String exportProjectName = 'Tên dự án';
   static const String exportProjectNote = 'Ghi chú';
   static const String exportIsActive = 'Hiệu lực';
-  static const String exportCompanyId = 'ID công ty';
-  static const String exportCreator = 'Người tạo';
-  static const String exportDisplay = 'Hiển thị';
 }

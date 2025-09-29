@@ -20,32 +20,48 @@ String _normalizeDateToISO(dynamic value) {
   if (value == null) return DateTime.now().toISOFormat();
   if (value is DateTime) return value.toISOFormat();
   if (value is num) return AppUtility.excelSerialToDate(value).toISOFormat();
-  
+
   final text = value.toString().trim();
   if (text.isEmpty) return DateTime.now().toISOFormat();
-  
+
   // Try to parse the date
   final parsed = DateTime.tryParse(text);
   if (parsed != null) return parsed.toISOFormat();
-  
+
   // If parsing fails, return current date
   return DateTime.now().toISOFormat();
 }
 
-Future<List<AssetGroupDto>> convertExcelToAssetGroup(
+Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
+  List<String> rowErrors = [];
+
+  // Validate required fields
+  if (json['id'] == null || json['id'].toString().trim().isEmpty) {
+    rowErrors.add('Mã nhóm không được để trống');
+  }
+
+  if (json['tenNhom'] == null || json['tenNhom'].toString().trim().isEmpty) {
+    rowErrors.add('Tên nhóm không được để trống');
+  }
+
+  return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
+}
+
+Future<Map<String, dynamic>> convertExcelToAssetGroup(
   String filePath, {
   Uint8List? fileBytes,
 }) async {
   final bytes = fileBytes ?? File(filePath).readAsBytesSync();
   final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
+  Map<String, dynamic> result = {
+    "success": true,
+    "message": "",
+    "data": [],
+    "errors": [],
+  };
 
   final List<AssetGroupDto> groups = [];
-
-  // Validate input
-  if (bytes.isEmpty) {
-    log('Error: File is empty');
-    return groups;
-  }
+  List<Map<String, dynamic>> errors = [];
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -60,17 +76,25 @@ Future<List<AssetGroupDto>> convertExcelToAssetGroup(
         final json = <String, dynamic>{
           'id': AppUtility.s(row[0]?.value),
           'tenNhom': AppUtility.s(row[1]?.value),
-          'hieuLuc': AppUtility.b(row[2]?.value),
-          'idCongTy': AppUtility.s(row[3]?.value),
-          'ngayTao': _normalizeDateToISO(row[4]?.value),
-          'ngayCapNhat': _normalizeDateToISO(row[5]?.value),
-          'nguoiTao': AppUtility.s(row[6]?.value, fallback: fallbackUser),
-          'nguoiCapNhat': AppUtility.s(row[7]?.value, fallback: fallbackUser),
-          'isActive': AppUtility.b(row[8]?.value),
+          'hieuLuc': AppUtility.b(row[2]?.value ?? true),
+          'idCongTy': 'ct001',
+          'ngayTao': _normalizeDateToISO(row[3]?.value ?? DateTime.now()),
+          'ngayCapNhat': _normalizeDateToISO(row[4]?.value ?? DateTime.now()),
+          'nguoiTao': fallbackUser,
+          'nguoiCapNhat': fallbackUser,
+          'isActive': true,
         };
-        log('asset_group json: ${jsonEncode(json)}');
-        log('Date format check - ngayTao: ${json['ngayTao']}, ngayCapNhat: ${json['ngayCapNhat']}');
-        groups.add(AssetGroupDto.fromJson(json));
+
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          groups.add(AssetGroupDto.fromJson(json));
+        }
       }
     }
   } catch (e) {
@@ -87,20 +111,40 @@ Future<List<AssetGroupDto>> convertExcelToAssetGroup(
         final json = <String, dynamic>{
           'id': AppUtility.s(cell(row, 0)),
           'tenNhom': AppUtility.s(cell(row, 1)),
-          'hieuLuc': AppUtility.b(cell(row, 2)),
-          'idCongTy': AppUtility.s(cell(row, 3)),
-          'ngayTao': _normalizeDateToISO(cell(row, 4)),
-          'ngayCapNhat': _normalizeDateToISO(cell(row, 5)),
-          'nguoiTao': AppUtility.s(cell(row, 6), fallback: fallbackUser),
-          'nguoiCapNhat': AppUtility.s(cell(row, 7), fallback: fallbackUser),
-          'isActive': AppUtility.b(cell(row, 8)),
+          'hieuLuc': AppUtility.b(cell(row, 2) ?? true),
+          'idCongTy': 'ct001',
+          'ngayTao': _normalizeDateToISO(cell(row, 3) ?? DateTime.now()),
+          'ngayCapNhat': _normalizeDateToISO(cell(row, 4) ?? DateTime.now()),
+          'nguoiTao': fallbackUser,
+          'nguoiCapNhat': fallbackUser,
+          'isActive': true,
         };
-        log('asset_group json2: ${jsonEncode(json)}');
-        log('Date format check - ngayTao: ${json['ngayTao']}, ngayCapNhat: ${json['ngayCapNhat']}');
-        groups.add(AssetGroupDto.fromJson(json));
+       
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          groups.add(AssetGroupDto.fromJson(json));
+        }
       }
     }
   }
 
-  return groups;
+  result['data'] = groups;
+  result['errors'] = errors;
+
+  if (errors.isNotEmpty) {
+    result['success'] = false;
+    result['message'] =
+        'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
+  } else {
+    result['success'] = true;
+    result['message'] = 'Import thành công ${groups.length} nhóm tài sản.';
+  }
+
+  return result;
 }

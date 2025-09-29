@@ -128,22 +128,24 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CommonFormInput(
-                label: 'Mã nhóm ccdc *',
+                label: 'Mã nhóm ccdc',
                 controller: controllerIdCcdcGroup,
                 isEditing: data == null ? isEditing : false,
                 textContent: controllerIdCcdcGroup.text,
                 width: double.infinity,
                 validationErrors: validationErrors,
                 fieldName: 'id',
+                isRequired: true,
               ),
               CommonFormInput(
-                label: 'Tên nhóm ccdc *',
+                label: 'Tên nhóm ccdc',
                 controller: controllerNameCcdcGroup,
                 isEditing: isEditing,
                 textContent: controllerNameCcdcGroup.text,
                 width: double.infinity,
                 validationErrors: validationErrors,
                 fieldName: 'tenNhom',
+                isRequired: true,
               ),
               CommonCheckboxInput(
                 label: 'Có hiệu lực',
@@ -216,7 +218,7 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
       );
       return;
     }
-    
+
     if (data == null) {
       CcdcGroup request = CcdcGroup(
         id: controllerIdCcdcGroup.text,

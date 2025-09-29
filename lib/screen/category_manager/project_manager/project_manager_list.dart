@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class ProjectManagerList extends StatefulWidget {
@@ -57,7 +58,7 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
         titleAlignment: TextAlign.start,
       ),
       TableBaseConfig.columnWidgetBase<DuAn>(
-        title: '',
+        title: 'Thao tác',
         cellBuilder:
             (item) => TableBaseConfig.viewActionBase<DuAn>(
               item: item,
@@ -65,7 +66,7 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
                 widget.onDelete?.call(item);
               },
             ),
-        width: 120,
+        width: 60,
         searchable: true,
       ),
     ];
@@ -161,6 +162,11 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<DuAn>(
