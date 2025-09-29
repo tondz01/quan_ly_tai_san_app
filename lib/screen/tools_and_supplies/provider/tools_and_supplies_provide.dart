@@ -126,25 +126,50 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     String searchLower = value.toLowerCase().trim();
     _filteredData =
         data.where((item) {
-          bool name = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
+          bool ten = AppUtility.fuzzySearch(
+            item.ten.toLowerCase(),
             searchLower,
           );
-          bool importUnit = item.importUnit.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.importUnit.toLowerCase().contains(
+          bool idDonVi = AppUtility.fuzzySearch(
+            item.idDonVi.toLowerCase(),
             searchLower,
           );
-          bool unit = item.unit.toLowerCase().contains(searchLower);
-          bool value = item.value.toString().contains(searchLower);
+          bool idNhomCCDC = AppUtility.fuzzySearch(
+            item.idNhomCCDC.toLowerCase(),
+            searchLower,
+          );
+          bool idLoaiCCDCCon = AppUtility.fuzzySearch(
+            item.idLoaiCCDCCon.toLowerCase(),
+            searchLower,
+          );
+          bool id = AppUtility.fuzzySearch(item.id.toLowerCase(), searchLower);
+          bool kyHieu = AppUtility.fuzzySearch(
+            item.kyHieu.toLowerCase(),
+            searchLower,
+          );
+          bool donViTinh = AppUtility.fuzzySearch(
+            item.donViTinh.toLowerCase(),
+            searchLower,
+          );
 
-          return name || importUnit || departmentGroup || unit || value;
+          return ten ||
+              idDonVi ||
+              idNhomCCDC ||
+              idLoaiCCDCCon ||
+              id ||
+              kyHieu ||
+              donViTinh;
         }).toList();
-    log('message _filteredData: $_filteredData');
+    
+    // Cập nhật phân trang sau khi search
+    _updatePagination();
     notifyListeners();
   }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
+    // Sử dụng filteredData thay vì data để phân trang đúng khi có search
+    List<ToolsAndSuppliesDto> dataToPaginate = filteredData ?? data ?? [];
+    totalEntries = dataToPaginate.length;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
@@ -156,8 +181,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        dataToPaginate.isNotEmpty
+            ? dataToPaginate.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )

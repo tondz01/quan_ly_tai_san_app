@@ -387,34 +387,32 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                                   backgroundColor: ColorValue.error,
                                   foregroundColor: Colors.white,
                                   onPressed: () {
-                                    setState(() {
-                                      List<String> data =
-                                          selectedItems
-                                              .map((e) => e.id)
-                                              .whereType<String>()
-                                              .toList();
-                                      showConfirmDialog(
-                                        context,
-                                        type: ConfirmType.delete,
-                                        title: 'Xóa tài sản',
-                                        message:
-                                            'Bạn có chắc muốn xóa ${selectedItems.length} tài sản đã chọn',
-                                        highlight:
-                                            selectedItems.length.toString(),
-                                        cancelText: 'Không',
-                                        confirmText: 'Xóa',
-                                        onConfirm: () {
-                                          final roleBloc =
-                                              context
-                                                  .read<
-                                                    ToolsAndSuppliesBloc
-                                                  >();
-                                          roleBloc.add(
-                                            DeleteAssetBatchEvent(data),
-                                          );
-                                        },
-                                      );
-                                    });
+                                    List<String> data =
+                                        selectedItems
+                                            .map((e) => e.id)
+                                            .whereType<String>()
+                                            .toList();
+                                    showConfirmDialog(
+                                      context,
+                                      type: ConfirmType.delete,
+                                      title: 'Xóa CCDC - Vật tư',
+                                      message:
+                                          'Bạn có chắc muốn xóa ${selectedItems.length} CCDC - Vật tư đã chọn',
+                                      highlight:
+                                          selectedItems.length.toString(),
+                                      cancelText: 'Không',
+                                      confirmText: 'Xóa',
+                                      onConfirm: () {
+                                        final roleBloc =
+                                            context
+                                                .read<
+                                                  ToolsAndSuppliesBloc
+                                                >();
+                                        roleBloc.add(
+                                          DeleteAssetBatchEvent(data),
+                                        );
+                                      },
+                                    );
                                   },
                                 ),
                               ],
@@ -428,16 +426,16 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                 ),
                 Expanded(
                   child:
-                      widget.provider.filteredData != null
+                      widget.provider.dataPage != null
                           ? TableBaseView<ToolsAndSuppliesDto>(
                             searchTerm: '',
                             columns: columns,
-                            data: widget.provider.filteredData!,
+                            data: widget.provider.dataPage!,
                             horizontalController: ScrollController(),
                             getters: getters,
                             startDate: DateTime.tryParse(
-                              widget.provider.filteredData!.isNotEmpty
-                                  ? widget.provider.filteredData!.first.ngayTao
+                              widget.provider.dataPage!.isNotEmpty
+                                  ? widget.provider.dataPage!.first.ngayTao
                                       .toString()
                                   : '',
                             ),

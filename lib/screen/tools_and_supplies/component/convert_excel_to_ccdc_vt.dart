@@ -20,17 +20,6 @@ extension DateTimeToMySQL on DateTime {
   }
 }
 
-int? _parseInt(dynamic value) {
-  if (value == null) return null;
-  if (value is int) return value;
-  if (value is double) return value.toInt();
-  if (value is String) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return null;
-    return int.tryParse(trimmed);
-  }
-  return null;
-}
 
 Map<String, dynamic> _validateRow(
   Map<String, dynamic> json,
