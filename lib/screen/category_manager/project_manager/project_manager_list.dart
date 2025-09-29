@@ -61,9 +61,6 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
         cellBuilder:
             (item) => TableBaseConfig.viewActionBase<DuAn>(
               item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
               onDelete: (item) {
                 widget.onDelete?.call(item);
               },

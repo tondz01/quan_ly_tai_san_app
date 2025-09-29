@@ -23,7 +23,9 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/login/Repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 
 class AssetDetail extends StatefulWidget {
@@ -116,7 +118,11 @@ class _AssetDetailState extends State<AssetDetail> {
     }
   }
 
-  _initData() {
+  _initData() async {
+    UserInfoDTO? user = AccountHelper.instance.getUserInfo();
+    if (user != null) {
+      await AuthRepository().loadData(user.idCongTy);
+    }
     // newChildAssets.clear();
     if (widget.provider.dataDetail != null) {
       data = widget.provider.dataDetail;
@@ -130,6 +136,17 @@ class _AssetDetailState extends State<AssetDetail> {
     }
     _clearValidationErrors();
     listAssetCategory = AccountHelper.instance.getAssetCategory() ?? [];
+    if (listAssetCategory.isNotEmpty) {
+      itemsAssetCategory.clear();
+      itemsAssetCategory.addAll([
+        ...listAssetCategory.map(
+          (e) => DropdownMenuItem<AssetCategoryDto>(
+            value: e,
+            child: Text(e.tenMoHinh ?? ''),
+          ),
+        ),
+      ]);
+    }
     log('check listAssetCategory: ${jsonEncode(listAssetCategory)}');
     _initController();
   }
@@ -253,8 +270,16 @@ class _AssetDetailState extends State<AssetDetail> {
                         onAssetGroupChanged: (value) {
                           setState(() {
                             idAssetGroup = value.id;
+                            log('Check listTypeAsset: ${jsonEncode(value)}');
                             listTypeAsset = AccountHelper.instance.getTypeAsset(
                               value.id ?? '',
+                            );
+                            log(
+                              'Check listTypeAsset getAllTypeAsset: ${AccountHelper.instance.getAllTypeAsset()}',
+                            );
+
+                            log(
+                              'Check listTypeAsset222: ${jsonEncode(listTypeAsset)}',
                             );
                           });
                         },
@@ -466,11 +491,14 @@ class _AssetDetailState extends State<AssetDetail> {
           data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlKyKhauHaoBanDau.text = data!.kyKhauHaoBanDau?.toString() ?? '';
       ctrlGiaTriThanhLy.text = data!.giaTriThanhLy?.toString() ?? '';
-      ctrlTenMoHinh.text =
-          listAssetCategory
-              .firstWhere((element) => element.id == data!.idMoHinhTaiSan)
-              .tenMoHinh ??
-          '';
+      // Resolve model name safely
+      final moHinh =
+          listAssetCategory.any((element) => element.id == data!.idMoHinhTaiSan)
+              ? listAssetCategory.firstWhere(
+                (element) => element.id == data!.idMoHinhTaiSan,
+              )
+              : null;
+      ctrlTenMoHinh.text = moHinh?.tenMoHinh ?? '';
       idAssetCategory = data!.idMoHinhTaiSan;
       ctrlPhuongPhapKhauHao.text = data!.giaTriKhauHaoBanDau?.toString() ?? '';
       ctrlSoKyKhauHao.text = data!.soKyKhauHao?.toString() ?? '';
@@ -496,8 +524,16 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
       valueKhoiTaoDonVi = data!.idDonViBanDau != null;
       ctrlTenTaiSan.text = data!.tenTaiSan ?? '';
-      List<TypeAsset> listTypeAsset = AccountHelper.instance.getTypeAsset(data!.idNhomTaiSan ?? '');
-      typeAsset = listTypeAsset.firstWhere((element) => element.id == data!.idLoaiTaiSanCon);
+      List<TypeAsset> listTypeAsset = AccountHelper.instance.getTypeAsset(
+        data!.idNhomTaiSan ?? '',
+      );
+      log('Check listTypeAsset11: ${jsonEncode(listTypeAsset)}');
+      typeAsset =
+          listTypeAsset.any((element) => element.id == data!.idLoaiTaiSanCon)
+              ? listTypeAsset.firstWhere(
+                (element) => element.id == data!.idLoaiTaiSanCon,
+              )
+              : null;
       ctrlTenLoaiTaiSan.text = typeAsset?.tenLoai ?? '';
     }
   }

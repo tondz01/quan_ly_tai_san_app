@@ -510,16 +510,16 @@ class _ToolAndSuppliesHandoverDetailState
                   "idCCDCVatTu": e.idCCDCVatTu,
                   "soLuong": e.soLuong,
                   "idChiTietCCDCVatTu": e.idChiTietCCDCVatTu,
-                  "idChiTietDieuDong": e.iddieudongccdcvattu,
+                  "idChiTietDieuDong": e.idChiTietDieuDong,
                   "ngayTao": e.ngayTao,
                   "ngayCapNhat": e.ngayCapNhat,
                   "nguoiTao": e.nguoiTao,
                   "nguoiCapNhat": e.nguoiCapNhat,
-                  "isActive": e.isActive,
+                  "active": e.isActive,
                 },
               )
               .toList();
-      if (!mounted) return;
+      log('Check số lượng requestDetail: ${jsonEncode(requestDetail)}');
       bloc.add(
         CreateToolAndSuppliesHandoverEvent(
           request,
@@ -842,6 +842,7 @@ class _ToolAndSuppliesHandoverDetailState
                                   ),
                                 )
                                 .toList();
+                        log('Check số lượng listDetailSubppliesHandover: ${jsonEncode(listDetailSubppliesHandover)}');
                       });
                     },
                   ),

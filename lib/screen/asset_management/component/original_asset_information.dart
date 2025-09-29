@@ -64,229 +64,197 @@ Widget buildOriginalAssetInfomation(
     }
   }
 
-  return MultiBlocListener(
-    listeners: [
-      // Lắng nghe từ AssetCategoryBloc
-      BlocListener<AssetCategoryBloc, AssetCategoryState>(
-        listener: (context, state) {
-          if (state is GetListAssetCategorySuccessState) {
-            // Handle successful data loading
-            Future.microtask(() {
-              listAssetCategory.clear();
-              listAssetCategory.addAll(state.data);
-              itemsAssetCategory.clear();
-              itemsAssetCategory.addAll([
-                for (var element in listAssetCategory)
-                  DropdownMenuItem<AssetCategoryDto>(
-                    value: element,
-                    child: Text(element.tenMoHinh ?? ''),
-                  ),
-              ]);
-            });
-          } else if (state is GetListAssetCategoryFailedState) {
-            log('message GetListAssetCategoryFailedState');
-          } else if (state is AssetCategoryLoadingState) {
-            // Show loading indicator
-            log('message AssetCategoryLoadingState');
-          } else if (state is AssetCategoryLoadingDismissState) {
-            // Hide loading indicator
-            log('message AssetCategoryLoadingDismissState');
-          }
-        },
+  return Column(
+    children: [
+      SGText(
+        text: 'Thông tin tài sản gôc',
+        size: 16,
+        fontWeight: FontWeight.w600,
+      ),
+      const SizedBox(height: 10),
+      Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
+      SizedBox(height: 8),
+  
+      CommonFormInput(
+        label: 'Tên tài sản',
+        controller: ctrlTenTaiSan,
+        isEditing: isEditing,
+        textContent: ctrlTenTaiSan.text,
+        fieldName: 'tenTaiSan',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+  
+      CommonFormInput(
+        label: 'Mã tài sản',
+        controller: ctrlMaTaiSan,
+        isEditing: isEditing,
+        textContent: ctrlMaTaiSan.text,
+        fieldName: 'id',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+      CommonFormInput(
+        label: 'Nguyên giá tài sản',
+        controller: ctrlNguyenGia,
+        isEditing: isEditing,
+        textContent: ctrlNguyenGia.text,
+        fieldName: 'nguyenGia',
+        inputType: TextInputType.number,
+        isMoney: true,
+        validationErrors: validationErrors,
+      ),
+      CommonFormInput(
+        label: 'Giá trị Khấu hao ban đầu',
+        controller: ctrlGiaTriKhauHaoBanDau,
+        isEditing: isEditing,
+        textContent: ctrlGiaTriKhauHaoBanDau.text,
+        fieldName: 'giaTriKhauHaoBanDau',
+        inputType: TextInputType.number,
+        isMoney: true,
+        validationErrors: validationErrors,
+      ),
+      CommonFormInput(
+        label: 'Kỳ khấu hao ban đầu',
+        controller: ctrlKyKhauHaoBanDau,
+        isEditing: isEditing,
+        textContent: ctrlKyKhauHaoBanDau.text,
+        fieldName: 'kyKhauHaoBanDau',
+        inputType: TextInputType.number,
+        validationErrors: validationErrors,
+      ),
+      CommonFormInput(
+        label: 'Giá trị thanh lý',
+        controller: ctrlGiaTriThanhLy,
+        isEditing: isEditing,
+        textContent: ctrlGiaTriThanhLy.text,
+        fieldName: 'kyKhauHaoBanDau',
+        inputType: TextInputType.number,
+        isMoney: true,
+        validationErrors: validationErrors,
+      ),
+  
+      CmFormDropdownObject<AssetCategoryDto>(
+        label: 'Mô hình tài sản',
+        controller: ctrlTenMoHinh,
+        isEditing: isEditing,
+        fieldName: 'idMoHinhTaiSan',
+        items: itemsAssetCategory,
+        defaultValue:
+            ctrlTenMoHinh.text.isNotEmpty
+                ? getAssetCategory(
+                  listAssetCatergory: listAssetCategory,
+                  idAssetCategory: ctrlTenMoHinh.text,
+                )
+                : null,
+        onChanged: onAssetCategoryChanged,
+        isRequired: true,
+        validationErrors: validationErrors,
+      ),
+  
+      CommonFormInput(
+        label: 'Phương pháp khấu hao',
+        controller: ctrlPhuongPhapKhauHao,
+        isEditing: false,
+        textContent: ctrlPhuongPhapKhauHao.text,
+        fieldName: 'tenMoHinh',
+        isDropdown: true,
+        items: AppUtility.phuongPhapKhauHaos,
+        onChanged: onDepreciationMethodChanged,
+        validationErrors: validationErrors,
+      ),
+  
+      CommonFormInput(
+        label: 'Số Kỳ khấu hao',
+        controller: ctrlSoKyKhauHao,
+        isEditing: false,
+        textContent: ctrlSoKyKhauHao.text,
+        fieldName: 'soKyKhauHao',
+        validationErrors: validationErrors,
+      ),
+      CommonFormInput(
+        label: 'Tài khoản tài sản',
+        controller: ctrlTaiKhoanTaiSan,
+        isEditing: false,
+        textContent: ctrlTaiKhoanTaiSan.text,
+        fieldName: 'taiKhoanTaiSan',
+        validationErrors: validationErrors,
+      ),
+      CommonFormInput(
+        label: 'Tài khoản khấu hao',
+        controller: ctrlTaiKhoanKhauHao,
+        isEditing: false,
+        textContent: ctrlTaiKhoanKhauHao.text,
+        fieldName: 'taiKhoanKhauHao',
+        validationErrors: validationErrors,
+      ),
+      CommonFormInput(
+        label: 'Tài khoản chi phí',
+        controller: ctrlTaiKhoanChiPhi,
+        isEditing: false,
+        textContent: ctrlTaiKhoanChiPhi.text,
+        fieldName: 'taiKhoanChiPhi',
+        validationErrors: validationErrors,
+      ),
+      CmFormDropdownObject<AssetGroupDto>(
+        label: 'Nhóm tài sản',
+        controller: ctrlIdNhomTaiSan,
+        isEditing: isEditing,
+        items: itemsAssetGroup,
+        defaultValue:
+            ctrlIdNhomTaiSan.text.isNotEmpty
+                ? getAssetGroup(
+                  listAssetGroup: listAssetGroup,
+                  idAssetGroup: ctrlIdNhomTaiSan.text,
+                )
+                : null,
+        onChanged: onAssetGroupChanged,
+        fieldName: 'idNhomTaiSan',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+      CmFormDropdownObject<TypeAsset>(
+        label: 'Loại tài sản',
+        controller: ctrlTenLoaiTaiSan,
+        isEditing: isEditing,
+        items: [
+          ...listTypeAsset.map(
+            (e) => DropdownMenuItem<TypeAsset>(
+              value: e,
+              child: Text(e.tenLoai ?? ''),
+            ),
+          ),
+        ],
+        onChanged: onTypeAssetChanged,
+        fieldName: 'idLoaiTaiSanCon',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+      const SizedBox(height: 10),
+      CmFormDate(
+        label: 'Ngày vào sổ',
+        controller: ctrlNgayVaoSo,
+        isEditing: isEditing,
+        enable: !isEditing,
+        onChanged: onChangedNgayVaoSo,
+        value:
+            ctrlNgayVaoSo.text.isNotEmpty
+                ? AppUtility.parseFlexibleDateTime(ctrlNgayVaoSo.text)
+                : DateTime.now(),
+      ),
+      const SizedBox(height: 10),
+      CmFormDate(
+        label: 'Ngày sử dụng',
+        controller: ctrlNgaySuDung,
+        isEditing: isEditing,
+        enable: !isEditing,
+        onChanged: onChangedNgaySuDung,
+        value:
+            ctrlNgaySuDung.text.isNotEmpty
+                ? AppUtility.parseFlexibleDateTime(ctrlNgaySuDung.text)
+                : DateTime.now(),
       ),
     ],
-    child: Column(
-      children: [
-        SGText(
-          text: 'Thông tin tài sản gôc',
-          size: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        const SizedBox(height: 10),
-        Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
-        SizedBox(height: 8),
-
-        CommonFormInput(
-          label: 'Tên tài sản',
-          controller: ctrlTenTaiSan,
-          isEditing: isEditing,
-          textContent: ctrlTenTaiSan.text,
-          fieldName: 'tenTaiSan',
-          validationErrors: validationErrors,
-          isRequired: true,
-        ),
-
-        CommonFormInput(
-          label: 'Mã tài sản',
-          controller: ctrlMaTaiSan,
-          isEditing: isEditing,
-          textContent: ctrlMaTaiSan.text,
-          fieldName: 'id',
-          validationErrors: validationErrors,
-          isRequired: true,
-        ),
-        CommonFormInput(
-          label: 'Nguyên giá tài sản',
-          controller: ctrlNguyenGia,
-          isEditing: isEditing,
-          textContent: ctrlNguyenGia.text,
-          fieldName: 'nguyenGia',
-          inputType: TextInputType.number,
-          isMoney: true,
-          validationErrors: validationErrors,
-        ),
-        CommonFormInput(
-          label: 'Giá trị Khấu hao ban đầu',
-          controller: ctrlGiaTriKhauHaoBanDau,
-          isEditing: isEditing,
-          textContent: ctrlGiaTriKhauHaoBanDau.text,
-          fieldName: 'giaTriKhauHaoBanDau',
-          inputType: TextInputType.number,
-          isMoney: true,
-          validationErrors: validationErrors,
-        ),
-        CommonFormInput(
-          label: 'Kỳ khấu hao ban đầu',
-          controller: ctrlKyKhauHaoBanDau,
-          isEditing: isEditing,
-          textContent: ctrlKyKhauHaoBanDau.text,
-          fieldName: 'kyKhauHaoBanDau',
-          inputType: TextInputType.number,
-          validationErrors: validationErrors,
-        ),
-        CommonFormInput(
-          label: 'Giá trị thanh lý',
-          controller: ctrlGiaTriThanhLy,
-          isEditing: isEditing,
-          textContent: ctrlGiaTriThanhLy.text,
-          fieldName: 'kyKhauHaoBanDau',
-          inputType: TextInputType.number,
-          isMoney: true,
-          validationErrors: validationErrors,
-        ),
-
-        CmFormDropdownObject<AssetCategoryDto>(
-          label: 'Mô hình tài sản',
-          controller: ctrlTenMoHinh,
-          isEditing: isEditing,
-          fieldName: 'idMoHinhTaiSan',
-          items: itemsAssetCategory,
-          defaultValue:
-              ctrlTenMoHinh.text.isNotEmpty
-                  ? getAssetCategory(
-                    listAssetCatergory: listAssetCategory,
-                    idAssetCategory: ctrlTenMoHinh.text,
-                  )
-                  : null,
-          onChanged: onAssetCategoryChanged,
-          isRequired: true,
-          validationErrors: validationErrors,
-        ),
-
-        CommonFormInput(
-          label: 'Phương pháp khấu hao',
-          controller: ctrlPhuongPhapKhauHao,
-          isEditing: false,
-          textContent: ctrlPhuongPhapKhauHao.text,
-          fieldName: 'tenMoHinh',
-          isDropdown: true,
-          items: AppUtility.phuongPhapKhauHaos,
-          onChanged: onDepreciationMethodChanged,
-          validationErrors: validationErrors,
-        ),
-
-        CommonFormInput(
-          label: 'Số Kỳ khấu hao',
-          controller: ctrlSoKyKhauHao,
-          isEditing: false,
-          textContent: ctrlSoKyKhauHao.text,
-          fieldName: 'soKyKhauHao',
-          validationErrors: validationErrors,
-        ),
-        CommonFormInput(
-          label: 'Tài khoản tài sản',
-          controller: ctrlTaiKhoanTaiSan,
-          isEditing: false,
-          textContent: ctrlTaiKhoanTaiSan.text,
-          fieldName: 'taiKhoanTaiSan',
-          validationErrors: validationErrors,
-        ),
-        CommonFormInput(
-          label: 'Tài khoản khấu hao',
-          controller: ctrlTaiKhoanKhauHao,
-          isEditing: false,
-          textContent: ctrlTaiKhoanKhauHao.text,
-          fieldName: 'taiKhoanKhauHao',
-          validationErrors: validationErrors,
-        ),
-        CommonFormInput(
-          label: 'Tài khoản chi phí',
-          controller: ctrlTaiKhoanChiPhi,
-          isEditing: false,
-          textContent: ctrlTaiKhoanChiPhi.text,
-          fieldName: 'taiKhoanChiPhi',
-          validationErrors: validationErrors,
-        ),
-        CmFormDropdownObject<AssetGroupDto>(
-          label: 'Nhóm tài sản',
-          controller: ctrlIdNhomTaiSan,
-          isEditing: isEditing,
-          items: itemsAssetGroup,
-          defaultValue:
-              ctrlIdNhomTaiSan.text.isNotEmpty
-                  ? getAssetGroup(
-                    listAssetGroup: listAssetGroup,
-                    idAssetGroup: ctrlIdNhomTaiSan.text,
-                  )
-                  : null,
-          onChanged: onAssetGroupChanged,
-          fieldName: 'idNhomTaiSan',
-          validationErrors: validationErrors,
-          isRequired: true,
-        ),
-        CmFormDropdownObject<TypeAsset>(
-          label: 'Loại tài sản',
-          controller: ctrlTenLoaiTaiSan,
-          isEditing: isEditing,
-          items: [
-            ...listTypeAsset.map(
-              (e) => DropdownMenuItem<TypeAsset>(
-                value: e,
-                child: Text(e.tenLoai ?? ''),
-              ),
-            ),
-          ],
-          onChanged: onTypeAssetChanged,
-          fieldName: 'idLoaiTaiSanCon',
-          validationErrors: validationErrors,
-          isRequired: true,
-        ),
-        const SizedBox(height: 10),
-        CmFormDate(
-          label: 'Ngày vào sổ',
-          controller: ctrlNgayVaoSo,
-          isEditing: isEditing,
-          enable: !isEditing,
-          onChanged: onChangedNgayVaoSo,
-          value:
-              ctrlNgayVaoSo.text.isNotEmpty
-                  ? AppUtility.parseFlexibleDateTime(ctrlNgayVaoSo.text)
-                  : DateTime.now(),
-        ),
-        const SizedBox(height: 10),
-        CmFormDate(
-          label: 'Ngày sử dụng',
-          controller: ctrlNgaySuDung,
-          isEditing: isEditing,
-          enable: !isEditing,
-          onChanged: onChangedNgaySuDung,
-          value:
-              ctrlNgaySuDung.text.isNotEmpty
-                  ? AppUtility.parseFlexibleDateTime(ctrlNgaySuDung.text)
-                  : DateTime.now(),
-        ),
-      ],
-    ),
   );
 }
 
