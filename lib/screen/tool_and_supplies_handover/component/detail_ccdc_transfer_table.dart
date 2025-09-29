@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
@@ -174,6 +177,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
 
     for (final c in chiTietDieuDong) {
       final id = c.idChiTietCCDCVatTu;
+      log('Check số lượng: ${c.soLuongXuat - c.soLuongDaBanGiao}');
 
       final idAsset = getDetailAssetByID(id);
       if (idAsset.idTaiSan == null) {
@@ -212,13 +216,18 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     List<DetailSubppliesHandoverDto> details,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
+    log('Check số lượng: ${chiTietDieuDong}');
     final result = <ItemDropdownDetailCcdc>[];
     for (final d in details) {
       final detail = chiTietDieuDong.firstWhere(
         (element) => element.id == d.idChiTietDieuDong,
         orElse: () => DetailToolAndMaterialTransferDto.empty(),
       );
+      log('Check số lượng: ${jsonEncode(detail)}');
 
+      log(
+        'Check số lượng: ${detail.soLuongXuat} - ${detail.soLuongDaBanGiao} = ${detail.soLuongXuat - detail.soLuongDaBanGiao}',
+      );
       // Tìm item dropdown theo id chi tiết CCDC VT đã lưu trong bàn giao
       final dropdownItem = listItemDropdownDetailAsset.firstWhere(
         (element) => element.id == d.iddieudongccdcvattu,
