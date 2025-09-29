@@ -310,11 +310,12 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
     // Validate chi tiết tài sản nếu có
     if (newDetailAssetDto.isNotEmpty) {
-      final detailErrors = _controller.getDeletedItems(
-        oldList: data?.chiTietTaiSanList ?? [],
-        newList: newDetailAssetDto,
+      final detailErrors = _controller.validateDetailAssets(
+        newDetailAssetDto,
+        data?.chiTietTaiSanList ??
+            [], 
+        controllerCode.text.trim(),
       );
-
       if (detailErrors.isNotEmpty) {
         AppUtility.showSnackBar(
           context,
@@ -347,10 +348,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         existingData: data,
       );
 
-      SGLog.debug(
-        '_saveItem',
-        'jsonEncode data: ${jsonEncode(newDetailAssetDto)}',
-      );
       // Gọi API thông qua Bloc
       if (data == null) {
         context.read<ToolsAndSuppliesBloc>().add(
