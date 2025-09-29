@@ -99,12 +99,8 @@ class AssetCategoryDto {
       'Tài khoản tài sản': _nullIfEmpty(taiKhoanTaiSan),
       'Tài khoản khấu hao': _nullIfEmpty(taiKhoanKhauHao),
       'Tài khoản chi phí': _nullIfEmpty(taiKhoanChiPhi),
-      'Id Công ty': _nullIfEmpty("ct001"),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
-      'Hiển thị': isActive ?? true,
     };
   }
 

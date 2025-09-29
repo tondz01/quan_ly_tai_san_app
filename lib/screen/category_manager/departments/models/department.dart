@@ -80,13 +80,9 @@ class PhongBan extends Equatable {
     return {
       'Mã phòng ban': _nullIfEmpty(id),
       'Tên phòng ban': _nullIfEmpty(tenPhongBan),
-      'Công ty': _nullIfEmpty(idCongTy ?? DepartmentConstants.defaultCompanyId),
-      'Phòng cấp trên': _nullIfEmpty(phongCapTren),
+      'Mã phòng cấp trên': _nullIfEmpty(phongCapTren),
       'Ngày tạo': _nullIfEmpty(ngayTao),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
-      'Hiển thị': isActive,
     };
   }
 

@@ -21,12 +21,38 @@ extension DateTimeToMySQL on DateTime {
   }
 }
 
-Future<List<NguonKinhPhi>> convertExcelToCapitalSource(
+Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
+  List<String> rowErrors = [];
+
+  // Validate required fields
+  if (json['id'] == null || json['id'].toString().trim().isEmpty) {
+    rowErrors.add('Mã nguồn kinh phí không được để trống');
+  }
+
+  if (json['tenNguonKinhPhi'] == null ||
+      json['tenNguonKinhPhi'].toString().trim().isEmpty) {
+    rowErrors.add('Tên nguồn kinh phí không được để trống');
+  }
+
+  return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
+}
+
+Future<Map<String, dynamic>> convertExcelToCapitalSource(
   String filePath, {
   Uint8List? fileBytes,
 }) async {
   final bytes = fileBytes ?? File(filePath).readAsBytesSync();
+  final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
+
+  Map<String, dynamic> result = {
+    "success": true,
+    "message": "",
+    "data": [],
+    "errors": [],
+  };
+
   List<NguonKinhPhi> nguonKinhPhiList = [];
+  List<Map<String, dynamic>> errors = [];
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -39,24 +65,28 @@ Future<List<NguonKinhPhi>> convertExcelToCapitalSource(
           "id": AppUtility.s(row[0]?.value),
           "tenNguonKinhPhi": AppUtility.s(row[1]?.value),
           "ghiChu": AppUtility.s(row[2]?.value),
-          "hieuLuc": AppUtility.s(row[3]?.value),
-          "idCongTy":
-              AppUtility.s(row[4]?.value) == ''
-                  ? AccountHelper.instance.getUserInfo()?.idCongTy
-                  : AppUtility.s(row[4]?.value),
-          "ngayTao": AppUtility.normalizeDateIsoString(row[5]?.value),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(row[6]?.value),
-          "nguoiTao": _sanitizeString(
-            row[7]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "hieuLuc": AppUtility.s(row[3]?.value ?? true),
+          "idCongTy": "ct001",
+          "ngayTao": AppUtility.normalizeDateIsoString(
+            row[5]?.value ?? DateTime.now(),
           ),
-          "nguoiCapNhat": _sanitizeString(
-            row[8]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "ngayCapNhat": AppUtility.normalizeDateIsoString(
+            row[6]?.value ?? DateTime.now(),
           ),
-          "isActive": row[9]?.value ?? true,
+          "nguoiTao": fallbackUser,
+          "nguoiCapNhat": fallbackUser,
+          "isActive": true,
         };
-        nguonKinhPhiList.add(NguonKinhPhi.fromJson(json));
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          nguonKinhPhiList.add(NguonKinhPhi.fromJson(json));
+        }
       }
     }
   } catch (e) {
@@ -71,23 +101,44 @@ Future<List<NguonKinhPhi>> convertExcelToCapitalSource(
           "id": cell(row, 0),
           "tenNguonKinhPhi": cell(row, 1),
           "ghiChu": cell(row, 2),
-          "hieuLuc": cell(row, 3),
-          "idCongTy": cell(row, 4) ?? "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(cell(row, 5)),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(cell(row, 6)),
-          "nguoiTao": _sanitizeString(
-            cell(row, 7),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "hieuLuc": cell(row, 3) ?? true,
+          "idCongTy": "ct001",
+          "ngayTao": AppUtility.normalizeDateIsoString(
+            cell(row, 5) ?? DateTime.now(),
           ),
-          "nguoiCapNhat": _sanitizeString(
-            cell(row, 8),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "ngayCapNhat": AppUtility.normalizeDateIsoString(
+            cell(row, 6) ?? DateTime.now(),
           ),
-          "isActive": cell(row, 9) ?? true,
+          "nguoiTao": fallbackUser,
+          "nguoiCapNhat": fallbackUser,
+          "isActive": true,
         };
-        nguonKinhPhiList.add(NguonKinhPhi.fromJson(json));
+
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          nguonKinhPhiList.add(NguonKinhPhi.fromJson(json));
+        }
       }
     }
   }
-  return nguonKinhPhiList;
+  result['data'] = nguonKinhPhiList;
+  result['errors'] = errors;
+
+  if (errors.isNotEmpty) {
+    result['success'] = false;
+    result['message'] =
+        'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
+  } else {
+    result['success'] = true;
+    result['message'] =
+        'Import thành công ${nguonKinhPhiList.length} nguồn kinh phí.';
+  }
+
+  return result;
 }

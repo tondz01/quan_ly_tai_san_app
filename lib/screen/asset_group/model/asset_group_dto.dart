@@ -96,13 +96,9 @@ class AssetGroupDto {
     return {
       'Mã nhóm': _nullIfEmpty(id),
       'Tên nhóm': _nullIfEmpty(tenNhom),
-      'Hiệu lực': hieuLuc,
-      'Mã công ty': _nullIfEmpty(idCongTy),
+      'Hiệu lực': hieuLuc ?? true,
       'Ngày tạo': _nullIfEmpty(ngayTao?.toIso8601String()),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat?.toIso8601String()),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
-      'Kích hoạt': isActive,
     };
   }
 }

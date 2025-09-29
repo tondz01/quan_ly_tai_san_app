@@ -106,7 +106,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
       );
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
-          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu thành công ${departments.length} nhân viên',
+          );
           searchController.clear();
           currentPage = 1;
           rowsPerPage = DepartmentConstants.defaultRowsPerPage;
@@ -121,7 +124,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
         if (context.mounted) {
           AppUtility.showSnackBar(
             context,
-            'Import dữ liệu thất bại',
+            'Import dữ liệu thất bại ${result['message']}',
             isError: true,
           );
         }
@@ -288,12 +291,42 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                   },
                   mainScreen: 'Quản lý phòng ban',
                   onFileSelected: (fileName, filePath, fileBytes) async {
-                    List<PhongBan> nv = await convertExcelToPhongBan(
+                    final result = await convertExcelToPhongBan(
                       filePath!,
                       fileBytes: fileBytes,
+                      phongBans: departments,
                     );
-                    log('nv: ${jsonEncode(nv)}');
-                    _importData(nv);
+
+                    if (result['success']) {
+                      List<PhongBan> phongBans = result['data'];
+                      _importData(phongBans);
+                    } else {
+                      List<dynamic> errors = result['errors'];
+
+                      // Tạo danh sách lỗi dạng list
+                      List<String> errorMessages = [];
+                      for (var error in errors) {
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
+                        );
+                        String errorText =
+                            'Dòng $rowNumber: ${rowErrors.join(', ')}';
+                        errorMessages.add(errorText);
+                      }
+
+                      log(
+                        '[ToolsAndSuppliesView] errorMessages: $errorMessages',
+                      );
+                      if (!mounted) return;
+                      // Hiển thị thông báo tổng quan
+                      AppUtility.showSnackBar(
+                        context,
+                        'Import dữ liệu thất bại: \n $errorMessages',
+                        isError: true,
+                        timeDuration: 4,
+                      );
+                    }
                   },
                   onExportData: () {
                     AppUtility.exportData(

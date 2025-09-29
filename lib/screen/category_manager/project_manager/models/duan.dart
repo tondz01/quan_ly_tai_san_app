@@ -62,9 +62,6 @@ class DuAn extends Equatable {
       ProjectConstants.exportProjectName: _nullIfEmpty(tenDuAn),
       ProjectConstants.exportProjectNote: _nullIfEmpty(ghiChu),
       ProjectConstants.exportIsActive: hieuLuc ?? ProjectConstants.defaultHieuLuc,
-      ProjectConstants.exportCompanyId: _nullIfEmpty(idCongTy ?? ProjectConstants.defaultCompanyId),
-      ProjectConstants.exportCreator: _nullIfEmpty(nguoiTao),
-      ProjectConstants.exportDisplay: isActive ?? ProjectConstants.defaultIsActive,
     };
   }
 

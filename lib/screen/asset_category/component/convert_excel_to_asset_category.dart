@@ -56,7 +56,8 @@ Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
   }
 
   // Validate loaiKyKhauHao
-  if (json['loaiKyKhauHao'] == null || json['loaiKyKhauHao'].toString().trim().isEmpty) {
+  if (json['loaiKyKhauHao'] == null ||
+      json['loaiKyKhauHao'].toString().trim().isEmpty) {
     rowErrors.add('Loại kỳ khấu hao không được để trống');
   } else {
     final loaiKyKhauHaoStr = json['loaiKyKhauHao'].toString().trim();
@@ -69,7 +70,8 @@ Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
   }
 
   // Validate taiKhoanTaiSan
-  if (json['taiKhoanTaiSan'] == null || json['taiKhoanTaiSan'].toString().trim().isEmpty) {
+  if (json['taiKhoanTaiSan'] == null ||
+      json['taiKhoanTaiSan'].toString().trim().isEmpty) {
     rowErrors.add('Tài khoản tài sản không được để trống');
   } else {
     final taiKhoanTaiSanStr = json['taiKhoanTaiSan'].toString().trim();
@@ -82,7 +84,8 @@ Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
   }
 
   // Validate taiKhoanKhauHao
-  if (json['taiKhoanKhauHao'] == null || json['taiKhoanKhauHao'].toString().trim().isEmpty) {
+  if (json['taiKhoanKhauHao'] == null ||
+      json['taiKhoanKhauHao'].toString().trim().isEmpty) {
     rowErrors.add('Tài khoản khấu hao không được để trống');
   } else {
     final taiKhoanKhauHaoStr = json['taiKhoanKhauHao'].toString().trim();
@@ -95,7 +98,8 @@ Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
   }
 
   // Validate taiKhoanChiPhi
-  if (json['taiKhoanChiPhi'] == null || json['taiKhoanChiPhi'].toString().trim().isEmpty) {
+  if (json['taiKhoanChiPhi'] == null ||
+      json['taiKhoanChiPhi'].toString().trim().isEmpty) {
     rowErrors.add('Tài khoản chi phí không được để trống');
   } else {
     final taiKhoanChiPhiStr = json['taiKhoanChiPhi'].toString().trim();
@@ -136,27 +140,22 @@ Future<Map<String, dynamic>> convertExcelToAssetCategory(
         Map<String, dynamic> json = {
           "id": AppUtility.s(row[0]?.value),
           "tenMoHinh": AppUtility.s(row[1]?.value),
-          "phuongPhapKhauHao": _parseInt(row[2]?.value),
-          "kyKhauHao": _parseInt(row[3]?.value),
+          "phuongPhapKhauHao": _parseInt(row[2]?.value.toString()),
+          "kyKhauHao": _parseInt(row[3]?.value.toString()),
           "loaiKyKhauHao": AppUtility.s(row[4]?.value),
           "taiKhoanTaiSan": AppUtility.s(row[5]?.value),
           "taiKhoanKhauHao": AppUtility.s(row[6]?.value),
           "taiKhoanChiPhi": AppUtility.s(row[7]?.value),
-          "idCongTy":
-              AppUtility.s(row[8]?.value) == ''
-                  ? AccountHelper.instance.getUserInfo()?.idCongTy
-                  : AppUtility.s(row[8]?.value),
-          "ngayTao": AppUtility.normalizeDateIsoString(row[9]?.value),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(row[10]?.value),
-          "nguoiTao": AppUtility.s(
-            row[11]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "idCongTy": "ct001",
+          "ngayTao": AppUtility.normalizeDateIsoString(
+            row[8]?.value ?? DateTime.now(),
           ),
-          "nguoiCapNhat": AppUtility.s(
-            row[12]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "ngayCapNhat": AppUtility.normalizeDateIsoString(
+            row[9]?.value ?? DateTime.now(),
           ),
-          "isActive": row[13]?.value ?? true,
+          "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "isActive": true,
         };
 
         // Validate row data
@@ -183,24 +182,22 @@ Future<Map<String, dynamic>> convertExcelToAssetCategory(
         Map<String, dynamic> json = {
           "id": cell(row, 0),
           "tenMoHinh": cell(row, 1),
-          "phuongPhapKhauHao": _parseInt(cell(row, 2)),
-          "kyKhauHao": _parseInt(cell(row, 3)),
-          "loaiKyKhauHao": AppUtility.s (cell(row, 4)),
+          "phuongPhapKhauHao": _parseInt(cell(row, 2).toString()),
+          "kyKhauHao": _parseInt(cell(row, 3).toString()),
+          "loaiKyKhauHao": AppUtility.s(cell(row, 4)),
           "taiKhoanTaiSan": AppUtility.s(cell(row, 5)),
           "taiKhoanKhauHao": AppUtility.s(cell(row, 6)),
           "taiKhoanChiPhi": AppUtility.s(cell(row, 7)),
-          "idCongTy": cell(row, 8) ?? "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(cell(row, 9)),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(cell(row, 10)),
-          "nguoiTao": AppUtility.s(
-            cell(row, 11),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "idCongTy": "ct001",
+          "ngayTao": AppUtility.normalizeDateIsoString(
+            cell(row, 9) ?? DateTime.now(),
           ),
-          "nguoiCapNhat": AppUtility.s(
-            cell(row, 12),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "ngayCapNhat": AppUtility.normalizeDateIsoString(
+            cell(row, 10) ?? DateTime.now(),
           ),
-          "isActive": cell(row, 13) ?? true,
+          "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "isActive": true,
         };
 
         // Validate row data

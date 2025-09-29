@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -120,7 +121,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
-    log('_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}');
+    log(
+      '_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}',
+    );
     if (widget.staff != null) {
       isEditing = false;
     } else {
@@ -274,22 +277,22 @@ class _StaffFormPageState extends State<StaffFormPage> {
     if (result != null && result.files.single.path != null) {
       setState(() {
         selectedFile = File(result.files.single.path!);
-          if (typeKy == 1) {
+        if (typeKy == 1) {
           selectedFileChuKyNhay = selectedFile;
           fileNameChuKyNhay = result.files.single.name;
-            if (selectedFileChuKyNhay != null) {
-              validateChuKyNhay();
-            }
-          } else if (typeKy == 2) {
-            selectedFileChuKyThuong = selectedFile;
-            if (selectedFileChuKyThuong != null) {
-              validateChuKyThuong();
-            }
-          fileNameChuKyThuong = result.files.single.name;
+          if (selectedFileChuKyNhay != null) {
+            validateChuKyNhay();
           }
-          if (typeKy == 1) {
+        } else if (typeKy == 2) {
+          selectedFileChuKyThuong = selectedFile;
+          if (selectedFileChuKyThuong != null) {
+            validateChuKyThuong();
+          }
+          fileNameChuKyThuong = result.files.single.name;
+        }
+        if (typeKy == 1) {
           _chuKyNhayData = result.files.single.bytes;
-          } else if (typeKy == 2) {
+        } else if (typeKy == 2) {
           _chuKyThuongData = result.files.single.bytes;
         }
       });
@@ -367,12 +370,48 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 if (v == null || v.isEmpty) {
                                   return StaffConstants.errorRequiredField;
                                 }
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(v)) {
                                   return StaffConstants.errorEmailFormat;
                                 }
                                 return null;
                               },
                             ),
+                            const SizedBox(height: 16),
+
+                            TextFormField(
+                              controller: _telController,
+                              readOnly: !isEditing,
+                              decoration: inputDecoration(
+                                'Số điện thoại',
+                                required: true,
+                              ),
+                              enabled: isEditing,
+                              keyboardType: TextInputType.phone,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return StaffConstants.errorRequiredField;
+                                }
+                                final normalized = v.replaceAll(' ', '');
+                                String candidate;
+                                if (normalized.startsWith('+')) {
+                                  if (!normalized.startsWith('+84')) {
+                                    return StaffConstants.errorPhoneFormat;
+                                  }
+                                  candidate = '0${normalized.substring(3)}';
+                                } else {
+                                  candidate = normalized;
+                                }
+                                
+                                final phonePattern = RegExp(r'^0\d{9,10}$');
+                                if (!phonePattern.hasMatch(candidate)) {
+                                  return StaffConstants.errorPhoneFormat;
+                                }
+                                return null;
+                              },
+                            ),
+
                             const SizedBox(height: 16),
                             CmFormDropdownObject<ChucVu>(
                               label: 'Chức vụ',
@@ -381,7 +420,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                               value: _chucVuDTO,
                               fieldName: 'chucvu',
                               items: [
-                                ...AccountHelper.instance.getChucVu()!.map(
+                                ...context.read<StaffBloc>().chucvus.map(
                                   (e) => DropdownMenuItem<ChucVu>(
                                     value: e,
                                     child: Text(e.tenChucVu),

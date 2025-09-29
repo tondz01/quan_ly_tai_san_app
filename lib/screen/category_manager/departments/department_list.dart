@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/dep
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class DepartmentList extends StatefulWidget {
@@ -108,7 +109,7 @@ class _DepartmentListState extends State<DepartmentList> {
                                 widget.onDelete?.call(item);
                               },
                     ),
-        width: 120,
+        width: 60,
         searchable: true,
       ),
     ];
@@ -211,6 +212,11 @@ class _DepartmentListState extends State<DepartmentList> {
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<PhongBan>(

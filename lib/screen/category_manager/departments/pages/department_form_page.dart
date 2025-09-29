@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
@@ -244,19 +245,6 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
           },
         );
   }
-}
-
-InputDecoration inputDecoration(
-  String label, {
-  bool required = false,
-  String? hint,
-}) {
-  return InputDecoration(
-    labelText: required ? '$label *' : label,
-    hintText: hint,
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-  );
 }
 
 Widget sectionTitle(IconData icon, String title, [String? desc]) {

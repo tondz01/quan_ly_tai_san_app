@@ -15,9 +15,59 @@ class ToolsAndSuppliesController {
   // Callback để update UI
   final VoidCallback? onStateChanged;
 
-  ToolsAndSuppliesController({
-    this.onStateChanged,
-  });
+  ToolsAndSuppliesController({this.onStateChanged});
+
+  /// Validate chi tiết tài sản và trả về danh sách lỗi
+  List<String> validateDetailAssets(
+    List<DetailAssetDto> detailAssets,
+    List<DetailAssetDto> listDetailAssets,
+    String assetCode,
+  ) {
+    List<String> errors = [];
+
+    // Cập nhật ID cho tất cả các detail assets trước khi validate
+    updateDetailAssetIds(detailAssets, listDetailAssets, assetCode);
+
+    for (int i = 0; i < detailAssets.length; i++) {
+      final detail = detailAssets[i];
+      final stt = i + 1;
+
+      // Validate các trường bắt buộc với null safety
+      if ((detail.soKyHieu?.trim().isEmpty ?? true)) {
+        errors.add('STT $stt: Số ký hiệu không được để trống');
+      }
+
+      if ((detail.congSuat?.trim().isEmpty ?? true)) {
+        errors.add('STT $stt: Công suất không được để trống');
+      }
+
+      if ((detail.nuocSanXuat?.trim().isEmpty ?? true)) {
+        errors.add('STT $stt: Nước sản xuất không được để trống');
+      }
+
+      // Validate số lượng
+      if ((detail.soLuong ?? 0) <= 0) {
+        errors.add('STT $stt: Số lượng phải lớn hơn 0');
+      }
+
+      // Validate năm sản xuất nếu có
+      final currentYear = DateTime.now().year;
+      if (detail.namSanXuat != null && detail.namSanXuat! > currentYear) {
+        errors.add(
+          'STT $stt: Năm sản xuất không được lớn hơn năm hiện tại ($currentYear)',
+        );
+      }
+
+      // Validate năm sản xuất không quá cũ
+      if (detail.namSanXuat != null &&
+          detail.namSanXuat! > 0 &&
+          detail.namSanXuat! < 1900) {
+        errors.add('STT $stt: Năm sản xuất không hợp lệ (phải >= 1900)');
+      }
+    }
+
+    return errors;
+  }
 
   /// Kiểm tra những item nào đã bị xóa so với danh sách cũ
   /// Trả về danh sách các item đã bị xóa
@@ -132,14 +182,13 @@ class ToolsAndSuppliesController {
       namSanXuat: 0,
       ghiChu: noteText.trim(),
       idCongTy: existingData?.idCongTy ?? currentUser?.idCongTy ?? "CT001",
-      ngayTao: existingData?.ngayTao  ?? now,
+      ngayTao: existingData?.ngayTao ?? now,
       ngayCapNhat: now,
       nguoiTao: existingData?.nguoiTao ?? currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       isActive: existingData?.isActive ?? true,
     );
   }
-
 
   /// Khởi tạo dropdown items cho phòng ban
   List<DropdownMenuItem<PhongBan>> buildPhongBanDropdownItems(

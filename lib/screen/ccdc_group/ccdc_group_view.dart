@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -115,14 +117,41 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                     mainScreen: 'Nhóm ccdc',
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetGroubBloc = context.read<CcdcGroupBloc>();
-                      final List<CcdcGroup> ccdc =
-                          await convertExcelToCcdcGroup(
-                            filePath!,
-                            fileBytes: fileBytes,
-                          );
+                      final result = await convertExcelToCcdcGroup(
+                        filePath!,
+                        fileBytes: fileBytes,
+                      );
                       if (!mounted) return;
-                      if (ccdc.isNotEmpty) {
-                        assetGroubBloc.add(CreateCcdcGroupBatchEvent(ccdc));
+                      if (result['success']) {
+                        List<CcdcGroup> ccdcList = result['data'];
+                        assetGroubBloc.add(CreateCcdcGroupBatchEvent(ccdcList));
+                      } else {
+                        List<dynamic> errors = result['errors'];
+
+                        // Tạo danh sách lỗi dạng list
+                        List<String> errorMessages = [];
+                        for (var error in errors) {
+                          String rowNumber = error['row'].toString();
+                          List<String> rowErrors = List<String>.from(
+                            error['errors'],
+                          );
+                          String errorText =
+                              'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                          errorMessages.add(errorText);
+                        }
+
+                        log(
+                          '[CcdcGroupView] errorMessages: $errorMessages',
+                        );
+                        if (!mounted) return;
+
+                        // Hiển thị thông báo tổng quan
+                        AppUtility.showSnackBar(
+                          context,
+                          'Import dữ liệu thất bại: \n $errorMessages',
+                          isError: true,
+                          timeDuration: 4,
+                        );
                       }
                     },
                     onExportData: () {

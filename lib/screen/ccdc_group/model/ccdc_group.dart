@@ -65,12 +65,9 @@ class CcdcGroup {
     return {
       'Mã nhóm CCDC': _nullIfEmpty(id),
       'Tên nhóm CCDC': _nullIfEmpty(ten),
-      'Hiệu lực': hieuLuc,
-      'Mã công ty': _nullIfEmpty(idCongTy),
+      'Hiệu lực': hieuLuc ?? false,
       'Ngày tạo': _nullIfEmpty(ngayTao?.toIso8601String()),
       'Ngày cập nhật': _nullIfEmpty(ngayCapNhat?.toIso8601String()),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
     };
   }
 }

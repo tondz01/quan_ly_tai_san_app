@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -6,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/convert_excel_to_staff.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
@@ -118,13 +119,13 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     try {
       final repo = PermissionRepository();
       final userId = AccountHelper.instance.getUserInfo()?.id ?? '';
-      
+
       final permissions = await Future.wait([
         repo.checkCanCreatePermission(userId, RoleCode.NHANVIEN),
         repo.checkCanUpdatePermission(userId, RoleCode.NHANVIEN),
         repo.checkCanDeletePermission(userId, RoleCode.NHANVIEN),
       ]);
-      
+
       if (mounted) {
         setState(() {
           isCanCreate = permissions[0] ?? false;
@@ -132,7 +133,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
           isCanDelete = permissions[2] ?? false;
         });
       }
-      
+
       SGLog.info(
         "_checkPermission",
         'isCanCreate: $isCanCreate -- isCanDelete: $isCanDelete -- isCanUpdate: $isCanUpdate',
@@ -152,7 +153,10 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   void _updatePagination() {
     // Sử dụng _filteredData thay vì _data
     totalEntries = _filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, StaffConstants.maxPaginationPages);
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
+      1,
+      StaffConstants.maxPaginationPages,
+    );
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
@@ -171,17 +175,26 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   }
 
   void importDataStaff(String? filePath, Uint8List? fileBytes) async {
-    List<NhanVien> nv = await convertExcelToNhanVien(
+    List<ChucVu> chucVus = context.read<StaffBloc>().chucvus;
+    List<PhongBan> phongBans = context.read<StaffBloc>().department;
+
+    final result = await convertExcelToNhanVien(
       filePath!,
       fileBytes: fileBytes,
+      chucVus: chucVus,
+      phongBans: phongBans,
     );
-    log('nv: ${jsonEncode(nv)}');
-    if (nv.isNotEmpty) {
-      final result = await NhanVienProvider().saveNhanVienBatch(nv);
-      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-          result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+
+    if (result['success']) {
+      List<NhanVien> nhanViens = result['data'];
+
+      final resultSave = await NhanVienProvider().saveNhanVienBatch(nhanViens);
+      if (checkStatusCodeDone(resultSave)) {
         if (!mounted) return;
-        AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
+        AppUtility.showSnackBar(
+          context,
+          'Import dữ liệu thành công ${nhanViens.length} nhân viên',
+        );
         searchController.clear();
         currentPage = 1;
         rowsPerPage = StaffConstants.defaultRowsPerPage;
@@ -195,12 +208,32 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         if (!mounted) return;
         AppUtility.showSnackBar(
           context,
-          'Import dữ liệu thất bại ${result['message']}',
+          'Import dữ liệu thất bại ${resultSave['message']}',
+          isError: true,
         );
       }
     } else {
+      List<dynamic> errors = result['errors'];
+
+      // Tạo danh sách lỗi dạng list
+      List<String> errorMessages = [];
+      for (var error in errors) {
+        String rowNumber = error['row'].toString();
+        List<String> rowErrors = List<String>.from(error['errors']);
+        String errorText = 'Dòng $rowNumber: ${rowErrors.join(', ')}';
+        errorMessages.add(errorText);
+      }
+
+      log('[ToolsAndSuppliesView] errorMessages: $errorMessages');
       if (!mounted) return;
-      AppUtility.showSnackBar(context, 'Import dữ liệu thất bại: File lỗi');
+
+      // Hiển thị thông báo tổng quan
+      AppUtility.showSnackBar(
+        context,
+        'Import dữ liệu thất bại: \n $errorMessages',
+        isError: true,
+        timeDuration: 4,
+      );
     }
   }
 
@@ -358,7 +391,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                     ),
                   ),
                   Visibility(
-                    visible: staffs.length >= StaffConstants.minPaginationThreshold,
+                    visible:
+                        staffs.length >= StaffConstants.minPaginationThreshold,
                     child: SGPaginationControls(
                       totalPages: totalPages,
                       currentPage: currentPage,

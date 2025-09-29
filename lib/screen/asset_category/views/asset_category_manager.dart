@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -316,6 +318,13 @@ class _AssetCategoryManagerState extends State<AssetCategoryManager>
                             'Dòng $rowNumber: ${rowErrors.join(', ')}';
                         errorMessages.add(errorText);
                       }
+
+                      log(
+                        '[AssetCategoryManager] errorMessages: $errorMessages',
+                      );
+                      
+                      if (!mounted) return;
+
                       // Hiển thị thông báo tổng quan
                       AppUtility.showSnackBar(
                         context,
