@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:graphic/graphic.dart';
+import 'package:graphic/graphic.dart' as graphic;
 import 'package:intl/intl.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_text_style.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/model/dashboard_report.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/statistics_card.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/pie_with_legend.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/scrollable_bar_chart.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_state.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_event.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -22,827 +15,1047 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  bool rebuild = false;
-  List<Map<String, Object>> tangTruongTaiSanTheoNamSX = [];
-  List<Map<String, Object>> taiSanTheoLoai = [];
-  List<Map<String, Object>> taiSanTheoPhongBan = [];
-  List<Map<String, Object>> ccdcTheoPhongBan = [];
-  List<Map<String, Object>> top5TaiSanGiaTriCao = [];
-  List<Map<String, Object>> taiSanTheoNhom = [];
-  List<Map<String, Object>> nhapKhoCCDCTheoNam = [];
-  List<Map<String, Object>> giaTriTheoDuAn = [];
-  List<Map<String, Object>> giaTriTheoNguonVon = [];
-  List<Map<String, Object>> giaTriTaiSanTheoCongTy = [];
-  List<Map<String, Object>> taiSanChuaDieuDong = [];
   final formatter = NumberFormat.currency(locale: 'vi_VN', symbol: '₫');
 
-  @override
-  void initState() {
-    super.initState();
-    tangTruongTaiSanTheoNamSX.clear();
-    taiSanTheoLoai.clear();
-    taiSanTheoPhongBan.clear();
-    ccdcTheoPhongBan.clear();
-    top5TaiSanGiaTriCao.clear();
-    taiSanTheoNhom.clear();
-    nhapKhoCCDCTheoNam.clear();
-    giaTriTheoDuAn.clear();
-    giaTriTheoNguonVon.clear();
-    giaTriTaiSanTheoCongTy.clear();
-    taiSanChuaDieuDong.clear();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DashboardBloc>().add(const LoadDashboard());
-    });
-  }
-
-  @override
-  void dispose() {
-    tangTruongTaiSanTheoNamSX.clear();
-    taiSanTheoLoai.clear();
-    taiSanTheoPhongBan.clear();
-    ccdcTheoPhongBan.clear();
-    top5TaiSanGiaTriCao.clear();
-    taiSanTheoNhom.clear();
-    nhapKhoCCDCTheoNam.clear();
-    giaTriTheoDuAn.clear();
-    giaTriTheoNguonVon.clear();
-    giaTriTaiSanTheoCongTy.clear();
-    taiSanChuaDieuDong.clear();
-    super.dispose();
-  }
+  // Dữ liệu mẫu từ API
+  final Map<String, dynamic> apiData = {
+    "success": true,
+    "message": "Lấy thống kê dashboard thành công",
+    "data": {
+      "giaTriTheoCongTy": [
+        {"congTy": "Công ty ABC", "soLuong": 9, "tongGiaTri": 1.7050715103E10},
+      ],
+      "taiSanTheoTrangThaiPhanTram": [
+        {
+          "trangThai": "Đang sử dụng",
+          "soLuong": 8,
+          "tongGiaTri": 3.050715103E9,
+          "phanTramSoLuong": 88.89,
+          "phanTramGiaTri": 17.89,
+        },
+        {
+          "trangThai": "Mất",
+          "soLuong": 1,
+          "tongGiaTri": 1.4E10,
+          "phanTramSoLuong": 11.11,
+          "phanTramGiaTri": 82.11,
+        },
+      ],
+      "taiSanTheoLoai": [],
+      "taiSanTheoTrangThai": [
+        {
+          "trangThai": "Đang sử dụng",
+          "soLuong": 8,
+          "tongGiaTri": 3.050715103E9,
+        },
+        {"trangThai": "Mất", "soLuong": 1, "tongGiaTri": 1.4E10},
+      ],
+      "taiSanTheoDuAnPhanTram": [],
+      "taiSanTheoCongTyPhanTram": [
+        {
+          "congTy": "Công ty ABC",
+          "soLuong": 9,
+          "tongGiaTri": 1.7050715103E10,
+          "phanTramSoLuong": 100.00,
+          "phanTramGiaTri": 100.0,
+        },
+      ],
+      "ccdcTheoPhongBan": [
+        {
+          "phongBan": "Phân xưởng Cơ giới -Cơ khí 1",
+          "tongSoLuong": 139,
+          "tongGiaTri": 5.5175E8,
+        },
+      ],
+      "tongTaiSan": 9,
+      "taiSanTheoLoaiConPhanTram": [
+        {
+          "ten": "Máy",
+          "idLoaiTaiSan": "TS_MMTB",
+          "tenLoai": "Máy",
+          "soLuong": 4,
+          "tongGiaTri": 1.4001255555E10,
+          "phanTramSoLuong": 44.44,
+          "phanTramGiaTri": 82.12,
+        },
+      ],
+      "taiSanTheoNhomPhanTram": [
+        {
+          "ten": "Máy móc, Trang thiết bị",
+          "soLuong": 8,
+          "tongGiaTri": 3.050715103E9,
+          "phanTramSoLuong": 88.89,
+          "phanTramGiaTri": 17.89,
+        },
+      ],
+      "top5TaiSanGiaTriCao": [
+        {
+          "TenTaiSan": "Nhà thờ 120 tỏi của HL",
+          "NguyenGia": 1.4E10,
+          "IdLoaiTaiSan": null,
+          "IdNhomTaiSan": "NT",
+          "HienTrang": 4,
+        },
+        {
+          "TenTaiSan": "Trạm BA 560 KVA (22)-6/0,4-0,23 KV",
+          "NguyenGia": 1.62474E9,
+          "IdLoaiTaiSan": null,
+          "IdNhomTaiSan": "TS_MMTB",
+          "HienTrang": 1,
+        },
+        {
+          "TenTaiSan":
+              "Trạm biến áp 400KVA-6/0,4KV MB +30 Tràng khê ( Cung cấp điện nhà điều hành )",
+          "NguyenGia": 1.09898E9,
+          "IdLoaiTaiSan": null,
+          "IdNhomTaiSan": "TS_MMTB",
+          "HienTrang": 1,
+        },
+        {
+          "TenTaiSan":
+              "Tủ cầu dao phòng nổ 6KV ( máy cắt phòng nổ ) mã hiệu PJG9L-630/6 ( Thiết bị khống chế và bảo vệ mạng điện )",
+          "NguyenGia": 1.49437E8,
+          "IdLoaiTaiSan": null,
+          "IdNhomTaiSan": "TS_MMTB",
+          "HienTrang": 1,
+        },
+        {
+          "TenTaiSan": "Tủ nạp ắc quy",
+          "NguyenGia": 1.41359E8,
+          "IdLoaiTaiSan": null,
+          "IdNhomTaiSan": "TS_MMTB",
+          "HienTrang": 1,
+        },
+      ],
+      "tongCCDC": 3,
+      "taiSanTheoQuy": [
+        {"nam": 2025, "quy": 3, "soLuong": 9, "tongGiaTri": 1.7050715103E10},
+      ],
+      "giaTriTheoNguonVon": [
+        {
+          "nguonVon": "Vốn Tự Bổ Sung",
+          "soLuong": 5,
+          "tongGiaTri": 2.724982531E9,
+        },
+      ],
+      "tongNhanVien": 23,
+      "taiSanTheoLoaiChinhPhanTram": [],
+      "taiSanTheoLoaiChinhChiTietPhanTram": [],
+      "tongNguyenGia": 1.7050715103E10,
+      "taiSanTheoNamTao": [
+        {"nam": 2025, "soLuong": 9, "tongGiaTri": 1.7050715103E10},
+      ],
+      "tongPhongBan": 94,
+      "tongCongTy": 1,
+      "taiSanTheoThang": [
+        {"nam": 2025, "thang": 9, "soLuong": 9, "tongGiaTri": 1.7050715103E10},
+      ],
+      "ccdcTheoLoai": [
+        {
+          "ten": "TEST-02",
+          "soLuong": 3,
+          "tongSoLuong": 139,
+          "tongGiaTri": 5.5175E8,
+        },
+      ],
+      "taiSanSapHetHanBaoHanh": [
+        {
+          "Id": "Test_002",
+          "TenTaiSan": "Test 01",
+          "NguyenGia": 55555.0,
+          "NgayVaoSo": "2025-09-18 22:53:00",
+          "ThoiHanBaoHanh": "Không có thông tin bảo hành",
+          "NgayHetHanBaoHanh": "Không có thông tin bảo hành",
+          "SoNgayConLai": 0,
+        },
+      ],
+      "taiSanTheoPhongBan": [
+        {
+          "phongBan": "Phân xưởng Cơ điện lò 2",
+          "soLuong": 4,
+          "tongGiaTri": 1.625997571E9,
+        },
+        {"phongBan": "Phòng Giám Đốc", "soLuong": 1, "tongGiaTri": 1.4E10},
+      ],
+      "ccdcTheoLoaiConChiTietPhanTram": [
+        {
+          "ten": "TEST-02",
+          "idLoaiCCDC": "NCCDC001",
+          "tenLoai": "TEST-02",
+          "soLuong": 3,
+          "tongSoLuong": 139,
+          "tongGiaTri": 5.5175E8,
+          "phanTramSoLuong": 100.00,
+          "phanTramTongSoLuong": 100.00,
+          "phanTramGiaTri": 100.0,
+        },
+      ],
+      "tongDuAn": 6,
+      "taiSanTheoNhom": [
+        {
+          "ten": "Máy móc, Trang thiết bị",
+          "soLuong": 8,
+          "tongGiaTri": 3.050715103E9,
+        },
+      ],
+      "taiSanCanBaoTri": [],
+      "giaTriTheoDuAn": [],
+      "taiSanTheoLoaiConChiTietPhanTram": [
+        {
+          "idLoaiTaiSanCon": "lts_01",
+          "tenLoaiTaiSanCon": "Máy",
+          "idLoaiTaiSan": "TS_MMTB",
+          "tenLoaiTaiSan": null,
+          "soLuong": 4,
+          "tongGiaTri": 1.4001255555E10,
+          "phanTramSoLuong": 44.44,
+          "phanTramGiaTri": 82.12,
+        },
+      ],
+      "taiSanTheoNguonVonPhanTram": [
+        {
+          "nguonVon": "Vốn Tự Bổ Sung",
+          "soLuong": 5,
+          "tongGiaTri": 2.724982531E9,
+          "phanTramSoLuong": 55.56,
+          "phanTramGiaTri": 15.98,
+        },
+      ],
+      "taiSanTheoPhongBanPhanTram": [
+        {
+          "phongBan": "Phân xưởng Cơ điện lò 2",
+          "soLuong": 4,
+          "tongGiaTri": 1.625997571E9,
+          "phanTramSoLuong": 44.44,
+          "phanTramGiaTri": 9.54,
+        },
+        {
+          "phongBan": "Phòng Giám Đốc",
+          "soLuong": 1,
+          "tongGiaTri": 1.4E10,
+          "phanTramSoLuong": 11.11,
+          "phanTramGiaTri": 82.11,
+        },
+      ],
+      "tongGiaTriCCDC": 5.5175E8,
+      "ccdcTheoPhongBanPhanTram": [
+        {
+          "phongBan": "Phân xưởng Cơ giới -Cơ khí 1",
+          "soLuong": 3,
+          "tongSoLuong": 139,
+          "tongGiaTri": 5.5175E8,
+          "phanTramSoLuong": 100.00,
+          "phanTramTongSoLuong": 100.00,
+          "phanTramGiaTri": 100.0,
+        },
+      ],
+      "ccdcTheoLoaiChinhChiTietPhanTram": [
+        {
+          "idLoaiCCDC": "NCCDC001",
+          "tenLoaiCCDC": "Không có bảng LoaiCCDC",
+          "soLuong": 3,
+          "tongSoLuong": 139,
+          "tongGiaTri": 5.5175E8,
+          "phanTramSoLuong": 100.00,
+          "phanTramTongSoLuong": 100.00,
+          "phanTramGiaTri": 100.0,
+        },
+      ],
+      "taiSanChuaDieuDong": [
+        {
+          "Id": "HL14T",
+          "TenTaiSan": "Nhà thờ 120 tỏi của HL",
+          "NguyenGia": 1.4E10,
+          "HienTrang": 4,
+          "TenLoaiTaiSan": null,
+          "TenNhom": null,
+          "TenPhongBan": "Phòng Giám Đốc",
+        },
+      ],
+      "ccdcTheoLoaiConPhanTram": [
+        {
+          "ten": "TEST-02",
+          "idLoaiCCDC": "NCCDC001",
+          "tenLoai": "TEST-02",
+          "soLuong": 3,
+          "tongSoLuong": 139,
+          "tongGiaTri": 5.5175E8,
+          "phanTramSoLuong": 100.00,
+          "phanTramTongSoLuong": 100.00,
+          "phanTramGiaTri": 100.0,
+        },
+      ],
+    },
+  };
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardBloc, DashboardState>(
-      builder: (context, state) {
-        final bool isLoading = state is! DashboardLoaded;
-        final data = state is DashboardLoaded ? state.data : null;
+    final data = apiData['data'] as Map<String, dynamic>;
 
-        if (isLoading) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        if (data != null) {
-          tangTruongTaiSanTheoNamSX.clear();
-          for (GrowthByYear item in data.tangTruongTaiSanTheoNamSX) {
-            tangTruongTaiSanTheoNamSX.add({
-              'nam': item.nam.toString(),
-              'soLuong': item.soLuong ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          taiSanTheoLoai.clear();
-          for (AssetByType item in data.taiSanTheoLoai) {
-            taiSanTheoLoai.add({
-              'ten': item.ten ?? 'Chưa xác định',
-              'soLuong': item.soLuong ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          taiSanTheoPhongBan.clear();
-          for (AssetByDepartment item in data.taiSanTheoPhongBan) {
-            taiSanTheoPhongBan.add({
-              'phongBan': item.phongBan ?? 'Chưa xác định',
-              'soLuong': item.soLuong ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          top5TaiSanGiaTriCao.clear();
-          for (TopAsset item in data.top5TaiSanGiaTriCao) {
-            top5TaiSanGiaTriCao.add({
-              'tenTaiSan': item.tenTaiSan ?? 'Chưa xác định',
-              'nguyenGia': item.nguyenGia ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          taiSanTheoNhom.clear();
-          for (AssetByGroup item in data.taiSanTheoNhom) {
-            taiSanTheoNhom.add({
-              'ten': item.ten ?? 'Chưa xác định',
-              'soLuong': item.soLuong ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          giaTriTheoDuAn.clear();
-          for (ProjectValue item in data.giaTriTheoDuAn) {
-            giaTriTheoDuAn.add({
-              'duAn': item.duAn ?? 'Chưa xác định',
-              'tongGiaTri': item.tongGiaTri ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          giaTriTheoNguonVon.clear();
-          for (CapitalValue item in data.giaTriTheoNguonVon) {
-            giaTriTheoNguonVon.add({
-              'nguonVon': item.nguonVon ?? 'Chưa xác định',
-              'tongGiaTri': item.tongGiaTri ?? 0,
-            });
-          }
-        }
-        if (data != null) {
-          giaTriTaiSanTheoCongTy.clear();
-          for (CompanyValue item in data.giaTriTaiSanTheoCongTy) {
-            giaTriTaiSanTheoCongTy.add({
-              'congTy': item.congTy ?? 'Chưa xác định',
-              'tongGiaTri': item.tongGiaTri ?? 0,
-            });
-          }
-        }
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildStatisticsSection(data),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-                      alignment: Alignment.centerLeft,
-                      child: SGText(
-                        text: "Thông tin tài sản",
-                        style: AppTextStyle.textStyleSemiBold24,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tài sản theo loại",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: taiSanTheoLoai,
-                                  categoryKey: 'ten',
-                                  valueKey: 'soLuong',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tăng trưởng tài sản theo năm sản xuất",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: tangTruongTaiSanTheoNamSX,
-                                  categoryKey: 'nam',
-                                  valueKey: 'soLuong',
-                                  barWidth: 32,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Divider(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tài sản theo phòng ban",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: taiSanTheoPhongBan,
-                                  categoryKey: 'phongBan',
-                                  valueKey: 'soLuong',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Top 5 tài sản giá trị cao",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                height: 420,
-                                child: Chart(
-                                  data: top5TaiSanGiaTriCao,
-                                  variables: {
-                                    'genre': Variable(
-                                      accessor:
-                                          (Map map) =>
-                                              map['tenTaiSan'] as String,
-                                    ),
-                                    'sold': Variable(
-                                      accessor:
-                                          (Map map) => map['nguyenGia'] as num,
-                                    ),
-                                  },
-                                  marks: [
-                                    IntervalMark(
-                                      label: LabelEncode(
-                                        encoder:
-                                            (tuple) =>
-                                                Label(tuple['sold'].toString()),
-                                      ),
-                                      gradient: GradientEncode(
-                                        value: const LinearGradient(
-                                          colors: [
-                                            Color(0x8883bff6),
-                                            Color(0x88188df0),
-                                            Color(0xcc188df0),
-                                          ],
-                                          stops: [0, 0.5, 1],
-                                        ),
-                                        updaters: {
-                                          'tap': {
-                                            true:
-                                                (_) => const LinearGradient(
-                                                  colors: [
-                                                    Color(0xee83bff6),
-                                                    Color(0xee3f78f7),
-                                                    Color(0xff3f78f7),
-                                                  ],
-                                                  stops: [0, 0.7, 1],
-                                                ),
-                                          },
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                  coord: RectCoord(transposed: true),
-                                  axes: [
-                                    Defaults.verticalAxis
-                                      ..line = Defaults.strokeStyle
-                                      ..grid = null,
-                                    Defaults.horizontalAxis
-                                      ..line = null
-                                      ..grid = Defaults.strokeStyle,
-                                  ],
-                                  selections: {
-                                    'tap': PointSelection(dim: Dim.x),
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Tài sản theo nhóm",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: taiSanTheoNhom,
-                                  categoryKey: 'ten',
-                                  valueKey: 'soLuong',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Giá trị theo dự án",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: giaTriTheoDuAn,
-                                  categoryKey: 'duAn',
-                                  valueKey: 'tongGiaTri',
-                                  barWidth: 32,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Giá trị theo nguồn vốn",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: PieDonutChartWithLegend(
-                                  data: giaTriTheoNguonVon,
-                                  categoryKey: 'nguonVon',
-                                  valueKey: 'tongGiaTri',
-                                  colors: listColors,
-                                  chartWidth: 420,
-                                  chartHeight: 420,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  10,
-                                  5,
-                                  10,
-                                  0,
-                                ),
-                                alignment: Alignment.centerLeft,
-                                child: SGText(
-                                  text: "Giá trị tài sản theo công ty",
-                                  style: AppTextStyle.textStyleRegular14,
-                                ),
-                              ),
-                              Container(
-                                margin: const EdgeInsets.only(top: 10),
-                                child: ScrollableBarChart(
-                                  data: giaTriTaiSanTheoCongTy,
-                                  categoryKey: 'congTy',
-                                  valueKey: 'tongGiaTri',
-                                  barWidth: 32,
-                                  spacing: 64,
-                                  height: 300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // const SizedBox(height: 16),
-              // Container(
-              //   decoration: BoxDecoration(
-              //     color: Colors.white,
-              //     borderRadius: BorderRadius.circular(16),
-              //   ),
-              //   padding: EdgeInsets.all(12),
-              //   child: Column(
-              //     children: [
-              //       Container(
-              //         padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-              //         alignment: Alignment.centerLeft,
-              //         child: SGText(
-              //           text: "Hoạt động điều động & bàn giao",
-              //           style: AppTextStyle.textStyleSemiBold24,
-              //         ),
-              //       ),
-              //       SizedBox(
-              //         width: double.infinity,
-              //         height: 400,
-              //         child: Row(
-              //           children: [
-              //             Expanded(
-              //               child: Column(
-              //                 children: [
-              //                   Container(
-              //                     padding: const EdgeInsets.fromLTRB(
-              //                       10,
-              //                       5,
-              //                       10,
-              //                       0,
-              //                     ),
-              //                     alignment: Alignment.centerLeft,
-              //                     child: SGText(
-              //                       text: 'Phiếu điều động tài sản (tháng/quý)',
-              //                       style: AppTextStyle.textStyleRegular14,
-              //                     ),
-              //                   ),
-              //                   Expanded(
-              //                     child: Container(
-              //                       margin: const EdgeInsets.only(top: 10),
-              //                       width: double.infinity,
-              //                       height: double.infinity,
-              //                       child: GroupLineChart(
-              //                         data: complexGroupData,
-              //                         xKey: 'date',
-              //                         yKey: 'points',
-              //                         groupKey: 'name',
-              //                         width: 350,
-              //                         height: 300,
-              //                       ),
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //             Expanded(
-              //               child: Column(
-              //                 children: [
-              //                   Container(
-              //                     padding: const EdgeInsets.fromLTRB(
-              //                       10,
-              //                       5,
-              //                       10,
-              //                       0,
-              //                     ),
-              //                     alignment: Alignment.centerLeft,
-              //                     child: SGText(
-              //                       text: "Phiếu điều động CCDC / vật tư",
-              //                       style: AppTextStyle.textStyleRegular14,
-              //                     ),
-              //                   ),
-              //                   Expanded(
-              //                     child: Container(
-              //                       margin: const EdgeInsets.only(top: 10),
-              //                       width: double.infinity,
-              //                       height: double.infinity,
-              //                       child: GroupLineChart(
-              //                         data: complexGroupData,
-              //                         xKey: 'date',
-              //                         yKey: 'points',
-              //                         groupKey: 'name',
-              //                         width: 350,
-              //                         height: 300,
-              //                       ),
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //           ],
-              //         ),
-              //       ),
-
-              //       SizedBox(
-              //         width: double.infinity,
-              //         height: 400,
-              //         child: Row(
-              //           children: [
-              //             Expanded(
-              //               child: Column(
-              //                 children: [
-              //                   Container(
-              //                     padding: const EdgeInsets.fromLTRB(
-              //                       10,
-              //                       5,
-              //                       10,
-              //                       0,
-              //                     ),
-              //                     alignment: Alignment.centerLeft,
-              //                     child: SGText(
-              //                       text: "Bàn giao tài sản theo trạng thái",
-              //                       style: AppTextStyle.textStyleRegular14,
-              //                     ),
-              //                   ),
-              //                   Expanded(
-              //                     child: Container(
-              //                       width: double.infinity,
-              //                       height: double.infinity,
-              //                       margin: const EdgeInsets.only(top: 10),
-              //                       child: PieDonutChartWithLegend(
-              //                         data: basicData,
-              //                         categoryKey: 'genre',
-              //                         valueKey: 'sold',
-              //                         colors: listColors,
-              //                         chartWidth: 420,
-              //                         chartHeight: 420,
-              //                       ),
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //             Expanded(
-              //               child: Column(
-              //                 children: [
-              //                   Container(
-              //                     padding: const EdgeInsets.fromLTRB(
-              //                       10,
-              //                       5,
-              //                       10,
-              //                       0,
-              //                     ),
-              //                     alignment: Alignment.centerLeft,
-              //                     child: SGText(
-              //                       text:
-              //                           "Tiến độ điều động (từ tggnTuNgay đến tggnDenNgay)",
-              //                       style: AppTextStyle.textStyleRegular14,
-              //                     ),
-              //                   ),
-              //                   Expanded(
-              //                     child: Container(
-              //                       margin: const EdgeInsets.only(top: 10),
-              //                       width: double.infinity,
-              //                       height: double.infinity,
-              //                       child: GroupLineChart(
-              //                         data: complexGroupData,
-              //                         xKey: 'date',
-              //                         yKey: 'points',
-              //                         groupKey: 'name',
-              //                         width: 350,
-              //                         height: 300,
-              //                       ),
-              //                     ),
-              //                   ),
-              //                 ],
-              //               ),
-              //             ),
-              //           ],
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // const SizedBox(height: 16),
-              // Container(
-              //   decoration: BoxDecoration(
-              //     color: Colors.white,
-              //     borderRadius: BorderRadius.circular(16),
-              //   ),
-              //   padding: EdgeInsets.all(12),
-              //   child: Column(
-              //     children: [
-              //       Container(
-              //         padding: const EdgeInsets.fromLTRB(10, 5, 10, 0),
-              //         alignment: Alignment.centerLeft,
-              //         child: SGText(
-              //           text: "Phòng ban & nhân sự",
-              //           style: AppTextStyle.textStyleSemiBold24,
-              //         ),
-              //       ),
-              //       Row(
-              //         children: [
-              //           Expanded(
-              //             child: Column(
-              //               children: [
-              //                 Container(
-              //                   padding: const EdgeInsets.fromLTRB(
-              //                     10,
-              //                     5,
-              //                     10,
-              //                     0,
-              //                   ),
-              //                   alignment: Alignment.centerLeft,
-              //                   child: SGText(
-              //                     text: 'Nhân viên theo phòng ban',
-              //                     style: AppTextStyle.textStyleRegular14,
-              //                   ),
-              //                 ),
-              //                 Container(
-              //                   margin: const EdgeInsets.only(top: 10),
-              //                   child: ScrollableBarChart(
-              //                     data: basicData2,
-              //                     categoryKey: 'genre',
-              //                     valueKey: 'sold',
-              //                     barWidth: 18,
-              //                     spacing: 64,
-              //                     height: 300,
-              //                   ),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //           Expanded(
-              //             child: Column(
-              //               children: [
-              //                 Container(
-              //                   padding: const EdgeInsets.fromLTRB(
-              //                     10,
-              //                     5,
-              //                     10,
-              //                     0,
-              //                   ),
-              //                   alignment: Alignment.centerLeft,
-              //                   child: SGText(
-              //                     text: "Tỷ lệ nhân viên Active / Inactive",
-              //                     style: AppTextStyle.textStyleRegular14,
-              //                   ),
-              //                 ),
-              //                 Container(
-              //                   margin: const EdgeInsets.only(top: 10),
-              //                   child: PieDonutChartWithLegend(
-              //                     data: basicData,
-              //                     categoryKey: 'genre',
-              //                     valueKey: 'sold',
-              //                     colors: listColors,
-              //                     chartWidth: 420,
-              //                     chartHeight: 420,
-              //                   ),
-              //                 ),
-              //               ],
-              //             ),
-              //           ),
-              //         ],
-              //       ),
-              //     ],
-              //   ),
-              // ),
-            ],
-          ),
-        );
-      },
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.grey.shade100, Colors.blue.shade50],
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatisticsSection(data),
+            const SizedBox(height: 24),
+            _buildAssetStatusSection(data),
+            const SizedBox(height: 24),
+            _buildAssetDistributionSection(data),
+            const SizedBox(height: 24),
+            _buildTopAssetsSection(data),
+            const SizedBox(height: 24),
+            _buildTrendAnalysisSection(data),
+            const SizedBox(height: 24),
+            _buildMaintenanceSection(data),
+          ],
+        ),
+      ),
     );
   }
 
-  List<Color> get listColors => [
-    ColorValue.oceanBlue,
-    ColorValue.pink,
-    ColorValue.coral,
-    ColorValue.amber,
-  ];
-
-  Widget _buildStatisticsSection(DashboardReport? data) {
+  Widget _buildStatisticsSection(Map<String, dynamic> data) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: EdgeInsets.all(12),
-      child: GridView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: _getCrossAxisCount(context),
-          crossAxisSpacing: 32,
-          mainAxisSpacing: 32,
-          mainAxisExtent: 112,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.blue.shade50],
         ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Nhóm Tài sản
-          StatisticsCard(
-            title: 'Tổng tài sản',
-            value: data?.tongTaiSan.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG4,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade600, Colors.blue.shade800],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SGText(
+              text: "📊 Tổng quan thống kê",
+              style: AppTextStyle.textStyleSemiBold24.copyWith(
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
           ),
-          StatisticsCard(
-            title: 'Tổng nguyên giá',
-            value: formatter.format(data?.tongNguyenGia ?? 0),
-            backgroundColor: ColorValue.backgroundBG3,
-          ),
-
-          // Nhóm CCDC (Công cụ dụng cụ)
-          StatisticsCard(
-            title: 'Tổng công cụ dụng cụ',
-            value: data?.tongCCDC.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG4,
-          ),
-          StatisticsCard(
-            title: 'Tổng số lượng CCDC điều động',
-            value: data?.tongSoLuongCCDCDieuDong.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG3,
-          ),
-
-          // Nhóm Phiếu điều động
-          StatisticsCard(
-            title: 'Tổng chi tiết điều động tài sản',
-            value: data?.tongChiTietDieuDongTaiSan.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG4,
-          ),
-          StatisticsCard(
-            title: 'Tổng phiếu điều động CCDC',
-            value: data?.tongPhieuDieuDongCCDC.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG3,
-          ),
-          StatisticsCard(
-            title: 'Tổng phiếu điều động tài sản',
-            value: data?.tongPhieuDieuDongTaiSan.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG4,
-          ),
-
-          // Nhóm Quản lý
-          StatisticsCard(
-            title: 'Dự án',
-            value: data?.tongDuAn.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG3,
-          ),
-          StatisticsCard(
-            title: 'Nguồn vốn hiệu lực',
-            value: data?.nguonVonHieuLuc.toString() ?? '0',
-            backgroundColor: ColorValue.backgroundBG4,
-          ),
-          StatisticsCard(
-            title: 'Nhân viên/Phòng ban',
-            value:
-                "${data?.tongNhanVien.toString() ?? '0'} / ${data?.tongPhongBan.toString() ?? '0'}",
-            backgroundColor: ColorValue.backgroundBG3,
+          const SizedBox(height: 24),
+          GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _getCrossAxisCount(context),
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              mainAxisExtent: 140,
+            ),
+            children: [
+              _buildEnhancedStatisticsCard(
+                'Tổng tài sản',
+                data['tongTaiSan'].toString(),
+                Icons.inventory_2,
+                [Colors.purple.shade400, Colors.purple.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng nguyên giá',
+                formatter.format(data['tongNguyenGia'] ?? 0),
+                Icons.attach_money,
+                [Colors.green.shade400, Colors.green.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng CCDC',
+                data['tongCCDC'].toString(),
+                Icons.build,
+                [Colors.orange.shade400, Colors.orange.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng giá trị CCDC',
+                formatter.format(data['tongGiaTriCCDC'] ?? 0),
+                Icons.monetization_on,
+                [Colors.teal.shade400, Colors.teal.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng nhân viên',
+                data['tongNhanVien'].toString(),
+                Icons.people,
+                [Colors.indigo.shade400, Colors.indigo.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng phòng ban',
+                data['tongPhongBan'].toString(),
+                Icons.business,
+                [Colors.pink.shade400, Colors.pink.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng dự án',
+                data['tongDuAn'].toString(),
+                Icons.folder,
+                [Colors.cyan.shade400, Colors.cyan.shade600],
+              ),
+              _buildEnhancedStatisticsCard(
+                'Tổng công ty',
+                data['tongCongTy'].toString(),
+                Icons.corporate_fare,
+                [Colors.amber.shade400, Colors.amber.shade600],
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+  Widget _buildAssetStatusSection(Map<String, dynamic> data) {
+    final statusData = data['taiSanTheoTrangThaiPhanTram'] as List<dynamic>;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.green.shade50],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade600, Colors.green.shade800],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SGText(
+              text: "📈 Tài sản theo trạng thái",
+              style: AppTextStyle.textStyleSemiBold24.copyWith(
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          if (statusData.isNotEmpty)
+            Center(
+              child: PieDonutChartWithLegend(
+                data:
+                    statusData
+                        .map(
+                          (item) => <String, Object>{
+                            'trangThai': item['trangThai'] ?? 'Chưa xác định',
+                            'phanTramSoLuong': item['phanTramSoLuong'] ?? 0,
+                          },
+                        )
+                        .toList(),
+                categoryKey: 'trangThai',
+                valueKey: 'phanTramSoLuong',
+                colors: listColors,
+                chartWidth: 450,
+                chartHeight: 450,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssetDistributionSection(Map<String, dynamic> data) {
+    final groupData = data['taiSanTheoNhomPhanTram'] as List<dynamic>;
+    final departmentData = data['taiSanTheoPhongBanPhanTram'] as List<dynamic>;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.purple.shade50],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.purple.shade600, Colors.purple.shade800],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: SGText(
+              text: "🎯 Phân bố tài sản",
+              style: AppTextStyle.textStyleSemiBold24.copyWith(
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SGText(
+                        text: "📊 Tài sản theo nhóm",
+                        style: AppTextStyle.textStyleRegular14.copyWith(
+                          color: Colors.purple.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    PieDonutChartWithLegend(
+                      data:
+                          groupData
+                              .map(
+                                (item) => <String, Object>{
+                                  'ten': item['ten'] ?? 'Chưa xác định',
+                                  'phanTramSoLuong':
+                                      item['phanTramSoLuong'] ?? 0,
+                                },
+                              )
+                              .toList(),
+                      categoryKey: 'ten',
+                      valueKey: 'phanTramSoLuong',
+                      colors: listColors,
+                      chartWidth: 350,
+                      chartHeight: 350,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SGText(
+                        text: "🏢 Tài sản theo phòng ban",
+                        style: AppTextStyle.textStyleRegular14.copyWith(
+                          color: Colors.purple.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    PieDonutChartWithLegend(
+                      data:
+                          departmentData
+                              .map(
+                                (item) => <String, Object>{
+                                  'phongBan':
+                                      item['phongBan'] ?? 'Chưa xác định',
+                                  'phanTramSoLuong':
+                                      item['phanTramSoLuong'] ?? 0,
+                                },
+                              )
+                              .toList(),
+                      categoryKey: 'phongBan',
+                      valueKey: 'phanTramSoLuong',
+                      colors: listColors,
+                      chartWidth: 350,
+                      chartHeight: 350,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SGText(
+                        text: "🔧 CCDC theo loại",
+                        style: AppTextStyle.textStyleRegular14.copyWith(
+                          color: Colors.purple.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (data['ccdcTheoLoaiConPhanTram'] != null &&
+                        (data['ccdcTheoLoaiConPhanTram'] as List).isNotEmpty)
+                      PieDonutChartWithLegend(
+                        data:
+                            (data['ccdcTheoLoaiConPhanTram'] as List)
+                                .map(
+                                  (item) => <String, Object>{
+                                    'ten': item['ten'] ?? 'Chưa xác định',
+                                    'phanTramSoLuong':
+                                        item['phanTramSoLuong'] ?? 0,
+                                  },
+                                )
+                                .toList(),
+                        categoryKey: 'ten',
+                        valueKey: 'phanTramSoLuong',
+                        colors: listColors,
+                        chartWidth: 350,
+                        chartHeight: 350,
+                      )
+                    else
+                      Container(
+                        height: 350,
+                        child: Center(
+                          child: Text(
+                            'Không có dữ liệu CCDC',
+                            style: AppTextStyle.textStyleRegular14,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SGText(
+                        text: "⚙️ Tài sản theo loại",
+                        style: AppTextStyle.textStyleRegular14.copyWith(
+                          color: Colors.purple.shade800,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (data['taiSanTheoLoaiConChiTietPhanTram'] != null &&
+                        (data['taiSanTheoLoaiConChiTietPhanTram'] as List)
+                            .isNotEmpty)
+                      PieDonutChartWithLegend(
+                        data:
+                            (data['taiSanTheoLoaiConChiTietPhanTram'] as List)
+                                .map(
+                                  (item) => <String, Object>{
+                                    'tenLoaiTaiSanCon':
+                                        item['tenLoaiTaiSanCon'] ??
+                                        'Chưa xác định',
+                                    'phanTramSoLuong':
+                                        item['phanTramSoLuong'] ?? 0,
+                                  },
+                                )
+                                .toList(),
+                        categoryKey: 'tenLoaiTaiSanCon',
+                        valueKey: 'phanTramSoLuong',
+                        colors: listColors,
+                        chartWidth: 350,
+                        chartHeight: 350,
+                      )
+                    else
+                      Container(
+                        height: 350,
+                        child: Center(
+                          child: Text(
+                            'Không có dữ liệu tài sản loại con',
+                            style: AppTextStyle.textStyleRegular14,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopAssetsSection(Map<String, dynamic> data) {
+    final topAssets = data['top5TaiSanGiaTriCao'] as List<dynamic>;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SGText(
+            text: "Top 5 tài sản giá trị cao",
+            style: AppTextStyle.textStyleSemiBold24,
+          ),
+          const SizedBox(height: 24),
+          Container(
+            height: 420,
+            child: graphic.Chart(
+              data:
+                  topAssets
+                      .map(
+                        (item) => {
+                          'tenTaiSan': item['TenTaiSan'] ?? 'Chưa xác định',
+                          'nguyenGia': item['NguyenGia'] ?? 0,
+                        },
+                      )
+                      .toList(),
+              variables: {
+                'genre': graphic.Variable(
+                  accessor: (Map map) => map['tenTaiSan'] as String,
+                ),
+                'sold': graphic.Variable(
+                  accessor: (Map map) => map['nguyenGia'] as num,
+                ),
+              },
+              marks: [
+                graphic.IntervalMark(
+                  label: graphic.LabelEncode(
+                    encoder:
+                        (tuple) =>
+                            graphic.Label(formatter.format(tuple['sold'])),
+                  ),
+                  gradient: graphic.GradientEncode(
+                    value: const LinearGradient(
+                      colors: [
+                        Color(0x8883bff6),
+                        Color(0x88188df0),
+                        Color(0xcc188df0),
+                      ],
+                      stops: [0, 0.5, 1],
+                    ),
+                    updaters: {
+                      'tap': {
+                        true:
+                            (_) => const LinearGradient(
+                              colors: [
+                                Color(0xee83bff6),
+                                Color(0xee3f78f7),
+                                Color(0xff3f78f7),
+                              ],
+                              stops: [0, 0.7, 1],
+                            ),
+                      },
+                    },
+                  ),
+                ),
+              ],
+              coord: graphic.RectCoord(transposed: true),
+              axes: [
+                graphic.Defaults.verticalAxis
+                  ..line = graphic.Defaults.strokeStyle
+                  ..grid = null,
+                graphic.Defaults.horizontalAxis
+                  ..line = null
+                  ..grid = graphic.Defaults.strokeStyle,
+              ],
+              selections: {'tap': graphic.PointSelection(dim: graphic.Dim.x)},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendAnalysisSection(Map<String, dynamic> data) {
+    final yearData = data['taiSanTheoNamTao'] as List<dynamic>;
+    final monthData = data['taiSanTheoThang'] as List<dynamic>;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SGText(
+            text: "Phân tích xu hướng",
+            style: AppTextStyle.textStyleSemiBold24,
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    SGText(
+                      text: "Tài sản theo năm tạo",
+                      style: AppTextStyle.textStyleRegular14,
+                    ),
+                    const SizedBox(height: 16),
+                    ScrollableBarChart(
+                      data:
+                          yearData
+                              .map(
+                                (item) => <String, Object>{
+                                  'nam': item['nam'].toString(),
+                                  'soLuong': item['soLuong'] ?? 0,
+                                },
+                              )
+                              .toList(),
+                      categoryKey: 'nam',
+                      valueKey: 'soLuong',
+                      barWidth: 32,
+                      spacing: 64,
+                      height: 300,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  children: [
+                    SGText(
+                      text: "Tài sản theo tháng",
+                      style: AppTextStyle.textStyleRegular14,
+                    ),
+                    const SizedBox(height: 16),
+                    ScrollableBarChart(
+                      data:
+                          monthData
+                              .map(
+                                (item) => <String, Object>{
+                                  'thang': item['thang'].toString(),
+                                  'soLuong': item['soLuong'] ?? 0,
+                                },
+                              )
+                              .toList(),
+                      categoryKey: 'thang',
+                      valueKey: 'soLuong',
+                      barWidth: 32,
+                      spacing: 64,
+                      height: 300,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMaintenanceSection(Map<String, dynamic> data) {
+    final maintenanceData = data['taiSanSapHetHanBaoHanh'] as List<dynamic>;
+
+    if (maintenanceData.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SGText(
+            text: "Tài sản sắp hết hạn bảo hành",
+            style: AppTextStyle.textStyleSemiBold24,
+          ),
+          const SizedBox(height: 24),
+          DataTable(
+            columns: const [
+              DataColumn(label: Text('ID')),
+              DataColumn(label: Text('Tên tài sản')),
+              DataColumn(label: Text('Nguyên giá')),
+              DataColumn(label: Text('Ngày vào sổ')),
+              DataColumn(label: Text('Thời hạn bảo hành')),
+              DataColumn(label: Text('Số ngày còn lại')),
+            ],
+            rows:
+                maintenanceData
+                    .map(
+                      (item) => DataRow(
+                        cells: [
+                          DataCell(Text(item['Id']?.toString() ?? '')),
+                          DataCell(Text(item['TenTaiSan']?.toString() ?? '')),
+                          DataCell(
+                            Text(formatter.format(item['NguyenGia'] ?? 0)),
+                          ),
+                          DataCell(Text(item['NgayVaoSo']?.toString() ?? '')),
+                          DataCell(
+                            Text(item['ThoiHanBaoHanh']?.toString() ?? ''),
+                          ),
+                          DataCell(
+                            Text(item['SoNgayConLai']?.toString() ?? ''),
+                          ),
+                        ],
+                      ),
+                    )
+                    .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedStatisticsCard(
+    String title,
+    String value,
+    IconData icon,
+    List<Color> gradientColors,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors[0].withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: Colors.white, size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: AppTextStyle.textStyleRegular14.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: AppTextStyle.textStyleSemiBold24.copyWith(
+                color: Colors.white,
+                fontSize: 20,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Color> get listColors => [
+    Colors.blue.shade400,
+    Colors.purple.shade400,
+    Colors.green.shade400,
+    Colors.orange.shade400,
+    Colors.pink.shade400,
+    Colors.teal.shade400,
+    Colors.indigo.shade400,
+    Colors.amber.shade400,
+  ];
 
   int _getCrossAxisCount(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
