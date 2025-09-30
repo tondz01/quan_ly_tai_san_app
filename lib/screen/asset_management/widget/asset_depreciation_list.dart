@@ -3,10 +3,10 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:se_gay_components/common/sg_text.dart';
+import 'package:intl/intl.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class AssetDepreciationList extends StatefulWidget {
@@ -19,20 +19,51 @@ class AssetDepreciationList extends StatefulWidget {
 
 class _AssetDepreciationListState extends State<AssetDepreciationList> {
   late List<ColumnDisplayOption> columnOptions;
+  final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
+
+  String _fmtNum(double? v) {
+    if (v == null) return '';
+    try {
+      return "${_vnNumber.format(v)}đ";
+    } catch (_) {
+      return v.toString();
+    }
+  }
+
+  String _fmtDate(DateTime? d) {
+    if (d == null) return '';
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString();
+    return '$dd/$mm/$yyyy';
+  }
+
   List<String> visibleColumnIds = [
-    'ngayCuoiKyKh',
-    'namCuaKy',
-    'thangCuaKy',
-    'butToanKhauHao',
-    'boPhanSuDung',
-    'taiSanKhauHao',
-    'taiSanChiPhi',
-    'giaTriKhauHao',
-    'kyKhauHao',
-    // 'created_at',
-    // 'updated_at',
-    // 'created_by',
-    // 'updated_by',
+    'soThe',
+    'tenTaiSan',
+    'nguonVon',
+    'maTk',
+    'ngayTinhKhao',
+    'thangKh',
+    'nguyenGia',
+    'khauHaoBanDau',
+    'khauHaoPsdk',
+    'gtclBanDau',
+    'khauHaoPsck',
+    'gtclHienTai',
+    'khauHaoBinhQuan',
+    'soTien',
+    'chenhLech',
+    'khKyTruoc',
+    'clKyTruoc',
+    'hsdCkh',
+    'tkNo',
+    'tkCo',
+    'dtgt',
+    'dtth',
+    'kmcp',
+    'ghiChuKhao',
+    'userId',
   ];
   @override
   void initState() {
@@ -43,54 +74,129 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'ngayCuoiKyKh',
-        label: 'Ngày cuối kỳ Kh',
-        isChecked: visibleColumnIds.contains('ngayCuoiKyKh'),
+        id: 'soThe',
+        label: 'Số thẻ',
+        isChecked: visibleColumnIds.contains('soThe'),
       ),
       ColumnDisplayOption(
-        id: 'namCuaKy',
-        label: 'Năm của kỳ',
-        isChecked: visibleColumnIds.contains('namCuaKy'),
+        id: 'tenTaiSan',
+        label: 'Tên tài sản',
+        isChecked: visibleColumnIds.contains('tenTaiSan'),
       ),
       ColumnDisplayOption(
-        id: 'thangCuaKy',
-        label: 'Tháng của kỳ',
-        isChecked: visibleColumnIds.contains('thangCuaKy'),
+        id: 'nguonVon',
+        label: 'Nguồn vốn',
+        isChecked: visibleColumnIds.contains('nguonVon'),
       ),
       ColumnDisplayOption(
-        id: 'butToanKhauHao',
-        label: 'Bút toán khấu hao',
-        isChecked: visibleColumnIds.contains('butToanKhauHao'),
+        id: 'maTk',
+        label: 'Mã tài khoản',
+        isChecked: visibleColumnIds.contains('maTk'),
       ),
       ColumnDisplayOption(
-        id: 'name_asset',
-        label: 'Tài sản',
-        isChecked: visibleColumnIds.contains('name_asset'),
+        id: 'ngayTinhKhao',
+        label: 'Ngày tính khấu hao',
+        isChecked: visibleColumnIds.contains('ngayTinhKhao'),
       ),
       ColumnDisplayOption(
-        id: 'boPhanSuDung',
-        label: 'Bộ phận sử dụng',
-        isChecked: visibleColumnIds.contains('boPhanSuDung'),
+        id: 'thangKh',
+        label: 'Tháng khấu hao',
+        isChecked: visibleColumnIds.contains('thangKh'),
       ),
       ColumnDisplayOption(
-        id: 'taiSanKhauHao',
-        label: 'Tài sản khấu hao',
-        isChecked: visibleColumnIds.contains('taiSanKhauHao'),
+        id: 'nguyenGia',
+        label: 'Nguyên giá',
+        isChecked: visibleColumnIds.contains('nguyenGia'),
       ),
       ColumnDisplayOption(
-        id: 'taiSanChiPhi',
-        label: 'Tài sản chi phí',
-        isChecked: visibleColumnIds.contains('taiSanChiPhi'),
+        id: 'khauHaoBanDau',
+        label: 'Khấu hao ban đầu',
+        isChecked: visibleColumnIds.contains('khauHaoBanDau'),
       ),
       ColumnDisplayOption(
-        id: 'giaTriKhauHao',
-        label: 'Giá trị khấu hao',
-        isChecked: visibleColumnIds.contains('giaTriKhauHao'),
+        id: 'khauHaoPsdk',
+        label: 'Khấu hao PSDK',
+        isChecked: visibleColumnIds.contains('khauHaoPsdk'),
       ),
       ColumnDisplayOption(
-        id: 'kyKhauHao',
-        label: 'Kỳ khấu hao',
-        isChecked: visibleColumnIds.contains('kyKhauHao'),
+        id: 'gtclBanDau',
+        label: 'GTCL ban đầu',
+        isChecked: visibleColumnIds.contains('gtclBanDau'),
+      ),
+      ColumnDisplayOption(
+        id: 'khauHaoPsck',
+        label: 'Khấu hao PSCK',
+        isChecked: visibleColumnIds.contains('khauHaoPsck'),
+      ),
+      ColumnDisplayOption(
+        id: 'gtclHienTai',
+        label: 'GTCL hiện tại',
+        isChecked: visibleColumnIds.contains('gtclHienTai'),
+      ),
+      ColumnDisplayOption(
+        id: 'khauHaoBinhQuan',
+        label: 'Khấu hao bình quân',
+        isChecked: visibleColumnIds.contains('khauHaoBinhQuan'),
+      ),
+      ColumnDisplayOption(
+        id: 'soTien',
+        label: 'Số tiền',
+        isChecked: visibleColumnIds.contains('soTien'),
+      ),
+      ColumnDisplayOption(
+        id: 'chenhLech',
+        label: 'Chênh lệch',
+        isChecked: visibleColumnIds.contains('chenhLech'),
+      ),
+      ColumnDisplayOption(
+        id: 'khKyTruoc',
+        label: 'Khấu hao kỳ trước',
+        isChecked: visibleColumnIds.contains('khKyTruoc'),
+      ),
+      ColumnDisplayOption(
+        id: 'clKyTruoc',
+        label: 'Chênh lệch kỳ trước',
+        isChecked: visibleColumnIds.contains('clKyTruoc'),
+      ),
+      ColumnDisplayOption(
+        id: 'hsdCkh',
+        label: 'HSDCKH',
+        isChecked: visibleColumnIds.contains('hsdCkh'),
+      ),
+      ColumnDisplayOption(
+        id: 'tkNo',
+        label: 'Tài khoản nợ',
+        isChecked: visibleColumnIds.contains('tkNo'),
+      ),
+      ColumnDisplayOption(
+        id: 'tkCo',
+        label: 'Tài khoản có',
+        isChecked: visibleColumnIds.contains('tkCo'),
+      ),
+      ColumnDisplayOption(
+        id: 'dtgt',
+        label: 'DTGT',
+        isChecked: visibleColumnIds.contains('dtgt'),
+      ),
+      ColumnDisplayOption(
+        id: 'dtth',
+        label: 'DTTH',
+        isChecked: visibleColumnIds.contains('dtth'),
+      ),
+      ColumnDisplayOption(
+        id: 'kmcp',
+        label: 'KMCP',
+        isChecked: visibleColumnIds.contains('kmcp'),
+      ),
+      ColumnDisplayOption(
+        id: 'ghiChuKhao',
+        label: 'Ghi chú khấu hao',
+        isChecked: visibleColumnIds.contains('ghiChuKhao'),
+      ),
+      ColumnDisplayOption(
+        id: 'userId',
+        label: 'Người tạo',
+        isChecked: visibleColumnIds.contains('userId'),
       ),
     ];
   }
@@ -101,95 +207,278 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
-        case 'ngayCuoiKyKh':
+        case 'soThe':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Ngày cuối kỳ Kh',
-              getValue: (item) => item.ngayTinhKhao.toString(),
+              title: 'Số thẻ',
+              getValue: (item) => item.soThe ?? '',
               width: 120,
+              searchValueGetter: (item) => item.soThe ?? '',
+              filterable: true,
             ),
           );
           break;
-        case 'namCuaKy':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Năm của kỳ',
-              getValue: (item) => item.ngayTinhKhao?.year.toString() ?? '',
-              width: 80,
-            ),
-          );
-          break;
-        case 'thangCuaKy':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tháng của kỳ',
-              getValue: (item) => item.thangKh.toString(),
-              width: 80,
-            ),
-          );
-          break;
-        case 'butToanKhauHao':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Mã tài sản',
-              getValue:
-                  (item) =>
-                      'Khấu hao ${item.soThe} - ${item.tenTaiSan}',
-              width: 120,
-            ),
-          );
-          break;
-        case 'name_asset':
+        case 'tenTaiSan':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Tên tài sản',
-              getValue: (item) => '${item.soThe} - ${item.tenTaiSan}',
-              width: 200,
+              getValue: (item) => item.tenTaiSan ?? '',
+              width: 220,
+              searchValueGetter: (item) => item.tenTaiSan ?? '',
+              filterable: true,
             ),
           );
           break;
-        case 'boPhanSuDung':
+        case 'nguonVon':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Khấu hao Psdk',
-              getValue: (item) => item.khauHaoPsdk.toString(),
-              width: 120,
+              title: 'Nguồn vốn',
+              getValue: (item) => item.nguonVon ?? '',
+              width: 140,
+              searchValueGetter: (item) => item.nguonVon ?? '',
+              filterable: true,
             ),
           );
           break;
-        case 'taiSanKhauHao':
+        case 'maTk':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tài sản khấu hao',
-              getValue: (item) => item.maTk.toString(),
-              width: 120,
+              title: 'Mã tài khoản',
+              getValue: (item) => item.maTk ?? '',
+              width: 140,
+              searchValueGetter: (item) => item.maTk ?? '',
+              filterable: true,
             ),
           );
           break;
-        case 'taiSanChiPhi':
+        case 'ngayTinhKhao':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Ngày tính khấu hao',
+              getValue: (item) => _fmtDate(item.ngayTinhKhao),
+              width: 160,
+              searchValueGetter: (item) => _fmtDate(item.ngayTinhKhao),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'thangKh':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Tháng khấu hao',
+              getValue: (item) => item.thangKh?.toString() ?? '',
+              width: 100,
+              searchValueGetter: (item) => item.thangKh?.toString() ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'nguyenGia':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Nguyên giá',
-              getValue: (item) => item.khauHaoBanDau?.toString() ?? '',
-              width: 150,
+              getValue: (item) => _fmtNum(item.nguyenGia),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.nguyenGia),
+              filterable: true,
             ),
           );
           break;
-        case 'giaTriKhauHao':
+        case 'khauHaoBanDau':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Khấu hao ban đầu',
-              getValue: (item) => item.khauHaoBanDau?.toString() ?? '',
-              width: 120,
+              getValue: (item) => _fmtNum(item.khauHaoBanDau),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.khauHaoBanDau),
+              filterable: true,
             ),
           );
           break;
-        case 'kyKhauHao':
+        case 'khauHaoPsdk':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Khấu hao PSDK',
+              getValue: (item) => _fmtNum(item.khauHaoPsdk),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.khauHaoPsdk),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'gtclBanDau':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'GTCL ban đầu',
+              getValue: (item) => _fmtNum(item.gtclBanDau),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.gtclBanDau),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'khauHaoPsck':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Khấu hao PSCK',
+              getValue: (item) => _fmtNum(item.khauHaoPsck),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.khauHaoPsck),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'gtclHienTai':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'GTCL hiện tại',
+              getValue: (item) => _fmtNum(item.gtclHienTai),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.gtclHienTai),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'khauHaoBinhQuan':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Khấu hao bình quân',
+              getValue: (item) => _fmtNum(item.khauHaoBinhQuan),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.khauHaoBinhQuan),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'soTien':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Số tiền',
+              getValue: (item) => _fmtNum(item.soTien),
+              width: 120,
+              searchValueGetter: (item) => _fmtNum(item.soTien),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'chenhLech':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Chênh lệch',
+              getValue: (item) => _fmtNum(item.chenhLech),
+              width: 120,
+              searchValueGetter: (item) => _fmtNum(item.chenhLech),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'khKyTruoc':
           columns.add(
             TableBaseConfig.columnTable<AssetDepreciationDto>(
               title: 'Khấu hao kỳ trước',
-              getValue: (item) => item.khKyTruoc.toString(),
+              getValue: (item) => _fmtNum(item.khKyTruoc),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.khKyTruoc),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'clKyTruoc':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Chênh lệch kỳ trước',
+              getValue: (item) => _fmtNum(item.clKyTruoc),
+              width: 140,
+              searchValueGetter: (item) => _fmtNum(item.clKyTruoc),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'hsdCkh':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'HSDCKH',
+              getValue: (item) => _fmtNum(item.hsdCkh),
               width: 120,
+              searchValueGetter: (item) => _fmtNum(item.hsdCkh),
+              filterable: true,
+            ),
+          );
+          break;
+        case 'tkNo':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Tài khoản nợ',
+              getValue: (item) => item.tkNo ?? '',
+              width: 140,
+              searchValueGetter: (item) => item.tkNo ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'tkCo':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Tài khoản có',
+              getValue: (item) => item.tkCo ?? '',
+              width: 140,
+              searchValueGetter: (item) => item.tkCo ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'dtgt':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'DTGT',
+              getValue: (item) => item.dtgt ?? '',
+              width: 100,
+              searchValueGetter: (item) => item.dtgt ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'dtth':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'DTTH',
+              getValue: (item) => item.dtth ?? '',
+              width: 100,
+              searchValueGetter: (item) => item.dtth ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'kmcp':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'KMCP',
+              getValue: (item) => item.kmcp ?? '',
+              width: 100,
+              searchValueGetter: (item) => item.kmcp ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'ghiChuKhao':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Ghi chú khấu hao',
+              getValue: (item) => item.ghiChuKhao ?? '',
+              width: 220,
+              searchValueGetter: (item) => item.ghiChuKhao ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'userId':
+          columns.add(
+            TableBaseConfig.columnTable<AssetDepreciationDto>(
+              title: 'Người tạo',
+              getValue: (item) => item.userId ?? '',
+              width: 120,
+              searchValueGetter: (item) => item.userId ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -199,16 +488,6 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     return columns;
   }
 
-  String getBoPhanSuDung(String idTaisan) {
-    AssetManagementDto data =
-        widget.provider.data.where((item) => item.id == idTaisan).first;
-    final departments = widget.provider.dataDepartment ?? [];
-    final phongBan = departments.firstWhere(
-      (dept) => dept.id == data.idDonViHienThoi,
-      orElse: () => const PhongBan(),
-    );
-    return phongBan.tenPhongBan ?? '';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -306,6 +585,19 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
                       ),
                     ),
                   ],
+                ),
+                Tooltip(
+                  message: 'Chuyển sang trang quản lý tài sản',
+                  child: InkWell(
+                    onTap: () {
+                      widget.provider.onChangeBody(ShowBody.taiSan);
+                    },
+                    child: SGText(
+                      size: 14,
+                      text: "Quản lý tài sản",
+                      color: ColorValue.link,
+                    ),
+                  ),
                 ),
               ],
             ),

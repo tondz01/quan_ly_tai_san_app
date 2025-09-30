@@ -53,7 +53,7 @@ class _TableChildCcdcState extends State<TableChildCcdc> {
             columns: [
               DetailEditableColumn<DetailAssetDto>(
                 field: 'so_thu_tu',
-                title: 'Stt',
+                title: 'STT',
                 titleAlignment: TextAlign.center,
                 width: 50,
                 getValue: (item) => '',

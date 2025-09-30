@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_sup
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_saved_changes_dialog.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
@@ -24,6 +25,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   get dataPhongBan => _dataPhongBan;
   get dataGroupCCDC => _dataGroupCCDC;
   get dataTypeCCDC => _dataTypeCCDC;
+  get dataUnit => _dataUnit;
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
@@ -86,6 +88,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   List<PhongBan>? _dataPhongBan;
   List<CcdcGroup>? _dataGroupCCDC;
   List<TypeCcdc>? _dataTypeCCDC;
+  List<UnitDto>? _dataUnit;
 
   void onInit(BuildContext context) {
     controllerDropdownPage = TextEditingController(text: '10');
@@ -111,6 +114,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       bloc.add(GetListToolsAndSuppliesEvent(context, 'CT001'));
       bloc.add(GetListPhongBanEvent(context, 'CT001'));
       bloc.add(GetListTypeCcdcEvent(context));
+      bloc.add(GetListUnitEvent(context));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -256,6 +260,15 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   ) {
     _error = null;
     _dataTypeCCDC = state.data;
+    notifyListeners();
+  }
+
+  getListUnitSuccess(
+    BuildContext context,
+    GetListUnitSuccessState state,
+  ) {
+    _error = null;
+    _dataUnit = state.data;
     notifyListeners();
   }
 

@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/unit/unit_view.dart';
 
 import 'routes.dart';
 
@@ -102,7 +103,7 @@ class AppRouteConf {
                   child: CapitalSourceManager(),
                 ),
           ),
-         
+
           GoRoute(
             path: AppRoute.toolAndMaterialTransfer.path,
             name: AppRoute.toolAndMaterialTransfer.name,
@@ -251,10 +252,8 @@ class AppRouteConf {
             path: AppRoute.loaiCcdc.path,
             name: AppRoute.loaiCcdc.name,
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: TypeCcdcView(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: TypeCcdcView()),
           ),
           GoRoute(
             path: AppRoute.loaiTaiSan.path,
@@ -264,6 +263,13 @@ class AppRouteConf {
                   key: state.pageKey,
                   child: TypeAssetView(),
                 ),
+          ),
+          GoRoute(
+            path: AppRoute.unit.path,
+            name: AppRoute.unit.name,
+            pageBuilder:
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: UnitView()),
           ),
         ],
       ),

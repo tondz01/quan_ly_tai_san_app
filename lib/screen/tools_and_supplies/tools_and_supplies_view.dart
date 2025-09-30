@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_detail_repository.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
@@ -58,6 +61,25 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
     if (assetCategories.isNotEmpty) {
       final result = await ToolsAndSuppliesRepository()
           .saveToolsAndSuppliesBatch(assetCategories);
+      List<DetailAssetDto> listDetailAsset =
+          assetCategories.expand((item) => item.chiTietTaiSanList).toList();
+
+      if (listDetailAsset.isNotEmpty) {
+        Map<String, dynamic> resultAssetDetail =
+            await AssetManagementDetailRepository().createAssetDetail(
+              jsonEncode(listDetailAsset),
+            );
+        if (checkStatusCodeDone(resultAssetDetail)) {
+        } else {
+          if (!mounted) return;
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu chi tiết CCDC - Vật tư thất bại có lỗi: ${resultAssetDetail['message']}',
+            isError: true,
+          );
+        }
+      }
+
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
           if (!mounted) return;
@@ -127,6 +149,21 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     if (result['success']) {
                       List<ToolsAndSuppliesDto> assetCategories =
                           result['data'];
+
+                      for (var item in assetCategories) {
+                        for (
+                          var i = 0;
+                          i < item.chiTietTaiSanList.length;
+                          i++
+                        ) {
+                          item.chiTietTaiSanList[i].id = '${item.id}-STT-$i';
+                        }
+
+                        item.soLuong = item.chiTietTaiSanList.fold<int>(
+                          0,
+                          (sum, e) => sum + (e.soLuong ?? 0),
+                        );
+                      }
                       _importData(assetCategories);
                     } else {
                       List<dynamic> errors = result['errors'];
@@ -156,11 +193,74 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     }
                   },
                   onExportData: () {
+                    if (provider.data == null) return;
+                    List<dynamic> data = [];
+                    for (var item in provider.data) {
+                      if (item.chiTietTaiSanList.isNotEmpty) {
+                        for (var element in item.chiTietTaiSanList) {
+                          Map<String, dynamic> dataItem = {
+                            'Mã công cụ dụng cụ': item.id,
+                            'Mã đơn vị': item.idDonVi,
+                            'Tên công cụ dụng cụ': item.ten,
+                            'Ngày nhập': item.ngayNhap
+                                .toIso8601String()
+                                .replaceAll('Z', ''),
+                            'Đơn vị tính': item.donViTinh,
+                            'Mã nhóm CCDC': item.idNhomCCDC,
+                            'Mã loại CCDC con': item.idLoaiCCDCCon,
+                            'Giá trị': item.giaTri,
+                            'Ký hiệu': item.kyHieu,
+                            'Ghi chú': item.ghiChu,
+                            'Ngày tạo': item.ngayTao
+                                .toIso8601String()
+                                .replaceAll('Z', ''),
+                            'Ngày cập nhật': item.ngayCapNhat
+                                .toIso8601String()
+                                .replaceAll('Z', ''),
+
+                            'Số ký hiệu': element.soKyHieu ?? '',
+                            'Số lượng': element.soLuong ?? '',
+                            'Công suất': element.congSuat ?? '',
+                            'Nước sản xuất': element.nuocSanXuat ?? '',
+                            'Năm sản xuất': element.namSanXuat ?? '',
+                          };
+                          data.add(dataItem);
+                        }
+                      } else {
+                        Map<String, dynamic> dataItem = {
+                          'Mã công cụ dụng cụ': item.id,
+                          'Mã đơn vị': item.idDonVi,
+                          'Tên công cụ dụng cụ': item.ten,
+                          'Ngày nhập': item.ngayNhap
+                              .toIso8601String()
+                              .replaceAll('Z', ''),
+                          'Đơn vị tính': item.donViTinh,
+                          'Mã nhóm CCDC': item.idNhomCCDC,
+                          'Mã loại CCDC con': item.idLoaiCCDCCon,
+                          'Giá trị': item.giaTri,
+                          'Ký hiệu': item.kyHieu,
+                          'Ghi chú': item.ghiChu,
+                          'Ngày tạo': item.ngayTao.toIso8601String().replaceAll(
+                            'Z',
+                            '',
+                          ),
+                          'Ngày cập nhật': item.ngayCapNhat
+                              .toIso8601String()
+                              .replaceAll('Z', ''),
+
+                          'Số ký hiệu': '',
+                          'Số lượng': '',
+                          'Công suất': '',
+                          'Nước sản xuất': '',
+                          'Năm sản xuất': '',
+                        };
+                        data.add(dataItem);
+                      }
+                    }
                     AppUtility.exportData(
                       context,
                       "Danh sách CCDC - Vật tư",
-                      provider.data?.map((e) => e.toJsonExport()).toList() ??
-                          [],
+                      data,
                     );
                   },
                 ),
@@ -225,6 +325,21 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           );
         }
         if (state is GetListToolsAndSuppliesFailedState) {}
+        if (state is GetListUnitSuccessState) {
+          context.read<ToolsAndSuppliesProvider>().getListUnitSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is GetListUnitFailedState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
         if (state is GetListTypeCcdcFailedState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

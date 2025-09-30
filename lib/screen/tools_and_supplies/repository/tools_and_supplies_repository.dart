@@ -41,29 +41,6 @@ class ToolsAndSuppliesRepository extends ApiBase {
         response.data,
         ToolsAndSuppliesDto.fromJson,
       );
-
-      // Gọi API detail cho từng item với error handling
-      // await Future.wait(
-      //   list.map((e) async {
-      //     try {
-      //       final detailResponse = await get(
-      //         '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/by-ccdcvt/${e.id}',
-      //       );
-
-      //       if (!checkStatusCodeFailed(detailResponse.statusCode ?? 0)) {
-      //         e.detailOwnershipUnit =
-      //             ResponseParser.parseToList<OwnershipUnitDetailDto>(
-      //               detailResponse.data['data'],
-      //               OwnershipUnitDetailDto.fromJson,
-      //             );
-      //       } else {
-      //         e.detailOwnershipUnit = [];
-      //       }
-      //     } catch (detailError) {
-      //       e.detailOwnershipUnit = [];
-      //     }
-      //   }),
-      // );
       result['data'] = list;
     } catch (e) {
       log("Error at getListToolsAndSupplies - ToolsAndSuppliesRepository: $e");

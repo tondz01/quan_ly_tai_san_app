@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
@@ -8,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 /// Controller xử lý logic nghiệp vụ cho Tools and Supplies Detail
@@ -237,6 +237,21 @@ class ToolsAndSuppliesController {
     }
     return [];
   }
+  /// Khởi tạo dropdown items cho loại CCDC
+  List<DropdownMenuItem<UnitDto>> buildUnitDropdownItems(
+    List<UnitDto>? dataUnit,
+  ) {
+    if (dataUnit != null && dataUnit.isNotEmpty) {
+      return [
+        for (var element in dataUnit)
+          DropdownMenuItem<UnitDto>(
+            value: element,
+            child: Text(element.tenDonVi ?? ''),
+          ),
+      ];
+    }
+    return [];
+  }
 
   /// Format dữ liệu hiển thị
   String formatDisplayValue(dynamic value, {String defaultValue = ''}) {
@@ -402,7 +417,7 @@ class ToolsAndSuppliesController {
 
   /// Tạo ID mới cho DetailAssetDto
   String _generateDetailAssetId(String assetCode, int index) {
-    return "${assetCode.trim()}-${DateTime.now().millisecondsSinceEpoch}-$index";
+    return "${assetCode.trim()}-STT-$index";
   }
 }
 

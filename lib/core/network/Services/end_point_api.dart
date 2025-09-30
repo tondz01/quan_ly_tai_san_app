@@ -48,4 +48,5 @@ class EndPointAPI {
   static String DETAIL_SUPPLIES_TRANSFER = "/api/chitietdieudongccdcvattu";
   static String TYPE_ASSET = "/api/loaitaisancon";
   static String TYPE_CCDC = "/api/loaiccdccon";
+  static String UNIT = "/api/donvitinh";
 }

@@ -102,8 +102,8 @@ class ToolsAndSuppliesDto {
               : [],
       soLuongXuat: json['soLuongXuat'] ?? 0,
       detailOwnershipUnit:
-          json['detailOwnershipUnit'] != null
-              ? (json['detailOwnershipUnit'] as List)
+          json['chiTietDonViSoHuuList'] != null
+              ? (json['chiTietDonViSoHuuList'] as List)
                   .map((item) => OwnershipUnitDetailDto.fromJson(item))
                   .toList()
               : [],
@@ -135,7 +135,7 @@ class ToolsAndSuppliesDto {
       'isActive': isActive,
       'soLuongXuat': soLuongXuat.toString(),
       'chiTietTaiSanList': chiTietTaiSanList.map((e) => e.toJson()).toList(),
-      'detailOwnershipUnit': detailOwnershipUnit.map((e) => e.toJson()).toList(),
+      'chiTietDonViSoHuuList': detailOwnershipUnit.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -146,14 +146,12 @@ class ToolsAndSuppliesDto {
       'Mã đơn vị': idDonVi,
       'Tên công cụ dụng cụ': ten,
       'Ngày nhập': ngayNhap.toIso8601String().replaceAll('Z', ''),
-      'Đơn vị tính': donViTinh,
+      'Mã đơn vị tính': donViTinh,
       'Mã nhóm CCDC': idNhomCCDC,
       'Mã loại CCDC con': idLoaiCCDCCon,
       'Giá trị': giaTri,
       'Ký hiệu': kyHieu,
       'Ghi chú': ghiChu,
-      'Ngày tạo': ngayTao.toIso8601String().replaceAll('Z', ''),
-      'Ngày cập nhật': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
     };
   }
 

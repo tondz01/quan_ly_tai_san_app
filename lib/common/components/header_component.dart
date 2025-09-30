@@ -26,6 +26,7 @@ class HeaderComponent extends StatefulWidget {
     this.onFileSelected,
     this.onExportData,
     this.isShowInput = true,
+    this.isShownew = true,
   });
   final TextEditingController controller;
   final Function(String) onSearchChanged;
@@ -39,6 +40,7 @@ class HeaderComponent extends StatefulWidget {
   onFileSelected;
   final Function()? onExportData;
   final bool isShowInput;
+  final bool isShownew;
   @override
   State<HeaderComponent> createState() => _HeaderComponentState();
 }
@@ -55,6 +57,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
       onNew: widget.onNew,
       mainScreen: widget.mainScreen,
       isShowSearch: widget.isShowSearch,
+      isShownew: widget.isShownew,
       child: widget.child,
       context: context,
       onFileSelected:
@@ -75,6 +78,7 @@ Widget buildHeader(
   String? mainScreen,
   bool? isShowSearch,
   bool isShowInput = true,
+  bool isShownew = true,
   Widget? child,
   required BuildContext context,
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
@@ -94,6 +98,7 @@ Widget buildHeader(
         onTap,
         isShowSearch,
         isShowInput,
+        isShownew,
         child,
         context,
         onFileSelected: onFileSelected,
@@ -109,6 +114,7 @@ Widget buildHeader(
         onTap,
         isShowSearch,
         isShowInput,
+        isShownew,
         child,
         context,
         onFileSelected: onFileSelected,
@@ -126,6 +132,7 @@ Widget _buildHeaderScreenLarge(
   Function()? onTap,
   bool? isShowSearch,
   bool isShowInput,
+  bool isShownew,
   Widget? child,
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
@@ -142,6 +149,7 @@ Widget _buildHeaderScreenLarge(
         onNew,
         onTap,
         isShowInput,
+        isShownew,
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
@@ -165,6 +173,7 @@ Widget _buildHeaderScreenSmall(
   Function()? onTap,
   bool? isShowSearch,
   bool isShowInput,
+  bool isShownew,
   Widget? child,
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
@@ -181,6 +190,7 @@ Widget _buildHeaderScreenSmall(
         onNew,
         onTap,
         isShowInput,
+        isShownew,
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
@@ -201,6 +211,7 @@ Widget _buildHeaderNameScreen(
   Function()? onNew,
   Function()? onTap,
   bool isShowInput,
+  bool isShownew,
   BuildContext context, {
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
@@ -211,13 +222,14 @@ Widget _buildHeaderNameScreen(
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      MaterialTextButton(
-        text: 'Mới',
-        // icon: Icons.add,
-        backgroundColor: isSubScreen ? Colors.white : ColorValue.primaryBlue,
-        foregroundColor: isSubScreen ? ColorValue.primaryBlue : Colors.white,
-        onPressed: onNew,
-      ),
+      if (isShownew)
+        MaterialTextButton(
+          text: 'Mới',
+          // icon: Icons.add,
+          backgroundColor: isSubScreen ? Colors.white : ColorValue.primaryBlue,
+          foregroundColor: isSubScreen ? ColorValue.primaryBlue : Colors.white,
+          onPressed: onNew,
+        ),
       // SGButton(text: 'Mới'),
       const SizedBox(width: 8),
       Row(

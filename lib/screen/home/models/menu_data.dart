@@ -164,6 +164,7 @@ class AppMenuData extends ChangeNotifier {
           SubMenuItem(label: 'Nhóm ccdc', route: AppRoute.ccdcGroup.path),
 
           SubMenuItem(label: 'Loại ccdc', route: AppRoute.loaiCcdc.path),
+          SubMenuItem(label: 'Đơn vị tính', route: AppRoute.unit.path),
         ],
       ),
       if (per.hasPermission(RoleCode.TAISAN))
