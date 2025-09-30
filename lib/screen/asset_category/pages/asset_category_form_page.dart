@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart'
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 
 class AssetCategoryFormPage extends StatefulWidget {
   final AssetCategoryDto? data;
@@ -121,12 +122,7 @@ class _AssetCategoryFormPageState extends State<AssetCategoryFormPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.data != null
-                  ? 'Chỉnh sửa mô hình tài sản'
-                  : 'Thêm mô hình tài sản',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            sectionTitle(Icons.info_outline, 'Thông tin mô hình tài sản'),
             const SizedBox(height: 16),
             _buildHeaderDetail(),
             const SizedBox(height: 16),
@@ -165,8 +161,7 @@ class _AssetCategoryFormPageState extends State<AssetCategoryFormPage> {
             Row(
               children: [
                 Expanded(
-                  child:
-                   TextFormField(
+                  child: TextFormField(
                     controller: _methodController,
                     enabled: _isEditing,
                     keyboardType: TextInputType.number,

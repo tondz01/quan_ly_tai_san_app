@@ -20,7 +20,6 @@ extension DateTimeToMySQL on DateTime {
   }
 }
 
-
 Map<String, dynamic> _validateRow(
   Map<String, dynamic> json,
   int rowIndex,
@@ -32,10 +31,9 @@ Map<String, dynamic> _validateRow(
   List<CcdcGroup> ccdcGroups = provider?.dataGroupCCDC ?? [];
   List<TypeCcdc> typeCcdcs = provider?.dataTypeCCDC ?? [];
 
-  log('[_validateRow] json: ${jsonEncode(json)}');
   // Validate required fields
   if (json['id'] == null || json['id'].toString().trim().isEmpty) {
-    rowErrors.add('Mã CCDC không được để trống');
+    rowErrors.add('Mã CCDC - Vật tư không được để trống');
   }
 
   if (json['idDonVi'] == null || json['idDonVi'].toString().trim().isEmpty) {
@@ -49,17 +47,7 @@ Map<String, dynamic> _validateRow(
   }
 
   if (json['ten'] == null || json['ten'].toString().trim().isEmpty) {
-    rowErrors.add('Tên CCDC không được để trống');
-  }
-
-  if (json['ngayNhap'] == null || json['ngayNhap'].toString().trim().isEmpty) {
-    rowErrors.add('Ngày nhập không được để trống');
-  } else {
-    try {
-      DateTime.parse(json['ngayNhap'].toString());
-    } catch (e) {
-      rowErrors.add('Ngày nhập không hợp lệ ${json['ngayNhap']}');
-    }
+    rowErrors.add('Tên CCDC - Vật tư không được để trống');
   }
 
   if (json['donViTinh'] == null ||
@@ -101,10 +89,6 @@ Map<String, dynamic> _validateRow(
     }
   }
 
-  if (json['idCongTy'] == null || json['idCongTy'].toString().trim().isEmpty) {
-    rowErrors.add('Công ty không được để trống');
-  }
-
   return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
 }
 
@@ -136,13 +120,15 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "id": AppUtility.s(row[0]?.value),
           "idDonVi": AppUtility.s(row[1]?.value),
           "ten": AppUtility.s(row[2]?.value),
-          "ngayNhap": AppUtility.normalizeDateIsoString(row[3]?.value),
+          "ngayNhap": AppUtility.normalizeDateIsoString(
+            row[3]?.value ?? DateTime.now(),
+          ),
           "donViTinh": AppUtility.s(row[4]?.value),
           "soLuong": 0,
           "idNhomCCDC": AppUtility.s(row[5]?.value),
           "idLoaiCCDCCon": AppUtility.s(row[6]?.value),
           "giaTri": AppUtility.parseCurrency(
-            AppUtility.s(row[7]?.value.toString()),
+            AppUtility.s(row[7]?.value.toString() ?? '0'),
           ),
           "soKyHieu": "",
           "kyHieu": AppUtility.s(row[8]?.value),
@@ -150,18 +136,12 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "nuocSanXuat": "",
           "namSanXuat": 0,
           "ghiChu": AppUtility.s(row[9]?.value),
-          "idCongTy": AppUtility.s(row[10]?.value ?? "ct001"),
-          "ngayTao": AppUtility.normalizeDateIsoString(row[11]?.value),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(row[12]?.value),
-          "nguoiTao": AppUtility.s(
-            row[13]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
-          ),
-          "nguoiCapNhat": AppUtility.s(
-            row[14]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
-          ),
-          "isActive": row[15]?.value ?? true,
+          "idCongTy": "ct001",
+          "ngayTao": DateTime.now(),
+          "ngayCapNhat": DateTime.now(),
+          "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "isActive": true,
         };
 
         // Validate row data
@@ -189,30 +169,26 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "id": cell(row, 0),
           "idDonVi": cell(row, 1),
           "ten": cell(row, 2),
-          "ngayNhap": AppUtility.normalizeDateIsoString(cell(row, 3)),
+          "ngayNhap": AppUtility.normalizeDateIsoString(
+            cell(row, 3)?.toString() ?? DateTime.now(),
+          ),
           "donViTinh": cell(row, 4),
           "soLuong": 0,
           "idNhomCCDC": cell(row, 5),
           "idLoaiCCDCCon": cell(row, 6),
-          "giaTri": AppUtility.parseCurrency(cell(row, 7).toString()),
+          "giaTri": AppUtility.parseCurrency(cell(row, 7)?.toString() ?? '0'),
           "soKyHieu": "",
           "kyHieu": cell(row, 8),
           "congSuat": "",
           "nuocSanXuat": "",
           "namSanXuat": 0,
           "ghiChu": cell(row, 9),
-          "idCongTy": cell(row, 10) ?? "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(cell(row, 11)),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(cell(row, 12)),
-          "nguoiTao": AppUtility.s(
-            cell(row, 13),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
-          ),
-          "nguoiCapNhat": AppUtility.s(
-            cell(row, 14),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
-          ),
-          "isActive": cell(row, 15) ?? true,
+          "idCongTy": "ct001",
+          "ngayTao": DateTime.now(),
+          "ngayCapNhat": DateTime.now(),
+          "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "isActive": true,
         };
 
         // Validate row data

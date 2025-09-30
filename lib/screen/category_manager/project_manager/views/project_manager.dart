@@ -196,6 +196,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                         onExpandedChanged: (isExpanded) {
                           isShowInput = isExpanded;
                         },
+                        title: 'Chi tiết dự án',
                       ),
                     ),
                   ),

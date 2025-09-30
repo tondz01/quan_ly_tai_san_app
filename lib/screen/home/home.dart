@@ -89,6 +89,16 @@ class _HomeState extends State<Home> {
   void dispose() {
     // Hủy đăng ký khi widget bị hủy
     _popupManager.removeGlobalListener(_onPopupStateChanged);
+    
+    // Reset về trạng thái ban đầu
+    _selectedIndex = 0;
+    _selectedSubIndex = 0;
+    _isPopupOpen = false;
+    isItemOne = false;
+    
+    // Xóa trạng thái đã lưu
+    MenuPrefs.clearSelection();
+    
     super.dispose();
   }
 
@@ -108,7 +118,6 @@ class _HomeState extends State<Home> {
         label: item.label,
         icon: item.icon,
         child: item.child,
-
         isActive: _selectedIndex == item.index,
         popupWidth: calculatePopupWidth(item),
         popupBorderRadius: 4.0,

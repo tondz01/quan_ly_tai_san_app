@@ -181,6 +181,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                         onExpandedChanged: (isExpanded) {
                           provider.onSetsShowCollapse(isExpanded);
                         },
+                        title: 'Chi tiết CCDC - Vật tư',
                       ),
                     ),
                   ),

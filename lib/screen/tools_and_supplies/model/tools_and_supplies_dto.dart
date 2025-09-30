@@ -142,22 +142,18 @@ class ToolsAndSuppliesDto {
   
   Map<String, dynamic> toJsonExport() {
     return {
-      'Id': id,
-      'Id đơn vị': idDonVi,
-      'Tên': ten,
-      'Ngày nhập': ngayNhap.toIso8601String(),
+      'Mã công cụ dụng cụ': id,
+      'Mã đơn vị': idDonVi,
+      'Tên công cụ dụng cụ': ten,
+      'Ngày nhập': ngayNhap.toIso8601String().replaceAll('Z', ''),
       'Đơn vị tính': donViTinh,
-      'Id nhóm CCDC': idNhomCCDC,
-      'Id loại CCDC con': idLoaiCCDCCon,
+      'Mã nhóm CCDC': idNhomCCDC,
+      'Mã loại CCDC con': idLoaiCCDCCon,
       'Giá trị': giaTri,
       'Ký hiệu': kyHieu,
       'Ghi chú': ghiChu,
-      'Id công ty': idCongTy,
       'Ngày tạo': ngayTao.toIso8601String().replaceAll('Z', ''),
       'Ngày cập nhật': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
-      'Người tạo': nguoiTao,
-      'Người cập nhật': nguoiCapNhat,
-      'Hiển thị': isActive,
     };
   }
 

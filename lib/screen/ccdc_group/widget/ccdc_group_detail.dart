@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -127,6 +128,8 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              sectionTitle(Icons.info_outline, 'Thông tin nhóm ccdc'),
+              const SizedBox(height: 16),
               CommonFormInput(
                 label: 'Mã nhóm ccdc',
                 controller: controllerIdCcdcGroup,

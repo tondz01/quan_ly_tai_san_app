@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_sup
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/ownership_unit_details.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -251,7 +252,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder:
                   (item) => TableBaseConfig.viewActionBase<ToolsAndSuppliesDto>(
                     item: item,
@@ -363,7 +364,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                           ),
                         ],
                       ),
-                      
+
                       Row(
                         spacing: 16,
                         children: [
@@ -405,9 +406,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                                       onConfirm: () {
                                         final roleBloc =
                                             context
-                                                .read<
-                                                  ToolsAndSuppliesBloc
-                                                >();
+                                                .read<ToolsAndSuppliesBloc>();
                                         roleBloc.add(
                                           DeleteAssetBatchEvent(data),
                                         );
@@ -423,6 +422,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                       // FindByStateAssetHandover(provider: widget.provider),
                     ],
                   ),
+                ),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
                 ),
                 Expanded(
                   child:

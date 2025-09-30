@@ -15,4 +15,5 @@ class MenuPrefs {
   static int? getSelectedSubIndex() => impl.getSelectedSubIndex();
   static void setSelection(int selectedIndex, int selectedSubIndex) =>
       impl.setSelection(selectedIndex, selectedSubIndex);
+  static void clearSelection() => impl.clearSelection();
 } 
