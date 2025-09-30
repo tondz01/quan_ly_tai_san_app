@@ -761,26 +761,63 @@ class _DashboardViewState extends State<DashboardView> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.orange.shade50],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SGText(
-            text: "Top 5 tài sản giá trị cao",
-            style: AppTextStyle.textStyleSemiBold24,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.orange.shade600, Colors.orange.shade800],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(left: 200),
+              child: SGText(
+                text: "Top 5 tài sản giá trị cao",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 24),
+
           Container(
+            padding: EdgeInsets.only(left: 100),
             height: 420,
             child: graphic.Chart(
               data:
                   topAssets
                       .map(
                         (item) => {
-                          'tenTaiSan': item['TenTaiSan'] ?? 'Chưa xác định',
+                          'tenTaiSan': _truncateText(
+                            item['TenTaiSan'] ?? 'Chưa xác định',
+                            20,
+                          ),
                           'nguyenGia': item['NguyenGia'] ?? 0,
                         },
                       )
@@ -801,24 +838,24 @@ class _DashboardViewState extends State<DashboardView> {
                             graphic.Label(formatter.format(tuple['sold'])),
                   ),
                   gradient: graphic.GradientEncode(
-                    value: const LinearGradient(
+                    value: LinearGradient(
                       colors: [
-                        Color(0x8883bff6),
-                        Color(0x88188df0),
-                        Color(0xcc188df0),
+                        Colors.orange.shade300.withOpacity(0.8),
+                        Colors.orange.shade500.withOpacity(0.8),
+                        Colors.orange.shade700.withOpacity(0.9),
                       ],
-                      stops: [0, 0.5, 1],
+                      stops: const [0, 0.5, 1],
                     ),
                     updaters: {
                       'tap': {
                         true:
-                            (_) => const LinearGradient(
+                            (_) => LinearGradient(
                               colors: [
-                                Color(0xee83bff6),
-                                Color(0xee3f78f7),
-                                Color(0xff3f78f7),
+                                Colors.orange.shade400.withOpacity(0.9),
+                                Colors.orange.shade600.withOpacity(0.9),
+                                Colors.orange.shade800,
                               ],
-                              stops: [0, 0.7, 1],
+                              stops: const [0, 0.7, 1],
                             ),
                       },
                     },
@@ -1044,6 +1081,13 @@ class _DashboardViewState extends State<DashboardView> {
         ),
       ),
     );
+  }
+
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return '${text.substring(0, maxLength)}...';
   }
 
   List<Color> get listColors => [
