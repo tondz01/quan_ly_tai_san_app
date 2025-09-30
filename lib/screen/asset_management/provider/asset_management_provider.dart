@@ -232,6 +232,11 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   reset() {
     _isLoading = true;
     onChangeBody(ShowBody.taiSan);
@@ -251,6 +256,7 @@ class AssetManagementProvider with ChangeNotifier {
       bloc.add(GetListDepartmentEvent(context, idCongTy));
       bloc.add(GetListKhauHaoEvent(context, idCongTy));
       bloc.add(GetAllChildAssetsEvent(context, idCongTy));
+      log('[check getDataAll] ');
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -323,7 +329,8 @@ class AssetManagementProvider with ChangeNotifier {
       // _filteredData = [];
       _isLoading = false;
     } else {
-      _data = state.data.where((element) => element.taiSanCon == false).toList();
+      _data = state.data.where((element) => element.isTaiSanCon == false).toList();
+      log('[check getListAssetManagementSuccess] _data: ${_data?.length}');
       _filteredData = List.from(_data!); // Khởi tạo filteredData
       _updatePagination();
       _isLoading = false;
@@ -375,6 +382,8 @@ class AssetManagementProvider with ChangeNotifier {
 
   createAssetError(BuildContext context, CreateAssetFailedState state) {
     _error = state.message;
+    _isLoading = false;
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
   }
 

@@ -1,7 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -11,7 +9,6 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
@@ -21,6 +18,7 @@ Widget buildOriginalAssetInfomation(
   BuildContext context, {
   required TextEditingController ctrlTenTaiSan,
   required TextEditingController ctrlMaTaiSan,
+  required TextEditingController ctrlSoThe,
   required TextEditingController ctrlIdNhomTaiSan,
   required TextEditingController ctrlNguyenGia,
   required TextEditingController ctrlGiaTriKhauHaoBanDau,
@@ -95,6 +93,15 @@ Widget buildOriginalAssetInfomation(
         isRequired: true,
       ),
       CommonFormInput(
+        label: 'Số thẻ tài sản',
+        controller: ctrlSoThe,
+        isEditing: isEditing,
+        textContent: ctrlSoThe.text,
+        fieldName: 'soThe',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+      CommonFormInput(
         label: 'Nguyên giá tài sản',
         controller: ctrlNguyenGia,
         isEditing: isEditing,
@@ -148,7 +155,7 @@ Widget buildOriginalAssetInfomation(
                 )
                 : null,
         onChanged: onAssetCategoryChanged,
-        isRequired: true,
+        // isRequired: true,
         validationErrors: validationErrors,
       ),
   
@@ -211,7 +218,7 @@ Widget buildOriginalAssetInfomation(
         onChanged: onAssetGroupChanged,
         fieldName: 'idNhomTaiSan',
         validationErrors: validationErrors,
-        isRequired: true,
+        // isRequired: true,
       ),
       CmFormDropdownObject<TypeAsset>(
         label: 'Loại tài sản',

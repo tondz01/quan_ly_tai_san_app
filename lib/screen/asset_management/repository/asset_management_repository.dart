@@ -472,12 +472,14 @@ class AssetManagementRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
       // Parse response data using the common ResponseParser utility
-      result['data'] = ResponseParser.parseToList<AssetManagementDto>(
-        response.data,
-        AssetManagementDto.fromJson,
-      );
+      // result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+      //   response.data,
+      //   AssetManagementDto.fromJson,
+      // );
     } catch (e) {
       log("Error at createAssetBatch - AssetTransferRepository: $e");
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
+      result['message'] = e;
     }
 
     return result;

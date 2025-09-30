@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
 class AssetManagementDto {
@@ -16,8 +17,11 @@ class AssetManagementDto {
 
   /// Dữ liệu export cho tài sản
   Map<String, dynamic> toExportJson() {
+    DateTime? ngayTao = DateTime.tryParse(this.ngayTao ?? '');
+    DateTime? ngayCapNhat = DateTime.tryParse(this.ngayCapNhat ?? '');
     return {
       'Mã tài sản': _nullIfEmpty(id),
+      'Số thẻ tài sản': _nullIfEmpty(soThe),
       'Tên tài sản': _nullIfEmpty(tenTaiSan),
       'Nguyên giá': nguyenGia ?? 0.0,
       'Giá trị khấu hao ban đầu': giaTriKhauHaoBanDau ?? 0.0,
@@ -37,8 +41,8 @@ class AssetManagementDto {
       'TK tài sản': taiKhoanTaiSan ?? 0,
       'TK khấu hao': taiKhoanKhauHao ?? 0,
       'TK chi phí': taiKhoanChiPhi ?? 0,
-      'Ngày vào sổ': ngayVaoSo?.toIso8601String() ?? "null",
-      'Ngày sử dụng': ngaySuDung?.toIso8601String() ?? "null",
+      'Ngày vào sổ': AppUtility.formatDateString(ngayVaoSo),
+      'Ngày sử dụng': AppUtility.formatDateString(ngaySuDung),
       'Ký hiệu': _nullIfEmpty(kyHieu),
       'Số ký hiệu': _nullIfEmpty(soKyHieu),
       'Công suất': _nullIfEmpty(congSuat),
@@ -52,16 +56,17 @@ class AssetManagementDto {
       'Mã đơn vị ban đầu': _nullIfEmpty(idDonViBanDau),
       'Mã đơn vị hiện thời': _nullIfEmpty(idDonViHienThoi),
       'Mô tả': _nullIfEmpty(moTa),
-      'Mã công ty': _nullIfEmpty(idCongTy),
-      'Ngày tạo': _nullIfEmpty(ngayTao),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      // 'Mã công ty': _nullIfEmpty(idCongTy),
+      'Ngày tạo': AppUtility.formatDateString(ngayTao),
+      'Ngày cập nhật': AppUtility.formatDateString(ngayCapNhat),
       'Người tạo': _nullIfEmpty(nguoiTao),
       'Người cập nhật': _nullIfEmpty(nguoiCapNhat),
-      'Hiển thị': isActive ?? false,
+      // 'Hiển thị': isActive ?? false,
     };
   }
 
   String? id;
+  String? soThe;
   String? tenTaiSan;
   double? nguyenGia;
   double? giaTriKhauHaoBanDau;
@@ -102,11 +107,12 @@ class AssetManagementDto {
   String? nguoiCapNhat;
   bool? isActive;
   List<ChildAssetDto>? childAssets;
-  bool? taiSanCon;
+  bool? isTaiSanCon;
   String? idLoaiTaiSanCon;
 
   AssetManagementDto({
     this.id,
+    this.soThe,
     this.tenTaiSan,
     this.nguyenGia,
     this.giaTriKhauHaoBanDau,
@@ -147,13 +153,14 @@ class AssetManagementDto {
     this.nguoiCapNhat,
     this.isActive,
     this.childAssets,
-    this.taiSanCon,
+    this.isTaiSanCon,
     this.idLoaiTaiSanCon,
   });
 
   factory AssetManagementDto.fromJson(Map<String, dynamic> json) {
     return AssetManagementDto(
       id: json['id'],
+      soThe: json['soThe'],
       tenTaiSan: json['tenTaiSan'],
       nguyenGia: json['nguyenGia']?.toDouble(),
       giaTriKhauHaoBanDau: json['giaTriKhauHaoBanDau']?.toDouble(),
@@ -208,7 +215,7 @@ class AssetManagementDto {
                   )
                   .toList()
               : [],
-      taiSanCon: json['taiSanCon'],
+      isTaiSanCon: json['isTaiSanCon'],
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'],
     );
   }
@@ -216,6 +223,7 @@ class AssetManagementDto {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'soThe': soThe,
       'tenTaiSan': tenTaiSan,
       'nguyenGia': nguyenGia,
       'giaTriKhauHaoBanDau': giaTriKhauHaoBanDau,
@@ -234,8 +242,8 @@ class AssetManagementDto {
       'taiKhoanTaiSan': taiKhoanTaiSan,
       'taiKhoanKhauHao': taiKhoanKhauHao,
       'taiKhoanChiPhi': taiKhoanChiPhi,
-      'ngayVaoSo': ngayVaoSo?.toIso8601String(),
-      'ngaySuDung': ngaySuDung?.toIso8601String(),
+      'ngayVaoSo': AppUtility.formatDateString(ngayVaoSo),
+      'ngaySuDung': AppUtility.formatDateString(ngaySuDung),
       'kyHieu': kyHieu,
       'soKyHieu': soKyHieu,
       'congSuat': congSuat,
@@ -256,10 +264,20 @@ class AssetManagementDto {
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
-      'taiSanCon': taiSanCon,
+      'isTaiSanCon': isTaiSanCon,
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
     };
   }
+
+  // String _formatDateForServer(DateTime? dateTime) {
+  //   if (dateTime == null) return '';
+  //   return '${dateTime.year.toString().padLeft(4, '0')}-'
+  //       '${dateTime.month.toString().padLeft(2, '0')}-'
+  //       '${dateTime.day.toString().padLeft(2, '0')} '
+  //       '${dateTime.hour.toString().padLeft(2, '0')}:'
+  //       '${dateTime.minute.toString().padLeft(2, '0')}:'
+  //       '${dateTime.second.toString().padLeft(2, '0')}';
+  // }
 
   static List<AssetManagementDto> fromJsonList(List<dynamic> jsonList) {
     return jsonList.map((json) => AssetManagementDto.fromJson(json)).toList();
@@ -276,6 +294,7 @@ class AssetManagementDto {
   factory AssetManagementDto.empty() {
     return AssetManagementDto(
       id: '',
+      soThe: '',
       tenTaiSan: '',
       nguyenGia: null,
       giaTriKhauHaoBanDau: null,
@@ -316,7 +335,7 @@ class AssetManagementDto {
       nguoiCapNhat: '',
       isActive: true,
       childAssets: [],
-      taiSanCon: false,
+      isTaiSanCon: false,
       idLoaiTaiSanCon: '',
     );
   }
@@ -328,6 +347,7 @@ class AssetManagementDto {
 
   AssetManagementDto copyWith({
     String? id,
+    String? soThe,
     String? tenTaiSan,
     double? nguyenGia,
     double? giaTriKhauHaoBanDau,
@@ -368,11 +388,12 @@ class AssetManagementDto {
     String? nguoiCapNhat,
     bool? isActive,
     List<ChildAssetDto>? childAssets,
-    bool? taiSanCon,
+    bool? isTaiSanCon,
     String? idLoaiTaiSanCon,
   }) {
     return AssetManagementDto(
       id: id ?? this.id,
+      soThe: soThe ?? this.soThe,
       tenTaiSan: tenTaiSan ?? this.tenTaiSan,
       nguyenGia: nguyenGia ?? this.nguyenGia,
       giaTriKhauHaoBanDau: giaTriKhauHaoBanDau ?? this.giaTriKhauHaoBanDau,
@@ -413,7 +434,7 @@ class AssetManagementDto {
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       isActive: isActive ?? this.isActive,
       childAssets: childAssets ?? this.childAssets,
-      taiSanCon: taiSanCon ?? this.taiSanCon,
+      isTaiSanCon: isTaiSanCon ?? this.isTaiSanCon,
       idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
     );
   }

@@ -826,7 +826,7 @@ class _ToolAndSuppliesHandoverListState
         AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
         return;
       }
-      
+
       final previousNotSigned = signatureFlow
           .take(currentIndex)
           .firstWhere((s) => s["signed"] == false, orElse: () => {});
@@ -869,15 +869,60 @@ class _ToolAndSuppliesHandoverListState
     }
   }
 
-  void _handleSendToSigner(List<ToolAndSuppliesHandoverDto> items) {
+ 
+  List<ToolAndSuppliesHandoverDto> _getNotSharedAndNotify(
+    List<ToolAndSuppliesHandoverDto> items,
+  ) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,
         'Không có phiếu nào để chia sẻ',
         isError: true,
       );
-      return;
+      return const [];
     }
+
+    final List<ToolAndSuppliesHandoverDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<ToolAndSuppliesHandoverDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.banGiaoCCDCVatTu?.trim().isNotEmpty == true
+                    ? e.banGiaoCCDCVatTu!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
+  void _handleSendToSigner(List<ToolAndSuppliesHandoverDto> items) {
+    // Xác nhận và chỉ gửi những phiếu chưa share
     showConfirmDialog(
       context,
       type: ConfirmType.delete,
@@ -886,8 +931,10 @@ class _ToolAndSuppliesHandoverListState
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<ToolAndSuppliesHandoverBloc>().add(
-          SendToSignerAsetHandoverEvent(context, items),
+          SendToSignerAsetHandoverEvent(context, notShared),
         );
       },
     );

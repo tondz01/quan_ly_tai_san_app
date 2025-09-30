@@ -325,6 +325,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     // if (controllerRepresentativeUnit.text.isEmpty) {
     //   newValidationErrors['representativeUnit'] = true;
     // }
+    if (item == null && _selectedFileName == null) {
+      newValidationErrors['document'] = true;
+    }
 
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {

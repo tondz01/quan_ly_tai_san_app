@@ -34,7 +34,7 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
     dataAssetTransfer =
         widget.provider.dataAssetTransfer
             ?.where((element) => element.trangThai == 3)
-            .where((element) => element.daBanGiao == false)
+            // .where((element) => element.daBanGiao == false)
             .toList() ??
         [];
   }

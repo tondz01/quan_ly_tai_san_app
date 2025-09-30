@@ -67,7 +67,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           PostLoginFailedState(
             title: "notice",
             code: result['status_code'],
-            message: "Tài khoản hoặc mật khẩu không chính xác",
+            message: "Tài khoản hoặc mật khẩu không chính xác ${result['message']}",
           ),
         );
       }

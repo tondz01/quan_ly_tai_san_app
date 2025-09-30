@@ -164,19 +164,19 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _isActive,
-                      onChanged:
-                          (v) => setState(() => _isActive = v ?? true),
-                    ),
-                    const Text(
-                      'Có hiệu lực',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
+                // Row(
+                //   children: [
+                //     Checkbox(
+                //       value: _isActive,
+                //       onChanged:
+                //           (v) => setState(() => _isActive = v ?? true),
+                //     ),
+                //     const Text(
+                //       'Có hiệu lực',
+                //       style: TextStyle(fontSize: 16),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ),

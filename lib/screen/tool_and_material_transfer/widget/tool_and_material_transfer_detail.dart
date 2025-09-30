@@ -204,6 +204,11 @@ class _ToolAndMaterialTransferDetailState
     if (donViGiao == null || controllerDeliveringUnit.text.isEmpty) {
       newValidationErrors['deliveringUnit'] = true;
     }
+
+    if (item == null && _selectedFileName == null) {
+      newValidationErrors['document'] = true;
+    }
+
     // Only update state if validation errors have changed
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
@@ -578,11 +583,11 @@ class _ToolAndMaterialTransferDetailState
         if (!changed(oldVal, newVal)) {
           continue;
         }
-        
+
         if (oldVal.id.isEmpty) {
           continue;
         }
-        
+
         await repo.update(
           oldVal.id,
           ChiTietBanGiaoRequest(

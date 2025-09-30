@@ -29,12 +29,7 @@ class ChiTietDieuDongTaiSanRepository {
   }
 
   Future<List<ChiTietDieuDongTaiSan>> getAll(String idDieuDongTaiSan) async {
-    log('message test: ${idDieuDongTaiSan}');
-    final queryParams = {"iddieudongtaisan": idDieuDongTaiSan};
 
-    // Log cURL command
-    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
-    log('cURL command: $curlCommand');
     final res = await _dio.get(
       '',
       queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},
