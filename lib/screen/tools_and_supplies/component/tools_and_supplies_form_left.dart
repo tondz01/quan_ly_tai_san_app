@@ -46,6 +46,33 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        CommonFormInput(
+          label: 'tas.code'.tr,
+          controller: controllerCode,
+          isEditing: item != null ? false : isEditing,
+          textContent: item?.id ?? '',
+          fieldName: 'id',
+          validationErrors: validationErrors,
+          isRequired: true,
+        ),
+        CommonFormInput(
+          label: 'tas.name'.tr,
+          controller: controllerName,
+          isEditing: isEditing,
+          textContent: item?.ten ?? '',
+          fieldName: 'ten',
+          validationErrors: validationErrors,
+          isRequired: true,
+        ),
+        CommonFormInput(
+          label: 'tas.unit'.tr,
+          controller: controllerUnit,
+          isEditing: isEditing,
+          textContent: item?.donViTinh ?? '',
+          fieldName: 'donViTinh',
+          validationErrors: validationErrors,
+          isRequired: true,
+        ),
         CmFormDropdownObject<PhongBan>(
           label: 'tas.import_unit'.tr,
           controller: controllerImportUnit,
@@ -58,25 +85,7 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
           onChanged: onPhongBanChanged,
           fieldName: 'idDonVi',
           validationErrors: validationErrors,
-          isRequired: true
-        ),
-        CommonFormInput(
-          label: 'tas.name'.tr,
-          controller: controllerName,
-          isEditing: isEditing,
-          textContent: item?.ten ?? '',
-          fieldName: 'ten',
-          validationErrors: validationErrors,
-          isRequired: true
-        ),
-        CommonFormInput(
-          label: 'tas.code'.tr,
-          controller: controllerCode,
-          isEditing: item != null ? false : isEditing,
-          textContent: item?.id ?? '',
-          fieldName: 'id',
-          validationErrors: validationErrors,
-          isRequired: true
+          isRequired: true,
         ),
         CmFormDate(
           label: 'tas.import_date'.tr,
@@ -86,16 +95,7 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
           value: selected,
           fieldName: 'ngayNhap',
           validationErrors: validationErrors,
-          isRequired: true
-        ),
-        CommonFormInput(
-          label: 'tas.unit'.tr,
-          controller: controllerUnit,
-          isEditing: isEditing,
-          textContent: item?.donViTinh ?? '',
-          fieldName: 'donViTinh',
-          validationErrors: validationErrors,
-          isRequired: true
+          isRequired: true,
         ),
       ],
     );

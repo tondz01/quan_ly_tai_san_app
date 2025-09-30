@@ -1,58 +1,31 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
-
-extension DateTimeToISO on DateTime {
-  String toISOFormat() {
-    return toUtc().toIso8601String();
-  }
-}
-
-/// Helper function to normalize date to ISO format with UTC timezone
-String _normalizeDateToISO(dynamic value) {
-  if (value == null) return DateTime.now().toISOFormat();
-  if (value is DateTime) return value.toISOFormat();
-  if (value is num) return AppUtility.excelSerialToDate(value).toISOFormat();
-
-  final text = value.toString().trim();
-  if (text.isEmpty) return DateTime.now().toISOFormat();
-
-  // Try to parse the date
-  final parsed = DateTime.tryParse(text);
-  if (parsed != null) return parsed.toISOFormat();
-
-  // If parsing fails, return current date
-  return DateTime.now().toISOFormat();
-}
 
 Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
   List<String> rowErrors = [];
 
   // Validate required fields
   if (json['id'] == null || json['id'].toString().trim().isEmpty) {
-    rowErrors.add('Mã nhóm không được để trống');
+    rowErrors.add('Mã đơn vị không được để trống');
   }
 
-  if (json['tenNhom'] == null || json['tenNhom'].toString().trim().isEmpty) {
-    rowErrors.add('Tên nhóm không được để trống');
+  if (json['tenDonVi'] == null || json['tenDonVi'].toString().trim().isEmpty) {
+    rowErrors.add('Tên đơn vị không được để trống');
   }
 
   return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
 }
 
-Future<Map<String, dynamic>> convertExcelToAssetGroup(
+Future<Map<String, dynamic>> convertExcelToUnit(
   String filePath, {
   Uint8List? fileBytes,
 }) async {
   final bytes = fileBytes ?? File(filePath).readAsBytesSync();
-  final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
   Map<String, dynamic> result = {
     "success": true,
     "message": "",
@@ -60,7 +33,7 @@ Future<Map<String, dynamic>> convertExcelToAssetGroup(
     "errors": [],
   };
 
-  final List<AssetGroupDto> groups = [];
+  final List<UnitDto> units = [];
   List<Map<String, dynamic>> errors = [];
 
   try {
@@ -75,14 +48,8 @@ Future<Map<String, dynamic>> convertExcelToAssetGroup(
         final row = sheet.rows[rowIndex];
         final json = <String, dynamic>{
           'id': AppUtility.s(row[0]?.value),
-          'tenNhom': AppUtility.s(row[1]?.value),
-          'hieuLuc': AppUtility.b(row[2]?.value ?? true),
-          'idCongTy': 'ct001',
-          'ngayTao': _normalizeDateToISO(row[3]?.value ?? DateTime.now()),
-          'ngayCapNhat': _normalizeDateToISO(row[4]?.value ?? DateTime.now()),
-          'nguoiTao': fallbackUser,
-          'nguoiCapNhat': fallbackUser,
-          'isActive': true,
+          'tenDonVi': AppUtility.s(row[1]?.value),
+          'note': AppUtility.s(row[2]?.value),
         };
 
         final validation = _validateRow(json, rowIndex);
@@ -93,7 +60,7 @@ Future<Map<String, dynamic>> convertExcelToAssetGroup(
             'data': json,
           });
         } else {
-          groups.add(AssetGroupDto.fromJson(json));
+          units.add(UnitDto.fromJson(json));
         }
       }
     }
@@ -110,14 +77,8 @@ Future<Map<String, dynamic>> convertExcelToAssetGroup(
         final row = sheet.rows[rowIndex];
         final json = <String, dynamic>{
           'id': AppUtility.s(cell(row, 0)),
-          'tenNhom': AppUtility.s(cell(row, 1)),
-          'hieuLuc': AppUtility.b(cell(row, 2) ?? true),
-          'idCongTy': 'ct001',
-          'ngayTao': _normalizeDateToISO(cell(row, 3) ?? DateTime.now()),
-          'ngayCapNhat': _normalizeDateToISO(cell(row, 4) ?? DateTime.now()),
-          'nguoiTao': fallbackUser,
-          'nguoiCapNhat': fallbackUser,
-          'isActive': true,
+          'tenDonVi': AppUtility.s(cell(row, 1)),
+          'note': AppUtility.s(cell(row, 2)),
         };
        
         final validation = _validateRow(json, rowIndex);
@@ -128,13 +89,13 @@ Future<Map<String, dynamic>> convertExcelToAssetGroup(
             'data': json,
           });
         } else {
-          groups.add(AssetGroupDto.fromJson(json));
+          units.add(UnitDto.fromJson(json));
         }
       }
     }
   }
 
-  result['data'] = groups;
+  result['data'] = units;
   result['errors'] = errors;
 
   if (errors.isNotEmpty) {
@@ -143,7 +104,7 @@ Future<Map<String, dynamic>> convertExcelToAssetGroup(
         'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
   } else {
     result['success'] = true;
-    result['message'] = 'Import thành công ${groups.length} nhóm tài sản.';
+    result['message'] = 'Import thành công ${units.length} đơn vị.';
   }
 
   return result;

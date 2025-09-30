@@ -1,104 +1,49 @@
 import 'dart:convert';
 
-class AssetGroupDto {
+class UnitDto {
   final String? id;
-  final String? tenNhom;
-  final bool? hieuLuc;
-  final String? idCongTy;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
-  final String? nguoiTao;
-  final String? nguoiCapNhat;
-  final bool? isActive;
+  final String? tenDonVi;
+  final String? note;
 
-  AssetGroupDto({
+  UnitDto({
     this.id,
-    this.tenNhom,
-    this.hieuLuc,
-    this.idCongTy,
-    this.ngayTao,
-    this.ngayCapNhat,
-    this.nguoiTao,
-    this.nguoiCapNhat,
-    this.isActive,
+    this.tenDonVi,
+    this.note,
   });
 
-  factory AssetGroupDto.fromJson(Map<String, dynamic> json) {
-    return AssetGroupDto(
+  factory UnitDto.fromJson(Map<String, dynamic> json) {
+    return UnitDto(
       id: json['id']?.toString(),
-      tenNhom: json['tenNhom'],
-      hieuLuc: json['hieuLuc'],
-      idCongTy: json['idCongTy'],
-      ngayTao:
-          json['ngayTao'] != null ? DateTime.tryParse(json['ngayTao']) : null,
-      ngayCapNhat:
-          json['ngayCapNhat'] != null
-              ? DateTime.tryParse(json['ngayCapNhat'])
-              : null,
-      nguoiTao: json['nguoiTao'],
-      nguoiCapNhat: json['nguoiCapNhat'],
-      isActive: json['isActive'],
+      tenDonVi: json['tenDonVi'],
+      note: json['note'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'tenNhom': tenNhom,
-      'hieuLuc': hieuLuc,
-      'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.toUtc().toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toUtc().toIso8601String(),
-      'nguoiTao': nguoiTao,
-      'nguoiCapNhat': nguoiCapNhat,
-      'isActive': isActive,
+      'tenDonVi': tenDonVi,
+      'note': note,
     };
   }
 
-  Map<String, dynamic> toLoaiTaisanJson() {
-    return {
-      'id': id,
-      'tenLoaiTaiSan': tenNhom,
-      'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.toIso8601String().replaceAll('Z', ''),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String().replaceAll('Z', ''),
-      'nguoiTao': nguoiTao,
-      'nguoiCapNhat': nguoiCapNhat,
-      'isActive': isActive,
-    };
+  static List<UnitDto> fromJsonList(List<dynamic> jsonList) {
+    return jsonList.map((json) => UnitDto.fromJson(json)).toList();
   }
 
-  static List<AssetGroupDto> fromJsonList(List<dynamic> jsonList) {
-    return jsonList.map((json) => AssetGroupDto.fromJson(json)).toList();
-  }
+  static String encode(List<UnitDto> units) =>
+      json.encode(units.map((u) => u.toJson()).toList());
 
-  static String encode(List<AssetGroupDto> categories) =>
-      json.encode(categories.map((category) => category.toJson()).toList());
-
-  static List<AssetGroupDto> decode(String categories) =>
-      (json.decode(categories) as List<dynamic>)
-          .map<AssetGroupDto>((item) => AssetGroupDto.fromJson(item))
+  static List<UnitDto> decode(String units) =>
+      (json.decode(units) as List<dynamic>)
+          .map<UnitDto>((item) => UnitDto.fromJson(item))
           .toList();
 
-  // Helper chuyển null/empty string thành "null" để export
-  dynamic _nullIfEmpty(dynamic value) {
-    if (value == null) {
-      return "";
-    }
-    if (value is String) {
-      return value.trim().isEmpty ? "" : value;
-    }
-    return value;
-  }
-
-  /// Dữ liệu export cho Nhóm tài sản
   Map<String, dynamic> toExportJson() {
     return {
-      'Mã nhóm': _nullIfEmpty(id),
-      'Tên nhóm': _nullIfEmpty(tenNhom),
-      'Hiệu lực': hieuLuc ?? true,
-      'Ngày tạo': _nullIfEmpty(ngayTao?.toIso8601String()),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat?.toIso8601String()),
+      'Mã đơn vị': id ?? '',
+      'Tên đơn vị': tenDonVi ?? '',
+      'Ghi chú': note ?? '',
     };
   }
 }

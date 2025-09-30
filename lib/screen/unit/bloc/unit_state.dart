@@ -1,42 +1,42 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 
-abstract class AssetGroupState extends Equatable {
-  const AssetGroupState();
+abstract class UnitState extends Equatable {
+  const UnitState();
 
   @override
   List<Object?> get props => [];
 }
 
-class AssetGroupInitialState extends AssetGroupState {}
+class UnitInitialState extends UnitState {}
 
-class AssetGroupLoadingState extends AssetGroupState {}
+class UnitLoadingState extends UnitState {}
 
-class AssetGroupLoadingDismissState extends AssetGroupState {}
+class UnitLoadingDismissState extends UnitState {}
 
-class GetListAssetGroupSuccessState extends AssetGroupState {
-  final List<AssetGroupDto> data;
+class GetListUnitSuccessState extends UnitState {
+  final List<UnitDto> data;
 
-  const GetListAssetGroupSuccessState({required this.data});
+  const GetListUnitSuccessState({required this.data});
 
   @override
   List<Object> get props => [data];
 }
 
-class CreateAssetGroupSuccessState extends AssetGroupState {
+class CreateUnitSuccessState extends UnitState {
 
-  const CreateAssetGroupSuccessState();
+  const CreateUnitSuccessState();
 
   @override
   List<Object> get props => [];
 }
 
-class GetListAssetGroupFailedState extends AssetGroupState {
+class GetListUnitFailedState extends UnitState {
   final String title;
   final int? code;
   final String message;
 
-  const GetListAssetGroupFailedState({
+  const GetListUnitFailedState({
     required this.title,
     this.code,
     required this.message,
@@ -46,12 +46,12 @@ class GetListAssetGroupFailedState extends AssetGroupState {
   List<Object> get props => [title, code!, message];
 }
 
-class CreateAssetGroupFailedState extends AssetGroupState {
+class CreateUnitFailedState extends UnitState {
   final String title;
   final int? code;
   final String message;
 
-  const CreateAssetGroupFailedState({
+  const CreateUnitFailedState({
     required this.title,
     this.code,
     required this.message,
@@ -62,26 +62,26 @@ class CreateAssetGroupFailedState extends AssetGroupState {
 }
 
 //UPDATE
-class UpdateAssetGroupSuccessState extends AssetGroupState {
+class UpdateUnitSuccessState extends UnitState {
   final String data;
 
-  const UpdateAssetGroupSuccessState({required this.data});
+  const UpdateUnitSuccessState({required this.data});
 
   @override
   List<Object> get props => [data];
 }
 
 //DELETE
-class DeleteAssetGroupSuccessState extends AssetGroupState {
+class DeleteUnitSuccessState extends UnitState {
   final String data;
 
-  const DeleteAssetGroupSuccessState({required this.data});
+  const DeleteUnitSuccessState({required this.data});
 
   @override
   List<Object> get props => [data];
 }
 
-class PutPostDeleteFailedState extends AssetGroupState {
+class PutPostDeleteFailedState extends UnitState {
   final String title;
   final int? code;
   final String message;

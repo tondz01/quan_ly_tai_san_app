@@ -6,14 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_state.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-class AssetGroupProvider with ChangeNotifier {
+class UnitProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchTerm => _searchTerm;
@@ -21,7 +21,7 @@ class AssetGroupProvider with ChangeNotifier {
   get data => _data;
   get filteredData => _filteredData;
   get dataPage => _dataPage;
-  AssetGroupDto? get dataDetail => _dataDetail;
+  UnitDto? get dataDetail => _dataDetail;
 
   get isCreate => _isCreate;
   bool get isShowCollapse => _isShowCollapse ?? false;
@@ -58,10 +58,10 @@ class AssetGroupProvider with ChangeNotifier {
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
 
-  List<AssetGroupDto>? _data;
-  List<AssetGroupDto>? _filteredData;
-  List<AssetGroupDto>? _dataPage;
-  AssetGroupDto? _dataDetail;
+  List<UnitDto>? _data;
+  List<UnitDto>? _filteredData;
+  List<UnitDto>? _dataPage;
+  UnitDto? _dataDetail;
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -81,17 +81,9 @@ class AssetGroupProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           _data!.where((item) {
-            return
-            // Tên phiếu
-            (item.id?.toLowerCase().contains(searchLower) ?? false) ||
-                // Số quyết định
-                (item.tenNhom?.toLowerCase().contains(searchLower) ?? false) ||
-                // công ty
-                (item.idCongTy?.toLowerCase().contains(searchLower) ?? false) ||
-                // ngày tạo
-                // ngày cập nhật
-                // người tạo
-                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false);
+            return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenDonVi?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.note?.toLowerCase().contains(searchLower) ?? false);
           }).toList();
     } else {
       _filteredData = _data!;
@@ -111,28 +103,25 @@ class AssetGroupProvider with ChangeNotifier {
     _isCreate = false;
     _isShowCollapse = false;
     _isShowInput = false;
-    getListAssetGroup(context);
+    getListUnit(context);
     notifyListeners();
   }
 
-  void getListAssetGroup(BuildContext context) {
+  void getListUnit(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
-      context.read<AssetGroupBloc>().add(GetListAssetGroupEvent(context));
+      context.read<UnitBloc>().add(GetListUnitEvent(context));
     });
   }
 
-  getListAssetGroupSuccess(
-    BuildContext context,
-    GetListAssetGroupSuccessState state,
-  ) {
+  getListUnitSuccess(BuildContext context, GetListUnitSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
       _isLoading = false;
     } else {
-      log('message getListAssetGroupSuccess: ${state.data.length}');
+      log('message getListUnitSuccess: ${state.data.length}');
       _data = state.data;
       _filteredData = List.from(_data!);
       _isLoading = false;
@@ -184,7 +173,7 @@ class AssetGroupProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetail(AssetGroupDto? item) {
+  void onChangeDetail(UnitDto? item) {
     // log('message onChangeDetail: ${item?.toJson()}');
     if (item != null) {
       _dataDetail = item;
@@ -200,49 +189,34 @@ class AssetGroupProvider with ChangeNotifier {
     log('message onChangeDetail: $_isShowInput');
   }
 
-  void createAssetGroupSuccess(
-    BuildContext context,
-    CreateAssetGroupSuccessState state,
-  ) {
+  void createUnitSuccess(BuildContext context, CreateUnitSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     refresh(context);
     notifyListeners();
   }
 
-  void updateAssetGroupSuccess(
-    BuildContext context,
-    UpdateAssetGroupSuccessState state,
-  ) {
+  void updateUnitSuccess(BuildContext context, UpdateUnitSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
     refresh(context);
     notifyListeners();
   }
 
-  void deleteAssetGroupSuccess(
-    BuildContext context,
-    DeleteAssetGroupSuccessState state,
-  ) {
+  void deleteUnitSuccess(BuildContext context, DeleteUnitSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
     refresh(context);
     notifyListeners();
   }
 
-  void getListAssetGroupFailed(
-    BuildContext context,
-    GetListAssetGroupFailedState state,
-  ) {
+  void getListUnitFailed(BuildContext context, GetListUnitFailedState state) {
     _error = state.message;
     _isLoading = false;
     notifyListeners();
   }
 
-  void createAssetGroupFailed(
-    BuildContext context,
-    CreateAssetGroupFailedState state,
-  ) {
+  void createUnitFailed(BuildContext context, CreateUnitFailedState state) {
     _error = state.message;
     AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
@@ -252,64 +226,7 @@ class AssetGroupProvider with ChangeNotifier {
     BuildContext context,
     PutPostDeleteFailedState state,
   ) {
-    AppUtility.showSnackBar(context, state.message,isError: true);
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
-  }
-
-  Future<Map<String, dynamic>?> insertData(
-    BuildContext context,
-    String fileName,
-    String filePath,
-    Uint8List fileBytes,
-  ) async {
-    if (kIsWeb) {
-      if (fileName.isEmpty || filePath.isEmpty) return null;
-    } else {
-      if (filePath.isEmpty) return null;
-    }
-    try {
-      final result =
-          kIsWeb
-              ? await AssetGroupRepository().insertDataFileBytes(
-                fileName,
-                fileBytes,
-              )
-              : await AssetGroupRepository().insertDataFile(filePath);
-      final statusCode = result['status_code'] as int? ?? 0;
-      if (statusCode >= 200 && statusCode < 300) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Import dữ liệu thành công'),
-              backgroundColor: Colors.green.shade600,
-            ),
-          );
-          getListAssetGroup(context);
-        }
-        return result['data'];
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tải lên thất bại (mã $statusCode)'),
-              backgroundColor: Colors.red.shade600,
-            ),
-          );
-        }
-        return null;
-      }
-    } catch (e) {
-      SGLog.debug("AssetGroupProvider", ' Error uploading file: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
-        return null;
-      }
-    }
-    return null;
   }
 }

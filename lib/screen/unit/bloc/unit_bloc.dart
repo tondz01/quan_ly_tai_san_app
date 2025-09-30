@@ -1,37 +1,31 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
 import 'unit_event.dart';
 import 'unit_state.dart';
 
-class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
-  AssetGroupBloc() : super(AssetGroupInitialState()) {
-    on<GetListAssetGroupEvent>(_getListAssetTransfer);
-    on<CreateAssetGroupEvent>(_createAssetGroup);
-    on<CreateAssetGroupBatchEvent>(_createAssetGroupBatch);
-    on<UpdateAssetGroupEvent>(_updateAssetGroup);
-    on<DeleteAssetGroupEvent>(_deleteAssetGroup);
-    on<DeleteAssetGroupBatchEvent>(_deleteAssetGroupBatch);
+class UnitBloc extends Bloc<UnitEvent, UnitState> {
+  UnitBloc() : super(UnitInitialState()) {
+    on<GetListUnitEvent>(_getListUnit);
+    on<CreateUnitEvent>(_createUnit);
+    on<CreateUnitBatchEvent>(_createUnitBatch);
+    on<UpdateUnitEvent>(_updateUnit);
+    on<DeleteUnitEvent>(_deleteUnit);
+    on<DeleteUnitBatchEvent>(_deleteUnitBatch);
   }
 
-  Future<void> _getListAssetTransfer(
-    GetListAssetGroupEvent event,
-    Emitter emit,
-  ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    Map<String, dynamic> result =
-        await AssetGroupRepository().getListAssetGroup();
+  Future<void> _getListUnit(GetListUnitEvent event, Emitter emit) async {
+    emit(UnitInitialState());
+    emit(UnitLoadingState());
+    Map<String, dynamic> result = await UnitRepository().getListUnit();
 
-    emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(GetListAssetGroupSuccessState(data: result['data']));
-      AccountHelper.instance.setAssetGroup(result['data']);
+    emit(UnitLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(GetListUnitSuccessState(data: result['data']));
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
       emit(
-        GetListAssetGroupFailedState(
+        GetListUnitFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,
@@ -40,23 +34,19 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
     }
   }
 
-  Future<void> _createAssetGroup(
-    CreateAssetGroupEvent event,
-    Emitter emit,
-  ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    Map<String, dynamic> result = await AssetGroupRepository().createAssetGroup(
+  Future<void> _createUnit(CreateUnitEvent event, Emitter emit) async {
+    emit(UnitInitialState());
+    emit(UnitLoadingState());
+    Map<String, dynamic> result = await UnitRepository().createUnit(
       event.params,
     );
-    emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
-      emit(CreateAssetGroupSuccessState());
+    emit(UnitLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(CreateUnitSuccessState());
     } else {
-      String msg = "Lỗi khi tạo nhóm tài sản ${result['message']}";
+      String msg = "Lỗi khi tạo đơn vị ${result['message']}";
       emit(
-        CreateAssetGroupFailedState(
+        CreateUnitFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,
@@ -65,95 +55,82 @@ class AssetGroupBloc extends Bloc<AssetGroupEvent, AssetGroupState> {
     }
   }
 
-  Future<void> _createAssetGroupBatch(
-    CreateAssetGroupBatchEvent event,
+  Future<void> _createUnitBatch(
+    CreateUnitBatchEvent event,
     Emitter emit,
   ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    Map<String, dynamic> result = await AssetGroupRepository()
-        .saveAssetGroupBatch(event.params);
-    emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
-      emit(CreateAssetGroupSuccessState());
-    } else {
-      String msg = "Lỗi khi tạo import nhóm tài sản ${result['message']}";
-      emit(
-        CreateAssetGroupFailedState(
-          title: "notice",
-          code: result['status_code'],
-          message: msg,
-        ),
-      );
-    }
-  }
-
-  //CALL API UPDATE
-  Future<void> _updateAssetGroup(
-    UpdateAssetGroupEvent event,
-    Emitter emit,
-  ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().updateAssetGroup(
+    emit(UnitInitialState());
+    emit(UnitLoadingState());
+    Map<String, dynamic> result = await UnitRepository().saveUnitBatch(
       event.params,
-      event.id,
     );
-    emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(UpdateAssetGroupSuccessState(data: result['data'].toString()));
+    emit(UnitLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(CreateUnitSuccessState());
     } else {
+      String msg = "Lỗi khi import đơn vị ${result['message']}";
       emit(
-        PutPostDeleteFailedState(
-          title: 'notice',
+        CreateUnitFailedState(
+          title: "notice",
           code: result['status_code'],
-          message: 'Lỗi khi cập nhật nhóm tài sản',
+          message: msg,
         ),
       );
     }
   }
 
-  //CALL API UPDATE
-  Future<void> _deleteAssetGroup(
-    DeleteAssetGroupEvent event,
-    Emitter emit,
-  ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().deleteAssetGroup(event.id);
-    emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(DeleteAssetGroupSuccessState(data: result['data'].toString()));
+  Future<void> _updateUnit(UpdateUnitEvent event, Emitter emit) async {
+    emit(UnitInitialState());
+    emit(UnitLoadingState());
+    final result = await UnitRepository().updateUnit(event.params, event.id);
+    emit(UnitLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(UpdateUnitSuccessState(data: result['data'].toString()));
     } else {
       emit(
         PutPostDeleteFailedState(
           title: 'notice',
           code: result['status_code'],
-          message: 'Lỗi khi xóa nhóm tài sản',
+          message: 'Lỗi khi cập nhật đơn vị',
         ),
       );
     }
   }
 
-  Future<void> _deleteAssetGroupBatch(
-    DeleteAssetGroupBatchEvent event,
-    Emitter emit,
-  ) async {
-    emit(AssetGroupInitialState());
-    emit(AssetGroupLoadingState());
-    final result = await AssetGroupRepository().deleteAssetGroupBatch(
-      event.ids,
-    );
-    emit(AssetGroupLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(DeleteAssetGroupSuccessState(data: result['data'].toString()));
+  Future<void> _deleteUnit(DeleteUnitEvent event, Emitter emit) async {
+    emit(UnitInitialState());
+    emit(UnitLoadingState());
+    final result = await UnitRepository().deleteUnit(event.id);
+    emit(UnitLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(DeleteUnitSuccessState(data: result['data'].toString()));
     } else {
       emit(
         PutPostDeleteFailedState(
           title: 'notice',
           code: result['status_code'],
-          message: 'Lỗi khi xóa danh sách nhóm tài sản',
+          message: 'Lỗi khi xóa đơn vị',
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteUnitBatch(
+    DeleteUnitBatchEvent event,
+    Emitter emit,
+  ) async {
+    emit(UnitInitialState());
+    emit(UnitLoadingState());
+    final result = await UnitRepository().deleteUnitBatch(event.ids);
+    emit(UnitLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(DeleteUnitSuccessState(data: result['data'].toString()));
+    } else {
+      emit(
+        PutPostDeleteFailedState(
+          title: 'notice',
+          code: result['status_code'],
+          message: 'Lỗi khi xóa danh sách đơn vị',
         ),
       );
     }

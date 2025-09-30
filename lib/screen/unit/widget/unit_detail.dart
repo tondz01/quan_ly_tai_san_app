@@ -2,37 +2,30 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/provider/unit_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 
-class AssetGroupDetail extends StatefulWidget {
-  final AssetGroupProvider provider;
-  const AssetGroupDetail({super.key, required this.provider});
+class UnitDetail extends StatefulWidget {
+  final UnitProvider provider;
+  const UnitDetail({super.key, required this.provider});
 
   @override
-  State<AssetGroupDetail> createState() => _AssetGroupDetailState();
+  State<UnitDetail> createState() => _UnitDetailState();
 }
 
-class _AssetGroupDetailState extends State<AssetGroupDetail> {
-  AssetGroupDto? data;
+class _UnitDetailState extends State<UnitDetail> {
+  UnitDto? data;
   bool isEditing = false;
-  bool isActive = false;
-  String? nameAssetGroup;
-  String idCongTy = 'CT001';
-  DateTime? createdAt;
 
-  TextEditingController controllerIdAssetGroup = TextEditingController();
-  TextEditingController controllerNameAssetGroup = TextEditingController();
+  TextEditingController controllerId = TextEditingController();
+  TextEditingController controllerTenDonVi = TextEditingController();
+  TextEditingController controllerNote = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -43,7 +36,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   }
 
   @override
-  void didUpdateWidget(covariant AssetGroupDetail oldWidget) {
+  void didUpdateWidget(covariant UnitDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.provider.dataDetail != data) {
       log('message didUpdateWidget: ${widget.provider.dataDetail?.toJson()}');
@@ -53,26 +46,13 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
 
   @override
   void dispose() {
-    controllerIdAssetGroup.dispose();
-    controllerNameAssetGroup.dispose();
+    controllerId.dispose();
+    controllerTenDonVi.dispose();
+    controllerNote.dispose();
     super.dispose();
   }
 
-  /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
-  String getDateNow() {
-    final now = DateTime.now();
-    final utc = now.toUtc();
-    final year = utc.year.toString().padLeft(4, '0');
-    final month = utc.month.toString().padLeft(2, '0');
-    final day = utc.day.toString().padLeft(2, '0');
-    final hour = utc.hour.toString().padLeft(2, '0');
-    final minute = utc.minute.toString().padLeft(2, '0');
-    final second = utc.second.toString().padLeft(2, '0');
-    final millisecond = utc.millisecond.toString().padLeft(3, '0');
-
-    return '$year-$month-${day}T$hour:$minute:$second.$millisecond+00:00';
-  }
-
+ 
   _initData() {
     log('message _initData: ${widget.provider.dataDetail}');
     if (widget.provider.dataDetail != null) {
@@ -80,17 +60,18 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
         isEditing = false;
       });
       data = widget.provider.dataDetail;
-      controllerIdAssetGroup.text = data!.id ?? '';
-      controllerNameAssetGroup.text = data!.tenNhom ?? '';
-      isActive = data!.hieuLuc ?? false;
+      controllerId.text = data!.id ?? '';
+      controllerTenDonVi.text = data!.tenDonVi ?? '';
+      controllerNote.text = data!.note ?? '';
     } else {
       log('message _initData: ${widget.provider.isCreate}');
       data = null;
       setState(() {
         isEditing = widget.provider.isCreate;
       });
-      controllerIdAssetGroup.text = '';
-      controllerNameAssetGroup.text = '';
+      controllerId.text = '';
+      controllerTenDonVi.text = '';
+      controllerNote.text = '';
     }
   }
 
@@ -117,36 +98,44 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                sectionTitle(Icons.info_outline, 'Thông tin nhóm tài sản'),
+                sectionTitle(Icons.info_outline, 'Thông tin đơn vị tính'),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: controllerIdAssetGroup,
+                  controller: controllerId,
                   enabled: data != null ? false : isEditing,
                   decoration: inputDecoration(
-                    'Mã nhóm tài sản',
+                    'Mã đơn vị tính',
                     required: true,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Nhập mã nhóm tài sản';
+                      return 'Nhập mã đơn vị tính';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: controllerNameAssetGroup,
+                  controller: controllerTenDonVi,
                   enabled: isEditing,
                   decoration: inputDecoration(
-                    'Tên nhóm tài sản',
+                    'Tên đơn vị tính',
                     required: true,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Nhập tên nhóm tài sản';
+                      return 'Nhập tên đơn vị tính';
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: controllerNote,
+                  enabled: isEditing,
+                  decoration: inputDecoration(
+                    'Ghi chú',
+                  ),
                 ),
               ],
             ),
@@ -188,7 +177,7 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa nhóm tài sản',
+          text: 'Chỉnh sửa đơn vị tính',
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,
@@ -201,37 +190,24 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   }
 
   void _saveChanges() {
-    UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
     if (_formKey.currentState!.validate()) {
       if (data == null) {
-        AssetGroupRequest request = AssetGroupRequest(
-          id: controllerIdAssetGroup.text,
-          tenNhom: controllerNameAssetGroup.text,
-          isActive: isActive,
-          hieuLuc: isActive,
-          idCongTy: idCongTy,
-          ngayTao: DateTime.parse(getDateNow()),
-          ngayCapNhat: DateTime.parse(getDateNow()),
-          nguoiTao: userInfo?.id ?? '',
+        final request = UnitDto(
+          id: controllerId.text,
+          tenDonVi: controllerTenDonVi.text,
+          note: controllerNote.text,
         );
-
-        context.read<AssetGroupBloc>().add(
-          CreateAssetGroupEvent(context, request),
+        context.read<UnitBloc>().add(
+          CreateUnitEvent(context, request),
         );
       } else {
-        AssetGroupRequest request = AssetGroupRequest(
-          id: controllerIdAssetGroup.text,
-          tenNhom: controllerNameAssetGroup.text,
-          isActive: isActive,
-          hieuLuc: isActive,
-          idCongTy: idCongTy,
-          ngayTao: DateTime.parse(getDateNow()),
-          ngayCapNhat: DateTime.parse(getDateNow()),
-          nguoiCapNhat: userInfo?.id ?? '',
+        final request = UnitDto(
+          id: controllerId.text,
+          tenDonVi: controllerTenDonVi.text,
+          note: controllerNote.text,
         );
-
-        context.read<AssetGroupBloc>().add(
-          UpdateAssetGroupEvent(context, request, data!.id!),
+        context.read<UnitBloc>().add(
+          UpdateUnitEvent(context, request, data!.id!),
         );
       }
     }

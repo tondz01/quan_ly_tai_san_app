@@ -5,25 +5,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/component/convert_excel_to_asset_group.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_state.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/component/convert_excel_to_unit.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/provider/unit_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/widget/unit_detail.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/widget/unit_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
-class AssetGroupView extends StatefulWidget {
-  const AssetGroupView({super.key});
+class UnitView extends StatefulWidget {
+  const UnitView({super.key});
 
   @override
-  State<AssetGroupView> createState() => _AssetGroupViewState();
+  State<UnitView> createState() => _UnitViewState();
 }
 
-class _AssetGroupViewState extends State<AssetGroupView> {
+class _UnitViewState extends State<UnitView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
 
@@ -31,18 +31,18 @@ class _AssetGroupViewState extends State<AssetGroupView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetGroupProvider>(context, listen: false).onInit(context);
+      Provider.of<UnitProvider>(context, listen: false).onInit(context);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetGroupBloc, AssetGroupState>(
+    return BlocConsumer<UnitBloc, UnitState>(
       builder: (context, state) {
         // Sử dụng ChangeNotifierProvider.value để đảm bảo tất cả thay đổi trong provider cập nhật UI
         return ChangeNotifierProvider.value(
-          value: context.read<AssetGroupProvider>(),
-          child: Consumer<AssetGroupProvider>(
+          value: context.read<UnitProvider>(),
+          child: Consumer<UnitProvider>(
             builder: (context, provider, child) {
               if (provider.isLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -62,18 +62,18 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                     onNew: () {
                       provider.onChangeDetail(null);
                     },
-                    mainScreen: 'Nhóm tài sản',
+                    mainScreen: 'Đơn vị tính',
                     onFileSelected: (fileName, filePath, fileBytes) async {
-                      final assetGroubBloc = context.read<AssetGroupBloc>();
-                      final result = await convertExcelToAssetGroup(
+                      final unitBloc = context.read<UnitBloc>();
+                      final result = await convertExcelToUnit(
                         filePath!,
                         fileBytes: fileBytes,
                       );
                       if (!mounted) return;
                       if (result['success']) {
-                        List<AssetGroupDto> assetGroupList = result['data'];
-                        assetGroubBloc.add(
-                          CreateAssetGroupBatchEvent(assetGroupList),
+                        List<UnitDto> units = result['data'];
+                        unitBloc.add(
+                          CreateUnitBatchEvent(units),
                         );
                       } else {
                         List<dynamic> errors = result['errors'];
@@ -90,9 +90,7 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                           errorMessages.add(errorText);
                         }
 
-                        log(
-                          '[AssetGroupView] errorMessages: $errorMessages',
-                        );
+                        log('[UnitView] errorMessages: $errorMessages');
                         if (!mounted) return;
 
                         // Hiển thị thông báo tổng quan
@@ -107,7 +105,7 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                     onExportData: () {
                       AppUtility.exportData(
                         context,
-                        "nhom_tai_san",
+                        "don_vi",
                         provider.data?.map((e) => e.toExportJson()).toList() ??
                             [],
                       );
@@ -120,9 +118,9 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical,
                         child: CommonPageView(
-                          title: "Chi tiết nhóm tài sản",
-                          childInput: AssetGroupDetail(provider: provider),
-                          childTableView: AssetGroupList(provider: provider),
+                          title: "Chi tiết đơn vị tính",
+                          childInput: UnitDetail(provider: provider),
+                          childTableView: UnitList(provider: provider),
                           isShowInput: provider.isShowInput,
                           isShowCollapse: provider.isShowCollapse,
                           onExpandedChanged: (isExpanded) {
@@ -153,49 +151,48 @@ class _AssetGroupViewState extends State<AssetGroupView> {
       },
 
       listener: (context, state) {
-        if (state is AssetGroupLoadingState) {
+        if (state is UnitLoadingState) {
           // Hiển thị loading
         }
-        if (state is GetListAssetGroupSuccessState) {
-          log('GetListAssetGroupSuccessState ${state.data.length}');
-          context.read<AssetGroupProvider>().getListAssetGroupSuccess(
+        if (state is GetListUnitSuccessState) {
+          context.read<UnitProvider>().getListUnitSuccess(
             context,
             state,
           );
         }
-        if (state is CreateAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().createAssetGroupSuccess(
+        if (state is CreateUnitSuccessState) {
+          context.read<UnitProvider>().createUnitSuccess(
             context,
             state,
           );
         }
-        if (state is CreateAssetGroupFailedState) {
-          context.read<AssetGroupProvider>().createAssetGroupFailed(
+        if (state is CreateUnitFailedState) {
+          context.read<UnitProvider>().createUnitFailed(
             context,
             state,
           );
         }
-        if (state is GetListAssetGroupFailedState) {
+        if (state is GetListUnitFailedState) {
           // Xử lý lỗi
-          context.read<AssetGroupProvider>().getListAssetGroupFailed(
+          context.read<UnitProvider>().getListUnitFailed(
             context,
             state,
           );
         }
-        if (state is UpdateAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().updateAssetGroupSuccess(
+        if (state is UpdateUnitSuccessState) {
+          context.read<UnitProvider>().updateUnitSuccess(
             context,
             state,
           );
         }
-        if (state is DeleteAssetGroupSuccessState) {
-          context.read<AssetGroupProvider>().deleteAssetGroupSuccess(
+        if (state is DeleteUnitSuccessState) {
+          context.read<UnitProvider>().deleteUnitSuccess(
             context,
             state,
           );
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<AssetGroupProvider>().putPostDeleteFailed(
+          context.read<UnitProvider>().putPostDeleteFailed(
             context,
             state,
           );

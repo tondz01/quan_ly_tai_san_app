@@ -9,41 +9,32 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/provider/unit_provider.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
-class AssetGroupList extends StatefulWidget {
-  final AssetGroupProvider provider;
-  const AssetGroupList({super.key, required this.provider});
+class UnitList extends StatefulWidget {
+  final UnitProvider provider;
+  const UnitList({super.key, required this.provider});
 
   @override
-  State<AssetGroupList> createState() => _AssetGroupListState();
+  State<UnitList> createState() => _UnitListState();
 }
 
-class _AssetGroupListState extends State<AssetGroupList> {
+class _UnitListState extends State<UnitList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
 
-  List<AssetGroupDto> listSelected = [];
+  List<UnitDto> listSelected = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
-  List<String> visibleColumnIds = [
-    'asset_group',
-    'code_asset_group',
-    'name_asset_group',
-    'actions',
-    // 'created_at',
-    // 'updated_at',
-    // 'created_by',
-    // 'updated_by',
-  ];
+  List<String> visibleColumnIds = ['code_unit', 'name_unit', 'note', 'actions'];
 
   @override
   void initState() {
@@ -54,39 +45,19 @@ class _AssetGroupListState extends State<AssetGroupList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'code_asset_group',
-        label: 'Mã nhóm tài sản',
-        isChecked: visibleColumnIds.contains('code_asset_group'),
+        id: 'code_unit',
+        label: 'Mã đơn vị tính',
+        isChecked: visibleColumnIds.contains('code_unit'),
       ),
       ColumnDisplayOption(
-        id: 'name_asset_group',
-        label: 'Tên nhóm tài sản',
-        isChecked: visibleColumnIds.contains('name_asset_group'),
-      ),
-      // ColumnDisplayOption(
-      //   id: 'is_active',
-      //   label: 'Có hiệu lực',
-      //   isChecked: visibleColumnIds.contains('is_active'),
-      // ),
-      ColumnDisplayOption(
-        id: 'created_at',
-        label: 'Ngày tạo',
-        isChecked: visibleColumnIds.contains('created_at'),
+        id: 'name_unit',
+        label: 'Tên đơn vị tính',
+        isChecked: visibleColumnIds.contains('name_unit'),
       ),
       ColumnDisplayOption(
-        id: 'updated_at',
-        label: 'Ngày cập nhật',
-        isChecked: visibleColumnIds.contains('updated_at'),
-      ),
-      ColumnDisplayOption(
-        id: 'created_by',
-        label: 'Người tạo',
-        isChecked: visibleColumnIds.contains('created_by'),
-      ),
-      ColumnDisplayOption(
-        id: 'updated_by',
-        label: 'Người cập nhật',
-        isChecked: visibleColumnIds.contains('updated_by'),
+        id: 'note',
+        label: 'Ghi chú',
+        isChecked: visibleColumnIds.contains('note'),
       ),
       ColumnDisplayOption(
         id: 'actions',
@@ -96,67 +67,37 @@ class _AssetGroupListState extends State<AssetGroupList> {
     ];
   }
 
-  List<SgTableColumn<AssetGroupDto>> _buildColumns() {
-    final List<SgTableColumn<AssetGroupDto>> columns = [];
+  List<SgTableColumn<UnitDto>> _buildColumns() {
+    final List<SgTableColumn<UnitDto>> columns = [];
 
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
-        case 'code_asset_group':
+        case 'code_unit':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Mã nhóm tài sản',
+            TableBaseConfig.columnTable<UnitDto>(
+              title: 'Mã đơn vị tính',
               getValue: (item) => item.id ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
             ),
           );
           break;
-        case 'name_asset_group':
+        case 'name_unit':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Tên nhóm tài sản',
-              getValue: (item) => item.tenNhom ?? '',
+            TableBaseConfig.columnTable<UnitDto>(
+              title: 'Tên đơn vị tính',
+              getValue: (item) => item.tenDonVi ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
             ),
           );
           break;
-        case 'created_at':
+        case 'note':
           columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Ngày tạo',
-              getValue: (item) => item.ngayTao.toString(),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'updated_at':
-          columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Ngày cập nhật',
-              getValue: (item) => item.ngayCapNhat.toString(),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'created_by':
-          columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Người tạo',
-              getValue: (item) => item.nguoiTao.toString(),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'updated_by':
-          columns.add(
-            TableBaseConfig.columnTable<AssetGroupDto>(
-              title: 'Người cập nhật',
-              getValue: (item) => item.nguoiCapNhat.toString(),
+            TableBaseConfig.columnTable<UnitDto>(
+              title: 'Ghi chú',
+              getValue: (item) => '',
               width: 120,
               titleAlignment: TextAlign.left,
             ),
@@ -164,7 +105,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
           break;
         case 'actions':
           columns.add(
-            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
+            TableBaseConfig.columnWidgetBase<UnitDto>(
               title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
@@ -180,7 +121,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<AssetGroupDto>> columns = _buildColumns();
+    final List<SgTableColumn<UnitDto>> columns = _buildColumns();
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -221,7 +162,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2.5),
                       child: Text(
-                        'Danh sách nhóm tài sản (${widget.provider.data.length})',
+                        'Danh sách đơn vị tính (${widget.provider.data.length})',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -236,7 +177,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                   child: Row(
                     children: [
                       SGText(
-                        text: 'Danh sách nhóm đã chọn: ${listSelected.length}',
+                        text: 'Đơn vị tính đã chọn: ${listSelected.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -245,7 +186,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                       ),
                       SizedBox(width: 16),
                       MaterialTextButton(
-                        text: 'Xóa đã chọn',
+                        text: 'Xóa đã chọn tính',
                         icon: Icons.delete,
                         backgroundColor: ColorValue.error,
                         foregroundColor: Colors.white,
@@ -255,15 +196,15 @@ class _AssetGroupListState extends State<AssetGroupList> {
                             showConfirmDialog(
                               context,
                               type: ConfirmType.delete,
-                              title: 'Xóa dự án',
+                              title: 'Xóa đơn vị tính',
                               message:
-                                  'Bạn có chắc muốn xóa ${listSelected.length} dự án',
+                                  'Bạn có chắc muốn xóa ${listSelected.length} đơn vị tính',
                               highlight: listSelected.length.toString(),
                               cancelText: 'Không',
                               confirmText: 'Xóa',
                               onConfirm: () {
-                                final roleBloc = context.read<AssetGroupBloc>();
-                                roleBloc.add(DeleteAssetGroupBatchEvent(ids));
+                                final unitBloc = context.read<UnitBloc>();
+                                unitBloc.add(DeleteUnitBatchEvent(ids));
                               },
                             );
                           });
@@ -281,7 +222,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
             color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
-            child: TableBaseView<AssetGroupDto>(
+            child: TableBaseView<UnitDto>(
               searchTerm: '',
               columns: columns,
               data: widget.provider.dataPage ?? [],
@@ -305,11 +246,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
     return SgCheckbox(value: isActive);
   }
 
-  String getNameColumnAssetGroup(AssetGroupDto item) {
-    return "${item.id} - ${item.tenNhom}";
+  String getNameColumnAssetGroup(UnitDto item) {
+    return "${item.id} - ${item.tenDonVi}";
   }
 
-  Widget viewAction(AssetGroupDto item) {
+  Widget viewAction(UnitDto item) {
     return viewActionButtons([
       ActionButtonConfig(
         icon: Icons.delete,
@@ -322,14 +263,14 @@ class _AssetGroupListState extends State<AssetGroupList> {
               showConfirmDialog(
                 context,
                 type: ConfirmType.delete,
-                title: 'Xóa nhóm tài sản',
-                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                highlight: item.tenNhom ?? '',
+                title: 'Xóa đơn vị tính',
+                message: 'Bạn có chắc muốn xóa ${item.tenDonVi}',
+                highlight: item.tenDonVi ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {
-                  context.read<AssetGroupBloc>().add(
-                    DeleteAssetGroupEvent(context, item.id!),
+                  context.read<UnitBloc>().add(
+                    DeleteUnitEvent(context, item.id!),
                   );
                 },
               ),
