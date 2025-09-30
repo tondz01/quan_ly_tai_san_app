@@ -1138,8 +1138,8 @@ class _ToolAndMaterialTransferDetailState
                             donViTinh: e.donViTinh,
                             soLuong: e.soLuong,
                             ghiChu: e.ghiChu,
-                            ngayTao: DateTime.now().toIso8601String(),
-                            ngayCapNhat: DateTime.now().toIso8601String(),
+                            ngayTao: AppUtility.formatDateString(DateTime.now()),
+                            ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
                             nguoiTao: widget.provider.userInfo?.id ?? '',
                             nguoiCapNhat: widget.provider.userInfo?.id ?? '',
                             active: true,
@@ -1232,19 +1232,19 @@ class _ToolAndMaterialTransferDetailState
       tgGnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDate.text,
-          ).toIso8601String(),
+          ).toString(),
       tgGnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDateTo.text,
-          ).toIso8601String(),
+          ).toString(),
       idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllerDeliveryLocation.text,
       idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
       noiNhan: '',
       trangThai: state,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
-      ngayTao: DateTime.now().toIso8601String(),
-      ngayCapNhat: DateTime.now().toIso8601String(),
+      ngayTao: AppUtility.formatDateString(DateTime.now()),
+      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: '',
       coHieuLuc: 1,
@@ -1254,7 +1254,7 @@ class _ToolAndMaterialTransferDetailState
       trichYeu: controllerSubject.text,
       duongDanFile: _selectedFilePath ?? '',
       tenFile: _selectedFileName ?? '',
-      ngayKy: DateTime.now().toIso8601String(),
+      ngayKy: AppUtility.formatDateString(DateTime.now()),
       share: false,
       daBanGiao: false,
       byStep: isByStep,
@@ -1279,11 +1279,11 @@ class _ToolAndMaterialTransferDetailState
       tggnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDate.text,
-          ).toIso8601String(),
+          ).toString(),
       tggnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllerEffectiveDateTo.text,
-          ).toIso8601String(),
+          ).toString(),
       idTrinhDuyetGiamDoc: nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllerDeliveryLocation.text,
       idPhongBanXemPhieu: nguoiKyCapPhong?.id ?? '',
@@ -1291,8 +1291,8 @@ class _ToolAndMaterialTransferDetailState
       noiNhan: '',
       trangThai: 0,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
-      ngayTao: DateTime.now().toIso8601String(),
-      ngayCapNhat: DateTime.now().toIso8601String(),
+      ngayTao: AppUtility.formatDateString(DateTime.now()),
+      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: '',
       coHieuLuc: 1,
@@ -1307,7 +1307,7 @@ class _ToolAndMaterialTransferDetailState
       trichYeu: controllerSubject.text,
       duongDanFile: _selectedFilePath ?? '',
       tenFile: _selectedFileName ?? '',
-      ngayKy: DateTime.now().toIso8601String(),
+      ngayKy: AppUtility.formatDateString(DateTime.now()),
       detailToolAndMaterialTransfers: listNewDetails,
       byStep: isByStep,
     );
@@ -1386,7 +1386,7 @@ class _ToolAndMaterialTransferDetailState
       ToolAndMaterialTransferRequest newRequest = request.copyWith(
         trinhDuyetCapPhongXacNhan: item!.trinhDuyetCapPhongXacNhan ?? false,
         trinhDuyetGiamDocXacNhan: item!.trinhDuyetGiamDocXacNhan ?? false,
-        ngayKy: item!.ngayKy ?? DateTime.now().toIso8601String(),
+        ngayKy: item!.ngayKy ?? AppUtility.formatDateString(DateTime.now()),
         nguoiCapNhat: userInfo.tenDangNhap,
         trangThai: trangThai,
         share: item!.share ?? false,

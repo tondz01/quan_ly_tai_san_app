@@ -198,9 +198,9 @@ class AccountHelper {
   }
 
   ChucVu? getChucVuById(String id) {
-    return StorageService.read(
-      StorageKey.CHUC_VU,
-    ).firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
+    final list = getChucVu();
+    if (list == null) return null;
+    return list.firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
   }
 
   //ASSET GROUP
@@ -728,6 +728,21 @@ class AccountHelper {
     final List<TypeAsset> filtered =
         all.where((element) => element.idLoaiTs == idTypeAsset).toList();
     return filtered;
+  }
+
+  TypeAsset? getTypeAssetById(String idTypeAsset) {
+    if (idTypeAsset.isEmpty) return null;
+    final raw = StorageService.read(
+      StorageKey.TYPE_ASSET,
+    )?.firstWhere((element) => element.id == idTypeAsset, orElse: () => null);
+    final types = raw
+        ?.map((e) => TypeAsset.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final TypeAsset? found = types
+        ?.firstWhere((t) => t.id == idTypeAsset, orElse: () => null);
+    if (found == null) return null;
+    return found;
   }
 
   TypeAsset? getTypeAssetObject(String idAssetGroup) {

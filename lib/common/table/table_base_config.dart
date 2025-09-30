@@ -130,13 +130,6 @@ abstract class TableBaseConfig {
     bool? searchable = false,
     bool? filterable = false,
   }) {
-    // 🔥 SỬA: Log với title để phân biệt
-    if (filterable == true) {
-      SGLog.info(
-        'filterable buildColumnFilter --',
-        'Column: [$title] \n filterable: $filterable \n searchValueGetter: $searchValueGetter',
-      );
-    }
 
     return SgTableColumn<T>(
       title: title,

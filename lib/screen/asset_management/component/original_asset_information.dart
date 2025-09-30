@@ -72,7 +72,24 @@ Widget buildOriginalAssetInfomation(
       const SizedBox(height: 10),
       Divider(color: ColorValue.darkGrey.withOpacity(0.6)),
       SizedBox(height: 8),
-  
+      CommonFormInput(
+        label: 'Số thẻ tài sản',
+        controller: ctrlMaTaiSan,
+        isEditing: isEditing,
+        textContent: ctrlMaTaiSan.text,
+        fieldName: 'id',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+      CommonFormInput(
+        label: 'Mã tài sản',
+        controller: ctrlSoThe,
+        isEditing: isEditing,
+        textContent: ctrlSoThe.text,
+        fieldName: 'soThe',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
       CommonFormInput(
         label: 'Tên tài sản',
         controller: ctrlTenTaiSan,
@@ -82,25 +99,7 @@ Widget buildOriginalAssetInfomation(
         validationErrors: validationErrors,
         isRequired: true,
       ),
-  
-      CommonFormInput(
-        label: 'Mã tài sản',
-        controller: ctrlMaTaiSan,
-        isEditing: isEditing,
-        textContent: ctrlMaTaiSan.text,
-        fieldName: 'id',
-        validationErrors: validationErrors,
-        isRequired: true,
-      ),
-      CommonFormInput(
-        label: 'Số thẻ tài sản',
-        controller: ctrlSoThe,
-        isEditing: isEditing,
-        textContent: ctrlSoThe.text,
-        fieldName: 'soThe',
-        validationErrors: validationErrors,
-        isRequired: true,
-      ),
+
       CommonFormInput(
         label: 'Nguyên giá tài sản',
         controller: ctrlNguyenGia,
@@ -140,7 +139,7 @@ Widget buildOriginalAssetInfomation(
         isMoney: true,
         validationErrors: validationErrors,
       ),
-  
+
       CmFormDropdownObject<AssetCategoryDto>(
         label: 'Mô hình tài sản',
         controller: ctrlTenMoHinh,
@@ -158,7 +157,7 @@ Widget buildOriginalAssetInfomation(
         // isRequired: true,
         validationErrors: validationErrors,
       ),
-  
+
       CommonFormInput(
         label: 'Phương pháp khấu hao',
         controller: ctrlPhuongPhapKhauHao,
@@ -170,7 +169,7 @@ Widget buildOriginalAssetInfomation(
         onChanged: onDepreciationMethodChanged,
         validationErrors: validationErrors,
       ),
-  
+
       CommonFormInput(
         label: 'Số Kỳ khấu hao',
         controller: ctrlSoKyKhauHao,

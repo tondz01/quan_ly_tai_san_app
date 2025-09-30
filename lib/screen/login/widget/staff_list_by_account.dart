@@ -6,11 +6,14 @@ import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_detail.dart';
+import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -26,6 +29,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
   String lableTitle = '';
+  List<NhanVien> filteredData = [];
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -38,9 +42,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
     'hoTen',
     'emailCongViec',
     'diDong',
-    'boPhan',
     'chucVu',
-    'tenQuanLy',
     'tenPhongBan',
     'trangThaiTaiKhoan',
     'nguoiTao',
@@ -49,10 +51,46 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
   @override
   void initState() {
     super.initState();
+    searchFilters();
     _initializeColumnOptions();
     lableTitle =
         'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
     // body = _buildTableStaff(_buildColumns());
+  }
+
+  void searchFilters() {
+    List<NhanVien> data = widget.provider.nhanViens ?? [];
+    if (widget.provider.nhanViens == null) return;
+
+    // Lọc theo trạng thái
+
+    // Lọc tiếp theo nội dung tìm kiếm
+    if (searchTerm.isNotEmpty) {
+      String searchLower = searchTerm.toLowerCase();
+      filteredData =
+          data.where((item) {
+            return (item.hoTen?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.emailCongViec?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.id?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.idCongTy?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.diDong?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.boPhan?.toLowerCase().contains(searchLower) ?? false) ||
+                (AccountHelper.instance
+                        .getChucVuById(item.chucVu ?? item.chucVuId ?? '')
+                        ?.tenChucVu
+                        .toLowerCase()
+                        .contains(searchLower) ??
+                    false) ||
+                (item.tenQuanLy?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.tenPhongBan?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false);
+          }).toList();
+    } else {
+      filteredData = data;
+    }
   }
 
   void _initializeColumnOptions() {
@@ -82,11 +120,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
         label: 'Số điện thoại',
         isChecked: visibleColumnIds.contains('diDong'),
       ),
-      ColumnDisplayOption(
-        id: 'boPhan',
-        label: 'Bộ phận',
-        isChecked: visibleColumnIds.contains('boPhan'),
-      ),
+
       ColumnDisplayOption(
         id: 'chucVu',
         label: 'Chức vụ',
@@ -96,11 +130,6 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
         id: 'tenQuanLy',
         label: 'Người quản lý',
         isChecked: visibleColumnIds.contains('tenQuanLy'),
-      ),
-      ColumnDisplayOption(
-        id: 'tenPhongBan',
-        label: 'Phòng ban',
-        isChecked: visibleColumnIds.contains('tenPhongBan'),
       ),
       ColumnDisplayOption(
         id: 'trangThaiTaiKhoan',
@@ -171,31 +200,11 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
             ),
           );
           break;
-        case 'boPhan':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Bộ phận',
-              getValue: (item) => item.boPhan ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
         case 'chucVu':
           columns.add(
             TableBaseConfig.columnTable<NhanVien>(
               title: 'Chức vụ',
               getValue: (item) => item.tenChucVu ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'tenQuanLy':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Người quản lý',
-              getValue: (item) => item.tenQuanLy ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
             ),
@@ -320,6 +329,24 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                     ),
                   ],
                 ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildSearchField(
+                        MediaQuery.of(context).size.width,
+                        TextEditingController(),
+                        (value) {
+                          setState(() {
+                            searchTerm = value;
+                            searchFilters();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -335,7 +362,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
         searchTerm: '',
         isShowCheckboxes: false,
         columns: columns,
-        data: widget.provider.nhanViens ?? [],
+        data: filteredData,
         horizontalController: ScrollController(),
         onRowTap: (item) {
           // widget.provider.onChangeDetail(item);
@@ -347,8 +374,6 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
   Widget showCheckBoxActive(bool isActive) {
     return SgCheckbox(value: isActive);
   }
-
-  
 
   /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
   String getDateNow() {
@@ -387,9 +412,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
           }
 
           final userInfo = UserInfoDTO(
-            id: UUIDGenerator.generateTimestampId(
-              prefix: 'USR',
-            ),
+            id: UUIDGenerator.generateTimestampId(prefix: 'USR'),
             tenDangNhap: item.id ?? '',
             username: item.id ?? '',
             matKhau: '${item.id}${item.idCongTy}',
@@ -476,5 +499,29 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
       return Colors.grey.shade400; // Màu xám khi đã có tài khoản
     }
     return Colors.red.shade700; // Màu đỏ khi chưa có tài khoản
+  }
+
+  Widget _buildSearchField(
+    double width,
+    TextEditingController controller,
+    Function(String) onSearchChanged,
+  ) {
+    final isSmallScreen =
+        TypeSizeScreenExtension.getSizeScreen(width) ==
+            TypeSizeScreen.extraSmall ||
+        TypeSizeScreenExtension.getSizeScreen(width) == TypeSizeScreen.small;
+
+    return SGInputText(
+      height: 35,
+      prefixIcon: const Icon(Icons.search),
+      controller: controller,
+      width: isSmallScreen ? width : width * 0.5,
+      borderRadius: 10,
+      enabledBorderColor: ColorValue.neutral800,
+      padding: const EdgeInsets.all(1),
+      fontSize: 14,
+      hintText: 'Tìm kiếm',
+      onChanged: onSearchChanged,
+    );
   }
 }
