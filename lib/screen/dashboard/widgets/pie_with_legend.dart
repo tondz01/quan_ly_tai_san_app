@@ -26,7 +26,8 @@ class PieDonutChartWithLegend extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Color> resolvedColors = colors ?? Defaults.colors10;
-    final List<String> categories = data.map((e) => e[categoryKey] as String).toList();
+    final List<String> categories =
+        data.map((e) => e[categoryKey] as String).toList();
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +38,9 @@ class PieDonutChartWithLegend extends StatelessWidget {
           child: Chart(
             data: data,
             variables: {
-              categoryKey: Variable(accessor: (Map map) => map[categoryKey] as String),
+              categoryKey: Variable(
+                accessor: (Map map) => map[categoryKey] as String,
+              ),
               valueKey: Variable(accessor: (Map map) => map[valueKey] as num),
             },
             transforms: [Proportion(variable: valueKey, as: 'percent')],
@@ -45,14 +48,31 @@ class PieDonutChartWithLegend extends StatelessWidget {
               IntervalMark(
                 position: Varset('percent') / Varset(categoryKey),
                 label: LabelEncode(
-                  encoder: (tuple) => Label(
-                    (tuple[valueKey]).toString(),
-                    LabelStyle(textStyle: (labelTextStyle ?? const TextStyle(fontSize: 12)).copyWith(color: Colors.white)),
-                  ),
+                  encoder: (tuple) {
+                    final value = tuple[valueKey] as num;
+                    final percent = tuple['percent'] as num;
+                    return Label(
+                      '${value.toInt()}',
+                      LabelStyle(
+                        textStyle: (labelTextStyle ??
+                                const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ))
+                            .copyWith(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  },
                 ),
-                color: ColorEncode(variable: categoryKey, values: resolvedColors),
+                color: ColorEncode(
+                  variable: categoryKey,
+                  values: resolvedColors,
+                ),
                 modifiers: [StackModifier()],
-                transition: Transition(duration: const Duration(milliseconds: 300)),
+                transition: Transition(
+                  duration: const Duration(milliseconds: 300),
+                ),
                 entrance: {MarkEntrance.y},
               ),
             ],
@@ -80,9 +100,29 @@ class PieDonutChartWithLegend extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          categories[i],
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF667085), fontWeight: FontWeight.w500),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                categories[i],
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF667085),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (i < data.length)
+                                Text(
+                                  '${(data[i][valueKey] as num).toInt()} (${((data[i][valueKey] as num) / data.fold(0.0, (sum, item) => sum + (item[valueKey] as num)) * 100).toStringAsFixed(1)}%)',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF667085),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -93,4 +133,4 @@ class PieDonutChartWithLegend extends StatelessWidget {
       ],
     );
   }
-} 
+}

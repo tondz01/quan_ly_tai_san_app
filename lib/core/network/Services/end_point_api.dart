@@ -32,10 +32,20 @@ class EndPointAPI {
   static String OWNERSHIP_UNIT_DETAIL = "/chitietdonvisohuu";
   static String EXPORT_DATA = "/api/upload/export";
   static String DASHBOARD = "/api/dashboard/statistics";
+  static String DASHBOARD_ASSET_STATUS =
+      "/api/dashboard/tai-san-theo-hien-trang-phan-tram";
+  static String DASHBOARD_CCDC_STATUS =
+      "/api/dashboard/ccdc-theo-hien-trang-phan-tram";
+  static String DASHBOARD_ASSET_GROUP_DISTRIBUTION =
+      "/api/dashboard/tai-san-theo-nhom-loai-con-phan-tram";
+  static String DASHBOARD_CCDC_GROUP_DISTRIBUTION =
+      "/api/dashboard/ccdc-theo-nhom-loai-con-phan-tram";
+  static String DASHBOARD_ASSET_DEPRECIATION =
+      "/api/dashboard/tai-san-sap-het-han-khau-hao";
   static String CONFIG = "/api/config";
   static String PERMISSIONS = "/api/userpermission";
   static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";
-  static String DETAIL_SUPPLIES_TRANSFER= "/api/chitietdieudongccdcvattu";
+  static String DETAIL_SUPPLIES_TRANSFER = "/api/chitietdieudongccdcvattu";
   static String TYPE_ASSET = "/api/loaitaisancon";
   static String TYPE_CCDC = "/api/loaiccdccon";
 }

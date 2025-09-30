@@ -33,4 +33,181 @@ class DashboardRepository extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> getAssetStatusData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(EndPointAPI.DASHBOARD_ASSET_STATUS);
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? [];
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "AssetStatus",
+        "Asset status data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "AssetStatus",
+        "Error at getAssetStatusData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getCcdcStatusData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(EndPointAPI.DASHBOARD_CCDC_STATUS);
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? [];
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "CcdcStatus",
+        "CCDC status data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "CcdcStatus",
+        "Error at getCcdcStatusData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getAssetGroupDistributionData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        EndPointAPI.DASHBOARD_ASSET_GROUP_DISTRIBUTION,
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? {};
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "AssetGroupDistribution",
+        "Asset group distribution data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "AssetGroupDistribution",
+        "Error at getAssetGroupDistributionData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getCcdcGroupDistributionData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(EndPointAPI.DASHBOARD_CCDC_GROUP_DISTRIBUTION);
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? {};
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "CcdcGroupDistribution",
+        "CCDC group distribution data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "CcdcGroupDistribution",
+        "Error at getCcdcGroupDistributionData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getAssetDepreciationData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(EndPointAPI.DASHBOARD_ASSET_DEPRECIATION);
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? [];
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "AssetDepreciation",
+        "Asset depreciation data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "AssetDepreciation",
+        "Error at getAssetDepreciationData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
 }
