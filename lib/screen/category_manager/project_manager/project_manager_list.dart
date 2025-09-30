@@ -51,12 +51,6 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
         width: 150,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<DuAn>(
-        title: 'Có hiệu lực',
-        getValue: (item) => item.hieuLuc ?? false ? 'Có' : 'Không',
-        width: 150,
-        titleAlignment: TextAlign.start,
-      ),
       TableBaseConfig.columnWidgetBase<DuAn>(
         title: 'Thao tác',
         cellBuilder:

@@ -218,7 +218,7 @@ Widget buildOriginalAssetInfomation(
         onChanged: onAssetGroupChanged,
         fieldName: 'idNhomTaiSan',
         validationErrors: validationErrors,
-        // isRequired: true,
+        isRequired: true,
       ),
       CmFormDropdownObject<TypeAsset>(
         label: 'Loại tài sản',
@@ -235,7 +235,6 @@ Widget buildOriginalAssetInfomation(
         onChanged: onTypeAssetChanged,
         fieldName: 'idLoaiTaiSanCon',
         validationErrors: validationErrors,
-        isRequired: true,
       ),
       const SizedBox(height: 10),
       CmFormDate(

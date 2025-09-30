@@ -38,7 +38,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
     'asset_group',
     'code_asset_group',
     'name_asset_group',
-    'is_active',
     'actions',
     // 'created_at',
     // 'updated_at',
@@ -64,11 +63,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
         label: 'Tên nhóm tài sản',
         isChecked: visibleColumnIds.contains('name_asset_group'),
       ),
-      ColumnDisplayOption(
-        id: 'is_active',
-        label: 'Có hiệu lực',
-        isChecked: visibleColumnIds.contains('is_active'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'is_active',
+      //   label: 'Có hiệu lực',
+      //   isChecked: visibleColumnIds.contains('is_active'),
+      // ),
       ColumnDisplayOption(
         id: 'created_at',
         label: 'Ngày tạo',
@@ -120,16 +119,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
               getValue: (item) => item.tenNhom ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'is_active':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
-              title: 'Có hiệu lực',
-              width: 100,
-              cellBuilder: (item) => SgCheckbox(value: item.isActive ?? false),
-              titleAlignment: TextAlign.center,
             ),
           );
           break;

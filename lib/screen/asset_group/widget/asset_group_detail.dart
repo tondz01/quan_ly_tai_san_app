@@ -145,18 +145,6 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
-                CommonCheckboxInput(
-                  label: 'Có hiệu lực',
-                  value: isActive,
-                  isEditing: isEditing,
-                  isDisabled: !isEditing,
-                  onChanged: (value) {
-                    setState(() {
-                      isActive = value;
-                    });
-                  },
-                ),
               ],
             ),
           ),

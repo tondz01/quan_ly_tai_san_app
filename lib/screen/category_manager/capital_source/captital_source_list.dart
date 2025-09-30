@@ -53,11 +53,11 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
         width: MediaQuery.of(context).size.width / 4,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<NguonKinhPhi>(
-        title: 'Có hiệu lực',
-        getValue: (item) => item.isActive ?? false ? 'Có' : 'Không',
-        width: 150,
-      ),
+      // TableBaseConfig.columnTable<NguonKinhPhi>(
+      //   title: 'Có hiệu lực',
+      //   getValue: (item) => item.isActive ?? false ? 'Có' : 'Không',
+      //   width: 150,
+      // ),
       TableBaseConfig.columnWidgetBase<NguonKinhPhi>(
         title: 'Thao tác',
         cellBuilder:
