@@ -150,17 +150,17 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
                 fieldName: 'tenNhom',
                 isRequired: true,
               ),
-              CommonCheckboxInput(
-                label: 'Có hiệu lực',
-                value: isActive,
-                isEditing: isEditing,
-                isDisabled: !isEditing,
-                onChanged: (value) {
-                  setState(() {
-                    isActive = value;
-                  });
-                },
-              ),
+              // CommonCheckboxInput(
+              //   label: 'Có hiệu lực',
+              //   value: isActive,
+              //   isEditing: isEditing,
+              //   isDisabled: !isEditing,
+              //   onChanged: (value) {
+              //     setState(() {
+              //       isActive = value;
+              //     });
+              //   },
+              // ),
               // _buildInfoCcdcHandoverMobile(isWideScreen),
             ],
           ),

@@ -37,7 +37,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
   List<String> visibleColumnIds = [
     'code_ccdc_group',
     'name_ccdc_group',
-    'is_active',
+    // 'is_active',
     'actions',
   ];
 
@@ -59,11 +59,11 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
         label: 'Tên nhóm ccdc',
         isChecked: visibleColumnIds.contains('name_ccdc_group'),
       ),
-      ColumnDisplayOption(
-        id: 'is_active',
-        label: 'Ngày bàn giao',
-        isChecked: visibleColumnIds.contains('is_active'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'is_active',
+      //   label: 'Ngày bàn giao',
+      //   isChecked: visibleColumnIds.contains('is_active'),
+      // ),
       ColumnDisplayOption(
         id: 'created_at',
         label: 'Ngày tạo',
@@ -117,16 +117,16 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
             ),
           );
           break;
-        case 'is_active':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<CcdcGroup>(
-              title: 'Có hiệu lực',
-              width: 100,
-              cellBuilder: (item) => SgCheckbox(value: item.hieuLuc ?? false),
-              titleAlignment: TextAlign.center,
-            ),
-          );
-          break;
+        // case 'is_active':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<CcdcGroup>(
+        //       title: 'Có hiệu lực',
+        //       width: 100,
+        //       cellBuilder: (item) => SgCheckbox(value: item.hieuLuc ?? false),
+        //       titleAlignment: TextAlign.center,
+        //     ),
+        //   );
+        //   break;
         case 'created_at':
           columns.add(
             TableBaseConfig.columnTable<CcdcGroup>(

@@ -7,14 +7,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/model
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
-String _sanitizeString(dynamic value, {String? fallback}) {
-  final str = value?.toString().trim();
-  if (str == null || str.isEmpty) {
-    return (fallback ?? '').trim();
-  }
-  return str;
-}
-
 extension DateTimeToMySQL on DateTime {
   String toMySQLFormat() {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(toUtc());
