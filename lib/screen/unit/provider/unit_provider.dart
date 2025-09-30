@@ -2,16 +2,14 @@
 
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_state.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class UnitProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -121,10 +119,11 @@ class UnitProvider with ChangeNotifier {
       _filteredData = [];
       _isLoading = false;
     } else {
-      log('message getListUnitSuccess: ${state.data.length}');
       _data = state.data;
       _filteredData = List.from(_data!);
       _isLoading = false;
+      AccountHelper.instance.clearUnit();
+      AccountHelper.instance.setUnit(_data!);
       _updatePagination();
     }
     notifyListeners();
