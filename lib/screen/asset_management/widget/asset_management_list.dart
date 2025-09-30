@@ -17,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
@@ -33,14 +34,15 @@ class _AssetManagementListState extends State<AssetManagementList> {
   late List<ColumnDisplayOption> columnOptions;
   ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
-    'code_asset',
     'so_the',
+    'code_asset',
     'name_asset',
     'book_entry_date',
     'usage_tart_date',
     'using_unit',
     'so_luong_ts_con',
     'nhom_tai_san',
+    'loai_tai_san',
     'hien_trang',
     'so_luong',
     'don_vi_tinh',
@@ -75,14 +77,14 @@ class _AssetManagementListState extends State<AssetManagementList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'code_asset',
-        label: 'Mã tài sản',
-        isChecked: visibleColumnIds.contains('code_asset'),
-      ),
-      ColumnDisplayOption(
         id: 'so_the',
         label: 'Số thẻ',
         isChecked: visibleColumnIds.contains('so_the'),
+      ),
+      ColumnDisplayOption(
+        id: 'code_asset',
+        label: 'Mã tài sản',
+        isChecked: visibleColumnIds.contains('code_asset'),
       ),
       ColumnDisplayOption(
         id: 'name_asset',
@@ -118,6 +120,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
         id: 'nhom_tai_san',
         label: 'Nhóm tài sản',
         isChecked: visibleColumnIds.contains('nhom_tai_san'),
+      ),
+      ColumnDisplayOption(
+        id: 'loai_tai_san',
+        label: 'Loại tài sản',
+        isChecked: visibleColumnIds.contains('loai_tai_san'),
       ),
       ColumnDisplayOption(
         id: 'hien_trang',
@@ -168,6 +175,15 @@ class _AssetManagementListState extends State<AssetManagementList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'so_the':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Số thẻ',
+              getValue: (item) => item.soThe ?? '',
+              width: 120,
+            ),
+          );
+          break;
         case 'code_asset':
           columns.add(
             TableColumnBuilder.createTextColumn<AssetManagementDto>(
@@ -179,15 +195,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
           );
           break;
-        case 'so_the':
-          columns.add(
-            TableBaseConfig.columnTable<AssetManagementDto>(
-              title: 'Số thẻ',
-              getValue: (item) => item.soThe ?? '',
-              width: 120,
-            ),
-          );
-          break;
+
         case 'name_asset':
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
@@ -218,10 +226,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
         case 'using_unit':
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
-              title: 'Đơn vị sử dụng',
+              title: 'Đơn vị hiện thời',
               getValue: (item) {
-                final department = AccountHelper.instance
-                    .getDepartmentById(item.idDonViHienThoi ?? '');
+                final department = AccountHelper.instance.getDepartmentById(
+                  item.idDonViHienThoi ?? '',
+                );
                 return department?.tenPhongBan ?? '';
               },
               width: 150,
@@ -256,6 +265,29 @@ class _AssetManagementListState extends State<AssetManagementList> {
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Nhóm tài sản',
               getValue: (item) => item.tenNhom ?? '',
+              width: 150,
+            ),
+          );
+          break;
+        case 'loai_tai_san':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Loại tài sản',
+              getValue: (item) {
+                final typeAsset = AccountHelper.instance.getAllTypeAsset();
+                if (typeAsset.isEmpty) return '';
+                String nameTypeAsset = typeAsset
+                    .firstWhere(
+                      (element) => element.id == item.idLoaiTaiSanCon,
+                      orElse: () => TypeAsset(
+                        id: '',
+                        tenLoai: '',
+                      ),
+                    )
+                    .tenLoai ??
+                    '';
+                return nameTypeAsset;
+              },
               width: 150,
             ),
           );
@@ -365,10 +397,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   fontSize: 16,
                 ),
               ),
-              Visibility(
-                visible: groups.isNotEmpty,
-                child: Divider(),
-              ),
+              Visibility(visible: groups.isNotEmpty, child: Divider()),
               Visibility(
                 visible: groups.isEmpty,
                 child: Center(
@@ -601,13 +630,13 @@ class _AssetManagementListState extends State<AssetManagementList> {
             child: TableBaseView<AssetManagementDto>(
               searchTerm: '',
               columns: columns,
-              data: widget.provider.filteredData ?? [],
+              data: widget.provider.dataPage ?? [],
               horizontalController: ScrollController(),
               getters: getters,
               startDate:
-                  widget.provider.filteredData?.isNotEmpty ?? false
+                  widget.provider.dataPage?.isNotEmpty ?? false
                       ? DateTime.tryParse(
-                        widget.provider.filteredData?.first.ngayTao ?? '',
+                        widget.provider.dataPage?.first.ngayTao ?? '',
                       )
                       : null,
               onRowTap: (item) {

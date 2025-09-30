@@ -28,12 +28,9 @@ class AssetManagementDto {
       'Kỳ khấu hao ban đầu': kyKhauHaoBanDau ?? 0,
       'Giá trị thanh lý': giaTriThanhLy ?? 0.0,
       'Mã mô hình tài sản': _nullIfEmpty(idMoHinhTaiSan),
-      'Tên mô hình': _nullIfEmpty(tenMoHinh),
       'Mã nhóm tài sản': _nullIfEmpty(idNhomTaiSan),
-      'Tên nhóm tài sản': _nullIfEmpty(tenNhom),
       'Mã loại tài sản': _nullIfEmpty(idLoaiTaiSanCon),
       'Mã dự án': _nullIfEmpty(idDuAn),
-      'Tên dự án': _nullIfEmpty(tenDuAn),
       'Mã nguồn vốn': _nullIfEmpty(idNguonVon),
       'Tên nguồn kinh phí': _nullIfEmpty(tenNguonKinhPhi),
       'Phương pháp khấu hao': phuongPhapKhauHao ?? 0,
@@ -193,8 +190,16 @@ class AssetManagementDto {
       nuocSanXuat: json['nuocSanXuat'],
       namSanXuat: json['namSanXuat'],
       lyDoTang: json['lyDoTang'],
-      hienTrang: json['hienTrang'],
-      soLuong: json['soLuong'],
+      hienTrang: json['hienTrang'] == null
+        ? null
+        : (json['hienTrang'] is int
+            ? json['hienTrang'] as int
+            : int.tryParse(json['hienTrang'].toString())),
+    soLuong: json['soLuong'] == null
+        ? null
+        : (json['soLuong'] is int
+            ? json['soLuong'] as int
+            : int.tryParse(json['soLuong'].toString())),
       donViTinh: json['donViTinh'],
       ghiChu: json['ghiChu'],
       idDonViBanDau: json['idDonViBanDau'],

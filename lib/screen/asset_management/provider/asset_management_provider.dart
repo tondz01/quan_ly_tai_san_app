@@ -158,11 +158,17 @@ class AssetManagementProvider with ChangeNotifier {
 
   //Tài sản con
   HienTrang getHienTrang(int id) {
-    return listHienTrang.firstWhere((element) => element.id == id);
+    return listHienTrang.firstWhere(
+      (element) => element.id == id,
+      orElse: () => listHienTrang.isNotEmpty ? listHienTrang.first : HienTrang(id: 0, name: ''),
+    );
   }
 
   LyDoTang getLyDoTang(int id) {
-    return listLyDoTang.firstWhere((element) => element.id == id);
+    return listLyDoTang.firstWhere(
+      (element) => element.id == id,
+      orElse: () => listLyDoTang.isNotEmpty ? listLyDoTang.first : LyDoTang(id: 0, name: ''),
+    );
   }
 
   Country? findCountryByName(String name) {
@@ -328,6 +334,8 @@ class AssetManagementProvider with ChangeNotifier {
       _data = [];
       // _filteredData = [];
       _isLoading = false;
+      _filteredData = [];
+      _dataPage = [];
     } else {
       _data = state.data.where((element) => element.isTaiSanCon == false).toList();
       log('[check getListAssetManagementSuccess] _data: ${_data?.length}');

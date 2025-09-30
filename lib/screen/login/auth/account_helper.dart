@@ -730,6 +730,21 @@ class AccountHelper {
     return filtered;
   }
 
+  TypeAsset? getTypeAssetById(String idTypeAsset) {
+    if (idTypeAsset.isEmpty) return null;
+    final raw = StorageService.read(
+      StorageKey.TYPE_ASSET,
+    )?.firstWhere((element) => element.id == idTypeAsset, orElse: () => null);
+    final types = raw
+        ?.map((e) => TypeAsset.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final TypeAsset? found = types
+        ?.firstWhere((t) => t.id == idTypeAsset, orElse: () => null);
+    if (found == null) return null;
+    return found;
+  }
+
   TypeAsset? getTypeAssetObject(String idAssetGroup) {
     try {
       final raw = StorageService.read(StorageKey.TYPE_ASSET)?.firstWhere(
