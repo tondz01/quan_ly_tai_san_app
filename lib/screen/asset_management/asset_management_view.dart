@@ -132,6 +132,12 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             [],
                       );
                     },
+                    isShowInput: provider.typeBody == ShowBody.taiSan
+                        ? true
+                        : false,
+                    isShownew: provider.typeBody == ShowBody.taiSan
+                        ? true
+                        : false,
                   ),
                 ),
                 body: Column(
