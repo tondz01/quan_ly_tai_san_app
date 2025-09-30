@@ -103,7 +103,8 @@ class _AssetTransferListState extends State<AssetTransferList> {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
     dataAssetTransfer = widget.data;
-    dataAssetTransferFilter = dataAssetTransfer;
+    dataAssetTransferFilter =
+        dataAssetTransfer.where((item) => item.daBanGiao == false).toList();
     _initializeColumnOptions();
   }
 

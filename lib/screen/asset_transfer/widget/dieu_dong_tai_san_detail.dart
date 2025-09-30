@@ -784,7 +784,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                 hienTrang: e.hienTrang ?? 0,
                                 soLuong: e.soLuong ?? 0,
                                 ghiChu: e.ghiChu ?? '',
-                                ngayTao: e.ngayTao ?? '',
+                                ngayTao: AppUtility.formatDateString(
+                                  DateTime.now(),
+                                ),
                                 ngayCapNhat: e.ngayCapNhat ?? '',
                                 nguoiTao: widget.provider.userInfo?.id ?? '',
                                 nguoiCapNhat:
@@ -854,19 +856,19 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tgGnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDate.text,
-          ).toIso8601String(),
+          ).toString(),
       tgGnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDateTo.text,
-          ).toIso8601String(),
+          ).toString(),
       idTrinhDuyetGiamDoc: this.state.nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllers.controllerDeliveryLocation.text,
       idPhongBanXemPhieu: this.state.nguoiKyCapPhong?.id ?? '',
       noiNhan: '',
       trangThai: state,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
-      ngayTao: DateTime.now().toIso8601String(),
-      ngayCapNhat: DateTime.now().toIso8601String(),
+      ngayTao: AppUtility.formatDateString(DateTime.now()),
+      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
       coHieuLuc: 1,
@@ -876,7 +878,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       trichYeu: controllers.controllerSubject.text,
       duongDanFile: this.state.selectedFileName ?? '',
       tenFile: this.state.selectedFileName ?? '',
-      ngayKy: DateTime.now().toIso8601String(),
+      ngayKy: AppUtility.formatDateString(DateTime.now()),
       share: false,
       daBanGiao: false,
       byStep: this.state.isByStep,
@@ -903,11 +905,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       tggnTuNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDate.text,
-          ).toIso8601String(),
+          ).toString(),
       tggnDenNgay:
           AppUtility.parseDateTimeOrNow(
             controllers.controllerEffectiveDateTo.text,
-          ).toIso8601String(),
+          ).toString(),
       idTrinhDuyetGiamDoc: state.nguoiKyGiamDoc?.id ?? '',
       diaDiemGiaoNhan: controllers.controllerDeliveryLocation.text,
       idPhongBanXemPhieu: state.nguoiKyCapPhong?.id ?? '',
@@ -915,8 +917,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       noiNhan: '',
       trangThai: 0,
       idCongTy: widget.provider.userInfo?.idCongTy ?? '',
-      ngayTao: DateTime.now().toIso8601String(),
-      ngayCapNhat: DateTime.now().toIso8601String(),
+      ngayTao: AppUtility.formatDateString(DateTime.now()),
+      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
       nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
       nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
       coHieuLuc: 1,
@@ -925,7 +927,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       trichYeu: controllers.controllerSubject.text,
       duongDanFile: state.selectedFilePath ?? '',
       tenFile: state.selectedFileName ?? '',
-      ngayKy: DateTime.now().toIso8601String(),
+      ngayKy: AppUtility.formatDateString(DateTime.now()),
       chiTietDieuDongTaiSans: listNewDetails,
     );
   }
@@ -939,8 +941,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             idTaiSan: e.idTaiSan,
             soLuong: e.soLuong,
             ghiChu: e.ghiChu,
-            ngayTao: e.ngayTao,
-            ngayCapNhat: e.ngayCapNhat,
+            ngayTao: AppUtility.formatDateString(DateTime.now()),
+            ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
             nguoiTao: widget.provider.userInfo?.tenDangNhap ?? '',
             nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
             isActive: true,
@@ -998,7 +1000,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         trinhDuyetCapPhongXacNhan:
             state.item!.trinhDuyetCapPhongXacNhan ?? false,
         trinhDuyetGiamDocXacNhan: state.item!.trinhDuyetGiamDocXacNhan ?? false,
-        ngayKy: state.item!.ngayKy ?? DateTime.now().toIso8601String(),
+        ngayKy: state.item!.ngayKy ?? AppUtility.formatDateString(DateTime.now()),
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
         trangThai: trangThai,
         daBanGiao: state.item!.daBanGiao ?? false,
@@ -1163,10 +1165,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
             [];
         _loadPdfNetwork(state.item?.tenFile ?? '');
       } else {
-        controllers.controllerSoChungTu.text =
-            UUIDGenerator.generateTimestampId(
-          prefix: 'SCT-TS',
-        );
+        controllers
+            .controllerSoChungTu
+            .text = UUIDGenerator.generateTimestampId(prefix: 'SCT-TS');
         controllers.controllerSubject.text = '';
         controllers.controllerDocumentName.text = '';
         controllers.controllerDeliveringUnit.text = '';

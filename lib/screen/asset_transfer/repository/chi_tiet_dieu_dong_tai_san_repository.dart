@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 

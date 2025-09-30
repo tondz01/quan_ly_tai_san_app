@@ -91,8 +91,8 @@ Future<List<AssetManagementDto>> convertExcelToAsset({Uint8List? bytes, String? 
       for (int rowIndex = 1; rowIndex < sheet.maxRows; rowIndex++) {
         final row = sheet.rows[rowIndex];
         final json = <String, dynamic>{
-          'id': AppUtility.s(cell(row, 0)),
-          'soThe': AppUtility.s(cell(row, 1)),
+          'id': AppUtility.s(cell(row, 1)),
+          'soThe': AppUtility.s(cell(row, 0)),
           'tenTaiSan': AppUtility.s(cell(row, 2)),
           'nguyenGia': AppUtility.parseCurrency(AppUtility.s(cell(row, 2))),
           'giaTriKhauHaoBanDau': AppUtility.parseCurrency(AppUtility.s(cell(row, 4))),

@@ -577,6 +577,7 @@ class ContractPage {
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
+        
         SGText(
           text: "Chúng tôi gồm có:",
           style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
