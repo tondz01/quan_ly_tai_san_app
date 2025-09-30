@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -9,9 +8,11 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
 extension DateTimeToMySQL on DateTime {
@@ -23,13 +24,20 @@ extension DateTimeToMySQL on DateTime {
 Map<String, dynamic> _validateRow(
   Map<String, dynamic> json,
   int rowIndex,
-  ToolsAndSuppliesProvider? provider,
-) {
+  ToolsAndSuppliesProvider? provider, {
+  String soKyHieu = '',
+  String congSuat = '',
+  String nuocSanXuat = '',
+  String soLuong = '',
+  String namSanXuat = '',
+  bool isDetail = false,
+}) {
   List<String> rowErrors = [];
 
   List<PhongBan> phongBans = provider?.dataPhongBan ?? [];
   List<CcdcGroup> ccdcGroups = provider?.dataGroupCCDC ?? [];
   List<TypeCcdc> typeCcdcs = provider?.dataTypeCCDC ?? [];
+  List<UnitDto> units = provider?.dataUnit ?? [];
 
   // Validate required fields
   if (json['id'] == null || json['id'].toString().trim().isEmpty) {
@@ -52,9 +60,14 @@ Map<String, dynamic> _validateRow(
 
   if (json['donViTinh'] == null ||
       json['donViTinh'].toString().trim().isEmpty) {
-    rowErrors.add('Đơn vị tính không được để trống');
+    rowErrors.add('Mã đơn vị tính không được để trống');
+  } else {
+    try {
+      units.firstWhere((unit) => unit.id == json['donViTinh']);
+    } catch (e) {
+      rowErrors.add('Đơn vị tính không tồn tại ${json['donViTinh']}');
+    }
   }
-
   if (json['idNhomCCDC'] == null ||
       json['idNhomCCDC'].toString().trim().isEmpty) {
     rowErrors.add('Nhóm CCDC không được để trống');
@@ -89,6 +102,52 @@ Map<String, dynamic> _validateRow(
     }
   }
 
+  if (isDetail) {
+    if (soKyHieu.isEmpty) {
+      rowErrors.add('Số ký hiệu không được để trống');
+    }
+    if (congSuat.isEmpty) {
+      rowErrors.add('Công suất không được để trống');
+    }
+    if (nuocSanXuat.isEmpty) {
+      rowErrors.add('Nước sản xuất không được để trống');
+    }
+    if (soLuong.isEmpty) {
+      rowErrors.add('Số lượng không được để trống');
+    } else {
+      try {
+        int.tryParse(soLuong);
+        if ((int.tryParse(soLuong) ?? 0) <= 0) {
+          rowErrors.add('Số lượng phải lớn hơn 0');
+        }
+      } catch (e) {
+        rowErrors.add('Số lượng không hợp lệ');
+      }
+    }
+
+    if (namSanXuat.isEmpty) {
+      rowErrors.add('Năm sản xuất không được để trống');
+    } else {
+      try {
+        int.tryParse(namSanXuat);
+
+        final currentYear = DateTime.now().year;
+
+        if ((int.tryParse(namSanXuat) ?? 0) > currentYear) {
+          rowErrors.add(
+            'Năm sản xuất không được lớn hơn năm hiện tại ($currentYear)',
+          );
+        }
+        if ((int.tryParse(namSanXuat) ?? 0) > 0 &&
+            (int.tryParse(namSanXuat) ?? 0) < 1900) {
+          rowErrors.add('Năm sản xuất không hợp lệ (phải >= 1900)');
+        }
+      } catch (e) {
+        rowErrors.add('Năm sản xuất không hợp lệ');
+      }
+    }
+  }
+
   return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
 }
 
@@ -106,8 +165,9 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
     "errors": [],
   };
 
-  List<ToolsAndSuppliesDto> ccdcVts = [];
   List<Map<String, dynamic>> errors = [];
+  final Map<String, ToolsAndSuppliesDto> idToHeader = {};
+  final Map<String, List<DetailAssetDto>> idToDetails = {};
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -116,6 +176,7 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
       if (sheet == null) continue;
       for (int rowIndex = 1; rowIndex < sheet.rows.length; rowIndex++) {
         var row = sheet.rows[rowIndex];
+
         Map<String, dynamic> json = {
           "id": AppUtility.s(row[0]?.value),
           "idDonVi": AppUtility.s(row[1]?.value),
@@ -144,8 +205,35 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "isActive": true,
         };
 
+        final String id = AppUtility.s(json['id']);
+
+        // Đọc cột chi tiết nếu file có (theo template export):
+        final String soKyHieu = row[10]?.value?.toString() ?? '';
+        final String soLuongStr = row[11]?.value?.toString() ?? '';
+        final String congSuat = row[12]?.value?.toString() ?? '';
+        final String nuocSanXuat = row[13]?.value?.toString() ?? '';
+        final String namSanXuatStr = row[14]?.value?.toString() ?? '';
+
+        final bool hasDetail =
+            soKyHieu.isNotEmpty ||
+            congSuat.isNotEmpty ||
+            nuocSanXuat.isNotEmpty ||
+            soLuongStr.isNotEmpty ||
+            namSanXuatStr.isNotEmpty;
+
         // Validate row data
-        final validation = _validateRow(json, rowIndex, provider);
+        final validation = _validateRow(
+          json,
+          rowIndex,
+          provider,
+          soKyHieu: soKyHieu,
+          congSuat: congSuat,
+          nuocSanXuat: nuocSanXuat,
+          soLuong: soLuongStr,
+          namSanXuat: namSanXuatStr,
+          isDetail: hasDetail,
+        );
+
         if (validation['hasError']) {
           errors.add({
             'row': rowIndex, // +1 because Excel rows start from 1
@@ -153,7 +241,22 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
             'data': json,
           });
         } else {
-          ccdcVts.add(ToolsAndSuppliesDto.fromJson(json));
+          idToHeader.putIfAbsent(id, () => ToolsAndSuppliesDto.fromJson(json));
+          if (hasDetail) {
+            final detail = DetailAssetDto(
+              id: "",
+              idTaiSan: id,
+              ngayVaoSo: DateTime.now().toIso8601String(),
+              ngaySuDung: DateTime.now().toIso8601String(),
+              soKyHieu: soKyHieu.isEmpty ? null : soKyHieu,
+              congSuat: congSuat.isEmpty ? null : congSuat,
+              nuocSanXuat: nuocSanXuat.isEmpty ? null : nuocSanXuat,
+              soLuong: int.tryParse(soLuongStr) ?? 0,
+              namSanXuat: int.tryParse(namSanXuatStr) ?? 0,
+              idDonVi: json['idDonVi'],
+            );
+            idToDetails.putIfAbsent(id, () => []).add(detail);
+          }
         }
       }
     }
@@ -191,23 +294,71 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "isActive": true,
         };
 
+        final String id = AppUtility.s(json['id']);
+
+        // Đọc cột chi tiết nếu file có (theo template export):
+        final String soKyHieu = cell(row, 10)?.toString() ?? '';
+        final String soLuongStr = cell(row, 11)?.toString() ?? '';
+        final String congSuat = cell(row, 12)?.toString() ?? '';
+        final String nuocSanXuat = cell(row, 13)?.toString() ?? '';
+        final String namSanXuatStr = cell(row, 14)?.toString() ?? '';
+
+        final bool hasDetail =
+            soKyHieu.isNotEmpty ||
+            congSuat.isNotEmpty ||
+            nuocSanXuat.isNotEmpty ||
+            soLuongStr.isNotEmpty ||
+            namSanXuatStr.isNotEmpty;
+
         // Validate row data
-        final validation = _validateRow(json, rowIndex, provider);
+        final validation = _validateRow(
+          json,
+          rowIndex,
+          provider,
+          soKyHieu: soKyHieu,
+          congSuat: congSuat,
+          nuocSanXuat: nuocSanXuat,
+          soLuong: soLuongStr,
+          namSanXuat: namSanXuatStr,
+          isDetail: hasDetail,
+        );
+
         if (validation['hasError']) {
           errors.add({
-            'row': rowIndex + 1, // +1 because Excel rows start from 1
+            'row': rowIndex, // +1 because Excel rows start from 1
             'errors': validation['errors'],
             'data': json,
           });
         } else {
-          ccdcVts.add(ToolsAndSuppliesDto.fromJson(json));
+          idToHeader.putIfAbsent(id, () => ToolsAndSuppliesDto.fromJson(json));
+          if (hasDetail) {
+            final detail = DetailAssetDto(
+              id: "",
+              idTaiSan: id,
+              ngayVaoSo: DateTime.now().toIso8601String(),
+              ngaySuDung: DateTime.now().toIso8601String(),
+              soKyHieu: soKyHieu.isEmpty ? null : soKyHieu,
+              congSuat: congSuat.isEmpty ? null : congSuat,
+              nuocSanXuat: nuocSanXuat.isEmpty ? null : nuocSanXuat,
+              soLuong: int.tryParse(soLuongStr) ?? 0,
+              namSanXuat: int.tryParse(namSanXuatStr) ?? 0,
+              idDonVi: json['idDonVi'],
+            );
+            idToDetails.putIfAbsent(id, () => []).add(detail);
+          }
         }
       }
     }
   }
 
-  // Update result
-  result['data'] = ccdcVts;
+  // Kết thúc: gắn chi tiết vào header và cập nhật result
+  final List<ToolsAndSuppliesDto> headers = idToHeader.values.toList();
+  for (final header in headers) {
+    final id = header.id;
+    header.chiTietTaiSanList = idToDetails[id] ?? [];
+  }
+
+  result['data'] = headers;
   result['errors'] = errors;
 
   if (errors.isNotEmpty) {
@@ -216,7 +367,7 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
         'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
   } else {
     result['success'] = true;
-    result['message'] = 'Import thành công ${ccdcVts.length} mô hình tài sản.';
+    result['message'] = 'Import thành công ${headers.length} CCDC-VT';
   }
 
   return result;

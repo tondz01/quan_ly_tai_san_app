@@ -36,6 +36,15 @@ class GetListTypeCcdcEvent extends ToolsAndSuppliesEvent {
   List<Object?> get props => [context];
 }
 
+class GetListUnitEvent extends ToolsAndSuppliesEvent {
+  final BuildContext context;
+
+  const GetListUnitEvent(this.context);
+
+  @override
+  List<Object?> get props => [context];
+}
+
 class CreateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final ToolsAndSuppliesRequest params;
 

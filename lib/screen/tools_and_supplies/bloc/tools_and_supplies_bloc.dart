@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_det
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/repository/ccdc_group_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/repository/type_ccdc_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
 
 import 'tools_and_supplies_event.dart';
 import 'tools_and_supplies_state.dart';
@@ -14,6 +15,7 @@ class ToolsAndSuppliesBloc
     on<GetListToolsAndSuppliesEvent>(_getListToolsAndSupplies);
     on<GetListPhongBanEvent>(_getListPhongBan);
     on<GetListTypeCcdcEvent>(_getListTypeCcdc);
+    on<GetListUnitEvent>(_getListUnit);
     on<CreateToolsAndSuppliesEvent>(_createToolsAndSupplies);
     on<UpdateToolsAndSuppliesEvent>(_updateToolsAndSupplies);
     on<DeleteToolsAndSuppliesEvent>(_deleteToolsAndSupplies);
@@ -78,6 +80,26 @@ class ToolsAndSuppliesBloc
     }
   }
 
+  //GET LIST UNIT
+  Future<void> _getListUnit(GetListUnitEvent event, Emitter emit) async {
+    emit(ToolsAndSuppliesInitialState());
+    emit(ToolsAndSuppliesLoadingState());
+    final result = await UnitRepository().getListUnit();
+    emit(ToolsAndSuppliesLoadingDismissState());
+    if (checkStatusCodeDone(result)) {
+      emit(GetListUnitSuccessState(data: result['data']));
+    } else {
+      String msg = "Lỗi khi lấy dữ liệu";
+      emit(
+        GetListUnitFailedState(
+          title: "notice",
+          code: result['status_code'],
+          message: msg,
+        ),
+      );
+    }
+  }
+
   //GET LIST TYPE CCDC
   Future<void> _getListTypeCcdc(
     GetListTypeCcdcEvent event,
@@ -114,9 +136,11 @@ class ToolsAndSuppliesBloc
         .createToolsAndSupplies(event.params);
 
     if (event.listAssetDetail.isNotEmpty) {
-      Map<String, dynamic> resultAssetDetail = {};
-      resultAssetDetail = await AssetManagementDetailRepository()
-          .createAssetDetail(event.listAssetDetail);
+      Map<String, dynamic> resultAssetDetail =
+          await AssetManagementDetailRepository().createAssetDetail(
+            event.listAssetDetail,
+          );
+
       if (checkStatusCodeDone(resultAssetDetail)) {
       } else {
         String msg = "Lỗi khi tạo chi tiết ccdc - vật tư";

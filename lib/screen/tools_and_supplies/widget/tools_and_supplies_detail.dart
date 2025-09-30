@@ -17,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_sup
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/tools_and_supplies_form_left.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesDetail extends StatefulWidget {
@@ -58,10 +59,12 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   PhongBan? selectedPhongBan;
   CcdcGroup? selectedGroupCCDC;
   TypeCcdc? selectedTypeCCDC;
+  UnitDto? selectedUnit;
 
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
   List<DropdownMenuItem<CcdcGroup>> itemsGroupCCDC = [];
   List<DropdownMenuItem<TypeCcdc>> itemsTypeCCDC = [];
+  List<DropdownMenuItem<UnitDto>> itemsUnit = [];
   List<DetailAssetDto> newDetailAssetDto = [];
   Map<String, bool> validationErrors = {};
 
@@ -142,7 +145,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     }
 
     // Validate đơn vị tính
-    if (controllerUnit.text.trim().isEmpty) {
+    if (controllerUnit.text.trim().isEmpty || selectedUnit == null) {
       newValidationErrors['donViTinh'] = true;
     }
 
@@ -204,6 +207,13 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
                         },
                         onImportDateChanged: (value) {},
                         listPhongBan: widget.provider.dataPhongBan,
+                        listUnit: widget.provider.dataUnit,
+                        itemsUnit: itemsUnit,
+                        onUnitChanged: (value) {
+                          setState(() {
+                            selectedUnit = value;
+                          });
+                        },
                         itemsPhongBan: itemsPhongBan,
                         controllerImportUnit: controllerImportUnit,
                         controllerName: controllerName,
@@ -312,8 +322,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     if (newDetailAssetDto.isNotEmpty) {
       final detailErrors = _controller.validateDetailAssets(
         newDetailAssetDto,
-        data?.chiTietTaiSanList ??
-            [], 
+        data?.chiTietTaiSanList ?? [],
         controllerCode.text.trim(),
       );
       if (detailErrors.isNotEmpty) {
@@ -342,7 +351,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         processedData: processedData,
         nameText: controllerName.text,
         codeText: controllerCode.text,
-        unitText: controllerUnit.text,
+        unitText: selectedUnit?.id ?? '',
         symbolText: controllerSymbol.text,
         noteText: controllerNote.text,
         existingData: data,
@@ -400,6 +409,8 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       widget.provider.dataTypeCCDC,
     );
 
+    itemsUnit = _controller.buildUnitDropdownItems(widget.provider.dataUnit);
+
     if (widget.provider.dataDetail != null) {
       isEditing = false;
       data = widget.provider.dataDetail;
@@ -408,7 +419,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerName.text = _controller.formatDisplayValue(data?.ten);
       controllerCode.text = _controller.formatDisplayValue(data?.id);
       controllerImportDate.text = _controller.formatDateDisplay(data?.ngayNhap);
-      controllerUnit.text = _controller.formatDisplayValue(data?.donViTinh);
       controllerQuantity.text = _controller.formatDisplayValue(
         data?.soLuong,
         defaultValue: '0',
@@ -421,8 +431,27 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerNote.text = _controller.formatDisplayValue(data?.ghiChu);
 
       controllerImportUnit.text = data?.tenDonVi ?? '';
-
       controllerGroupCCDC.text = data?.tenNhomCCDC ?? '';
+
+      if (data?.donViTinh != null && data?.donViTinh != '') {
+        SGLog.debug(
+          '_cancelEdit',
+          'data?.donViTinh initData: ${data?.donViTinh}',
+        );
+        try {
+          controllerUnit.text =
+              widget.provider.dataUnit
+                  .firstWhere((element) => element.id == data?.donViTinh)
+                  .tenDonVi ??
+              '';
+        } catch (e) {
+          SGLog.debug('_cancelEdit', 'Error initData: $e');
+          controllerTypeCCDC.text = '';
+        }
+      } else {
+        controllerUnit.text = '';
+      }
+
       if (data?.idLoaiCCDCCon != null && data?.idLoaiCCDCCon != '') {
         SGLog.debug(
           '_cancelEdit',
@@ -513,7 +542,7 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       controllerName.text = _controller.formatDisplayValue(data?.ten);
       controllerCode.text = _controller.formatDisplayValue(data?.id);
       controllerImportDate.text = _controller.formatDateDisplay(data?.ngayNhap);
-      controllerUnit.text = _controller.formatDisplayValue(data?.donViTinh);
+
       controllerQuantity.text = _controller.formatDisplayValue(
         data?.soLuong,
         defaultValue: '0',
@@ -527,6 +556,22 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
       controllerImportUnit.text = data?.tenDonVi ?? '';
       controllerGroupCCDC.text = data?.tenNhomCCDC ?? '';
+
+      if (data?.donViTinh != null && data?.donViTinh != '') {
+        SGLog.debug('_cancelEdit', 'data?.donViTinh: ${data?.donViTinh}');
+        try {
+          controllerUnit.text =
+              widget.provider.dataUnit
+                  .firstWhere((element) => element.id == data?.donViTinh)
+                  .tenDonVi ??
+              '';
+        } catch (e) {
+          SGLog.debug('_cancelEdit', 'Error _cancelEdit: $e');
+          controllerUnit.text = '';
+        }
+      } else {
+        controllerUnit.text = '';
+      }
 
       if (data?.idLoaiCCDCCon != null && data?.idLoaiCCDCCon != '') {
         SGLog.debug(

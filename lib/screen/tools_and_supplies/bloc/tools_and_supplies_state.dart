@@ -3,6 +3,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 
 abstract class ToolsAndSuppliesState extends Equatable {
   const ToolsAndSuppliesState();
@@ -61,6 +62,31 @@ class GetListTypeCcdcFailedState extends ToolsAndSuppliesState {
   final String message;
 
   const GetListTypeCcdcFailedState({
+    required this.title,
+    this.code,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [title, code!, message];
+}
+
+//GET LIST UNIT
+class GetListUnitSuccessState extends ToolsAndSuppliesState {
+  final List<UnitDto> data;
+
+  const GetListUnitSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
+class GetListUnitFailedState extends ToolsAndSuppliesState {
+  final String title;
+  final int? code;
+  final String message;
+
+  const GetListUnitFailedState({
     required this.title,
     this.code,
     required this.message,

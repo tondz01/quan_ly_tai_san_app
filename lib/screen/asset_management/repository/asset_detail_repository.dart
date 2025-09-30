@@ -8,7 +8,6 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetManagementDetailRepository extends ApiBase {
   Future<Map<String, dynamic>> createAssetDetail(String params) async {
@@ -16,7 +15,6 @@ class AssetManagementDetailRepository extends ApiBase {
       'data': null,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
-    SGLog.debug("_saveItem 2", params);
     try {
       UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
       List<DetailAssetDto> newRequestDetailAsset = DetailAssetDto.decode(
