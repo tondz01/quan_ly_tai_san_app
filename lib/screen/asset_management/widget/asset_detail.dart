@@ -48,6 +48,7 @@ class _AssetDetailState extends State<AssetDetail> {
   List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory = [];
 
   TextEditingController ctrlMaTaiSan = TextEditingController();
+  TextEditingController ctrlSoThe = TextEditingController();
   TextEditingController ctrlIdNhomTaiSan = TextEditingController();
   TextEditingController ctrlNguyenGia = TextEditingController();
   TextEditingController ctrlGiaTriKhauHaoBanDau = TextEditingController();
@@ -172,6 +173,7 @@ class _AssetDetailState extends State<AssetDetail> {
                       isEditing: isEditing,
                       ctrlTenTaiSan: ctrlTenTaiSan,
                       ctrlMaTaiSan: ctrlMaTaiSan,
+                      ctrlSoThe: ctrlSoThe,
                       ctrlIdNhomTaiSan: ctrlIdNhomTaiSan,
                       ctrlNguyenGia: ctrlNguyenGia,
                       ctrlGiaTriKhauHaoBanDau: ctrlGiaTriKhauHaoBanDau,
@@ -400,6 +402,7 @@ class _AssetDetailState extends State<AssetDetail> {
       log('check isEditing: $isEditing');
 
       ctrlMaTaiSan.text = '';
+      ctrlSoThe.text = '';
       ctrlIdNhomTaiSan.text = '';
       ctrlNguyenGia.text = '';
       ctrlGiaTriKhauHaoBanDau.text = '';
@@ -434,14 +437,13 @@ class _AssetDetailState extends State<AssetDetail> {
       if (widget.provider.dataDetail != null) {
         data = widget.provider.dataDetail;
         isEditing = false;
-        log('check isEditing: $isEditing');
       }
       if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
         isEditing = false;
-        log('check isEditing: $isEditing');
       }
       // If data is not null, set controllers with data values
       ctrlMaTaiSan.text = data!.id ?? '';
+      ctrlSoThe.text = data!.soThe ?? '';
       ctrlIdNhomTaiSan.text = data!.tenNhom ?? '';
       ctrlNguyenGia.text = data!.nguyenGia?.toString() ?? '';
       ctrlGiaTriKhauHaoBanDau.text =

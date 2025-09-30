@@ -34,6 +34,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
   ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
     'code_asset',
+    'so_the',
     'name_asset',
     'book_entry_date',
     'usage_tart_date',
@@ -77,6 +78,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
         id: 'code_asset',
         label: 'Mã tài sản',
         isChecked: visibleColumnIds.contains('code_asset'),
+      ),
+      ColumnDisplayOption(
+        id: 'so_the',
+        label: 'Số thẻ',
+        isChecked: visibleColumnIds.contains('so_the'),
       ),
       ColumnDisplayOption(
         id: 'name_asset',
@@ -170,6 +176,15 @@ class _AssetManagementListState extends State<AssetManagementList> {
               width: 120,
               // filterable: true,
               searchValue: (item) => item.id ?? '',
+            ),
+          );
+          break;
+        case 'so_the':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Số thẻ',
+              getValue: (item) => item.soThe ?? '',
+              width: 120,
             ),
           );
           break;

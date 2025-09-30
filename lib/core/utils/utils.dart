@@ -249,4 +249,35 @@ abstract class AppUtility {
     if (parsed != null) return parsed.toIso8601String();
     return DateTime.now().toIso8601String();
   }
+
+  static String normalizeDateIsoStringV2(dynamic value) {
+    if (value == null) return formatDateForServer(DateTime.now());
+    if (value is DateTime) return formatDateForServer(value);
+    if (value is num) return formatDateForServer(excelSerialToDate(value));
+    final text = value.toString().trim();
+    if (text.isEmpty) return formatDateForServer(DateTime.now());
+    final parsed = DateTime.tryParse(text);
+    if (parsed != null) return formatDateForServer(parsed);
+    return formatDateForServer(DateTime.now());
+  }
+
+  static String formatDateForServer(DateTime dateTime) {
+    // Tạo định dạng YYYY-MM-DD HH:mm:ss mà server có thể parse
+    return '${dateTime.year.toString().padLeft(4, '0')}-'
+        '${dateTime.month.toString().padLeft(2, '0')}-'
+        '${dateTime.day.toString().padLeft(2, '0')} '
+        '${dateTime.hour.toString().padLeft(2, '0')}:'
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
+  static String formatDateString(DateTime? dateTime) {
+    if (dateTime == null) return '';
+    return '${dateTime.year.toString().padLeft(4, '0')}-'
+        '${dateTime.month.toString().padLeft(2, '0')}-'
+        '${dateTime.day.toString().padLeft(2, '0')} '
+        '${dateTime.hour.toString().padLeft(2, '0')}:'
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
+  }
 }

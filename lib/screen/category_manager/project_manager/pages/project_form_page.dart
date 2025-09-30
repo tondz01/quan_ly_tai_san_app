@@ -168,15 +168,15 @@ class _ProjectFormPageState extends State<ProjectFormPage> {
                     //     (v) => v == null || v.isEmpty ? ProjectConstants.validationProjectNoteRequired : null,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isActive,
-                        onChanged: (v) => !isEditing ? null : setState(() => _isActive = v ?? true),
-                      ),
-                      Text(ProjectConstants.labelIsActive, style: const TextStyle(fontSize: 16)),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     Checkbox(
+                  //       value: _isActive,
+                  //       onChanged: (v) => !isEditing ? null : setState(() => _isActive = v ?? true),
+                  //     ),
+                  //     Text(ProjectConstants.labelIsActive, style: const TextStyle(fontSize: 16)),
+                  //   ],
+                  // ),
                 ],
               ),
             ),

@@ -18,6 +18,7 @@ Widget buildOriginalAssetInfomation(
   BuildContext context, {
   required TextEditingController ctrlTenTaiSan,
   required TextEditingController ctrlMaTaiSan,
+  required TextEditingController ctrlSoThe,
   required TextEditingController ctrlIdNhomTaiSan,
   required TextEditingController ctrlNguyenGia,
   required TextEditingController ctrlGiaTriKhauHaoBanDau,
@@ -88,6 +89,15 @@ Widget buildOriginalAssetInfomation(
         isEditing: isEditing,
         textContent: ctrlMaTaiSan.text,
         fieldName: 'id',
+        validationErrors: validationErrors,
+        isRequired: true,
+      ),
+      CommonFormInput(
+        label: 'Số thẻ tài sản',
+        controller: ctrlSoThe,
+        isEditing: isEditing,
+        textContent: ctrlSoThe.text,
+        fieldName: 'soThe',
         validationErrors: validationErrors,
         isRequired: true,
       ),

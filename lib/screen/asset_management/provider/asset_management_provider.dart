@@ -232,6 +232,11 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   reset() {
     _isLoading = true;
     onChangeBody(ShowBody.taiSan);
@@ -377,6 +382,8 @@ class AssetManagementProvider with ChangeNotifier {
 
   createAssetError(BuildContext context, CreateAssetFailedState state) {
     _error = state.message;
+    _isLoading = false;
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
   }
 
