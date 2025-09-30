@@ -399,7 +399,6 @@ class _AssetDetailState extends State<AssetDetail> {
     }
     if (widget.provider.dataDetail == null) {
       isEditing = true;
-      log('check isEditing: $isEditing');
 
       ctrlMaTaiSan.text = '';
       ctrlSoThe.text = '';

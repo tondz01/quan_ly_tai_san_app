@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:intl/intl.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class LyDoTang {
   final int id;
@@ -279,5 +280,42 @@ abstract class AppUtility {
         '${dateTime.hour.toString().padLeft(2, '0')}:'
         '${dateTime.minute.toString().padLeft(2, '0')}:'
         '${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
+  static Widget showPermissionSigning(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              status == 1
+                  ? Colors.red
+                  : status == 2
+                  ? Colors.deepOrangeAccent
+                  : status == 3
+                  ? Colors.blue
+                  : Colors.green,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              status == 2
+                  ? 'Không được phép ký'
+                  : status == 1
+                  ? 'Chưa đến lượt ký'
+                  : status == 3
+                  ? 'Đã ký'
+                  : 'Cần ký',
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
   }
 }

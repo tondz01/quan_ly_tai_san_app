@@ -19,7 +19,12 @@ import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 class StaffListByAccount extends StatefulWidget {
   final LoginProvider provider;
-  const StaffListByAccount({super.key, required this.provider});
+  final Function()? onTapClose;
+  const StaffListByAccount({
+    super.key,
+    required this.provider,
+    this.onTapClose,
+  });
 
   @override
   State<StaffListByAccount> createState() => _StaffListByAccountState();
@@ -30,6 +35,8 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
   String searchTerm = "";
   String lableTitle = '';
   List<NhanVien> filteredData = [];
+
+  bool isShowSearch = false;
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
@@ -296,6 +303,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   spacing: 8,
@@ -334,7 +342,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      _buildSearchField(
+                      body == null ? _buildSearchField(
                         MediaQuery.of(context).size.width,
                         TextEditingController(),
                         (value) {
@@ -343,8 +351,19 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                             searchFilters();
                           });
                         },
-                      ),
+                      ) : SizedBox.shrink(),
                     ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: widget.onTapClose,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.close,
+                      color: ColorValue.primaryDarkBlue,
+                      size: 24,
+                    ),
                   ),
                 ),
               ],

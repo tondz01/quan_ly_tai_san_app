@@ -297,7 +297,6 @@ class AssetManagementProvider with ChangeNotifier {
     }
     _isShowCollapse = true;
     isShowInput = true;
-    log('message onChangeDetail isNew: $_isNew');
     notifyListeners();
   }
 

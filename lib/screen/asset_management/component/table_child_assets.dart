@@ -65,7 +65,6 @@ class _TableChildAssetsState extends State<TableChildAssets> {
 
   @override
   Widget build(BuildContext context) {
-    log('movementDetails: ${movementDetails.length}');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
