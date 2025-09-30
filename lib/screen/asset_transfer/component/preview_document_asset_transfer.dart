@@ -181,7 +181,7 @@ previewDocumentView({
             idTaiLieu: item.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
-            pin: int.parse(nhanVien.pin ?? '0'),
+            pin: int.tryParse(nhanVien.pin?.trim() ?? '') ?? 0,
             isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,
             isKyNhay: nhanVien.kyNhay ?? false,

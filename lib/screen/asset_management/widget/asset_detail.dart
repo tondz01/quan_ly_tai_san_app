@@ -500,6 +500,7 @@ class _AssetDetailState extends State<AssetDetail> {
   AssetRequest _createAssetRequest() {
     return AssetRequest(
       id: ctrlMaTaiSan.text.replaceAll(RegExp(r"\s+"), ""),
+      soThe: ctrlSoThe.text,
       idLoaiTaiSan: idAssetGroup ?? '',
       tenTaiSan: ctrlTenTaiSan.text,
       nguyenGia: AppUtility.parseCurrency(ctrlNguyenGia.text),

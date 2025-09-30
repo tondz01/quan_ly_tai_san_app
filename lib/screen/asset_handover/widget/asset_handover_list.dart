@@ -72,7 +72,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'receiver_unit',
     'created_by',
     'status',
-    'by_step',
+    // 'by_step',
     'actions',
   ];
 
@@ -176,11 +176,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         label: 'Người lập phiếu',
         isChecked: visibleColumnIds.contains('created_by'),
       ),
-      ColumnDisplayOption(
-        id: 'by_step',
-        label: 'Ký theo lượt',
-        isChecked: visibleColumnIds.contains('by_step'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'by_step',
+      //   label: 'Ký theo lượt',
+      //   isChecked: visibleColumnIds.contains('by_step'),
+      // ),
       ColumnDisplayOption(
         id: 'status',
         label: 'Trạng thái phiếu',
@@ -322,23 +322,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             ),
           );
           break;
-        case 'by_step':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: 'Ký theo lượt',
-              cellBuilder:
-                  (item) =>
-                      SgCheckbox(value: item.byStep == true, onChanged: null),
-              width: 100,
-              searchValueGetter: (item) {
-                return item.byStep == true
-                    ? 'Ký theo lượt'
-                    : 'Không ký theo lượt';
-              },
-              filterable: true,
-            ),
-          );
-          break;
+        // case 'by_step':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+        //       title: 'Ký theo lượt',
+        //       cellBuilder:
+        //           (item) =>
+        //               SgCheckbox(value: item.byStep == true, onChanged: null),
+        //       width: 100,
+        //       searchValueGetter: (item) {
+        //         return item.byStep == true
+        //             ? 'Ký theo lượt'
+        //             : 'Không ký theo lượt';
+        //       },
+        //       filterable: true,
+        //     ),
+        //   );
+        //   break;
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(

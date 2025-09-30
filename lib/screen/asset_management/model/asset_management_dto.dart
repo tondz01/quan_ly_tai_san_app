@@ -20,8 +20,8 @@ class AssetManagementDto {
     DateTime? ngayTao = DateTime.tryParse(this.ngayTao ?? '');
     DateTime? ngayCapNhat = DateTime.tryParse(this.ngayCapNhat ?? '');
     return {
-      'Mã tài sản': _nullIfEmpty(id),
-      'Số thẻ tài sản': _nullIfEmpty(soThe),
+      'Số thẻ tài sản': _nullIfEmpty(id),
+      'Mã tài sản': _nullIfEmpty(soThe),
       'Tên tài sản': _nullIfEmpty(tenTaiSan),
       'Nguyên giá': nguyenGia ?? 0.0,
       'Giá trị khấu hao ban đầu': giaTriKhauHaoBanDau ?? 0.0,

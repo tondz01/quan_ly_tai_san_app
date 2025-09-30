@@ -61,7 +61,7 @@ class _AccountViewState extends State<AccountView> {
                       Expanded(
                         child: HeaderComponent(
                           controller: TextEditingController(),
-                          isShowSearch: false,
+                          isShowSearch: true,
                           onSearchChanged: (value) {
                             // Cập nhật trạng thái tìm kiếm trong provider
                             // provider.searchTerm = value;
@@ -79,11 +79,8 @@ class _AccountViewState extends State<AccountView> {
                                     // shape: RoundedRectangleBorder(
                                     //   borderRadius: BorderRadius.circular(16),
                                     // ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: StaffListByAccount(
-                                        provider: provider,
-                                      ),
+                                    child: StaffListByAccount(
+                                      provider: provider,
                                     ),
                                   ),
                             );

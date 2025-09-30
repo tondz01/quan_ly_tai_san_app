@@ -34,8 +34,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
   late List<ColumnDisplayOption> columnOptions;
   ScrollController horizontalController = ScrollController();
   List<String> visibleColumnIds = [
-    'so_the',
     'code_asset',
+    'so_the',
     'name_asset',
     'book_entry_date',
     'usage_tart_date',
@@ -77,15 +77,16 @@ class _AssetManagementListState extends State<AssetManagementList> {
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'so_the',
-        label: 'Số thẻ',
-        isChecked: visibleColumnIds.contains('so_the'),
-      ),
-      ColumnDisplayOption(
         id: 'code_asset',
         label: 'Mã tài sản',
         isChecked: visibleColumnIds.contains('code_asset'),
       ),
+      ColumnDisplayOption(
+        id: 'so_the',
+        label: 'Số thẻ',
+        isChecked: visibleColumnIds.contains('so_the'),
+      ),
+
       ColumnDisplayOption(
         id: 'name_asset',
         label: 'Tên tài sản',
@@ -148,7 +149,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
       ),
       ColumnDisplayOption(
         id: 'so_ky_hieu',
-        label: 'Số kys hieeu',
+        label: 'Số Ký hiệu',
         isChecked: visibleColumnIds.contains('so_ky_hieu'),
       ),
       ColumnDisplayOption(
@@ -175,19 +176,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
-        case 'so_the':
-          columns.add(
-            TableBaseConfig.columnTable<AssetManagementDto>(
-              title: 'Số thẻ',
-              getValue: (item) => item.soThe ?? '',
-              width: 120,
-            ),
-          );
-          break;
         case 'code_asset':
           columns.add(
             TableColumnBuilder.createTextColumn<AssetManagementDto>(
-              title: 'Mã tài sản',
+              title: 'Số thẻ tài sản',
               getValue: (item) => item.id ?? '',
               width: 120,
               // filterable: true,
@@ -195,7 +187,15 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
           );
           break;
-
+        case 'so_the':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Mã tài sản',
+              getValue: (item) => item.soThe ?? '',
+              width: 120,
+            ),
+          );
+          break;
         case 'name_asset':
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
@@ -276,15 +276,13 @@ class _AssetManagementListState extends State<AssetManagementList> {
               getValue: (item) {
                 final typeAsset = AccountHelper.instance.getAllTypeAsset();
                 if (typeAsset.isEmpty) return '';
-                String nameTypeAsset = typeAsset
-                    .firstWhere(
-                      (element) => element.id == item.idLoaiTaiSanCon,
-                      orElse: () => TypeAsset(
-                        id: '',
-                        tenLoai: '',
-                      ),
-                    )
-                    .tenLoai ??
+                String nameTypeAsset =
+                    typeAsset
+                        .firstWhere(
+                          (element) => element.id == item.idLoaiTaiSanCon,
+                          orElse: () => TypeAsset(id: '', tenLoai: ''),
+                        )
+                        .tenLoai ??
                     '';
                 return nameTypeAsset;
               },

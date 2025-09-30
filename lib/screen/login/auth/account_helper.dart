@@ -198,9 +198,9 @@ class AccountHelper {
   }
 
   ChucVu? getChucVuById(String id) {
-    return StorageService.read(
-      StorageKey.CHUC_VU,
-    ).firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
+    final list = getChucVu();
+    if (list == null) return null;
+    return list.firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
   }
 
   //ASSET GROUP
