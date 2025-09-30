@@ -20,6 +20,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -85,6 +86,16 @@ class _AssetTransferListState extends State<AssetTransferList> {
     'id',
     'status',
     'actions',
+  ];
+  List<Map<String, DateTime Function(DieuDongTaiSanDto)>> getters = [
+    {
+      'Ngày ngày có hiệu lực':
+          (item) => DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày ký':
+          (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
+    },
   ];
 
   @override
@@ -317,12 +328,23 @@ class _AssetTransferListState extends State<AssetTransferList> {
             ),
             child: headerList(),
           ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
+          ),
           Expanded(
             child: TableBaseView<DieuDongTaiSanDto>(
               searchTerm: '',
               columns: columns,
               data: dataAssetTransferFilter,
               horizontalController: ScrollController(),
+              getters: getters,
+              startDate: DateTime.tryParse(
+                dataAssetTransferFilter.isNotEmpty
+                    ? dataAssetTransferFilter.first.tggnTuNgay.toString()
+                    : '',
+              ),
               onRowTap: (item) {
                 // widget.provider.onChangeDetailDieuDongTaiSan(item);
               },
@@ -441,9 +463,7 @@ class _AssetTransferListState extends State<AssetTransferList> {
               widget.provider.onChangeDetail(
                 context,
                 AssetHandoverDto(
-                  id: UUIDGenerator.generateWithFormat(
-                    'BG-************',
-                  ),
+                  id: UUIDGenerator.generateWithFormat('BG-************'),
                   idCongTy: item.idCongTy,
                   banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
                   quyetDinhDieuDongSo: '',
@@ -526,7 +546,6 @@ class _AssetTransferListState extends State<AssetTransferList> {
             }
 
             if (_filterStatus[FilterType.thuHoi] == true && (itemStatus == 3)) {
-              
               return true;
             }
 

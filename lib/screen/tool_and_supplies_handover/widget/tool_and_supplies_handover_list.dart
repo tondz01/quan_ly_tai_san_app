@@ -21,6 +21,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -74,7 +75,12 @@ class _ToolAndSuppliesHandoverListState
   ];
 
   PdfDocument? _document;
-  List<Map<String, DateTime Function(ToolAndSuppliesHandoverDto)>> getters = [];
+  List<Map<String, DateTime Function(ToolAndSuppliesHandoverDto)>> getters = [
+    {
+      'Ngày bàn giao':
+          (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
+    },
+  ];
 
   @override
   void initState() {
@@ -334,7 +340,7 @@ class _ToolAndSuppliesHandoverListState
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -458,12 +464,26 @@ class _ToolAndSuppliesHandoverListState
                           ],
                         ),
                       ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: SGAppColors.colorBorderGray.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
                       Expanded(
                         child: TableBaseView<ToolAndSuppliesHandoverDto>(
                           searchTerm: '',
                           columns: columns,
                           data: widget.provider.dataPage ?? [],
                           horizontalController: ScrollController(),
+                          getters: getters,
+                          startDate: DateTime.tryParse(
+                            widget.provider.dataPage!.isNotEmpty
+                                ? widget.provider.dataPage!.first.ngayBanGiao
+                                    .toString()
+                                : '',
+                          ),
                           onRowTap: (item) async {
                             isShowPreview = true;
                             widget.provider.onChangeDetail(
@@ -869,7 +889,6 @@ class _ToolAndSuppliesHandoverListState
     }
   }
 
- 
   List<ToolAndSuppliesHandoverDto> _getNotSharedAndNotify(
     List<ToolAndSuppliesHandoverDto> items,
   ) {

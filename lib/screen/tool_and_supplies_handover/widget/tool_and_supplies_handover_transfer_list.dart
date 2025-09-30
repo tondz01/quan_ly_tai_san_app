@@ -88,6 +88,16 @@ class _ToolAndSuppliesHandoverTransferListState
     'status',
     'actions',
   ];
+  List<Map<String, DateTime Function(ToolAndMaterialTransferDto)>> getters = [
+    {
+      'Ngày ngày có hiệu lực':
+          (item) => DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày ký':
+          (item) => DateTime.tryParse(item.ngayKy ?? '') ?? DateTime.now(),
+    },
+  ];
 
   @override
   void initState() {
@@ -325,6 +335,12 @@ class _ToolAndSuppliesHandoverTransferListState
             child: TableBaseView<ToolAndMaterialTransferDto>(
               searchTerm: '',
               columns: columns,
+              getters: getters,
+              startDate: DateTime.tryParse(
+                dataAssetTransferFilter.isNotEmpty
+                    ? dataAssetTransferFilter.first.tggnTuNgay.toString()
+                    : '',
+              ),
               data: dataAssetTransferFilter,
               horizontalController: ScrollController(),
               onRowTap: (item) {},
@@ -431,9 +447,7 @@ class _ToolAndSuppliesHandoverTransferListState
               widget.provider.onChangeDetail(
                 context,
                 ToolAndSuppliesHandoverDto(
-                  id: UUIDGenerator.generateWithFormat(
-                    'BBCCDC-******',
-                  ),
+                  id: UUIDGenerator.generateWithFormat('BBCCDC-******'),
                   banGiaoCCDCVatTu: '',
                   quyetDinhDieuDongSo: '',
                   lenhDieuDong: item.id,

@@ -25,6 +25,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -473,6 +474,13 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
                             FindByStateAssetHandover(provider: widget.provider),
                           ],
+                        ),
+                      ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: SGAppColors.colorBorderGray.withValues(
+                          alpha: 0.3,
                         ),
                       ),
                       Expanded(
@@ -931,9 +939,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     }
   }
 
-  List<AssetHandoverDto> _getNotSharedAndNotify(
-    List<AssetHandoverDto> items,
-  ) {
+  List<AssetHandoverDto> _getNotSharedAndNotify(List<AssetHandoverDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,

@@ -443,6 +443,11 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
               ],
             ),
           ),
+        Divider(
+          height: 1,
+          thickness: 1,
+          color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
+        ),
         Expanded(
           child: Scrollbar(
             controller: _horizontalController,
