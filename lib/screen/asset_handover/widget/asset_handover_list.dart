@@ -27,7 +27,6 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -62,6 +61,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   List<AssetHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
+    'permission_signing',
     'signing_status',
     'share',
     'name',
@@ -126,6 +126,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'permission_signing',
+        label: 'Quyền ký',
+        isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
       ColumnDisplayOption(
         id: 'signing_status',
         label: 'Trạng thái ký',
@@ -200,6 +205,30 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'permission_signing':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Quyền ký',
+              cellBuilder:
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = getPermissionSigning(item);
+                return status == 2
+                    ? 'Không được phép ký'
+                    : status == 1
+                    ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
+                    : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
@@ -1095,5 +1124,47 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         ),
       ],
     );
+  }
+
+  int getPermissionSigning(AssetHandoverDto item) {
+    final signatureFlow =
+        [
+              {
+                "id": item.idDaiDiendonviBanHanhQD,
+                "signed": item.daXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                          },
+                        )
+                        .toList() ??
+                    []),
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo?.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+    if (previousNotSigned.isNotEmpty) return 1;
+    return 0;
   }
 }

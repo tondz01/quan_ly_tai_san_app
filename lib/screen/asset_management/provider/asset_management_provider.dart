@@ -160,14 +160,22 @@ class AssetManagementProvider with ChangeNotifier {
   HienTrang getHienTrang(int id) {
     return listHienTrang.firstWhere(
       (element) => element.id == id,
-      orElse: () => listHienTrang.isNotEmpty ? listHienTrang.first : HienTrang(id: 0, name: ''),
+      orElse:
+          () =>
+              listHienTrang.isNotEmpty
+                  ? listHienTrang.first
+                  : HienTrang(id: 0, name: ''),
     );
   }
 
   LyDoTang getLyDoTang(int id) {
     return listLyDoTang.firstWhere(
       (element) => element.id == id,
-      orElse: () => listLyDoTang.isNotEmpty ? listLyDoTang.first : LyDoTang(id: 0, name: ''),
+      orElse:
+          () =>
+              listLyDoTang.isNotEmpty
+                  ? listLyDoTang.first
+                  : LyDoTang(id: 0, name: ''),
     );
   }
 
@@ -185,7 +193,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<Map<String, bool>?> checkBoxAssetGroup = [];
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
+    totalEntries = _filteredData?.length ?? 0;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
@@ -197,8 +205,8 @@ class AssetManagementProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        _filteredData?.isNotEmpty ?? false
+            ? _filteredData!.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
@@ -297,7 +305,6 @@ class AssetManagementProvider with ChangeNotifier {
     }
     _isShowCollapse = true;
     isShowInput = true;
-    log('message onChangeDetail isNew: $_isNew');
     notifyListeners();
   }
 
@@ -337,7 +344,8 @@ class AssetManagementProvider with ChangeNotifier {
       _filteredData = [];
       _dataPage = [];
     } else {
-      _data = state.data.where((element) => element.isTaiSanCon == false).toList();
+      _data =
+          state.data.where((element) => element.isTaiSanCon == false).toList();
       log('[check getListAssetManagementSuccess] _data: ${_data?.length}');
       _filteredData = List.from(_data!); // Khởi tạo filteredData
       _updatePagination();
@@ -518,6 +526,8 @@ class AssetManagementProvider with ChangeNotifier {
       }
     }
     findDataByIdAssetGroup();
+    _updatePagination();
+
     notifyListeners();
   }
 
@@ -584,8 +594,6 @@ class AssetManagementProvider with ChangeNotifier {
       for (var element in listLyDoTang)
         DropdownMenuItem<LyDoTang>(value: element, child: Text(element.name)),
     ];
-
-    log('onLoadItemDropdown itemsLyDoTang: ${_itemsLyDoTang.length}');
 
     //Item dropdown hien trang
     _itemsHienTrang = [

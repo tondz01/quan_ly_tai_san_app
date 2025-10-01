@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -17,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool
 import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 
 class AccountHelper {
   //create private constructor
@@ -200,7 +202,10 @@ class AccountHelper {
   ChucVu? getChucVuById(String id) {
     final list = getChucVu();
     if (list == null) return null;
-    return list.firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
+    return list.firstWhere(
+      (chucVu) => chucVu.id == id,
+      orElse: () => ChucVu.empty(),
+    );
   }
 
   //ASSET GROUP
@@ -685,12 +690,16 @@ class AccountHelper {
   }
 
   //Config
-  setConfigTimeExpire(int timeExpire) {
-    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, timeExpire);
+  setConfigTimeExpire(ConfigDto config) {
+    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, config);
   }
 
-  int? getConfigTimeExpire() {
-    return StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+  ConfigDto? getConfigTimeExpire() {
+    final raw = StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+    if (raw == null) return null;
+    if (raw is ConfigDto) return raw;
+    if (raw is Map) return ConfigDto.fromJson(Map<String, dynamic>.from(raw));
+    return null;
   }
 
   // Global type asset
@@ -735,12 +744,13 @@ class AccountHelper {
     final raw = StorageService.read(
       StorageKey.TYPE_ASSET,
     )?.firstWhere((element) => element.id == idTypeAsset, orElse: () => null);
-    final types = raw
-        ?.map((e) => TypeAsset.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final types =
+        raw?.map((e) => TypeAsset.fromJson(e as Map<String, dynamic>)).toList();
 
-    final TypeAsset? found = types
-        ?.firstWhere((t) => t.id == idTypeAsset, orElse: () => null);
+    final TypeAsset? found = types?.firstWhere(
+      (t) => t.id == idTypeAsset,
+      orElse: () => null,
+    );
     if (found == null) return null;
     return found;
   }
@@ -803,5 +813,35 @@ class AccountHelper {
 
   clearTypeCcdc() {
     StorageService.remove(StorageKey.TYPE_CCDCV);
+  }
+
+  // Global unit
+  setUnit(List<UnitDto> unit) {
+    if (unit.isNotEmpty) {
+      StorageService.write(StorageKey.UNIT, unit);
+    }
+  }
+
+  clearUnit() {
+    StorageService.remove(StorageKey.UNIT);
+  }
+
+  List<UnitDto> getAllUnit() {
+    final raw = StorageService.read(StorageKey.UNIT);
+    if (raw == null) return [];
+    if (raw is List<UnitDto>) return raw;
+    return [];
+  }
+
+  UnitDto? getUnitById(String idUnit) {
+    final raw = StorageService.read(StorageKey.UNIT);
+    if (raw == null) return null;
+    if (raw is List<UnitDto>) {
+      return raw.firstWhere(
+        (unit) => unit.id == idUnit,
+        orElse: () => UnitDto(),
+      );
+    }
+    return null;
   }
 }

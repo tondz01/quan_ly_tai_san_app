@@ -46,4 +46,9 @@ class UnitDto {
       'Ghi chú': note ?? '',
     };
   }
+
+  @override
+  String toString() {
+    return tenDonVi ?? '';
+  }
 }

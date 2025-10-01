@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_constants.dart';
 
 class ChucVu extends Equatable {
   final String id;

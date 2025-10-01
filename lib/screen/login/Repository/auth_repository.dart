@@ -23,6 +23,8 @@ import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/repository/type_ccdc_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -143,20 +145,14 @@ class AuthRepository extends ApiBase {
     SGLog.info('[check loadData] _loadData', 'loadUserDepartments');
     await _loadUserDepartments(idCongTy);
     // }
-    SGLog.info('_loadData', 'loadUserEmployee');
     await _loadUserEmployee(idCongTy);
-    SGLog.info('_loadData', 'loadAssetGroup');
     await _loadAssetGroup(idCongTy);
-    SGLog.info('_loadData', 'loadCCDCGroup');
     await _loadCCDCGroup(idCongTy);
-    SGLog.info('_loadData', 'loadChucVu');
     await _loadChucVu(idCongTy);
-    SGLog.info('_loadData', 'loadTypeAsset');
     await _loadTypeAsset(idCongTy);
-    SGLog.info('_loadData', 'loadTypeCcdc');
     await _loadTypeCcdc(idCongTy);
-    SGLog.info('_loadData', 'loadAssetCategory');
     await _loadAssetCategory(idCongTy);
+    await _loadUnit(idCongTy);
   }
 
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
@@ -196,6 +192,7 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setNhanVien(nhanVienList);
+        SGLog.info('_loadData', 'loadUserEmployee');
       }
     } catch (e) {
       log('Error calling API NHAN_VIEN: $e');
@@ -219,8 +216,8 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setAssetGroup(assetGroupList);
-        log('assetGroupList: $assetGroupList');
       }
+      SGLog.info('_loadData', 'loadAssetGroup');
     } catch (e) {
       log('Error calling API ASSET_GROUP: $e');
     }
@@ -243,6 +240,7 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setCcdcGroup(ccdcGroupList);
+        SGLog.info('_loadData', 'loadCCDCGroup');
       }
     } catch (e) {
       log('Error calling API CCDC_GROUP: $e');
@@ -263,6 +261,7 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setChucVu(chucVuList);
+        SGLog.info('_loadData', 'loadChucVu');
       }
     } catch (e) {
       log('Error calling API CHUC_VU: $e');
@@ -276,11 +275,8 @@ class AuthRepository extends ApiBase {
       );
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final typeAssetList = response['data'] as List<TypeAsset>;
-        log('[check _loadTypeAsset] typeAssetList: $typeAssetList');
         AccountHelper.instance.setTypeAsset(typeAssetList);
-        log(
-          'check _loadTypeAsset: ${AccountHelper.instance.getAllTypeAsset()}',
-        );
+        SGLog.info('_loadData', 'loadTypeAsset');
       }
     } catch (e) {
       log('Error calling API TYPE_ASSET: $e');
@@ -295,6 +291,7 @@ class AuthRepository extends ApiBase {
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final typeCcdcList = response['data'] as List<TypeCcdc>;
         AccountHelper.instance.setTypeCcdc(typeCcdcList);
+        SGLog.info('_loadData', 'loadTypeCcdc');
       }
     } catch (e) {
       log('Error calling API TYPE_CCDC: $e');
@@ -306,10 +303,23 @@ class AuthRepository extends ApiBase {
       final response = await AssetCategoryRepository().getListAssetCategory(
         idCongTy,
       );
-      log('response AssetCategory: $response');
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         final assetCategoryList = response['data'] as List<AssetCategoryDto>;
         AccountHelper.instance.setAssetCategory(assetCategoryList);
+        SGLog.info('_loadData', 'loadAssetCategory');
+      }
+    } catch (e) {
+      log('Error calling API ASSET_CATEGORY: $e');
+    }
+  }
+
+  Future<void> _loadUnit(String idCongTy) async {
+    try {
+      final response = await UnitRepository().getListUnit();
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final unitList = response['data'] as List<UnitDto>;
+        AccountHelper.instance.setUnit(unitList);
+        SGLog.info('_loadData', 'loadUnit');
       }
     } catch (e) {
       log('Error calling API ASSET_CATEGORY: $e');

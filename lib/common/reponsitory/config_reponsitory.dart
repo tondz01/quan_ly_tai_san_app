@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -40,20 +41,21 @@ class ConfigReponsitory extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> setConfigTimeExpire(int timeExpire) async {
+  Future<Map<String, dynamic>> setConfigTimeExpire(
+    Map<String, dynamic> body,
+  ) async {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
       'message': '',
     };
-    Map<String, dynamic> body = {
-      'idAccount': userInfo.id,
-      'thoiHanTaiLieu': timeExpire,
-    };
+    body['idAccount'] = userInfo.id;
+
     try {
       final response = await post(EndPointAPI.CONFIG, data: body);
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS &&
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
         result['status_code'] = response.statusCode;
         result['message'] = response.data['message'];
         return result;
@@ -61,6 +63,9 @@ class ConfigReponsitory extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
+      ConfigDto config = ConfigDto.fromJson(body);
+      SGLog.info("ConfigRepository", "Set config time expire success: $config");
+      AccountHelper.instance.setConfigTimeExpire(config);
       result['data'] = response.data;
     } catch (e) {
       SGLog.error(
@@ -68,18 +73,22 @@ class ConfigReponsitory extends ApiBase {
         "Error at getListAssetHandover - AssetHandoverRepository: $e",
       );
       result['message'] = e.toString();
+      result['status_code'] = Numeral.STATUS_CODE_DEFAULT;
     }
+    SGLog.debug("ConfigRepository", "result: $result");
     return result;
   }
 
-  Future<Map<String, dynamic>> updateConfigTimeExpire(int timeExpire) async {
+  Future<Map<String, dynamic>> updateConfigTimeExpire(
+    Map<String, dynamic> body,
+  ) async {
     UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
       'message': '',
     };
-    Map<String, dynamic> body = {'thoiHanTaiLieu': timeExpire};
+    body['idAccount'] = userInfo.id;
     try {
       final response = await put(
         '${EndPointAPI.CONFIG}/${userInfo.id}',
@@ -92,7 +101,12 @@ class ConfigReponsitory extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
+      ConfigDto config = ConfigDto.fromJson(response.data);
+      SGLog.info(
+        "ConfigRepository",
+        "Update config time expire success: $config",
+      );
+      AccountHelper.instance.setConfigTimeExpire(config);
       result['data'] = response.data;
     } catch (e) {
       SGLog.error(

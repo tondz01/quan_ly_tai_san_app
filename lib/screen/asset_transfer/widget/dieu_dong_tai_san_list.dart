@@ -61,6 +61,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
+    'permission_signing',
     'signing_status',
     'share',
     'type',
@@ -122,6 +123,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'permission_signing',
+        label: 'Quyền ký',
+        isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
       ColumnDisplayOption(
         id: 'signing_status',
         label: 'Trạng thái ký',
@@ -210,6 +216,30 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'permission_signing':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Quyền ký',
+              cellBuilder:
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = getPermissionSigning(item);
+                return status == 2
+                    ? 'Không được phép ký'
+                    : status == 1
+                    ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
+                    : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
         case 'signing_status':
           columns.add(
             SgTableColumn<DieuDongTaiSanDto>(
@@ -1026,5 +1056,49 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         );
       },
     );
+  }
+
+  int getPermissionSigning(DieuDongTaiSanDto item) {
+    final signatureFlow =
+        [
+              if (item.nguoiLapPhieuKyNhay == true)
+                {
+                  "id": item.idNguoiKyNhay,
+                  "signed": item.trangThaiKyNhay == true,
+                  "label":
+                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
+                },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trinhDuyetCapPhongXacNhan == true,
+                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
+              },
+              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                {
+                  "id": item.listSignatory![i].idNguoiKy,
+                  "signed": item.listSignatory![i].trangThai == 1,
+                  "label":
+                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trinhDuyetGiamDocXacNhan == true,
+                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo?.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+    if (previousNotSigned.isNotEmpty) return 1;
+    return 0;
   }
 }

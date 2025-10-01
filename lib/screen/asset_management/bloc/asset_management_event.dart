@@ -115,14 +115,13 @@ class CreateAssetBatchEvent extends AssetManagementEvent {
 }
 
 class UpdateAssetEvent extends AssetManagementEvent {
-  final BuildContext context;
   final AssetRequest request;
   final String id;
 
-  const UpdateAssetEvent(this.context, this.request, this.id);
+  const UpdateAssetEvent(this.request, this.id);
 
   @override
-  List<Object> get props => [context, request];
+  List<Object> get props => [request];
 }
 
 class DeleteAssetEvent extends AssetManagementEvent {

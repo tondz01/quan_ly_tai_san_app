@@ -312,7 +312,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Đơn vị tính',
-              getValue: (item) => item.donViTinh ?? '',
+              getValue:
+                  (item) =>
+                      AccountHelper.instance
+                          .getUnitById(item.donViTinh ?? '')
+                          ?.tenDonVi ??
+                      '',
               width: 100,
             ),
           );

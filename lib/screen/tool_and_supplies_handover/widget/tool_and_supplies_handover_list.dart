@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -25,7 +23,6 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/t
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -205,7 +202,9 @@ class _ToolAndSuppliesHandoverListState
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
               title: 'Quyền ký',
               cellBuilder:
-                  (item) => showPermissionSigning(getPermissionSigning(item)),
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
               width: 150,
               searchValueGetter: (item) {
                 final status = getPermissionSigning(item);
@@ -213,6 +212,8 @@ class _ToolAndSuppliesHandoverListState
                     ? 'Không được phép ký'
                     : status == 1
                     ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
                     : 'Cần ký';
               },
               searchable: true,
@@ -575,7 +576,8 @@ class _ToolAndSuppliesHandoverListState
         spacing: 8,
         children: [
           Visibility(
-            visible: selectedItems.isNotEmpty &&
+            visible:
+                selectedItems.isNotEmpty &&
                 selectedItems.length < 2 &&
                 getPermissionSigning(selectedItems.first) == 0,
             child: Tooltip(
@@ -1100,43 +1102,11 @@ class _ToolAndSuppliesHandoverListState
       (s) => s["id"] == userInfo?.tenDangNhap,
     );
     if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
     final previousNotSigned = signatureFlow
         .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
     if (previousNotSigned.isNotEmpty) return 1;
     return 0;
-  }
-
-  Widget showPermissionSigning(int status) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color:
-              status == 1
-                  ? Colors.red
-                  : status == 2
-                  ? Colors.deepOrangeAccent
-                  : Colors.green,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: SGText(
-          text:
-              status == 2
-                  ? 'Không được phép ký'
-                  : status == 1
-                  ? 'Chưa đến lượt ký'
-                  : 'Cần ký',
-          size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
   }
 }

@@ -81,6 +81,9 @@ class _AccountViewState extends State<AccountView> {
                                     // ),
                                     child: StaffListByAccount(
                                       provider: provider,
+                                      onTapClose: () {
+                                        Navigator.pop(context);
+                                      },
                                     ),
                                   ),
                             );

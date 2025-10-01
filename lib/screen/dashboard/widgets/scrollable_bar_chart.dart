@@ -32,11 +32,14 @@ class ScrollableBarChart extends StatelessWidget {
           final double contentWidth = count * (barWidth + spacing) + 40;
           final double chartWidth =
               contentWidth < minWidth ? minWidth : contentWidth;
+          
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: SizedBox(
+            physics: const BouncingScrollPhysics(),
+            child: Container(
               width: chartWidth,
               height: height,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Chart(
                 data: data,
                 variables: {
