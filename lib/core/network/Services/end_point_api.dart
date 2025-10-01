@@ -42,6 +42,10 @@ class EndPointAPI {
       "/api/dashboard/ccdc-theo-nhom-loai-con-phan-tram";
   static String DASHBOARD_ASSET_DEPRECIATION =
       "/api/dashboard/tai-san-sap-het-han-khau-hao";
+  static String DASHBOARD_ASSET_GROUP_PERCENTAGE =
+      "/api/dashboard/tai-san-theo-nhom-phan-tram-chi-tiet";
+  static String DASHBOARD_CCDC_GROUP_PERCENTAGE =
+      "/api/dashboard/ccdc-theo-nhom-phan-tram-chi-tiet";
   static String CONFIG = "/api/config";
   static String PERMISSIONS = "/api/userpermission";
   static String DETAIL_SUPPLIES_HANDOVER = "/api/chitietbangiaoccdcvattu";

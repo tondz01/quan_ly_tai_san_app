@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_text_style.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/pie_with_legend.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/scrollable_bar_chart.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/horizontal_progress_chart.dart';
+import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/pie_with_legend.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/repository/dashboard_reponsitory.dart';
 
 class DashboardView extends StatefulWidget {
@@ -50,6 +50,16 @@ class _DashboardViewState extends State<DashboardView> {
   String? _depreciationError;
   int _displayCount = 20; // Default display count
 
+  // Asset group percentage data
+  List<dynamic> _assetGroupPercentageData = [];
+  bool _isLoadingAssetGroupPercentage = false;
+  String? _assetGroupPercentageError;
+
+  // CCDC group percentage data
+  List<dynamic> _ccdcGroupPercentageData = [];
+  bool _isLoadingCcdcGroupPercentage = false;
+  String? _ccdcGroupPercentageError;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +68,8 @@ class _DashboardViewState extends State<DashboardView> {
     _loadAssetGroupData();
     _loadCcdcGroupData();
     _loadDepreciationData();
+    _loadAssetGroupPercentageData();
+    _loadCcdcGroupPercentageData();
   }
 
   Future<void> _loadAssetStatusData() async {
@@ -212,6 +224,62 @@ class _DashboardViewState extends State<DashboardView> {
       setState(() {
         _depreciationError = 'Lỗi khi tải dữ liệu: $e';
         _isLoadingDepreciation = false;
+      });
+    }
+  }
+
+  Future<void> _loadAssetGroupPercentageData() async {
+    setState(() {
+      _isLoadingAssetGroupPercentage = true;
+      _assetGroupPercentageError = null;
+    });
+
+    try {
+      final result = await _dashboardRepository.getAssetGroupPercentageData();
+
+      if (result['status_code'] == 200) {
+        setState(() {
+          _assetGroupPercentageData = result['data'] ?? [];
+          _isLoadingAssetGroupPercentage = false;
+        });
+      } else {
+        setState(() {
+          _assetGroupPercentageError = result['message'] ?? 'Có lỗi xảy ra';
+          _isLoadingAssetGroupPercentage = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _assetGroupPercentageError = 'Lỗi khi tải dữ liệu: $e';
+        _isLoadingAssetGroupPercentage = false;
+      });
+    }
+  }
+
+  Future<void> _loadCcdcGroupPercentageData() async {
+    setState(() {
+      _isLoadingCcdcGroupPercentage = true;
+      _ccdcGroupPercentageError = null;
+    });
+
+    try {
+      final result = await _dashboardRepository.getCcdcGroupPercentageData();
+
+      if (result['status_code'] == 200) {
+        setState(() {
+          _ccdcGroupPercentageData = result['data'] ?? [];
+          _isLoadingCcdcGroupPercentage = false;
+        });
+      } else {
+        setState(() {
+          _ccdcGroupPercentageError = result['message'] ?? 'Có lỗi xảy ra';
+          _isLoadingCcdcGroupPercentage = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _ccdcGroupPercentageError = 'Lỗi khi tải dữ liệu: $e';
+        _isLoadingCcdcGroupPercentage = false;
       });
     }
   }
@@ -521,7 +589,15 @@ class _DashboardViewState extends State<DashboardView> {
             const SizedBox(height: 24),
             Row(
               children: [
+                Expanded(child: _buildAssetGroupPercentageSection()),
+                const SizedBox(width: 24),
                 Expanded(child: _buildAssetGroupDistributionSection(data)),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(child: _buildCcdcGroupPercentageSection()),
                 const SizedBox(width: 24),
                 Expanded(child: _buildCcdcGroupDistributionSection(data)),
               ],
@@ -999,6 +1075,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildAssetGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
+      height: 700, // Fixed height
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1033,7 +1110,7 @@ class _DashboardViewState extends State<DashboardView> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: SGText(
-                  text: "📊 Phân bố tài sản theo nhóm",
+                  text: "📊 Phân bố tài sản theo loại",
                   style: AppTextStyle.textStyleSemiBold24.copyWith(
                     color: Colors.white,
                     shadows: [
@@ -1214,38 +1291,59 @@ class _DashboardViewState extends State<DashboardView> {
       );
     }
 
-    return Center(
-      child: PieDonutChartWithLegend(
-        data:
-            groupData
-                .map(
-                  (item) => <String, Object>{
-                    'label': item['TenLoai'] ?? 'Chưa xác định',
-                    'value': item['SoLuong'] ?? 0,
-                    'percentage': item['TiLePhanTram'] ?? 0,
-                  },
-                )
-                .toList(),
-        categoryKey: 'label',
-        valueKey: 'value',
-        colors: [
-          Colors.purple.shade600,
-          Colors.blue.shade600,
-          Colors.green.shade600,
-          Colors.orange.shade600,
-          Colors.red.shade600,
-          Colors.teal.shade600,
-          Colors.indigo.shade600,
-          Colors.pink.shade600,
+    return Container(
+      height: 450,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.purple.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.purple.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.bar_chart, color: Colors.purple.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Phân bố tài sản theo loại trong nhóm "$groupName"',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.purple.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ScrollableBarChart(
+              data: groupData
+                  .map(
+                    (item) => <String, Object>{
+                      'label': item['TenLoai'] ?? 'Chưa xác định',
+                      'value': item['SoLuong'] ?? 0,
+                    },
+                  )
+                  .toList(),
+              categoryKey: 'label',
+              valueKey: 'value',
+              barWidth: 40,
+              spacing: 80,
+              height: 300,
+              barColor: Colors.purple.shade600,
+            ),
+          ),
         ],
-        chartWidth: 400,
-        chartHeight: 400,
       ),
     );
   }
 
   Widget _buildCcdcGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
+      height: 700, // Fixed height
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1280,7 +1378,7 @@ class _DashboardViewState extends State<DashboardView> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: SGText(
-                  text: "🔧 Phân bố CCDC theo nhóm",
+                  text: "🔧 Phân bố CCDC theo loại",
                   style: AppTextStyle.textStyleSemiBold24.copyWith(
                     color: Colors.white,
                     shadows: [
@@ -1461,32 +1559,370 @@ class _DashboardViewState extends State<DashboardView> {
       );
     }
 
-    return Center(
-      child: PieDonutChartWithLegend(
-        data:
-            groupData
-                .map(
-                  (item) => <String, Object>{
-                    'label': item['TenLoai'] ?? 'Chưa xác định',
-                    'value': item['SoLuong'] ?? 0,
-                    'percentage': item['TiLePhanTram'] ?? 0,
-                  },
-                )
-                .toList(),
-        categoryKey: 'label',
-        valueKey: 'value',
-        colors: [
-          Colors.orange.shade600,
-          Colors.blue.shade600,
-          Colors.green.shade600,
-          Colors.purple.shade600,
-          Colors.red.shade600,
-          Colors.teal.shade600,
-          Colors.indigo.shade600,
-          Colors.pink.shade600,
+    return Container(
+      height: 450,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.bar_chart, color: Colors.orange.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Phân bố CCDC theo loại trong nhóm "$groupName"',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.orange.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ScrollableBarChart(
+              data: groupData
+                  .map(
+                    (item) => <String, Object>{
+                      'label': item['TenLoai'] ?? 'Chưa xác định',
+                      'value': item['SoLuong'] ?? 0,
+                    },
+                  )
+                  .toList(),
+              categoryKey: 'label',
+              valueKey: 'value',
+              barWidth: 40,
+              spacing: 80,
+              height: 300,
+              barColor: Colors.orange.shade600,
+            ),
+          ),
         ],
-        chartWidth: 400,
-        chartHeight: 400,
+      ),
+    );
+  }
+
+  Widget _buildAssetGroupPercentageSection() {
+    return Container(
+      height: 700, // Fixed height
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.green.shade50],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.green.shade600, Colors.green.shade800],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SGText(
+                  text: "📊 Phân bố tài sản theo nhóm (%)",
+                  style: AppTextStyle.textStyleSemiBold24.copyWith(
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_assetGroupPercentageError != null)
+                IconButton(
+                  onPressed: _loadAssetGroupPercentageData,
+                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
+                  tooltip: 'Tải lại dữ liệu',
+                ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isLoadingAssetGroupPercentage)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Colors.green.shade600),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Đang tải dữ liệu...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (_assetGroupPercentageError != null)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        _assetGroupPercentageError!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: _loadAssetGroupPercentageData,
+                        icon: Icon(Icons.refresh, size: 16),
+                        label: Text('Thử lại'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade600,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (_assetGroupPercentageData.isNotEmpty)
+                  PieDonutChartWithLegend(
+                    data: _assetGroupPercentageData
+                        .map(
+                          (item) => <String, Object>{
+                            'label': item['TenNhom'] ?? 'Chưa xác định',
+                            'value': item['SoLuong'] ?? 0,
+                            'percentage': item['TiLePhanTram'] ?? 0,
+                          },
+                        )
+                        .toList(),
+                    categoryKey: 'label',
+                    valueKey: 'value',
+                    colors: [
+                      Colors.green.shade600,
+                      Colors.blue.shade600,
+                      Colors.orange.shade600,
+                      Colors.purple.shade600,
+                      Colors.red.shade600,
+                      Colors.teal.shade600,
+                      Colors.indigo.shade600,
+                      Colors.pink.shade600,
+                    ],
+                    chartWidth: 400,
+                    chartHeight: 400,
+                  )
+                else
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.pie_chart,
+                        size: 48,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Không có dữ liệu phân bố tài sản',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCcdcGroupPercentageSection() {
+    return Container(
+      height: 700, // Fixed height
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Colors.amber.shade50],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.amber.shade600, Colors.amber.shade800],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SGText(
+                  text: "🔧 Phân bố CCDC theo nhóm (%)",
+                  style: AppTextStyle.textStyleSemiBold24.copyWith(
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_ccdcGroupPercentageError != null)
+                IconButton(
+                  onPressed: _loadCcdcGroupPercentageData,
+                  icon: Icon(Icons.refresh, color: Colors.amber.shade600),
+                  tooltip: 'Tải lại dữ liệu',
+                ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_isLoadingCcdcGroupPercentage)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Colors.amber.shade600),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Đang tải dữ liệu...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (_ccdcGroupPercentageError != null)
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        _ccdcGroupPercentageError!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.red[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: _loadCcdcGroupPercentageData,
+                        icon: Icon(Icons.refresh, size: 16),
+                        label: Text('Thử lại'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber.shade600,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  )
+                else if (_ccdcGroupPercentageData.isNotEmpty)
+                  PieDonutChartWithLegend(
+                    data: _ccdcGroupPercentageData
+                        .map(
+                          (item) => <String, Object>{
+                            'label': item['TenNhom'] ?? 'Chưa xác định',
+                            'value': item['SoLuong'] ?? 0,
+                            'percentage': item['TiLePhanTram'] ?? 0,
+                          },
+                        )
+                        .toList(),
+                    categoryKey: 'label',
+                    valueKey: 'value',
+                    colors: [
+                      Colors.amber.shade600,
+                      Colors.blue.shade600,
+                      Colors.green.shade600,
+                      Colors.purple.shade600,
+                      Colors.red.shade600,
+                      Colors.teal.shade600,
+                      Colors.indigo.shade600,
+                      Colors.pink.shade600,
+                    ],
+                    chartWidth: 400,
+                    chartHeight: 400,
+                  )
+                else
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.build_circle_outlined,
+                        size: 48,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Không có dữ liệu phân bố CCDC',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

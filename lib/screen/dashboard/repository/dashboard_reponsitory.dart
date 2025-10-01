@@ -210,4 +210,74 @@ class DashboardRepository extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> getAssetGroupPercentageData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(EndPointAPI.DASHBOARD_ASSET_GROUP_PERCENTAGE);
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? [];
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "AssetGroupPercentage",
+        "Asset group percentage data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "AssetGroupPercentage",
+        "Error at getAssetGroupPercentageData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getCcdcGroupPercentageData() async {
+    Map<String, dynamic> result = {
+      'data': null,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(EndPointAPI.DASHBOARD_CCDC_GROUP_PERCENTAGE);
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'API trả về lỗi';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data['data'] ?? [];
+      result['message'] = response.data['message'] ?? 'Thành công';
+
+      SGLog.debug(
+        "CcdcGroupPercentage",
+        "CCDC group percentage data: ${jsonEncode(result['data'])}",
+      );
+    } catch (e) {
+      SGLog.error(
+        "CcdcGroupPercentage",
+        "Error at getCcdcGroupPercentageData - DashboardRepository: $e",
+      );
+      result['status_code'] = 0;
+      result['message'] = 'Lỗi khi gọi API: $e';
+    }
+
+    return result;
+  }
 }
