@@ -205,24 +205,15 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                             'Ngày nhập': item.ngayNhap
                                 .toIso8601String()
                                 .replaceAll('Z', ''),
-                            'Đơn vị tính': item.donViTinh,
+                            'Mã đơn vị tính': item.donViTinh,
                             'Mã nhóm CCDC': item.idNhomCCDC,
                             'Mã loại CCDC con': item.idLoaiCCDCCon,
                             'Giá trị': item.giaTri,
                             'Ký hiệu': item.kyHieu,
                             'Ghi chú': item.ghiChu,
-                            'Ngày tạo': item.ngayTao
-                                .toIso8601String()
-                                .replaceAll('Z', ''),
-                            'Ngày cập nhật': item.ngayCapNhat
-                                .toIso8601String()
-                                .replaceAll('Z', ''),
-
                             'Số ký hiệu': element.soKyHieu ?? '',
                             'Số lượng': element.soLuong ?? '',
                             'Công suất': element.congSuat ?? '',
-                            'Nước sản xuất': element.nuocSanXuat ?? '',
-                            'Năm sản xuất': element.namSanXuat ?? '',
                           };
                           data.add(dataItem);
                         }
@@ -234,20 +225,12 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                           'Ngày nhập': item.ngayNhap
                               .toIso8601String()
                               .replaceAll('Z', ''),
-                          'Đơn vị tính': item.donViTinh,
+                          'Mã đơn vị tính': item.donViTinh,
                           'Mã nhóm CCDC': item.idNhomCCDC,
                           'Mã loại CCDC con': item.idLoaiCCDCCon,
                           'Giá trị': item.giaTri,
                           'Ký hiệu': item.kyHieu,
                           'Ghi chú': item.ghiChu,
-                          'Ngày tạo': item.ngayTao.toIso8601String().replaceAll(
-                            'Z',
-                            '',
-                          ),
-                          'Ngày cập nhật': item.ngayCapNhat
-                              .toIso8601String()
-                              .replaceAll('Z', ''),
-
                           'Số ký hiệu': '',
                           'Số lượng': '',
                           'Công suất': '',
