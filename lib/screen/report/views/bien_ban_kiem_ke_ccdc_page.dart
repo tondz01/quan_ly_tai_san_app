@@ -314,22 +314,17 @@ class BienBanKiemKeCcdcPage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    ccdcInventory[i].tenTaiSan,
+                    ccdcInventory[i].tenTaiSan ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    ccdcInventory[i].donViTinh,
+                    ccdcInventory[i].donViTinh ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    ccdcInventory[i].nuocSanXuat,
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    "",
+                    ccdcInventory[i].nuocSanXuat ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -339,7 +334,12 @@ class BienBanKiemKeCcdcPage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    ccdcInventory[i].ghiChu,
+                    "",
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  ContractPage.tableCell(
+                    ccdcInventory[i].ghiChu ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),

@@ -1,5 +1,6 @@
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -54,6 +55,7 @@ class ReportRepository extends ApiBase {
         '${EndPointAPI.BAO_CAO}/baocaokiemketaisan',
         queryParameters: {'iddonvi': idDonVi, 'ngayBanGiao': ngayBanGiao},
       );
+      
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -61,9 +63,9 @@ class ReportRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+      result['data'] = ResponseParser.parseToList<InventoryMinutes>(
         response.data,
-        DieuDongTaiSanDto.fromJson,
+        InventoryMinutes.fromJson,
       );
     } catch (e) {
       SGLog.error(
@@ -76,7 +78,7 @@ class ReportRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> getInventoryReportToolsSupplies(String idDonVi, String ngayBanGiao) async {
-    List<DieuDongTaiSanDto> list = [];
+    List<CCDCInventoryReport> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -94,9 +96,9 @@ class ReportRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+      result['data'] = ResponseParser.parseToList<CCDCInventoryReport>(
         response.data,
-        DieuDongTaiSanDto.fromJson,
+        CCDCInventoryReport.fromJson,
       );
     } catch (e) {
       SGLog.error(
