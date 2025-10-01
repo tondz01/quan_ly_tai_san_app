@@ -617,7 +617,10 @@ class _ToolAndMaterialTransferListState
         spacing: 8,
         children: [
           Visibility(
-            visible: listItemSelected.isNotEmpty && listItemSelected.length < 2,
+            visible:
+                listItemSelected.isNotEmpty &&
+                listItemSelected.length < 2 &&
+                getPermissionSigning(listItemSelected.first) == 0,
             child: Tooltip(
               message: 'Ký biên bản',
               child: InkWell(

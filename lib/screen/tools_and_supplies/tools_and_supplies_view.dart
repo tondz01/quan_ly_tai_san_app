@@ -214,6 +214,8 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                             'Số ký hiệu': element.soKyHieu ?? '',
                             'Số lượng': element.soLuong ?? '',
                             'Công suất': element.congSuat ?? '',
+                            'Nước sản xuất': element.nuocSanXuat ?? '',
+                            'Năm sản xuất': element.namSanXuat ?? '',
                           };
                           data.add(dataItem);
                         }

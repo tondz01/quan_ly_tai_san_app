@@ -613,7 +613,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         spacing: 8,
         children: [
           Visibility(
-            visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+            visible:
+                selectedItems.isNotEmpty &&
+                selectedItems.length < 2 &&
+                getPermissionSigning(selectedItems.first) == 0,
             child: Tooltip(
               message: 'Ký biên bản',
               child: InkWell(

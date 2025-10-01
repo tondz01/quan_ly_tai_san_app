@@ -230,8 +230,9 @@ class ToolsAndSuppliesBloc
     final result = await ToolsAndSuppliesRepository().deleteToolsAndSupplies(
       event.id,
     );
-    final resultAssetDetail = await AssetManagementDetailRepository()
-        .deleteAssetDetail(event.listIdAssetDetail);
+
+    // final resultAssetDetail = await AssetManagementDetailRepository()
+    //     .deleteAssetDetail(event.listIdAssetDetail);
     emit(ToolsAndSuppliesLoadingDismissState());
     if (checkStatusCodeDone(result)) {
       emit(DeleteToolsAndSuppliesSuccessState(data: result['data'].toString()));
@@ -245,17 +246,17 @@ class ToolsAndSuppliesBloc
       );
     }
 
-    if (checkStatusCodeDone(resultAssetDetail)) {
-    } else {
-      String msg = "Lỗi khi xóa chi tiết ccdc - vật tư";
-      emit(
-        CreateToolsAndSuppliesFailedState(
-          title: "notice",
-          code: resultAssetDetail['status_code'],
-          message: msg,
-        ),
-      );
-    }
+    // if (checkStatusCodeDone(resultAssetDetail)) {
+    // } else {
+    //   String msg = "Lỗi khi xóa chi tiết ccdc - vật tư";
+    //   emit(
+    //     CreateToolsAndSuppliesFailedState(
+    //       title: "notice",
+    //       code: resultAssetDetail['status_code'],
+    //       message: msg,
+    //     ),
+    //   );
+    // }
   }
 
   Future<void> _deleteAssetBatch(

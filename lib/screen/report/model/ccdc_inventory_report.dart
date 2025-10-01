@@ -1,8 +1,8 @@
 class CCDCInventoryReport {
-  final String tenTaiSan;
-  final String donViTinh;
-  final String nuocSanXuat;
-  final String ghiChu;
+  final String? tenTaiSan;
+  final String? donViTinh;
+  final String? nuocSanXuat;
+  final String? ghiChu;
 
   CCDCInventoryReport({
     required this.tenTaiSan,

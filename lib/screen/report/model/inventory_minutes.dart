@@ -1,9 +1,9 @@
 class InventoryMinutes {
-  final String tenTaiSan;
+  final String? tenTaiSan;
   final String donViTinh;
-  final String nuocSanXuat;
-  final int hienTrang;
-  final String ghiChu;
+  final String? nuocSanXuat;
+  final int? hienTrang;
+  final String? ghiChu;
 
   InventoryMinutes({
     required this.tenTaiSan,

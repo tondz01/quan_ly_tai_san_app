@@ -319,7 +319,7 @@ class BienBanKiemKePage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].tenTaiSan,
+                    inventoryMinutes[i].tenTaiSan ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -329,7 +329,7 @@ class BienBanKiemKePage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].nuocSanXuat,
+                    inventoryMinutes[i].nuocSanXuat ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -349,7 +349,7 @@ class BienBanKiemKePage extends StatelessWidget {
                     SettingPage.textStyle,
                   ),
                   ContractPage.tableCell(
-                    inventoryMinutes[i].ghiChu,
+                    inventoryMinutes[i].ghiChu ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),

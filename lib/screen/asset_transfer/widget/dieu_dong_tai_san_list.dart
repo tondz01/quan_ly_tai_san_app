@@ -709,7 +709,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 children: [
                   Visibility(
                     visible:
-                        selectedItems.isNotEmpty && selectedItems.length < 2,
+                        selectedItems.isNotEmpty &&
+                        selectedItems.length < 2 &&
+                        getPermissionSigning(selectedItems.first) == 0,
                     child: Tooltip(
                       message: 'Ký biên bản',
                       child: InkWell(

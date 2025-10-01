@@ -8,11 +8,14 @@ import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_page.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -129,6 +132,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
 
   Future<void> onloadViewPage() async {
     if (donVi == null) {
+      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
       return;
     }
 
@@ -137,61 +141,49 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
     });
 
     // Format date to YYYY-MM-DD format
-    String formattedDate = controllerImportDate.text;
-    if (formattedDate.isNotEmpty) {
-      try {
-        // Parse the date from the controller
-        DateTime parsedDate = DateTime.parse(formattedDate);
-        // Format to YYYY-MM-DD
-        formattedDate = "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
-      } catch (e) {
-        // If parsing fails, try DD/MM/YYYY format
-        try {
-          final parts = formattedDate.split('/');
-          if (parts.length == 3) {
-            final day = int.parse(parts[0]);
-            final month = int.parse(parts[1]);
-            final year = int.parse(parts[2]);
-            formattedDate = "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-          }
-        } catch (e) {
-          // Keep original format if all parsing fails
-        }
-      }
-    }
+    String formattedDate = controllerImportDate.text.trim();
+    formattedDate = formatteDate(formattedDate);
 
     final result = await _repo.getInventoryReportToolsSupplies(
       donVi!.id!,
       formattedDate,
     );
-
-    setState(() {
-      _list = (result['data'] as List).cast<CCDCInventoryReport>();
-      _isLoading = false;
-    });
+    if (!mounted) return;
+    if (checkStatusCodeDone(result)) {
+      setState(() {
+        _list = [];
+        _list = (result['data'] as List).cast<CCDCInventoryReport>();
+        _isLoading = false;
+        if (_list.isEmpty) {
+          AppUtility.showSnackBar(context, 'Không có dữ liệu!');
+        } else {
+          AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
+        }
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      AppUtility.showSnackBar(context, 'Lấy dữ liệu thất bại!', isError: true);
+    }
   }
 
   String formatDate(String date) {
+    final String input = date.trim();
     try {
-      // Try parsing as ISO format first
-      final DateTime parsedDate = DateTime.parse(date);
-      return "${parsedDate.day}/${parsedDate.month}/${parsedDate.year}";
+      final DateTime parsedDate = DateTime.parse(input);
+      return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
     } catch (e) {
-      // If that fails, try parsing DD/MM/YYYY HH:mm:ss format
       try {
-        final parts = date.split(' ');
-        if (parts.isNotEmpty) {
-          final datePart = parts[0];
-          final dateParts = datePart.split('/');
-          if (dateParts.length == 3) {
-            final day = int.parse(dateParts[0]);
-            final month = int.parse(dateParts[1]);
-            final year = int.parse(dateParts[2]);
-            return "$day/$month/$year";
-          }
+        final String dateOnly = input.split(' ').first;
+        final List<String> parts = dateOnly.split('/');
+        if (parts.length == 3) {
+          final int day = int.parse(parts[0]);
+          final int month = int.parse(parts[1]);
+          final int year = int.parse(parts[2]);
+          return "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
         }
-      } catch (e) {
-        // If all parsing fails, return the original string
+      } catch (_) {
         return date;
       }
       return date;
@@ -264,7 +256,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                _loadData();
+                                onloadViewPage();
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(8.0),
@@ -273,7 +265,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
-                                  'Làm mới file',
+                                  'Lấy dữ liệu',
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
