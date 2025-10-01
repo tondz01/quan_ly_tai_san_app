@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
@@ -14,9 +15,7 @@ import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetTransferView extends StatefulWidget {
-  final int typeAssetTransfer;
-
-  const AssetTransferView({super.key, required this.typeAssetTransfer});
+  const AssetTransferView({super.key});
 
   @override
   State<AssetTransferView> createState() => _AssetTransferViewState();
@@ -27,20 +26,46 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   String searchTerm = "";
   late int currentType;
   String idCongTy = "CT001";
+  DieuDongTaiSanProvider? _providerRef;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    currentType = widget.typeAssetTransfer;
+    currentType = 0;
     _initData();
   }
 
   @override
-  void didUpdateWidget(AssetTransferView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
-      currentType = widget.typeAssetTransfer;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = GoRouterState.of(context);
+    final String? typeParam = state.uri.queryParameters['type'];
+    final int newType = int.tryParse(typeParam ?? '') ?? 0;
+    // Cache provider reference for safe use in dispose
+    _providerRef ??= Provider.of<DieuDongTaiSanProvider>(
+      context,
+      listen: false,
+    );
+
+    if (!_isInitialized) {
+      currentType = newType;
       _initData();
+    } else if (newType != currentType) {
+      currentType = newType;
+      _reloadData();
+    }
+  }
+
+  void _reloadData() {
+    final provider = Provider.of<DieuDongTaiSanProvider>(
+      context,
+      listen: false,
+    );
+
+    // Chỉ tải lại dữ liệu nếu đã khởi tạo trước đó
+    if (_isInitialized) {
+      provider.refreshData(context, currentType);
     }
   }
 
@@ -51,11 +76,15 @@ class _AssetTransferViewState extends State<AssetTransferView> {
         listen: false,
       ).onInit(context, currentType);
     });
+    _isInitialized = true;
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    // Reset provider state when leaving this page using cached reference
+    _providerRef?.onDispose();
+    _isInitialized = false;
     super.dispose();
   }
 

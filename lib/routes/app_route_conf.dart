@@ -43,12 +43,7 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: AssetTransferView(
-                    typeAssetTransfer:
-                        state.extra != null && state.extra is String
-                            ? int.tryParse(state.extra as String) ?? 0
-                            : 0,
-                  ),
+                  child: AssetTransferView(),
                 ),
           ),
           GoRoute(
@@ -103,19 +98,13 @@ class AppRouteConf {
                   child: CapitalSourceManager(),
                 ),
           ),
-
           GoRoute(
             path: AppRoute.toolAndMaterialTransfer.path,
             name: AppRoute.toolAndMaterialTransfer.name,
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: ToolAndMaterialTransferView(
-                    typeAssetTransfer:
-                        state.extra != null && state.extra is String
-                            ? int.tryParse(state.extra as String) ?? 0
-                            : 0,
-                  ),
+                  child: ToolAndMaterialTransferView(),
                 ),
           ),
           GoRoute(

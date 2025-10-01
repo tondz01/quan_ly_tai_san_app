@@ -182,7 +182,11 @@ class _HomeState extends State<Home> {
                 subItem.callback?.call(context);
                 if (subItem.route.isNotEmpty) {
                   isItemOne = false;
-                  context.go(subItem.route, extra: subItem.extra);
+                  if (subItem.extra?.isNotEmpty ?? false) {
+                    context.go('${subItem.route}?type=${subItem.extra}');
+                  } else {
+                    context.go(subItem.route);
+                  }
                 }
               }),
         );
@@ -225,7 +229,12 @@ class _HomeState extends State<Home> {
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
                     isItemOne = false;
-                    context.go(item.route, extra: item.extra);
+                    if (item.route == AppRoute.toolAndMaterialTransfer.path &&
+                        (item.extra?.isNotEmpty ?? false)) {
+                      context.go('${item.route}?type=${item.extra}');
+                    } else {
+                      context.go(item.route, extra: item.extra);
+                    }
                   }
                 }),
           );

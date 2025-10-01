@@ -71,27 +71,39 @@ class _DetailToolAndMaterialTransferTableState
         widget.allAssets
             .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
             .toList();
-    listItemDropdownDetailAsset =
-        widget.listOwnershipUnit.map<ItemDropdownDetailCcdc>((e) {
-          final asset = getAssetByID(e.idCCDCVT);
-          final detailAsset = getDetailAssetByID(e.idTsCon);
+    final List<ItemDropdownDetailCcdc> builtItems = [];
+    for (final e in widget.listOwnershipUnit) {
+      if (e.idCCDCVT.isEmpty || e.idTsCon.isEmpty) {
+        continue;
+      }
 
-          return ItemDropdownDetailCcdc(
-            id: e.id,
-            idCCDCVatTu: e.idCCDCVT,
-            tenCCDCVatTu: asset.ten,
-            idDetaiAsset: detailAsset.id ?? '',
-            tenDetailAsset:
-                '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
-            idDonVi: e.idDonViSoHuu,
-            donViTinh: asset.donViTinh,
-            namSanXuat: detailAsset.namSanXuat ?? 2010,
-            soLuong: e.soLuong,
-            ghiChu: asset.ghiChu,
-            soLuongDaBanGiao: 0,
-            asset: asset,
-          );
-        }).toList();
+      final asset = getAssetByID(e.idCCDCVT);
+      final detailAsset = getDetailAssetByID(e.idTsCon);
+
+      final String detailId = detailAsset.id ?? '';
+      if ((asset.id).isEmpty || detailId.isEmpty) {
+        continue;
+      }
+
+      builtItems.add(
+        ItemDropdownDetailCcdc(
+          id: e.id,
+          idCCDCVatTu: e.idCCDCVT,
+          tenCCDCVatTu: asset.ten,
+          idDetaiAsset: detailId,
+          tenDetailAsset:
+              '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
+          idDonVi: e.idDonViSoHuu,
+          donViTinh: asset.donViTinh,
+          namSanXuat: detailAsset.namSanXuat ?? 2010,
+          soLuong: e.soLuong,
+          ghiChu: asset.ghiChu,
+          soLuongDaBanGiao: 0,
+          asset: asset,
+        ),
+      );
+    }
+    listItemDropdownDetailAsset = builtItems;
   }
 
   @override
@@ -265,7 +277,7 @@ class _DetailToolAndMaterialTransferTableState
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'don_vi_tinh',
-                title: 'Đơn vị tính',
+                title: 'Mã đơn vị tính',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue: (item) => item.donViTinh,

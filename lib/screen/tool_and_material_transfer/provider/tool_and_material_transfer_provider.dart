@@ -380,6 +380,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       AccountHelper.instance.clearToolAndMaterialTransfer();
       AccountHelper.instance.setToolAndMaterialTransfer(state.data);
