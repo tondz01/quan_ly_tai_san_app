@@ -62,6 +62,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
     'permission_signing',
+    'status_document',
     'signing_status',
     'share',
     'type',
@@ -127,6 +128,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         id: 'permission_signing',
         label: 'Quyền ký',
         isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
+      ColumnDisplayOption(
+        id: 'status_document',
+        label: 'Trạng thái phiếu',
+        isChecked: visibleColumnIds.contains('status_document'),
       ),
       ColumnDisplayOption(
         id: 'signing_status',
@@ -234,6 +240,29 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     : status == 3
                     ? 'Đã ký'
                     : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'status_document':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Trạng thái phiếu',
+              cellBuilder:
+                  (item) =>
+                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = item.trangThaiPhieu ?? 0;
+                return status == 0
+                    ? 'Chưa hoàn thành'
+                    : status == 1
+                    ? 'Sắp hết hạn'
+                    : status == 2
+                    ? 'Đã hoàn thành'
+                    : 'Không xác đinh';
               },
               searchable: true,
               filterable: true,

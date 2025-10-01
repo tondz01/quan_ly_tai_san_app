@@ -58,34 +58,35 @@ class ToolAndMaterialTransferDto {
   bool? phoPhongDonViGiaoXacNhan;
   bool? trinhDuyetCapPhongXacNhan;
   bool? trinhDuyetGiamDocXacNhan;
-  
+
   // Thời gian giao nhận
   String? tggnTuNgay;
   String? tggnDenNgay;
-  
+
   String? diaDiemGiaoNhan;
   String? noiNhan;
   String? trichYeu;
   String? duongDanFile;
   String? tenFile;
   String? ngayKy;
-  
+
   int? trangThai;
   String? idCongTy;
-  
+
   String? ngayTao;
   String? ngayCapNhat;
-  
+
   String? nguoiTao;
   String? nguoiCapNhat;
-  
+
   int? coHieuLuc;
   int? loai;
   bool? share;
   bool? isActive;
   bool? daBanGiao;
   bool? byStep;
-  
+  int? trangThaiPhieu;
+
   List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers;
   List<SignatoryDto>? listSignatory;
 
@@ -144,10 +145,10 @@ class ToolAndMaterialTransferDto {
     this.listSignatory,
     this.daBanGiao,
     this.byStep,
+    this.trangThaiPhieu,
   });
 
   factory ToolAndMaterialTransferDto.fromJson(Map<String, dynamic> json) {
-
     // Parse các danh sách chi tiết nếu có
     List<DetailToolAndMaterialTransferDto>? parseDetails(dynamic details) {
       if (details == null) return null;
@@ -160,7 +161,6 @@ class ToolAndMaterialTransferDto {
     }
 
     List<SignatoryDto>? parseSignatory(dynamic signatory) {
-
       if (signatory == null) return null;
       if (signatory is List) {
         return signatory.map((item) => SignatoryDto.fromJson(item)).toList();
@@ -219,10 +219,13 @@ class ToolAndMaterialTransferDto {
       loai: json['loai'],
       share: json['share'],
       isActive: json['isActive'],
-      detailToolAndMaterialTransfers: parseDetails(json['chiTietToolAndMaterialTransfers']),
+      detailToolAndMaterialTransfers: parseDetails(
+        json['chiTietToolAndMaterialTransfers'],
+      ),
       listSignatory: parseSignatory(json['listSignatory']),
       daBanGiao: json['daBanGiao'],
       byStep: json['byStep'],
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -278,13 +281,18 @@ class ToolAndMaterialTransferDto {
       "loai": loai,
       "share": share,
       "isActive": isActive,
-      "chiTietToolAndMaterialTransfers": detailToolAndMaterialTransfers?.map((detail) => detail.toJson()).toList(),
-      "listSignatory": listSignatory?.map((signatory) => signatory.toJson()).toList(),
+      "chiTietToolAndMaterialTransfers":
+          detailToolAndMaterialTransfers
+              ?.map((detail) => detail.toJson())
+              .toList(),
+      "listSignatory":
+          listSignatory?.map((signatory) => signatory.toJson()).toList(),
       "daBanGiao": daBanGiao,
       "byStep": byStep,
+      "trangThaiPhieu": trangThaiPhieu,
     };
   }
-  
+
   // Tạo một instance rỗng cho việc khởi tạo mới
   factory ToolAndMaterialTransferDto.empty() {
     return ToolAndMaterialTransferDto(
@@ -321,7 +329,8 @@ class ToolAndMaterialTransferDto {
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
       tggnTuNgay: DateTime.now().toIso8601String(),
-      tggnDenNgay: DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+      tggnDenNgay:
+          DateTime.now().add(const Duration(days: 1)).toIso8601String(),
       diaDiemGiaoNhan: '',
       noiNhan: '',
       trichYeu: '',
@@ -341,6 +350,7 @@ class ToolAndMaterialTransferDto {
       listSignatory: [],
       daBanGiao: false,
       byStep: false,
+      trangThaiPhieu: 0,
     );
   }
 
@@ -400,6 +410,7 @@ class ToolAndMaterialTransferDto {
     List<SignatoryDto>? listSignatory,
     bool? daBanGiao,
     bool? byStep,
+    int? trangThaiPhieu,
   }) {
     return ToolAndMaterialTransferDto(
       id: id ?? this.id,
@@ -415,12 +426,15 @@ class ToolAndMaterialTransferDto {
       tenPhongBanXemPhieu: tenPhongBanXemPhieu ?? this.tenPhongBanXemPhieu,
       idNguoiDeNghi: idNguoiDeNghi ?? this.idNguoiDeNghi,
       tenNguoiDeNghi: tenNguoiDeNghi ?? this.tenNguoiDeNghi,
-      idTruongPhongDonViGiao: idTruongPhongDonViGiao ?? this.idTruongPhongDonViGiao,
-      tenTruongPhongDonViGiao: tenTruongPhongDonViGiao ?? this.tenTruongPhongDonViGiao,
+      idTruongPhongDonViGiao:
+          idTruongPhongDonViGiao ?? this.idTruongPhongDonViGiao,
+      tenTruongPhongDonViGiao:
+          tenTruongPhongDonViGiao ?? this.tenTruongPhongDonViGiao,
       idPhoPhongDonViGiao: idPhoPhongDonViGiao ?? this.idPhoPhongDonViGiao,
       tenPhoPhongDonViGiao: tenPhoPhongDonViGiao ?? this.tenPhoPhongDonViGiao,
       idTrinhDuyetCapPhong: idTrinhDuyetCapPhong ?? this.idTrinhDuyetCapPhong,
-      tenTrinhDuyetCapPhong: tenTrinhDuyetCapPhong ?? this.tenTrinhDuyetCapPhong,
+      tenTrinhDuyetCapPhong:
+          tenTrinhDuyetCapPhong ?? this.tenTrinhDuyetCapPhong,
       idTrinhDuyetGiamDoc: idTrinhDuyetGiamDoc ?? this.idTrinhDuyetGiamDoc,
       tenTrinhDuyetGiamDoc: tenTrinhDuyetGiamDoc ?? this.tenTrinhDuyetGiamDoc,
       idNhanSuXemPhieu: idNhanSuXemPhieu ?? this.idNhanSuXemPhieu,
@@ -430,10 +444,14 @@ class ToolAndMaterialTransferDto {
       nguoiLapPhieuKyNhay: nguoiLapPhieuKyNhay ?? this.nguoiLapPhieuKyNhay,
       quanTrongCanXacNhan: quanTrongCanXacNhan ?? this.quanTrongCanXacNhan,
       phoPhongXacNhan: phoPhongXacNhan ?? this.phoPhongXacNhan,
-      truongPhongDonViGiaoXacNhan: truongPhongDonViGiaoXacNhan ?? this.truongPhongDonViGiaoXacNhan,
-      phoPhongDonViGiaoXacNhan: phoPhongDonViGiaoXacNhan ?? this.phoPhongDonViGiaoXacNhan,
-      trinhDuyetCapPhongXacNhan: trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
-      trinhDuyetGiamDocXacNhan: trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
+      truongPhongDonViGiaoXacNhan:
+          truongPhongDonViGiaoXacNhan ?? this.truongPhongDonViGiaoXacNhan,
+      phoPhongDonViGiaoXacNhan:
+          phoPhongDonViGiaoXacNhan ?? this.phoPhongDonViGiaoXacNhan,
+      trinhDuyetCapPhongXacNhan:
+          trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
+      trinhDuyetGiamDocXacNhan:
+          trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
       tggnTuNgay: tggnTuNgay ?? this.tggnTuNgay,
       tggnDenNgay: tggnDenNgay ?? this.tggnDenNgay,
       diaDiemGiaoNhan: diaDiemGiaoNhan ?? this.diaDiemGiaoNhan,
@@ -454,9 +472,10 @@ class ToolAndMaterialTransferDto {
       isActive: isActive ?? this.isActive,
       daBanGiao: daBanGiao ?? this.daBanGiao,
       byStep: byStep ?? this.byStep,
-      detailToolAndMaterialTransfers: detailToolAndMaterialTransfers ?? this.detailToolAndMaterialTransfers,
+      detailToolAndMaterialTransfers:
+          detailToolAndMaterialTransfers ?? this.detailToolAndMaterialTransfers,
       listSignatory: listSignatory ?? this.listSignatory,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
-  
 }

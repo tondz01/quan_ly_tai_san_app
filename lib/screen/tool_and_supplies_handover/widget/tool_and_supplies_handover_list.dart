@@ -60,6 +60,7 @@ class _ToolAndSuppliesHandoverListState
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
     'permission_signing',
+    'status_document',
     'signing_status',
     'share',
     'name',
@@ -127,6 +128,11 @@ class _ToolAndSuppliesHandoverListState
         id: 'permission_signing',
         label: 'Quyền ký',
         isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
+      ColumnDisplayOption(
+        id: 'status_document',
+        label: 'Trạng thái phiếu',
+        isChecked: visibleColumnIds.contains('status_document'),
       ),
       ColumnDisplayOption(
         id: 'signing_status',
@@ -215,6 +221,29 @@ class _ToolAndSuppliesHandoverListState
                     : status == 3
                     ? 'Đã ký'
                     : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'status_document':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+              title: 'Trạng thái phiếu',
+              cellBuilder:
+                  (item) =>
+                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = item.trangThaiPhieu ?? 0;
+                return status == 0
+                    ? 'Chưa hoàn thành'
+                    : status == 1
+                    ? 'Sắp hết hạn'
+                    : status == 2
+                    ? 'Đã hoàn thành'
+                    : 'Không xác đinh';
               },
               searchable: true,
               filterable: true,

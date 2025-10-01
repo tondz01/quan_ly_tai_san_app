@@ -343,11 +343,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _item = item;
     isShowInput = true;
     isShowCollapse = true;
-    _listDetailTransferCCDC = await getListDetailTransferCCDC(item!.id!);
-    log(
-      "check result listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
-    );
-    buildThreadNodes(item);
+    if (item != null) {
+      _listDetailTransferCCDC = await getListDetailTransferCCDC(item.id!);
+      log(
+        "check result listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
+      );
+      buildThreadNodes(item);
+    }
     notifyListeners();
   }
 
@@ -380,6 +382,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       AccountHelper.instance.clearToolAndMaterialTransfer();
       AccountHelper.instance.setToolAndMaterialTransfer(state.data);

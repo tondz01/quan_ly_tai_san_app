@@ -35,7 +35,7 @@ class ToolAndSuppliesHandoverDto {
   List<SignatoryDto>? listSignatory;
   List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover;
   bool? byStep;
-
+  int? trangThaiPhieu;
   ToolAndSuppliesHandoverDto({
     this.id,
     this.banGiaoCCDCVatTu,
@@ -70,6 +70,7 @@ class ToolAndSuppliesHandoverDto {
     this.listSignatory,
     this.byStep,
     this.listDetailSubppliesHandover,
+    this.trangThaiPhieu,
   });
 
   factory ToolAndSuppliesHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -119,6 +120,7 @@ class ToolAndSuppliesHandoverDto {
                 ),
               )
               : null,
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -157,6 +159,7 @@ class ToolAndSuppliesHandoverDto {
       'listSignatory': listSignatory,
       'byStep': byStep,
       'listDetailSubppliesHandover': listDetailSubppliesHandover,
+      'trangThaiPhieu': trangThaiPhieu,
     };
   }
 
@@ -194,6 +197,7 @@ class ToolAndSuppliesHandoverDto {
     List<SignatoryDto>? listSignatory,
     bool? byStep,
     List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover,
+    int? trangThaiPhieu,
   }) {
     return ToolAndSuppliesHandoverDto(
       id: id ?? this.id,
@@ -233,6 +237,7 @@ class ToolAndSuppliesHandoverDto {
       byStep: byStep ?? this.byStep,
       listDetailSubppliesHandover:
           listDetailSubppliesHandover ?? this.listDetailSubppliesHandover,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
 }

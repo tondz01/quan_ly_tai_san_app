@@ -36,6 +36,7 @@ class AssetHandoverDto {
   final String? tenFile;
   final String? duongDanFile;
   final bool? byStep;
+  final int? trangThaiPhieu;
   List<SignatoryDto>? listSignatory;
 
   AssetHandoverDto({
@@ -75,6 +76,7 @@ class AssetHandoverDto {
     this.duongDanFile,
     this.listSignatory,
     this.byStep,
+    this.trangThaiPhieu,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -113,12 +115,14 @@ class AssetHandoverDto {
       share: json['share'],
       tenFile: json['tenFile'],
       duongDanFile: json['duongDanFile'],
-      listSignatory: json['listSignatory'] != null
-          ? List<SignatoryDto>.from(
-              json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
-            )
-          : null,
+      listSignatory:
+          json['listSignatory'] != null
+              ? List<SignatoryDto>.from(
+                json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
+              )
+              : null,
       byStep: json['byStep'],
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -160,6 +164,7 @@ class AssetHandoverDto {
       'duongDanFile': duongDanFile,
       'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
       'byStep': byStep,
+      'trangThaiPhieu': trangThaiPhieu,
     };
   }
 
@@ -200,6 +205,7 @@ class AssetHandoverDto {
     String? duongDanFile,
     List<SignatoryDto>? listSignatory,
     bool? byStep,
+    int? trangThaiPhieu,
   }) {
     return AssetHandoverDto(
       id: id ?? this.id,
@@ -216,15 +222,18 @@ class AssetHandoverDto {
       ngayBanGiao: ngayBanGiao ?? this.ngayBanGiao,
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
-      idDaiDiendonviBanHanhQD: idDaiDiendonviBanHanhQD ?? this.idDaiDiendonviBanHanhQD,
+      idDaiDiendonviBanHanhQD:
+          idDaiDiendonviBanHanhQD ?? this.idDaiDiendonviBanHanhQD,
       tenDaiDienBanHanhQD: tenDaiDienBanHanhQD ?? this.tenDaiDienBanHanhQD,
       daXacNhan: daXacNhan ?? this.daXacNhan,
       idDaiDienBenGiao: idDaiDienBenGiao ?? this.idDaiDienBenGiao,
       tenDaiDienBenGiao: tenDaiDienBenGiao ?? this.tenDaiDienBenGiao,
-      daiDienBenGiaoXacNhan: daiDienBenGiaoXacNhan ?? this.daiDienBenGiaoXacNhan,
+      daiDienBenGiaoXacNhan:
+          daiDienBenGiaoXacNhan ?? this.daiDienBenGiaoXacNhan,
       idDaiDienBenNhan: idDaiDienBenNhan ?? this.idDaiDienBenNhan,
       tenDaiDienBenNhan: tenDaiDienBenNhan ?? this.tenDaiDienBenNhan,
-      daiDienBenNhanXacNhan: daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
+      daiDienBenNhanXacNhan:
+          daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
       donViDaiDienXacNhan: donViDaiDienXacNhan ?? this.donViDaiDienXacNhan,
       trangThai: trangThai ?? this.trangThai,
       note: note ?? this.note,
@@ -238,6 +247,7 @@ class AssetHandoverDto {
       duongDanFile: duongDanFile ?? this.duongDanFile,
       listSignatory: listSignatory ?? this.listSignatory,
       byStep: byStep ?? this.byStep,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
 }

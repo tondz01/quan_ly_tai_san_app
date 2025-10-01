@@ -40,8 +40,8 @@ class _AssetTransferViewState extends State<AssetTransferView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
       currentType = widget.typeAssetTransfer;
-      _initData();
     }
+    _initData();
   }
 
   void _initData() {

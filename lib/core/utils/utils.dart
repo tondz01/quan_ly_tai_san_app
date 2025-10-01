@@ -318,4 +318,40 @@ abstract class AppUtility {
       ),
     );
   }
+  static Widget showStatusDocument(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              status == 0
+                  ? Colors.red
+                  : status == 1
+                  ? Colors.deepOrangeAccent
+                  : status == 2
+                  ? Colors.blue
+                  : Colors.green,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              status == 0
+                  ? 'Chưa hoàn thành'
+                  : status == 1
+                  ? 'Sắp hết hạn'
+                  : status == 2
+                  ? 'Đã hoàn thành'
+                  : 'Không xác đinh',
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
 }

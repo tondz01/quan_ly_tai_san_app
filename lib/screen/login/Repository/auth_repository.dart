@@ -93,9 +93,7 @@ class AuthRepository extends ApiBase {
       await loadData(user.idCongTy);
 
       List<String> roles = onGetPermission(user.tenDangNhap);
-      log("check roles: ${jsonEncode(roles)}");
       PermissionService.instance.saveRoles(roles);
-      log("check roles: ${jsonEncode(PermissionService.instance.getRoles())}");
 
       result['data'] = user;
       result['message'] = '';
@@ -138,13 +136,7 @@ class AuthRepository extends ApiBase {
 
   //------LOAD DATA------------------------------------------------------------------------------------///
   Future<void> loadData(String idCongTy) async {
-    log(
-      '[check loadData] loadUserDepartments: ${AccountHelper.instance.getDepartment()}',
-    );
-    // if (AccountHelper.instance.getDepartment()?.isEmpty ?? true) {
-    SGLog.info('[check loadData] _loadData', 'loadUserDepartments');
     await _loadUserDepartments(idCongTy);
-    // }
     await _loadUserEmployee(idCongTy);
     await _loadAssetGroup(idCongTy);
     await _loadCCDCGroup(idCongTy);

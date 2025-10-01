@@ -23,18 +23,16 @@ class ConfigReponsitory extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-      AccountHelper.instance.setConfigTimeExpire(
-        response.data['thoiHanTaiLieu'],
-      );
-      SGLog.info(
-        "ConfigRepository",
-        "Get config time expire success: ${response.data['thoiHanTaiLieu']}",
-      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final config = ConfigDto.fromJson(data);
+        AccountHelper.instance.setConfigTimeExpire(config);
+      }
       result['data'] = response.data['thoiHanTaiLieu'] ?? 0;
     } catch (e) {
       SGLog.error(
-        "AssetHandoverRepository",
-        "Error at getListAssetHandover - AssetHandoverRepository: $e",
+        "ConfigReponsitory",
+        "Error at getConfigTimeExpire - ConfigReponsitory: $e",
       );
       result['message'] = e.toString();
     }

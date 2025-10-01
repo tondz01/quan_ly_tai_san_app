@@ -520,15 +520,11 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           controller: controllers.controllerEffectiveDateTo,
                           isEditing: state.isEditing,
                           onChanged: (value) {},
-                          value:
-                              controllers
-                                      .controllerEffectiveDateTo
-                                      .text
-                                      .isNotEmpty
-                                  ? AppUtility.parseFlexibleDateTime(
-                                    controllers.controllerEffectiveDateTo.text,
-                                  )
-                                  : DateTime.now(),
+                          value: controllers.controllerEffectiveDateTo.text.isNotEmpty
+                              ? AppUtility.parseFlexibleDateTime(
+                                  controllers.controllerEffectiveDateTo.text,
+                                )
+                              : DateTime.now(),
                           isRequired: true,
                         ),
                       ],
@@ -1000,7 +996,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         trinhDuyetCapPhongXacNhan:
             state.item!.trinhDuyetCapPhongXacNhan ?? false,
         trinhDuyetGiamDocXacNhan: state.item!.trinhDuyetGiamDocXacNhan ?? false,
-        ngayKy: state.item!.ngayKy ?? AppUtility.formatDateString(DateTime.now()),
+        ngayKy:
+            state.item!.ngayKy ?? AppUtility.formatDateString(DateTime.now()),
         nguoiCapNhat: widget.provider.userInfo?.tenDangNhap ?? '',
         trangThai: trangThai,
         daBanGiao: state.item!.daBanGiao ?? false,
