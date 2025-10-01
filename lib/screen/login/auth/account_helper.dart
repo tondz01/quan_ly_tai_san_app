@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -689,12 +690,16 @@ class AccountHelper {
   }
 
   //Config
-  setConfigTimeExpire(int timeExpire) {
-    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, timeExpire);
+  setConfigTimeExpire(ConfigDto config) {
+    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, config);
   }
 
-  int? getConfigTimeExpire() {
-    return StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+  ConfigDto? getConfigTimeExpire() {
+    final raw = StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+    if (raw == null) return null;
+    if (raw is ConfigDto) return raw;
+    if (raw is Map) return ConfigDto.fromJson(Map<String, dynamic>.from(raw));
+    return null;
   }
 
   // Global type asset

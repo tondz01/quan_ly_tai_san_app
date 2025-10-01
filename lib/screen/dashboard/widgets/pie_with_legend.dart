@@ -50,7 +50,7 @@ class PieDonutChartWithLegend extends StatelessWidget {
                 label: LabelEncode(
                   encoder: (tuple) {
                     final value = tuple[valueKey] as num;
-                    final percent = tuple['percent'] as num;
+                    // final percent = tuple['percent'] as num;
                     return Label(
                       '${value.toInt()}',
                       LabelStyle(

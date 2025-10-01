@@ -82,6 +82,8 @@ class DieuDongTaiSanDto {
   bool? share;
   bool? daBanGiao;
   bool? byStep;
+  int? trangThaiPhieu;
+  // 🔥 Logic: add field
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
   List<SignatoryDto>? listSignatory;
 
@@ -141,6 +143,7 @@ class DieuDongTaiSanDto {
     this.trangThaiKyNhay,
     this.daBanGiao,
     this.byStep,
+    this.trangThaiPhieu,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -200,6 +203,7 @@ class DieuDongTaiSanDto {
       listSignatory: json['listSignatory'],
       daBanGiao: json['daBanGiao'],
       byStep: json['byStep'],
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -260,6 +264,7 @@ class DieuDongTaiSanDto {
       "listSignatory": listSignatory,
       "daBanGiao": daBanGiao,
       "byStep": byStep,
+      "trangThaiPhieu": trangThaiPhieu,
     };
   }
 
@@ -319,6 +324,7 @@ class DieuDongTaiSanDto {
     List<SignatoryDto>? listSignatory,
     bool? daBanGiao,
     bool? byStep,
+    int? trangThaiPhieu,
   }) {
     return DieuDongTaiSanDto(
       id: id ?? this.id,
@@ -384,6 +390,7 @@ class DieuDongTaiSanDto {
       listSignatory: listSignatory ?? this.listSignatory,
       daBanGiao: daBanGiao ?? this.daBanGiao,
       byStep: byStep ?? this.byStep,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
 }

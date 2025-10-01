@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
@@ -315,9 +312,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                         errorMessages.add(errorText);
                       }
 
-                      log(
-                        '[ToolsAndSuppliesView] errorMessages: $errorMessages',
-                      );
                       if (!mounted) return;
                       // Hiển thị thông báo tổng quan
                       AppUtility.showSnackBar(
