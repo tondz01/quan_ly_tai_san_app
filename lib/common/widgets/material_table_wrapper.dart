@@ -23,6 +23,7 @@ class MaterialTableWrapper<T> extends StatelessWidget {
   final Color? actionViewColor;
   final Color? actionEditColor;
   final Color? actionDeleteColor;
+  final double showQuantityColumn;
 
   const MaterialTableWrapper({
     super.key,
@@ -45,6 +46,7 @@ class MaterialTableWrapper<T> extends StatelessWidget {
     this.actionViewColor,
     this.actionEditColor,
     this.actionDeleteColor,
+    this.showQuantityColumn = 20,
   });
 
   @override
@@ -70,6 +72,7 @@ class MaterialTableWrapper<T> extends StatelessWidget {
       ),
       padding: padding ?? const EdgeInsets.all(16),
       child: SgTable<T>(
+        showQuantityColumn: showQuantityColumn,
         headerBackgroundColor: ColorValue.primaryBlue,
         textHeaderColor: Colors.white,
         evenRowBackgroundColor: ColorValue.neutral50,

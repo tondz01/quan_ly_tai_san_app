@@ -608,11 +608,9 @@ packages:
   se_gay_components:
     dependency: "direct main"
     description:
-      path: "."
-      ref: main
-      resolved-ref: "7c5f72f5562a68f1080ef34f85a844255fc44d3e"
-      url: "https://github.com/congcuong207/SeGayComponent.git"
-    source: git
+      path: "E:\\DataApp\\DataFlutter\\Segayv2\\SeGayComponent"
+      relative: false
+    source: path
     version: "1.0.0+1"
   sky_engine:
     dependency: transitive
