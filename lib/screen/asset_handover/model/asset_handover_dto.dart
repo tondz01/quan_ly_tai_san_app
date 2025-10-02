@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 class AssetHandoverDto {
@@ -90,7 +91,7 @@ class AssetHandoverDto {
       tenDonViNhan: json['tenDonViNhan'],
       idDonViDaiDien: json['idDonViDaiDien'],
       tenDonViDaiDien: json['tenDonViDaiDien'],
-      ngayBanGiao: json['ngayBanGiao'],
+      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
@@ -105,8 +106,8 @@ class AssetHandoverDto {
       donViDaiDienXacNhan: json['donViDaiDienXacNhan'],
       trangThai: json['trangThai'],
       note: json['note'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -135,7 +136,7 @@ class AssetHandoverDto {
       'tenDonViNhan': tenDonViNhan,
       'idDonViDaiDien': idDonViDaiDien,
       'tenDonViDaiDien': tenDonViDaiDien,
-      'ngayBanGiao': ngayBanGiao,
+      'ngayBanGiao': AppUtility.formatFromISOString(ngayBanGiao ?? ''),
       'idLanhDao': idLanhDao,
       'tenLanhDao': tenLanhDao,
       'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
@@ -150,8 +151,8 @@ class AssetHandoverDto {
       'donViDaiDienXacNhan': donViDaiDienXacNhan,
       'trangThai': trangThai,
       'note': note,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,

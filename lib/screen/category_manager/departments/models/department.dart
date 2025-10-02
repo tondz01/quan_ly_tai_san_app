@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
 
 class PhongBan extends Equatable {
@@ -12,7 +13,6 @@ class PhongBan extends Equatable {
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
-
 
   final String? ngayTao;
   final String? ngayCapNhat;
@@ -29,7 +29,7 @@ class PhongBan extends Equatable {
     this.nguoiCapNhat,
     this.ngayTao,
     this.ngayCapNhat,
-    this.isActive
+    this.isActive,
   });
 
   factory PhongBan.fromJson(Map<String, dynamic> json) {
@@ -41,8 +41,14 @@ class PhongBan extends Equatable {
       idCongTy: json['idCongTy'],
       phongCapTren: json['phongCapTren'],
       mauSac: json['mauSac'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao:
+          json['ngayTao'] != null
+              ? AppUtility.formatFromISOString(json['ngayTao'])
+              : null,
+      ngayCapNhat:
+          json['ngayCapNhat'] != null
+              ? AppUtility.formatFromISOString(json['ngayCapNhat'])
+              : null,
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -60,8 +66,12 @@ class PhongBan extends Equatable {
       'mauSac': mauSac ?? "",
       'nguoiTao': nguoiTao ?? "",
       'nguoiCapNhat': nguoiCapNhat ?? "",
-      'ngayTao': ngayTao ?? DateTime.now().toIso8601String(),
-      'ngayCapNhat': ngayCapNhat ?? DateTime.now().toIso8601String(),
+      'ngayTao': AppUtility.formatFromISOString(
+        ngayTao ?? DateTime.now().toIso8601String(),
+      ),
+      'ngayCapNhat': AppUtility.formatFromISOString(
+        ngayCapNhat ?? DateTime.now().toIso8601String(),
+      ),
       'isActive': isActive ?? DepartmentConstants.defaultIsActive,
     };
   }
@@ -81,23 +91,25 @@ class PhongBan extends Equatable {
       'Mã phòng ban': _nullIfEmpty(id),
       'Tên phòng ban': _nullIfEmpty(tenPhongBan),
       'Mã phòng cấp trên': _nullIfEmpty(phongCapTren),
-      'Ngày tạo': _nullIfEmpty(ngayTao),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(
+        AppUtility.formatFromISOString(ngayCapNhat ?? ''),
+      ),
     };
   }
 
   @override
   List<Object?> get props => [
-        id,
-        idNhomDonVi,
-        tenPhongBan,
-        idQuanLy,
-        idCongTy,
-        phongCapTren,
-        mauSac,
-        nguoiTao,
-        nguoiCapNhat,
-        ngayTao,
-        ngayCapNhat,
-      ];
+    id,
+    idNhomDonVi,
+    tenPhongBan,
+    idQuanLy,
+    idCongTy,
+    phongCapTren,
+    mauSac,
+    nguoiTao,
+    nguoiCapNhat,
+    ngayTao,
+    ngayCapNhat,
+  ];
 }

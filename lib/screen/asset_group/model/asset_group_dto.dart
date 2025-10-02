@@ -1,12 +1,14 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class AssetGroupDto {
   final String? id;
   final String? tenNhom;
   final bool? hieuLuc;
   final String? idCongTy;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
+  final String? ngayTao;
+  final String? ngayCapNhat;
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
@@ -30,10 +32,10 @@ class AssetGroupDto {
       hieuLuc: json['hieuLuc'],
       idCongTy: json['idCongTy'],
       ngayTao:
-          json['ngayTao'] != null ? DateTime.tryParse(json['ngayTao']) : null,
+          json['ngayTao'] != null ? AppUtility.formatFromISOString(json['ngayTao']) : null,
       ngayCapNhat:
           json['ngayCapNhat'] != null
-              ? DateTime.tryParse(json['ngayCapNhat'])
+              ? AppUtility.formatFromISOString(json['ngayCapNhat'])
               : null,
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
@@ -47,8 +49,8 @@ class AssetGroupDto {
       'tenNhom': tenNhom,
       'hieuLuc': hieuLuc,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.toUtc().toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toUtc().toIso8601String(),
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -60,8 +62,8 @@ class AssetGroupDto {
       'id': id,
       'tenLoaiTaiSan': tenNhom,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao?.toIso8601String().replaceAll('Z', ''),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String().replaceAll('Z', ''),
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -97,8 +99,8 @@ class AssetGroupDto {
       'Mã nhóm': _nullIfEmpty(id),
       'Tên nhóm': _nullIfEmpty(tenNhom),
       'Hiệu lực': hieuLuc ?? true,
-      'Ngày tạo': _nullIfEmpty(ngayTao?.toIso8601String()),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat?.toIso8601String()),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
     };
   }
 }

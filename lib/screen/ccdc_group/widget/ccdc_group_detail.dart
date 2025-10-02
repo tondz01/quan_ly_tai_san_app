@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
@@ -227,8 +228,8 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
         ten: controllerNameCcdcGroup.text,
         hieuLuc: isActive,
         idCongTy: idCongTy,
-        ngayTao: DateTime.parse(getDateNow()),
-        ngayCapNhat: DateTime.parse(getDateNow()),
+        ngayTao: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
+        ngayCapNhat: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
         nguoiTao: userInfo?.id ?? '',
       );
 
@@ -239,8 +240,8 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
         ten: controllerNameCcdcGroup.text,
         hieuLuc: isActive,
         idCongTy: idCongTy,
-        ngayTao: DateTime.parse(getDateNow()),
-        ngayCapNhat: DateTime.parse(getDateNow()),
+        ngayTao: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
+        ngayCapNhat: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
         nguoiCapNhat: userInfo?.id ?? '',
       );
 

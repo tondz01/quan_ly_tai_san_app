@@ -66,11 +66,11 @@ Future<Map<String, dynamic>> convertExcelToChucVu(
           'banGiaoCCDCVatTu': AppUtility.b(row[13]?.value ?? false),
           'baoCao': AppUtility.b(row[14]?.value ?? false),
           'idCongTy': 'ct001',
-          'ngayTao': AppUtility.normalizeDateIsoString(
-            row[15]?.value ?? DateTime.now(),
+          'ngayTao': AppUtility.formatFromISOString(
+            row[15]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(
-            row[16]?.value ?? DateTime.now(),
+          'ngayCapNhat': AppUtility.formatFromISOString(
+            row[16]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           'nguoiTao': fallbackUser,
           'nguoiCapNhat': fallbackUser,
@@ -115,11 +115,11 @@ Future<Map<String, dynamic>> convertExcelToChucVu(
           'banGiaoCCDCVatTu': AppUtility.b(cell(row, 13) ?? false),
           'baoCao': AppUtility.b(cell(row, 14) ?? false),
           'idCongTy': 'ct001',
-          'ngayTao': AppUtility.normalizeDateIsoString(
-            cell(row, 15) ?? DateTime.now(),
+          'ngayTao': AppUtility.formatFromISOString(
+            cell(row, 15) ?? DateTime.now().toIso8601String(),
           ),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(
-            cell(row, 16) ?? DateTime.now(),
+          'ngayCapNhat': AppUtility.formatFromISOString(
+            cell(row, 16) ?? DateTime.now().toIso8601String(),
           ),
           'nguoiTao': fallbackUser,
           'nguoiCapNhat': fallbackUser,

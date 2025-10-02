@@ -4,17 +4,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
-import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
-
-extension DateTimeToMySQL on DateTime {
-  String toMySQLFormat() {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(toUtc());
-  }
-}
 
 int? _parseInt(dynamic value) {
   if (value == null) return null;
@@ -147,11 +140,11 @@ Future<Map<String, dynamic>> convertExcelToAssetCategory(
           "taiKhoanKhauHao": AppUtility.s(row[6]?.value),
           "taiKhoanChiPhi": AppUtility.s(row[7]?.value),
           "idCongTy": "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(
-            row[8]?.value ?? DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(
+            row[8]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(
-            row[9]?.value ?? DateTime.now(),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            row[9]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
@@ -189,10 +182,10 @@ Future<Map<String, dynamic>> convertExcelToAssetCategory(
           "taiKhoanKhauHao": AppUtility.s(cell(row, 6)),
           "taiKhoanChiPhi": AppUtility.s(cell(row, 7)),
           "idCongTy": "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(
+          "ngayTao": AppUtility.formatFromISOString(
             cell(row, 9) ?? DateTime.now(),
           ),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(
+          "ngayCapNhat": AppUtility.formatFromISOString(
             cell(row, 10) ?? DateTime.now(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,

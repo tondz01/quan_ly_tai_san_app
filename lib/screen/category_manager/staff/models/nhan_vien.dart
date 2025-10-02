@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 
 class NhanVien extends Equatable {
@@ -112,8 +113,8 @@ class NhanVien extends Equatable {
       kyNhay: b(json['kyNhay']),
       kyThuong: b(json['kyThuong']),
       kySo: b(json['kySo']),
-      ngayTao: s(json['ngayTao']),
-      ngayCapNhat: s(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] ?? ''),
       savePin: b(json['savePin']),
     );
   }
@@ -177,7 +178,7 @@ class NhanVien extends Equatable {
       muiGio: muiGio ?? this.muiGio,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
-      active: isActive ?? this.active,
+      active: isActive ?? active,
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
       kyNhay: kyNhay ?? this.kyNhay,
@@ -214,8 +215,8 @@ class NhanVien extends Equatable {
       'kyNhay': kyNhay,
       'kyThuong': kyThuong,
       'kySo': kySo,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'active': active,
       'savePin': savePin,
     };
@@ -243,8 +244,8 @@ class NhanVien extends Equatable {
       'Mã Pin': _nullIfEmpty(pin),
       'Phòng ban (Mã phòng ban)': _nullIfEmpty(phongBanId),
       'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVuId),
-      'Ngày tạo': _nullIfEmpty(ngayTao),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
     };
   }
 
