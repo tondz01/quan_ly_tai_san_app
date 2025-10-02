@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
-import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -13,12 +12,6 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
-
-extension DateTimeToMySQL on DateTime {
-  String toMySQLFormat() {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(toUtc());
-  }
-}
 
 Map<String, dynamic> _validateRow(
   Map<String, dynamic> json,
@@ -197,8 +190,10 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "namSanXuat": 0,
           "ghiChu": AppUtility.s(row[9]?.value),
           "idCongTy": "ct001",
-          "ngayTao": DateTime.now(),
-          "ngayCapNhat": DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(DateTime.now().toString()),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            DateTime.now().toString(),
+          ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "isActive": true,
@@ -271,8 +266,8 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "id": cell(row, 0),
           "idDonVi": cell(row, 1),
           "ten": cell(row, 2),
-          "ngayNhap": AppUtility.normalizeDateIsoString(
-            cell(row, 3)?.toString() ?? DateTime.now(),
+          "ngayNhap": AppUtility.formatFromISOString(
+            cell(row, 3)?.toString() ?? DateTime.now().toString(),
           ),
           "donViTinh": cell(row, 4),
           "soLuong": 0,
@@ -286,8 +281,10 @@ Future<Map<String, dynamic>> convertExcelToCcdcVt(
           "namSanXuat": 0,
           "ghiChu": cell(row, 9),
           "idCongTy": "ct001",
-          "ngayTao": DateTime.now(),
-          "ngayCapNhat": DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(DateTime.now().toString()),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            DateTime.now().toString(),
+          ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "isActive": true,
