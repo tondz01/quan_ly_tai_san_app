@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/original_asset_information.dart';
@@ -46,6 +47,7 @@ class _AssetDetailState extends State<AssetDetail> {
   Country? country;
 
   List<AssetCategoryDto> listAssetCategory = [];
+  List<NguonKinhPhi> listNguonKinhPhi = [];
   List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory = [];
 
   TextEditingController ctrlMaTaiSan = TextEditingController();
@@ -271,6 +273,13 @@ class _AssetDetailState extends State<AssetDetail> {
                       phongBanBanDau: phongBanBanDau,
                       phongBanHienThoi: phongBanHienThoi,
                       unit: unit,
+                      initialSelectedNguonKinhPhi: listNguonKinhPhi,
+                      onChangedNguonKinhPhi: (value) {
+                        setState(() {
+                          // listNguonKinhPhi = value;
+                          log('onChangedNguonKinhPhi: ${jsonEncode(value)}');
+                        });
+                      },
                       validationErrors: validationErrors,
                       onNuocSanXuatChanged: (value) {
                         setState(() {
@@ -498,7 +507,6 @@ class _AssetDetailState extends State<AssetDetail> {
       List<TypeAsset> listTypeAsset = AccountHelper.instance.getTypeAsset(
         data!.idNhomTaiSan ?? '',
       );
-      log('Check listTypeAsset11: ${jsonEncode(listTypeAsset)}');
       typeAsset =
           listTypeAsset.any((element) => element.id == data!.idLoaiTaiSanCon)
               ? listTypeAsset.firstWhere(

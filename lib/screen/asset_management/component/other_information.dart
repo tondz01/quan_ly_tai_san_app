@@ -5,6 +5,7 @@ import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/dropdown_add_list_object.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -47,11 +48,13 @@ Widget buildOtherInformation(
   required List<PhongBan> listPhongBan,
   required List<DuAn> listDuAn,
   required List<NguonKinhPhi> listNguonKinhPhi,
+  required List<NguonKinhPhi> initialSelectedNguonKinhPhi,
   required List<UnitDto> listUnit,
   required List<DropdownMenuItem<PhongBan>> itemsPhongBan,
   required List<DropdownMenuItem<DuAn>> itemsDuAn,
   required List<DropdownMenuItem<NguonKinhPhi>> itemsNguonKinhPhi,
   required Function(Country)? onNuocSanXuatChanged,
+  required Function(List<NguonKinhPhi>)? onChangedNguonKinhPhi,
   required AssetManagementProvider provider,
   DuAn? duAn,
   HienTrang? hienTrang,
@@ -85,6 +88,22 @@ Widget buildOtherInformation(
         fieldName: 'duAn',
         validationErrors: validationErrors,
       ),
+      
+      // CMObjectMultiSelectDropdownField<NguonKinhPhi>(
+      //   labelText: 'Nguồn kinh phí',
+      //   items: listNguonKinhPhi,
+      //   itemLabel: (o) => o.tenNguonKinhPhi ?? '',
+      //   itemKey: (o) => o.id ?? '',
+      //   initialSelected: initialSelectedNguonKinhPhi,
+      //   onChanged: (list) {
+      //     onChangedNguonKinhPhi?.call(list);
+      //     initialSelectedNguonKinhPhi = list;
+      //   },
+      //   onConfirmed: (list) {
+      //     onChangedNguonKinhPhi?.call(list);
+      //     initialSelectedNguonKinhPhi = list;
+      //   },
+      // ),
 
       CmFormDropdownObject<NguonKinhPhi>(
         label: 'Nguồn kinh phí',

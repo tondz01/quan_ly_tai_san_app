@@ -198,6 +198,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
               title: 'Ngày nhập',
               getValue: (item) => item.ngayNhap.toString(),
               width: 120,
+              filterable: true,
             ),
           );
           break;

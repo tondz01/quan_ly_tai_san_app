@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
@@ -51,7 +52,8 @@ class AssetManagementDetailRepository extends ApiBase {
 
       if (checkStatusCodeFailed(responseOwnershipUnit.statusCode ?? 0)) {
         result['status_code'] = responseOwnershipUnit.statusCode;
-        result['message'] = responseOwnershipUnit.data?['message'] ?? 'Unknown error';
+        result['message'] =
+            responseOwnershipUnit.data?['message'] ?? 'Unknown error';
         return result;
       }
 
@@ -74,6 +76,33 @@ class AssetManagementDetailRepository extends ApiBase {
 
     try {
       final response = await put(EndPointAPI.CHI_TIET_TAI_SAN, data: params);
+
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        result['message'] = response.data?['message'] ?? 'Unknown error';
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data;
+    } catch (e) {
+      log("Error at updateToolsAndSupplies - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> createNguonKinhPhi(
+    List<NguonKinhPhi> params,
+  ) async {
+    Map<String, dynamic>? data;
+    Map<String, dynamic> result = {
+      'data': data,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    
+    try {
+      final response = await post('/api/nguonkinhphi/batch', data: params);
 
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;

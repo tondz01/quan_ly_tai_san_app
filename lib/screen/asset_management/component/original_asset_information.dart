@@ -139,7 +139,6 @@ Widget buildOriginalAssetInfomation(
         isMoney: true,
         validationErrors: validationErrors,
       ),
-
       CmFormDropdownObject<AssetCategoryDto>(
         label: 'Mô hình tài sản',
         controller: ctrlTenMoHinh,

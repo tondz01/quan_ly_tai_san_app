@@ -182,8 +182,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Số thẻ tài sản',
               getValue: (item) => item.id ?? '',
               width: 120,
-              // filterable: true,
               searchValue: (item) => item.id ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -193,6 +193,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Mã tài sản',
               getValue: (item) => item.soThe ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -202,6 +203,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Tên tài sản',
               getValue: (item) => item.tenTaiSan ?? '',
               width: 200,
+              filterable: true,
             ),
           );
           break;
@@ -211,6 +213,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Ngày vào sổ',
               getValue: (item) => item.ngayVaoSo?.toString() ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -220,6 +223,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Ngày bàn giao',
               getValue: (item) => item.ngaySuDung?.toString() ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -234,6 +238,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 return department?.tenPhongBan ?? '';
               },
               width: 150,
+              filterable: true,
             ),
           );
           break;
@@ -243,6 +248,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Ngày cập nhật',
               getValue: (item) => item.ngayCapNhat?.toString() ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -257,6 +263,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           .length
                           .toString(),
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -266,6 +273,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Nhóm tài sản',
               getValue: (item) => item.tenNhom ?? '',
               width: 150,
+              filterable: true,
             ),
           );
           break;
@@ -287,6 +295,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 return nameTypeAsset;
               },
               width: 150,
+              filterable: true,
             ),
           );
           break;
@@ -294,8 +303,9 @@ class _AssetManagementListState extends State<AssetManagementList> {
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Hiện trạng',
-              getValue: (item) => item.hienTrang?.toString() ?? '',
+              getValue: (item) => widget.provider.getHienTrang(item.hienTrang ?? 0).name,
               width: 100,
+              filterable: true,
             ),
           );
           break;
@@ -305,6 +315,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Số lượng',
               getValue: (item) => item.soLuong?.toString() ?? '',
               width: 100,
+              filterable: true,
             ),
           );
           break;
@@ -319,6 +330,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           ?.tenDonVi ??
                       '',
               width: 100,
+              filterable: true,
             ),
           );
           break;
@@ -328,6 +340,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Ký hiệu',
               getValue: (item) => item.kyHieu ?? '',
               width: 100,
+              filterable: true,
             ),
           );
           break;
@@ -337,6 +350,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Số ký hiệu',
               getValue: (item) => item.soKyHieu ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -346,6 +360,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Nước sản xuất',
               getValue: (item) => item.nuocSanXuat ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -355,6 +370,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Năm sản xuất',
               getValue: (item) => item.namSanXuat?.toString() ?? '',
               width: 100,
+              filterable: true,
             ),
           );
           break;

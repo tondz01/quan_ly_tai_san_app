@@ -300,6 +300,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Tên phiếu',
               getValue: (item) => item.banGiaoCCDCVatTu ?? '',
               width: 170,
+              filterable: true,
             ),
           );
           break;
@@ -309,6 +310,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Quyết định điều động',
               getValue: (item) => item.quyetDinhDieuDongSo ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -318,6 +320,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Lệnh điều động',
               getValue: (item) => item.lenhDieuDong ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -334,6 +337,7 @@ class _ToolAndSuppliesHandoverListState
                           )
                           : '',
               width: 150,
+              filterable: true,
             ),
           );
           break;

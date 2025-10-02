@@ -1,4 +1,5 @@
 import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,6 +30,8 @@ class AssetManagementProvider with ChangeNotifier {
   get isCanUpdate => _isCanUpdate;
   get isCanDelete => _isCanDelete;
   get isNew => _isNew;
+
+  String get searchTerm => _searchTerm;
 
   get error => _error;
   bool get isLoading => _isLoading;
@@ -103,6 +106,7 @@ class AssetManagementProvider with ChangeNotifier {
   bool _isNew = false;
 
   String? _error;
+  String _searchTerm = '';
 
   String? _subScreen;
   String? _selectedFileName;
@@ -156,6 +160,12 @@ class AssetManagementProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
+    set searchTerm(String value) {
+    _searchTerm = value;
+    _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
+    notifyListeners();
+  }
+
   //Tài sản con
   HienTrang getHienTrang(int id) {
     return listHienTrang.firstWhere(
@@ -191,6 +201,41 @@ class AssetManagementProvider with ChangeNotifier {
   }
 
   List<Map<String, bool>?> checkBoxAssetGroup = [];
+  void _applyFilters() {
+    if (_data == null) return;
+    // Lọc tiếp theo nội dung tìm kiếm
+    if (_searchTerm.isNotEmpty) {
+      String searchLower = _searchTerm.toLowerCase();
+      _filteredData =
+          _data!.where((item) {
+            String departmentName = AccountHelper.instance
+                        .getDepartmentById(item.id ?? '')
+                        ?.tenPhongBan
+                        ?.toLowerCase() ??
+                    '';
+            log('message test: departmentName: $departmentName');
+            return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenTaiSan?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.tenNhom?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
+                //đơn vị tính
+                (AccountHelper.instance
+                        .getUnitById(item.donViTinh ?? '')
+                        ?.tenDonVi
+                        ?.toLowerCase()
+                        .contains(searchLower) ??
+                    false) ||
+                //phòng ban
+                (departmentName.contains(searchLower));
+          }).toList();
+    } else {
+      _filteredData = _data!;
+    }
+
+    // Sau khi lọc, cập nhật lại phân trang
+    _updatePagination();
+  }
 
   void _updatePagination() {
     totalEntries = _filteredData?.length ?? 0;
@@ -270,9 +315,11 @@ class AssetManagementProvider with ChangeNotifier {
       bloc.add(GetListDepartmentEvent(context, idCongTy));
       bloc.add(GetListKhauHaoEvent(context, idCongTy));
       bloc.add(GetAllChildAssetsEvent(context, idCongTy));
-      log('[check getDataAll] ');
     } catch (e) {
-      log('Error adding AssetManagement events: $e');
+      SGLog.error(
+        "AssetManagementProvider",
+        "Error adding AssetManagement events: $e",
+      );
     }
   }
 
@@ -326,7 +373,6 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataDepreciationDetail = null;
     }
-    log('message onChangeDepreciationDetail');
     _isShowCollapseKhauHao = true;
     isShowInputKhauHao = true;
   }
@@ -346,7 +392,6 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _data =
           state.data.where((element) => element.isTaiSanCon == false).toList();
-      log('[check getListAssetManagementSuccess] _data: ${_data?.length}');
       _filteredData = List.from(_data!); // Khởi tạo filteredData
       _updatePagination();
       _isLoading = false;
@@ -462,7 +507,6 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
-    log('getListCapitalSourceSuccess: ${_itemsNguonKinhPhi?.length}');
     notifyListeners();
   }
 
@@ -600,8 +644,6 @@ class AssetManagementProvider with ChangeNotifier {
       for (var element in listHienTrang)
         DropdownMenuItem<HienTrang>(value: element, child: Text(element.name)),
     ];
-
-    log('onLoadItemDropdown itemsHienTrang: ${_itemsHienTrang.length}');
   }
 
   void onSubmit(

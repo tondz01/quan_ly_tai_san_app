@@ -89,7 +89,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             ? _searchController
                             : _searchKhauHaoController,
                     onSearchChanged: (value) {
-                      // provider.searchTerm = value;
+                      provider.searchTerm = value;
                     },
                     onTap: () {
                       // provider.onChangeDetailAssetManagement(null);
@@ -132,12 +132,10 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             [],
                       );
                     },
-                    isShowInput: provider.typeBody == ShowBody.taiSan
-                        ? true
-                        : false,
-                    isShownew: provider.typeBody == ShowBody.taiSan
-                        ? true
-                        : false,
+                    isShowInput:
+                        provider.typeBody == ShowBody.taiSan ? true : false,
+                    isShownew:
+                        provider.typeBody == ShowBody.taiSan ? true : false,
                   ),
                 ),
                 body: Column(

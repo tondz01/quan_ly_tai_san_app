@@ -626,7 +626,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         AccountHelper.instance.getUserInfo();
                     AssetHandoverDto? item =
                         selectedItems.isNotEmpty ? selectedItems.first : null;
-                    log('item: ${jsonEncode(item)}');
                     _handleSignDocument(item!, userInfo!, widget.provider);
                   }
                 },
