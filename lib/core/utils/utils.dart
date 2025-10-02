@@ -143,6 +143,23 @@ abstract class AppUtility {
     }
   }
 
+  static String formatDateTimeISO(DateTime input) {
+    try {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(input);
+    } catch (_) {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    }
+  }
+
+  static String formatFromISOString(String isoString) {
+    try {
+      DateTime dateTime = DateTime.parse(isoString);
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+    } catch (_) {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    }
+  }
+
   static double parseCurrency(String input) {
     if (input.isEmpty) return 0.0;
     String sanitized = input.trim();
