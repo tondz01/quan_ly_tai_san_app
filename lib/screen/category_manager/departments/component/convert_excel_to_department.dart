@@ -74,11 +74,11 @@ Future<Map<String, dynamic>> convertExcelToPhongBan(
           "idQuanLy": "",
           "idCongTy": "ct001",
           "phongCapTren": AppUtility.s(row[2]?.value),
-          "ngayTao": AppUtility.normalizeDateIsoString(
-            row[3]?.value ?? DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(
+            row[3]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(
-            row[4]?.value ?? DateTime.now(),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            row[4]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
@@ -112,11 +112,11 @@ Future<Map<String, dynamic>> convertExcelToPhongBan(
           "idQuanLy": '',
           "idCongTy": "ct001",
           "phongCapTren": cell(row, 2),
-          "ngayTao": AppUtility.normalizeDateIsoString(
-            cell(row, 3) ?? DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(
+            cell(row, 3) ?? DateTime.now().toIso8601String(),
           ),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(
-            cell(row, 4) ?? DateTime.now(),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            cell(row, 4) ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,

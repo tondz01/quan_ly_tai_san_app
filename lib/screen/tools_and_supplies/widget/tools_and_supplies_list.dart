@@ -38,9 +38,9 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   String titleDetailDepartmentTree = "";
   bool isShowDetailDepartmentTree = false;
   List<Map<String, DateTime Function(ToolsAndSuppliesDto)>> getters = [
-    {'Ngày tạo': (item) => item.ngayTao},
-    {'Ngày cập nhật': (item) => item.ngayCapNhat},
-    {'Ngày nhập': (item) => item.ngayNhap},
+    {'Ngày tạo': (item) => DateTime.tryParse(item.ngayTao) ?? DateTime.now()},
+    {'Ngày cập nhật': (item) => DateTime.tryParse(item.ngayCapNhat) ?? DateTime.now()},
+    {'Ngày nhập': (item) => DateTime.tryParse(item.ngayNhap) ?? DateTime.now()},
   ];
 
   // Column display options

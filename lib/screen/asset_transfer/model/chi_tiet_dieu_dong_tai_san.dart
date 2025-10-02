@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class ChiTietDieuDongTaiSan {
   final String id;
   final String idDieuDongTaiSan;
@@ -58,8 +60,8 @@ class ChiTietDieuDongTaiSan {
       hienTrang: parseInt(json['hienTrang']),
       soLuong: parseInt(json['soLuong']),
       ghiChu: parseString(json['ghiChu']),
-      ngayTao: parseString(json['ngayTao']),
-      ngayCapNhat: parseString(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: parseString(json['nguoiTao']),
       nguoiCapNhat: parseString(json['nguoiCapNhat']),
       isActive: parseBool(json['isActive']),
@@ -78,8 +80,8 @@ class ChiTietDieuDongTaiSan {
       'hienTrang': hienTrang,
       'soLuong': soLuong,
       'ghiChu': ghiChu,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -98,8 +100,8 @@ class ChiTietDieuDongTaiSan {
       hienTrang: 0,
       soLuong: 0,
       ghiChu: '',
-      ngayTao: DateTime.now().toIso8601String(),
-      ngayCapNhat: DateTime.now().toIso8601String(),
+      ngayTao: AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
+      ngayCapNhat: AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,

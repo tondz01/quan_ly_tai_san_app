@@ -1,10 +1,12 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class ToolsAndSuppliesRequest {
   final String id;
   final String idDonVi;
   final String idNhomCCDC;
   final String idLoaiCCDCCon;
   final String ten;
-  final DateTime ngayNhap;
+  final String ngayNhap;
   final String donViTinh;
   final int soLuong;
   final double giaTri;
@@ -15,8 +17,8 @@ class ToolsAndSuppliesRequest {
   final int namSanXuat;
   final String ghiChu;
   final String idCongTy;
-  final DateTime ngayTao;
-  final DateTime ngayCapNhat;
+  final String ngayTao;
+  final String ngayCapNhat;
   final String nguoiTao;
   final String nguoiCapNhat;
   final bool isActive;
@@ -52,10 +54,7 @@ class ToolsAndSuppliesRequest {
       idNhomCCDC: json['idNhomCCDC'] ?? '',
       idLoaiCCDCCon: json['idLoaiCCDCCon'] ?? '',
       ten: json['ten'] ?? '',
-      ngayNhap:
-          json['ngayNhap'] != null
-              ? DateTime.parse(json['ngayNhap'].toString().replaceAll('Z', ''))
-              : DateTime.now(),
+      ngayNhap: AppUtility.formatFromISOString(json['ngayNhap'].toString()),
       donViTinh: json['donViTinh'] ?? '',
       soLuong: json['soLuong'] ?? 0,
       giaTri: json['giaTri'] is num ? (json['giaTri'] as num).toDouble() : 0.0,
@@ -66,16 +65,10 @@ class ToolsAndSuppliesRequest {
       namSanXuat: json['namSanXuat'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao:
-          json['ngayTao'] != null
-              ? DateTime.parse(json['ngayTao'].toString().replaceAll('Z', ''))
-              : DateTime.now(),
-      ngayCapNhat:
-          json['ngayCapNhat'] != null
-              ? DateTime.parse(
-                json['ngayCapNhat'].toString().replaceAll('Z', ''),
-              )
-              : DateTime.now(),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'].toString()),
+      ngayCapNhat: AppUtility.formatFromISOString(
+        json['ngayCapNhat'].toString(),
+      ),
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
@@ -89,7 +82,7 @@ class ToolsAndSuppliesRequest {
       'idNhomCCDC': idNhomCCDC,
       'idLoaiCCDCCon': idLoaiCCDCCon,
       'ten': ten,
-      'ngayNhap': ngayNhap.toIso8601String().replaceAll('Z', ''),
+      'ngayNhap': ngayNhap,
       'donViTinh': donViTinh,
       'soLuong': soLuong,
       'giaTri': giaTri,
@@ -100,8 +93,8 @@ class ToolsAndSuppliesRequest {
       'namSanXuat': namSanXuat,
       'ghiChu': ghiChu,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao.toIso8601String().replaceAll('Z', ''),
-      'ngayCapNhat': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,

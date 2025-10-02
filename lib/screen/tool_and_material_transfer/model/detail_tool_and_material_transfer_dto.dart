@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class DetailToolAndMaterialTransferDto {
   final String id;
   final String idDieuDongCCDCVatTu; // idToolAndMaterialTransfer
@@ -89,8 +91,8 @@ class DetailToolAndMaterialTransferDto {
       soLuongXuat: parseInt(json['soLuongXuat'] ?? 0),
       soLuongDaBanGiao: parseInt(json['soLuongDaBanGiao'] ?? 0),
       ghiChu: parseString(json['ghiChu']),
-      ngayTao: parseString(json['ngayTao']),
-      ngayCapNhat: parseString(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(parseString(json['ngayTao'])),
+      ngayCapNhat: AppUtility.formatFromISOString(parseString(json['ngayCapNhat'])),
       nguoiTao: parseString(json['nguoiTao']),
       nguoiCapNhat: parseString(json['nguoiCapNhat']),
       active: parseBool(json['active'] ?? json['isActive']),
@@ -119,8 +121,8 @@ class DetailToolAndMaterialTransferDto {
       'soLuongXuat': soLuongXuat,
       'soLuongDaBanGiao': soLuongDaBanGiao,
       'ghiChu': ghiChu,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'active': active,
@@ -148,8 +150,8 @@ class DetailToolAndMaterialTransferDto {
       soLuongXuat: 0,
       soLuongDaBanGiao: 0,
       ghiChu: '',
-      ngayTao: now.toIso8601String(),
-      ngayCapNhat: now.toIso8601String(),
+      ngayTao: AppUtility.formatFromISOString(now.toIso8601String()),
+      ngayCapNhat: AppUtility.formatFromISOString(now.toIso8601String()),
       nguoiTao: '',
       nguoiCapNhat: '',
       active: false,
@@ -199,8 +201,8 @@ class DetailToolAndMaterialTransferDto {
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
       soLuongDaBanGiao: soLuongDaBanGiao ?? this.soLuongDaBanGiao,
       ghiChu: ghiChu ?? this.ghiChu,
-      ngayTao: ngayTao ?? this.ngayTao,
-      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao),
+      ngayCapNhat: AppUtility.formatFromISOString(ngayCapNhat ?? this.ngayCapNhat),
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       active: active ?? this.active,

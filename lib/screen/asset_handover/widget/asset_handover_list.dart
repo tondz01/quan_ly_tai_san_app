@@ -308,6 +308,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Tên phiếu',
               getValue: (item) => item.banGiaoTaiSan ?? '',
               width: 170,
+              filterable: true,
             ),
           );
           break;
@@ -317,6 +318,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Quyết định điều động',
               getValue: (item) => item.quyetDinhDieuDongSo ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -326,6 +328,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Lệnh điều động',
               getValue: (item) => item.lenhDieuDong ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -342,6 +345,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           )
                           : '',
               width: 150,
+              filterable: true,
             ),
           );
           break;

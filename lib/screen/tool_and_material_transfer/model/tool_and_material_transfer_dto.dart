@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 import 'detail_tool_and_material_transfer_dto.dart';
@@ -59,9 +60,11 @@ class ToolAndMaterialTransferDto {
   bool? trinhDuyetCapPhongXacNhan;
   bool? trinhDuyetGiamDocXacNhan;
 
+
   // Thời gian giao nhận
   String? tggnTuNgay;
   String? tggnDenNgay;
+
 
   String? diaDiemGiaoNhan;
   String? noiNhan;
@@ -70,14 +73,18 @@ class ToolAndMaterialTransferDto {
   String? tenFile;
   String? ngayKy;
 
+
   int? trangThai;
   String? idCongTy;
+
 
   String? ngayTao;
   String? ngayCapNhat;
 
+
   String? nguoiTao;
   String? nguoiCapNhat;
+
 
   int? coHieuLuc;
   int? loai;
@@ -85,6 +92,7 @@ class ToolAndMaterialTransferDto {
   bool? isActive;
   bool? daBanGiao;
   bool? byStep;
+
   int? trangThaiPhieu;
 
   List<DetailToolAndMaterialTransferDto>? detailToolAndMaterialTransfers;
@@ -201,18 +209,18 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: json['phoPhongDonViGiaoXacNhan'],
       trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
       trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
-      tggnTuNgay: json['tggnTuNgay'],
-      tggnDenNgay: json['tggnDenNgay'],
+      tggnTuNgay: AppUtility.formatFromISOString(json['tggnTuNgay']),
+      tggnDenNgay: AppUtility.formatFromISOString(json['tggnDenNgay']),
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       noiNhan: json['noiNhan'],
       trichYeu: json['trichYeu'],
       duongDanFile: json['duongDanFile'],
       tenFile: json['tenFile'],
-      ngayKy: json['ngayKy'],
+      ngayKy: AppUtility.formatFromISOString(json['ngayKy']),
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],
@@ -263,18 +271,18 @@ class ToolAndMaterialTransferDto {
       "phoPhongDonViGiaoXacNhan": phoPhongDonViGiaoXacNhan,
       "trinhDuyetCapPhongXacNhan": trinhDuyetCapPhongXacNhan,
       "trinhDuyetGiamDocXacNhan": trinhDuyetGiamDocXacNhan,
-      "tggnTuNgay": tggnTuNgay,
-      "tggnDenNgay": tggnDenNgay,
+      "tggnTuNgay": AppUtility.formatFromISOString(tggnTuNgay ?? ''),
+      "tggnDenNgay": AppUtility.formatFromISOString(tggnDenNgay ?? ''),
       "diaDiemGiaoNhan": diaDiemGiaoNhan,
       "noiNhan": noiNhan,
       "trichYeu": trichYeu,
       "duongDanFile": duongDanFile,
       "tenFile": tenFile,
-      "ngayKy": ngayKy,
+      "ngayKy": AppUtility.formatFromISOString(ngayKy ?? ''),
       "trangThai": trangThai,
       "idCongTy": idCongTy,
-      "ngayTao": ngayTao,
-      "ngayCapNhat": ngayCapNhat,
+      "ngayTao": AppUtility.formatFromISOString(ngayTao ?? ''),
+      "ngayCapNhat": AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       "nguoiTao": nguoiTao,
       "nguoiCapNhat": nguoiCapNhat,
       "coHieuLuc": coHieuLuc,
@@ -292,6 +300,7 @@ class ToolAndMaterialTransferDto {
       "trangThaiPhieu": trangThaiPhieu,
     };
   }
+
 
   // Tạo một instance rỗng cho việc khởi tạo mới
   factory ToolAndMaterialTransferDto.empty() {
@@ -328,9 +337,12 @@ class ToolAndMaterialTransferDto {
       phoPhongDonViGiaoXacNhan: false,
       trinhDuyetCapPhongXacNhan: false,
       trinhDuyetGiamDocXacNhan: false,
-      tggnTuNgay: DateTime.now().toIso8601String(),
-      tggnDenNgay:
-          DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+      tggnTuNgay: AppUtility.formatFromISOString(
+        DateTime.now().toIso8601String(),
+      ),
+      tggnDenNgay: AppUtility.formatFromISOString(
+        DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+      ),
       diaDiemGiaoNhan: '',
       noiNhan: '',
       trichYeu: '',
@@ -339,7 +351,7 @@ class ToolAndMaterialTransferDto {
       ngayKy: '',
       trangThai: 0,
       idCongTy: '',
-      ngayTao: DateTime.now().toIso8601String(),
+      ngayTao: AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
       ngayCapNhat: null,
       nguoiTao: '',
       nguoiCapNhat: '',
@@ -452,18 +464,24 @@ class ToolAndMaterialTransferDto {
           trinhDuyetCapPhongXacNhan ?? this.trinhDuyetCapPhongXacNhan,
       trinhDuyetGiamDocXacNhan:
           trinhDuyetGiamDocXacNhan ?? this.trinhDuyetGiamDocXacNhan,
-      tggnTuNgay: tggnTuNgay ?? this.tggnTuNgay,
-      tggnDenNgay: tggnDenNgay ?? this.tggnDenNgay,
+      tggnTuNgay: AppUtility.formatFromISOString(
+        tggnTuNgay ?? this.tggnTuNgay ?? '',
+      ),
+      tggnDenNgay: AppUtility.formatFromISOString(
+        tggnDenNgay ?? this.tggnDenNgay ?? '',
+      ),
       diaDiemGiaoNhan: diaDiemGiaoNhan ?? this.diaDiemGiaoNhan,
       noiNhan: noiNhan ?? this.noiNhan,
       trichYeu: trichYeu ?? this.trichYeu,
       duongDanFile: duongDanFile ?? this.duongDanFile,
       tenFile: tenFile ?? this.tenFile,
-      ngayKy: ngayKy ?? this.ngayKy,
+      ngayKy: AppUtility.formatFromISOString(ngayKy ?? this.ngayKy ?? ''),
       trangThai: trangThai ?? this.trangThai,
       idCongTy: idCongTy ?? this.idCongTy,
-      ngayTao: ngayTao ?? this.ngayTao,
-      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(
+        ngayCapNhat ?? this.ngayCapNhat ?? '',
+      ),
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       coHieuLuc: coHieuLuc ?? this.coHieuLuc,

@@ -52,11 +52,11 @@ Future<Map<String, dynamic>> convertExcelToCcdcGroup(
           'ten': AppUtility.s(row[1]?.value),
           'hieuLuc': AppUtility.b(row[2]?.value),
           'idCongTy': 'ct001',
-          'ngayTao': AppUtility.normalizeDateIsoString(
-            row[3]?.value ?? DateTime.now(),
+          'ngayTao': AppUtility.formatFromISOString(
+            row[3]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ).replaceAll('Z', ''),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(
-            row[4]?.value ?? DateTime.now(),
+          'ngayCapNhat': AppUtility.formatFromISOString(
+            row[4]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ).replaceAll('Z', ''),
           'nguoiTao': fallbackUser,
           'nguoiCapNhat': fallbackUser,
@@ -90,10 +90,10 @@ Future<Map<String, dynamic>> convertExcelToCcdcGroup(
           'hieuLuc': AppUtility.b(cell(row, 2)),
           'idCongTy': 'ct001',
           'ngayTao': AppUtility.normalizeDateIsoString(
-            cell(row, 3) ?? DateTime.now(),
+            cell(row, 3) ?? DateTime.now().toIso8601String(),
           ).replaceAll('Z', ''),
           'ngayCapNhat': AppUtility.normalizeDateIsoString(
-            cell(row, 4) ?? DateTime.now(),
+            cell(row, 4) ?? DateTime.now().toIso8601String(),
           ).replaceAll('Z', ''),
           'nguoiTao': fallbackUser,
           'nguoiCapNhat': fallbackUser,

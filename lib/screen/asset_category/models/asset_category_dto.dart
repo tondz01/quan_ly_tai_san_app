@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class AssetCategoryDto {
   final String? id;
   final String? tenMoHinh;
@@ -50,8 +52,8 @@ class AssetCategoryDto {
       taiKhoanKhauHao: json['taiKhoanKhauHao'],
       taiKhoanChiPhi: json['taiKhoanChiPhi'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -69,8 +71,8 @@ class AssetCategoryDto {
       'taiKhoanKhauHao': taiKhoanKhauHao,
       'taiKhoanChiPhi': taiKhoanChiPhi,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -99,8 +101,8 @@ class AssetCategoryDto {
       'Tài khoản tài sản': _nullIfEmpty(taiKhoanTaiSan),
       'Tài khoản khấu hao': _nullIfEmpty(taiKhoanKhauHao),
       'Tài khoản chi phí': _nullIfEmpty(taiKhoanChiPhi),
-      'Ngày tạo': _nullIfEmpty(ngayTao),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
     };
   }
 

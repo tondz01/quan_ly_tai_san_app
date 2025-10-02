@@ -183,6 +183,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                       log(
                         '[ToolsAndSuppliesView] errorMessages: $errorMessages',
                       );
+                      if (!context.mounted) return;
                       // Hiển thị thông báo tổng quan
                       AppUtility.showSnackBar(
                         context,
@@ -202,9 +203,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                             'Mã công cụ dụng cụ': item.id,
                             'Mã đơn vị': item.idDonVi,
                             'Tên công cụ dụng cụ': item.ten,
-                            'Ngày nhập': item.ngayNhap
-                                .toIso8601String()
-                                .replaceAll('Z', ''),
+                            'Ngày nhập': item.ngayNhap,
                             'Mã đơn vị tính': item.donViTinh,
                             'Mã nhóm CCDC': item.idNhomCCDC,
                             'Mã loại CCDC con': item.idLoaiCCDCCon,
@@ -224,9 +223,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                           'Mã công cụ dụng cụ': item.id,
                           'Mã đơn vị': item.idDonVi,
                           'Tên công cụ dụng cụ': item.ten,
-                          'Ngày nhập': item.ngayNhap
-                              .toIso8601String()
-                              .replaceAll('Z', ''),
+                          'Ngày nhập': item.ngayNhap,
                           'Mã đơn vị tính': item.donViTinh,
                           'Mã nhóm CCDC': item.idNhomCCDC,
                           'Mã loại CCDC con': item.idLoaiCCDCCon,

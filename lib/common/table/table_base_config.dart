@@ -15,6 +15,7 @@ abstract class TableBaseConfig {
     Function(List<T> items)? onSelectionChanged,
     bool isShowCheckboxes = true,
     Offset? filterPopupOffset,
+    double showQuantityColumn = 20,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -30,6 +31,7 @@ abstract class TableBaseConfig {
       ),
       child: SgTable<T>(
         // rowHeight: 45.0,
+        showQuantityColumn: showQuantityColumn,
         data: data,
         titleStyleHeader: const TextStyle(
           fontWeight: FontWeight.w600,

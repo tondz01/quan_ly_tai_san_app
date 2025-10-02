@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 
@@ -11,7 +12,7 @@ class ToolsAndSuppliesDto {
   String idNhomCCDC;
   String tenNhomCCDC;
   String idLoaiCCDCCon;
-  DateTime ngayNhap;
+  String ngayNhap;
   String donViTinh;
   int soLuong;
   double giaTri;
@@ -22,8 +23,8 @@ class ToolsAndSuppliesDto {
   int namSanXuat;
   String ghiChu;
   String idCongTy;
-  DateTime ngayTao;
-  DateTime ngayCapNhat;
+  String ngayTao;
+  String ngayCapNhat;
   String nguoiTao;
   String nguoiCapNhat;
   List<DetailAssetDto> chiTietTaiSanList;
@@ -69,10 +70,7 @@ class ToolsAndSuppliesDto {
       idNhomCCDC: json['idNhomCCDC'] ?? '',
       tenNhomCCDC: json['tenNhomCCDC'] ?? '',
       idLoaiCCDCCon: json['idLoaiCCDCCon'] ?? '',
-      ngayNhap:
-          json['ngayNhap'] != null
-              ? DateTime.parse(json['ngayNhap'].toString())
-              : DateTime.now(),
+      ngayNhap: AppUtility.formatFromISOString(json['ngayNhap'].toString()),
       donViTinh: json['donViTinh'] ?? '',
       soLuong: json['soLuong'] ?? 0,
       giaTri: json['giaTri'] ?? 0.0,
@@ -83,14 +81,11 @@ class ToolsAndSuppliesDto {
       namSanXuat: json['namSanXuat'] ?? 0,
       ghiChu: json['ghiChu'] ?? '',
       idCongTy: json['idCongTy'] ?? '',
-      ngayTao:
-          json['ngayTao'] != null
-              ? DateTime.parse(json['ngayTao'].toString())
-              : DateTime.now(),
-      ngayCapNhat:
-          json['ngayCapNhat'] != null
-              ? DateTime.parse(json['ngayCapNhat'].toString())
-              : DateTime.now(),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'].toString()),
+      ngayCapNhat: AppUtility.formatFromISOString(
+        json['ngayCapNhat'].toString(),
+      ),
+
       nguoiTao: json['nguoiTao'] ?? '',
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
@@ -117,7 +112,7 @@ class ToolsAndSuppliesDto {
       'idLoaiCCDCCon': idLoaiCCDCCon,
       'idNhomCCDC': idNhomCCDC,
       'ten': ten,
-      'ngayNhap': ngayNhap.toIso8601String().replaceAll('Z', ''),
+      'ngayNhap': ngayNhap,
       'donViTinh': donViTinh,
       'soLuong': soLuong,
       'giaTri': giaTri,
@@ -128,24 +123,24 @@ class ToolsAndSuppliesDto {
       'namSanXuat': namSanXuat,
       'ghiChu': ghiChu,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao.toIso8601String().replaceAll('Z', ''),
-      'ngayCapNhat': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
+      'ngayTao': ngayTao,
+      'ngayCapNhat': ngayCapNhat,
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
       'soLuongXuat': soLuongXuat.toString(),
       'chiTietTaiSanList': chiTietTaiSanList.map((e) => e.toJson()).toList(),
-      'chiTietDonViSoHuuList': detailOwnershipUnit.map((e) => e.toJson()).toList(),
+      'chiTietDonViSoHuuList':
+          detailOwnershipUnit.map((e) => e.toJson()).toList(),
     };
   }
 
-  
   Map<String, dynamic> toJsonExport() {
     return {
       'Mã công cụ dụng cụ': id,
       'Mã đơn vị': idDonVi,
       'Tên công cụ dụng cụ': ten,
-      'Ngày nhập': ngayNhap.toIso8601String().replaceAll('Z', ''),
+      'Ngày nhập': ngayNhap,
       'Mã đơn vị tính': donViTinh,
       'Mã nhóm CCDC': idNhomCCDC,
       'Mã loại CCDC con': idLoaiCCDCCon,
@@ -164,7 +159,7 @@ class ToolsAndSuppliesDto {
       idNhomCCDC: '',
       tenNhomCCDC: '',
       idLoaiCCDCCon: '',
-      ngayNhap: DateTime.now(),
+      ngayNhap: AppUtility.formatFromISOString(DateTime.now().toString()),
       donViTinh: '',
       soLuong: 0,
       giaTri: 0.0,
@@ -175,8 +170,8 @@ class ToolsAndSuppliesDto {
       namSanXuat: 0,
       ghiChu: '',
       idCongTy: '',
-      ngayTao: DateTime.now(),
-      ngayCapNhat: DateTime.now(),
+      ngayTao: AppUtility.formatFromISOString(DateTime.now().toString()),
+      ngayCapNhat: AppUtility.formatFromISOString(DateTime.now().toString()),
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,
@@ -210,7 +205,7 @@ class ToolsAndSuppliesDto {
     String? idDonVi,
     String? ten,
     String? idLoaiCCDCCon,
-    DateTime? ngayNhap,
+    String? ngayNhap,
     String? donViTinh,
     int? soLuong,
     double? giaTri,
@@ -221,8 +216,8 @@ class ToolsAndSuppliesDto {
     int? namSanXuat,
     String? ghiChu,
     String? idCongTy,
-    DateTime? ngayTao,
-    DateTime? ngayCapNhat,
+    String? ngayTao,
+    String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
     int? soLuongXuat,

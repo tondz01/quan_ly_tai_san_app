@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -115,16 +116,16 @@ class ToolsAndSuppliesController {
     CcdcGroup? selectedGroupCCDC,
     TypeCcdc? selectedTypeCCDC,
   }) {
-    // Parse ngày nhập
+    // Parse ngày nhập (hỗ trợ cả dd/MM/yyyy và dd/MM/yyyy HH:mm:ss)
     DateTime importDate = DateTime.now();
-    try {
-      if (importDateText.trim().isNotEmpty) {
-        importDate = DateFormat(
-          'dd/MM/yyyy',
-        ).parseStrict(importDateText.trim());
+    final trimmedDateText = importDateText.trim();
+    if (trimmedDateText.isNotEmpty) {
+      final parsed = AppUtility.parseFlexibleDateTime(trimmedDateText);
+      if (parsed != null) {
+        importDate = parsed;
+      } else {
+        SGLog.warning('processFormData', 'Invalid date format: $importDateText');
       }
-    } catch (e) {
-      SGLog.warning('processFormData', 'Invalid date format: $importDateText');
     }
 
     // Parse số lượng
@@ -171,7 +172,10 @@ class ToolsAndSuppliesController {
       idNhomCCDC: processedData['idGroupCCDC'],
       idLoaiCCDCCon: processedData['idTypeCCDC'],
       ten: nameText.trim(),
-      ngayNhap: processedData['importDate'],
+      // Convert DateTime to server string format
+      ngayNhap: AppUtility.formatDateForServer(
+        processedData['importDate'] as DateTime,
+      ),
       donViTinh: unitText.trim(),
       soLuong: processedData['quantity'],
       giaTri: processedData['value'],
@@ -182,8 +186,12 @@ class ToolsAndSuppliesController {
       namSanXuat: 0,
       ghiChu: noteText.trim(),
       idCongTy: existingData?.idCongTy ?? currentUser?.idCongTy ?? "CT001",
-      ngayTao: existingData?.ngayTao ?? now,
-      ngayCapNhat: now,
+      ngayTao:
+          existingData?.ngayTao ??
+          AppUtility.formatFromISOString(now.toString()),
+      ngayCapNhat:
+          existingData?.ngayCapNhat ??
+          AppUtility.formatFromISOString(now.toString()),
       nguoiTao: existingData?.nguoiTao ?? currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       isActive: existingData?.isActive ?? true,
@@ -237,6 +245,7 @@ class ToolsAndSuppliesController {
     }
     return [];
   }
+
   /// Khởi tạo dropdown items cho loại CCDC
   List<DropdownMenuItem<UnitDto>> buildUnitDropdownItems(
     List<UnitDto>? dataUnit,
@@ -257,12 +266,6 @@ class ToolsAndSuppliesController {
   String formatDisplayValue(dynamic value, {String defaultValue = ''}) {
     if (value == null) return defaultValue;
     return value.toString();
-  }
-
-  /// Format ngày hiển thị
-  String formatDateDisplay(DateTime? date) {
-    if (date == null) return '';
-    return DateFormat('dd/MM/yyyy').format(date);
   }
 
   /// Kiểm tra dữ liệu có thay đổi không
@@ -311,9 +314,11 @@ class ToolsAndSuppliesController {
       final inputDate = DateFormat(
         'dd/MM/yyyy',
       ).parseStrict(importDateText.trim());
-      if (originalData.ngayNhap.day != inputDate.day ||
-          originalData.ngayNhap.month != inputDate.month ||
-          originalData.ngayNhap.year != inputDate.year) {
+      DateTime originalDate =
+          DateTime.tryParse(originalData.ngayNhap) ?? DateTime.now();
+      if (originalDate.day != inputDate.day ||
+          originalDate.month != inputDate.month ||
+          originalDate.year != inputDate.year) {
         return true;
       }
     } catch (_) {

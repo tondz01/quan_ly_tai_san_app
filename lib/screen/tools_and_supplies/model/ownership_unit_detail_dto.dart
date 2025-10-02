@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class OwnershipUnitDetailDto {
   String id;
   String idCCDCVT;
@@ -31,8 +33,12 @@ class OwnershipUnitDetailDto {
           json['soLuong'] is int
               ? (json['soLuong'] as int)
               : int.tryParse(json['soLuong']?.toString() ?? '0') ?? 0,
-      thoiGianBanGiao: json['thoiGianBanGiao']?.toString() ?? '',
-      ngayTao: json['ngayTao']?.toString() ?? '',
+      thoiGianBanGiao: AppUtility.formatFromISOString(
+        json['thoiGianBanGiao']?.toString() ?? '',
+      ),
+      ngayTao: AppUtility.formatFromISOString(
+        json['ngayTao']?.toString() ?? '',
+      ),
       nguoiTao: json['nguoiTao']?.toString() ?? '',
     );
   }

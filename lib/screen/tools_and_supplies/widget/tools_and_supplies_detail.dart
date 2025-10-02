@@ -418,7 +418,9 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       // Khởi tạo các controller với null-safety
       controllerName.text = _controller.formatDisplayValue(data?.ten);
       controllerCode.text = _controller.formatDisplayValue(data?.id);
-      controllerImportDate.text = _controller.formatDateDisplay(data?.ngayNhap);
+      controllerImportDate.text = AppUtility.formatFromISOString(
+        data?.ngayNhap ?? '',
+      );
       controllerQuantity.text = _controller.formatDisplayValue(
         data?.soLuong,
         defaultValue: '0',
@@ -541,7 +543,9 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       // Reset controllers với null safety thông qua controller
       controllerName.text = _controller.formatDisplayValue(data?.ten);
       controllerCode.text = _controller.formatDisplayValue(data?.id);
-      controllerImportDate.text = _controller.formatDateDisplay(data?.ngayNhap);
+      controllerImportDate.text = AppUtility.formatFromISOString(
+        data?.ngayNhap ?? '',
+      );
 
       controllerQuantity.text = _controller.formatDisplayValue(
         data?.soLuong,

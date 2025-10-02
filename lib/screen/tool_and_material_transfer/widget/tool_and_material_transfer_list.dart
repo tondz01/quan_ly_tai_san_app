@@ -316,6 +316,7 @@ class _ToolAndMaterialTransferListState
               title: 'Phiếu ký nội sinh',
               width: 150,
               getValue: (item) => getName(item.loai ?? 0),
+              filterable: true,
             ),
           );
           break;
@@ -325,6 +326,7 @@ class _ToolAndMaterialTransferListState
               title: 'Ngày có hiệu lực',
               width: 100,
               getValue: (item) => item.tggnTuNgay ?? '',
+             filterable: true,
             ),
           );
           break;
@@ -334,6 +336,7 @@ class _ToolAndMaterialTransferListState
               title: 'Trình duyệt ban giám đốc',
               width: 150,
               getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -352,6 +355,7 @@ class _ToolAndMaterialTransferListState
               titleAlignment: TextAlign.center,
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -361,6 +365,7 @@ class _ToolAndMaterialTransferListState
               title: 'Ký số',
               width: 120,
               getValue: (item) => item.id ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -370,6 +375,7 @@ class _ToolAndMaterialTransferListState
               title: 'Thời gian giao nhận từ ngày',
               width: 150,
               getValue: (item) => item.tggnTuNgay ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -384,6 +390,7 @@ class _ToolAndMaterialTransferListState
                 }
                 return item.tggnDenNgay!;
               },
+              filterable: true,
             ),
           );
           break;

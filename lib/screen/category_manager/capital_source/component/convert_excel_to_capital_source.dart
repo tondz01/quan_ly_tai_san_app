@@ -1,17 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:excel/excel.dart';
-import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-
-extension DateTimeToMySQL on DateTime {
-  String toMySQLFormat() {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(toUtc());
-  }
-}
 
 Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
   List<String> rowErrors = [];
@@ -59,11 +52,11 @@ Future<Map<String, dynamic>> convertExcelToCapitalSource(
           "ghiChu": AppUtility.s(row[2]?.value),
           "hieuLuc": AppUtility.s(row[3]?.value ?? true),
           "idCongTy": "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(
-            row[5]?.value ?? DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(
+            row[5]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(
-            row[6]?.value ?? DateTime.now(),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            row[6]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": fallbackUser,
           "nguoiCapNhat": fallbackUser,
@@ -95,11 +88,11 @@ Future<Map<String, dynamic>> convertExcelToCapitalSource(
           "ghiChu": cell(row, 2),
           "hieuLuc": cell(row, 3) ?? true,
           "idCongTy": "ct001",
-          "ngayTao": AppUtility.normalizeDateIsoString(
-            cell(row, 5) ?? DateTime.now(),
+          "ngayTao": AppUtility.formatFromISOString(
+            cell(row, 5) ?? DateTime.now().toIso8601String(),
           ),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(
-            cell(row, 6) ?? DateTime.now(),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            cell(row, 6) ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": fallbackUser,
           "nguoiCapNhat": fallbackUser,

@@ -4,49 +4,12 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-
-/// Convert excel serial date (days since 1899-12-30) to DateTime
-DateTime _excelSerialToDate(num serial) {
-  final base = DateTime(1899, 12, 30);
-  return base.add(
-    Duration(
-      days: serial.floor(),
-      milliseconds: (((serial % 1) * 24 * 60 * 60 * 1000)).round(),
-    ),
-  );
-}
-
-extension DateTimeToMySQL on DateTime {
-  String toMySQLFormat() {
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(toUtc());
-  }
-}
-
-String _normalizeDateIso(dynamic value) {
-  if (value == null) {
-    return DateTime.now().toMySQLFormat();
-  }
-  if (value is DateTime) {
-    return value.toMySQLFormat();
-  }
-  if (value is num) {
-    return _excelSerialToDate(value).toMySQLFormat();
-  }
-  final text = value.toString().trim();
-  if (text.isEmpty) {
-    return DateTime.now().toMySQLFormat();
-  }
-  final parsed = DateTime.tryParse(text);
-  if (parsed != null) {
-    return parsed.toMySQLFormat();
-  }
-  return DateTime.now().toMySQLFormat();
-}
 
 Map<String, dynamic> _validateRow(
   Map<String, dynamic> json,
@@ -158,11 +121,15 @@ Future<Map<String, dynamic>> convertExcelToNhanVien(
           "phongBanId": row[6]?.value,
           "chucVu": row[7]?.value,
           "chucVuId": row[7]?.value,
-          "idCongTy":"ct001",
+          "idCongTy": "ct001",
           "nguoiTao": AccountHelper.instance.getUserInfo()!.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()!.tenDangNhap,
-          "ngayTao": _normalizeDateIso(row[8]?.value ?? DateTime.now()),
-          "ngayCapNhat": _normalizeDateIso(row[9]?.value ?? DateTime.now()),
+          "ngayTao": AppUtility.formatFromISOString(
+            row[8]?.value?.toString() ?? DateTime.now().toIso8601String(),
+          ),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            row[9]?.value?.toString() ?? DateTime.now().toIso8601String(),
+          ),
           'active': true,
           'kySo':
               (row[4]!.value.toString().isNotEmpty &&
@@ -211,8 +178,12 @@ Future<Map<String, dynamic>> convertExcelToNhanVien(
           "idCongTy": "ct001",
           "nguoiTao": AccountHelper.instance.getUserInfo()!.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()!.tenDangNhap,
-          "ngayTao": _normalizeDateIso(cell(row, 8) ?? DateTime.now()),
-          "ngayCapNhat": _normalizeDateIso(cell(row, 9) ?? DateTime.now()),
+          "ngayTao": AppUtility.formatFromISOString(
+            cell(row, 8) ?? DateTime.now().toIso8601String(),
+          ),
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            cell(row, 9) ?? DateTime.now().toIso8601String(),
+          ),
           "boPhan": cell(row, 6),
           "chucVu": cell(row, 7),
           'active': true,
