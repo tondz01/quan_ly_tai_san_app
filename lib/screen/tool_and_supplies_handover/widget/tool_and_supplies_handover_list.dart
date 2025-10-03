@@ -59,10 +59,7 @@ class _ToolAndSuppliesHandoverListState
 
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
-    'permission_signing',
-    'status_document',
-    'signing_status',
-    'share',
+    
     'name',
     'decision_number',
     'transfer_order',
@@ -71,6 +68,10 @@ class _ToolAndSuppliesHandoverListState
     'receiver_unit',
     'created_by',
     // 'by_step',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     'actions',
   ];
@@ -131,7 +132,7 @@ class _ToolAndSuppliesHandoverListState
       ),
       ColumnDisplayOption(
         id: 'status_document',
-        label: 'Trạng thái phiếu',
+        label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status_document'),
       ),
       ColumnDisplayOption(
@@ -186,7 +187,7 @@ class _ToolAndSuppliesHandoverListState
       // ),
       ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái phiếu',
+        label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(

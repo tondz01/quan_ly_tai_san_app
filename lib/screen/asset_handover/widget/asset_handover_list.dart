@@ -61,10 +61,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   List<AssetHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
-    'permission_signing',
-    'status_document',
-    'signing_status',
-    'share',
     'name',
     'decision_number',
     'transfer_order',
@@ -72,6 +68,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'sender_unit',
     'receiver_unit',
     'created_by',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     // 'by_step',
     'actions',
@@ -134,7 +134,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ColumnDisplayOption(
         id: 'status_document',
-        label: 'Trạng thái phiếu',
+        label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status_document'),
       ),
       ColumnDisplayOption(
@@ -238,7 +238,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         case 'status_document':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: 'Trạng thái phiếu',
+              title: 'Trạng thái bàn giao',
               cellBuilder:
                   (item) =>
                       AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),

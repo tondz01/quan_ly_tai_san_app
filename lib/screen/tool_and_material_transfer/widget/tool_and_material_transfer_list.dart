@@ -65,10 +65,6 @@ class _ToolAndMaterialTransferListState
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'permission_signing',
-    'status_document',
-    'signing_status',
-    'share',
     'type',
     'effective_date',
     'approver',
@@ -78,6 +74,10 @@ class _ToolAndMaterialTransferListState
     'to_date',
     'don_vi_giao',
     'don_vi_nhan',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     'actions',
   ];
@@ -142,7 +142,7 @@ class _ToolAndMaterialTransferListState
       ),
       ColumnDisplayOption(
         id: 'status_document',
-        label: 'Trạng thái phiếu',
+        label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status_document'),
       ),
       ColumnDisplayOption(
@@ -246,7 +246,7 @@ class _ToolAndMaterialTransferListState
         case 'status_document':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Trạng thái phiếu',
+              title: 'Trạng thái bàn giao',
               cellBuilder:
                   (item) =>
                       AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
@@ -326,7 +326,7 @@ class _ToolAndMaterialTransferListState
               title: 'Ngày có hiệu lực',
               width: 100,
               getValue: (item) => item.tggnTuNgay ?? '',
-             filterable: true,
+              filterable: true,
             ),
           );
           break;

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/capital_source_by_asset_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
 class AssetManagementDto {
@@ -106,6 +107,7 @@ class AssetManagementDto {
   List<ChildAssetDto>? childAssets;
   bool? isTaiSanCon;
   String? idLoaiTaiSanCon;
+  List<CapitalSourceByAssetDto>? nguonKinhPhiList;
 
   AssetManagementDto({
     this.id,
@@ -152,6 +154,7 @@ class AssetManagementDto {
     this.childAssets,
     this.isTaiSanCon,
     this.idLoaiTaiSanCon,
+    this.nguonKinhPhiList,
   });
 
   factory AssetManagementDto.fromJson(Map<String, dynamic> json) {
@@ -189,7 +192,11 @@ class AssetManagementDto {
       congSuat: json['congSuat'],
       nuocSanXuat: json['nuocSanXuat'],
       namSanXuat: json['namSanXuat'],
-      lyDoTang: json['lyDoTang'],
+      lyDoTang: json['lyDoTang'] == null
+        ? null
+        : (json['lyDoTang'] is int
+            ? json['lyDoTang'] as int
+            : int.tryParse(json['lyDoTang'].toString())),
       hienTrang: json['hienTrang'] == null
         ? null
         : (json['hienTrang'] is int
@@ -222,6 +229,13 @@ class AssetManagementDto {
               : [],
       isTaiSanCon: json['isTaiSanCon'],
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'],
+      nguonKinhPhiList: json['nguonKinhPhiList'] != null
+          ? (json['nguonKinhPhiList'] as List<dynamic>)
+              .map<CapitalSourceByAssetDto>(
+                (item) => CapitalSourceByAssetDto.fromJson(item as Map<String, dynamic>),
+              )
+              .toList()
+          : [],
     );
   }
 
@@ -271,6 +285,7 @@ class AssetManagementDto {
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
       'isTaiSanCon': isTaiSanCon,
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
+      'nguonKinhPhiList': nguonKinhPhiList?.map((item) => item.toJson()).toList(),
     };
   }
 
@@ -342,6 +357,7 @@ class AssetManagementDto {
       childAssets: [],
       isTaiSanCon: false,
       idLoaiTaiSanCon: '',
+      nguonKinhPhiList: [],
     );
   }
 
@@ -395,6 +411,7 @@ class AssetManagementDto {
     List<ChildAssetDto>? childAssets,
     bool? isTaiSanCon,
     String? idLoaiTaiSanCon,
+    List<CapitalSourceByAssetDto>? nguonKinhPhiList,
   }) {
     return AssetManagementDto(
       id: id ?? this.id,
@@ -441,6 +458,7 @@ class AssetManagementDto {
       childAssets: childAssets ?? this.childAssets,
       isTaiSanCon: isTaiSanCon ?? this.isTaiSanCon,
       idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
+      nguonKinhPhiList: nguonKinhPhiList ?? this.nguonKinhPhiList,
     );
   }
 }

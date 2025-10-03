@@ -61,10 +61,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'permission_signing',
-    'status_document',
-    'signing_status',
-    'share',
     'type',
     'effective_date',
     'approver',
@@ -74,6 +70,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     'to_date',
     'don_vi_giao',
     'don_vi_nhan',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     'actions',
   ];
@@ -131,7 +131,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       ),
       ColumnDisplayOption(
         id: 'status_document',
-        label: 'Trạng thái phiếu',
+        label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status_document'),
       ),
       ColumnDisplayOption(
@@ -249,7 +249,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'status_document':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Trạng thái phiếu',
+              title: 'Trạng thái bàn giao',
               cellBuilder:
                   (item) =>
                       AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),

@@ -88,22 +88,22 @@ Widget buildOtherInformation(
         fieldName: 'duAn',
         validationErrors: validationErrors,
       ),
-      
-      // CMObjectMultiSelectDropdownField<NguonKinhPhi>(
-      //   labelText: 'Nguồn kinh phí',
-      //   items: listNguonKinhPhi,
-      //   itemLabel: (o) => o.tenNguonKinhPhi ?? '',
-      //   itemKey: (o) => o.id ?? '',
-      //   initialSelected: initialSelectedNguonKinhPhi,
-      //   onChanged: (list) {
-      //     onChangedNguonKinhPhi?.call(list);
-      //     initialSelectedNguonKinhPhi = list;
-      //   },
-      //   onConfirmed: (list) {
-      //     onChangedNguonKinhPhi?.call(list);
-      //     initialSelectedNguonKinhPhi = list;
-      //   },
-      // ),
+
+      CMObjectMultiSelectDropdownField<NguonKinhPhi>(
+        labelText: 'Nguồn kinh phí',
+        items: listNguonKinhPhi,
+        itemLabel: (o) => o.tenNguonKinhPhi ?? '',
+        itemKey: (o) => o.id ?? '',
+        initialSelected: initialSelectedNguonKinhPhi,
+        onChanged: (list) {
+          onChangedNguonKinhPhi?.call(list);
+          initialSelectedNguonKinhPhi = list;
+        },
+        onConfirmed: (list) {
+          onChangedNguonKinhPhi?.call(list);
+          initialSelectedNguonKinhPhi = list;
+        },
+      ),
 
       CmFormDropdownObject<NguonKinhPhi>(
         label: 'Nguồn kinh phí',
