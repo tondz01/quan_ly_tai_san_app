@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/reason_increase/reason_increase_view.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/unit_view.dart';
 
 import 'routes.dart';
@@ -259,6 +260,15 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) =>
                     NoTransitionPage(key: state.pageKey, child: UnitView()),
+          ),
+          GoRoute(
+            path: AppRoute.reasonIncrease.path,
+            name: AppRoute.reasonIncrease.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: ReasonIncreaseView(),
+                ),
           ),
         ],
       ),

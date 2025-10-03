@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_eve
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/reason_increase/bloc/reason_increase_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
@@ -51,5 +52,6 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<TypeAssetBloc>(create: (_) => TypeAssetBloc()),
     BlocProvider<TypeCcdcBloc>(create: (_) => TypeCcdcBloc()),
     BlocProvider<UnitBloc>(create: (_) => UnitBloc()),
+    BlocProvider<ReasonIncreaseBloc>(create: (_) => ReasonIncreaseBloc()),
   ];
 }

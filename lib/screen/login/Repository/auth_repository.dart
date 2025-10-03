@@ -19,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
+import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
@@ -148,6 +149,7 @@ class AuthRepository extends ApiBase {
     await _loadUserEmployee(idCongTy);
     await _loadAssetGroup(idCongTy);
     await _loadCCDCGroup(idCongTy);
+    await _loadReasonIncrease();
     await _loadChucVu(idCongTy);
     await _loadTypeAsset(idCongTy);
     await _loadTypeCcdc(idCongTy);
@@ -244,6 +246,23 @@ class AuthRepository extends ApiBase {
       }
     } catch (e) {
       log('Error calling API CCDC_GROUP: $e');
+    }
+  }
+
+  Future<void> _loadReasonIncrease() async {
+    try {
+      final response = await get(EndPointAPI.REASON_INCREASE);
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final rawReasonIncrease = response.data;
+        final reasonIncreaseList =
+            (rawReasonIncrease as List<dynamic>)
+                .map((e) => ReasonIncrease.fromJson(e as Map<String, dynamic>))
+                .toList();
+        AccountHelper.instance.setReasonIncrease(reasonIncreaseList);
+        SGLog.info('_loadData', 'loadReasonIncrease');
+      }
+    } catch (e) {
+      log('Error calling API REASON_INCREASE: $e');
     }
   }
 
