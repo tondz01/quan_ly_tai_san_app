@@ -20,333 +20,128 @@ class BienBanKiemKeCcdcPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        HeaderBankiemKeCCDC(tenDonVi: tenDonVi, denNgay: denNgay),
+        BodyBankiemKeCCDC(ccdcInventory: ccdcInventory),
+        FooterBankiemKeCCDC(),
+      ],
+    );
+  }
+}
+
+class BodyBankiemKeCCDC extends StatelessWidget {
+  const BodyBankiemKeCCDC({super.key, required this.ccdcInventory, this.startIndex = 0});
+  final List<CCDCInventoryReport> ccdcInventory;
+  final int startIndex;
+  @override
+  Widget build(BuildContext context) {
+    return Table(
+      border: TableBorder.all(),
+      columnWidths: const {
+        0: FixedColumnWidth(40),
+        1: FlexColumnWidth(3),
+        2: FlexColumnWidth(1),
+        3: FlexColumnWidth(1),
+        4: FlexColumnWidth(1),
+        5: FlexColumnWidth(1),
+        6: FlexColumnWidth(1.5),
+        7: FlexColumnWidth(1.5),
+        8: FlexColumnWidth(1.5),
+      },
+      children: [
+        TableRow(
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SGText(
-                    text:
-                        "TẬP ĐOÀN CÔNG NGHIỆP\nTHAN - KHOÁNG SẢN VIỆT NAM",
-                    style: SettingPage.textStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  SGText(
-                    text: "CÔNG TY THAN UÔNG BÍ - TKV",
-                    style: SettingPage.textStyle.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+            ContractPage.tableHeader(
+              "STT",
+              SettingPage.scale,
+              SettingPage.textStyle,
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SGText(
-                    text: "Mẫu số 01a-TS",
-                    style: SettingPage.textStyle.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SGText(
-                    text: "Ban hành kèm theo QĐ số           /QĐ-TUB",
-                    style: SettingPage.textStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  SGText(
-                    text: "ngày    /   /       của Giám đốc Công ty",
-                    style: SettingPage.textStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+            ContractPage.tableHeader(
+              "Tên tài sản, công cụ dụng cụ ( ký mã hiệu )",
+              SettingPage.scale,
+              SettingPage.textStyle,
+            ),
+            ContractPage.tableHeader(
+              "Đơn vị tính",
+              SettingPage.scale,
+              SettingPage.textStyle,
+            ),
+            ContractPage.tableHeader(
+              "Nước sản xuất",
+              SettingPage.scale,
+              SettingPage.textStyle,
+            ),
+            ContractPage.tableHeader(
+              "Phương thức kiểm kê",
+              SettingPage.scale,
+              SettingPage.textStyle,
+            ),
+            ContractPage.tableHeader(
+              "Số lượng kiểm kê thực tế",
+              SettingPage.scale,
+              SettingPage.textStyle,
+            ),
+            ContractPage.tableHeader(
+              "Ghi chú",
+              SettingPage.scale,
+              SettingPage.textStyle,
             ),
           ],
         ),
-        SGText(text: "", style: SettingPage.textStyle),
-        SGText(text: "", style: SettingPage.textStyle),
-        Center(
-          child: SGText(
-            text: "BIÊN BẢN KIỂM KÊ TSCĐ, CCDC TẠI HIỆN TRƯỜNG",
-            style: SettingPage.textStyle.copyWith(
-              fontWeight: FontWeight.bold,
-              fontSize: 14 * SettingPage.scale,
-            ),
-          ),
-        ),
-        Center(
-          child: SGText(
-            text: "Đơn vị: $tenDonVi",
-            style: SettingPage.textStyle.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        SGText(text: "", style: SettingPage.textStyle),
-        Center(
-          child: SGText(
-            text:
-                "Hôm nay, ngày .... tháng .... năm ....... tại .......... Thành phần kiểm kê chúng tôi gồm:",
-            style: SettingPage.textStyle,
-          ),
-        ),
-        SGText(text: "", style: SettingPage.textStyle),
-        SGText(
-          text: "   A. THÀNH PHẦN",
-          style: SettingPage.textStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SGText(
-          text: "   I. Tiểu ban kiểm kê",
-          style: SettingPage.textStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SGText(
-                    text:
-                        "   1. Ông (bà):................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "   2. Ông (bà):................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "   3. Ông (bà):................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+
+        // Dữ liệu chi tiết chưa được cung cấp trong AssetHandoverDto
+        for (int i = 0; i < (ccdcInventory.length); i++)
+          TableRow(
+            children: [
+              ContractPage.tableCell(
+                (startIndex + i + 1).toString(),
+                SettingPage.scale,
+                SettingPage.textStyle,
               ),
-            ),
-            SizedBox(width: 12 * SettingPage.scale),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SGText(
-                    text:
-                        "Chức vụ:................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "Chức vụ:................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "Chức vụ:................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+              ContractPage.tableCell(
+                ccdcInventory[i].tenTaiSan ?? '',
+                SettingPage.scale,
+                SettingPage.textStyle,
               ),
-            ),
-          ],
-        ),
-        SGText(
-          text: "   II. Đơn vị được kiểm kê",
-          style: SettingPage.textStyle.copyWith(
-            fontWeight: FontWeight.bold,
+              ContractPage.tableCell(
+                ccdcInventory[i].donViTinh ?? '',
+                SettingPage.scale,
+                SettingPage.textStyle,
+              ),
+              ContractPage.tableCell(
+                ccdcInventory[i].nuocSanXuat ?? '',
+                SettingPage.scale,
+                SettingPage.textStyle,
+              ),
+              ContractPage.tableCell(
+                "",
+                SettingPage.scale,
+                SettingPage.textStyle,
+              ),
+              ContractPage.tableCell(
+                "",
+                SettingPage.scale,
+                SettingPage.textStyle,
+              ),
+              ContractPage.tableCell(
+                ccdcInventory[i].ghiChu ?? '',
+                SettingPage.scale,
+                SettingPage.textStyle,
+              ),
+            ],
           ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SGText(
-                    text:
-                        "   1. Ông (bà): ................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "   2. Ông (bà): ................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "   3. Ông (bà): ................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(width: 12 * SettingPage.scale),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SGText(
-                    text:
-                        "Chức vụ: ................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "Chức vụ: ................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SGText(
-                    text:
-                        "Chức vụ: ................................................................................................",
-                    style: SettingPage.textStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        SGText(
-          text: "   B. NỘI DUNG",
-          style: SettingPage.textStyle.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SGText(
-          text:
-              "      Tiến hành kiểm kê TSCĐ, CCDC hiện có tại đơn vị đến ngày $denNgay cụ thể như sau:",
-          style: SettingPage.textStyle,
-        ),
-        SGText(text: "", style: SettingPage.textStyle),
-    
-        Table(
-          border: TableBorder.all(),
-          columnWidths: const {
-            0: FixedColumnWidth(40),
-            1: FlexColumnWidth(3),
-            2: FlexColumnWidth(1),
-            3: FlexColumnWidth(1),
-            4: FlexColumnWidth(1),
-            5: FlexColumnWidth(1),
-            6: FlexColumnWidth(1.5),
-            7: FlexColumnWidth(1.5),
-            8: FlexColumnWidth(1.5),
-          },
-          children: [
-            TableRow(
-              children: [
-                ContractPage.tableHeader(
-                  "STT",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
-                  "Tên tài sản, công cụ dụng cụ ( ký mã hiệu )",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
-                  "Đơn vị tính",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
-                  "Nước sản xuất",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
-                  "Phương thức kiểm kê",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
-                  "Số lượng kiểm kê thực tế",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                ContractPage.tableHeader(
-                  "Ghi chú",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-              ],
-            ),
-    
-            // Dữ liệu chi tiết chưa được cung cấp trong AssetHandoverDto
-            for (int i = 0; i < (ccdcInventory.length); i++)
-              TableRow(
-                children: [
-                  ContractPage.tableCell(
-                    (i + 1).toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    ccdcInventory[i].tenTaiSan ?? '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    ccdcInventory[i].donViTinh ?? '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    ccdcInventory[i].nuocSanXuat ?? '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    "",
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    "",
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  ContractPage.tableCell(
-                    ccdcInventory[i].ghiChu ?? '',
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                ],
-              ),
-          ],
-        ),
+      ],
+    );
+  }
+}
+
+class FooterBankiemKeCCDC extends StatelessWidget {
+  const FooterBankiemKeCCDC({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         SGText(
           text:
               "      Biên bản được lập xong hồi ....... giờ cùng ngày, các thành viên thống nhất thông qua.",
@@ -431,6 +226,244 @@ class BienBanKiemKeCcdcPage extends StatelessWidget {
             ),
           ],
         ),
+      ],
+    );
+  }
+}
+
+class HeaderBankiemKeCCDC extends StatelessWidget {
+  const HeaderBankiemKeCCDC({
+    super.key,
+    required this.tenDonVi,
+    required this.denNgay,
+  });
+
+  final String tenDonVi;
+  final String denNgay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SGText(
+                    text: "TẬP ĐOÀN CÔNG NGHIỆP\nTHAN - KHOÁNG SẢN VIỆT NAM",
+                    style: SettingPage.textStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  SGText(
+                    text: "CÔNG TY THAN UÔNG BÍ - TKV",
+                    style: SettingPage.textStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SGText(
+                    text: "Mẫu số 01a-TS",
+                    style: SettingPage.textStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SGText(
+                    text: "Ban hành kèm theo QĐ số           /QĐ-TUB",
+                    style: SettingPage.textStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                  SGText(
+                    text: "ngày    /   /       của Giám đốc Công ty",
+                    style: SettingPage.textStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SGText(text: "", style: SettingPage.textStyle),
+        SGText(text: "", style: SettingPage.textStyle),
+        Center(
+          child: SGText(
+            text: "BIÊN BẢN KIỂM KÊ TSCĐ, CCDC TẠI HIỆN TRƯỜNG",
+            style: SettingPage.textStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 14 * SettingPage.scale,
+            ),
+          ),
+        ),
+        Center(
+          child: SGText(
+            text: "Đơn vị: $tenDonVi",
+            style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        SGText(text: "", style: SettingPage.textStyle),
+        Center(
+          child: SGText(
+            text:
+                "Hôm nay, ngày .... tháng .... năm ....... tại .......... Thành phần kiểm kê chúng tôi gồm:",
+            style: SettingPage.textStyle,
+          ),
+        ),
+        SGText(text: "", style: SettingPage.textStyle),
+        SGText(
+          text: "   A. THÀNH PHẦN",
+          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        SGText(
+          text: "   I. Tiểu ban kiểm kê",
+          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SGText(
+                    text:
+                        "   1. Ông (bà):................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "   2. Ông (bà):................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "   3. Ông (bà):................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12 * SettingPage.scale),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SGText(
+                    text:
+                        "Chức vụ:................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "Chức vụ:................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "Chức vụ:................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SGText(
+          text: "   II. Đơn vị được kiểm kê",
+          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SGText(
+                    text:
+                        "   1. Ông (bà): ................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "   2. Ông (bà): ................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "   3. Ông (bà): ................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 12 * SettingPage.scale),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SGText(
+                    text:
+                        "Chức vụ: ................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "Chức vụ: ................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SGText(
+                    text:
+                        "Chức vụ: ................................................................................................",
+                    style: SettingPage.textStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SGText(
+          text: "   B. NỘI DUNG",
+          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        SGText(
+          text:
+              "      Tiến hành kiểm kê TSCĐ, CCDC hiện có tại đơn vị đến ngày $denNgay cụ thể như sau:",
+          style: SettingPage.textStyle,
+        ),
+        SGText(text: "", style: SettingPage.textStyle),
       ],
     );
   }
