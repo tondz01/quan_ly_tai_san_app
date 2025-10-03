@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dar
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_bloc.dart';
@@ -143,6 +144,8 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              sectionTitle(Icons.info_outline, 'Thông tin loại CCDC'),
+              const SizedBox(height: 16),
               CommonFormInput(
                 label: 'Mã loại CCDC',
                 controller: controllerId,
@@ -151,6 +154,7 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
                 width: double.infinity,
                 validationErrors: validationErrors,
                 fieldName: 'id',
+                isRequired: true,
               ),
               CmFormDropdownObject<CcdcGroup>(
                 label: 'Mã loại CCDC cha',
@@ -169,6 +173,7 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
                 },
                 fieldName: 'idLoaiCCDC',
                 validationErrors: validationErrors,
+                isRequired: true,
               ),
               CommonFormInput(
                 label: 'Tên loại CCDC',
@@ -178,6 +183,7 @@ class _TypeCcdcDetailState extends State<TypeCcdcDetail> {
                 width: double.infinity,
                 validationErrors: validationErrors,
                 fieldName: 'tenLoai',
+                isRequired: true,
               ),
             ],
           ),

@@ -1,19 +1,16 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/convert_excel_to_department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
@@ -35,7 +32,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   late int totalPages = 0;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage = 10;
+  int rowsPerPage = DepartmentConstants.defaultRowsPerPage;
   int currentPage = 1;
 
   final ScrollController horizontalController = ScrollController();
@@ -58,9 +55,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DepartmentBloc>().add(const LoadDepartments());
-    });
+    // Removed duplicate LoadDepartments call
   }
 
   @override
@@ -80,7 +75,10 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   void _updatePagination() {
     // Sử dụng _filteredData thay vì _data
     totalEntries = filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
+      1,
+      DepartmentConstants.maxPaginationPages,
+    );
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
@@ -103,19 +101,15 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
       final result = await DepartmentsProvider().saveDepartmentBatch(
         departments,
       );
-      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-          result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      if (checkStatusCodeDone(result)) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Import dữ liệu thành công'),
-              backgroundColor: Colors.green.shade600,
-            ),
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu thành công ${departments.length} nhân viên',
           );
-          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
           searchController.clear();
           currentPage = 1;
-          rowsPerPage = 10;
+          rowsPerPage = DepartmentConstants.defaultRowsPerPage;
           filteredData = [];
           dataPage = [];
           context.read<DepartmentBloc>().add(const LoadDepartments());
@@ -125,10 +119,9 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
         }
       } else {
         if (context.mounted) {
-          
           AppUtility.showSnackBar(
             context,
-            'Import dữ liệu thất bại',
+            'Import dữ liệu thất bại ${result['message']}',
             isError: true,
           );
         }
@@ -192,111 +185,223 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DepartmentBloc, DepartmentState>(
-      builder: (context, state) {
-        if (state is DepartmentLoaded) {
-          List<PhongBan> departments = state.departments;
-          data = departments;
-          AccountHelper.instance.clearDepartment();
-          AccountHelper.instance.setDepartment(departments);
-          filteredData = data;
-          _updatePagination();
-
-          return Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: HeaderComponent(
-                controller: searchController,
-                onSearchChanged: (value) {
-                  setState(() {
-                    _searchDepartment(value);
-                  });
-                },
-                onNew: () {
-                  setState(() {
-                    _showForm(null);
-                    isShowInput = true;
-                  });
-                },
-                mainScreen: 'Quản lý phòng ban',
-                onFileSelected: (fileName, filePath, fileBytes) async {
-                  List<PhongBan> nv = await convertExcelToPhongBan(filePath!);
-                  log('nv: ${jsonEncode(nv)}');
-                  _importData(nv);
-                },
-                onExportData: () {
-                  AppUtility.exportData(
-                    context,
-                    "phong_ban",
-                    departments.map((e) => e.toExportJson()).toList(),
-                  );
-                },
-              ),
-            ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: CommonPageView(
-                      title: 'Chi tiết phòng ban',
-                      childInput: DepartmentFormPage(
-                        department: editingDepartment,
-                        onCancel: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                        onSaved: () {
-                          setState(() {
-                            isShowInput = false;
-                          });
-                        },
-                      ),
-                      childTableView: DepartmentList(
-                        data: dataPage,
-                        onChangeDetail: (item) {
-                          _showForm(item);
-                        },
-                        onDelete: (item) {
-                          _showDeleteDialog(context, item);
-                        },
-                        onEdit: (item) {
-                          _showForm(item);
-                        },
-                      ),
-
-                      isShowInput: isShowInput,
-                      onExpandedChanged: (isExpanded) {
-                        isShowInput = isExpanded;
-                      },
-                    ),
-                  ),
-                ),
-                Visibility(
-                  visible: (departments.length) >= 5,
-                  child: SGPaginationControls(
-                    totalPages: totalPages,
-                    currentPage: currentPage,
-                    rowsPerPage: rowsPerPage,
-                    controllerDropdownPage: controller,
-                    items: [
-                      DropdownMenuItem(value: 10, child: Text('10')),
-                      DropdownMenuItem(value: 20, child: Text('20')),
-                      DropdownMenuItem(value: 50, child: Text('50')),
-                    ],
-                    onPageChanged: onPageChanged,
-                    onRowsPerPageChanged: onRowsPerPageChanged,
-                  ),
-                ),
-              ],
+    return BlocListener<DepartmentBloc, DepartmentState>(
+      listener: (context, state) {
+        isShowInput = false;
+        if (state is AddDepartmentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
-        } else if (state is DepartmentError) {
-          return Center(child: Text(state.message));
         }
-        return const Center(child: CircularProgressIndicator());
+        if (state is UpdateDepartmentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteDepartmentSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DepartmentError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteDepartmentBatchSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa phòng ban thành công'),
+              backgroundColor: Colors.green.shade600,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        } else if (state is DeleteDepartmentBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa phòng ban thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? DepartmentConstants.webSnackBarDuration
+                      : DepartmentConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
       },
+      child: BlocBuilder<DepartmentBloc, DepartmentState>(
+        builder: (context, state) {
+          if (state is DepartmentLoaded) {
+            List<PhongBan> departments = state.departments;
+            data = departments;
+            AccountHelper.instance.clearDepartment();
+            AccountHelper.instance.setDepartment(departments);
+            filteredData = data;
+            _updatePagination();
+
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: HeaderComponent(
+                  controller: searchController,
+                  onSearchChanged: (value) {
+                    setState(() {
+                      _searchDepartment(value);
+                    });
+                  },
+                  onNew: () {
+                    setState(() {
+                      _showForm(null);
+                      isShowInput = true;
+                    });
+                  },
+                  mainScreen: 'Quản lý phòng ban',
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    final result = await convertExcelToPhongBan(
+                      filePath!,
+                      fileBytes: fileBytes,
+                      phongBans: departments,
+                    );
+
+                    if (result['success']) {
+                      List<PhongBan> phongBans = result['data'];
+                      _importData(phongBans);
+                    } else {
+                      List<dynamic> errors = result['errors'];
+
+                      // Tạo danh sách lỗi dạng list
+                      List<String> errorMessages = [];
+                      for (var error in errors) {
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
+                        );
+                        String errorText =
+                            'Dòng $rowNumber: ${rowErrors.join(', ')}';
+                        errorMessages.add(errorText);
+                      }
+
+                      if (!mounted) return;
+                      // Hiển thị thông báo tổng quan
+                      AppUtility.showSnackBar(
+                        context,
+                        'Import dữ liệu thất bại: \n $errorMessages',
+                        isError: true,
+                        timeDuration: 4,
+                      );
+                    }
+                  },
+                  onExportData: () {
+                    AppUtility.exportData(
+                      context,
+                      "phong_ban",
+                      departments.map((e) => e.toExportJson()).toList(),
+                    );
+                  },
+                ),
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        title: 'Chi tiết phòng ban',
+                        childInput: DepartmentFormPage(
+                          department: editingDepartment,
+                          onCancel: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                          onSaved: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                        ),
+                        childTableView: DepartmentList(
+                          data: dataPage,
+                          onChangeDetail: (item) {
+                            _showForm(item);
+                          },
+                          onDelete: (item) {
+                            _showDeleteDialog(context, item);
+                          },
+                          onEdit: (item) {
+                            _showForm(item);
+                          },
+                        ),
+
+                        isShowInput: isShowInput,
+                        onExpandedChanged: (isExpanded) {
+                          isShowInput = isExpanded;
+                        },
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible:
+                        departments.length >=
+                        DepartmentConstants.minPaginationThreshold,
+                    child: SGPaginationControls(
+                      totalPages: totalPages,
+                      currentPage: currentPage,
+                      rowsPerPage: rowsPerPage,
+                      controllerDropdownPage: controller,
+                      items:
+                          (DepartmentConstants.mobilePaginationOptions)
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(value.toString()),
+                                ),
+                              )
+                              .toList(),
+                      onPageChanged: onPageChanged,
+                      onRowsPerPageChanged: onRowsPerPageChanged,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is DepartmentError) {
+            return Center(child: Text(state.message));
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
   }
 }

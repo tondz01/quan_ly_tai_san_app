@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:quan_ly_tai_san_app/common/components/commom_loading.dart';
+import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/config_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
-import 'package:quan_ly_tai_san_app/screen/home/component/config_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/component/popup_setting_expiration_time.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/menu_prefs.dart';
@@ -88,6 +92,16 @@ class _HomeState extends State<Home> {
   void dispose() {
     // Hủy đăng ký khi widget bị hủy
     _popupManager.removeGlobalListener(_onPopupStateChanged);
+
+    // Reset về trạng thái ban đầu
+    _selectedIndex = 0;
+    _selectedSubIndex = 0;
+    _isPopupOpen = false;
+    isItemOne = false;
+
+    // Xóa trạng thái đã lưu
+    MenuPrefs.clearSelection();
+
     super.dispose();
   }
 
@@ -107,7 +121,6 @@ class _HomeState extends State<Home> {
         label: item.label,
         icon: item.icon,
         child: item.child,
-
         isActive: _selectedIndex == item.index,
         popupWidth: calculatePopupWidth(item),
         popupBorderRadius: 4.0,
@@ -169,7 +182,11 @@ class _HomeState extends State<Home> {
                 subItem.callback?.call(context);
                 if (subItem.route.isNotEmpty) {
                   isItemOne = false;
-                  context.go(subItem.route, extra: subItem.extra);
+                  if (subItem.extra?.isNotEmpty ?? false) {
+                    context.go('${subItem.route}?type=${subItem.extra}');
+                  } else {
+                    context.go(subItem.route);
+                  }
                 }
               }),
         );
@@ -212,7 +229,12 @@ class _HomeState extends State<Home> {
                   _popupManager.closeAllPopups();
                   if (item.route.isNotEmpty) {
                     isItemOne = false;
-                    context.go(item.route, extra: item.extra);
+                    if (item.route == AppRoute.toolAndMaterialTransfer.path &&
+                        (item.extra?.isNotEmpty ?? false)) {
+                      context.go('${item.route}?type=${item.extra}');
+                    } else {
+                      context.go(item.route, extra: item.extra);
+                    }
                   }
                 }),
           );
@@ -327,7 +349,10 @@ class _HomeState extends State<Home> {
                 ),
                 PopupMenuItem(
                   value: 'settings',
-                  child: _buildAvatarMenuOption('Thiết lập thời gian hết hạn', Icons.settings),
+                  child: _buildAvatarMenuOption(
+                    'Thiết lập thời gian hết hạn',
+                    Icons.settings,
+                  ),
                 ),
                 PopupMenuItem(
                   value: 'logout',
@@ -343,28 +368,7 @@ class _HomeState extends State<Home> {
                 break;
               case 'settings':
                 // Navigate to settings page
-
-                showPopupSettingExpirationTime(
-                  context: context,
-                  title: "Thiết lập thời gian hết hạn",
-                  description:
-                      "Nhập số ngày để thiết lập thời gian hết hạn cho các biên bản",
-                  initialValue:
-                      AccountHelper.instance.getConfigTimeExpire() ?? 0,
-                  minValue: 1,
-                  // maxValue: 365,
-                  step: 1,
-                  onConfirm: (value) async {
-                    int? currentValue =
-                        AccountHelper.instance.getConfigTimeExpire();
-                    if (currentValue == null) {
-                      fetchConfigTimeExpire(context, value);
-                      return;
-                    } else if (currentValue != value) {
-                      updateConfigTimeExpire(context, value);
-                    }
-                  },
-                );
+                showConfigExpirationTime(userInfo);
                 break;
               case 'logout':
                 // Handle logout
@@ -373,34 +377,6 @@ class _HomeState extends State<Home> {
             }
           },
         ),
-        // User avatar
-        // Tooltip(
-        //   message:
-        //       'Tên: ${userInfo.hoTen}\nTên đăng nhập: ${userInfo.tenDangNhap}',
-        //   child: CircleAvatar(
-        //     radius: 20,
-        //     backgroundColor: ColorValue.primaryLightBlue,
-        //     child: CircleAvatar(
-        //       radius: 18,
-        //       backgroundImage: AssetImage(AppImage.imageUser),
-        //       backgroundColor: Colors.white,
-        //     ),
-        //   ),
-        // ),
-        // const SizedBox(width: 16),
-        // Tooltip(
-        //   message: 'Đăng xuất',
-        //   child: IconButton(
-        //     onPressed: () {
-        //       context.read<LoginProvider>().logout(context);
-        //     },
-        //     icon: const Icon(
-        //       Icons.logout_outlined,
-        //       size: 24,
-        //       color: ColorValue.background,
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }
@@ -445,5 +421,61 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
+  }
+
+  // 🔥 Logic: show popup setting expiration time
+  void showConfigExpirationTime(UserInfoDTO userInfo) {
+    ConfigDto? config = AccountHelper.instance.getConfigTimeExpire();
+    if (config == null) {
+      ConfigReponsitory().getConfigTimeExpire();
+    }
+    showPopupSettingExpirationTime(
+      context: context,
+      title: "Thiết lập thời gian hết hạn",
+      description:
+          "Nhập số ngày để thiết lập thời gian hết hạn cho các biên bản",
+      initialValue: config?.thoiHanTaiLieu ?? 0,
+      initialValueNotifiDealing: config?.ngayBaoHetHan ?? 0,
+      minValue: 1,
+      // maxValue: 365,
+      step: 1,
+      onConfirm: (value, valueNotifiDealing) async {
+        if (config?.thoiHanTaiLieu != value ||
+            config?.ngayBaoHetHan != valueNotifiDealing) {
+          Map<String, dynamic> body = {
+            'idAccount': userInfo.id,
+            'thoiHanTaiLieu': value,
+            'ngayBaoHetHan': valueNotifiDealing,
+          };
+          await showLoadingPopup(context);
+          // ignore: use_build_context_synchronously
+          fetchConfigTimeExpire(context, body);
+        }
+      },
+    );
+  }
+
+  // 🔥 Logic: fetch config time expire
+  void fetchConfigTimeExpire(
+    BuildContext context,
+    Map<String, dynamic> value,
+  ) async {
+    final result = await ConfigReponsitory().setConfigTimeExpire(value);
+    SGLog.debug("Home", "result: $result");
+    if (!context.mounted) return;
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
+        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+      hideLoadingPopup(context);
+      AppUtility.showSnackBar(
+        context,
+        "Thiết lập thời gian hết hạn thành công",
+      );
+    } else {
+      hideLoadingPopup(context);
+      AppUtility.showSnackBar(
+        context,
+        "Thiết lập thời gian hết hạn thất bại: ${result['message']}",
+      );
+    }
   }
 }

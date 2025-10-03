@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/upload_file_signature.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -38,6 +39,7 @@ class StaffSaveService {
     required String? fileNameChuKyThuong,
     required Uint8List? chuKyNhayData,
     required Uint8List? chuKyThuongData,
+    required bool savePin,
   }) async {
     final userInfoDTO = AccountHelper.instance.getUserInfo();
 
@@ -45,9 +47,11 @@ class StaffSaveService {
     bool b(bool? v) => v ?? false;
 
     // Chỉ xem là "chọn file mới" nếu path khác path chữ ký cũ
-    final bool isNewNhaySelected = selectedFileChuKyNhay != null &&
+    final bool isNewNhaySelected =
+        selectedFileChuKyNhay != null &&
         s(selectedFileChuKyNhay.path) != s(existingStaff?.chuKyNhay);
-    final bool isNewThuongSelected = selectedFileChuKyThuong != null &&
+    final bool isNewThuongSelected =
+        selectedFileChuKyThuong != null &&
         s(selectedFileChuKyThuong.path) != s(existingStaff?.chuKyThuong);
 
     bool hasStaffChanged(NhanVien oldV, NhanVien newV) {
@@ -67,7 +71,8 @@ class StaffSaveService {
           b(oldV.active) != b(newV.active) ||
           b(oldV.kyNhay) != b(newV.kyNhay) ||
           b(oldV.kyThuong) != b(newV.kyThuong) ||
-          b(oldV.kySo) != b(newV.kySo);
+          b(oldV.kySo) != b(newV.kySo) ||
+          b(oldV.savePin) != b(newV.savePin);
     }
 
     bool hasUploadChanged(NhanVien? oldV, NhanVien newV) {
@@ -111,6 +116,7 @@ class StaffSaveService {
           kyNhay: kyNhay,
           kyThuong: kyThuong,
           kySo: kySo,
+          savePin: savePin,
         );
       }
       return NhanVien(
@@ -132,11 +138,13 @@ class StaffSaveService {
         kyNhay: kyNhay,
         kyThuong: kyThuong,
         kySo: kySo,
+        savePin: savePin,
       );
     }
 
     Future<NhanVien?> uploadNhayIfNeeded(NhanVien staff) async {
-      final bool shouldUpload = existingStaff == null ? kyNhay : (kyNhay && isNewNhaySelected);
+      final bool shouldUpload =
+          existingStaff == null ? kyNhay : (kyNhay && isNewNhaySelected);
       if (!shouldUpload) return staff;
       final Map<String, dynamic>? result = await uploadFileSignature(
         context,
@@ -145,14 +153,20 @@ class StaffSaveService {
         chuKyNhayData ?? Uint8List(0),
       );
       if (result == null) {
-        AppUtility.showSnackBar(context, 'Upload file chữ ký nháy thất bại', isError: true);
+        if (!context.mounted) return null;
+        AppUtility.showSnackBar(
+          context,
+          StaffConstants.errorUploadSignature,
+          isError: true,
+        );
         return null;
       }
       return staff.copyWith(chuKyNhay: result['fileName']);
     }
 
     Future<NhanVien?> uploadThuongIfNeeded(NhanVien staff) async {
-      final bool shouldUpload = existingStaff == null ? kyThuong : (kyThuong && isNewThuongSelected);
+      final bool shouldUpload =
+          existingStaff == null ? kyThuong : (kyThuong && isNewThuongSelected);
       if (!shouldUpload) return staff;
       final Map<String, dynamic>? result = await uploadFileSignature(
         context,
@@ -161,7 +175,12 @@ class StaffSaveService {
         chuKyThuongData ?? Uint8List(0),
       );
       if (result == null) {
-        AppUtility.showSnackBar(context, 'Upload file chữ ký thường thất bại', isError: true);
+        if (!context.mounted) return null;
+        AppUtility.showSnackBar(
+          context,
+          StaffConstants.errorUploadSignature,
+          isError: true,
+        );
         return null;
       }
       return staff.copyWith(chuKyThuong: result['fileName']);
@@ -171,7 +190,11 @@ class StaffSaveService {
 
     if (existingStaff == null) {
       if (kySo && (staff.pin?.isEmpty ?? true)) {
-        AppUtility.showSnackBar(context, 'Vui lòng nhập mã PIN để lấy Agreement UUID', isError: true);
+        AppUtility.showSnackBar(
+          context,
+          StaffConstants.errorPinRequired,
+          isError: true,
+        );
       }
 
       NhanVien? candidate = staff;
@@ -179,19 +202,24 @@ class StaffSaveService {
       if (candidate == null) return false;
       candidate = await uploadThuongIfNeeded(candidate);
       if (candidate == null) return false;
-
+      if (!context.mounted) return false;
       context.read<StaffBloc>().add(AddStaff(candidate));
       return true;
     } else {
       // Chỉ update khi có thay đổi dữ liệu hoặc có thay đổi liên quan đến upload chữ ký
       final bool uploadChanged = hasUploadChanged(existingStaff, staff);
-      final bool changed = hasStaffChanged(existingStaff, staff) || uploadChanged;
+      final bool changed =
+          hasStaffChanged(existingStaff, staff) || uploadChanged;
       if (!changed) {
         return true; // Không có thay đổi, bỏ qua update
       }
 
       if (kySo && (staff.pin?.isEmpty ?? true)) {
-        AppUtility.showSnackBar(context, 'Vui lòng nhập mã PIN để lấy Agreement UUID', isError: true);
+        AppUtility.showSnackBar(
+          context,
+          StaffConstants.errorPinRequired,
+          isError: true,
+        );
       }
 
       NhanVien? candidate = staff;
@@ -199,12 +227,22 @@ class StaffSaveService {
       if (uploadChanged) {
         // Nếu bật ký nháy nhưng chưa có file cũ và cũng không chọn file mới -> báo lỗi
         if (kyNhay && (s(candidate.chuKyNhay).isEmpty) && !isNewNhaySelected) {
-          AppUtility.showSnackBar(context, 'Vui lòng chọn file chữ ký nháy', isError: true);
+          AppUtility.showSnackBar(
+            context,
+            StaffConstants.errorSelectSignatureFile,
+            isError: true,
+          );
           return false;
         }
         // Nếu bật ký thường nhưng chưa có file cũ và cũng không chọn file mới -> báo lỗi
-        if (kyThuong && (s(candidate.chuKyThuong).isEmpty) && !isNewThuongSelected) {
-          AppUtility.showSnackBar(context, 'Vui lòng chọn file chữ ký thường', isError: true);
+        if (kyThuong &&
+            (s(candidate.chuKyThuong).isEmpty) &&
+            !isNewThuongSelected) {
+          AppUtility.showSnackBar(
+            context,
+            StaffConstants.errorSelectSignatureFile,
+            isError: true,
+          );
           return false;
         }
 
@@ -214,6 +252,7 @@ class StaffSaveService {
         if (candidate == null) return false;
       }
 
+      if (!context.mounted) return false;
       context.read<StaffBloc>().add(UpdateStaff(candidate));
       return true;
     }

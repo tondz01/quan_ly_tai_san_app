@@ -1,7 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart' show PdfDocument, PdfPageView;
@@ -33,7 +31,6 @@ Widget previewDocumentCcdcHandover({
 }) {
   return InkWell(
     onTap: () {
-      log('item: $item');
       if (dieuDongCcdc == null) return;
       prevDocumentCcdcHandover(
         context: context,
@@ -91,7 +88,7 @@ prevDocumentCcdcHandover({
   String getChucVu(String idUser) {
     NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idUser);
     final chucVu = AccountHelper.instance.getChucVuById(
-      nhanVien?.chucVuId ?? '',
+      nhanVien?.chucVuId ?? nhanVien?.chucVu ?? '',
     );
     return chucVu?.tenChucVu ?? '';
   }
@@ -169,10 +166,12 @@ prevDocumentCcdcHandover({
                 ),
               ),
             ],
+            
             signatureList: [urlChuKyNhay, urlChuKyThuong],
-            idTaiLieu: item.id.toString(),
+            idTaiLieu: dieuDongCcdc.id.toString(),
             idNguoiKy: userInfo.tenDangNhap,
             tenNguoiKy: userInfo.hoTen,
+            nhanVien: nhanVien,
             pin: int.tryParse(nhanVien.pin ?? '') ?? 0,
             isSavePin: nhanVien.savePin ?? false,
             isShowKy: isShowKy,

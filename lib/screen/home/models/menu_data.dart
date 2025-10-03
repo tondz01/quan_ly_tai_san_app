@@ -100,7 +100,7 @@ class MenuDataNotifier extends ChangeNotifier {
 
 /// Class quản lý toàn bộ dữ liệu menu
 class AppMenuData extends ChangeNotifier {
-  late final List<MenuItem> menuItems;
+  late List<MenuItem> menuItems;
   final MenuDataNotifier _notifier = MenuDataNotifier();
 
   final ValueNotifier<int> _countTrigger = ValueNotifier<int>(0);
@@ -156,15 +156,15 @@ class AppMenuData extends ChangeNotifier {
               route: AppRoute.assetCategory.path,
             ),
 
-          SubMenuItem(label: 'Loại tài sản', route: AppRoute.loaiTaiSan.path),
-
           if (per.hasPermission(RoleCode.NHOMTAISAN))
             SubMenuItem(label: 'Nhóm tài sản', route: AppRoute.assetGroup.path),
 
-          SubMenuItem(label: 'Loại ccdc', route: AppRoute.loaiCcdc.path),
+          SubMenuItem(label: 'Loại tài sản', route: AppRoute.loaiTaiSan.path),
 
-          // if (per.hasPermission(RoleCode.NHOMCCDC))
           SubMenuItem(label: 'Nhóm ccdc', route: AppRoute.ccdcGroup.path),
+
+          SubMenuItem(label: 'Loại ccdc', route: AppRoute.loaiCcdc.path),
+          SubMenuItem(label: 'Đơn vị tính', route: AppRoute.unit.path),
         ],
       ),
       if (per.hasPermission(RoleCode.TAISAN))
@@ -308,6 +308,14 @@ class AppMenuData extends ChangeNotifier {
   /// Method để refresh counts và rebuild menu items
   void refreshCounts() {
     _countTrigger.value++;
+    notifyListeners();
+  }
+
+  /// Public method để rebuild lại menu khi quyền thay đổi (ví dụ sau khi login)
+  void rebuildMenuItems() {
+    MenuItem._nextIndex = 0;
+    _buildMenuItems();
+    log('message rebuildMenuItems MenuDataNotifier');
     notifyListeners();
   }
 

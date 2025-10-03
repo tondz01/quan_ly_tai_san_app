@@ -1,4 +1,5 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart' as bloc_concurrency;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -10,9 +11,10 @@ import 'package:get_storage/get_storage.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 
 class Config {
-  static const String environment = "prd";
+  static const String environment = "dev";
 
   static String get baseUrl {
     switch (environment) {
@@ -25,6 +27,11 @@ class Config {
 }
 
 void main() async {
+  // Bỏ dấu # trên web
+  if (kIsWeb) {
+    setPathUrlStrategy();
+  }
+
   ApiConfig.setBaseURL(Config.baseUrl);
   await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();

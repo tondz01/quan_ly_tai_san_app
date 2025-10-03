@@ -142,7 +142,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
             response.data,
             DetailSubppliesHandoverDto.fromJson,
           );
-   
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = chiTietBanGiao;
@@ -190,7 +189,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> getListDetailAssetByTransfer(String id) async {
-    List<ChiTietDieuDongTaiSan> list = [];
+    List<DetailSubppliesHandoverDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -198,24 +197,23 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
     try {
       final response = await get(
-        EndPointAPI.CHI_TIET_DIEU_DONG_TAI_SAN,
-        queryParameters: {'iddieudongtaisan': id},
+        '${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/by-dieu-dong/$id',
       );
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         return result;
       }
-      
+
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      result['data'] = ResponseParser.parseToList<ChiTietDieuDongTaiSan>(
+      result['data'] = ResponseParser.parseToList<DetailSubppliesHandoverDto>(
         response.data,
-        ChiTietDieuDongTaiSan.fromJson,
+        DetailSubppliesHandoverDto.fromJson,
       );
     } catch (e) {
       SGLog.error(
         "ToolAndSuppliesHandoverRepository",
-        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
+        "Error at getListDetailAssetByTransfer - ToolAndSuppliesHandoverRepository: $e",
       );
     }
 
@@ -278,6 +276,37 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       SGLog.error(
         "ToolAndSuppliesHandoverRepository",
         "Error at createAsset - AssetManagementRepository: $e",
+      );
+    }
+
+    return result;
+  }
+  Future<Map<String, dynamic>> createDetailHandoverCCDC(
+    List<Map<String, dynamic>> requestDetailSubppliesHandover,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': "",
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/batch",
+        data: requestDetailSubppliesHandover,
+      );
+
+      final int? status = response.statusCode;
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at createDetailHandoverCCDC - ToolAndSuppliesHandoverRepository: $e",
       );
     }
 
@@ -386,7 +415,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         );
         await updateStateBanGiao(idDieuChuyen, true);
       }
-      log('response.data điều động: ${result['data']}');
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
     }
@@ -601,5 +629,67 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
         "Error loading detail supplies handover for ID ${item.id}: $e",
       );
     }
+  }
+
+  Future<Map<String, dynamic>> updateDetailHandoverCCDC(
+    Map<String, dynamic> request,
+  ) async {
+    log('request: $request');
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await put(
+        EndPointAPI.DETAIL_SUPPLIES_HANDOVER,
+        data: request,
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = response.data;
+    } catch (e) {
+      log(
+        "Error at updateStateBanGiao - ToolAndMaterialTransferRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteDetailHandoverCCDC(String id) async {
+    Map<String, dynamic> result = {
+      'data': "",
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete(
+        "${EndPointAPI.DETAIL_SUPPLIES_HANDOVER}/$id",
+      );
+      final int? status = response.statusCode;
+      if (checkStatusCodeFailed(status ?? 0)) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at deleteDetailHandoverCCDC - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
+
+    return result;
   }
 }

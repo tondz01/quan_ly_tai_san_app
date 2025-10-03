@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class NhomDonVi extends Equatable {
   final String? id;
   final String? tenNhom;
-  final DateTime? ngayTao;
+  final String? ngayTao;
   final String? nguoiTao;
   final String? idCongTy;
   final bool? isActive;
@@ -21,7 +22,9 @@ class NhomDonVi extends Equatable {
     return NhomDonVi(
       id: json['id'],
       tenNhom: json['tenNhom'],
-      ngayTao: json['ngayTao'] != null ? DateTime.parse(json['ngayTao']) : null,
+      ngayTao: json['ngayTao'] != null
+          ? AppUtility.formatFromISOString(json['ngayTao'])
+          : null,
       nguoiTao: json['nguoiTao'],
       idCongTy: json['idCongTy'],
       isActive: json['isActive'],
@@ -32,7 +35,7 @@ class NhomDonVi extends Equatable {
     return {
       'id': id,
       'tenNhom': tenNhom,
-      'ngayTao': ngayTao?.toIso8601String(),
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
       'nguoiTao': nguoiTao,
       'idCongTy': "ct001", // Assuming a default company ID
       'isActive': isActive,

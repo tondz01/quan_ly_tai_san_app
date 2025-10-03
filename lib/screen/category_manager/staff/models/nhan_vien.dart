@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 
 class NhanVien extends Equatable {
   final String? id;
@@ -111,8 +113,8 @@ class NhanVien extends Equatable {
       kyNhay: b(json['kyNhay']),
       kyThuong: b(json['kyThuong']),
       kySo: b(json['kySo']),
-      ngayTao: s(json['ngayTao']),
-      ngayCapNhat: s(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] ?? ''),
       savePin: b(json['savePin']),
     );
   }
@@ -176,7 +178,7 @@ class NhanVien extends Equatable {
       muiGio: muiGio ?? this.muiGio,
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
-      active: isActive ?? this.active,
+      active: isActive ?? active,
       phongBanId: phongBanId ?? this.phongBanId,
       tenPhongBan: tenPhongBan ?? this.tenPhongBan,
       kyNhay: kyNhay ?? this.kyNhay,
@@ -184,10 +186,10 @@ class NhanVien extends Equatable {
       kySo: kySo ?? this.kySo,
       ngayTao: ngayTao ?? this.ngayTao,
       ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
-      savePin: savePin ?? this.savePin
+      savePin: savePin ?? this.savePin,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -200,10 +202,11 @@ class NhanVien extends Equatable {
       'chuKyThuong': chuKyThuong,
       'boPhan': boPhan,
       'chucVu': chucVu,
+      'chucVuId': chucVuId,
       'nguoiQuanLy': nguoiQuanLy,
       'laQuanLy': laQuanLy,
       'avatar': avatar,
-      'idCongTy': "ct001",
+      'idCongTy': idCongTy ?? StaffConstants.defaultCompanyId,
       'diaChiLamViec': diaChiLamViec,
       'hinhThucLamViec': hinhThucLamViec,
       'nguoiTao': nguoiTao,
@@ -212,8 +215,8 @@ class NhanVien extends Equatable {
       'kyNhay': kyNhay,
       'kyThuong': kyThuong,
       'kySo': kySo,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'active': active,
       'savePin': savePin,
     };
@@ -234,31 +237,15 @@ class NhanVien extends Equatable {
   Map<String, dynamic> toExportJson() {
     return {
       'Mã nhân viên': _nullIfEmpty(id),
-      'Họ tên': _nullIfEmpty(hoTen),
-      'Điện thoại': _nullIfEmpty(diDong),
+      'Tên nhân viên': _nullIfEmpty(hoTen),
+      'Số điện thoại': _nullIfEmpty(diDong),
       'Email': _nullIfEmpty(emailCongViec),
-      'Ký nháy': kyNhay,
-      'Ký thường': kyThuong,
-      'Ký số': kySo,
-      'Chữ ký nháy': _nullIfEmpty(chuKyNhay),
-      'Chữ ký thường': _nullIfEmpty(chuKyThuong),
       'Agreement UUId': _nullIfEmpty(agreementUUId),
       'Mã Pin': _nullIfEmpty(pin),
       'Phòng ban (Mã phòng ban)': _nullIfEmpty(phongBanId),
-      'Tên phòng ban': _nullIfEmpty(boPhan),
-      'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVu),
-      'Người quản lý (Mã người quản lý)': _nullIfEmpty(nguoiQuanLy),
-      'Là quản lý': laQuanLy,
-      'Ảnh đại diện': _nullIfEmpty(avatar),
-      'Công ty (Mã công ty)': _nullIfEmpty(idCongTy),
-      'Địa chỉ làm việc': _nullIfEmpty(diaChiLamViec),
-      'Hình thức làm việc': _nullIfEmpty(hinhThucLamViec),
-      'Người tạo (Mã nhân viên)': _nullIfEmpty(nguoiTao),
-      'Người cập nhật (Mã nhân viên)': _nullIfEmpty(nguoiCapNhat),
-      'Ngày tạo': _nullIfEmpty(ngayTao),
-      'Ngày cập nhật': _nullIfEmpty(ngayCapNhat),
-      'Hiển thị': active,
-      'Lưu mã PIN': savePin,
+      'Chức vụ (Mã chức vụ)': _nullIfEmpty(chucVuId),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
     };
   }
 
@@ -274,6 +261,8 @@ class NhanVien extends Equatable {
     chuKyThuong,
     boPhan,
     chucVu,
+    tenChucVu,
+    chucVuId,
     nguoiQuanLy,
     quanLyId,
     tenQuanLy,
@@ -293,8 +282,6 @@ class NhanVien extends Equatable {
     kyNhay,
     kyThuong,
     kySo,
-    ngayTao,
-    ngayCapNhat,
-    savePin
+    savePin,
   ];
 }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class AssetCategoryDto {
   final String? id;
   final String? tenMoHinh;
@@ -50,8 +52,8 @@ class AssetCategoryDto {
       taiKhoanKhauHao: json['taiKhoanKhauHao'],
       taiKhoanChiPhi: json['taiKhoanChiPhi'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -69,8 +71,8 @@ class AssetCategoryDto {
       'taiKhoanKhauHao': taiKhoanKhauHao,
       'taiKhoanChiPhi': taiKhoanChiPhi,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -88,4 +90,30 @@ class AssetCategoryDto {
       (json.decode(categories) as List<dynamic>)
           .map<AssetCategoryDto>((item) => AssetCategoryDto.fromJson(item))
           .toList();
+
+  Map<String, dynamic> toExportJson() {
+    return {
+      'Id': _nullIfEmpty(id),
+      'Tên mô hình': _nullIfEmpty(tenMoHinh),
+      'Phương pháp khấu hao': _nullIfEmpty(phuongPhapKhauHao),
+      'Kỳ khấu hao': _nullIfEmpty(kyKhauHao),
+      'Loại kỳ khấu hao': _nullIfEmpty(loaiKyKhauHao),
+      'Tài khoản tài sản': _nullIfEmpty(taiKhoanTaiSan),
+      'Tài khoản khấu hao': _nullIfEmpty(taiKhoanKhauHao),
+      'Tài khoản chi phí': _nullIfEmpty(taiKhoanChiPhi),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
+    };
+  }
+
+  // Helper chuyển null/empty string thành "null" để export
+  dynamic _nullIfEmpty(dynamic value) {
+    if (value == null) {
+      return "null";
+    }
+    if (value is String) {
+      return value.trim().isEmpty ? "null" : value;
+    }
+    return value;
+  }
 }

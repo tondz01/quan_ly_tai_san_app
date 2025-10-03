@@ -215,6 +215,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                     },
                     mainScreen: 'Biên bản bàn giao tài sản',
                     subScreen: provider.subScreen,
+                    isShowInput: false,
                   ),
                 ),
                 body: Column(

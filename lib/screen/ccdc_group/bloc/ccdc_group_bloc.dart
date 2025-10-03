@@ -3,6 +3,7 @@ import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_state.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/repository/ccdc_group_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   CcdcGroupBloc() : super(CcdcGroupInitialState()) {
@@ -25,6 +26,7 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
     emit(CcdcGroupLoadingDismissState());
     if (checkStatusCodeDone(result)) {
       emit(GetListCcdcGroupSuccessState(data: result['data']));
+      AccountHelper.instance.setCcdcGroup(result['data']);
     } else {
       String msg = "Lỗi khi lấy dữ liệu";
       emit(
@@ -70,11 +72,15 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
         .saveCcdcGroupBatch(event.params);
     emit(CcdcGroupLoadingDismissState());
     if (checkStatusCodeDone(result)) {
-      emit(CreateCcdcGroupSuccessState(data: result['data'].toString()));
+      emit(
+        CreateCcdcGroupBatchSuccessState(
+          message: "Thêm danh sách nhóm tài sản thành công",
+        ),
+      );
     } else {
       String msg = "Lỗi khi tạo danh sách nhóm tài sản";
       emit(
-        CreateCcdcGroupFailedState(
+        CreateCcdcGroupBatchFailedState(
           title: "notice",
           code: result['status_code'],
           message: msg,
@@ -138,7 +144,7 @@ class CcdcGroupBloc extends Bloc<CcdcGroupEvent, CcdcGroupState> {
   ) async {
     emit(CcdcGroupInitialState());
     emit(CcdcGroupLoadingState());
-    final result = await CcdcGroupRepository().deleteCcdcGroupBatch(event.id);
+    final result = await CcdcGroupRepository().deleteCcdcGroupBatch(event.ids);
     emit(CcdcGroupLoadingDismissState());
     if (checkStatusCodeDone(result)) {
       emit(DeleteCcdcGroupSuccessState(data: result['data'].toString()));

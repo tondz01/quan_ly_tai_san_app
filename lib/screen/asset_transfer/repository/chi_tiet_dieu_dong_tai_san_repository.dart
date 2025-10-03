@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:dio/dio.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 
@@ -29,12 +27,7 @@ class ChiTietDieuDongTaiSanRepository {
   }
 
   Future<List<ChiTietDieuDongTaiSan>> getAll(String idDieuDongTaiSan) async {
-    log('message test: ${idDieuDongTaiSan}');
-    final queryParams = {"iddieudongtaisan": idDieuDongTaiSan};
 
-    // Log cURL command
-    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
-    log('cURL command: $curlCommand');
     final res = await _dio.get(
       '',
       queryParameters: {"iddieudongtaisan": idDieuDongTaiSan},

@@ -8,6 +8,8 @@ import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
@@ -128,6 +130,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
 
   Future<void> onloadViewPage() async {
     if (donVi == null) {
+      AppUtility.showSnackBar(context, 'Vui lòng chọn đơn vị!', isError: true);
       return;
     }
 
@@ -136,61 +139,46 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
     });
 
     // Format date to YYYY-MM-DD format
-    String formattedDate = controllerImportDate.text;
-    if (formattedDate.isNotEmpty) {
-      try {
-        // Parse the date from the controller
-        DateTime parsedDate = DateTime.parse(formattedDate);
-        // Format to YYYY-MM-DD
-        formattedDate = "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
-      } catch (e) {
-        // If parsing fails, try DD/MM/YYYY format
-        try {
-          final parts = formattedDate.split('/');
-          if (parts.length == 3) {
-            final day = int.parse(parts[0]);
-            final month = int.parse(parts[1]);
-            final year = int.parse(parts[2]);
-            formattedDate = "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-          }
-        } catch (e) {
-          // Keep original format if all parsing fails
+    String formattedDate = controllerImportDate.text.trim();
+    formattedDate = formatteDate(formattedDate);
+
+    final result = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
+    if (!mounted) return;
+    if (checkStatusCodeDone(result)) {
+      setState(() {
+        _list = [];
+        _list = (result['data'] as List).cast<InventoryMinutes>();
+        _isLoading = false;
+        if (_list.isEmpty) {
+          AppUtility.showSnackBar(context, 'Không có dữ liệu!');
+        } else {
+          AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
         }
-      }
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+      });
+      AppUtility.showSnackBar(context, 'Lấy dữ liệu thất bại!', isError: true);
     }
-
-    final result = await _repo.getInventoryMinutes(
-      donVi!.id!,
-      formattedDate,
-    );
-
-    setState(() {
-      _list = (result['data'] as List).cast<InventoryMinutes>();
-      _isLoading = false;
-    });
   }
 
   String formatDate(String date) {
+    final String input = date.trim();
     try {
-      // Try parsing as ISO format first
-      final DateTime parsedDate = DateTime.parse(date);
-      return "${parsedDate.day}/${parsedDate.month}/${parsedDate.year}";
+      final DateTime parsedDate = DateTime.parse(input);
+      return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
     } catch (e) {
-      // If that fails, try parsing DD/MM/YYYY HH:mm:ss format
       try {
-        final parts = date.split(' ');
-        if (parts.isNotEmpty) {
-          final datePart = parts[0];
-          final dateParts = datePart.split('/');
-          if (dateParts.length == 3) {
-            final day = int.parse(dateParts[0]);
-            final month = int.parse(dateParts[1]);
-            final year = int.parse(dateParts[2]);
-            return "$day/$month/$year";
-          }
+        final String dateOnly = input.split(' ').first;
+        final List<String> parts = dateOnly.split('/');
+        if (parts.length == 3) {
+          final int day = int.parse(parts[0]);
+          final int month = int.parse(parts[1]);
+          final int year = int.parse(parts[2]);
+          return "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
         }
-      } catch (e) {
-        // If all parsing fails, return the original string
+      } catch (_) {
         return date;
       }
       return date;
@@ -263,7 +251,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                _loadData();
+                                onloadViewPage();
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(8.0),
@@ -272,7 +260,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
-                                  'Làm mới file',
+                                  'Lấy dữ liệu',
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
@@ -351,4 +339,32 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
       ],
     );
   }
+}
+
+String formatteDate(String formattedDate) {
+  if (formattedDate.isNotEmpty) {
+    // Strip time part if exists (e.g., '01/10/2025 21:56:05' -> '01/10/2025')
+    final String dateOnly = formattedDate.split(' ').first;
+    try {
+      // Try ISO first (e.g., 2025-10-01 or 2025-10-01T12:00:00)
+      final DateTime parsedDate = DateTime.parse(dateOnly);
+      formattedDate =
+          "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
+    } catch (e) {
+      try {
+        // Try DD/MM/YYYY
+        final parts = dateOnly.split('/');
+        if (parts.length == 3) {
+          final int day = int.parse(parts[0]);
+          final int month = int.parse(parts[1]);
+          final int year = int.parse(parts[2]);
+          formattedDate =
+              "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+        }
+      } catch (e) {
+        SGLog.info('formattedDate', 'DD/MM/YYYY parse error: $e');
+      }
+    }
+  }
+  return formattedDate;
 }

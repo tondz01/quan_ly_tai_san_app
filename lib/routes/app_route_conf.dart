@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/unit/unit_view.dart';
 
 import 'routes.dart';
 
@@ -42,12 +43,7 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: AssetTransferView(
-                    typeAssetTransfer:
-                        state.extra != null && state.extra is String
-                            ? int.tryParse(state.extra as String) ?? 0
-                            : 0,
-                  ),
+                  child: AssetTransferView(),
                 ),
           ),
           GoRoute(
@@ -102,19 +98,13 @@ class AppRouteConf {
                   child: CapitalSourceManager(),
                 ),
           ),
-         
           GoRoute(
             path: AppRoute.toolAndMaterialTransfer.path,
             name: AppRoute.toolAndMaterialTransfer.name,
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: ToolAndMaterialTransferView(
-                    typeAssetTransfer:
-                        state.extra != null && state.extra is String
-                            ? int.tryParse(state.extra as String) ?? 0
-                            : 0,
-                  ),
+                  child: ToolAndMaterialTransferView(),
                 ),
           ),
           GoRoute(
@@ -251,10 +241,8 @@ class AppRouteConf {
             path: AppRoute.loaiCcdc.path,
             name: AppRoute.loaiCcdc.name,
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: TypeCcdcView(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: TypeCcdcView()),
           ),
           GoRoute(
             path: AppRoute.loaiTaiSan.path,
@@ -264,6 +252,13 @@ class AppRouteConf {
                   key: state.pageKey,
                   child: TypeAssetView(),
                 ),
+          ),
+          GoRoute(
+            path: AppRoute.unit.path,
+            name: AppRoute.unit.name,
+            pageBuilder:
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: UnitView()),
           ),
         ],
       ),

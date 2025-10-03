@@ -1,3 +1,5 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+
 class UserInfoDTO {
   final String id;
   final String tenDangNhap;
@@ -55,8 +57,8 @@ class UserInfoDTO {
           json['isActive'] is bool
               ? json['isActive'] as bool
               : json['isActive'] == 1,
-      ngayTao: json['ngayTao'] as String?,
-      ngayCapNhat: json['ngayCapNhat'] as String?,
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] as String? ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] as String? ?? ''),
       chuKy: json['chuKy'] as String?,
       username: json['username'] as String?,
     );
@@ -76,8 +78,8 @@ class UserInfoDTO {
       'idCongTy': idCongTy,
       'rule': rule,
       'isActive': isActive,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'chuKy': chuKy,
       'username': username,
     };
@@ -114,8 +116,8 @@ class UserInfoDTO {
       idCongTy: idCongTy ?? this.idCongTy,
       rule: rule ?? this.rule,
       isActive: isActive ?? this.isActive,
-      ngayTao: ngayTao ?? this.ngayTao,
-      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(ngayCapNhat ?? this.ngayCapNhat ?? ''),
       chuKy: chuKy ?? this.chuKy,
       username: username ?? this.username,
     );
@@ -135,8 +137,8 @@ class UserInfoDTO {
       idCongTy: '',
       rule: 0,
       isActive: false,
-      ngayTao: '',
-      ngayCapNhat: '',
+      ngayTao: AppUtility.formatFromISOString(''),
+      ngayCapNhat: AppUtility.formatFromISOString(''),
       chuKy: '',
       username: '',
     );

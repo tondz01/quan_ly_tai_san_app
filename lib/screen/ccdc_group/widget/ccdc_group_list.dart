@@ -7,11 +7,13 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -35,7 +37,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
   List<String> visibleColumnIds = [
     'code_ccdc_group',
     'name_ccdc_group',
-    'is_active',
+    // 'is_active',
     'actions',
   ];
 
@@ -57,11 +59,11 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
         label: 'Tên nhóm ccdc',
         isChecked: visibleColumnIds.contains('name_ccdc_group'),
       ),
-      ColumnDisplayOption(
-        id: 'is_active',
-        label: 'Ngày bàn giao',
-        isChecked: visibleColumnIds.contains('is_active'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'is_active',
+      //   label: 'Ngày bàn giao',
+      //   isChecked: visibleColumnIds.contains('is_active'),
+      // ),
       ColumnDisplayOption(
         id: 'created_at',
         label: 'Ngày tạo',
@@ -115,16 +117,16 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
             ),
           );
           break;
-        case 'is_active':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<CcdcGroup>(
-              title: 'Có hiệu lực',
-              width: 100,
-              cellBuilder: (item) => SgCheckbox(value: item.hieuLuc ?? false),
-              titleAlignment: TextAlign.center,
-            ),
-          );
-          break;
+        // case 'is_active':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<CcdcGroup>(
+        //       title: 'Có hiệu lực',
+        //       width: 100,
+        //       cellBuilder: (item) => SgCheckbox(value: item.hieuLuc ?? false),
+        //       titleAlignment: TextAlign.center,
+        //     ),
+        //   );
+        //   break;
         case 'created_at':
           columns.add(
             TableBaseConfig.columnTable<CcdcGroup>(
@@ -181,34 +183,6 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
     return columns;
   }
 
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<CcdcGroup>> columns = _buildColumns();
@@ -260,14 +234,6 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: _showColumnDisplayPopup,
-                      child: Icon(
-                        Icons.settings,
-                        color: ColorValue.link,
-                        size: 18,
-                      ),
-                    ),
                   ],
                 ),
                 Visibility(
@@ -283,33 +249,41 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                         ),
                       ),
                       SizedBox(width: 16),
-                      IconButton(
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
                         onPressed: () {
-                          Map<String, dynamic> data = {
-                            'id': listSelected.map((e) => e.id).toList(),
-                          };
-                          showConfirmDialog(
-                            context,
-                            type: ConfirmType.delete,
-                            title: 'Xóa nhân nhóm CCDC - Vật tư',
-                            message:
-                                'Bạn có chắc muốn xóa ${listSelected.length} nhóm CCDC - Vật tư',
-                            highlight: listSelected.length.toString(),
-                            cancelText: 'Không',
-                            confirmText: 'Xóa',
-                            onConfirm: () {
-                              final roleBloc = context.read<CcdcGroupBloc>();
-                              roleBloc.add(DeleteCcdcGroupBatchEvent(data));
-                            },
-                          );
+                          setState(() {
+                            final ids = listSelected.map((e) => e.id!).toList();
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa dự án',
+                              message:
+                                  'Bạn có chắc muốn xóa ${listSelected.length} dự án',
+                              highlight: listSelected.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final roleBloc = context.read<CcdcGroupBloc>();
+                                roleBloc.add(DeleteCcdcGroupBatchEvent(ids));
+                              },
+                            );
+                          });
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<CcdcGroup>(

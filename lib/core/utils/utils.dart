@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:intl/intl.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class LyDoTang {
   final int id;
@@ -104,12 +105,13 @@ abstract class AppUtility {
     String message, {
     bool isError = false,
     TextAlign? textAlign = TextAlign.left,
+    int? timeDuration = 2,
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, textAlign: textAlign),
         backgroundColor: isError ? Colors.red : Colors.green,
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: timeDuration ?? 2),
       ),
     );
   }
@@ -138,6 +140,23 @@ abstract class AppUtility {
       return DateFormat('dd/MM/yyyy HH:mm').parse(input);
     } catch (_) {
       return DateTime.now();
+    }
+  }
+
+  static String formatDateTimeISO(DateTime input) {
+    try {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(input);
+    } catch (_) {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    }
+  }
+
+  static String formatFromISOString(String isoString) {
+    try {
+      DateTime dateTime = DateTime.parse(isoString);
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+    } catch (_) {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     }
   }
 
@@ -247,5 +266,109 @@ abstract class AppUtility {
     final parsed = DateTime.tryParse(text);
     if (parsed != null) return parsed.toIso8601String();
     return DateTime.now().toIso8601String();
+  }
+
+  static String normalizeDateIsoStringV2(dynamic value) {
+    if (value == null) return formatDateForServer(DateTime.now());
+    if (value is DateTime) return formatDateForServer(value);
+    if (value is num) return formatDateForServer(excelSerialToDate(value));
+    final text = value.toString().trim();
+    if (text.isEmpty) return formatDateForServer(DateTime.now());
+    final parsed = DateTime.tryParse(text);
+    if (parsed != null) return formatDateForServer(parsed);
+    return formatDateForServer(DateTime.now());
+  }
+
+  static String formatDateForServer(DateTime dateTime) {
+    // Tạo định dạng YYYY-MM-DD HH:mm:ss mà server có thể parse
+    return '${dateTime.year.toString().padLeft(4, '0')}-'
+        '${dateTime.month.toString().padLeft(2, '0')}-'
+        '${dateTime.day.toString().padLeft(2, '0')} '
+        '${dateTime.hour.toString().padLeft(2, '0')}:'
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
+  static String formatDateString(DateTime? dateTime) {
+    if (dateTime == null) return '';
+    return '${dateTime.year.toString().padLeft(4, '0')}-'
+        '${dateTime.month.toString().padLeft(2, '0')}-'
+        '${dateTime.day.toString().padLeft(2, '0')} '
+        '${dateTime.hour.toString().padLeft(2, '0')}:'
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
+  static Widget showPermissionSigning(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              status == 1
+                  ? Colors.red
+                  : status == 2
+                  ? Colors.deepOrangeAccent
+                  : status == 3
+                  ? Colors.blue
+                  : Colors.green,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              status == 2
+                  ? 'Không được phép ký'
+                  : status == 1
+                  ? 'Chưa đến lượt ký'
+                  : status == 3
+                  ? 'Đã ký'
+                  : 'Cần ký',
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+  static Widget showStatusDocument(int status) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color:
+              status == 0
+                  ? Colors.red
+                  : status == 1
+                  ? Colors.deepOrangeAccent
+                  : status == 2
+                  ? Colors.blue
+                  : Colors.green,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: SGText(
+          text:
+              status == 0
+                  ? 'Chưa hoàn thành'
+                  : status == 1
+                  ? 'Sắp hết hạn'
+                  : status == 2
+                  ? 'Đã hoàn thành'
+                  : 'Không xác đinh',
+          size: 12,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
   }
 }

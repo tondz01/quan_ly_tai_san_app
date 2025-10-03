@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -13,7 +12,6 @@ import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AccountDetail extends StatefulWidget {
   final UserInfoDTO userInfo;
@@ -78,7 +76,6 @@ class _AccountDetailState extends State<AccountDetail> {
       for (var item in role)
         DropdownMenuItem(value: item, child: Text(item.name)),
     ];
-    SGLog.info('User Info', 'User: ${jsonEncode(widget.userInfo)}');
     ctrlIdAccount.text = widget.userInfo.tenDangNhap;
     ctrlTenTk.text = widget.userInfo.username ?? '';
     ctrlMatKhau.text = widget.userInfo.matKhau;
@@ -98,7 +95,7 @@ class _AccountDetailState extends State<AccountDetail> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 18.0),
           child: _buildHeaderDetail(),
         ),
         const SizedBox(height: 5),
@@ -186,12 +183,6 @@ class _AccountDetailState extends State<AccountDetail> {
                       controller: ctrlEmail,
                       isEditing: false,
                       textContent: ctrlEmail.text,
-                    ),
-                    CommonFormInput(
-                      label: 'Số điện thoại',
-                      controller: ctrlPhone,
-                      isEditing: false,
-                      textContent: ctrlPhone.text,
                     ),
                     CommonFormInput(
                       label: 'Số điện thoại',

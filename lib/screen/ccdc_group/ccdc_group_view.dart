@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -46,6 +48,18 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
         }
         if (state is CreateCcdcGroupSuccessState) {
           context.read<CcdcGroupProvider>().createCcdcGroupSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CreateCcdcGroupBatchSuccessState) {
+          context.read<CcdcGroupProvider>().createCcdcGroupBatchSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CreateCcdcGroupBatchFailedState) {
+          context.read<CcdcGroupProvider>().createCcdcGroupBatchFailed(
             context,
             state,
           );
@@ -103,18 +117,49 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                     mainScreen: 'Nhóm ccdc',
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetGroubBloc = context.read<CcdcGroupBloc>();
-                      final List<CcdcGroup> ccdc =
-                          await convertExcelToCcdcGroup(filePath!);
+                      final result = await convertExcelToCcdcGroup(
+                        filePath!,
+                        fileBytes: fileBytes,
+                      );
                       if (!mounted) return;
-                      if (ccdc.isNotEmpty) {
-                        assetGroubBloc.add(CreateCcdcGroupBatchEvent(ccdc));
+                      if (result['success']) {
+                        List<CcdcGroup> ccdcList = result['data'];
+                        assetGroubBloc.add(CreateCcdcGroupBatchEvent(ccdcList));
+                      } else {
+                        List<dynamic> errors = result['errors'];
+
+                        // Tạo danh sách lỗi dạng list
+                        List<String> errorMessages = [];
+                        for (var error in errors) {
+                          String rowNumber = error['row'].toString();
+                          List<String> rowErrors = List<String>.from(
+                            error['errors'],
+                          );
+                          String errorText =
+                              'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                          errorMessages.add(errorText);
+                        }
+
+                        log(
+                          '[CcdcGroupView] errorMessages: $errorMessages',
+                        );
+                        if (!mounted) return;
+
+                        // Hiển thị thông báo tổng quan
+                        AppUtility.showSnackBar(
+                          context,
+                          'Import dữ liệu thất bại: \n $errorMessages',
+                          isError: true,
+                          timeDuration: 4,
+                        );
                       }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
                         "ccdc_vt",
-                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
+                        provider.data?.map((e) => e.toExportJson()).toList() ??
+                            [],
                       );
                     },
                   ),

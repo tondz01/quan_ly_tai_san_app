@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_t
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import '../../../common/page/contract_page.dart';
 import '../../asset_transfer/component/config_view_asset_transfer.dart';
@@ -164,12 +165,20 @@ class _ReportScreenState extends State<ReportScreen> {
                             ],
                           ),
                         ),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: SGAppColors.colorBorderGray.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
                         Expanded(
                           child: TableBaseView<DieuDongTaiSanDto>(
                             searchTerm: '',
                             columns: columns,
                             data: _list,
                             horizontalController: ScrollController(),
+                            isShowCheckboxes: false,
                             onRowTap: (item) async {
                               UserInfoDTO userInfo =
                                   AccountHelper.instance.getUserInfo()!;

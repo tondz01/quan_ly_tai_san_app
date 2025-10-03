@@ -9,6 +9,8 @@ import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/permission_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -17,7 +19,14 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/repository/type_ccdc_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AuthRepository extends ApiBase {
   Future<Map<String, dynamic>> login(AuthRequest params) async {
@@ -73,21 +82,16 @@ class AuthRepository extends ApiBase {
 
       final raw = response.data;
       final rawData = raw is Map<String, dynamic> ? raw['data'] : raw;
-      log('logged - Raw login data: $rawData');
       final userMap =
           rawData is String
               ? (jsonDecode(rawData) as Map<String, dynamic>)
               : (rawData as Map<String, dynamic>);
-      log('logged - Parsed user data: ${userMap['taiKhoan']}');
       final user = UserInfoDTO.fromJson(userMap['taiKhoan']);
       AccountHelper.instance.setUserInfo(user);
-      log('User logged in: ${jsonEncode(user)}');
+
       // Gọi các API phụ trợ
-      await _loadUserDepartments(user.idCongTy);
-      await _loadUserEmployee(user.idCongTy);
-      await _loadAssetGroup(user.idCongTy);
-      await _loadCCDCGroup(user.idCongTy);
-      await _loadChucVu(user.idCongTy);
+      await loadData(user.idCongTy);
+
       List<String> roles = onGetPermission(user.tenDangNhap);
       PermissionService.instance.saveRoles(roles);
 
@@ -130,6 +134,19 @@ class AuthRepository extends ApiBase {
     return result;
   }
 
+  //------LOAD DATA------------------------------------------------------------------------------------///
+  Future<void> loadData(String idCongTy) async {
+    await _loadUserDepartments(idCongTy);
+    await _loadUserEmployee(idCongTy);
+    await _loadAssetGroup(idCongTy);
+    await _loadCCDCGroup(idCongTy);
+    await _loadChucVu(idCongTy);
+    await _loadTypeAsset(idCongTy);
+    await _loadTypeCcdc(idCongTy);
+    await _loadAssetCategory(idCongTy);
+    await _loadUnit(idCongTy);
+  }
+
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
   Future<void> _loadUserDepartments(String idCongTy) async {
     try {
@@ -167,6 +184,7 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setNhanVien(nhanVienList);
+        SGLog.info('_loadData', 'loadUserEmployee');
       }
     } catch (e) {
       log('Error calling API NHAN_VIEN: $e');
@@ -191,6 +209,7 @@ class AuthRepository extends ApiBase {
 
         AccountHelper.instance.setAssetGroup(assetGroupList);
       }
+      SGLog.info('_loadData', 'loadAssetGroup');
     } catch (e) {
       log('Error calling API ASSET_GROUP: $e');
     }
@@ -213,6 +232,7 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setCcdcGroup(ccdcGroupList);
+        SGLog.info('_loadData', 'loadCCDCGroup');
       }
     } catch (e) {
       log('Error calling API CCDC_GROUP: $e');
@@ -233,12 +253,72 @@ class AuthRepository extends ApiBase {
                 .toList();
 
         AccountHelper.instance.setChucVu(chucVuList);
+        SGLog.info('_loadData', 'loadChucVu');
       }
     } catch (e) {
       log('Error calling API CHUC_VU: $e');
     }
   }
 
+  Future<void> _loadTypeAsset(String idCongTy) async {
+    try {
+      final response = await TypeAssetRepository().getListTypeAssetRepository(
+        idCongTy,
+      );
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final typeAssetList = response['data'] as List<TypeAsset>;
+        AccountHelper.instance.setTypeAsset(typeAssetList);
+        SGLog.info('_loadData', 'loadTypeAsset');
+      }
+    } catch (e) {
+      log('Error calling API TYPE_ASSET: $e');
+    }
+  }
+
+  Future<void> _loadTypeCcdc(String idCongTy) async {
+    try {
+      final response = await TypeCcdcRepository().getListTypeCcdcRepository(
+        idCongTy,
+      );
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final typeCcdcList = response['data'] as List<TypeCcdc>;
+        AccountHelper.instance.setTypeCcdc(typeCcdcList);
+        SGLog.info('_loadData', 'loadTypeCcdc');
+      }
+    } catch (e) {
+      log('Error calling API TYPE_CCDC: $e');
+    }
+  }
+
+  Future<void> _loadAssetCategory(String idCongTy) async {
+    try {
+      final response = await AssetCategoryRepository().getListAssetCategory(
+        idCongTy,
+      );
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final assetCategoryList = response['data'] as List<AssetCategoryDto>;
+        AccountHelper.instance.setAssetCategory(assetCategoryList);
+        SGLog.info('_loadData', 'loadAssetCategory');
+      }
+    } catch (e) {
+      log('Error calling API ASSET_CATEGORY: $e');
+    }
+  }
+
+  Future<void> _loadUnit(String idCongTy) async {
+    try {
+      final response = await UnitRepository().getListUnit();
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final unitList = response['data'] as List<UnitDto>;
+        AccountHelper.instance.setUnit(unitList);
+        SGLog.info('_loadData', 'loadUnit');
+      }
+    } catch (e) {
+      log('Error calling API ASSET_CATEGORY: $e');
+    }
+  }
+
+  //------------------------------------------------------------------------------------------///
   Future<Map<String, dynamic>> createAccount(UserInfoDTO params) async {
     Map<String, dynamic> result = {
       'data': null,
@@ -420,6 +500,7 @@ class AuthRepository extends ApiBase {
   }
 
   List<String> onGetPermission(String idUser) {
+    log("check onGetPermission: $idUser");
     List<String> roles = [];
     log('Getting permissions for user: $idUser');
     if (idUser.toLowerCase() == 'admin') {
@@ -440,9 +521,18 @@ class AuthRepository extends ApiBase {
       ];
     } else {
       final nhanVien = AccountHelper.instance.getNhanVienById(idUser);
+      log(
+        "[check onGetPermission] 1 - check nhanVien: ${jsonEncode(nhanVien)}",
+      );
       if (nhanVien == null || nhanVien.chucVuId == null) return [];
+      log(
+        "[check onGetPermission] 2 - check nhanVien: ${jsonEncode(nhanVien)}",
+      );
       final chucVu = AccountHelper.instance.getChucVuById(nhanVien.chucVuId!);
+      log('[check onGetPermission] 3 - chucVu: ${jsonEncode(chucVu)}');
+      log("[check onGetPermission] 4 - check chucVu: ${jsonEncode(chucVu)}");
       if (chucVu == null) return [];
+      log("[check onGetPermission] 5 - check chucVu2: ${jsonEncode(chucVu)}");
       final List<MapEntry<bool, String>> permissionMap = [
         MapEntry(chucVu.quanLyNhanVien, RoleCode.NHANVIEN),
         MapEntry(chucVu.quanLyPhongBan, RoleCode.PHONGBAN),
@@ -460,9 +550,11 @@ class AuthRepository extends ApiBase {
       ];
       roles = permissionMap.where((e) => e.key).map((e) => e.value).toList();
     }
+    log("check roles11: ${jsonEncode(roles)}");
     if (roles.isNotEmpty) {
       return roles;
     }
+    log("check roles: ${jsonEncode(roles)}");
     return roles;
   }
 

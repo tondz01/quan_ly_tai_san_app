@@ -6,9 +6,11 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class RoleProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
@@ -45,16 +47,17 @@ class RoleProvider with ChangeNotifier {
   late int totalPages = 1;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage = 10;
+  int rowsPerPage = RoleConstants.defaultRowsPerPage;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
 
-  final List<DropdownMenuItem<int>> items = [
-    const DropdownMenuItem(value: 5, child: Text('5')),
-    const DropdownMenuItem(value: 10, child: Text('10')),
-    const DropdownMenuItem(value: 20, child: Text('20')),
-    const DropdownMenuItem(value: 50, child: Text('50')),
-  ];
+  final List<DropdownMenuItem<int>> items =
+      (RoleConstants.mobilePaginationOptions)
+          .map(
+            (value) =>
+                DropdownMenuItem(value: value, child: Text(value.toString())),
+          )
+          .toList();
 
   String? _error;
   String? _subScreen;
@@ -74,7 +77,7 @@ class RoleProvider with ChangeNotifier {
 
   void onInit(BuildContext context) {
     _userInfo = AccountHelper.instance.getUserInfo();
-    controllerDropdownPage = TextEditingController(text: '10');
+    controllerDropdownPage = TextEditingController(text: RoleConstants.defaultRowsPerPage.toString());
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
@@ -102,33 +105,38 @@ class RoleProvider with ChangeNotifier {
   }
 
   void onSearchRoles(String value) {
+    currentPage = 1;
+    
     if (value.isEmpty) {
       _filteredData = data;
+      _updatePagination();
+      notifyListeners();
       return;
     }
 
     String searchLower = value.toLowerCase().trim();
-    _filteredData =
-        data.where((item) {
-          bool name = AppUtility.fuzzySearch(
-            item.name.toLowerCase(),
-            searchLower,
-          );
-          bool importUnit = item.importUnit.toLowerCase().contains(searchLower);
-          bool departmentGroup = item.importUnit.toLowerCase().contains(
-            searchLower,
-          );
-          bool unit = item.unit.toLowerCase().contains(searchLower);
-          bool value = item.value.toString().contains(searchLower);
 
-          return name || importUnit || departmentGroup || unit || value;
-        }).toList();
+    _filteredData =
+        data?.where((item) {
+          bool name = AppUtility.fuzzySearch(
+            item.tenChucVu?.toLowerCase() ?? '',
+            searchLower,
+          );
+          bool idMatch = item.id?.toLowerCase().contains(searchLower) ?? false;
+
+          return name || idMatch;
+        }).toList() ?? [];
+    
+    _updatePagination();
     notifyListeners();
   }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    totalEntries = _filteredData?.length ?? 0;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
+      1,
+      RoleConstants.maxPaginationPages,
+    );
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
@@ -139,12 +147,17 @@ class RoleProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        _filteredData?.isNotEmpty == true
+            ? _filteredData!.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
+
+    SGLog.debug(
+      'RoleProvider',
+      'Pagination - totalEntries: $totalEntries, currentPage: $currentPage, totalPages: $totalPages, dataPage length: ${_dataPage?.length ?? 0}',
+    );
   }
 
   void onCloseDetail(BuildContext context) {
@@ -178,6 +191,7 @@ class RoleProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       _data = state.data;
       AccountHelper.instance.clearChucVu();
@@ -193,7 +207,7 @@ class RoleProvider with ChangeNotifier {
     onCloseDetail(context);
     getListRoles(context);
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Thêm "Chức vụ" tư thành công!');
+    AppUtility.showSnackBar(context, RoleConstants.successCreateRole);
   }
 
   void updateRolesSuccess(BuildContext context, UpdateRoleSuccessState state) {
@@ -202,7 +216,7 @@ class RoleProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Cập nhập "Chức vụ" tư thành công!');
+    AppUtility.showSnackBar(context, RoleConstants.successUpdateRole);
   }
 
   void deleteRolesSuccess(BuildContext context, DeleteRoleSuccessState state) {
@@ -211,7 +225,14 @@ class RoleProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Xóa "Chức vụ" tư thành công!');
+    AppUtility.showSnackBar(context, RoleConstants.successDeleteRole);
+  }
+
+  void deleteRoleBatchSuccess(BuildContext context, DeleteRoleBatchSuccess state) {
+    _isLoading = false;
+     onCloseDetail(context);
+    getListRoles(context);
+    AppUtility.showSnackBar(context, RoleConstants.successDeleteRoleBatch);
   }
 
   void onChangeDetail(BuildContext context, ChucVu? item) {

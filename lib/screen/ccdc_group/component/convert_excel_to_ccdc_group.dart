@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,11 +7,35 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
-Future<List<CcdcGroup>> convertExcelToCcdcGroup(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
-  final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
+Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
+  List<String> rowErrors = [];
 
+  // Validate required fields
+  if (json['id'] == null || json['id'].toString().trim().isEmpty) {
+    rowErrors.add('Mã nhóm CCDC không được để trống');
+  }
+
+  if (json['ten'] == null || json['ten'].toString().trim().isEmpty) {
+    rowErrors.add('Tên nhóm CCDC không được để trống');
+  }
+
+  return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
+}
+
+Future<Map<String, dynamic>> convertExcelToCcdcGroup(
+  String filePath, {
+  Uint8List? fileBytes,
+}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
+  final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
+  Map<String, dynamic> result = {
+    "success": true,
+    "message": "",
+    "data": [],
+    "errors": [],
+  };
   final List<CcdcGroup> list = [];
+  List<Map<String, dynamic>> errors = [];
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -28,14 +51,26 @@ Future<List<CcdcGroup>> convertExcelToCcdcGroup(String filePath) async {
           'id': AppUtility.s(row[0]?.value),
           'ten': AppUtility.s(row[1]?.value),
           'hieuLuc': AppUtility.b(row[2]?.value),
-          'idCongTy': AppUtility.s(row[3]?.value),
-          'ngayTao': AppUtility.normalizeDateIsoString(row[4]?.value),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(row[5]?.value),
-          'nguoiTao': AppUtility.s(row[6]?.value, fallback: fallbackUser),
-          'nguoiCapNhat': AppUtility.s(row[7]?.value, fallback: fallbackUser),
+          'idCongTy': 'ct001',
+          'ngayTao': AppUtility.formatFromISOString(
+            row[3]?.value?.toString() ?? DateTime.now().toIso8601String(),
+          ).replaceAll('Z', ''),
+          'ngayCapNhat': AppUtility.formatFromISOString(
+            row[4]?.value?.toString() ?? DateTime.now().toIso8601String(),
+          ).replaceAll('Z', ''),
+          'nguoiTao': fallbackUser,
+          'nguoiCapNhat': fallbackUser,
         };
-        log('ccdc_group json: ${jsonEncode(json)}');
-        list.add(CcdcGroup.fromJson(json));
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          list.add(CcdcGroup.fromJson(json));
+        }
       }
     }
   } catch (e) {
@@ -53,17 +88,41 @@ Future<List<CcdcGroup>> convertExcelToCcdcGroup(String filePath) async {
           'id': AppUtility.s(cell(row, 0)),
           'ten': AppUtility.s(cell(row, 1)),
           'hieuLuc': AppUtility.b(cell(row, 2)),
-          'idCongTy': AppUtility.s(cell(row, 3)),
-          'ngayTao': AppUtility.normalizeDateIsoString(cell(row, 4)),
-          'ngayCapNhat': AppUtility.normalizeDateIsoString(cell(row, 5)),
-          'nguoiTao': AppUtility.s(cell(row, 6), fallback: fallbackUser),
-          'nguoiCapNhat': AppUtility.s(cell(row, 7), fallback: fallbackUser),
+          'idCongTy': 'ct001',
+          'ngayTao': AppUtility.normalizeDateIsoString(
+            cell(row, 3) ?? DateTime.now().toIso8601String(),
+          ).replaceAll('Z', ''),
+          'ngayCapNhat': AppUtility.normalizeDateIsoString(
+            cell(row, 4) ?? DateTime.now().toIso8601String(),
+          ).replaceAll('Z', ''),
+          'nguoiTao': fallbackUser,
+          'nguoiCapNhat': fallbackUser,
         };
-        log('ccdc_group json2: ${jsonEncode(json)}');
-        list.add(CcdcGroup.fromJson(json));
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          list.add(CcdcGroup.fromJson(json));
+        }
       }
     }
   }
 
-  return list;
+  result['data'] = list;
+  result['errors'] = errors;
+
+  if (errors.isNotEmpty) {
+    result['success'] = false;
+    result['message'] =
+        'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
+  } else {
+    result['success'] = true;
+    result['message'] = 'Import thành công ${list.length} nhóm CCDC.';
+  }
+
+  return result;
 }

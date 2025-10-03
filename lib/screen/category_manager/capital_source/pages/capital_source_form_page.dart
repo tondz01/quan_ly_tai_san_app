@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
@@ -10,12 +13,16 @@ class CapitalSourceFormPage extends StatefulWidget {
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
+  final bool isNew;
+  final bool isCanUpdate;
   const CapitalSourceFormPage({
     super.key,
     this.capitalSource,
     this.index,
     this.onCancel,
     this.onSaved,
+    this.isNew = false,
+    this.isCanUpdate = false,
   });
 
   @override
@@ -28,7 +35,7 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
   late TextEditingController _nameController;
   late TextEditingController _noteController;
   bool _isActive = true;
-
+  bool isEditing = false;
   @override
   void initState() {
     _initData();
@@ -44,6 +51,14 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
   }
 
   void _initData() {
+    if (widget.capitalSource != null) {
+      isEditing = false;
+    } else {
+      isEditing = true;
+    }
+    // if (!widget.isCanUpdate && !widget.isNew) {
+    //   isEditing = false;
+    // }
     _codeController = TextEditingController(
       text: widget.capitalSource?.id ?? '',
     );
@@ -88,144 +103,127 @@ class _CapitalSourceFormPageState extends State<CapitalSourceFormPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.capitalSource != null;
-    return Container(
-      // constraints: BoxConstraints(
-      //   maxWidth: MediaQuery.of(context).size.width * 0.8,
-      // ),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F9FC),
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return Form(
+      key: _formKey,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              vertical: 32.0,
-              horizontal: 32.0,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  sectionTitle(
-                    Icons.account_balance_wallet,
-                    isEdit ? 'Cập nhật nguồn vốn' : 'Thêm mới nguồn vốn',
-                    'Nhập thông tin nguồn vốn.',
-                  ),
-                  sectionCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        sectionTitle(Icons.info_outline, 'Thông tin nguồn vốn'),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: _codeController,
-                                enabled: !isEdit, // Read-only khi update
-                                decoration: inputDecoration(
-                                  'Mã nguồn kinh phí',
-                                  required: true,
-                                ),
-                                validator:
-                                    (v) =>
-                                        v == null || v.isEmpty
-                                            ? 'Nhập mã nguồn kinh phí'
-                                            : null,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: TextFormField(
-                                controller: _nameController,
-                                decoration: inputDecoration(
-                                  'Tên nguồn kinh phí',
-                                  required: true,
-                                ),
-                                validator:
-                                    (v) =>
-                                        v == null || v.isEmpty
-                                            ? 'Nhập tên nguồn kinh phí'
-                                            : null,
-                              ),
-                            ),
-                          ],
+          sectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                sectionTitle(Icons.info_outline, 'Thông tin nguồn vốn'),
+                const SizedBox(height: 16),
+                if (widget.isNew ||
+                    (widget.isCanUpdate &&
+                        !widget.isNew &&
+                        widget.capitalSource != null))
+                  _buildHeaderDetail(),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _codeController,
+                        enabled: !isEdit, // Read-only khi update
+                        decoration: inputDecoration(
+                          'Mã nguồn kinh phí',
+                          required: true,
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _noteController,
-                          decoration: inputDecoration('Ghi chú'),
-                          minLines: 1,
-                          maxLines: 3,
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _isActive,
-                              onChanged:
-                                  (v) => setState(() => _isActive = v ?? true),
-                            ),
-                            const Text(
-                              'Có hiệu lực',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ],
+                        validator:
+                            (v) =>
+                                v == null || v.isEmpty
+                                    ? 'Nhập mã nguồn kinh phí'
+                                    : null,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      OutlinedButton(
-                        onPressed: () {
-                          if (widget.onCancel != null) {
-                            widget.onCancel!();
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF7B8EC8),
-                          side: const BorderSide(color: Color(0xFFE6EAF3)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _nameController,
+                        enabled: isEditing,
+                        decoration: inputDecoration(
+                          'Tên nguồn kinh phí',
+                          required: true,
                         ),
-                        child: const Text('Hủy'),
+                        validator:
+                            (v) =>
+                                v == null || v.isEmpty
+                                    ? 'Nhập tên nguồn kinh phí'
+                                    : null,
                       ),
-                      const Spacer(),
-                      ElevatedButton(
-                        onPressed: _save,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2264E5),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                        ),
-                        child: Text(isEdit ? 'Cập nhật' : 'Lưu'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _noteController,
+                  decoration: inputDecoration('Ghi chú'),
+                  enabled: isEditing,
+                  minLines: 1,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                // Row(
+                //   children: [
+                //     Checkbox(
+                //       value: _isActive,
+                //       onChanged:
+                //           (v) => setState(() => _isActive = v ?? true),
+                //     ),
+                //     const Text(
+                //       'Có hiệu lực',
+                //       style: TextStyle(fontSize: 16),
+                //     ),
+                //   ],
+                // ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildHeaderDetail() {
+    return isEditing
+        ? Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            MaterialTextButton(
+              text: 'Lưu',
+              icon: Icons.save,
+              backgroundColor: ColorValue.success,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                _save();
+              },
+            ),
+            const SizedBox(width: 8),
+            MaterialTextButton(
+              text: 'Hủy',
+              icon: Icons.cancel,
+              backgroundColor: ColorValue.error,
+              foregroundColor: Colors.white,
+              onPressed: () {
+                if (widget.onCancel != null) {
+                  widget.onCancel!();
+                }
+              },
+            ),
+          ],
+        )
+        : MaterialTextButton(
+          text: 'Chỉnh sửa nguồn vốn',
+          icon: Icons.save,
+          backgroundColor: ColorValue.success,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            setState(() {
+              isEditing = true;
+            });
+          },
+        );
+  }
+
 }

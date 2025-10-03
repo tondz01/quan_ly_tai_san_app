@@ -9,6 +9,8 @@ abstract class CapitalSourceState extends Equatable {
 
 class CapitalSourceInitial extends CapitalSourceState {}
 
+class CapitalSourceLoading extends CapitalSourceState {}
+
 class CapitalSourceLoaded extends CapitalSourceState {
   final List<NguonKinhPhi> capitalSources;
   const CapitalSourceLoaded(this.capitalSources);
@@ -19,6 +21,36 @@ class CapitalSourceLoaded extends CapitalSourceState {
 class CapitalSourceError extends CapitalSourceState {
   final String message;
   const CapitalSourceError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class AddCapitalSourceSuccess extends CapitalSourceState {
+  final String message;
+  const AddCapitalSourceSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateCapitalSourceSuccess extends CapitalSourceState {
+  final String message;
+  const UpdateCapitalSourceSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteCapitalSourceSuccess extends CapitalSourceState {
+  final String message;
+  const DeleteCapitalSourceSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteCapitalSourceBatchSuccess extends CapitalSourceState {}
+
+class DeleteCapitalSourceBatchFailure extends CapitalSourceState {
+  final String message;
+  const DeleteCapitalSourceBatchFailure(this.message);
   @override
   List<Object?> get props => [message];
 } 

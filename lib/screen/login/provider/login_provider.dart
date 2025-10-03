@@ -17,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
 import 'package:quan_ly_tai_san_app/screen/login/component/popup_setting_permission.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
+import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
 
 class LoginProvider with ChangeNotifier {
   get authRequest => _authRequest;
@@ -138,6 +139,13 @@ class LoginProvider with ChangeNotifier {
     _isLoggedIn = true;
     _userInfo = data.data;
     notifyListeners();
+
+    // Rebuild menu items after permissions are saved during login
+    try {
+      AppMenuData.instance.rebuildMenuItems();
+    } catch (_) {
+    }
+
     context.go(AppRoute.dashboard.path);
   }
 
@@ -388,7 +396,7 @@ class LoginProvider with ChangeNotifier {
       (element) => element.id == userInfo.tenDangNhap,
       orElse: () => NhanVien(),
     );
-    if (user.id!.isEmpty) {
+    if (user.id == null || user.id!.isEmpty) {
       return "Không xác định";
     }
     return user.hoTen ?? "";

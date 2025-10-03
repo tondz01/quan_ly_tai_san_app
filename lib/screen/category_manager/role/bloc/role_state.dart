@@ -35,8 +35,9 @@ class GetListRoleFailedState extends RoleState {
   });
 
   @override
-  List<Object> get props => [title, code!, message];
+  List<Object> get props => [title, code ?? 0, message];
 }
+
 //CREATE
 class CreateRoleSuccessState extends RoleState {
   final String data;
@@ -59,7 +60,7 @@ class CreateRoleFailedState extends RoleState {
   });
 
   @override
-  List<Object> get props => [title, code!, message];
+  List<Object> get props => [title, code ?? 0, message];
 }
 
 //UPDATE
@@ -94,5 +95,20 @@ class PutPostDeleteFailedState extends RoleState {
   });
 
   @override
-  List<Object> get props => [title, code!, message];
+  List<Object> get props => [title, code ?? 0, message];
+}
+
+// Additional states for better error handling
+class DeleteRoleBatchSuccess extends RoleState {
+  final String message;
+  const DeleteRoleBatchSuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteRoleBatchFailure extends RoleState {
+  final String message;
+  const DeleteRoleBatchFailure(this.message);
+  @override
+  List<Object?> get props => [message];
 }

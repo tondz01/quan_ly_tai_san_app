@@ -49,6 +49,7 @@ enum AppRoute {
   ccdcGroup(path: "/ccdc-group", name: 'ccdc-group'),
   loaiCcdc(path: "/loai-ccdc", name: 'loai-ccdc'),
   loaiTaiSan(path: "/loai-tai-san", name: 'loai-tai-san'),
+  unit(path: "/unit", name: 'unit'),
   toolAndSuppliesHandover(path: "/tool-and-supplies-handover", name: 'tool-and-supplies-handover');
 
   final String path;

@@ -19,83 +19,59 @@ class SignersTable extends StatelessWidget {
   Widget build(BuildContext context) {
     if (signers.isEmpty) return const SizedBox.shrink();
 
-    return Table(
-      columnWidths: {
-        0: FixedColumnWidth(20 * scale),
-        1: const IntrinsicColumnWidth(),
-        2: const IntrinsicColumnWidth(),
-        3: const IntrinsicColumnWidth(),
-        4: const IntrinsicColumnWidth(),
-        5: const IntrinsicColumnWidth(),
-        6: const FlexColumnWidth(1),
-      },
-      defaultVerticalAlignment: TableCellVerticalAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (int i = 0; i < signers.length; i++)
-          TableRow(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 2.0 * scale),
-                child: Text(
-                  "${i + 1}.",
-                  style: textStyle,
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 4.0 * scale),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 8.0 * scale),
+                  child: Text(
+                    "${i + 1}.",
+                    style: textStyle,
+                  ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 2.0 * scale),
-                child: Text(
-                  "Ông (bà):",
-                  style: textStyle,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLine(label: "Ông (bà):", value: signers[i].hoTen),
+                      SizedBox(height: 2.0 * scale),
+                      _buildLine(label: "Chức vụ:", value: signers[i].chucVu),
+                      SizedBox(height: 2.0 * scale),
+                      _buildLine(label: "Đại diện:", value: signers[i].donVi),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  0,
-                  2.0 * scale,
-                  gapAfterValue * scale,
-                  2.0 * scale,
-                ),
-                child: Text(
-                  signers[i].hoTen,
-                  style: textStyle,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 2.0 * scale),
-                child: Text(
-                  "Chức vụ:",
-                  style: textStyle,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  0,
-                  2.0 * scale,
-                  gapAfterValue * scale,
-                  2.0 * scale,
-                ),
-                child: Text(
-                  signers[i].chucVu,
-                  style: textStyle,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 2.0 * scale),
-                child: Text(
-                  "Đại diện:",
-                  style: textStyle,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 2.0 * scale),
-                child: Text(
-                  signers[i].donVi,
-                  style: textStyle,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildLine({required String label, required String value}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: 6.0 * scale),
+          child: Text(
+            label,
+            style: textStyle,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: textStyle,
+            softWrap: true,
+          ),
+        ),
       ],
     );
   }

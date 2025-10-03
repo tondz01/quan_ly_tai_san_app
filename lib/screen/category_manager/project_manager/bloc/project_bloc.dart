@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/constants/project_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/repository/project_repository.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'project_event.dart';
 import 'project_state.dart';
 
@@ -18,21 +20,32 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
   }
 
   Future<void> _loadProjects(GetListProjectEvent event, Emitter emit) async {
-    emit(ProjectInitialState());
     emit(ProjectLoadingState());
-    Map<String, dynamic> result = await repository.fetchProjects(
-      event.idCongTy,
-    );
-    emit(ProjectLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(GetListProjectSuccsessState(result['data']));
-    } else {
-      String msg = "Lỗi khi lấy dữ liệu";
+    try {
+      Map<String, dynamic> result = await repository.fetchProjects(
+        event.idCongTy,
+      );
+      emit(ProjectLoadingDismissState());
+      
+      if (checkStatusCodeDone(result)) {
+        emit(GetListProjectSuccessState(data: result['data']));
+      } else {
+        emit(
+          GetListProjectFailedState(
+            title: "notice",
+            code: result['status_code'],
+            message: result['message'] ?? ProjectConstants.errorLoadProjects,
+          ),
+        );
+      }
+    } catch (e) {
+      SGLog.error('ProjectBloc', 'LoadProjects error: $e');
+      emit(ProjectLoadingDismissState());
       emit(
         GetListProjectFailedState(
           title: "notice",
-          code: result['status_code'],
-          message: msg,
+          code: Numeral.STATUS_CODE_DEFAULT,
+          message: ProjectConstants.errorLoadProjects,
         ),
       );
     }
@@ -59,12 +72,31 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
 
   Future<void> _addProject(AddProjectEvent event, Emitter emit) async {
     emit(ProjectLoadingState());
-    final result = await repository.addProject(event.project);
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
-      emit(AddProjectSuccessState(result['data']));
-    } else {
-      emit(ProjectErrorState('Thêm dự án thất bại: ${result['message']}'));
+    try {
+      final result = await repository.addProject(event.project);
+      emit(ProjectLoadingDismissState());
+      
+      final int? statusCode = result['status_code'] as int?;
+      if (checkStatusCodeDone(result)) {
+        emit(CreateProjectSuccessState(data: (result['data'] ?? '').toString()));
+      } else {
+        emit(
+          PutPostDeleteFailedState(
+            title: 'Tạo dự án',
+            code: statusCode,
+            message: result['message'] ?? ProjectConstants.errorCreateProject,
+          ),
+        );
+      }
+    } catch (e) {
+      SGLog.error('ProjectBloc', 'AddProject error: $e');
+      emit(
+        PutPostDeleteFailedState(
+          title: 'Tạo dự án',
+          code: Numeral.STATUS_CODE_DEFAULT,
+          message: ProjectConstants.errorCreateProject,
+        ),
+      );
     }
     emit(ProjectLoadingDismissState());
   }
@@ -74,40 +106,98 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     Emitter emit,
   ) async {
     emit(ProjectLoadingState());
-    final result = await repository.saveProjectBatch(event.params);
-    emit(ProjectLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS ||
-        result['status_code'] == Numeral.STATUS_CODE_SUCCESS_CREATE) {
-      emit(AddProjectSuccessState(result['data']));
-    } else {
+    try {
+      final result = await repository.saveProjectBatch(event.params);
+      emit(ProjectLoadingDismissState());
+      
+      final int? statusCode = result['status_code'] as int?;
+      if (checkStatusCodeDone(result) ||
+          statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        emit(CreateProjectSuccessState(data: (result['data'] ?? '').toString()));
+      } else {
+        String msg =
+            'Thất bại khi lưu danh sách dự án: ${result['message'] ?? ProjectConstants.errorCreateProject}';
+        emit(
+          PutPostDeleteFailedState(
+            title: 'Tạo dự án',
+            code: statusCode,
+            message: msg,
+          ),
+        );
+      }
+    } catch (e) {
+      SGLog.error('ProjectBloc', 'CreateProjectBatch error: $e');
       emit(
-        ProjectErrorState(
-          'Thêm danh sách dự án thất bại: ${result['message']}',
+        PutPostDeleteFailedState(
+          title: 'Tạo dự án',
+          code: Numeral.STATUS_CODE_DEFAULT,
+          message: ProjectConstants.errorCreateProject,
         ),
       );
     }
+    emit(ProjectLoadingDismissState());
   }
 
   Future<void> _updateProject(UpdateProjectEvent event, Emitter emit) async {
     emit(ProjectLoadingState());
-    final result = await repository.updateProject(event.project);
-    emit(ProjectLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(UpdateProjectSuccessState(result['data']));
-    } else {
-      emit(ProjectErrorState('Cập nhật dự án thất bại: ${result['message']}'));
+    try {
+      final result = await repository.updateProject(event.project);
+      emit(ProjectLoadingDismissState());
+      
+      final int? statusCode = result['status_code'] as int?;
+      if (checkStatusCodeDone(result)) {
+        emit(UpdateProjectSuccessState(data: (result['data'] ?? '').toString()));
+      } else {
+        emit(
+          PutPostDeleteFailedState(
+            title: 'Cập nhật dự án',
+            code: statusCode,
+            message: result['message'] ?? ProjectConstants.errorUpdateProject,
+          ),
+        );
+      }
+    } catch (e) {
+      SGLog.error('ProjectBloc', 'UpdateProject error: $e');
+      emit(
+        PutPostDeleteFailedState(
+          title: 'Cập nhật dự án',
+          code: Numeral.STATUS_CODE_DEFAULT,
+          message: ProjectConstants.errorUpdateProject,
+        ),
+      );
     }
+    emit(ProjectLoadingDismissState());
   }
 
   Future<void> _deleteProject(DeleteProjectEvent event, Emitter emit) async {
     emit(ProjectLoadingState());
-    final result = await repository.deleteProject(event.project.id ?? '');
-    emit(ProjectLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(DeleteProjectSuccessState(result['data']));
-    } else {
-      emit(ProjectErrorState('Xóa dự án thất bại: ${result['message']}'));
+    try {
+      final result = await repository.deleteProject(event.project.id ?? '');
+      emit(ProjectLoadingDismissState());
+      
+      final int? statusCode = result['status_code'] as int?;
+      if (checkStatusCodeDone(result)) {
+        emit(DeleteProjectSuccessState(data: (result['data'] ?? '').toString()));
+      } else {
+        emit(
+          PutPostDeleteFailedState(
+            title: 'Xóa dự án',
+            code: statusCode,
+            message: result['message'] ?? ProjectConstants.errorDeleteProject,
+          ),
+        );
+      }
+    } catch (e) {
+      SGLog.error('ProjectBloc', 'DeleteProject error: $e');
+      emit(
+        PutPostDeleteFailedState(
+          title: 'Xóa dự án',
+          code: Numeral.STATUS_CODE_DEFAULT,
+          message: ProjectConstants.errorDeleteProject,
+        ),
+      );
     }
+    emit(ProjectLoadingDismissState());
   }
 
   Future<void> _deleteProjectBatch(
@@ -115,14 +205,23 @@ class ProjectBloc extends Bloc<ProjectEvent, ProjectState> {
     Emitter emit,
   ) async {
     emit(ProjectLoadingState());
-    final result = await repository.deleteProjectBatch(event.id);
-    emit(ProjectLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(DeleteProjectSuccessState(result['data']));
-    } else {
-      emit(
-        ProjectErrorState('Xóa danh sách dự án thất bại: ${result['message']}'),
-      );
+    try {
+      final result = await repository.deleteProjectBatch(event.id);
+      emit(ProjectLoadingDismissState());
+      
+      if (checkStatusCodeDone(result)) {
+        emit(DeleteProjectBatchSuccess(ProjectConstants.successDeleteProjectBatch));
+      } else {
+        emit(
+          DeleteProjectBatchFailure(
+            result['message'] ?? ProjectConstants.errorDeleteProject,
+          ),
+        );
+      }
+    } catch (e) {
+      SGLog.error('ProjectBloc', 'DeleteProjectBatch error: $e');
+      emit(DeleteProjectBatchFailure(ProjectConstants.errorDeleteProject));
     }
+    emit(ProjectLoadingDismissState());
   }
 }

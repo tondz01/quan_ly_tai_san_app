@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,11 +7,35 @@ import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
-Future<List<DuAn>> convertExcelToProject(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
-  final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
+Map<String, dynamic> _validateRow(Map<String, dynamic> json, int rowIndex) {
+  List<String> rowErrors = [];
 
+  // Validate required fields
+  if (json['id'] == null || json['id'].toString().trim().isEmpty) {
+    rowErrors.add('Mã dự án không được để trống');
+  }
+
+  if (json['tenDuAn'] == null || json['tenDuAn'].toString().trim().isEmpty) {
+    rowErrors.add('Tên dự án không được để trống');
+  }
+
+  return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
+}
+
+Future<Map<String, dynamic>> convertExcelToProject(
+  String filePath, {
+  Uint8List? fileBytes,
+}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
+  final fallbackUser = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';
+  Map<String, dynamic> result = {
+    "success": true,
+    "message": "",
+    "data": [],
+    "errors": [],
+  };
   List<DuAn> duAnList = [];
+  List<Map<String, dynamic>> errors = [];
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -28,13 +51,22 @@ Future<List<DuAn>> convertExcelToProject(String filePath) async {
           'id': AppUtility.s(row[0]?.value),
           'tenDuAn': AppUtility.s(row[1]?.value),
           'ghiChu': AppUtility.s(row[2]?.value),
-          'hieuLuc': AppUtility.b(row[3]?.value),
-          'idCongTy': AppUtility.s(row[4]?.value),
-          'nguoiTao': AppUtility.s(row[5]?.value, fallback: fallbackUser),
-          'isActive': AppUtility.b(row[6]?.value),
+          'hieuLuc': AppUtility.b(row[3]?.value ?? true),
+          'idCongTy': "ct001",
+          'nguoiTao': fallbackUser,
+          'isActive': true,
         };
-        log('du_an json: ${jsonEncode(json)}');
-        duAnList.add(DuAn.fromJson(json));
+        // Validate row data
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          duAnList.add(DuAn.fromJson(json));
+        }
       }
     }
   } catch (e) {
@@ -52,16 +84,36 @@ Future<List<DuAn>> convertExcelToProject(String filePath) async {
           'id': AppUtility.s(cell(row, 0)),
           'tenDuAn': AppUtility.s(cell(row, 1)),
           'ghiChu': AppUtility.s(cell(row, 2)),
-          'hieuLuc': AppUtility.b(cell(row, 3)),
-          'idCongTy': AppUtility.s(cell(row, 4)),
-          'nguoiTao': AppUtility.s(cell(row, 5), fallback: fallbackUser),
-          'isActive': AppUtility.b(cell(row, 6)),
+          'hieuLuc': AppUtility.b(cell(row, 3) ?? true),
+          'idCongTy': "ct001",
+          'nguoiTao': fallbackUser,
+          'isActive': true,
         };
-        log('du_an json2: ${jsonEncode(json)}');
-        duAnList.add(DuAn.fromJson(json));
+        final validation = _validateRow(json, rowIndex);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          duAnList.add(DuAn.fromJson(json));
+        }
       }
     }
   }
 
-  return duAnList;
+  result['data'] = duAnList;
+  result['errors'] = errors;
+
+  if (errors.isNotEmpty) {
+    result['success'] = false;
+    result['message'] =
+        'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
+  } else {
+    result['success'] = true;
+    result['message'] = 'Import thành công ${duAnList.length} dự án.';
+  }
+
+  return result;
 }

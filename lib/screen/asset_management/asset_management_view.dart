@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -88,7 +89,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             ? _searchController
                             : _searchKhauHaoController,
                     onSearchChanged: (value) {
-                      // provider.searchTerm = value;
+                      provider.searchTerm = value;
                     },
                     onTap: () {
                       // provider.onChangeDetailAssetManagement(null);
@@ -111,12 +112,17 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     subScreen: provider.subScreen,
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetBloc = context.read<AssetManagementBloc>();
-                      final List<AssetManagementDto> cv =
-                          await convertExcelToAsset(filePath!);
-                      if (!mounted) return;
-                      if (cv.isNotEmpty) {
-                        assetBloc.add(CreateAssetBatchEvent(cv));
-                      }
+                      final List<AssetManagementDto> assets =
+                          await convertExcelToAsset(
+                            bytes: fileBytes,
+                            filePath: filePath,
+                          );
+                      log(
+                        'message test: CreateAssetBatchEvent ${jsonEncode(assets)}',
+                      );
+                      // return;
+                      provider.onLoading(true);
+                      assetBloc.add(CreateAssetBatchEvent(assets));
                     },
                     onExportData: () {
                       AppUtility.exportData(
@@ -126,6 +132,10 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             [],
                       );
                     },
+                    isShowInput:
+                        provider.typeBody == ShowBody.taiSan ? true : false,
+                    isShownew:
+                        provider.typeBody == ShowBody.taiSan ? true : false,
                   ),
                 ),
                 body: Column(
@@ -261,6 +271,13 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         }
         if (state is GetAllChildAssetsSuccessState) {
           context.read<AssetManagementProvider>().getAllChildAssetsSuccess(
+            context,
+            state,
+          );
+        }
+        if (state is CreateAssetFailedState) {
+          log('CreateAssetFailedState');
+          context.read<AssetManagementProvider>().createAssetError(
             context,
             state,
           );

@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -8,25 +7,58 @@ import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
-String _sanitizeString(dynamic value, {String? fallback}) {
-  final str = value?.toString().trim();
-  if (str == null || str.isEmpty) {
-    return (fallback ?? '').trim();
-  }
-  return str;
-}
-
 extension DateTimeToMySQL on DateTime {
   String toMySQLFormat() {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(toUtc());
   }
 }
 
+Map<String, dynamic> _validateRow(
+  Map<String, dynamic> json,
+  int rowIndex,
+  List<PhongBan>? phongBans,
+) {
+  List<String> rowErrors = [];
 
+  // Validate required fields
+  if (json['id'] == null || json['id'].toString().trim().isEmpty) {
+    rowErrors.add('Mã phòng ban không được để trống');
+  }
 
-Future<List<PhongBan>> convertExcelToPhongBan(String filePath) async {
-  final bytes = File(filePath).readAsBytesSync();
+  if (json['tenPhongBan'] == null ||
+      json['tenPhongBan'].toString().trim().isEmpty) {
+    rowErrors.add('Tên phòng ban không được để trống');
+  }
+
+  if (json['phongCapTren'] == null ||
+      json['phongCapTren'].toString().trim().isEmpty) {
+  } else {
+    try {
+      phongBans?.firstWhere((phongBan) => phongBan.id == json['phongCapTren']);
+    } catch (e) {
+      rowErrors.add('Phòng cấp trên không tồn tại ${json['phongCapTren']}');
+    }
+  }
+
+  return {'hasError': rowErrors.isNotEmpty, 'errors': rowErrors};
+}
+
+Future<Map<String, dynamic>> convertExcelToPhongBan(
+  String filePath, {
+  Uint8List? fileBytes,
+  List<PhongBan>? phongBans,
+}) async {
+  final bytes = fileBytes ?? File(filePath).readAsBytesSync();
+
+  Map<String, dynamic> result = {
+    "success": true,
+    "message": "",
+    "data": [],
+    "errors": [],
+  };
+
   List<PhongBan> phongBanList = [];
+  List<Map<String, dynamic>> errors = [];
 
   try {
     final excel = Excel.decodeBytes(bytes);
@@ -38,27 +70,31 @@ Future<List<PhongBan>> convertExcelToPhongBan(String filePath) async {
         Map<String, dynamic> json = {
           "id": AppUtility.s(row[0]?.value),
           "tenPhongBan": AppUtility.s(row[1]?.value),
-          "idNhomDonVi": AppUtility.s(row[2]?.value),
-          "idQuanLy": AppUtility.s(row[3]?.value),
-          "idCongTy":
-              AppUtility.s(row[4]?.value) == ''
-                  ? AccountHelper.instance.getUserInfo()?.idCongTy
-                  : AppUtility.s(row[4]?.value),
-          "phongCapTren": AppUtility.s(row[5]?.value),
-          "ngayTao": AppUtility.normalizeDateIsoString(row[6]?.value),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(row[7]?.value),
-          "nguoiTao": _sanitizeString(
-            row[8]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "idNhomDonVi": "",
+          "idQuanLy": "",
+          "idCongTy": "ct001",
+          "phongCapTren": AppUtility.s(row[2]?.value),
+          "ngayTao": AppUtility.formatFromISOString(
+            row[3]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
-          "nguoiCapNhat": _sanitizeString(
-            row[9]?.value,
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            row[4]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
-          "isActive": row[11]?.value ?? true,
+          "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "isActive": true,
         };
-        log('json: ${jsonEncode(json)}');
-        phongBanList.add(PhongBan.fromJson(json));
+
+        final validation = _validateRow(json, rowIndex, phongBans);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          phongBanList.add(PhongBan.fromJson(json));
+        }
       }
     }
   } catch (e) {
@@ -72,26 +108,46 @@ Future<List<PhongBan>> convertExcelToPhongBan(String filePath) async {
         Map<String, dynamic> json = {
           "id": cell(row, 0),
           "tenPhongBan": cell(row, 1),
-          "idNhomDonVi": cell(row, 2),
-          "idQuanLy": cell(row, 3),
-          "idCongTy": cell(row, 4) ?? "ct001",
-          "phongCapTren": cell(row, 5),
-          "ngayTao": AppUtility.normalizeDateIsoString(cell(row, 6)),
-          "ngayCapNhat": AppUtility.normalizeDateIsoString(cell(row, 7)),
-          "nguoiTao": _sanitizeString(
-            cell(row, 8),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "idNhomDonVi": '',
+          "idQuanLy": '',
+          "idCongTy": "ct001",
+          "phongCapTren": cell(row, 2),
+          "ngayTao": AppUtility.formatFromISOString(
+            cell(row, 3) ?? DateTime.now().toIso8601String(),
           ),
-          "nguoiCapNhat": _sanitizeString(
-            cell(row, 9),
-            fallback: AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "ngayCapNhat": AppUtility.formatFromISOString(
+            cell(row, 4) ?? DateTime.now().toIso8601String(),
           ),
-          "isActive": cell(row, 10) ?? true,
+          "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
+          "isActive": true,
         };
-        log('json2: ${jsonEncode(json)}');
-        phongBanList.add(PhongBan.fromJson(json));
+        // Validate row data
+        final validation = _validateRow(json, rowIndex, phongBans);
+        if (validation['hasError']) {
+          errors.add({
+            'row': rowIndex + 1, // +1 because Excel rows start from 1
+            'errors': validation['errors'],
+            'data': json,
+          });
+        } else {
+          phongBanList.add(PhongBan.fromJson(json));
+        }
       }
     }
   }
-  return phongBanList;
+  // Update result
+  result['data'] = phongBanList;
+  result['errors'] = errors;
+
+  if (errors.isNotEmpty) {
+    result['success'] = false;
+    result['message'] =
+        'Có ${errors.length} dòng có lỗi. Vui lòng kiểm tra và sửa lại.';
+  } else {
+    result['success'] = true;
+    result['message'] = 'Import thành công ${phongBanList.length} phòng ban.';
+  }
+
+  return result;
 }

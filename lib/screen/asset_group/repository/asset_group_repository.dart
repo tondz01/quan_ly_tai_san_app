@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:async'; // Add this import for unawaited
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -39,7 +39,9 @@ class AssetGroupRepository extends ApiBase {
         AssetGroupDto.fromJson,
       );
     } catch (e) {
-      log("Error at getListAssetTransfer - AssetTransferRepository: $e");
+      SGLog.error("AssetGroupRepository", "Error at getListAssetGroup: $e");
+      result['status_code'] = 500;
+      result['message'] = 'Lỗi khi lấy danh sách nhóm tài sản: $e';
     }
 
     return result;
@@ -59,10 +61,12 @@ class AssetGroupRepository extends ApiBase {
         data: params.toJson(),
       );
 
+      log('createAssetGroup: ${params.toJson()}');
+
       unawaited(
         post(
           EndPointAPI.ASSET_GROUP_V2,
-          data: params.toJson(),
+          data: params.toLoaiTaisanJson(),
           options: Options(
             headers: {
               'Content-Type': 'application/json',
@@ -80,7 +84,9 @@ class AssetGroupRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = AssetGroupDto.fromJson(response.data);
     } catch (e) {
-      log("Error at createAssetGroup - AssetGroupRepository: $e");
+      SGLog.error("AssetGroupRepository", "Error at createAssetGroup: $e");
+      result['status_code'] = 500;
+      result['message'] = 'Lỗi khi tạo nhóm tài sản: $e';
     }
 
     return result;
@@ -120,7 +126,9 @@ class AssetGroupRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;
     } catch (e) {
-      log("Error at updateAssetGroup - AssetGroupRepository: $e");
+      SGLog.error("AssetGroupRepository", "Error at updateAssetGroup: $e");
+      result['status_code'] = 500;
+      result['message'] = 'Lỗi khi cập nhật nhóm tài sản: $e';
     }
 
     return result;
@@ -144,7 +152,9 @@ class AssetGroupRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;
     } catch (e) {
-      log("Error at deleteAssetGroup - AssetGroupRepository: $e");
+      SGLog.error("AssetGroupRepository", "Error at deleteAssetGroup: $e");
+      result['status_code'] = 500;
+      result['message'] = 'Lỗi khi xóa nhóm tài sản: $e';
     }
 
     return result;
@@ -221,6 +231,19 @@ class AssetGroupRepository extends ApiBase {
         data: jsonEncode(assetGroups),
       );
 
+      unawaited(
+        post(
+          '${EndPointAPI.ASSET_GROUP_V2}/batch',
+          data: jsonEncode(assetGroups.map((e) => e.toLoaiTaisanJson()).toList()),
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          ),
+        ),
+      );
+
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -234,13 +257,15 @@ class AssetGroupRepository extends ApiBase {
         AssetGroupDto.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("AssetGroupRepository", "Error at saveAssetGroupBatch: $e");
+      result['status_code'] = 500;
+      result['message'] = 'Lỗi khi import nhóm tài sản: $e';
     }
 
     return result;
   }
 
-  Future<Map<String, dynamic>> deleteAssetGroupBatch(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> deleteAssetGroupBatch(List<String> ids) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -249,8 +274,10 @@ class AssetGroupRepository extends ApiBase {
     try {
       final response = await delete(
         '${EndPointAPI.ASSET_GROUP}/batch',
-        data: data,
+        data: ids,
       );
+
+      unawaited(delete('${EndPointAPI.ASSET_GROUP_V2}/batch', data: ids));
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -265,7 +292,9 @@ class AssetGroupRepository extends ApiBase {
         AssetGroupDto.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("AssetGroupRepository", "Error at deleteAssetGroupBatch: $e");
+      result['status_code'] = 500;
+      result['message'] = 'Lỗi khi xóa danh sách nhóm tài sản: $e';
     }
 
     return result;

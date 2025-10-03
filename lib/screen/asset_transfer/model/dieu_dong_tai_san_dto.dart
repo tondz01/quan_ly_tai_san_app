@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 import 'chi_tiet_dieu_dong_tai_san.dart';
@@ -82,6 +83,8 @@ class DieuDongTaiSanDto {
   bool? share;
   bool? daBanGiao;
   bool? byStep;
+  int? trangThaiPhieu;
+  // 🔥 Logic: add field
   List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans;
   List<SignatoryDto>? listSignatory;
 
@@ -141,6 +144,7 @@ class DieuDongTaiSanDto {
     this.trangThaiKyNhay,
     this.daBanGiao,
     this.byStep,
+    this.trangThaiPhieu,
   });
 
   factory DieuDongTaiSanDto.fromJson(Map<String, dynamic> json) {
@@ -178,18 +182,18 @@ class DieuDongTaiSanDto {
       trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
       trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
       trangThaiKyNhay: json['trangThaiKyNhay'],
-      tggnTuNgay: json['tggnTuNgay'],
-      tggnDenNgay: json['tggnDenNgay'],
+      tggnTuNgay: AppUtility.formatFromISOString(json['tggnTuNgay']),
+      tggnDenNgay: AppUtility.formatFromISOString(json['tggnDenNgay']),
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       noiNhan: json['noiNhan'],
       trichYeu: json['trichYeu'],
       duongDanFile: json['duongDanFile'],
       tenFile: json['tenFile'],
-      ngayKy: json['ngayKy'],
+      ngayKy: AppUtility.formatFromISOString(json['ngayKy']),
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],
@@ -200,6 +204,7 @@ class DieuDongTaiSanDto {
       listSignatory: json['listSignatory'],
       daBanGiao: json['daBanGiao'],
       byStep: json['byStep'],
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -238,18 +243,18 @@ class DieuDongTaiSanDto {
       "trinhDuyetCapPhongXacNhan": trinhDuyetCapPhongXacNhan,
       "trinhDuyetGiamDocXacNhan": trinhDuyetGiamDocXacNhan,
       "trangThaiKyNhay": trangThaiKyNhay,
-      "tggnTuNgay": tggnTuNgay,
-      "tggnDenNgay": tggnDenNgay,
+      "tggnTuNgay": AppUtility.formatFromISOString(tggnTuNgay ?? ''),
+      "tggnDenNgay": AppUtility.formatFromISOString(tggnDenNgay ?? ''),
       "diaDiemGiaoNhan": diaDiemGiaoNhan,
       "noiNhan": noiNhan,
       "trichYeu": trichYeu,
       "duongDanFile": duongDanFile,
       "tenFile": tenFile,
-      "ngayKy": ngayKy,
+      "ngayKy": AppUtility.formatFromISOString(ngayKy ?? ''),
       "trangThai": trangThai,
       "idCongTy": idCongTy,
-      "ngayTao": ngayTao,
-      "ngayCapNhat": ngayCapNhat,
+      "ngayTao": AppUtility.formatFromISOString(ngayTao ?? ''),
+      "ngayCapNhat": AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       "nguoiTao": nguoiTao,
       "nguoiCapNhat": nguoiCapNhat,
       "coHieuLuc": coHieuLuc,
@@ -260,6 +265,7 @@ class DieuDongTaiSanDto {
       "listSignatory": listSignatory,
       "daBanGiao": daBanGiao,
       "byStep": byStep,
+      "trangThaiPhieu": trangThaiPhieu,
     };
   }
 
@@ -319,6 +325,7 @@ class DieuDongTaiSanDto {
     List<SignatoryDto>? listSignatory,
     bool? daBanGiao,
     bool? byStep,
+    int? trangThaiPhieu,
   }) {
     return DieuDongTaiSanDto(
       id: id ?? this.id,
@@ -384,6 +391,7 @@ class DieuDongTaiSanDto {
       listSignatory: listSignatory ?? this.listSignatory,
       daBanGiao: daBanGiao ?? this.daBanGiao,
       byStep: byStep ?? this.byStep,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
 }

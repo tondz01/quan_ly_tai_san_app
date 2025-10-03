@@ -1,9 +1,16 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class CapitalSourceList extends StatefulWidget {
@@ -29,10 +36,10 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
   @override
   Widget build(BuildContext context) {
     final columns = [
-      
       TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Mã nguồn kinh phí',
-        getValue: (item) => item.id ?? "", width: 100,
+        getValue: (item) => item.id ?? "",
+        width: 100,
       ),
       TableBaseConfig.columnTable<NguonKinhPhi>(
         title: 'Tên nguồn kinh phí',
@@ -46,19 +53,16 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
         width: MediaQuery.of(context).size.width / 4,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<NguonKinhPhi>(
-        title: 'Có hiệu lực',
-        getValue: (item) => item.isActive ?? false ? 'Có' : 'Không',
-        width: 150,
-      ),
+      // TableBaseConfig.columnTable<NguonKinhPhi>(
+      //   title: 'Có hiệu lực',
+      //   getValue: (item) => item.isActive ?? false ? 'Có' : 'Không',
+      //   width: 150,
+      // ),
       TableBaseConfig.columnWidgetBase<NguonKinhPhi>(
-        title: '',
+        title: 'Thao tác',
         cellBuilder:
             (item) => TableBaseConfig.viewActionBase<NguonKinhPhi>(
               item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
               onDelete: (item) {
                 widget.onDelete?.call(item);
               },
@@ -114,28 +118,60 @@ class _CapitalSourceListState extends State<CapitalSourceList> {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    SGText(
-                      text:
-                          'Danh sách nguồn vốn đã chọn: ${selectedItems.length}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                Visibility(
+                  visible: selectedItems.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text:
+                            'Danh sách nguồn vốn đã chọn: ${selectedItems.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 16),
-                    IconButton(
-                      onPressed: () {
-                        // TODO: Xóa nhân viên đã chọn
-                      },
-                      icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    ),
-                  ],
+                      SizedBox(width: 16),
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            List<String> data =
+                                selectedItems.map((e) => e.id!).toList();
+
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa nguồn vốn',
+                              message:
+                                  'Bạn có chắc muốn xóa ${selectedItems.length} nguồn vốn',
+                              highlight: selectedItems.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final capitalSourceBloc =
+                                    context.read<CapitalSourceBloc>();
+                                capitalSourceBloc.add(
+                                  DeleteCapitalSourceBatch(data),
+                                );
+                              },
+                            );
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<NguonKinhPhi>(

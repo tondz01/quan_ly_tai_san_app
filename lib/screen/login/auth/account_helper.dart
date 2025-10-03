@@ -1,6 +1,8 @@
 import 'dart:developer';
 
+import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
@@ -14,6 +16,9 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
+import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 
 class AccountHelper {
   //create private constructor
@@ -82,13 +87,42 @@ class AccountHelper {
   }
 
   List<PhongBan>? getDepartment() {
-    return StorageService.read(StorageKey.DEPARTMENT);
+    final raw = StorageService.read(StorageKey.DEPARTMENT);
+    if (raw == null) return null;
+
+    try {
+      if (raw is List<PhongBan>) return raw;
+      if (raw is List) {
+        return raw
+            .map((e) {
+              if (e is PhongBan) return e;
+              if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
+              if (e is Map)
+                return PhongBan.fromJson(Map<String, dynamic>.from(e));
+              return null;
+            })
+            .whereType<PhongBan>()
+            .toList();
+      }
+      return null;
+    } catch (e) {
+      print('Error parsing department data: $e');
+      return null;
+    }
   }
 
   PhongBan? getDepartmentById(String id) {
-    return StorageService.read(
-      StorageKey.DEPARTMENT,
-    ).firstWhere((department) => department.id == id, orElse: () => PhongBan());
+    final departments = getDepartment();
+    if (departments == null) return null;
+
+    try {
+      for (final d in departments) {
+        if (d.id == id) return d;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   //NHÂN VIÊN
@@ -101,14 +135,40 @@ class AccountHelper {
   }
 
   List<NhanVien>? getNhanVien() {
-    return StorageService.read(StorageKey.NHAN_VIEN);
+    final raw = StorageService.read(StorageKey.NHAN_VIEN);
+    if (raw == null) return null;
+    if (raw is List<NhanVien>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .map(
+              (e) =>
+                  e is NhanVien
+                      ? e
+                      : NhanVien.fromJson(e as Map<String, dynamic>),
+            )
+            .toList();
+      } catch (e) {
+        log('Error at getNhanVien: $e');
+        return null;
+      }
+    }
+    return null;
   }
 
   NhanVien? getNhanVienById(String id) {
-    log('message id getNhanVienById: $id');
-    return StorageService.read(
-      StorageKey.NHAN_VIEN,
-    ).firstWhere((nhanVien) => nhanVien.id == id, orElse: () => NhanVien());
+    final nhanVienList = getNhanVien();
+    if (nhanVienList == null) return null;
+
+    try {
+      return nhanVienList.firstWhere(
+        (nhanVien) => nhanVien.id == id,
+        orElse: () => NhanVien(),
+      );
+    } catch (e) {
+      print('Error parsing nhanVien data: $e');
+      return NhanVien();
+    }
   }
 
   //CHỨC VỤ
@@ -121,13 +181,31 @@ class AccountHelper {
   }
 
   List<ChucVu>? getChucVu() {
-    return StorageService.read(StorageKey.CHUC_VU);
+    final raw = StorageService.read(StorageKey.CHUC_VU);
+    if (raw == null) return null;
+    if (raw is List<ChucVu>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => ChucVu.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (e) {
+        log('Error at getChucVu: $e');
+        return null;
+      }
+    }
+    log('Error at getChucVu: $raw');
+    return null;
   }
 
   ChucVu? getChucVuById(String id) {
-    return StorageService.read(
-      StorageKey.CHUC_VU,
-    ).firstWhere((chucVu) => chucVu.id == id, orElse: () => ChucVu.empty());
+    final list = getChucVu();
+    if (list == null) return null;
+    return list.firstWhere(
+      (chucVu) => chucVu.id == id,
+      orElse: () => ChucVu.empty(),
+    );
   }
 
   //ASSET GROUP
@@ -147,7 +225,10 @@ class AccountHelper {
       try {
         return raw
             .whereType()
-            .map((e) => AssetGroupDto.fromJson(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) =>
+                  AssetGroupDto.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
       } catch (e) {
         log('Error at getAssetGroup: $e');
@@ -214,6 +295,43 @@ class AccountHelper {
   void clearAssetTransfer() {
     StorageService.remove(StorageKey.ASSET_TRANSFER);
     refreshAllCounts();
+  }
+
+  // ASSET CATEGORY
+  setAssetCategory(List<AssetCategoryDto> assetCategory) {
+    StorageService.write(StorageKey.ASSET_CATEGORY, assetCategory);
+  }
+
+  List<AssetCategoryDto>? getAssetCategory() {
+    final raw = StorageService.read(StorageKey.ASSET_CATEGORY);
+    if (raw == null) return null;
+    if (raw is List<AssetCategoryDto>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map(
+              (e) => AssetCategoryDto.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ),
+            )
+            .toList();
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  void clearAssetCategory() {
+    StorageService.remove(StorageKey.ASSET_CATEGORY);
+  }
+
+  AssetCategoryDto? getAssetCategoryById(String id) {
+    return StorageService.read(StorageKey.ASSET_CATEGORY).firstWhere(
+      (assetCategory) => assetCategory.id == id,
+      orElse: () => AssetCategoryDto(),
+    );
   }
 
   int getAssetTransferCount(int type) {
@@ -572,11 +690,158 @@ class AccountHelper {
   }
 
   //Config
-  setConfigTimeExpire(int timeExpire) {
-    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, timeExpire);
+  setConfigTimeExpire(ConfigDto config) {
+    StorageService.write(StorageKey.CONFIG_TIME_EXPIRE, config);
   }
 
-  int? getConfigTimeExpire() {
-    return StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+  ConfigDto? getConfigTimeExpire() {
+    final raw = StorageService.read(StorageKey.CONFIG_TIME_EXPIRE);
+    if (raw == null) return null;
+    if (raw is ConfigDto) return raw;
+    if (raw is Map) return ConfigDto.fromJson(Map<String, dynamic>.from(raw));
+    return null;
+  }
+
+  // Global type asset
+  setTypeAsset(List<TypeAsset> typeAsset) {
+    if (typeAsset.isNotEmpty) {
+      StorageService.write(StorageKey.TYPE_ASSET, typeAsset);
+    }
+  }
+
+  // List<TypeAsset> getAllTypeAsset() {
+  //   final raw = StorageService.read(StorageKey.TYPE_ASSET);
+  //   if (raw == null) return [];
+  //   if (raw is List<TypeAsset>) return raw;
+  //   return [];
+  // }
+  List<TypeAsset> getAllTypeAsset() {
+    final raw = StorageService.read(StorageKey.TYPE_ASSET);
+    if (raw == null) return [];
+    if (raw is List<TypeAsset>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map((e) => TypeAsset.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (_) {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  List<TypeAsset> getTypeAsset(String idTypeAsset) {
+    final List<TypeAsset> all = getAllTypeAsset();
+    final List<TypeAsset> filtered =
+        all.where((element) => element.idLoaiTs == idTypeAsset).toList();
+    return filtered;
+  }
+
+  TypeAsset? getTypeAssetById(String idTypeAsset) {
+    if (idTypeAsset.isEmpty) return null;
+    final raw = StorageService.read(
+      StorageKey.TYPE_ASSET,
+    )?.firstWhere((element) => element.id == idTypeAsset, orElse: () => null);
+    final types =
+        raw?.map((e) => TypeAsset.fromJson(e as Map<String, dynamic>)).toList();
+
+    final TypeAsset? found = types?.firstWhere(
+      (t) => t.id == idTypeAsset,
+      orElse: () => null,
+    );
+    if (found == null) return null;
+    return found;
+  }
+
+  TypeAsset? getTypeAssetObject(String idAssetGroup) {
+    try {
+      final raw = StorageService.read(StorageKey.TYPE_ASSET)?.firstWhere(
+        (element) => element.id == idAssetGroup,
+        orElse: () => null,
+      );
+      if (raw == null) return null;
+      return raw is TypeAsset
+          ? raw
+          : TypeAsset.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  clearTypeAsset() {
+    StorageService.remove(StorageKey.TYPE_ASSET);
+  }
+
+  // Global type ccdc
+  setTypeCcdc(List<TypeCcdc> typeCcdc) {
+    if (typeCcdc.isNotEmpty) {
+      StorageService.write(StorageKey.TYPE_CCDCV, typeCcdc);
+    }
+  }
+
+  List<TypeCcdc> getAllTypeCcdc() {
+    final raw = StorageService.read(StorageKey.TYPE_CCDCV);
+    if (raw == null) return [];
+    if (raw is List<TypeCcdc>) return raw;
+    return [];
+  }
+
+  List<TypeCcdc> getTypeCcdc(String idCcdcGroup) {
+    final raw = StorageService.read(StorageKey.TYPE_CCDCV);
+    if (raw == null) return [];
+    if (raw is List<TypeCcdc>) {
+      return raw.where((element) => element.idLoaiCCDC == idCcdcGroup).toList();
+    }
+    return [];
+  }
+
+  TypeCcdc? getTypeCcdcObject(String idCcdcGroup) {
+    try {
+      final raw = StorageService.read(
+        StorageKey.TYPE_CCDCV,
+      )?.firstWhere((element) => element.id == idCcdcGroup, orElse: () => null);
+      if (raw == null) return null;
+      if (raw is TypeCcdc) return raw;
+      if (raw is Map) return TypeCcdc.fromJson(Map<String, dynamic>.from(raw));
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  clearTypeCcdc() {
+    StorageService.remove(StorageKey.TYPE_CCDCV);
+  }
+
+  // Global unit
+  setUnit(List<UnitDto> unit) {
+    if (unit.isNotEmpty) {
+      StorageService.write(StorageKey.UNIT, unit);
+    }
+  }
+
+  clearUnit() {
+    StorageService.remove(StorageKey.UNIT);
+  }
+
+  List<UnitDto> getAllUnit() {
+    final raw = StorageService.read(StorageKey.UNIT);
+    if (raw == null) return [];
+    if (raw is List<UnitDto>) return raw;
+    return [];
+  }
+
+  UnitDto? getUnitById(String idUnit) {
+    final raw = StorageService.read(StorageKey.UNIT);
+    if (raw == null) return null;
+    if (raw is List<UnitDto>) {
+      return raw.firstWhere(
+        (unit) => unit.id == idUnit,
+        orElse: () => UnitDto(),
+      );
+    }
+    return null;
   }
 }

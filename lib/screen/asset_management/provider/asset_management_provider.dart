@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,6 +31,8 @@ class AssetManagementProvider with ChangeNotifier {
   get isCanUpdate => _isCanUpdate;
   get isCanDelete => _isCanDelete;
   get isNew => _isNew;
+
+  String get searchTerm => _searchTerm;
 
   get error => _error;
   bool get isLoading => _isLoading;
@@ -103,6 +107,7 @@ class AssetManagementProvider with ChangeNotifier {
   bool _isNew = false;
 
   String? _error;
+  String _searchTerm = '';
 
   String? _subScreen;
   String? _selectedFileName;
@@ -156,13 +161,33 @@ class AssetManagementProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
+    set searchTerm(String value) {
+    _searchTerm = value;
+    _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
+    notifyListeners();
+  }
+
   //Tài sản con
   HienTrang getHienTrang(int id) {
-    return listHienTrang.firstWhere((element) => element.id == id);
+    return listHienTrang.firstWhere(
+      (element) => element.id == id,
+      orElse:
+          () =>
+              listHienTrang.isNotEmpty
+                  ? listHienTrang.first
+                  : HienTrang(id: 0, name: ''),
+    );
   }
 
   LyDoTang getLyDoTang(int id) {
-    return listLyDoTang.firstWhere((element) => element.id == id);
+    return listLyDoTang.firstWhere(
+      (element) => element.id == id,
+      orElse:
+          () =>
+              listLyDoTang.isNotEmpty
+                  ? listLyDoTang.first
+                  : LyDoTang(id: 0, name: ''),
+    );
   }
 
   Country? findCountryByName(String name) {
@@ -177,9 +202,44 @@ class AssetManagementProvider with ChangeNotifier {
   }
 
   List<Map<String, bool>?> checkBoxAssetGroup = [];
+  void _applyFilters() {
+    if (_data == null) return;
+    // Lọc tiếp theo nội dung tìm kiếm
+    if (_searchTerm.isNotEmpty) {
+      String searchLower = _searchTerm.toLowerCase();
+      _filteredData =
+          _data!.where((item) {
+            String departmentName = AccountHelper.instance
+                        .getDepartmentById(item.id ?? '')
+                        ?.tenPhongBan
+                        ?.toLowerCase() ??
+                    '';
+            log('message test: departmentName: $departmentName');
+            return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenTaiSan?.toLowerCase().contains(searchLower) ??
+                    false) ||
+                (item.tenNhom?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
+                //đơn vị tính
+                (AccountHelper.instance
+                        .getUnitById(item.donViTinh ?? '')
+                        ?.tenDonVi
+                        ?.toLowerCase()
+                        .contains(searchLower) ??
+                    false) ||
+                //phòng ban
+                (departmentName.contains(searchLower));
+          }).toList();
+    } else {
+      _filteredData = _data!;
+    }
+
+    // Sau khi lọc, cập nhật lại phân trang
+    _updatePagination();
+  }
 
   void _updatePagination() {
-    totalEntries = data?.length ?? 0;
+    totalEntries = _filteredData?.length ?? 0;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
     startIndex = (currentPage - 1) * rowsPerPage;
     endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
@@ -191,8 +251,8 @@ class AssetManagementProvider with ChangeNotifier {
     }
 
     _dataPage =
-        data.isNotEmpty
-            ? data.sublist(
+        _filteredData?.isNotEmpty ?? false
+            ? _filteredData!.sublist(
               startIndex < totalEntries ? startIndex : 0,
               endIndex < totalEntries ? endIndex : totalEntries,
             )
@@ -232,6 +292,11 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void onLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   reset() {
     _isLoading = true;
     onChangeBody(ShowBody.taiSan);
@@ -252,7 +317,10 @@ class AssetManagementProvider with ChangeNotifier {
       bloc.add(GetListKhauHaoEvent(context, idCongTy));
       bloc.add(GetAllChildAssetsEvent(context, idCongTy));
     } catch (e) {
-      log('Error adding AssetManagement events: $e');
+      SGLog.error(
+        "AssetManagementProvider",
+        "Error adding AssetManagement events: $e",
+      );
     }
   }
 
@@ -285,15 +353,16 @@ class AssetManagementProvider with ChangeNotifier {
     }
     _isShowCollapse = true;
     isShowInput = true;
-    log('message onChangeDetail isNew: $_isNew');
     notifyListeners();
   }
 
   List<ChildAssetDto> getListChildAssetsByIdAsset(String idTaiSan) {
     List<ChildAssetDto> list = [];
-    for (var element in _dataChildAssets!) {
-      if (element.idTaiSanCha == idTaiSan) {
-        list.add(element);
+    if (_dataChildAssets != null) {
+      for (var element in _dataChildAssets!) {
+        if (element.idTaiSanCha == idTaiSan) {
+          list.add(element);
+        }
       }
     }
     return list;
@@ -305,7 +374,6 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataDepreciationDetail = null;
     }
-    log('message onChangeDepreciationDetail');
     _isShowCollapseKhauHao = true;
     isShowInputKhauHao = true;
   }
@@ -320,8 +388,11 @@ class AssetManagementProvider with ChangeNotifier {
       _data = [];
       // _filteredData = [];
       _isLoading = false;
+      _filteredData = [];
+      _dataPage = [];
     } else {
-      _data = state.data;
+      _data =
+          state.data.where((element) => element.isTaiSanCon == false).toList();
       _filteredData = List.from(_data!); // Khởi tạo filteredData
       _updatePagination();
       _isLoading = false;
@@ -338,7 +409,6 @@ class AssetManagementProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _dataChildAssets = [];
       // _filteredData = [];
-      log('message getListChildAssetsSuccess: ${state.data}');
     } else {
       _dataChildAssets = state.data;
       _filteredData = List.from(_dataChildAssets!); // Khởi tạo filteredData
@@ -374,6 +444,8 @@ class AssetManagementProvider with ChangeNotifier {
 
   createAssetError(BuildContext context, CreateAssetFailedState state) {
     _error = state.message;
+    _isLoading = false;
+    AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
   }
 
@@ -436,7 +508,6 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
-    log('getListCapitalSourceSuccess: ${_itemsNguonKinhPhi?.length}');
     notifyListeners();
   }
 
@@ -500,6 +571,8 @@ class AssetManagementProvider with ChangeNotifier {
       }
     }
     findDataByIdAssetGroup();
+    _updatePagination();
+
     notifyListeners();
   }
 
@@ -567,15 +640,11 @@ class AssetManagementProvider with ChangeNotifier {
         DropdownMenuItem<LyDoTang>(value: element, child: Text(element.name)),
     ];
 
-    log('onLoadItemDropdown itemsLyDoTang: ${_itemsLyDoTang.length}');
-
     //Item dropdown hien trang
     _itemsHienTrang = [
       for (var element in listHienTrang)
         DropdownMenuItem<HienTrang>(value: element, child: Text(element.name)),
     ];
-
-    log('onLoadItemDropdown itemsHienTrang: ${_itemsHienTrang.length}');
   }
 
   void onSubmit(

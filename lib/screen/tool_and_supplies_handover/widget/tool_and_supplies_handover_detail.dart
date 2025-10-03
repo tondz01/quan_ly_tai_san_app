@@ -4,8 +4,8 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -33,6 +33,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:se_gay_components/common/sg_indicator.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
@@ -96,6 +97,7 @@ class _ToolAndSuppliesHandoverDetailState
   List<ToolAndMaterialTransferDto> listAssetTransfer = [];
   List<ChiTietDieuDongTaiSan> listDetailAssetMobilization = [];
   List<DetailSubppliesHandoverDto> listDetailSubppliesHandover = [];
+  List<DetailSubppliesHandoverDto> initialDetails = [];
 
   List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
@@ -117,6 +119,7 @@ class _ToolAndSuppliesHandoverDetailState
   final List<NhanVien?> _additionalSigners = [];
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
+  List<AdditionalSignerData> initialSignersDetailed = [];
   DateTime? ngayBanGiao;
 
   @override
@@ -193,24 +196,9 @@ class _ToolAndSuppliesHandoverDetailState
         item!.nguoiTao == currentUser?.tenDangNhap);
   }
 
-  DateTime? _parseDate(String dateString) {
-    try {
-      if (dateString.isEmpty) return null;
-      final trimmed = dateString.trim();
-      if (trimmed.isEmpty) return null;
-      // Thử parse ISO 8601 format trước
-      if (trimmed.contains('T')) {
-        return DateTime.tryParse(trimmed);
-      }
-      return DateFormat("dd/MM/yyyy").parseStrict(trimmed);
-    } catch (e) {
-      log('Error parsing date: $dateString, error: $e');
-      return null;
-    }
-  }
-
   void _initData() async {
     if (!mounted) return; // Kiểm tra nếu widget đã bị dispose
+    // _clearData();
     currentUser = AccountHelper.instance.getUserInfo();
     item = widget.provider.item;
     isEditing = widget.isEditing;
@@ -268,23 +256,26 @@ class _ToolAndSuppliesHandoverDetailState
             : <DropdownMenuItem<ToolAndMaterialTransferDto>>[];
 
     if (item != null) {
-      donViGiao = getPhongBan(
-        listPhongBan: listPhongBan,
-        idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
-      );
-      if (widget.isFindNew) {
-        isEditing = widget.isFindNew;
-
-        await widget.provider.getListOwnership(donViGiao!.id.toString());
-      }
+      // Determine transfer order and units before using them
       dieuDongCcdc = listAssetTransfer.firstWhere(
         (element) => element.id == item?.lenhDieuDong,
         orElse: () => ToolAndMaterialTransferDto(),
       );
-      log(
-        "check dieuDongCcdc: ${jsonEncode(dieuDongCcdc?.detailToolAndMaterialTransfers)}",
+      donViGiao = getPhongBan(
+        listPhongBan: listPhongBan,
+        idPhongBan: dieuDongCcdc?.idDonViGiao ?? '',
       );
-      
+      donViNhan = getPhongBan(
+        listPhongBan: listPhongBan,
+        idPhongBan: dieuDongCcdc?.idDonViNhan ?? '',
+      );
+      if (widget.isFindNew) {
+        isEditing = widget.isFindNew;
+        final idDonViGiao = donViGiao?.id ?? item?.idDonViGiao ?? '';
+        if (idDonViGiao.isNotEmpty) {
+          await widget.provider.getListOwnership(idDonViGiao);
+        }
+      }
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
@@ -292,10 +283,26 @@ class _ToolAndSuppliesHandoverDetailState
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
 
-      ngayBanGiao =
-          item?.ngayBanGiao != null ? _parseDate(item!.ngayBanGiao!) : null;
+      ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
       isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
-      getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
+      initialDetails = item?.listDetailSubppliesHandover ?? [];
+      initialSignersDetailed =
+          item?.listSignatory
+              ?.map(
+                (e) => AdditionalSignerData(
+                  department: widget.provider.dataDepartment?.firstWhere(
+                    (element) => element.id == e.idPhongBan,
+                    orElse: () => PhongBan(),
+                  ),
+                  employee: widget.provider.dataStaff?.firstWhere(
+                    (element) => element.id == e.idNguoiKy,
+                    orElse: () => NhanVien(),
+                  ),
+                  signed: e.trangThai == 1,
+                ),
+              )
+              .toList() ??
+          [];
       _additionalSignersDetailed =
           item?.listSignatory
               ?.map(
@@ -313,10 +320,7 @@ class _ToolAndSuppliesHandoverDetailState
               )
               .toList() ??
           [];
-      dieuDongCcdc = listAssetTransfer.firstWhere(
-        (element) => element.id == item?.lenhDieuDong,
-        orElse: () => ToolAndMaterialTransferDto(),
-      );
+      getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
       if (!widget.isFindNew) {
         _loadPdfNetwork(item?.tenFile ?? '');
       }
@@ -339,11 +343,13 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   void getStaffDonViGiaoAndNhan(String idDonViNhan, String idDonViGiao) {
+    log('idDonViNhan: $idDonViNhan');
+    listNhanVien = AccountHelper.instance.getNhanVien() ?? [];
     listNhanVienDonViNhan =
-        widget.provider.dataStaff
-            ?.where((element) => element.phongBanId == idDonViNhan)
-            .toList() ??
-        [];
+        listNhanVien
+            .where((element) => element.phongBanId == idDonViNhan)
+            .toList();
+    log('listNhanVienDonViNhan: ${listNhanVienDonViNhan.length}');
 
     listNhanVienDonViGiao =
         widget.provider.dataStaff
@@ -362,13 +368,13 @@ class _ToolAndSuppliesHandoverDetailState
     if (controllerDocumentName.text.isEmpty) {
       newValidationErrors['documentName'] = true;
     }
-    if (controllerOrder.text.isEmpty) {
+    if (dieuDongCcdc == null || controllerOrder.text.isEmpty) {
       newValidationErrors['order'] = true;
     }
-    if (controllerSenderUnit.text.isEmpty) {
+    if (donViGiao == null || controllerSenderUnit.text.isEmpty) {
       newValidationErrors['senderUnit'] = true;
     }
-    if (controllerReceiverUnit.text.isEmpty) {
+    if (donViNhan == null || controllerReceiverUnit.text.isEmpty) {
       newValidationErrors['receiverUnit'] = true;
     }
     if (controllerTransferDate.text.isEmpty) {
@@ -386,10 +392,21 @@ class _ToolAndSuppliesHandoverDetailState
     if (controllerReceiverRepresentative.text.isEmpty) {
       newValidationErrors['receiverRepresentative'] = true;
     }
-    // if (controllerRepresentativeUnit.text.isEmpty) {
-    //   newValidationErrors['representativeUnit'] = true;
-    // }
-
+    if (nguoiDaiDienBanHanhQD == null ||
+        controllerIssuingUnitRepresentative.text.isEmpty) {
+      newValidationErrors['issuingUnitRepresentative'] = true;
+    }
+    if (nguoiDaiDienBenGiao == null ||
+        controllerDelivererRepresentative.text.isEmpty) {
+      newValidationErrors['delivererRepresentative'] = true;
+    }
+    if (nguoiDaiDienBenNhan == null ||
+        controllerReceiverRepresentative.text.isEmpty) {
+      newValidationErrors['receiverRepresentative'] = true;
+    }
+    if (item == null && _selectedFileName == null) {
+      newValidationErrors['document'] = true;
+    }
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
       setState(() {
@@ -408,10 +425,9 @@ class _ToolAndSuppliesHandoverDetailState
       controllerOrder.text = item?.lenhDieuDong ?? '';
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-      controllerTransferDate.text =
-          ngayBanGiao != null
-              ? DateFormat("dd/MM/yyyy HH:mm:ss").format(ngayBanGiao!)
-              : '';
+      controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
+        ngayBanGiao ?? DateTime.now(),
+      );
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
@@ -433,9 +449,8 @@ class _ToolAndSuppliesHandoverDetailState
 
     provider.isLoading = true;
 
-    DateTime ngaybangiao = DateFormat(
-      "dd/MM/yyyy HH:mm:ss",
-    ).parse(controllerTransferDate.text);
+    DateTime ngaybangiao =
+        AppUtility.parseDate(controllerTransferDate.text) ?? DateTime.now();
 
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
@@ -458,9 +473,9 @@ class _ToolAndSuppliesHandoverDetailState
       "nguoiCapNhat": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
-      "ngayBanGiao": ngaybangiao.toIso8601String(),
-      "ngayTao": DateTime.now().toIso8601String(),
-      "ngayCapNhat": DateTime.now().toIso8601String(),
+      "ngayBanGiao": AppUtility.formatDateString(ngaybangiao),
+      "ngayTao": AppUtility.formatDateString(DateTime.now()),
+      "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
       "byStep": isByStep,
     };
 
@@ -478,6 +493,7 @@ class _ToolAndSuppliesHandoverDetailState
             )
             .toList();
     if (provider.isFindNewItem ? true : item == null) {
+      if (!mounted) return;
       Map<String, dynamic>? result = await dieuDongProvider.uploadWordDocument(
         context,
         _selectedFileName ?? '',
@@ -487,6 +503,8 @@ class _ToolAndSuppliesHandoverDetailState
 
       request['duongDanFile'] = result!['filePath'] ?? '';
       request['tenFile'] = result['fileName'] ?? '';
+      log('check request: ${jsonEncode(listDetailSubppliesHandover)}');
+      // return;
       List<Map<String, dynamic>> requestDetail =
           listDetailSubppliesHandover
               .map(
@@ -496,16 +514,16 @@ class _ToolAndSuppliesHandoverDetailState
                   "idCCDCVatTu": e.idCCDCVatTu,
                   "soLuong": e.soLuong,
                   "idChiTietCCDCVatTu": e.idChiTietCCDCVatTu,
-                  "idChiTietDieuDong": e.iddieudongccdcvattu,
+                  "idChiTietDieuDong": e.idChiTietDieuDong ?? e.iddieudongccdcvattu,
                   "ngayTao": e.ngayTao,
                   "ngayCapNhat": e.ngayCapNhat,
                   "nguoiTao": e.nguoiTao,
                   "nguoiCapNhat": e.nguoiCapNhat,
-                  "isActive": e.isActive,
+                  "active": e.isActive,
                 },
               )
               .toList();
-      log("check requestDetail: ${jsonEncode(requestDetail)}");
+      log('Check số lượng requestDetail: ${jsonEncode(requestDetail)}');
       bloc.add(
         CreateToolAndSuppliesHandoverEvent(
           request,
@@ -517,6 +535,7 @@ class _ToolAndSuppliesHandoverDetailState
       int trangThai = item!.trangThai == 2 ? 1 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
+        if (!mounted) return;
         Map<String, dynamic>? result = await dieuDongProvider
             .uploadWordDocument(
               context,
@@ -533,9 +552,17 @@ class _ToolAndSuppliesHandoverDetailState
       request['trangThai'] = trangThai;
       request['share'] = item!.share ?? false;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
-      if (mounted) {
-        bloc.add(UpdateToolAndSuppliesHandoverEvent(context, request));
+
+      if (_detailsChanged()) {
+        await _syncDetails(item!.id!);
       }
+      if (_signatoriesChanged()) {
+        await UpdateSignerData().syncSignatories(
+          item!.id!,
+          _additionalSignersDetailed,
+        );
+      }
+      bloc.add(UpdateToolAndSuppliesHandoverEvent(request));
     }
 
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
@@ -551,7 +578,7 @@ class _ToolAndSuppliesHandoverDetailState
     if (listDetailSubppliesHandover.isEmpty) {
       AppUtility.showSnackBar(
         context,
-        "Vui lòng chọn CCDC vật tư bàn giao",
+        "Vui lòng chọn Số lượng bàn giao",
         isError: true,
       );
       return;
@@ -563,15 +590,6 @@ class _ToolAndSuppliesHandoverDetailState
           content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
           backgroundColor: Colors.red,
         ),
-      );
-      return;
-    }
-    if ((_selectedFileName ?? '').isEmpty ||
-        (_selectedFilePath ?? '').isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        "Vui lòng chon file trước khi lưu",
-        isError: true,
       );
       return;
     }
@@ -811,8 +829,8 @@ class _ToolAndSuppliesHandoverDetailState
                                     soLuong: e.soLuongXuat,
                                     idChiTietCCDCVatTu: e.idDetaiAsset,
                                     iddieudongccdcvattu: e.id,
-                                    ngayTao: DateTime.now().toIso8601String(),
-                                    ngayCapNhat: '',
+                                    ngayTao: AppUtility.formatDateString(DateTime.now()),
+                                    ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
                                     nguoiTao: currentUser!.tenDangNhap,
                                     nguoiCapNhat: '',
                                     isActive: true,
@@ -895,10 +913,6 @@ class _ToolAndSuppliesHandoverDetailState
           onChanged: (value) async {
             setState(() {
               dieuDongCcdc = value;
-              log(
-                "check dieuDongCcdc: ${jsonEncode(dieuDongCcdc?.detailToolAndMaterialTransfers)}",
-              );
-
               //change Đơn vị giao
               donViGiao = getPhongBan(
                 listPhongBan: listPhongBan,
@@ -1011,7 +1025,7 @@ class _ToolAndSuppliesHandoverDetailState
         ),
         SizedBox(height: 1),
         CmFormDropdownObject<NhanVien>(
-          label: 'Đơn vị giao',
+          label: 'Đại diện đơn vị giao',
           controller: controllerDelivererRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -1047,7 +1061,7 @@ class _ToolAndSuppliesHandoverDetailState
           },
         ),
         CmFormDropdownObject<NhanVien>(
-          label: 'Đơn vị bên nhận',
+          label: 'Đại diện đơn vị bên nhận',
           controller: controllerReceiverRepresentative,
           isEditing: isEditing,
           defaultValue:
@@ -1163,5 +1177,214 @@ class _ToolAndSuppliesHandoverDetailState
               )
               .toList(),
     );
+  }
+
+  List<Map<String, dynamic>> _normalizeDetails(
+    List<DetailSubppliesHandoverDto> list,
+  ) {
+    final data =
+        list
+            .map(
+              (d) => {
+                'idCCDCVatTu': d.idCCDCVatTu,
+                'soLuong': d.soLuong,
+                'idChiTietCCDCVatTu': d.idChiTietCCDCVatTu,
+                'idBanGiaoCCDCVatTu': d.idBanGiaoCCDCVatTu,
+                "ngayTao": d.ngayTao,
+                "ngayCapNhat": d.ngayCapNhat,
+                "nguoiTao": d.nguoiTao,
+                "nguoiCapNhat": d.nguoiCapNhat,
+              },
+            )
+            .toList();
+    data.sort(
+      (a, b) =>
+          (a['idCCDCVatTu'] as String).compareTo(b['idCCDCVatTu'] as String),
+    );
+    return data;
+  }
+
+  bool _signatoriesChanged() {
+    if (item == null) return _additionalSignersDetailed.isNotEmpty;
+    final beforeJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(initialSignersDetailed),
+    );
+    final afterJson = jsonEncode(
+      UpdateSignerData().normalizeSignatories(_additionalSignersDetailed),
+    );
+    return beforeJson != afterJson;
+  }
+
+  bool _detailsChanged() {
+    if (item == null) return listDetailSubppliesHandover.isNotEmpty;
+
+    // So sánh chính xác hơn
+    final beforeJson = jsonEncode(_normalizeDetails(initialDetails));
+    final afterJson = jsonEncode(
+      _normalizeDetails(listDetailSubppliesHandover),
+    );
+
+    log('Details changed check:');
+    log('Before: $beforeJson');
+    log('After: $afterJson');
+
+    return beforeJson != afterJson;
+  }
+
+  Future<void> _syncDetails(String idDieuDongTaiSan) async {
+    try {
+      final repo = ToolAndSuppliesHandoverRepository();
+
+      String keyOf(String idCCDCVatTu, String idChiTietCCDCVatTu) =>
+          '$idCCDCVatTu|$idChiTietCCDCVatTu';
+
+      // Tạo map từ initial details (dữ liệu cũ)
+      final initialByKey = {
+        for (final d in initialDetails)
+          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+      };
+
+      // Tạo map từ list hiện tại (dữ liệu mới)
+      final newByKey = {
+        for (final d in listDetailSubppliesHandover)
+          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+      };
+
+      log(
+        'Sync details - Initial count: ${initialDetails.length}, New count: ${listDetailSubppliesHandover.length}',
+      );
+      log('Initial keys: ${initialByKey.keys.toList()}');
+      log('New keys: ${newByKey.keys.toList()}');
+
+      // Hàm kiểm tra có thay đổi không
+      bool changed(
+        DetailSubppliesHandoverDto a,
+        DetailSubppliesHandoverDto b,
+      ) =>
+          a.soLuong != b.soLuong ||
+          a.idCCDCVatTu != b.idCCDCVatTu ||
+          a.idChiTietCCDCVatTu != b.idChiTietCCDCVatTu ||
+          a.idBanGiaoCCDCVatTu != b.idBanGiaoCCDCVatTu;
+
+      // 1. DELETE: Những item có trong list cũ nhưng không có trong list mới
+      final itemsToDelete =
+          initialByKey.keys.where((k) => !newByKey.containsKey(k)).toList();
+
+      log('Items to delete: ${itemsToDelete.length}');
+      for (final k in itemsToDelete) {
+        final itemToDelete = initialByKey[k]!;
+        final id = itemToDelete.id;
+
+        if (id.isEmpty) {
+          log('Skipping delete for item with empty ID: $k');
+          continue;
+        }
+
+        try {
+          log('Deleting item with ID: $id, Key: $k');
+          await repo.deleteDetailHandoverCCDC(id);
+          log('Successfully deleted item: $id');
+        } catch (e) {
+          log('Error deleting item $id: $e');
+          if (!e.toString().contains('404')) rethrow;
+        }
+      }
+
+      // 2. UPDATE: Những item có trong cả hai list nhưng có thay đổi
+      final itemsToUpdate =
+          newByKey.keys.where(initialByKey.containsKey).toList();
+
+      log('Items to check for update: ${itemsToUpdate.length}');
+      for (final k in itemsToUpdate) {
+        final oldVal = initialByKey[k]!;
+        final newVal = newByKey[k]!;
+
+        if (!changed(oldVal, newVal)) {
+          log('No changes for item: $k');
+          continue;
+        }
+
+        if (oldVal.id.isEmpty) {
+          log('Skipping update for item with empty ID: $k');
+          continue;
+        }
+
+        log('Updating item: $k');
+        log(
+          'Old: soLuong=${oldVal.soLuong}, idCCDCVatTu=${oldVal.idCCDCVatTu}',
+        );
+        log(
+          'New: soLuong=${newVal.soLuong}, idCCDCVatTu=${newVal.idCCDCVatTu}',
+        );
+
+        Map<String, dynamic> request = {
+          "id": oldVal.id,
+          "idBanGiaoCCDCVatTu": newVal.idBanGiaoCCDCVatTu,
+          "idCCDCVatTu": newVal.idCCDCVatTu,
+          "soLuong": newVal.soLuong,
+          "idChiTietCCDCVatTu": newVal.idChiTietCCDCVatTu,
+          "ngayTao": newVal.ngayTao,
+          "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
+          "nguoiTao": newVal.nguoiTao,
+          "nguoiCapNhat": widget.provider.userInfo?.tenDangNhap ?? '',
+          "isActive": true,
+        };
+
+        try {
+          await repo.updateDetailHandoverCCDC(request);
+          log('Successfully updated item: ${oldVal.id}');
+        } catch (e) {
+          log('Error updating item ${oldVal.id}: $e');
+          rethrow;
+        }
+      }
+
+      // 3. CREATE: Những item có trong list mới nhưng không có trong list cũ
+      final itemsToCreate =
+          newByKey.keys
+              .where((k) => !initialByKey.containsKey(k))
+              .map((k) => newByKey[k]!)
+              .toList();
+
+      log('Items to create: ${itemsToCreate.length}');
+      if (itemsToCreate.isNotEmpty) {
+        final creates =
+            itemsToCreate
+                .map(
+                  (d) => {
+                    "id": UUIDGenerator.generateWithFormat("CTBG-************"),
+                    "idBanGiaoCCDCVatTu": d.idBanGiaoCCDCVatTu,
+                    "idCCDCVatTu": d.idCCDCVatTu,
+                    "soLuong": d.soLuong,
+                    "idChiTietCCDCVatTu": d.idChiTietCCDCVatTu,
+                    "idChiTietDieuDong": d.iddieudongccdcvattu,
+                    "ngayTao": d.ngayTao,
+                    "ngayCapNhat": d.ngayCapNhat,
+                    "nguoiTao": d.nguoiTao,
+                    "nguoiCapNhat": d.nguoiCapNhat,
+                    "isActive": d.isActive,
+                  },
+                )
+                .toList();
+
+        log('Creating ${creates.length} new items');
+        for (final create in creates) {
+          log('Creating item: ${create['idCCDCVatTu']} - ${create['soLuong']}');
+        }
+
+        try {
+          await repo.createDetailHandoverCCDC(creates);
+          log('Successfully created ${creates.length} new items');
+        } catch (e) {
+          log('Error creating items: $e');
+          rethrow;
+        }
+      }
+
+      log('Sync completed successfully');
+    } catch (e) {
+      log('Sync details error: $e');
+      rethrow; // Re-throw để caller có thể handle
+    }
   }
 }

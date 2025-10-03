@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class ChucVu extends Equatable {
   final String id;
@@ -87,8 +88,8 @@ class ChucVu extends Equatable {
       banGiaoCCDCVatTu: json['banGiaoCCDCVatTu'] ?? false,
       baoCao: json['baoCao'] ?? false,
       idCongTy: json['idCongTy']?.toString() ?? '',
-      ngayTao: json['ngayTao']?.toString() ?? '',
-      ngayCapNhat: json['ngayCapNhat']?.toString() ?? '',
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] ?? ''),
       nguoiTao: json['nguoiTao']?.toString() ?? '',
       nguoiCapNhat: json['nguoiCapNhat']?.toString() ?? '',
     );
@@ -113,8 +114,8 @@ class ChucVu extends Equatable {
       'banGiaoCCDCVatTu': banGiaoCCDCVatTu,
       'baoCao': baoCao,
       'idCongTy': idCongTy,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
     };
@@ -149,11 +150,8 @@ class ChucVu extends Equatable {
       'Có quyền Bàn giao tài sản': banGiaoTaiSan,
       'Có quyền Bàn giao CCDC - VT': banGiaoCCDCVatTu,
       'Quản lý Báo cáo': baoCao,
-      'Mã công ty': _nullIfEmpty("ct001"),
-      'Ngày tạo': _nullIfEmpty(ngayTao),
-      'Ngày cập nhập': _nullIfEmpty(ngayCapNhat),
-      'Người tạo': _nullIfEmpty(nguoiTao),
-      'Người cập nhập': _nullIfEmpty(nguoiCapNhat),
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao)),
+      'Ngày cập nhập': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat)),
     };
   }
 
@@ -197,8 +195,8 @@ class ChucVu extends Equatable {
       banGiaoCCDCVatTu: banGiaoCCDCVatTu ?? this.banGiaoCCDCVatTu,
       baoCao: baoCao ?? this.baoCao,
       idCongTy: idCongTy ?? this.idCongTy,
-      ngayTao: ngayTao ?? this.ngayTao,
-      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao),
+      ngayCapNhat: AppUtility.formatFromISOString(ngayCapNhat ?? this.ngayCapNhat),
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
     );

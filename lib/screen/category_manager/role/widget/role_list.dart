@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/provider/role_provide.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -406,7 +407,7 @@ class _RoleListState extends State<RoleList> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Quản lý chức vụ (${widget.provider.data.length})',
+                      'Quản lý chức vụ (${widget.provider.filteredData?.length ?? 0})',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -447,7 +448,8 @@ class _RoleListState extends State<RoleList> {
                         foregroundColor: Colors.white,
                         onPressed: () {
                           setState(() {
-                            List<String> data = listSelected.map((e) => e.id).toList();
+                            List<String> data =
+                                listSelected.map((e) => e.id).toList();
                             showConfirmDialog(
                               context,
                               type: ConfirmType.delete,
@@ -472,11 +474,16 @@ class _RoleListState extends State<RoleList> {
               ],
             ),
           ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
+          ),
           Expanded(
             child: TableBaseView<ChucVu>(
               searchTerm: '',
               columns: _buildColumns(),
-              data: widget.provider.filteredData,
+              data: widget.provider.dataPage,
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDetail(context, item);

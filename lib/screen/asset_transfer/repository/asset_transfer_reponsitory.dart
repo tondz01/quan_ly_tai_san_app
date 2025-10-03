@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -10,6 +9,7 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -20,6 +20,7 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetTransferRepository extends ApiBase {
+  final SignatoryRepository _signatoryRepository = SignatoryRepository();
   // Get danh sách tài sản
   Future<Map<String, dynamic>> getListDieuDongTaiSan({int? type = -1}) async {
     final userInfo = AccountHelper.instance.getUserInfo();
@@ -48,8 +49,7 @@ class AssetTransferRepository extends ApiBase {
           );
 
       if (type != null && type != -1) {
-        dieuDongTaiSans =
-            dieuDongTaiSans.where((e) => e.loai == type).toList();
+        dieuDongTaiSans = dieuDongTaiSans.where((e) => e.loai == type).toList();
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
@@ -61,7 +61,20 @@ class AssetTransferRepository extends ApiBase {
           dieuDongTaiSan.chiTietDieuDongTaiSans = result['data'];
         }),
       );
-      log('message test15: ${jsonEncode(dieuDongTaiSans)}');
+      await Future.wait(
+        dieuDongTaiSans.map((dieuDongTaiSan) async {
+          try {
+            final signatories = await _signatoryRepository.getAll(
+              dieuDongTaiSan.id.toString(),
+            );
+            // Đảm bảo listSignatory được khởi tạo
+            dieuDongTaiSan.listSignatory = signatories;
+          } catch (e) {
+            log("Error loading signatories for ${dieuDongTaiSan.id}: $e");
+            dieuDongTaiSan.listSignatory = [];
+          }
+        }),
+      );
       result['data'] = dieuDongTaiSans;
     } catch (e) {
       log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");

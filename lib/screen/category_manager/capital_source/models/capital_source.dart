@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class NguonKinhPhi extends Equatable {
   final String? id;
@@ -6,8 +7,8 @@ class NguonKinhPhi extends Equatable {
   final String? ghiChu;
   final bool? hieuLuc;
   final String? idCongTy;
-  final DateTime? ngayTao;
-  final DateTime? ngayCapNhat;
+  final String? ngayTao;
+  final String? ngayCapNhat;
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
@@ -32,8 +33,14 @@ class NguonKinhPhi extends Equatable {
       ghiChu: json['ghiChu'],
       hieuLuc: json['hieuLuc'],
       idCongTy: json['idCongTy'],
-      ngayTao: json['ngayTao'] != null ? DateTime.parse(json['ngayTao']) : null,
-      ngayCapNhat: json['ngayCapNhat'] != null ? DateTime.parse(json['ngayCapNhat']) : null,
+      ngayTao:
+          json['ngayTao'] != null
+              ? AppUtility.formatFromISOString(json['ngayTao'])
+              : null,
+      ngayCapNhat:
+          json['ngayCapNhat'] != null
+              ? AppUtility.formatFromISOString(json['ngayCapNhat'])
+              : null,
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
@@ -47,8 +54,8 @@ class NguonKinhPhi extends Equatable {
       'ghiChu': ghiChu,
       'hieuLuc': hieuLuc,
       'idCongTy': "ct001", // Assuming a default company ID
-      'ngayTao': ngayTao?.toIso8601String(),
-      'ngayCapNhat': ngayCapNhat?.toIso8601String(),
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -66,36 +73,30 @@ class NguonKinhPhi extends Equatable {
     return value;
   }
 
-  String? _formatDate(DateTime? dateTime) {
-    return dateTime?.toIso8601String();
-  }
-
   Map<String, dynamic> toExportJson() {
     return {
-      'id': _nullIfEmpty(id),
-      'tenNguonKinhPhi': _nullIfEmpty(tenNguonKinhPhi),
-      'ghiChu': _nullIfEmpty(ghiChu),
-      'hieuLuc': hieuLuc ?? false,
-      'idCongTy': _nullIfEmpty("ct001"),
-      'ngayTao': _nullIfEmpty(_formatDate(ngayTao)),
-      'ngayCapNhat': _nullIfEmpty(_formatDate(ngayCapNhat)),
-      'nguoiTao': _nullIfEmpty(nguoiTao),
-      'nguoiCapNhat': _nullIfEmpty(nguoiCapNhat),
-      'isActive': true,
+      'Id': _nullIfEmpty(id),
+      'Tên nguồn kinh phí': _nullIfEmpty(tenNguonKinhPhi),
+      'Ghi chú': _nullIfEmpty(ghiChu),
+      'Hiệu lực': hieuLuc ?? false,
+      'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(
+        AppUtility.formatFromISOString(ngayCapNhat ?? ''),
+      ),
     };
   }
 
   @override
   List<Object?> get props => [
-        id,
-        tenNguonKinhPhi,
-        ghiChu,
-        hieuLuc,
-        idCongTy,
-        ngayTao,
-        ngayCapNhat,
-        nguoiTao,
-        nguoiCapNhat,
-        isActive,
-      ];
+    id,
+    tenNguonKinhPhi,
+    ghiChu,
+    hieuLuc,
+    idCongTy,
+    ngayTao,
+    ngayCapNhat,
+    nguoiTao,
+    nguoiCapNhat,
+    isActive,
+  ];
 }

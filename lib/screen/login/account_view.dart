@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
@@ -60,28 +61,33 @@ class _AccountViewState extends State<AccountView> {
                       Expanded(
                         child: HeaderComponent(
                           controller: TextEditingController(),
-                          isShowSearch: false,
+                          isShowSearch: true,
                           onSearchChanged: (value) {
                             // Cập nhật trạng thái tìm kiếm trong provider
                             // provider.searchTerm = value;
                           },
                           onTap: () {},
-                          onNew:
-                              () => showDialog(
-                                context: context,
-                                builder:
-                                    (context) => Dialog(
-                                      // shape: RoundedRectangleBorder(
-                                      //   borderRadius: BorderRadius.circular(16),
-                                      // ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: StaffListByAccount(
-                                          provider: provider,
-                                        ),
-                                      ),
+                          onNew: () {
+                            if(AccountHelper.instance.getUserInfo()?.tenDangNhap != "admin") {
+                              AppUtility.showSnackBar(context, "Bạn không có quyền tạo tài khoản", isError: true);
+                              return;
+                            }
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) => Dialog(
+                                    // shape: RoundedRectangleBorder(
+                                    //   borderRadius: BorderRadius.circular(16),
+                                    // ),
+                                    child: StaffListByAccount(
+                                      provider: provider,
+                                      onTapClose: () {
+                                        Navigator.pop(context);
+                                      },
                                     ),
-                              ),
+                                  ),
+                            );
+                          },
                           mainScreen: 'User',
                         ),
                       ),

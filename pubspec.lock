@@ -61,10 +61,10 @@ packages:
     dependency: transitive
     description:
       name: bloc
-      sha256: "52c10575f4445c61dd9e0cafcc6356fdd827c4c64dd7945ef3c4105f6b6ac189"
+      sha256: e18b8e7825e9921d67a6d256dba0b6015ece8a577eb0a411845c46a352994d78
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "9.0.1"
   bloc_concurrency:
     dependency: "direct main"
     description:
@@ -169,6 +169,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  dynamic_path_url_strategy:
+    dependency: "direct main"
+    description:
+      name: dynamic_path_url_strategy
+      sha256: "34e57be27449d4d0c40ea692f37a2297bd7c991fb31a20acf66899a69d0079ff"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   equatable:
     dependency: "direct main"
     description:
@@ -602,7 +610,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "865198886e5f11c31d8f3430009f0ba181ee0d25"
+      resolved-ref: "7c5f72f5562a68f1080ef34f85a844255fc44d3e"
       url: "https://github.com/congcuong207/SeGayComponent.git"
     source: git
     version: "1.0.0+1"

@@ -56,29 +56,39 @@ class _CmFormDateState extends State<CmFormDate> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SGDateTimeInputButton(
-            label: widget.label,
-            controller: widget.controller,
-            value: widget.value,
-            onChanged: (dt) {
-              widget.onChanged?.call(dt);
-            },
-            width: double.infinity,
-            height: 40,
-            initWithNow: widget.initWithNow,
-            enable: widget.enable,
-            textAlign: TextAlign.left,
-            sizeBorderCircular: 7,
-            allowTyping: widget.allowTyping,
-            showTimeSection: widget.showTimeSection,
-            timeOptional: widget.timeOptional,
-            includeSeconds: widget.includeSeconds,
-            initialIncludeTime: widget.initialIncludeTime,
-            colorBorder: SGAppColors.colorBorderGray,
-            colorBorderFocus: SGAppColors.info500,
-            // showUnderlineBorderOnly: true,
+          AbsorbPointer(
+            absorbing: !widget.isEditing,
+            child: SGDateTimeInputButton(
+              label: widget.label,
+              controller: widget.controller,
+              value: widget.value,
+              onChanged: (dt) {
+                widget.onChanged?.call(dt);
+              },
+              width: double.infinity,
+              height: 40,
+              initWithNow: widget.initWithNow,
+              enable: widget.enable,
+              textAlign: TextAlign.left,
+              sizeBorderCircular: 7,
+              fontSize: 14,
+              colorLabel: Colors.black.withOpacity(0.7),
+              allowTyping: widget.allowTyping,
+              showTimeSection: widget.showTimeSection,
+              timeOptional: widget.timeOptional,
+              includeSeconds: widget.includeSeconds,
+              initialIncludeTime: widget.initialIncludeTime,
+              colorBorder:
+                  (widget.validationErrors != null &&
+                          widget.fieldName != null &&
+                          widget.validationErrors![widget.fieldName] == true)
+                      ? Colors.red
+                      : SGAppColors.neutral400,
+              colorBorderFocus: SGAppColors.info500,
+              // showUnderlineBorderOnly: true,
+            ),
           ),
-            
+
           if (hasError)
             Padding(
               padding: const EdgeInsets.only(top: 4),

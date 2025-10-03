@@ -203,7 +203,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                 // onlyLine: true,
                 color: Colors.black,
                 enabledBorderColor: ColorValue.darkGrey,
-                showBorder: widget.isEditing,
+                showBorder: true,
                 borderColor: hasError ? Colors.red : ColorValue.darkGrey,
                 hintText:
                     !widget.isEditing

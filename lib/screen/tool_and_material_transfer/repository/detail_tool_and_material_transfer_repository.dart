@@ -66,11 +66,7 @@ class DetailToolAndMaterialTransferRepository {
   Future<List<DetailToolAndMaterialTransferDto>> getAll(
     String idToolAndMaterialTransfer,
   ) async {
-    final queryParams = {"iddieudongccdcvattu": idToolAndMaterialTransfer};
-    
     // Log cURL command
-    final curlCommand = generateCurlCommand('GET', '', queryParams, null);
-    log('cURL command: $curlCommand');
     final res = await _dio.get(
       '',
       queryParameters: {"iddieudongccdcvattu": idToolAndMaterialTransfer},
@@ -96,8 +92,22 @@ class DetailToolAndMaterialTransferRepository {
   }
 
   Future<int> update(String id, ChiTietBanGiaoRequest obj) async {
-    final res = await _dio.put('/$id', data: obj.toJson());
-    return res.data;
+    try {
+      final res = await _dio.put('', data: obj.toJson());
+      final data = res.data;
+      
+      // Kiểm tra và xử lý kiểu dữ liệu trả về
+      if (data is int) return data;
+      if (data is Map<String, dynamic>) {
+        final code = data['status_code'] ?? data['statusCode'] ?? data['code'];
+        if (code is int) return code;
+        if (code is String) return int.tryParse(code) ?? (res.statusCode ?? 0);
+      }
+      return res.statusCode ?? 0;
+    } catch (e) {
+      log("Error in update: $e");
+      return 500; // Return error status code
+    }
   }
 
   Future<int> delete(String id) async {

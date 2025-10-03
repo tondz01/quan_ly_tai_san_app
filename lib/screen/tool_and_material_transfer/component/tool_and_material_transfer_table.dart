@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
@@ -74,27 +71,39 @@ class _DetailToolAndMaterialTransferTableState
         widget.allAssets
             .expand<DetailAssetDto>((asset) => asset.chiTietTaiSanList)
             .toList();
-    listItemDropdownDetailAsset =
-        widget.listOwnershipUnit.map<ItemDropdownDetailCcdc>((e) {
-          final asset = getAssetByID(e.idCCDCVT);
-          final detailAsset = getDetailAssetByID(e.idTsCon);
+    final List<ItemDropdownDetailCcdc> builtItems = [];
+    for (final e in widget.listOwnershipUnit) {
+      if (e.idCCDCVT.isEmpty || e.idTsCon.isEmpty) {
+        continue;
+      }
 
-          return ItemDropdownDetailCcdc(
-            id: e.id,
-            idCCDCVatTu: e.idCCDCVT,
-            tenCCDCVatTu: asset.ten,
-            idDetaiAsset: detailAsset.id ?? '',
-            tenDetailAsset:
-                '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
-            idDonVi: e.idDonViSoHuu,
-            donViTinh: asset.donViTinh,
-            namSanXuat: detailAsset.namSanXuat ?? 2010,
-            soLuong: e.soLuong,
-            ghiChu: asset.ghiChu,
-            soLuongDaBanGiao: 0,
-            asset: asset,
-          );
-        }).toList();
+      final asset = getAssetByID(e.idCCDCVT);
+      final detailAsset = getDetailAssetByID(e.idTsCon);
+
+      final String detailId = detailAsset.id ?? '';
+      if ((asset.id).isEmpty || detailId.isEmpty) {
+        continue;
+      }
+
+      builtItems.add(
+        ItemDropdownDetailCcdc(
+          id: e.id,
+          idCCDCVatTu: e.idCCDCVT,
+          tenCCDCVatTu: asset.ten,
+          idDetaiAsset: detailId,
+          tenDetailAsset:
+              '${asset.ten}(${detailAsset.soKyHieu}) - ${detailAsset.namSanXuat}',
+          idDonVi: e.idDonViSoHuu,
+          donViTinh: asset.donViTinh,
+          namSanXuat: detailAsset.namSanXuat ?? 2010,
+          soLuong: e.soLuong,
+          ghiChu: asset.ghiChu,
+          soLuongDaBanGiao: 0,
+          asset: asset,
+        ),
+      );
+    }
+    listItemDropdownDetailAsset = builtItems;
   }
 
   @override
@@ -155,10 +164,8 @@ class _DetailToolAndMaterialTransferTableState
         continue;
       }
       final asset = idToAsset[idAsset.idTaiSan];
-      log('message số lượng xuất: ${jsonEncode(c)}');
       if (asset != null) {
         // Tìm ItemDropdownDetailAsset tương ứng
-        log('message số lượng xuất22: ${c.soLuong}');
         final detailAsset = listItemDropdownDetailAsset.firstWhere(
           (element) => element.idDetaiAsset == id,
           orElse:
@@ -173,12 +180,14 @@ class _DetailToolAndMaterialTransferTableState
                 namSanXuat: 2010,
                 soLuong: c.soLuong,
                 soLuongXuat: 0,
-                soLuongDaBanGiao: soLuongDaBanGiao,
                 ghiChu: asset.ghiChu,
                 asset: asset,
               ),
         );
-        final newDetailAsset = detailAsset.copyWith(soLuongXuat: c.soLuongXuat);
+        final newDetailAsset = detailAsset.copyWith(
+          soLuongXuat: c.soLuongXuat,
+          soLuongDaBanGiao: soLuongDaBanGiao,
+        );
         result.add(newDetailAsset);
       }
     }
@@ -229,7 +238,6 @@ class _DetailToolAndMaterialTransferTableState
                 titleAlignment: TextAlign.center,
                 width: 150,
                 getValue: (item) {
-                  log('message item222: $item');
                   return item;
                 },
                 setValue: (item, value) {
@@ -269,7 +277,7 @@ class _DetailToolAndMaterialTransferTableState
               ),
               SgEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'don_vi_tinh',
-                title: 'Đơn vị tính',
+                title: 'Mã đơn vị tính',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue: (item) => item.donViTinh,
@@ -378,15 +386,16 @@ class _DetailToolAndMaterialTransferTableState
       tenDonVi: '',
       idNhomCCDC: '',
       tenNhomCCDC: '',
-      ngayNhap: DateTime.now(),
+      idLoaiCCDCCon: '',
+      ngayNhap: AppUtility.formatFromISOString(DateTime.now().toString()),
       donViTinh: '',
       soLuong: 0,
       giaTri: 0,
       nuocSanXuat: '',
       namSanXuat: 0,
       idCongTy: '',
-      ngayTao: DateTime.now(),
-      ngayCapNhat: DateTime.now(),
+      ngayTao: AppUtility.formatFromISOString(DateTime.now().toString()),
+      ngayCapNhat: AppUtility.formatFromISOString(DateTime.now().toString()),
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: false,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -20,11 +19,11 @@ enum EditableCellEditor { text, dropdown }
 class ValidationResult {
   final bool isValid;
   final String? errorMessage;
-  
+
   const ValidationResult({required this.isValid, this.errorMessage});
-  
+
   static const ValidationResult valid = ValidationResult(isValid: true);
-  static ValidationResult invalid(String message) => 
+  static ValidationResult invalid(String message) =>
       ValidationResult(isValid: false, errorMessage: message);
 }
 
@@ -32,7 +31,7 @@ class ValidationResult {
 class ControllerPool {
   final Map<String, TextEditingController> _availableControllers = {};
   final Map<String, TextEditingController> _usedControllers = {};
-  
+
   TextEditingController getController(String key, String initialValue) {
     if (_usedControllers.containsKey(key)) {
       final controller = _usedControllers[key]!;
@@ -41,28 +40,30 @@ class ControllerPool {
       }
       return controller;
     }
-    
+
     TextEditingController controller;
-    
+
     if (_availableControllers.isNotEmpty) {
-      controller = _availableControllers.remove(_availableControllers.keys.first)!;
+      controller =
+          _availableControllers.remove(_availableControllers.keys.first)!;
       controller.text = initialValue;
     } else {
       controller = TextEditingController(text: initialValue);
     }
-    
+
     _usedControllers[key] = controller;
     return controller;
   }
-  
+
   void releaseController(String key) {
     final controller = _usedControllers.remove(key);
     if (controller != null) {
       controller.clear();
-      _availableControllers['pool_${_availableControllers.length}'] = controller;
+      _availableControllers['pool_${_availableControllers.length}'] =
+          controller;
     }
   }
-  
+
   void dispose() {
     for (final controller in _usedControllers.values) {
       controller.dispose();
@@ -96,12 +97,13 @@ class DetailEditableTable<T> extends StatefulWidget {
   // Per-row editable settings
   final bool defaultRowEditable;
   final bool Function(T item, int rowIndex)? rowEditableDecider;
-  
+
   // NEW: Validation and error handling
-  final ValidationResult Function(T item, String field, dynamic value)? validator;
+  final ValidationResult Function(T item, String field, dynamic value)?
+  validator;
   final void Function(String errorMessage)? onError;
   final int maxRows;
-  
+
   // NEW: Performance settings
   final bool useVirtualScrolling;
   final bool enableRowCaching;
@@ -141,23 +143,23 @@ class DetailEditableTable<T> extends StatefulWidget {
 class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
   late List<T> _tableData;
   int? _selectedRowIndex;
-  
+
   // Use controller pool for better memory management
   late ControllerPool _controllerPool;
-  
+
   // Cache for row widgets to improve performance
   final Map<int, Widget> _cachedRows = {};
-  
+
   // Per-row editable flags
   Map<int, bool> _rowEditableFlags = {};
-  
+
   // Validation errors cache
   final Map<String, String> _validationErrors = {};
 
   // Sorting state
   int? _sortColumnIndex;
   SortDirection _sortDirection = SortDirection.none;
-  
+
   // Performance optimization flags
   bool _isProcessingUpdate = false;
   Timer? _debounceTimer;
@@ -215,7 +217,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
       _showError('Đã đạt giới hạn tối đa ${widget.maxRows} dòng');
       return;
     }
-    
+
     setState(() {
       final newItem = widget.createEmptyItem();
       _tableData.add(newItem);
@@ -228,7 +230,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
 
   void _removeRow(int index) {
     if (index < 0 || index >= _tableData.length) return;
-    
+
     // Release controllers for editable columns in this row
     for (var column in widget.columns) {
       if (column.isEditable) {
@@ -266,10 +268,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
       widget.onError!(message);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     }
   }
@@ -285,7 +284,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
     // Validate the value
     final validation = _validateCellValue(_tableData[rowIndex], field, value);
     final validationKey = '${rowIndex}_$field';
-    
+
     if (!validation.isValid && validation.errorMessage != null) {
       _validationErrors[validationKey] = validation.errorMessage!;
       _showError(validation.errorMessage!);
@@ -293,24 +292,27 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
     } else {
       _validationErrors.remove(validationKey);
     }
-    
+
     _setCellValue(rowIndex, field, value);
   }
 
   // Safely set a cell value in data and sync controller text
   void _setCellValue(int rowIndex, String field, dynamic value) {
     if (rowIndex >= _tableData.length) return;
-    
+
     final column = widget.columns.firstWhere((c) => c.field == field);
     column.setValue(_tableData[rowIndex], value);
-    
+
     // Sync controller if it exists
     final key = _getControllerKey(rowIndex, field);
-    final controller = _controllerPool.getController(key, value?.toString() ?? '');
+    final controller = _controllerPool.getController(
+      key,
+      value?.toString() ?? '',
+    );
     if (controller.text != (value?.toString() ?? '')) {
       controller.text = value?.toString() ?? '';
     }
-    
+
     setState(() {
       _clearCache(); // Clear cache when data changes
     });
@@ -551,7 +553,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
             : widget.oddRowBackgroundColor;
 
     final rowWidget = Container(
-      height: widget.rowHeight,
+      height: widget.rowHeight + 10,
       decoration: BoxDecoration(
         color: backgroundColor,
         border:
@@ -565,6 +567,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
                 : null,
       ),
       child: Row(
+        spacing: 8,
         children: [
           // Data cells
           ...widget.columns.map(
@@ -620,10 +623,13 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
     DetailEditableColumn<T> column,
   ) {
     // Get controller from pool
-    final value = column.getValueWithIndex?.call(item, rowIndex) ?? 
-                  column.getValue(item);
+    final value =
+        column.getValueWithIndex?.call(item, rowIndex) ?? column.getValue(item);
     final key = _getControllerKey(rowIndex, column.field);
-    final controller = _controllerPool.getController(key, value?.toString() ?? '');
+    final controller = _controllerPool.getController(
+      key,
+      value?.toString() ?? '',
+    );
 
     if (column.editor == EditableCellEditor.dropdown) {
       final currentValue =
@@ -637,7 +643,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
           value: currentValue,
           defaultValue: currentValue,
           items: column.dropdownItems ?? [],
-          showUnderlineBorderOnly: true,
+          // showUnderlineBorderOnly: true,
           isClearController: false,
           fontSize: 14,
           inputType: column.inputType ?? TextInputType.text,
@@ -647,10 +653,10 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
           textAlignItem: TextAlign.left,
           sizeBorderCircular: 6,
           contentPadding: const EdgeInsets.only(
-            top: 4,
-            bottom: 4,
+            top: 0,
+            bottom: 6,
             left: 6,
-            right: 6,
+            right: 2,
           ),
           onChanged: (value) {
             if (value != null) {
@@ -676,20 +682,19 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
       children: [
         SGInputText(
           controller: controller,
-          height: 32,
+          height: 40,
           inputFormatters:
               column.inputType == TextInputType.number
                   ? [FilteringTextInputFormatter.digitsOnly]
                   : null,
           borderRadius: 10,
           enabled: widget.isEditing,
-          onlyLine: true,
-          showBorder: false,
+          // onlyLine: true,
+          showBorder: true,
           hintText: 'Nhập thông tin',
           onChanged: (value) {
             setState(() {
               controller.text = value;
-              log('message onChanged: $value');
               _updateCellValue(rowIndex, column.field, value);
               // cascade updates
               final updater = column.onValueChanged;
@@ -747,10 +752,11 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
           child: TextField(
             enabled: false,
             controller: TextEditingController(text: value?.toString() ?? ''),
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, overflow: TextOverflow.ellipsis),
             readOnly: true,
+            maxLines: 1,
             decoration: InputDecoration(
-              isDense: false,
+              isDense: true,
               filled: true,
               fillColor: Colors.transparent,
               border: UnderlineInputBorder(
@@ -774,7 +780,7 @@ class DetailEditableTableState<T> extends State<DetailEditableTable<T>> {
               suffixIcon: null,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 8,
-                vertical: 15,
+                vertical: 5,
               ),
             ),
           ),
@@ -848,7 +854,8 @@ class DetailEditableColumn<T> {
     int rowIndex,
     dynamic newValue,
     void Function(String targetField, dynamic targetValue) updateRow,
-  )? onValueChanged;
+  )?
+  onValueChanged;
 
   DetailEditableColumn({
     required this.field,
@@ -859,7 +866,7 @@ class DetailEditableColumn<T> {
     this.cellAlignment = TextAlign.left,
     this.isEditable = true,
     required this.getValue,
-    this.getValueWithIndex, 
+    this.getValueWithIndex,
     required this.setValue,
     this.sortValueGetter,
     this.isCellEditableDecider,

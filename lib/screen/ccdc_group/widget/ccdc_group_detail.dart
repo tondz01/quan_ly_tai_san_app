@@ -1,11 +1,11 @@
-import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -31,7 +31,7 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
 
   TextEditingController controllerIdCcdcGroup = TextEditingController();
   TextEditingController controllerNameCcdcGroup = TextEditingController();
-  TextEditingController controllerIdAndNameCcdcGroup = TextEditingController();
+  Map<String, bool> validationErrors = {};
 
   @override
   void initState() {
@@ -52,6 +52,27 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
     controllerIdCcdcGroup.dispose();
     controllerNameCcdcGroup.dispose();
     super.dispose();
+  }
+
+  // Thêm: Hàm validate form trước khi lưu
+  bool _validateForm() {
+    Map<String, bool> newValidationErrors = {};
+    if (data == null) {
+      if (controllerIdCcdcGroup.text.isEmpty) {
+        newValidationErrors['id'] = true;
+      }
+    }
+    if (controllerNameCcdcGroup.text.isEmpty) {
+      newValidationErrors['tenNhom'] = true;
+    }
+
+    bool hasChanges = !mapEquals(validationErrors, newValidationErrors);
+    if (hasChanges) {
+      setState(() {
+        validationErrors = newValidationErrors;
+      });
+    }
+    return newValidationErrors.isEmpty;
   }
 
   /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
@@ -107,31 +128,39 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              sectionTitle(Icons.info_outline, 'Thông tin nhóm ccdc'),
+              const SizedBox(height: 16),
               CommonFormInput(
-                label: 'mã nhóm ccdc',
+                label: 'Mã nhóm ccdc',
                 controller: controllerIdCcdcGroup,
                 isEditing: data == null ? isEditing : false,
                 textContent: controllerIdCcdcGroup.text,
                 width: double.infinity,
+                validationErrors: validationErrors,
+                fieldName: 'id',
+                isRequired: true,
               ),
               CommonFormInput(
-                label: 'tên nhóm ccdc',
+                label: 'Tên nhóm ccdc',
                 controller: controllerNameCcdcGroup,
                 isEditing: isEditing,
                 textContent: controllerNameCcdcGroup.text,
                 width: double.infinity,
+                validationErrors: validationErrors,
+                fieldName: 'tenNhom',
+                isRequired: true,
               ),
-              CommonCheckboxInput(
-                label: 'có hiệu lực',
-                value: isActive,
-                isEditing: isEditing,
-                isDisabled: !isEditing,
-                onChanged: (value) {
-                  setState(() {
-                    isActive = value;
-                  });
-                },
-              ),
+              // CommonCheckboxInput(
+              //   label: 'Có hiệu lực',
+              //   value: isActive,
+              //   isEditing: isEditing,
+              //   isDisabled: !isEditing,
+              //   onChanged: (value) {
+              //     setState(() {
+              //       isActive = value;
+              //     });
+              //   },
+              // ),
               // _buildInfoCcdcHandoverMobile(isWideScreen),
             ],
           ),
@@ -183,15 +212,24 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
 
   void _saveChanges() {
     UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
-    log('message: _saveChanges');
+    if (!_validateForm()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc (*)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     if (data == null) {
       CcdcGroup request = CcdcGroup(
         id: controllerIdCcdcGroup.text,
         ten: controllerNameCcdcGroup.text,
         hieuLuc: isActive,
-        idCongTy: 'CT001',
-        ngayTao: DateTime.parse(getDateNow()),
-        ngayCapNhat: DateTime.parse(getDateNow()),
+        idCongTy: idCongTy,
+        ngayTao: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
+        ngayCapNhat: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
         nguoiTao: userInfo?.id ?? '',
       );
 
@@ -201,9 +239,9 @@ class _CcdcGroupDetailState extends State<CcdcGroupDetail> {
         id: controllerIdCcdcGroup.text,
         ten: controllerNameCcdcGroup.text,
         hieuLuc: isActive,
-        idCongTy: 'CT001',
-        ngayTao: DateTime.parse(getDateNow()),
-        ngayCapNhat: DateTime.parse(getDateNow()),
+        idCongTy: idCongTy,
+        ngayTao: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
+        ngayCapNhat: AppUtility.formatDateTimeISO(DateTime.parse(getDateNow())),
         nguoiCapNhat: userInfo?.id ?? '',
       );
 

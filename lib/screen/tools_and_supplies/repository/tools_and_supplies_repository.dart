@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:async';
 
@@ -8,7 +9,6 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -40,29 +40,6 @@ class ToolsAndSuppliesRepository extends ApiBase {
       list = ResponseParser.parseToList<ToolsAndSuppliesDto>(
         response.data,
         ToolsAndSuppliesDto.fromJson,
-      );
-
-      // Gọi API detail cho từng item với error handling
-      await Future.wait(
-        list.map((e) async {
-          try {
-            final detailResponse = await get(
-              '${EndPointAPI.OWNERSHIP_UNIT_DETAIL}/by-ccdcvt/${e.id}',
-            );
-
-            if (!checkStatusCodeFailed(detailResponse.statusCode ?? 0)) {
-              e.detailOwnershipUnit =
-                  ResponseParser.parseToList<OwnershipUnitDetailDto>(
-                    detailResponse.data['data'],
-                    OwnershipUnitDetailDto.fromJson,
-                  );
-            } else {
-              e.detailOwnershipUnit = [];
-            }
-          } catch (detailError) {
-            e.detailOwnershipUnit = [];
-          }
-        }),
       );
       result['data'] = list;
     } catch (e) {
@@ -184,6 +161,75 @@ class ToolsAndSuppliesRepository extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       log("Error at updateToolsAndSupplies - ToolsAndSuppliesRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> saveToolsAndSuppliesBatch(
+    List<ToolsAndSuppliesDto> toolsAndSupplies,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/batch',
+        data: jsonEncode(toolsAndSupplies),
+      );
+
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+        response.data,
+        ToolsAndSuppliesDto.fromJson,
+      );
+    } catch (e) {
+      log(
+        "Error at saveToolsAndSuppliesBatch - ToolsAndSuppliesRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteToolsAndSuppliesBatch(
+    List<String> data,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await delete(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/batch',
+        data: jsonEncode(data),
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+        response.data,
+        ToolsAndSuppliesDto.fromJson,
+      );
+    } catch (e) {
+      log(
+        "Error at deleteToolsAndSuppliesBatch - ToolsAndSuppliesRepository: $e",
+      );
     }
 
     return result;

@@ -46,21 +46,17 @@ class _LoginViewState extends State<LoginView> {
             if (state is LoginInitialState) {}
             if (state is LoginLoadingState) {
               showLoadingDialog(context);
-              log('message LoginLoadingState');
             }
             if (state is LoginLoadingDismissState) {
               hideLoadingDialog(context);
-              log('message LoginLoadingDismissState');
             }
             if (state is PostLoginSuccessState) {
               hideLoadingDialog(context);
               context.read<LoginProvider>().onLoginSuccess(context, state);
-              log('message PostLoginSuccessState');
             }
             if (state is PostLoginFailedState) {
               hideLoadingDialog(context);
               context.read<LoginProvider>().onLoginFailed(state);
-              log('message PostLoginFailedState');
             }
           },
           builder: (BuildContext context, LoginState state) {

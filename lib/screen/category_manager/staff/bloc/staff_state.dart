@@ -13,6 +13,22 @@ class StaffLoadingState extends StaffState {}
 
 class StaffLoadingDismissState extends StaffState {}
 
+class AddStaffSuccessState extends StaffState {
+  final String message;
+  const AddStaffSuccessState(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateStaffSuccessState extends StaffState {
+  final String message;
+  const UpdateStaffSuccessState(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+
+
 class DeleteStaffBatchSuccess extends StaffState {}
 
 class DeleteStaffBatchFailure extends StaffState {

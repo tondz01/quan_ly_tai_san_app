@@ -7,11 +7,13 @@ import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -36,7 +38,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
     'asset_group',
     'code_asset_group',
     'name_asset_group',
-    'is_active',
     'actions',
     // 'created_at',
     // 'updated_at',
@@ -62,11 +63,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
         label: 'Tên nhóm tài sản',
         isChecked: visibleColumnIds.contains('name_asset_group'),
       ),
-      ColumnDisplayOption(
-        id: 'is_active',
-        label: 'Ngày bàn giao',
-        isChecked: visibleColumnIds.contains('is_active'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'is_active',
+      //   label: 'Có hiệu lực',
+      //   isChecked: visibleColumnIds.contains('is_active'),
+      // ),
       ColumnDisplayOption(
         id: 'created_at',
         label: 'Ngày tạo',
@@ -118,16 +119,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
               getValue: (item) => item.tenNhom ?? '',
               width: 120,
               titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'is_active':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<AssetGroupDto>(
-              title: 'Có hiệu lực',
-              width: 100,
-              cellBuilder: (item) => SgCheckbox(value: item.isActive ?? false),
-              titleAlignment: TextAlign.center,
             ),
           );
           break;
@@ -187,35 +178,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
     return columns;
   }
 
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<SgTableColumn<AssetGroupDto>> columns = _buildColumns();
@@ -267,14 +229,6 @@ class _AssetGroupListState extends State<AssetGroupList> {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: _showColumnDisplayPopup,
-                      child: Icon(
-                        Icons.settings,
-                        color: ColorValue.link,
-                        size: 18,
-                      ),
-                    ),
                   ],
                 ),
                 Visibility(
@@ -282,8 +236,7 @@ class _AssetGroupListState extends State<AssetGroupList> {
                   child: Row(
                     children: [
                       SGText(
-                        text:
-                            'Danh sách nhóm đã chọn: ${listSelected.length}',
+                        text: 'Danh sách nhóm đã chọn: ${listSelected.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -291,33 +244,41 @@ class _AssetGroupListState extends State<AssetGroupList> {
                         ),
                       ),
                       SizedBox(width: 16),
-                      IconButton(
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
                         onPressed: () {
-                          Map<String, dynamic> data = {
-                            'id': listSelected.map((e) => e.id).toList(),
-                          };
-                          showConfirmDialog(
-                            context,
-                            type: ConfirmType.delete,
-                            title: 'Xóa nhân nhóm tài sản',
-                            message:
-                                'Bạn có chắc muốn xóa ${listSelected.length} nhóm tài sản',
-                            highlight: listSelected.length.toString(),
-                            cancelText: 'Không',
-                            confirmText: 'Xóa',
-                            onConfirm: () {
-                              final roleBloc = context.read<AssetGroupBloc>();
-                              roleBloc.add(DeleteAssetGroupBatchEvent(data));
-                            },
-                          );
+                          setState(() {
+                            final ids = listSelected.map((e) => e.id!).toList();
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa dự án',
+                              message:
+                                  'Bạn có chắc muốn xóa ${listSelected.length} dự án',
+                              highlight: listSelected.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final roleBloc = context.read<AssetGroupBloc>();
+                                roleBloc.add(DeleteAssetGroupBatchEvent(ids));
+                              },
+                            );
+                          });
                         },
-                        icon: Icon(Icons.delete, color: Colors.grey.shade700),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<AssetGroupDto>(

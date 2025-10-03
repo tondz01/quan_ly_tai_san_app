@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
@@ -14,11 +15,9 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
 
 class ToolAndMaterialTransferView extends StatefulWidget {
-  final int typeAssetTransfer;
 
   const ToolAndMaterialTransferView({
     super.key,
-    required this.typeAssetTransfer,
   });
 
   @override
@@ -34,6 +33,7 @@ class _ToolAndMaterialTransferViewState
   late int currentType;
   String idCongTy = "CT001";
   bool _isInitialized = false;
+  ToolAndMaterialTransferProvider? _providerRef;
 
   @override
   bool get wantKeepAlive => true;
@@ -41,16 +41,25 @@ class _ToolAndMaterialTransferViewState
   @override
   void initState() {
     super.initState();
-    currentType = widget.typeAssetTransfer;
-    _initData();
+    currentType = 0;
   }
 
   @override
-  void didUpdateWidget(ToolAndMaterialTransferView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.typeAssetTransfer != widget.typeAssetTransfer) {
-      currentType = widget.typeAssetTransfer;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = GoRouterState.of(context);
+    final String? typeParam = state.uri.queryParameters['type'];
+    final int newType = int.tryParse(typeParam ?? '') ?? 0;
+    // Cache provider reference for safe use in dispose
+    _providerRef ??= Provider.of<ToolAndMaterialTransferProvider>(
+      context,
+      listen: false,
+    );
+    if (!_isInitialized) {
+      currentType = newType;
       _initData();
+    } else if (newType != currentType) {
+      currentType = newType;
       _reloadData();
     }
   }
@@ -81,6 +90,9 @@ class _ToolAndMaterialTransferViewState
   @override
   void dispose() {
     _searchController.dispose();
+    // Reset provider state when leaving this page using cached reference
+    _providerRef?.onDispose();
+    _isInitialized = false;
     super.dispose();
   }
 

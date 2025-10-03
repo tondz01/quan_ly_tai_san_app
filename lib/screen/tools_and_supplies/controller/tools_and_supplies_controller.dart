@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
+import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 /// Controller xử lý logic nghiệp vụ cho Tools and Supplies Detail
 class ToolsAndSuppliesController {
   // Callback để update UI
   final VoidCallback? onStateChanged;
-  final Function(String, List<String>)? onShowValidationErrors;
-  final Function(String)? onShowErrorMessage;
 
-  ToolsAndSuppliesController({
-    this.onStateChanged,
-    this.onShowValidationErrors,
-    this.onShowErrorMessage,
-  });
+  ToolsAndSuppliesController({this.onStateChanged});
 
   /// Validate chi tiết tài sản và trả về danh sách lỗi
   List<String> validateDetailAssets(
@@ -117,17 +114,18 @@ class ToolsAndSuppliesController {
     required String valueText,
     PhongBan? selectedPhongBan,
     CcdcGroup? selectedGroupCCDC,
+    TypeCcdc? selectedTypeCCDC,
   }) {
-    // Parse ngày nhập
+    // Parse ngày nhập (hỗ trợ cả dd/MM/yyyy và dd/MM/yyyy HH:mm:ss)
     DateTime importDate = DateTime.now();
-    try {
-      if (importDateText.trim().isNotEmpty) {
-        importDate = DateFormat(
-          'dd/MM/yyyy',
-        ).parseStrict(importDateText.trim());
+    final trimmedDateText = importDateText.trim();
+    if (trimmedDateText.isNotEmpty) {
+      final parsed = AppUtility.parseFlexibleDateTime(trimmedDateText);
+      if (parsed != null) {
+        importDate = parsed;
+      } else {
+        SGLog.warning('processFormData', 'Invalid date format: $importDateText');
       }
-    } catch (e) {
-      SGLog.warning('processFormData', 'Invalid date format: $importDateText');
     }
 
     // Parse số lượng
@@ -143,13 +141,15 @@ class ToolsAndSuppliesController {
     final idDonVi = (selectedPhongBan?.id ?? '').trim();
     // Lấy ID nhóm CCDC
     final idGroupCCDC = (selectedGroupCCDC?.id ?? '').trim();
-
+    // Lấy ID loại CCDC
+    final idTypeCCDC = (selectedTypeCCDC?.id ?? '').trim();
     return {
       'importDate': importDate,
       'quantity': quantity,
       'value': value,
       'idDonVi': idDonVi,
       'idGroupCCDC': idGroupCCDC,
+      'idTypeCCDC': idTypeCCDC,
     };
   }
 
@@ -170,8 +170,12 @@ class ToolsAndSuppliesController {
       id: existingData?.id ?? codeText.trim(),
       idDonVi: processedData['idDonVi'],
       idNhomCCDC: processedData['idGroupCCDC'],
+      idLoaiCCDCCon: processedData['idTypeCCDC'],
       ten: nameText.trim(),
-      ngayNhap: processedData['importDate'],
+      // Convert DateTime to server string format
+      ngayNhap: AppUtility.formatDateForServer(
+        processedData['importDate'] as DateTime,
+      ),
       donViTinh: unitText.trim(),
       soLuong: processedData['quantity'],
       giaTri: processedData['value'],
@@ -182,144 +186,16 @@ class ToolsAndSuppliesController {
       namSanXuat: 0,
       ghiChu: noteText.trim(),
       idCongTy: existingData?.idCongTy ?? currentUser?.idCongTy ?? "CT001",
-      ngayTao: existingData?.ngayTao ?? now,
-      ngayCapNhat: now,
+      ngayTao:
+          existingData?.ngayTao ??
+          AppUtility.formatFromISOString(now.toString()),
+      ngayCapNhat:
+          existingData?.ngayCapNhat ??
+          AppUtility.formatFromISOString(now.toString()),
       nguoiTao: existingData?.nguoiTao ?? currentUser?.id ?? '',
       nguoiCapNhat: currentUser?.id ?? '',
       isActive: existingData?.isActive ?? true,
     );
-  }
-
-  /// Validate form và trả về kết quả
-  FormValidationResult validateForm({
-    required String nameText,
-    required String codeText,
-    required String importDateText,
-    required String unitText,
-    required String quantityText,
-    required String valueText,
-    PhongBan? selectedPhongBan,
-    required String importUnitText,
-  }) {
-    List<String> errors = [];
-
-    final validationStates = FormValidationStates();
-
-    // Validate tên công cụ dụng cụ
-    validationStates.isNameValid = nameText.trim().isNotEmpty;
-    if (!validationStates.isNameValid) {
-      errors.add('Tên công cụ dụng cụ không được để trống');
-    }
-
-    // Validate đơn vị nhập
-    final String idDonVi = (selectedPhongBan?.id ?? importUnitText).trim();
-    validationStates.isImportUnitValid = idDonVi.isNotEmpty;
-    if (!validationStates.isImportUnitValid) {
-      errors.add('Đơn vị nhập không được để trống');
-    }
-
-    // Validate nhóm CCDC
-    final String idGroupCCDC = (selectedPhongBan?.id ?? importUnitText).trim();
-    validationStates.isGroupCCDCValid = idGroupCCDC.isNotEmpty;
-    if (!validationStates.isGroupCCDCValid) {
-      errors.add('Nhóm CCDC không được để trống');
-    }
-
-    // Validate mã công cụ dụng cụ
-    final String code = codeText.trim();
-    validationStates.isCodeValid = code.isNotEmpty && !code.contains(' ');
-    if (code.isEmpty) {
-      errors.add('Mã công cụ dụng cụ không được để trống');
-    } else if (code.contains(' ')) {
-      errors.add('Mã công cụ dụng cụ không được chứa khoảng trắng');
-    }
-
-    // Validate ngày nhập
-    validationStates.isImportDateValid = _validateImportDate(importDateText);
-    if (!validationStates.isImportDateValid) {
-      errors.add('Ngày nhập không hợp lệ (định dạng: dd/MM/yyyy)');
-    }
-
-    // Validate đơn vị tính
-    validationStates.isUnitValid = unitText.trim().isNotEmpty;
-    if (!validationStates.isUnitValid) {
-      errors.add('Đơn vị tính không được để trống');
-    }
-
-    // Validate số lượng
-    validationStates.isQuantityValid = _validateQuantity(quantityText);
-    if (!validationStates.isQuantityValid) {
-      errors.add(
-        'Số lượng phải là số nguyên dương và lớn hơn 0 (tối đa 999,999)',
-      );
-    }
-
-    // Validate giá trị
-    validationStates.isValueValid = _validateValue(valueText);
-    if (!validationStates.isValueValid) {
-      errors.add(
-        'Giá trị phải là số nguyên dương và lớn hơn 0 (tối đa 999,999,999,999)',
-      );
-    }
-
-    return FormValidationResult(
-      isValid: errors.isEmpty,
-      errors: errors,
-      validationStates: validationStates,
-    );
-  }
-
-  /// Validate ngày nhập
-  bool _validateImportDate(String dateText) {
-    if (dateText.trim().isEmpty) {
-      return false;
-    }
-
-    final formats = [
-      DateFormat('dd/MM/yyyy'),
-      DateFormat('dd/MM/yyyy HH:mm:ss'),
-    ];
-
-    for (var format in formats) {
-      try {
-        final date = format.parseStrict(dateText.trim());
-        // Kiểm tra ngày không được trong tương lai quá xa
-        if (date.isAfter(DateTime.now().add(Duration(days: 365)))) {
-          return false;
-        }
-        // Kiểm tra ngày không được quá cũ
-        if (date.isBefore(DateTime(1900))) {
-          return false;
-        }
-        return true;
-      } catch (_) {
-        continue;
-      }
-    }
-    return false;
-  }
-
-  /// Validate số lượng
-  bool _validateQuantity(String quantityText) {
-    if (quantityText.trim().isEmpty) {
-      return false;
-    }
-
-    final sanitized = quantityText.replaceAll(RegExp(r'[^0-9]'), '');
-    final quantity = int.tryParse(sanitized);
-    return quantity != null && quantity > 0 && quantity <= 999999;
-  }
-
-  /// Validate giá trị
-  bool _validateValue(String valueText) {
-    final trimmed = valueText.trim();
-    if (trimmed.isEmpty || trimmed.replaceAll('.', '').isEmpty) {
-      return false;
-    }
-
-    final sanitized = trimmed.replaceAll('.', '').replaceAll(',', '.');
-    final value = double.tryParse(sanitized);
-    return value != null && value >= 0 && value <= 999999999999;
   }
 
   /// Khởi tạo dropdown items cho phòng ban
@@ -354,16 +230,42 @@ class ToolsAndSuppliesController {
     return [];
   }
 
+  /// Khởi tạo dropdown items cho loại CCDC
+  List<DropdownMenuItem<TypeCcdc>> buildTypeCcdcDropdownItems(
+    List<TypeCcdc>? dataTypeCCDC,
+  ) {
+    if (dataTypeCCDC != null && dataTypeCCDC.isNotEmpty) {
+      return [
+        for (var element in dataTypeCCDC)
+          DropdownMenuItem<TypeCcdc>(
+            value: element,
+            child: Text(element.tenLoai ?? ''),
+          ),
+      ];
+    }
+    return [];
+  }
+
+  /// Khởi tạo dropdown items cho loại CCDC
+  List<DropdownMenuItem<UnitDto>> buildUnitDropdownItems(
+    List<UnitDto>? dataUnit,
+  ) {
+    if (dataUnit != null && dataUnit.isNotEmpty) {
+      return [
+        for (var element in dataUnit)
+          DropdownMenuItem<UnitDto>(
+            value: element,
+            child: Text(element.tenDonVi ?? ''),
+          ),
+      ];
+    }
+    return [];
+  }
+
   /// Format dữ liệu hiển thị
   String formatDisplayValue(dynamic value, {String defaultValue = ''}) {
     if (value == null) return defaultValue;
     return value.toString();
-  }
-
-  /// Format ngày hiển thị
-  String formatDateDisplay(DateTime? date) {
-    if (date == null) return '';
-    return DateFormat('dd/MM/yyyy').format(date);
   }
 
   /// Kiểm tra dữ liệu có thay đổi không
@@ -412,9 +314,11 @@ class ToolsAndSuppliesController {
       final inputDate = DateFormat(
         'dd/MM/yyyy',
       ).parseStrict(importDateText.trim());
-      if (originalData.ngayNhap.day != inputDate.day ||
-          originalData.ngayNhap.month != inputDate.month ||
-          originalData.ngayNhap.year != inputDate.year) {
+      DateTime originalDate =
+          DateTime.tryParse(originalData.ngayNhap) ?? DateTime.now();
+      if (originalDate.day != inputDate.day ||
+          originalDate.month != inputDate.month ||
+          originalDate.year != inputDate.year) {
         return true;
       }
     } catch (_) {
@@ -518,7 +422,7 @@ class ToolsAndSuppliesController {
 
   /// Tạo ID mới cho DetailAssetDto
   String _generateDetailAssetId(String assetCode, int index) {
-    return "${assetCode.trim()}-${DateTime.now().millisecondsSinceEpoch}-$index";
+    return "${assetCode.trim()}-STT-$index";
   }
 }
 
@@ -540,6 +444,7 @@ class FormValidationStates {
   bool isNameValid = true;
   bool isImportUnitValid = true;
   bool isGroupCCDCValid = true;
+  bool isTypeCCDCValid = true;
   bool isCodeValid = true;
   bool isImportDateValid = true;
   bool isUnitValid = true;
@@ -551,6 +456,7 @@ class FormValidationStates {
     isNameValid = true;
     isImportUnitValid = true;
     isGroupCCDCValid = true;
+    isTypeCCDCValid = true;
     isCodeValid = true;
     isImportDateValid = true;
     isUnitValid = true;

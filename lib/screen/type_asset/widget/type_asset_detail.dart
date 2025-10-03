@@ -1,14 +1,12 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_event.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
@@ -33,7 +31,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
   TextEditingController controllerId = TextEditingController();
   TextEditingController controllerIdLoaiTs = TextEditingController();
   TextEditingController controllerName = TextEditingController();
-  
+
   Map<String, bool> validationErrors = {};
   List<AssetGroupDto> listAssetGroup = [];
   AssetGroupDto? assetGroup;
@@ -149,6 +147,8 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              sectionTitle(Icons.info_outline, 'Thông tin loại tài sản'),
+              const SizedBox(height: 16),
               CommonFormInput(
                 label: 'Mã loại tài sản',
                 controller: controllerId,
@@ -157,6 +157,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
                 width: double.infinity,
                 validationErrors: validationErrors,
                 fieldName: 'id',
+                isRequired: true,
               ),
               CmFormDropdownObject<AssetGroupDto>(
                 label: 'Mã loại tài sản cha',
@@ -175,6 +176,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
                 },
                 fieldName: 'idLoaiTs',
                 validationErrors: validationErrors,
+                isRequired: true,
               ),
               CommonFormInput(
                 label: 'Tên loại tài sản',
@@ -184,6 +186,7 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
                 width: double.infinity,
                 validationErrors: validationErrors,
                 fieldName: 'tenLoai',
+                isRequired: true,
               ),
             ],
           ),
@@ -215,6 +218,9 @@ class _TypeAssetDetailState extends State<TypeAssetDetail> {
               onPressed: () {
                 setState(() {
                   isEditing = false;
+                  if (widget.provider.dataDetail == null) {
+                    widget.provider.onCloseDetail(context);
+                  }
                 });
               },
             ),

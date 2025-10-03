@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -39,40 +41,22 @@ class _TypeAssetViewState extends State<TypeAssetView> {
       listener: (context, state) {
         if (state is TypeAssetLoadingState) {}
         if (state is GetListTypeAssetSuccessState) {
-          context.read<TypeAssetProvider>().getListSuccess(
-            context,
-            state,
-          );
+          context.read<TypeAssetProvider>().getListSuccess(context, state);
         }
         if (state is CreateTypeAssetSuccessState) {
-          context.read<TypeAssetProvider>().createSuccess(
-            context,
-            state,
-          );
+          context.read<TypeAssetProvider>().createSuccess(context, state);
         }
         if (state is CreateTypeAssetFailedState) {
-          context.read<TypeAssetProvider>().createFailed(
-            context,
-            state,
-          );
+          context.read<TypeAssetProvider>().createFailed(context, state);
         }
         if (state is GetListTypeAssetFailedState) {
-          context.read<TypeAssetProvider>().getListFailed(
-            context,
-            state,
-          );
+          context.read<TypeAssetProvider>().getListFailed(context, state);
         }
         if (state is UpdateTypeAssetSuccessState) {
-          context.read<TypeAssetProvider>().updateSuccess(
-            context,
-            state,
-          );
+          context.read<TypeAssetProvider>().updateSuccess(context, state);
         }
         if (state is DeleteTypeAssetSuccessState) {
-          context.read<TypeAssetProvider>().deleteSuccess(
-            context,
-            state,
-          );
+          context.read<TypeAssetProvider>().deleteSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
           context.read<TypeAssetProvider>().putPostDeleteFailed(context, state);
@@ -103,19 +87,50 @@ class _TypeAssetViewState extends State<TypeAssetView> {
                     mainScreen: 'Loại tài sản',
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final bloc = context.read<TypeAssetBloc>();
-                      final List<TypeAsset> list = fileBytes != null
-                          ? await convertExcelToTypeAssetBytes(fileBytes)
-                          : await convertExcelToTypeAsset(filePath!);
+                      final result = await convertExcelToTypeAsset(
+                        filePath!,
+                        fileBytes: fileBytes,
+                      );
                       if (!mounted) return;
-                      if (list.isNotEmpty) {
+
+                      if (result['success']) {
+                        List<TypeAsset> list = result['data'];
                         bloc.add(CreateTypeAssetBatchEvent(list));
+                      } else {
+                        List<dynamic> errors = result['errors'];
+
+                        // Tạo danh sách lỗi dạng list
+                        List<String> errorMessages = [];
+                        for (var error in errors) {
+                          String rowNumber = error['row'].toString();
+                          List<String> rowErrors = List<String>.from(
+                            error['errors'],
+                          );
+                          String errorText =
+                              'Dòng $rowNumber: ${rowErrors.join(', ')}\n';
+                          errorMessages.add(errorText);
+                        }
+
+                        log(
+                          '[ToolsAndSuppliesView] errorMessages: $errorMessages',
+                        );
+                        if (!mounted) return;
+
+                        // Hiển thị thông báo tổng quan
+                        AppUtility.showSnackBar(
+                          context,
+                          'Import dữ liệu thất bại: \n $errorMessages',
+                          isError: true,
+                          timeDuration: 4,
+                        );
                       }
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
                         "type_asset",
-                        provider.data?.map((e) => e.toExportJson()).toList() ?? [],
+                        provider.data?.map((e) => e.toExportJson()).toList() ??
+                            [],
                       );
                     },
                   ),

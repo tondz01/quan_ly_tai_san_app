@@ -5,7 +5,6 @@ import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:se_gay_components/common/table/sg_table.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 abstract class TableBaseConfig {
   static Widget tableBase<T>({
@@ -16,6 +15,7 @@ abstract class TableBaseConfig {
     Function(List<T> items)? onSelectionChanged,
     bool isShowCheckboxes = true,
     Offset? filterPopupOffset,
+    double showQuantityColumn = 20,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -31,6 +31,7 @@ abstract class TableBaseConfig {
       ),
       child: SgTable<T>(
         // rowHeight: 45.0,
+        showQuantityColumn: showQuantityColumn,
         data: data,
         titleStyleHeader: const TextStyle(
           fontWeight: FontWeight.w600,
@@ -44,8 +45,11 @@ abstract class TableBaseConfig {
         oddRowBackgroundColor: Colors.white,
         evenRowBackgroundColor: Colors.grey.shade50,
         selectedRowColor: ColorValue.accentLightCyan,
+        gridLineColor: Colors.grey.shade100,
+        colorLineVertical: ColorValue.disabledText.withOpacity(0.3),
+        gridLineWidth: 1,
         showCheckboxes: isShowCheckboxes,
-        showVerticalLines: false,
+        showVerticalLines: true,
         showHorizontalLines: true,
         columns: columns,
         onSelectionChanged: onSelectionChanged,
@@ -127,13 +131,6 @@ abstract class TableBaseConfig {
     bool? searchable = false,
     bool? filterable = false,
   }) {
-    // 🔥 SỬA: Log với title để phân biệt
-    if (filterable == true) {
-      SGLog.info(
-        'filterable buildColumnFilter --',
-        'Column: [$title] \n filterable: $filterable \n searchValueGetter: $searchValueGetter',
-      );
-    }
 
     return SgTableColumn<T>(
       title: title,

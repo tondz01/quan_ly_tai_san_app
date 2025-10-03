@@ -16,6 +16,10 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = locator<AppRouteConf>().router;
+    // UserInfoDTO userInfo =
+    //     AccountHelper.instance.getUserInfo() ?? UserInfoDTO.empty();
+    // _loadDataIfNeeded(userInfo);
+
     return MultiBlocProvider(
       providers: blocProvider,
       child: MultiProvider(
@@ -35,10 +39,7 @@ class App extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('vi', 'VN'),
-              Locale('en', 'US'),
-            ],
+            supportedLocales: const [Locale('vi', 'VN'), Locale('en', 'US')],
             locale: const Locale('vi', 'VN'),
             fallbackLocale: const Locale('en', 'US'),
             translations: MyLocale(),
@@ -50,4 +51,10 @@ class App extends StatelessWidget {
       ),
     );
   }
+
+  // Future<void> _loadDataIfNeeded(UserInfoDTO userInfo) async {
+  //   if (userInfo.idCongTy.isNotEmpty) {
+  //     await AuthRepository().loadData(userInfo.idCongTy);
+  //   }
+  // }
 }

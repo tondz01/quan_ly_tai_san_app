@@ -366,6 +366,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       _filteredData.clear();
       _data?.clear();
@@ -680,22 +681,37 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
 
     final currentSigner = signatureFlow[currentIndex];
-    
-    if (item.nguoiLapPhieuKyNhay == true && 
+
+    if (item.nguoiLapPhieuKyNhay == true &&
         item.idNguoiKyNhay == userInfo.tenDangNhap) {
-      return item.trangThaiKyNhay == true ? 2 : 4; 
+      return item.trangThaiKyNhay == true ? 2 : 4;
     }
-    
-    if (item.nguoiTao == userInfo.tenDangNhap && 
+
+    if (item.nguoiTao == userInfo.tenDangNhap &&
         currentSigner["signed"] != -1) {
-      return currentSigner["signed"] == true ? 3 : 5; 
+      return currentSigner["signed"] == true ? 3 : 5;
     }
-    
+
     // Logic cũ
     if (currentSigner["signed"] == -1) {
-      return -1; 
+      return -1;
     }
 
     return currentSigner["signed"] == true ? 1 : 0;
+  }
+
+  void refreshData(BuildContext context, int type) {
+    typeDieuDongTaiSan = type;
+    _data = null;
+    _dataPage = null;
+    _item = null;
+    _dataAsset = null;
+    _dataPhongBan = null;
+    _dataNhanVien = null;
+    notifyListeners();
+    _userInfo = AccountHelper.instance.getUserInfo();
+    onCloseDetail(context);
+    controllerDropdownPage = TextEditingController(text: '10');
+    getDataAll(context);
   }
 }

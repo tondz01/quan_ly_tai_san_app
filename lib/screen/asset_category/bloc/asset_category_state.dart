@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 
 abstract class AssetCategoryState extends Equatable {
   const AssetCategoryState();
@@ -95,4 +95,48 @@ class PutPostDeleteFailedState extends AssetCategoryState {
 
   @override
   List<Object> get props => [title, code!, message];
+}
+
+class AssetCategoryLoaded extends AssetCategoryState {
+  final List<AssetCategoryDto> assetCategories;
+  const AssetCategoryLoaded(this.assetCategories);
+  @override
+  List<Object?> get props => [assetCategories];
+}
+
+class AssetCategoryError extends AssetCategoryState {
+  final String message;
+  const AssetCategoryError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class AddAssetCategorySuccess extends AssetCategoryState {
+  final String message;
+  const AddAssetCategorySuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateAssetCategorySuccess extends AssetCategoryState {
+  final String message;
+  const UpdateAssetCategorySuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteAssetCategorySuccess extends AssetCategoryState {
+  final String message;
+  const DeleteAssetCategorySuccess(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteAssetCategoryBatchSuccess extends AssetCategoryState {}
+
+class DeleteAssetCategoryBatchFailure extends AssetCategoryState {
+  final String message;
+  const DeleteAssetCategoryBatchFailure(this.message);
+  @override
+  List<Object?> get props => [message];
 }

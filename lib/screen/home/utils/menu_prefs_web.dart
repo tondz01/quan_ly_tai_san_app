@@ -15,4 +15,9 @@ int? getSelectedSubIndex() {
 void setSelection(int selectedIndex, int selectedSubIndex) {
   html.window.localStorage['MENU_SELECTED_INDEX'] = selectedIndex.toString();
   html.window.localStorage['MENU_SELECTED_SUB_INDEX'] = selectedSubIndex.toString();
+}
+
+void clearSelection() {
+  html.window.localStorage.remove('MENU_SELECTED_INDEX');
+  html.window.localStorage.remove('MENU_SELECTED_SUB_INDEX');
 } 

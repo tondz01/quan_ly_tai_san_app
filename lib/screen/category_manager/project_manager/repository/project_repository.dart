@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/constants/project_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -40,7 +41,7 @@ class ProjectRepository extends ApiBase {
         DuAn.fromJson,
       );
     } catch (e) {
-      log("Error at addProject - AssetTransferRepository: $e");
+      SGLog.error("ProjectRepository", "Error at fetchProjects: $e");
     }
 
     return result;
@@ -70,7 +71,7 @@ class ProjectRepository extends ApiBase {
         DuAn.fromJson,
       );
     } catch (e) {
-      log("Error at addProject - AssetTransferRepository: $e");
+      SGLog.error("ProjectRepository", "Error at addProject: $e");
     }
 
     return result;
@@ -103,7 +104,7 @@ class ProjectRepository extends ApiBase {
         DuAn.fromJson,
       );
     } catch (e) {
-      log("Error at updateProject - AssetTransferRepository: $e");
+      SGLog.error("ProjectRepository", "Error at updateProject: $e");
     }
 
     return result;
@@ -129,7 +130,7 @@ class ProjectRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
       result['data'] = response.data;
     } catch (e) {
-      log("Error at deleteProject - ProjectRepository: $e");
+      SGLog.error("ProjectRepository", "Error at deleteProject: $e");
     }
 
     return result;
@@ -156,8 +157,8 @@ class ProjectRepository extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       SGLog.error(
-        "AssetTransferRepository",
-        "Error at insertDataFile - AssetTransferRepository: $e",
+        "ProjectRepository",
+        "Error at insertDataFile: $e",
       );
     }
 
@@ -185,8 +186,8 @@ class ProjectRepository extends ApiBase {
       result['data'] = response.data;
     } catch (e) {
       SGLog.error(
-        "AssetTransferRepository",
-        "Error at insertDataFileBytes - AssetTransferRepository: $e",
+        "ProjectRepository",
+        "Error at insertDataFileBytes: $e",
       );
     }
     return result;
@@ -201,14 +202,14 @@ class ProjectRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.CHUC_VU}/batch',
+        '${EndPointAPI.DU_AN}/batch',
         data: jsonEncode(duAnList),
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         result['message'] =
-            response.data['message'] ?? 'Lưu danh sách chức vụ thất bại';
+            response.data['message'] ?? ProjectConstants.errorCreateProjectBatch;
         return result;
       }
 
@@ -220,7 +221,7 @@ class ProjectRepository extends ApiBase {
         DuAn.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("ProjectRepository", "Error at saveProjectBatch: $e");
     }
 
     return result;
@@ -234,7 +235,7 @@ class ProjectRepository extends ApiBase {
 
     try {
       final response = await delete(
-        '${EndPointAPI.CHUC_VU}/batch',
+        '${EndPointAPI.DU_AN}/batch',
         data: jsonEncode(data),
       );
 
@@ -251,7 +252,7 @@ class ProjectRepository extends ApiBase {
         DuAn.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("ProjectRepository", "Error at deleteProjectBatch: $e");
     }
 
     return result;

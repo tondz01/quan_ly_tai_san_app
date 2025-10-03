@@ -61,8 +61,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'signing_status',
-    'share',
     'type',
     'effective_date',
     'approver',
@@ -72,6 +70,10 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     'to_date',
     'don_vi_giao',
     'don_vi_nhan',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     'actions',
   ];
@@ -122,6 +124,16 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'permission_signing',
+        label: 'Quyền ký',
+        isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
+      ColumnDisplayOption(
+        id: 'status_document',
+        label: 'Trạng thái bàn giao',
+        isChecked: visibleColumnIds.contains('status_document'),
+      ),
       ColumnDisplayOption(
         id: 'signing_status',
         label: 'Trạng thái ký',
@@ -210,6 +222,53 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'permission_signing':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Quyền ký',
+              cellBuilder:
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = getPermissionSigning(item);
+                return status == 2
+                    ? 'Không được phép ký'
+                    : status == 1
+                    ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
+                    : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'status_document':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
+              title: 'Trạng thái bàn giao',
+              cellBuilder:
+                  (item) =>
+                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = item.trangThaiPhieu ?? 0;
+                return status == 0
+                    ? 'Chưa hoàn thành'
+                    : status == 1
+                    ? 'Sắp hết hạn'
+                    : status == 2
+                    ? 'Đã hoàn thành'
+                    : 'Không xác đinh';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
         case 'signing_status':
           columns.add(
             SgTableColumn<DieuDongTaiSanDto>(
@@ -260,6 +319,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               title: 'Phiếu ký nội sinh',
               width: 150,
               getValue: (item) => getName(item.loai ?? 0),
+              filterable: true,
             ),
           );
           break;
@@ -269,6 +329,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               title: 'Ngày có hiệu lực',
               width: 100,
               getValue: (item) => item.tggnTuNgay ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -278,6 +339,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               title: 'Trình duyệt ban giám đốc',
               width: 150,
               getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -296,6 +358,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               titleAlignment: TextAlign.center,
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -305,6 +368,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               title: 'Ký số',
               width: 120,
               getValue: (item) => item.id ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -314,6 +378,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               title: 'Thời gian giao nhận từ ngày',
               width: 150,
               getValue: (item) => item.tggnTuNgay ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -328,6 +393,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 }
                 return item.tggnDenNgay!;
               },
+              filterable: true,
             ),
           );
           break;
@@ -368,8 +434,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               cellBuilder:
                   (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
               width: 150,
-              searchValueGetter: (item) =>
-                  ConfigViewAT.getStatus(item.trangThai ?? 0),
+              searchValueGetter:
+                  (item) => ConfigViewAT.getStatus(item.trangThai ?? 0),
               searchable: true,
               filterable: true,
             ),
@@ -650,7 +716,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 children: [
                   Visibility(
                     visible:
-                        selectedItems.isNotEmpty && selectedItems.length < 2,
+                        selectedItems.isNotEmpty &&
+                        selectedItems.length < 2 &&
+                        getPermissionSigning(selectedItems.first) == 0,
                     child: Tooltip(
                       message: 'Ký biên bản',
                       child: InkWell(
@@ -951,6 +1019,57 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     );
   }
 
+  List<DieuDongTaiSanDto> _getNotSharedAndNotify(
+    List<DieuDongTaiSanDto> items,
+  ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<DieuDongTaiSanDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<DieuDongTaiSanDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.tenPhieu?.trim().isNotEmpty == true
+                    ? e.tenPhieu!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
   void _handleSendToSigner(List<DieuDongTaiSanDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
@@ -960,18 +1079,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       );
       return;
     }
-    // bool hasNonZero = items.any(
-    //   (item) => item.trangThai != 0 && item.trangThai != 2,
-    // );
-    // if (hasNonZero) {
-    //   AppUtility.showSnackBar(
-    //     context,
-    //     'Có phiếu không phải ở trạng thái "Nháp", không thể chia sẻ',
-    //     isError: true,
-    //   );
-    //   return;
-    // }
-
     showConfirmDialog(
       context,
       type: ConfirmType.delete,
@@ -980,10 +1087,56 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<DieuDongTaiSanBloc>().add(
-          SendToSignerEvent(context, items),
+          SendToSignerEvent(context, notShared),
         );
       },
     );
+  }
+
+  int getPermissionSigning(DieuDongTaiSanDto item) {
+    final signatureFlow =
+        [
+              if (item.nguoiLapPhieuKyNhay == true)
+                {
+                  "id": item.idNguoiKyNhay,
+                  "signed": item.trangThaiKyNhay == true,
+                  "label":
+                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
+                },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trinhDuyetCapPhongXacNhan == true,
+                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
+              },
+              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                {
+                  "id": item.listSignatory![i].idNguoiKy,
+                  "signed": item.listSignatory![i].trangThai == 1,
+                  "label":
+                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trinhDuyetGiamDocXacNhan == true,
+                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo?.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+    if (previousNotSigned.isNotEmpty) return 1;
+    return 0;
   }
 }

@@ -1,9 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_event.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_state.dart';
@@ -76,11 +75,12 @@ class TypeAssetProvider with ChangeNotifier {
     if (_data == null) return;
     if (_searchTerm.isNotEmpty) {
       String searchLower = _searchTerm.toLowerCase();
-      _filteredData = _data!.where((item) {
-        return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
-            (item.tenLoai?.toLowerCase().contains(searchLower) ?? false) ||
-            (item.idLoaiTs?.toLowerCase().contains(searchLower) ?? false);
-      }).toList();
+      _filteredData =
+          _data!.where((item) {
+            return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.tenLoai?.toLowerCase().contains(searchLower) ?? false) ||
+                (item.idLoaiTs?.toLowerCase().contains(searchLower) ?? false);
+          }).toList();
     } else {
       _filteredData = _data!;
     }
@@ -105,20 +105,20 @@ class TypeAssetProvider with ChangeNotifier {
   void getList(BuildContext context) {
     _isLoading = true;
     Future.microtask(() {
+      if (!context.mounted) return;
       context.read<TypeAssetBloc>().add(GetListTypeAssetEvent(context));
     });
   }
 
-  getListSuccess(
-    BuildContext context,
-    GetListTypeAssetSuccessState state,
-  ) {
+  getListSuccess(BuildContext context, GetListTypeAssetSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
     } else {
       _data = state.data;
+      AccountHelper.instance.clearTypeAsset();
+      AccountHelper.instance.setTypeAsset(_data ?? []);
       _filteredData = List.from(_data!);
       _updatePagination();
     }
@@ -138,12 +138,13 @@ class TypeAssetProvider with ChangeNotifier {
       endIndex = rowsPerPage.clamp(0, totalEntries);
     }
 
-    _dataPage = _filteredData!.isNotEmpty
-        ? _filteredData!.sublist(
-            startIndex < totalEntries ? startIndex : 0,
-            endIndex < totalEntries ? endIndex : totalEntries,
-          )
-        : [];
+    _dataPage =
+        _filteredData!.isNotEmpty
+            ? _filteredData!.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
   }
 
   void onPageChanged(int page) {
@@ -178,49 +179,34 @@ class TypeAssetProvider with ChangeNotifier {
     isShowInput = true;
   }
 
-  void createSuccess(
-    BuildContext context,
-    CreateTypeAssetSuccessState state,
-  ) {
+  void createSuccess(BuildContext context, CreateTypeAssetSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     refresh(context);
     notifyListeners();
   }
 
-  void updateSuccess(
-    BuildContext context,
-    UpdateTypeAssetSuccessState state,
-  ) {
+  void updateSuccess(BuildContext context, UpdateTypeAssetSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
     refresh(context);
     notifyListeners();
   }
 
-  void deleteSuccess(
-    BuildContext context,
-    DeleteTypeAssetSuccessState state,
-  ) {
+  void deleteSuccess(BuildContext context, DeleteTypeAssetSuccessState state) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
     refresh(context);
     notifyListeners();
   }
 
-  void getListFailed(
-    BuildContext context,
-    GetListTypeAssetFailedState state,
-  ) {
+  void getListFailed(BuildContext context, GetListTypeAssetFailedState state) {
     _error = state.message;
     _isLoading = false;
     notifyListeners();
   }
 
-  void createFailed(
-    BuildContext context,
-    CreateTypeAssetFailedState state,
-  ) {
+  void createFailed(BuildContext context, CreateTypeAssetFailedState state) {
     _error = state.message;
     AppUtility.showSnackBar(context, state.message, isError: true);
     notifyListeners();
@@ -246,12 +232,13 @@ class TypeAssetProvider with ChangeNotifier {
       if (filePath.isEmpty) return null;
     }
     try {
-      final result = kIsWeb
-          ? await TypeAssetRepository().insertDataFileBytes(
-              fileName,
-              fileBytes,
-            )
-          : await TypeAssetRepository().insertDataFile(filePath);
+      final result =
+          kIsWeb
+              ? await TypeAssetRepository().insertDataFileBytes(
+                fileName,
+                fileBytes,
+              )
+              : await TypeAssetRepository().insertDataFile(filePath);
       final statusCode = result['status_code'] as int? ?? 0;
       if (statusCode >= 200 && statusCode < 300) {
         if (context.mounted) {
@@ -290,5 +277,3 @@ class TypeAssetProvider with ChangeNotifier {
     return null;
   }
 }
-
-

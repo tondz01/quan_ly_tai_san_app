@@ -6,9 +6,11 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/component/convert_excel_to_chucvu.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_list.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -35,7 +37,7 @@ class _RoleViewState extends State<RoleView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<RoleProvider>(context, listen: false).onInit(context);
+    // Removed duplicate onInit call
   }
 
   @override
@@ -53,9 +55,6 @@ class _RoleViewState extends State<RoleView> {
             if (provider.isLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            // if (provider.data == null) {
-            //   return const Center(child: Text('Không có dữ liệu'));
-            // }
             provider.controllerDropdownPage ??= TextEditingController(
               text: provider.rowsPerPage.toString(),
             );
@@ -67,9 +66,6 @@ class _RoleViewState extends State<RoleView> {
                   onSearchChanged: (value) {
                     provider.onSearchRoles(value);
                   },
-                  onTap: () {
-                    // provider.onChangeDetailAssetTransfer(null);
-                  },
                   onNew: () {
                     provider.onChangeDetail(context, null);
                   },
@@ -77,12 +73,38 @@ class _RoleViewState extends State<RoleView> {
                   subScreen: provider.subScreen,
                   onFileSelected: (fileName, filePath, fileBytes) async {
                     final roleBloc = context.read<RoleBloc>();
-                    final List<ChucVu> cv = await convertExcelToChucVu(
+                    final result = await convertExcelToChucVu(
                       filePath!,
+                      fileBytes: fileBytes,
                     );
                     if (!mounted) return;
-                    if (cv.isNotEmpty) {
+
+                    if (result['success']) {
+                      List<ChucVu> cv = result['data'];
                       roleBloc.add(CreateRoleBatchEvent(cv));
+                    } else {
+                      List<dynamic> errors = result['errors'];
+
+                      // Tạo danh sách lỗi dạng list
+                      List<String> errorMessages = [];
+                      for (var error in errors) {
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
+                        );
+                        String errorText =
+                            'Dòng $rowNumber: ${rowErrors.join(', ')}';
+                        errorMessages.add(errorText);
+                      }
+
+                      if (!mounted) return;
+                      // Hiển thị thông báo tổng quan
+                      AppUtility.showSnackBar(
+                        context,
+                        'Import dữ liệu thất bại: \n $errorMessages',
+                        isError: true,
+                        timeDuration: 4,
+                      );
                     }
                   },
                   onExportData: () {
@@ -114,7 +136,9 @@ class _RoleViewState extends State<RoleView> {
                     ),
                   ),
                   Visibility(
-                    visible: (provider.data?.length ?? 0) >= 5,
+                    visible:
+                        (provider.data?.length ?? 0) >=
+                        RoleConstants.minPaginationThreshold,
                     child: SGPaginationControls(
                       totalPages: provider.totalPages,
                       currentPage: provider.currentPage,
@@ -144,7 +168,16 @@ class _RoleViewState extends State<RoleView> {
           context.read<RoleProvider>().createRolesSuccess(context, state);
         }
         if (state is CreateRoleFailedState) {
-          AppUtility.showSnackBar(context, state.message, isError: true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? RoleConstants.webSnackBarDuration
+                      : RoleConstants.mobileSnackBarDuration,
+            ),
+          );
         }
         if (state is UpdateRoleSuccessState) {
           context.read<RoleProvider>().updateRolesSuccess(context, state);
@@ -153,7 +186,30 @@ class _RoleViewState extends State<RoleView> {
           context.read<RoleProvider>().deleteRolesSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<RoleProvider>().onCallFailled(context, state.message);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? RoleConstants.webSnackBarDuration
+                      : RoleConstants.mobileSnackBarDuration,
+            ),
+          );
+        }
+        if (state is DeleteRoleBatchSuccess) {
+          context.read<RoleProvider>().deleteRoleBatchSuccess(context, state);
+        } else if (state is DeleteRoleBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa chức vụ thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+              duration:
+                  kIsWeb
+                      ? RoleConstants.webSnackBarDuration
+                      : RoleConstants.mobileSnackBarDuration,
+            ),
+          );
         }
       },
     );

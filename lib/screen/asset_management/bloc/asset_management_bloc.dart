@@ -248,7 +248,7 @@ class AssetManagementBloc
       emit(CreateAssetSuccessState());
     } else {
       String msg =
-          'Thất bại khi lưu danh sách tài sản: error ${result['message']}';
+          'Thất bại khi lưu danh sách tài sản';
       emit(
         CreateAssetFailedState(
           title: 'Tạo tài sản',

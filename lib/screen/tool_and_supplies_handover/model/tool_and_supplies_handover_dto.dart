@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 
@@ -35,7 +36,7 @@ class ToolAndSuppliesHandoverDto {
   List<SignatoryDto>? listSignatory;
   List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover;
   bool? byStep;
-
+  int? trangThaiPhieu;
   ToolAndSuppliesHandoverDto({
     this.id,
     this.banGiaoCCDCVatTu,
@@ -70,6 +71,7 @@ class ToolAndSuppliesHandoverDto {
     this.listSignatory,
     this.byStep,
     this.listDetailSubppliesHandover,
+    this.trangThaiPhieu,
   });
 
   factory ToolAndSuppliesHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -82,7 +84,7 @@ class ToolAndSuppliesHandoverDto {
       tenDonViGiao: json['tenDonViGiao'],
       idDonViNhan: json['idDonViNhan'],
       tenDonViNhan: json['tenDonViNhan'],
-      ngayBanGiao: json['ngayBanGiao'],
+      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
@@ -96,8 +98,8 @@ class ToolAndSuppliesHandoverDto {
       daiDienBenNhanXacNhan: json['daiDienBenNhanXacNhan'],
       trangThai: json['trangThai'],
       note: json['note'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       share: json['share'],
@@ -119,6 +121,7 @@ class ToolAndSuppliesHandoverDto {
                 ),
               )
               : null,
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -132,7 +135,7 @@ class ToolAndSuppliesHandoverDto {
       'tenDonViGiao': tenDonViGiao,
       'idDonViNhan': idDonViNhan,
       'tenDonViNhan': tenDonViNhan,
-      'ngayBanGiao': ngayBanGiao,
+      'ngayBanGiao': AppUtility.formatFromISOString(ngayBanGiao ?? ''),
       'idLanhDao': idLanhDao,
       'tenLanhDao': tenLanhDao,
       'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
@@ -146,8 +149,8 @@ class ToolAndSuppliesHandoverDto {
       'daiDienBenNhanXacNhan': daiDienBenNhanXacNhan,
       'trangThai': trangThai,
       'note': note,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'share': share,
@@ -157,6 +160,7 @@ class ToolAndSuppliesHandoverDto {
       'listSignatory': listSignatory,
       'byStep': byStep,
       'listDetailSubppliesHandover': listDetailSubppliesHandover,
+      'trangThaiPhieu': trangThaiPhieu,
     };
   }
 
@@ -194,6 +198,7 @@ class ToolAndSuppliesHandoverDto {
     List<SignatoryDto>? listSignatory,
     bool? byStep,
     List<DetailSubppliesHandoverDto>? listDetailSubppliesHandover,
+    int? trangThaiPhieu,
   }) {
     return ToolAndSuppliesHandoverDto(
       id: id ?? this.id,
@@ -204,7 +209,7 @@ class ToolAndSuppliesHandoverDto {
       tenDonViGiao: tenDonViGiao ?? this.tenDonViGiao,
       idDonViNhan: idDonViNhan ?? this.idDonViNhan,
       tenDonViNhan: tenDonViNhan ?? this.tenDonViNhan,
-      ngayBanGiao: ngayBanGiao ?? this.ngayBanGiao,
+      ngayBanGiao: AppUtility.formatFromISOString(ngayBanGiao ?? this.ngayBanGiao ?? ''),
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
       idDaiDiendonviBanHanhQD:
@@ -221,8 +226,10 @@ class ToolAndSuppliesHandoverDto {
           daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
       trangThai: trangThai ?? this.trangThai,
       note: note ?? this.note,
-      ngayTao: ngayTao ?? this.ngayTao,
-      ngayCapNhat: ngayCapNhat ?? this.ngayCapNhat,
+      ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(
+        ngayCapNhat ?? this.ngayCapNhat ?? '',
+      ),
       nguoiTao: nguoiTao ?? this.nguoiTao,
       nguoiCapNhat: nguoiCapNhat ?? this.nguoiCapNhat,
       share: share ?? this.share,
@@ -233,6 +240,7 @@ class ToolAndSuppliesHandoverDto {
       byStep: byStep ?? this.byStep,
       listDetailSubppliesHandover:
           listDetailSubppliesHandover ?? this.listDetailSubppliesHandover,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
 }

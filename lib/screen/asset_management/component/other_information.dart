@@ -1,17 +1,20 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/dropdown_add_list_object.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 Widget buildOtherInformation(
@@ -41,13 +44,17 @@ Widget buildOtherInformation(
   Function(HienTrang)? onHienTrangChanged,
   Function(NguonKinhPhi)? onNguonKinhPhiChanged,
   Function(bool)? onKhoiTaoDonViChanged,
+  Function(UnitDto)? onUnitChanged,
   required List<PhongBan> listPhongBan,
   required List<DuAn> listDuAn,
   required List<NguonKinhPhi> listNguonKinhPhi,
+  required List<NguonKinhPhi> initialSelectedNguonKinhPhi,
+  required List<UnitDto> listUnit,
   required List<DropdownMenuItem<PhongBan>> itemsPhongBan,
   required List<DropdownMenuItem<DuAn>> itemsDuAn,
   required List<DropdownMenuItem<NguonKinhPhi>> itemsNguonKinhPhi,
   required Function(Country)? onNuocSanXuatChanged,
+  required Function(List<NguonKinhPhi>)? onChangedNguonKinhPhi,
   required AssetManagementProvider provider,
   DuAn? duAn,
   HienTrang? hienTrang,
@@ -55,6 +62,7 @@ Widget buildOtherInformation(
   Country? country,
   PhongBan? phongBanBanDau,
   PhongBan? phongBanHienThoi,
+  UnitDto? unit,
 }) {
   return Column(
     children: [
@@ -79,6 +87,22 @@ Widget buildOtherInformation(
         onChanged: onDuAnChanged,
         fieldName: 'duAn',
         validationErrors: validationErrors,
+      ),
+
+      CMObjectMultiSelectDropdownField<NguonKinhPhi>(
+        labelText: 'Nguồn kinh phí',
+        items: listNguonKinhPhi,
+        itemLabel: (o) => o.tenNguonKinhPhi ?? '',
+        itemKey: (o) => o.id ?? '',
+        initialSelected: initialSelectedNguonKinhPhi,
+        onChanged: (list) {
+          onChangedNguonKinhPhi?.call(list);
+          initialSelectedNguonKinhPhi = list;
+        },
+        onConfirmed: (list) {
+          onChangedNguonKinhPhi?.call(list);
+          initialSelectedNguonKinhPhi = list;
+        },
       ),
 
       CmFormDropdownObject<NguonKinhPhi>(
@@ -197,11 +221,21 @@ Widget buildOtherInformation(
         validationErrors: validationErrors,
       ),
       const SizedBox(height: 5),
-      CommonFormInput(
-        label: 'Đơn vị tính',
+      CmFormDropdownObject<UnitDto>(
+        label: 'tas.unit'.tr,
         controller: ctrlDonViTinh,
         isEditing: isEditing,
-        textContent: ctrlDonViTinh.text,
+        items: [
+          ...listUnit.map(
+            (unit) => DropdownMenuItem<UnitDto>(
+              value: unit,
+              child: Text(unit.tenDonVi ?? ''),
+            ),
+          ),
+        ],
+        defaultValue: unit,
+        onChanged: onUnitChanged,
+        value: unit,
         fieldName: 'donViTinh',
         validationErrors: validationErrors,
         isRequired: true,

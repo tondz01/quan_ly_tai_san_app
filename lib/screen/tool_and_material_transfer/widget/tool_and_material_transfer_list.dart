@@ -65,8 +65,6 @@ class _ToolAndMaterialTransferListState
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'signing_status',
-    'share',
     'type',
     'effective_date',
     'approver',
@@ -76,6 +74,10 @@ class _ToolAndMaterialTransferListState
     'to_date',
     'don_vi_giao',
     'don_vi_nhan',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     'actions',
   ];
@@ -133,6 +135,16 @@ class _ToolAndMaterialTransferListState
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'permission_signing',
+        label: 'Quyền ký',
+        isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
+      ColumnDisplayOption(
+        id: 'status_document',
+        label: 'Trạng thái bàn giao',
+        isChecked: visibleColumnIds.contains('status_document'),
+      ),
       ColumnDisplayOption(
         id: 'signing_status',
         label: 'Trạng thái ký',
@@ -207,6 +219,53 @@ class _ToolAndMaterialTransferListState
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'permission_signing':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
+              title: 'Quyền ký',
+              cellBuilder:
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = getPermissionSigning(item);
+                return status == 2
+                    ? 'Không được phép ký'
+                    : status == 1
+                    ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
+                    : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'status_document':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
+              title: 'Trạng thái bàn giao',
+              cellBuilder:
+                  (item) =>
+                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = item.trangThaiPhieu ?? 0;
+                return status == 0
+                    ? 'Chưa hoàn thành'
+                    : status == 1
+                    ? 'Sắp hết hạn'
+                    : status == 2
+                    ? 'Đã hoàn thành'
+                    : 'Không xác đinh';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
@@ -257,6 +316,7 @@ class _ToolAndMaterialTransferListState
               title: 'Phiếu ký nội sinh',
               width: 150,
               getValue: (item) => getName(item.loai ?? 0),
+              filterable: true,
             ),
           );
           break;
@@ -266,6 +326,7 @@ class _ToolAndMaterialTransferListState
               title: 'Ngày có hiệu lực',
               width: 100,
               getValue: (item) => item.tggnTuNgay ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -275,6 +336,7 @@ class _ToolAndMaterialTransferListState
               title: 'Trình duyệt ban giám đốc',
               width: 150,
               getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -293,6 +355,7 @@ class _ToolAndMaterialTransferListState
               titleAlignment: TextAlign.center,
               width: 150,
               searchable: true,
+              filterable: true,
             ),
           );
           break;
@@ -302,6 +365,7 @@ class _ToolAndMaterialTransferListState
               title: 'Ký số',
               width: 120,
               getValue: (item) => item.id ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -311,6 +375,7 @@ class _ToolAndMaterialTransferListState
               title: 'Thời gian giao nhận từ ngày',
               width: 150,
               getValue: (item) => item.tggnTuNgay ?? '',
+              filterable: true,
             ),
           );
           break;
@@ -325,6 +390,7 @@ class _ToolAndMaterialTransferListState
                 }
                 return item.tggnDenNgay!;
               },
+              filterable: true,
             ),
           );
           break;
@@ -477,6 +543,7 @@ class _ToolAndMaterialTransferListState
                         widget.provider.onChangeDetailToolAndMaterialTransfer(
                           item,
                         );
+
                         setState(() {
                           nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
                           isShowDetailDepartmentTree = true;
@@ -485,7 +552,6 @@ class _ToolAndMaterialTransferListState
                       },
                       onSelectionChanged: (items) {
                         setState(() {
-                          listItemSelected.clear();
                           listItemSelected = items;
                         });
                       },
@@ -558,7 +624,10 @@ class _ToolAndMaterialTransferListState
         spacing: 8,
         children: [
           Visibility(
-            visible: listItemSelected.isNotEmpty && listItemSelected.length < 2,
+            visible:
+                listItemSelected.isNotEmpty &&
+                listItemSelected.length < 2 &&
+                getPermissionSigning(listItemSelected.first) == 0,
             child: Tooltip(
               message: 'Ký biên bản',
               child: InkWell(
@@ -905,6 +974,8 @@ class _ToolAndMaterialTransferListState
           ),
         ),
       ThreadNode(header: 'Chi tiết bàn giao', depth: 0),
+      if (widget.provider.listSignatoryDetail.isNotEmpty)
+        ...widget.provider.listSignatoryDetail,
     ];
   }
 
@@ -931,6 +1002,57 @@ class _ToolAndMaterialTransferListState
     );
   }
 
+  List<ToolAndMaterialTransferDto> _getNotSharedAndNotify(
+    List<ToolAndMaterialTransferDto> items,
+  ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<ToolAndMaterialTransferDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<ToolAndMaterialTransferDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.tenPhieu?.trim().isNotEmpty == true
+                    ? e.tenPhieu!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
   void _handleSendToSigner(List<ToolAndMaterialTransferDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
@@ -949,10 +1071,57 @@ class _ToolAndMaterialTransferListState
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<ToolAndMaterialTransferBloc>().add(
           SendToSignerTAMTEvent(context, items),
         );
       },
     );
+  }
+
+  // Implement check permission signing
+  int getPermissionSigning(ToolAndMaterialTransferDto item) {
+    final signatureFlow =
+        [
+              if (item.nguoiLapPhieuKyNhay == true)
+                {
+                  "id": item.idNguoiKyNhay,
+                  "signed": item.trangThaiKyNhay == true,
+                  "label":
+                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
+                },
+              {
+                "id": item.idTrinhDuyetCapPhong,
+                "signed": item.trinhDuyetCapPhongXacNhan == true,
+                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
+              },
+              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
+                {
+                  "id": item.listSignatory![i].idNguoiKy,
+                  "signed": item.listSignatory![i].trangThai == 1,
+                  "label":
+                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
+                },
+              {
+                "id": item.idTrinhDuyetGiamDoc,
+                "signed": item.trinhDuyetGiamDocXacNhan == true,
+                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
+              },
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo?.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+    if (previousNotSigned.isNotEmpty) return 1;
+    return 0;
   }
 }

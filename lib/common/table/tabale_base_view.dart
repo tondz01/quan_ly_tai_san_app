@@ -443,35 +443,26 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
               ],
             ),
           ),
+        Divider(
+          height: 1,
+          thickness: 1,
+          color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
+        ),
         Expanded(
-          child: Scrollbar(
-            controller: _horizontalController,
-            thumbVisibility: true,
-            thickness: 4,
-            notificationPredicate:
-                (notification) => notification.metrics.axis == Axis.horizontal,
-            child: SingleChildScrollView(
-              controller: _horizontalController,
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: TableBaseConfig.tableBase<T>(
-                    columns: newColumns,
-                    isShowCheckboxes: widget.isShowCheckboxes,
-                    data: _filteredData,
-                    searchTerm: widget.searchTerm,
-                    onRowTap: (item) {
-                      widget.onRowTap?.call(item);
-                    },
-                    onSelectionChanged: (items) {
-                      widget.onSelectionChanged?.call(items);
-                    },
-                    filterPopupOffset: widget.filterPopupOffset,
-                  ),
-                ),
-              ),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: TableBaseConfig.tableBase<T>(
+              columns: newColumns,
+              isShowCheckboxes: widget.isShowCheckboxes,
+              data: _filteredData,
+              searchTerm: widget.searchTerm,
+              onRowTap: (item) {
+                widget.onRowTap?.call(item);
+              },
+              onSelectionChanged: (items) {
+                widget.onSelectionChanged?.call(items);
+              },
+              filterPopupOffset: widget.filterPopupOffset,
             ),
           ),
         ),

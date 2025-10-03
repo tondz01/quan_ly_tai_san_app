@@ -3,10 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/provider/role_provide.dart';
 
@@ -21,6 +23,9 @@ class RoleDetail extends StatefulWidget {
 }
 
 class _RoleDetailState extends State<RoleDetail> {
+  // Form key để validate
+  final _formKey = GlobalKey<FormState>();
+
   // Các controller để quản lý dữ liệu nhập liệu
   late TextEditingController controllerIdChucVu = TextEditingController();
   late TextEditingController controllerNameChucVu = TextEditingController();
@@ -59,6 +64,8 @@ class _RoleDetailState extends State<RoleDetail> {
 
   @override
   void dispose() {
+    controllerIdChucVu.dispose();
+    controllerNameChucVu.dispose();
     super.dispose();
   }
 
@@ -120,45 +127,58 @@ class _RoleDetailState extends State<RoleDetail> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              sectionTitle(Icons.info_outline, 'Thông tin chức vụ'),
-              const SizedBox(height: 16),
-              // detail
-              Row(
-                spacing: 32,
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: controllerIdChucVu,
-                      decoration: inputDecoration('Mã chức vụ', required: true),
-                      enabled: isEditing ? data == null : false, // Read-only khi update
-                      validator:
-                          (v) =>
-                              v == null || v.isEmpty
-                                  ? 'Nhập mã nhân viên'
-                                  : null,
-                    ),
-                  ),
-                  Expanded(
-                    child: TextFormField(
-                      controller: controllerNameChucVu,
-                      decoration: inputDecoration(
-                        'Tên chức vụ',
-                        required: true,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                sectionTitle(Icons.info_outline, RoleConstants.sectionRoleInfo),
+                const SizedBox(height: 16),
+                // detail
+                Row(
+                  spacing: 32,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        readOnly: !isEditing,
+                        controller: controllerIdChucVu,
+                        decoration: inputDecoration(
+                          'Mã chức vụ',
+                          required: true,
+                        ),
+                        enabled:
+                            isEditing
+                                ? data == null
+                                : false, // Read-only khi update
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return RoleConstants.validationRoleIdRequired;
+                          }
+                          return null;
+                        },
                       ),
-                      enabled: isEditing, // Read-only khi update
-                      validator:
-                          (v) =>
-                              v == null || v.isEmpty
-                                  ? 'Nhập tên chức vụ'
-                                  : null,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    Expanded(
+                      child: TextFormField(
+                        readOnly: !isEditing,
+                        controller: controllerNameChucVu,
+                        decoration: inputDecoration(
+                          'Tên chức vụ',
+                          required: true,
+                        ),
+                        enabled: isEditing, // Read-only khi update
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return RoleConstants.validationRoleNameRequired;
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -171,7 +191,10 @@ class _RoleDetailState extends State<RoleDetail> {
           ),
           child: Column(
             children: [
-              sectionTitle(Icons.info_outline, 'Phân quyên quản lý'),
+              sectionTitle(
+                Icons.info_outline,
+                RoleConstants.sectionPermissions,
+              ),
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,7 +215,7 @@ class _RoleDetailState extends State<RoleDetail> {
     return Column(
       children: [
         CommonCheckboxInput(
-          label: "Quản lý CCDC vật tư",
+          label: RoleConstants.permissionManageSupplies,
           value: isQuanLyCCDCVatTu,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -204,7 +227,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Điều động tài sản",
+          label: RoleConstants.permissionTransferAsset,
           value: isDieuDongTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -216,7 +239,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Điều động CCDC vật tư",
+          label: RoleConstants.permissionTransferSupplies,
           value: isDieuDongCCDCVatTu,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -228,7 +251,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Bàn giao tài sản",
+          label: RoleConstants.permissionHandoverAsset,
           value: isBanGiaoTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -240,7 +263,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Bàn giao CCDC vật tư",
+          label: RoleConstants.permissionHandoverSupplies,
           value: isBanGiaoCCDCVatTu,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -252,7 +275,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Báo cáo",
+          label: RoleConstants.permissionReport,
           value: isBaoCao,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -270,7 +293,7 @@ class _RoleDetailState extends State<RoleDetail> {
     return Column(
       children: [
         CommonCheckboxInput(
-          label: "Quản lý nhân viên",
+          label: RoleConstants.permissionManageStaff,
           value: isQuanLyNhanVien,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -282,7 +305,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Quản lý phòng ban",
+          label: RoleConstants.permissionManageDepartment,
           value: isQuanLyPhongBan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -294,7 +317,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Quản lý dự án",
+          label: RoleConstants.permissionManageProject,
           value: isQuanLyDuAn,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -306,7 +329,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Quản lý nguồn vốn",
+          label: RoleConstants.permissionManageFund,
           value: isQuanLyNguonVon,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -318,7 +341,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Quản lý mô hình tài sản",
+          label: RoleConstants.permissionManageAssetModel,
           value: isQuanLyMoHinhTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -330,7 +353,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Quản lý nhóm tài sản",
+          label: RoleConstants.permissionManageAssetGroup,
           value: isQuanLyNhomTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -342,7 +365,7 @@ class _RoleDetailState extends State<RoleDetail> {
         ),
         const SizedBox(height: 16),
         CommonCheckboxInput(
-          label: "Quản lý tài sản",
+          label: RoleConstants.permissionManageAsset,
           value: isQuanLyTaiSan,
           isEditing: isEditing,
           isDisabled: !isEditing,
@@ -356,26 +379,13 @@ class _RoleDetailState extends State<RoleDetail> {
     );
   }
 
-  InputDecoration inputDecoration(
-    String label, {
-    bool required = false,
-    String? hint,
-  }) {
-    return InputDecoration(
-      labelText: required ? '$label *' : label,
-      hintText: hint,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    );
-  }
-
   Widget _buildHeaderDetail() {
     return isEditing
         ? Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             MaterialTextButton(
-              text: 'Lưu',
+              text: RoleConstants.saveText,
               icon: Icons.save,
               backgroundColor: ColorValue.success,
               foregroundColor: Colors.white,
@@ -387,20 +397,23 @@ class _RoleDetailState extends State<RoleDetail> {
             ),
             const SizedBox(width: 8),
             MaterialTextButton(
-              text: 'Hủy',
+              text: RoleConstants.cancelText,
               icon: Icons.cancel,
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
               onPressed: () {
                 setState(() {
                   isEditing = false;
+                  if (widget.provider.dataDetail == null) {
+                    widget.provider.onCloseDetail(context);
+                  }
                 });
               },
             ),
           ],
         )
         : MaterialTextButton(
-          text: 'Chỉnh sửa chức vụ',
+          text: RoleConstants.editText,
           icon: Icons.save,
           backgroundColor: ColorValue.success,
           foregroundColor: Colors.white,
@@ -414,7 +427,7 @@ class _RoleDetailState extends State<RoleDetail> {
 
   Widget sectionTitle(IconData icon, String title, [String? desc]) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           margin: const EdgeInsets.only(right: 12, top: 2),
@@ -430,6 +443,7 @@ class _RoleDetailState extends State<RoleDetail> {
           children: [
             Text(
               title,
+              textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             if (desc != null)
@@ -479,10 +493,10 @@ class _RoleDetailState extends State<RoleDetail> {
 
   void _saveChanges() {
     // Validate form trước khi lưu
-    if (!_validateForm()) {
+    if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng điền đầy đủ thông tin bắt buộc'),
+        SnackBar(
+          content: Text(RoleConstants.validationFormIncomplete),
           backgroundColor: Colors.red,
         ),
       );
@@ -516,15 +530,5 @@ class _RoleDetailState extends State<RoleDetail> {
       );
       bloc.add(UpdateRoleEvent(newRequest));
     }
-  }
-
-  bool _validateForm() {
-    if (controllerIdChucVu.text.isEmpty) {
-      return false;
-    }
-    if (controllerNameChucVu.text.isEmpty) {
-      return false;
-    }
-    return true;
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -131,7 +129,6 @@ class _ToolAndSuppliesHandoverViewState
       listener: (context, state) {
         if (state is ToolAndSuppliesHandoverLoadingState) {
         } else if (state is GetListToolAndSuppliesHandoverSuccessState) {
-          log('message filteredData  state ${state.data}');
           context
               .read<ToolAndSuppliesHandoverProvider>()
               .getListToolAndSuppliesHandoverSuccess(context, state);
@@ -229,6 +226,7 @@ class _ToolAndSuppliesHandoverViewState
                     },
                     mainScreen: 'Biên bản bàn giao CCDC-Vật tư',
                     subScreen: provider.subScreen,
+                    isShowInput: false,
                   ),
                 ),
                 body: Column(

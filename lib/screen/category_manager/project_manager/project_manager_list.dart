@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class ProjectManagerList extends StatefulWidget {
@@ -44,25 +51,16 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
         width: 150,
         titleAlignment: TextAlign.start,
       ),
-      TableBaseConfig.columnTable<DuAn>(
-        title: 'Có hiệu lực',
-        getValue: (item) => item.hieuLuc ?? false ? 'Có' : 'Không',
-        width: 150,
-        titleAlignment: TextAlign.start,
-      ),
       TableBaseConfig.columnWidgetBase<DuAn>(
-        title: '',
+        title: 'Thao tác',
         cellBuilder:
             (item) => TableBaseConfig.viewActionBase<DuAn>(
               item: item,
-              onEdit: (item) {
-                widget.onEdit?.call(item);
-              },
               onDelete: (item) {
                 widget.onDelete?.call(item);
               },
             ),
-        width: 120,
+        width: 60,
         searchable: true,
       ),
     ];
@@ -97,7 +95,11 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
+                    Icon(
+                      Icons.table_chart,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    ),
                     SizedBox(width: 8),
                     SGText(
                       text: 'Danh sách dự án',
@@ -109,28 +111,56 @@ class _ProjectManagerListState extends State<ProjectManagerList> {
                     ),
                   ],
                 ),
-                Row(
-                  children: [
-                    SGText(
-                      text:
-                          'Danh sách dự án đã chọn: ${selectedItems.length}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                Visibility(
+                  visible: selectedItems.isNotEmpty,
+                  child: Row(
+                    children: [
+                      SGText(
+                        text:
+                            'Danh sách dự án đã chọn: ${selectedItems.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 16),
-                    // IconButton(
-                    //   onPressed: () {
-                    //     // TODO: Xóa nhân viên đã chọn
-                    //   },
-                    //   icon: Icon(Icons.delete, color: Colors.grey.shade700),
-                    // ),
-                  ],
+                      SizedBox(width: 16),
+                      MaterialTextButton(
+                        text: 'Xóa đã chọn',
+                        icon: Icons.delete,
+                        backgroundColor: ColorValue.error,
+                        foregroundColor: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            List<String> data =
+                                selectedItems.map((e) => e.id ?? '').toList();
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa dự án',
+                              message:
+                                  'Bạn có chắc muốn xóa ${selectedItems.length} dự án',
+                              highlight: selectedItems.length.toString(),
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                final roleBloc = context.read<ProjectBloc>();
+                                roleBloc.add(DeleteProjectBatchEvent(data));
+                              },
+                            );
+                          });
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
+          ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
           ),
           Expanded(
             child: TableBaseView<DuAn>(

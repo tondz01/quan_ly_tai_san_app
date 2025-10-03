@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -13,11 +15,15 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import '../bloc/tool_and_material_transfer_state.dart';
@@ -48,6 +54,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get dataPhongBan => _dataPhongBan;
   get dataNhanVien => _dataNhanVien;
   get listOwnershipUnit => _listOwnershipUnit;
+  get listDetailTransferCCDC => _listDetailTransferCCDC;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDDNhanVien => _itemsDDNhanVien;
@@ -119,6 +126,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   List<ToolAndMaterialTransferDto>? _dataPage;
   List<ToolAndMaterialTransferDto> _filteredData = [];
   List<OwnershipUnitDetailDto> _listOwnershipUnit = [];
+  List<DetailSubppliesHandoverDto> _listDetailTransferCCDC = [];
+  List<ThreadNode> listSignatoryDetail = [];
+
   ToolAndMaterialTransferDto? _item;
   UserInfoDTO? _userInfo;
 
@@ -326,11 +336,20 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetailToolAndMaterialTransfer(ToolAndMaterialTransferDto? item) {
+  void onChangeDetailToolAndMaterialTransfer(
+    ToolAndMaterialTransferDto? item,
+  ) async {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
     _item = item;
     isShowInput = true;
     isShowCollapse = true;
+    if (item != null) {
+      _listDetailTransferCCDC = await getListDetailTransferCCDC(item.id!);
+      log(
+        "check result listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
+      );
+      buildThreadNodes(item);
+    }
     notifyListeners();
   }
 
@@ -363,6 +382,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _dataPage = [];
     } else {
       AccountHelper.instance.clearToolAndMaterialTransfer();
       AccountHelper.instance.setToolAndMaterialTransfer(state.data);
@@ -713,5 +733,110 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     } else {
       return [];
     }
+  }
+
+  Future<List<DetailSubppliesHandoverDto>> getListDetailTransferCCDC(
+    String id,
+  ) async {
+    if (id.isEmpty) return [];
+    Map<String, dynamic> result = await ToolAndSuppliesHandoverRepository()
+        .getListDetailAssetByTransfer(id);
+    log("check result: ${jsonEncode(result)}");
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      final List<dynamic> rawData = result['data'];
+      log("check result rawData: ${jsonEncode(rawData)}");
+      // The repository already returns parsed DTOs, so we can cast directly
+      final list = rawData.cast<DetailSubppliesHandoverDto>();
+      _listDetailTransferCCDC = list;
+      log(
+        "check result _listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
+      );
+      notifyListeners();
+      return list;
+    } else {
+      return [];
+    }
+  }
+
+  void buildThreadNodes(ToolAndMaterialTransferDto item) {
+    List<ThreadNode> nodes = [];
+
+    // Tạo danh sách ThreadNode theo từng cụm chiTietTaiSanList
+    for (DetailToolAndMaterialTransferDto chiTiet
+        in item.detailToolAndMaterialTransfers ?? []) {
+      // Thêm ThreadNode cho chiTietTaiSanList
+      nodes.add(
+        ThreadNode(
+          header: '${chiTiet.tenCCDCVatTu} -- SLX: ${chiTiet.soLuongXuat}',
+          colorHeader: ColorValue.pink,
+          depth: 1,
+          child: SGText(
+            text: 'Số lượng đã bàn giao: ${chiTiet.soLuongDaBanGiao}',
+            size: 13,
+            color: ColorValue.cyan,
+          ),
+        ),
+      );
+
+      // Tìm các detailOwnershipUnit tương ứng với chiTietTaiSanList này
+      var relatedOwnershipUnits =
+          _listDetailTransferCCDC
+              .where((e) => e.idChiTietDieuDong == chiTiet.id)
+              .toList();
+
+      // Thêm các ThreadNode cho detailOwnershipUnit tương ứng
+      if (relatedOwnershipUnits.isNotEmpty) {
+        for (var detailHandover in relatedOwnershipUnits) {
+          nodes.add(
+            ThreadNode(
+              header: 'Số phiếu bán giao: ${detailHandover.idBanGiaoCCDCVatTu}',
+              depth: 2,
+              child: _buildDetailHandover(detailHandover),
+            ),
+          );
+        }
+      }
+    }
+
+    // Nếu không có chiTietTaiSanList, hiển thị tất cả detailOwnershipUnit
+    if (item.detailToolAndMaterialTransfers?.isEmpty ??
+        true && _listDetailTransferCCDC.isNotEmpty) {
+      for (DetailSubppliesHandoverDto ownershipUnit
+          in _listDetailTransferCCDC) {
+        nodes.add(
+          ThreadNode(
+            header: 'Số phiếu bán giao: ${ownershipUnit.idBanGiaoCCDCVatTu}',
+            depth: 1,
+            child: _buildDetailHandover(ownershipUnit),
+          ),
+        );
+      }
+    }
+
+    listSignatoryDetail = nodes;
+    notifyListeners();
+  }
+
+  Widget _buildDetailHandover(DetailSubppliesHandoverDto item) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        spacing: 3,
+        children: [
+          SGText(
+            text: 'Mã chi tiết CCDC - Vật tư: ${item.idChiTietCCDCVatTu}',
+            size: 13,
+            color: ColorValue.primaryBlue,
+          ),
+          SGText(
+            text: 'Số lượng bàn giao: ${item.soLuong}',
+            size: 13,
+            color: ColorValue.mediumGreen,
+          ),
+        ],
+      ),
+    );
   }
 }

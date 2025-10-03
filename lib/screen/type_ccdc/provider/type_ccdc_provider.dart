@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_event.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_state.dart';
@@ -119,6 +120,8 @@ class TypeCcdcProvider with ChangeNotifier {
       _filteredData = [];
     } else {
       _data = state.data;
+      AccountHelper.instance.clearTypeCcdc();
+      AccountHelper.instance.setTypeCcdc(_data ?? []);
       _filteredData = List.from(_data!);
       _updatePagination();
     }

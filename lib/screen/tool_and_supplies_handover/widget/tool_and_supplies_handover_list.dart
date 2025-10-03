@@ -21,8 +21,8 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -59,8 +59,7 @@ class _ToolAndSuppliesHandoverListState
 
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
-    'signing_status',
-    'share',
+    
     'name',
     'decision_number',
     'transfer_order',
@@ -68,13 +67,22 @@ class _ToolAndSuppliesHandoverListState
     'sender_unit',
     'receiver_unit',
     'created_by',
-    'by_step',
+    // 'by_step',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
     'actions',
   ];
 
   PdfDocument? _document;
-  List<Map<String, DateTime Function(ToolAndSuppliesHandoverDto)>> getters = [];
+  List<Map<String, DateTime Function(ToolAndSuppliesHandoverDto)>> getters = [
+    {
+      'Ngày bàn giao':
+          (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
+    },
+  ];
 
   @override
   void initState() {
@@ -117,6 +125,16 @@ class _ToolAndSuppliesHandoverListState
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'permission_signing',
+        label: 'Quyền ký',
+        isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
+      ColumnDisplayOption(
+        id: 'status_document',
+        label: 'Trạng thái bàn giao',
+        isChecked: visibleColumnIds.contains('status_document'),
+      ),
       ColumnDisplayOption(
         id: 'signing_status',
         label: 'Trạng thái ký',
@@ -162,14 +180,14 @@ class _ToolAndSuppliesHandoverListState
         label: 'Người lập phiếu',
         isChecked: visibleColumnIds.contains('created_by'),
       ),
-      ColumnDisplayOption(
-        id: 'by_step',
-        label: 'Ký theo lượt',
-        isChecked: visibleColumnIds.contains('by_step'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'by_step',
+      //   label: 'Ký theo lượt',
+      //   isChecked: visibleColumnIds.contains('by_step'),
+      // ),
       ColumnDisplayOption(
         id: 'status',
-        label: 'Trạng thái phiếu',
+        label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status'),
       ),
       ColumnDisplayOption(
@@ -186,6 +204,53 @@ class _ToolAndSuppliesHandoverListState
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'permission_signing':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+              title: 'Quyền ký',
+              cellBuilder:
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = getPermissionSigning(item);
+                return status == 2
+                    ? 'Không được phép ký'
+                    : status == 1
+                    ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
+                    : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'status_document':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+              title: 'Trạng thái phiếu',
+              cellBuilder:
+                  (item) =>
+                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = item.trangThaiPhieu ?? 0;
+                return status == 0
+                    ? 'Chưa hoàn thành'
+                    : status == 1
+                    ? 'Sắp hết hạn'
+                    : status == 2
+                    ? 'Đã hoàn thành'
+                    : 'Không xác đinh';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
@@ -236,6 +301,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Tên phiếu',
               getValue: (item) => item.banGiaoCCDCVatTu ?? '',
               width: 170,
+              filterable: true,
             ),
           );
           break;
@@ -245,6 +311,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Quyết định điều động',
               getValue: (item) => item.quyetDinhDieuDongSo ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -254,6 +321,7 @@ class _ToolAndSuppliesHandoverListState
               title: 'Lệnh điều động',
               getValue: (item) => item.lenhDieuDong ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -270,6 +338,7 @@ class _ToolAndSuppliesHandoverListState
                           )
                           : '',
               width: 150,
+              filterable: true,
             ),
           );
           break;
@@ -303,23 +372,23 @@ class _ToolAndSuppliesHandoverListState
             ),
           );
           break;
-        case 'by_step':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
-              title: 'Ký theo lượt',
-              cellBuilder:
-                  (item) =>
-                      SgCheckbox(value: item.byStep == true, onChanged: null),
-              width: 100,
-              searchValueGetter: (item) {
-                return item.byStep == true
-                    ? 'Ký theo lượt'
-                    : 'Không ký theo lượt';
-              },
-              filterable: true,
-            ),
-          );
-          break;
+        // case 'by_step':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+        //       title: 'Ký theo lượt',
+        //       cellBuilder:
+        //           (item) =>
+        //               SgCheckbox(value: item.byStep == true, onChanged: null),
+        //       width: 100,
+        //       searchValueGetter: (item) {
+        //         return item.byStep == true
+        //             ? 'Ký theo lượt'
+        //             : 'Không ký theo lượt';
+        //       },
+        //       filterable: true,
+        //     ),
+        //   );
+        //   break;
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
@@ -334,7 +403,7 @@ class _ToolAndSuppliesHandoverListState
         case 'actions':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
-              title: '',
+              title: 'Thao tác',
               cellBuilder: (item) => viewAction(item),
               width: 120,
               searchable: true,
@@ -458,13 +527,31 @@ class _ToolAndSuppliesHandoverListState
                           ],
                         ),
                       ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: SGAppColors.colorBorderGray.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
                       Expanded(
                         child: TableBaseView<ToolAndSuppliesHandoverDto>(
                           searchTerm: '',
                           columns: columns,
                           data: widget.provider.dataPage ?? [],
                           horizontalController: ScrollController(),
-                          onRowTap: (item) {
+                          getters: getters,
+                          startDate: DateTime.tryParse(
+                            (widget.provider.dataPage?.isNotEmpty ?? false)
+                                ? (widget
+                                        .provider
+                                        .dataPage!
+                                        .first
+                                        .ngayBanGiao ??
+                                    '')
+                                : '',
+                          ),
+                          onRowTap: (item) async {
                             isShowPreview = true;
                             widget.provider.onChangeDetail(
                               context,
@@ -523,7 +610,10 @@ class _ToolAndSuppliesHandoverListState
         spacing: 8,
         children: [
           Visibility(
-            visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+            visible:
+                selectedItems.isNotEmpty &&
+                selectedItems.length < 2 &&
+                getPermissionSigning(selectedItems.first) == 0,
             child: Tooltip(
               message: 'Ký biên bản',
               child: InkWell(
@@ -826,7 +916,7 @@ class _ToolAndSuppliesHandoverListState
         AppUtility.showSnackBar(context, 'Bạn đã ký rồi.', isError: true);
         return;
       }
-      
+
       final previousNotSigned = signatureFlow
           .take(currentIndex)
           .firstWhere((s) => s["signed"] == false, orElse: () => {});
@@ -869,15 +959,59 @@ class _ToolAndSuppliesHandoverListState
     }
   }
 
-  void _handleSendToSigner(List<ToolAndSuppliesHandoverDto> items) {
+  List<ToolAndSuppliesHandoverDto> _getNotSharedAndNotify(
+    List<ToolAndSuppliesHandoverDto> items,
+  ) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,
         'Không có phiếu nào để chia sẻ',
         isError: true,
       );
-      return;
+      return const [];
     }
+
+    final List<ToolAndSuppliesHandoverDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<ToolAndSuppliesHandoverDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.banGiaoCCDCVatTu?.trim().isNotEmpty == true
+                    ? e.banGiaoCCDCVatTu!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
+  void _handleSendToSigner(List<ToolAndSuppliesHandoverDto> items) {
+    // Xác nhận và chỉ gửi những phiếu chưa share
     showConfirmDialog(
       context,
       type: ConfirmType.delete,
@@ -886,8 +1020,10 @@ class _ToolAndSuppliesHandoverListState
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<ToolAndSuppliesHandoverBloc>().add(
-          SendToSignerAsetHandoverEvent(context, items),
+          SendToSignerAsetHandoverEvent(context, notShared),
         );
       },
     );
@@ -964,5 +1100,47 @@ class _ToolAndSuppliesHandoverListState
         ),
       ],
     );
+  }
+
+  int getPermissionSigning(ToolAndSuppliesHandoverDto item) {
+    final signatureFlow =
+        [
+              {
+                "id": item.idDaiDiendonviBanHanhQD,
+                "signed": item.daXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                          },
+                        )
+                        .toList() ??
+                    []),
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo?.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+    if (previousNotSigned.isNotEmpty) return 1;
+    return 0;
   }
 }

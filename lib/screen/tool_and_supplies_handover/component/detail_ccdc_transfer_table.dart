@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
-import 'package:quan_ly_tai_san_app/common/table/sg_editable_table.dart';
+import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
@@ -40,7 +43,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   late List<DetailAssetDto> listDetailAsset;
   late List<OwnershipUnitDetailDto> listDetailOwnershipUnit;
   late List<ItemDropdownDetailCcdc> listItemDropdownDetailAsset;
-  final GlobalKey<SgEditableTableState<ItemDropdownDetailCcdc>> _tableKey =
+  final GlobalKey<DetailEditableTableState<ItemDropdownDetailCcdc>> _tableKey =
       GlobalKey(); // Thay đổi generic type
 
   void _forceNotifyDataChanged() {
@@ -174,6 +177,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
 
     for (final c in chiTietDieuDong) {
       final id = c.idChiTietCCDCVatTu;
+      log('Check số lượng: ${c.soLuongXuat - c.soLuongDaBanGiao}');
 
       final idAsset = getDetailAssetByID(id);
       if (idAsset.idTaiSan == null) {
@@ -212,13 +216,21 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     List<DetailSubppliesHandoverDto> details,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
+    log('Check số lượng [getAssetsByHandoverDetails]: ${chiTietDieuDong}');
     final result = <ItemDropdownDetailCcdc>[];
     for (final d in details) {
       final detail = chiTietDieuDong.firstWhere(
-        (element) => element.id == d.idChiTietDieuDong,
+        (element) {
+          log('Check số lượng [getAssetsByHandoverDetails]: ${element.id} - ${d.idChiTietDieuDong}');
+          return element.id == d.idChiTietDieuDong;
+        },
         orElse: () => DetailToolAndMaterialTransferDto.empty(),
       );
+      log('Check số lượng [getAssetsByHandoverDetails]: ${jsonEncode(detail)}');
 
+      log(
+        'Check số lượng [getAssetsByHandoverDetails]: ${detail.soLuongXuat} - ${detail.soLuongDaBanGiao} = ${detail.soLuongXuat - detail.soLuongDaBanGiao}',
+      );
       // Tìm item dropdown theo id chi tiết CCDC VT đã lưu trong bàn giao
       final dropdownItem = listItemDropdownDetailAsset.firstWhere(
         (element) => element.id == d.iddieudongccdcvattu,
@@ -271,7 +283,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
         Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
           padding: const EdgeInsets.only(left: 10, top: 15),
-          child: SgEditableTable<ItemDropdownDetailCcdc>(
+          child: DetailEditableTable<ItemDropdownDetailCcdc>(
             // Thay đổi generic type
             key: _tableKey,
             initialData: listAsset,
@@ -292,7 +304,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
               widget.onDataChanged?.call(data);
             },
             columns: [
-              SgEditableColumn<ItemDropdownDetailCcdc>(
+              DetailEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'asset',
                 title: 'CCDC Vật tư',
                 titleAlignment: TextAlign.center,
@@ -350,7 +362,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                   Future.microtask(() => _forceNotifyDataChanged());
                 },
               ),
-              SgEditableColumn<ItemDropdownDetailCcdc>(
+              DetailEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'don_vi_tinh',
                 title: 'Đơn vị tính',
                 titleAlignment: TextAlign.center,
@@ -360,7 +372,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 sortValueGetter: (item) => item.donViTinh,
                 isEditable: false,
               ),
-              SgEditableColumn<ItemDropdownDetailCcdc>(
+              DetailEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong',
                 title: 'Số lượng cần bàn giao',
                 titleAlignment: TextAlign.center,
@@ -372,9 +384,9 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 sortValueGetter: (item) => item.soLuong,
                 isEditable: false,
               ),
-              SgEditableColumn<ItemDropdownDetailCcdc>(
+              DetailEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'so_luong_xuat',
-                title: 'Số lượng xuất',
+                title: 'Số lượng bàn giao',
                 titleAlignment: TextAlign.center,
                 width: 100,
                 getValue:
@@ -411,7 +423,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 sortValueGetter: (item) => item.soLuongXuat,
                 isEditable: widget.isEditing,
               ),
-              SgEditableColumn<ItemDropdownDetailCcdc>(
+              DetailEditableColumn<ItemDropdownDetailCcdc>(
                 field: 'ghi_chu',
                 title: 'Ghi chú',
                 titleAlignment: TextAlign.center,
@@ -451,15 +463,16 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
       tenDonVi: '',
       idNhomCCDC: '',
       tenNhomCCDC: '',
-      ngayNhap: DateTime.now(),
+      idLoaiCCDCCon: '',
+      ngayNhap: AppUtility.formatFromISOString(DateTime.now().toString()),
       donViTinh: '',
       soLuong: 0,
       giaTri: 0,
       nuocSanXuat: '',
       namSanXuat: 0,
       idCongTy: '',
-      ngayTao: DateTime.now(),
-      ngayCapNhat: DateTime.now(),
+      ngayTao: AppUtility.formatFromISOString(DateTime.now().toString()),
+      ngayCapNhat: AppUtility.formatFromISOString(DateTime.now().toString()),
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: false,

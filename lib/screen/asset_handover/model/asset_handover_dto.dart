@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 class AssetHandoverDto {
@@ -36,6 +37,7 @@ class AssetHandoverDto {
   final String? tenFile;
   final String? duongDanFile;
   final bool? byStep;
+  final int? trangThaiPhieu;
   List<SignatoryDto>? listSignatory;
 
   AssetHandoverDto({
@@ -75,6 +77,7 @@ class AssetHandoverDto {
     this.duongDanFile,
     this.listSignatory,
     this.byStep,
+    this.trangThaiPhieu,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -90,7 +93,7 @@ class AssetHandoverDto {
       tenDonViNhan: json['tenDonViNhan'],
       idDonViDaiDien: json['idDonViDaiDien'],
       tenDonViDaiDien: json['tenDonViDaiDien'],
-      ngayBanGiao: json['ngayBanGiao'],
+      ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
@@ -105,20 +108,22 @@ class AssetHandoverDto {
       donViDaiDienXacNhan: json['donViDaiDienXacNhan'],
       trangThai: json['trangThai'],
       note: json['note'],
-      ngayTao: json['ngayTao'],
-      ngayCapNhat: json['ngayCapNhat'],
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
       share: json['share'],
       tenFile: json['tenFile'],
       duongDanFile: json['duongDanFile'],
-      listSignatory: json['listSignatory'] != null
-          ? List<SignatoryDto>.from(
-              json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
-            )
-          : null,
+      listSignatory:
+          json['listSignatory'] != null
+              ? List<SignatoryDto>.from(
+                json['listSignatory'].map((x) => SignatoryDto.fromJson(x)),
+              )
+              : null,
       byStep: json['byStep'],
+      trangThaiPhieu: json['trangThaiPhieu'],
     );
   }
 
@@ -135,7 +140,7 @@ class AssetHandoverDto {
       'tenDonViNhan': tenDonViNhan,
       'idDonViDaiDien': idDonViDaiDien,
       'tenDonViDaiDien': tenDonViDaiDien,
-      'ngayBanGiao': ngayBanGiao,
+      'ngayBanGiao': AppUtility.formatFromISOString(ngayBanGiao ?? ''),
       'idLanhDao': idLanhDao,
       'tenLanhDao': tenLanhDao,
       'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
@@ -150,8 +155,8 @@ class AssetHandoverDto {
       'donViDaiDienXacNhan': donViDaiDienXacNhan,
       'trangThai': trangThai,
       'note': note,
-      'ngayTao': ngayTao,
-      'ngayCapNhat': ngayCapNhat,
+      'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
+      'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat ?? ''),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
@@ -160,6 +165,7 @@ class AssetHandoverDto {
       'duongDanFile': duongDanFile,
       'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
       'byStep': byStep,
+      'trangThaiPhieu': trangThaiPhieu,
     };
   }
 
@@ -200,6 +206,7 @@ class AssetHandoverDto {
     String? duongDanFile,
     List<SignatoryDto>? listSignatory,
     bool? byStep,
+    int? trangThaiPhieu,
   }) {
     return AssetHandoverDto(
       id: id ?? this.id,
@@ -216,15 +223,18 @@ class AssetHandoverDto {
       ngayBanGiao: ngayBanGiao ?? this.ngayBanGiao,
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
-      idDaiDiendonviBanHanhQD: idDaiDiendonviBanHanhQD ?? this.idDaiDiendonviBanHanhQD,
+      idDaiDiendonviBanHanhQD:
+          idDaiDiendonviBanHanhQD ?? this.idDaiDiendonviBanHanhQD,
       tenDaiDienBanHanhQD: tenDaiDienBanHanhQD ?? this.tenDaiDienBanHanhQD,
       daXacNhan: daXacNhan ?? this.daXacNhan,
       idDaiDienBenGiao: idDaiDienBenGiao ?? this.idDaiDienBenGiao,
       tenDaiDienBenGiao: tenDaiDienBenGiao ?? this.tenDaiDienBenGiao,
-      daiDienBenGiaoXacNhan: daiDienBenGiaoXacNhan ?? this.daiDienBenGiaoXacNhan,
+      daiDienBenGiaoXacNhan:
+          daiDienBenGiaoXacNhan ?? this.daiDienBenGiaoXacNhan,
       idDaiDienBenNhan: idDaiDienBenNhan ?? this.idDaiDienBenNhan,
       tenDaiDienBenNhan: tenDaiDienBenNhan ?? this.tenDaiDienBenNhan,
-      daiDienBenNhanXacNhan: daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
+      daiDienBenNhanXacNhan:
+          daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
       donViDaiDienXacNhan: donViDaiDienXacNhan ?? this.donViDaiDienXacNhan,
       trangThai: trangThai ?? this.trangThai,
       note: note ?? this.note,
@@ -238,6 +248,7 @@ class AssetHandoverDto {
       duongDanFile: duongDanFile ?? this.duongDanFile,
       listSignatory: listSignatory ?? this.listSignatory,
       byStep: byStep ?? this.byStep,
+      trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
     );
   }
 }

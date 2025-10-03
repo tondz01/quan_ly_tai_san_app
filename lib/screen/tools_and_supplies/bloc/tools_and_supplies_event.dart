@@ -27,6 +27,24 @@ class GetListPhongBanEvent extends ToolsAndSuppliesEvent {
   List<Object?> get props => [context, idCongTy];
 }
 
+class GetListTypeCcdcEvent extends ToolsAndSuppliesEvent {
+  final BuildContext context;
+
+  const GetListTypeCcdcEvent(this.context);
+
+  @override
+  List<Object?> get props => [context];
+}
+
+class GetListUnitEvent extends ToolsAndSuppliesEvent {
+  final BuildContext context;
+
+  const GetListUnitEvent(this.context);
+
+  @override
+  List<Object?> get props => [context];
+}
+
 class CreateToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final ToolsAndSuppliesRequest params;
 
@@ -61,4 +79,13 @@ class DeleteToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
 
   @override
   List<Object?> get props => [id, listIdAssetDetail];
+}
+
+class DeleteAssetBatchEvent extends ToolsAndSuppliesEvent {
+  final List<String> id;
+
+  const DeleteAssetBatchEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }

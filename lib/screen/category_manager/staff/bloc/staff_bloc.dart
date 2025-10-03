@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider.dart/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'staff_event.dart';
 
@@ -63,18 +64,32 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
           }).toList();
       emit(StaffLoaded(filtered));
     });
+
     on<AddStaff>((event, emit) async {
-      await _provider.addNhanVien(event.staff, event.staff.avatar);
-      add(LoadStaffs());
+      final result = await _provider.addNhanVien(
+        event.staff,
+        event.staff.avatar,
+      );
+      if (checkStatusCodeDone(result)) {
+        emit(AddStaffSuccessState('Thêm thành công'));
+      } else {
+        emit(StaffError(result['message'] ?? 'Thêm thất bại'));
+      }
     });
+
     on<UpdateStaff>((event, emit) async {
-      await _provider.updateNhanVien(event.staff);
-      add(LoadStaffs());
+      final result = await _provider.updateNhanVien(event.staff);
+      if (checkStatusCodeDone(result)) {
+        emit(UpdateStaffSuccessState('Cập nhật thành công'));
+      } else {
+        emit(StaffError(result['message'] ?? 'Cập nhật thất bại'));
+      }
     });
     on<DeleteStaff>((event, emit) async {
       emit(StaffLoadingState());
       try {
         final result = await _provider.deleteNhanVien(event.staff.id ?? '');
+
         if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
           emit(DeleteStaffBatchSuccess());
           add(LoadStaffs());
@@ -82,23 +97,26 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
           emit(DeleteStaffBatchFailure(result['message'] ?? 'Xóa thất bại'));
         }
       } catch (e) {
-        emit(DeleteStaffBatchFailure(e.toString()));
+        SGLog.error('StaffBloc', 'DeleteStaff error: $e');
+        emit(DeleteStaffBatchFailure('Lỗi hệ thống: ${e.toString()}'));
       }
     });
     on<DeleteStaffBatch>((event, emit) async {
       emit(StaffLoadingState());
       try {
         final result = await _provider.deleteNhanVienBatch(event.data);
-        SGLog.warning('StaffBloc', 'DeleteStaffBatch | ${jsonEncode(result)}');
+        SGLog.info('StaffBloc', 'DeleteStaffBatch | ${jsonEncode(result)}');
         if ((result['status_code'] == Numeral.STATUS_CODE_SUCCESS)) {
           emit(DeleteStaffBatchSuccess());
           add(LoadStaffs());
         } else {
-          String message = 'Xóa danh sách nhân viên thất bại: ${result['message']}';
+          String message =
+              'Xóa danh sách nhân viên thất bại: ${result['message']}';
           emit(DeleteStaffBatchFailure(message));
         }
       } catch (e) {
-        emit(DeleteStaffBatchFailure(e.toString()));
+        SGLog.error('StaffBloc', 'DeleteStaffBatch error: $e');
+        emit(DeleteStaffBatchFailure('Lỗi hệ thống: ${e.toString()}'));
       }
     });
   }

@@ -1,14 +1,13 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -16,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/component/staff_save_service.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staff_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -121,7 +121,9 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
-    log('_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}');
+    log(
+      '_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}',
+    );
     if (widget.staff != null) {
       isEditing = false;
     } else {
@@ -135,6 +137,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
+    log('savePin: ${widget.staff?.savePin}');
     _isActive = widget.staff?.active ?? false;
     _savePin = widget.staff?.savePin ?? false;
     _activityController = TextEditingController(
@@ -231,7 +234,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     if (validateChuKyNhay() || validateChuKyThuong()) {
       return;
     }
-
+    log('savePin: $_savePin');
     final bool ok = await StaffSaveService.save(
       context: context,
       existingStaff: widget.staff,
@@ -255,6 +258,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
       chuKyNhayData: _chuKyNhayData,
       chuKyThuongData: _chuKyThuongData,
       isActive: _isActive,
+      savePin: _savePin,
     );
 
     if (ok && widget.onSaved != null) {
@@ -361,12 +365,53 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 required: true,
                               ),
                               enabled: isEditing,
-                              validator:
-                                  (v) =>
-                                      v == null || v.isEmpty
-                                          ? 'Nhập email'
-                                          : null,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return StaffConstants.errorRequiredField;
+                                }
+                                if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                ).hasMatch(v)) {
+                                  return StaffConstants.errorEmailFormat;
+                                }
+                                return null;
+                              },
                             ),
+                            const SizedBox(height: 16),
+
+                            TextFormField(
+                              controller: _telController,
+                              readOnly: !isEditing,
+                              decoration: inputDecoration(
+                                'Số điện thoại',
+                                required: true,
+                              ),
+                              enabled: isEditing,
+                              keyboardType: TextInputType.phone,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return StaffConstants.errorRequiredField;
+                                }
+                                final normalized = v.replaceAll(' ', '');
+                                String candidate;
+                                if (normalized.startsWith('+')) {
+                                  if (!normalized.startsWith('+84')) {
+                                    return StaffConstants.errorPhoneFormat;
+                                  }
+                                  candidate = '0${normalized.substring(3)}';
+                                } else {
+                                  candidate = normalized;
+                                }
+                                
+                                final phonePattern = RegExp(r'^0\d{9,10}$');
+                                if (!phonePattern.hasMatch(candidate)) {
+                                  return StaffConstants.errorPhoneFormat;
+                                }
+                                return null;
+                              },
+                            ),
+
                             const SizedBox(height: 16),
                             CmFormDropdownObject<ChucVu>(
                               label: 'Chức vụ',
@@ -375,7 +420,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                               value: _chucVuDTO,
                               fieldName: 'chucvu',
                               items: [
-                                ...AccountHelper.instance.getChucVu()!.map(
+                                ...context.read<StaffBloc>().chucvus.map(
                                   (e) => DropdownMenuItem<ChucVu>(
                                     value: e,
                                     child: Text(e.tenChucVu),

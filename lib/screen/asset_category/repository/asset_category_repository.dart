@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_category/model/asset_category_dto.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -29,9 +31,6 @@ class AssetCategoryRepository extends ApiBase {
         queryParameters: {'idcongty': idCongTy},
       );
 
-      log('API Response Status: ${response.statusCode}');
-      log('API Response Data: ${response.data}');
-
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         result['error_message'] = 'API trả về lỗi: ${response.statusCode}';
@@ -46,7 +45,6 @@ class AssetCategoryRepository extends ApiBase {
         AssetCategoryDto.fromJson,
       );
 
-      log('Parsed data count: ${result['data'].length}');
     } catch (e) {
       log("Error at getListAssetCategory - AssetCategoryRepository: $e");
       result['status_code'] = 0;
@@ -100,7 +98,6 @@ class AssetCategoryRepository extends ApiBase {
       } else {
         result['data'] = resp ?? 1;
       }
-      print('object result: ${result['data']}');
     } catch (e) {
       log("Error at createAssetCategory - AssetCategoryRepository: $e");
     }
@@ -215,6 +212,39 @@ class AssetCategoryRepository extends ApiBase {
         "Error at insertDataFileBytes - AssetCategoryRepository: $e",
       );
     }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> saveAssetCategoryBatch(
+    List<AssetCategoryDto> assetCategories,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.ASSET_CATEGORY}/batch',
+        data: jsonEncode(assetCategories),
+      );
+
+      if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<AssetCategoryDto>(
+        response.data,
+        AssetCategoryDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at saveAssetCategoryBatch - AssetCategoryRepository: $e");
+    }
+
     return result;
   }
 }

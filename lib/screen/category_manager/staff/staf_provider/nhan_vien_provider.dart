@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -14,7 +15,6 @@ import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class NhanVienProvider extends ApiBase {
-
   UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
   Future<List<NhanVien>> fetchNhanViens() async {
     final response = await get(
@@ -71,53 +71,64 @@ class NhanVienProvider extends ApiBase {
     }
   }
 
-  Future<void> addNhanVien(
+  Future<Map<String, dynamic>> addNhanVien(
     NhanVien nhanVien,
     dynamic avatarFile, {
     String? fileName,
   }) async {
-    try {
-      final response = await post(
-        EndPointAPI.NHAN_VIEN,
-        data: nhanVien.toJson(),
-        // options: Options(headers: {'Content-Type': 'multipart/form-data'}),
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-      } else {
-        throw Exception('Lỗi server:  [200m${response.statusCode} [0m');
-      }
-    } catch (e) {
-      rethrow;
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    final response = await post(EndPointAPI.NHAN_VIEN, data: nhanVien.toJson());
+    if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+      result['status_code'] = response.statusCode;
+      result['message'] = response.data['message'];
+      return result;
     }
+    result['status_code'] = response.statusCode;
+    result['data'] = response.data;
+    return result;
   }
 
-  Future<void> updateNhanVien(NhanVien nhanVien) async {
-    try {
-      // logFormData(formData);
-      log('message nhanVien: ${jsonEncode(nhanVien)}');
+  Future<Map<String, dynamic>> updateNhanVien(NhanVien nhanVien) async {
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
 
-      final response = await put(
-        '${EndPointAPI.NHAN_VIEN}/${nhanVien.id}',
-        data: nhanVien.toJson(),
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-      } else {
-        throw Exception('Lỗi server:  [200m${response.statusCode} [0m');
-      }
-    } catch (e) {
-      rethrow;
+    final response = await put(
+      '${EndPointAPI.NHAN_VIEN}/${nhanVien.id}',
+      data: nhanVien.toJson(),
+    );
+    
+    if (checkStatusCodeFailed(response.statusCode ?? 0)) {
+      result['status_code'] = response.statusCode;
+      result['message'] = response.data['message'];
+      return result;
     }
+    result['status_code'] = response.statusCode;
+    result['data'] = response.data;
+    return result;
   }
 
-  deleteNhanVien(String id) async {
+  Future<Map<String, dynamic>> deleteNhanVien(String id) async {
+    Map<String, dynamic> result = {
+      'message': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
     final response = await delete('${EndPointAPI.NHAN_VIEN}/$id');
     final body = response.data; // ở đây là Map luôn (nếu API trả về JSON)
 
     if (body['success'] == true) {
-      return;
+      result['status_code'] = response.statusCode;
+      return result;
     } else {
-      throw Exception(body['message'] ?? "Failed to delete nhân viên");
+      result['status_code'] = response.statusCode;
+      result['message'] = body['message'] ?? "Failed to delete nhân viên";
     }
+    return result;
   }
 
   void logFormData(FormData formData) {
@@ -204,7 +215,7 @@ class NhanVienProvider extends ApiBase {
         return result;
       }
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("NhanVienProvider", "Error at saveNhanVienBatch: $e");
     }
 
     return result;
@@ -237,7 +248,7 @@ class NhanVienProvider extends ApiBase {
         NhanVien.fromJson,
       );
     } catch (e) {
-      log("Error at getListDieuDongTaiSan - AssetTransferRepository: $e");
+      SGLog.error("NhanVienProvider", "Error at deleteNhanVienBatch: $e");
     }
 
     return result;

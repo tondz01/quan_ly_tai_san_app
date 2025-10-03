@@ -60,8 +60,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
             colorBorder:
                 (widget.validationErrors != null &&
                         widget.fieldName != null &&
-                        widget.validationErrors![widget.fieldName] ==
-                            true)
+                        widget.validationErrors![widget.fieldName] == true)
                     ? Colors.red
                     : SGAppColors.neutral400,
             // showUnderlineBorderOnly: true,
@@ -88,7 +87,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
               }
             },
           ),
-            
+
           if (hasError)
             Padding(
               padding: const EdgeInsets.only(top: 4),

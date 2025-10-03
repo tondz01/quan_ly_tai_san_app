@@ -281,47 +281,58 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   Future<List<ToolAndMaterialTransferDto>> getAllToolAndMeterialTransfer(
     int? type,
   ) async {
-    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
+    try {
+      UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
 
-    final res = await get(
-      '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}',
-    );
+      final res = await get(
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/getbyuserid/${userInfo.tenDangNhap}',
+      );
 
-    List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
-        type == null
-            ? (res.data as List)
-                .map((e) => ToolAndMaterialTransferDto.fromJson(e))
-                .toList()
-            : (res.data as List)
-                .map((e) => ToolAndMaterialTransferDto.fromJson(e))
-                .where((e) => e.loai == type)
-                .toList();
-    await Future.wait(
-      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
-        toolAndMaterialTransfer.detailToolAndMaterialTransfers =
-            await _detailCcdcVt.getAll(toolAndMaterialTransfer.id.toString());
-        log(
-          'toolAndMaterialTransfer.detailToolAndMaterialTransfers: ${jsonEncode(toolAndMaterialTransfers)}',
-        );
-      }),
-    );
-    await Future.wait(
-      toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
-        try {
-          final signatories = await _signatoryRepository.getAll(
-            toolAndMaterialTransfer.id.toString(),
-          );
-          toolAndMaterialTransfer.listSignatory = signatories;
-        } catch (e) {
-          log(
-            "Error loading signatories for ${toolAndMaterialTransfer.id}: $e",
-          );
-          toolAndMaterialTransfer.listSignatory = [];
-        }
-      }),
-    );
+      // Check if the response is successful
+      if (res.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        return []; // Return empty list on error
+      }
 
-    return toolAndMaterialTransfers;
+      List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
+          type == null
+              ? (res.data as List)
+                  .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+                  .toList()
+              : (res.data as List)
+                  .map((e) => ToolAndMaterialTransferDto.fromJson(e))
+                  .where((e) => e.loai == type)
+                  .toList();
+
+      await Future.wait(
+        toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+          try {
+            toolAndMaterialTransfer
+                .detailToolAndMaterialTransfers = await _detailCcdcVt.getAll(
+              toolAndMaterialTransfer.id.toString(),
+            );
+          } catch (e) {
+            toolAndMaterialTransfer.detailToolAndMaterialTransfers = [];
+          }
+        }),
+      );
+
+      await Future.wait(
+        toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
+          try {
+            final signatories = await _signatoryRepository.getAll(
+              toolAndMaterialTransfer.id.toString(),
+            );
+            toolAndMaterialTransfer.listSignatory = signatories;
+          } catch (e) {
+            toolAndMaterialTransfer.listSignatory = [];
+          }
+        }),
+      );
+
+      return toolAndMaterialTransfers;
+    } catch (e) {
+      return []; // Return empty list on error
+    }
   }
 
   Future<List<ToolAndMaterialTransferDto>>
@@ -416,53 +427,51 @@ class ToolAndMaterialTransferRepository extends ApiBase {
 
     try {
       for (var item in items) {
-        ToolAndMaterialTransferDto toolAndMaterialTransfer =
-            ToolAndMaterialTransferDto(
-              soQuyetDinh: item.soQuyetDinh ?? '',
-              tenPhieu: item.tenPhieu ?? '',
-              idDonViGiao: item.idDonViGiao ?? '',
-              idDonViNhan: item.idDonViNhan ?? '',
-              idNguoiDeNghi: item.idNguoiDeNghi ?? '',
-              nguoiLapPhieuKyNhay: item.nguoiLapPhieuKyNhay ?? false,
-              quanTrongCanXacNhan: item.quanTrongCanXacNhan ?? false,
-              phoPhongXacNhan: item.phoPhongXacNhan ?? false,
-              idDonViDeNghi: item.idDonViDeNghi ?? '',
-              tggnTuNgay: item.tggnTuNgay ?? '',
-              tggnDenNgay: item.tggnDenNgay ?? '',
-              idTruongPhongDonViGiao: item.idTruongPhongDonViGiao ?? '',
-              truongPhongDonViGiaoXacNhan:
-                  item.truongPhongDonViGiaoXacNhan ?? false,
-              idPhoPhongDonViGiao: item.idPhoPhongDonViGiao ?? '',
-              phoPhongDonViGiaoXacNhan: item.phoPhongDonViGiaoXacNhan ?? false,
-              idTrinhDuyetCapPhong: item.idTrinhDuyetCapPhong ?? '',
-              trinhDuyetCapPhongXacNhan:
-                  item.trinhDuyetCapPhongXacNhan ?? false,
-              idTrinhDuyetGiamDoc: item.idTrinhDuyetGiamDoc ?? '',
-              trinhDuyetGiamDocXacNhan: item.trinhDuyetGiamDocXacNhan ?? false,
-              diaDiemGiaoNhan: item.diaDiemGiaoNhan ?? '',
-              idPhongBanXemPhieu: item.idPhongBanXemPhieu ?? '',
-              idNhanSuXemPhieu: item.idNhanSuXemPhieu ?? '',
-              noiNhan: item.noiNhan ?? '',
-              trangThai: item.trangThai ?? 0,
-              idCongTy: item.idCongTy ?? '',
-              ngayTao: item.ngayTao ?? '',
-              ngayCapNhat: item.ngayCapNhat ?? '',
-              nguoiTao: item.nguoiTao ?? '',
-              nguoiCapNhat: item.nguoiCapNhat ?? '',
-              coHieuLuc: item.coHieuLuc ?? 1,
-              loai: item.loai ?? 0,
-              isActive: item.isActive ?? false,
-              trichYeu: item.trichYeu ?? '',
-              duongDanFile: item.duongDanFile ?? '',
-              tenFile: item.tenFile ?? '',
-              ngayKy: item.ngayKy ?? '',
-              share: true,
-              idNguoiKyNhay: item.idNguoiKyNhay ?? '',
-              trangThaiKyNhay: item.trangThaiKyNhay ?? false,
-            );
+        log('item: ${item.toJson()}');
+        ToolAndMaterialTransferDto toolAndMaterialTransfer = item.copyWith(
+          share: true,
+        );
+        log('toolAndMaterialTransfer: ${toolAndMaterialTransfer.toJson()}');
+        Map<String, dynamic> data = {
+          "id": toolAndMaterialTransfer.id,
+          "soQuyetDinh": toolAndMaterialTransfer.soQuyetDinh,
+          "tenPhieu": toolAndMaterialTransfer.tenPhieu,
+          "idDonViGiao": toolAndMaterialTransfer.idDonViGiao,
+          "idDonViNhan": toolAndMaterialTransfer.idDonViNhan,
+          "idNguoiKyNhay": toolAndMaterialTransfer.idNguoiKyNhay,
+          "trangThaiKyNhay": toolAndMaterialTransfer.trangThaiKyNhay,
+          "nguoiLapPhieuKyNhay": toolAndMaterialTransfer.nguoiLapPhieuKyNhay,
+          "idDonViDeNghi": toolAndMaterialTransfer.idDonViDeNghi,
+          "tgGnTuNgay": toolAndMaterialTransfer.tggnTuNgay,
+          "tgGnDenNgay": toolAndMaterialTransfer.tggnDenNgay,
+          "idTrinhDuyetCapPhong": toolAndMaterialTransfer.idTrinhDuyetCapPhong,
+          "trinhDuyetCapPhongXacNhan":
+              toolAndMaterialTransfer.trinhDuyetCapPhongXacNhan,
+          "idTrinhDuyetGiamDoc": toolAndMaterialTransfer.idTrinhDuyetGiamDoc,
+          "trinhDuyetGiamDocXacNhan":
+              toolAndMaterialTransfer.trinhDuyetGiamDocXacNhan,
+          "diaDiemGiaoNhan": toolAndMaterialTransfer.diaDiemGiaoNhan,
+          "idPhongBanXemPhieu": toolAndMaterialTransfer.idPhongBanXemPhieu,
+          "noiNhan": toolAndMaterialTransfer.noiNhan,
+          "trangThai": toolAndMaterialTransfer.trangThai,
+          "idCongTy": toolAndMaterialTransfer.idCongTy,
+          "ngayTao": toolAndMaterialTransfer.ngayTao,
+          "ngayCapNhat": toolAndMaterialTransfer.ngayCapNhat,
+          "nguoiTao": toolAndMaterialTransfer.nguoiTao,
+          "nguoiCapNhat": toolAndMaterialTransfer.nguoiCapNhat,
+          "coHieuLuc": toolAndMaterialTransfer.coHieuLuc,
+          "loai": toolAndMaterialTransfer.loai,
+          "share": true,
+          "trichYeu": toolAndMaterialTransfer.trichYeu,
+          "duongDanFile": toolAndMaterialTransfer.duongDanFile,
+          "tenFile": toolAndMaterialTransfer.tenFile,
+          "ngayKy": toolAndMaterialTransfer.ngayKy,
+          "daBanGiao": toolAndMaterialTransfer.daBanGiao,
+          "byStep": toolAndMaterialTransfer.byStep,
+        };
         final response = await put(
           '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/${item.id}',
-          data: toolAndMaterialTransfer.toJson(),
+          data: data,
         );
         if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
           result['data'] = response.data;

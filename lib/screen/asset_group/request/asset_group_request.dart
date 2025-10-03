@@ -49,4 +49,18 @@ class AssetGroupRequest {
       'isActive': isActive,
     };
   }
+
+  // Method to convert an instance to a JSON map
+  Map<String, dynamic> toLoaiTaisanJson() {
+    return {
+      'id': id,
+      'tenLoaiTaiSan': tenNhom,
+      'idCongTy': idCongTy,
+      'ngayTao': ngayTao.toIso8601String().replaceAll('Z', ''),
+      'ngayCapNhat': ngayCapNhat.toIso8601String().replaceAll('Z', ''),
+      'nguoiTao': nguoiTao ?? '',
+      'nguoiCapNhat': nguoiCapNhat ?? '',
+      'isActive': isActive,
+    };
+  }
 }

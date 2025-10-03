@@ -25,8 +25,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_sa
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
+import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -61,8 +61,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   List<AssetHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
-    'signing_status',
-    'share',
     'name',
     'decision_number',
     'transfer_order',
@@ -70,15 +68,19 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'sender_unit',
     'receiver_unit',
     'created_by',
+    'permission_signing',
+    'status_document',
+    'signing_status',
+    'share',
     'status',
-    'by_step',
+    // 'by_step',
     'actions',
   ];
 
   PdfDocument? _document;
   DieuDongTaiSanDto? _selectedAssetTransfer;
   List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [
-     {
+    {
       'Ngày bàn giao':
           (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
     },
@@ -125,6 +127,16 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
 
   void _initializeColumnOptions() {
     columnOptions = [
+      ColumnDisplayOption(
+        id: 'permission_signing',
+        label: 'Quyền ký',
+        isChecked: visibleColumnIds.contains('permission_signing'),
+      ),
+      ColumnDisplayOption(
+        id: 'status_document',
+        label: 'Trạng thái bàn giao',
+        isChecked: visibleColumnIds.contains('status_document'),
+      ),
       ColumnDisplayOption(
         id: 'signing_status',
         label: 'Trạng thái ký',
@@ -175,11 +187,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         label: 'Người lập phiếu',
         isChecked: visibleColumnIds.contains('created_by'),
       ),
-      ColumnDisplayOption(
-        id: 'by_step',
-        label: 'Ký theo lượt',
-        isChecked: visibleColumnIds.contains('by_step'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'by_step',
+      //   label: 'Ký theo lượt',
+      //   isChecked: visibleColumnIds.contains('by_step'),
+      // ),
       ColumnDisplayOption(
         id: 'status',
         label: 'Trạng thái phiếu',
@@ -199,6 +211,53 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     // Thêm cột dựa trên visibleColumnIds
     for (String columnId in visibleColumnIds) {
       switch (columnId) {
+        case 'permission_signing':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Quyền ký',
+              cellBuilder:
+                  (item) => AppUtility.showPermissionSigning(
+                    getPermissionSigning(item),
+                  ),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = getPermissionSigning(item);
+                return status == 2
+                    ? 'Không được phép ký'
+                    : status == 1
+                    ? 'Chưa đến lượt ký'
+                    : status == 3
+                    ? 'Đã ký'
+                    : 'Cần ký';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'status_document':
+          columns.add(
+            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+              title: 'Trạng thái bàn giao',
+              cellBuilder:
+                  (item) =>
+                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
+              width: 150,
+              searchValueGetter: (item) {
+                final status = item.trangThaiPhieu ?? 0;
+                return status == 0
+                    ? 'Chưa hoàn thành'
+                    : status == 1
+                    ? 'Sắp hết hạn'
+                    : status == 2
+                    ? 'Đã hoàn thành'
+                    : 'Không xác đinh';
+              },
+              searchable: true,
+              filterable: true,
+            ),
+          );
+          break;
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
@@ -249,6 +308,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Tên phiếu',
               getValue: (item) => item.banGiaoTaiSan ?? '',
               width: 170,
+              filterable: true,
             ),
           );
           break;
@@ -258,6 +318,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Quyết định điều động',
               getValue: (item) => item.quyetDinhDieuDongSo ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -267,6 +328,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               title: 'Lệnh điều động',
               getValue: (item) => item.lenhDieuDong ?? '',
               width: 120,
+              filterable: true,
             ),
           );
           break;
@@ -283,6 +345,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           )
                           : '',
               width: 150,
+              filterable: true,
             ),
           );
           break;
@@ -321,23 +384,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             ),
           );
           break;
-        case 'by_step':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: 'Ký theo lượt',
-              cellBuilder:
-                  (item) =>
-                      SgCheckbox(value: item.byStep == true, onChanged: null),
-              width: 100,
-              searchValueGetter: (item) {
-                return item.byStep == true
-                    ? 'Ký theo lượt'
-                    : 'Không ký theo lượt';
-              },
-              filterable: true,
-            ),
-          );
-          break;
+        // case 'by_step':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+        //       title: 'Ký theo lượt',
+        //       cellBuilder:
+        //           (item) =>
+        //               SgCheckbox(value: item.byStep == true, onChanged: null),
+        //       width: 100,
+        //       searchValueGetter: (item) {
+        //         return item.byStep == true
+        //             ? 'Ký theo lượt'
+        //             : 'Không ký theo lượt';
+        //       },
+        //       filterable: true,
+        //     ),
+        //   );
+        //   break;
         case 'status':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
@@ -475,6 +538,13 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           ],
                         ),
                       ),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: SGAppColors.colorBorderGray.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
                       Expanded(
                         child: TableBaseView<AssetHandoverDto>(
                           searchTerm: '',
@@ -547,7 +617,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         spacing: 8,
         children: [
           Visibility(
-            visible: selectedItems.isNotEmpty && selectedItems.length < 2,
+            visible:
+                selectedItems.isNotEmpty &&
+                selectedItems.length < 2 &&
+                getPermissionSigning(selectedItems.first) == 0,
             child: Tooltip(
               message: 'Ký biên bản',
               child: InkWell(
@@ -557,7 +630,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                         AccountHelper.instance.getUserInfo();
                     AssetHandoverDto? item =
                         selectedItems.isNotEmpty ? selectedItems.first : null;
-                    log('item: ${jsonEncode(item)}');
                     _handleSignDocument(item!, userInfo!, widget.provider);
                   }
                 },
@@ -931,6 +1003,55 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     }
   }
 
+  List<AssetHandoverDto> _getNotSharedAndNotify(List<AssetHandoverDto> items) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<AssetHandoverDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<AssetHandoverDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.quyetDinhDieuDongSo?.trim().isNotEmpty == true
+                    ? e.quyetDinhDieuDongSo!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
   void _handleSendToSigner(List<AssetHandoverDto> items) {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
@@ -958,8 +1079,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       cancelText: 'Không',
       confirmText: 'Chia sẻ',
       onConfirm: () {
+        final notShared = _getNotSharedAndNotify(items);
+        if (notShared.isEmpty) return;
         context.read<AssetHandoverBloc>().add(
-          SendToSignerAsetHandoverEvent(context, items),
+          SendToSignerAsetHandoverEvent(context, notShared),
         );
       },
     );
@@ -1036,5 +1159,47 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         ),
       ],
     );
+  }
+
+  int getPermissionSigning(AssetHandoverDto item) {
+    final signatureFlow =
+        [
+              {
+                "id": item.idDaiDiendonviBanHanhQD,
+                "signed": item.daXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenGiao,
+                "signed": item.daiDienBenGiaoXacNhan == true,
+              },
+              {
+                "id": item.idDaiDienBenNhan,
+                "signed": item.daiDienBenNhanXacNhan == true,
+              },
+              if (item.listSignatory?.isNotEmpty ?? false)
+                ...(item.listSignatory
+                        ?.map(
+                          (e) => {
+                            "id": e.idNguoiKy,
+                            "signed": e.trangThai == 1,
+                          },
+                        )
+                        .toList() ??
+                    []),
+            ]
+            .where(
+              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
+            )
+            .toList();
+    final currentIndex = signatureFlow.indexWhere(
+      (s) => s["id"] == userInfo?.tenDangNhap,
+    );
+    if (currentIndex == -1) return 2;
+    if (signatureFlow[currentIndex]["signed"] == true) return 3;
+    final previousNotSigned = signatureFlow
+        .take(currentIndex)
+        .firstWhere((s) => s["signed"] == false, orElse: () => {});
+    if (previousNotSigned.isNotEmpty) return 1;
+    return 0;
   }
 }

@@ -5,6 +5,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
@@ -130,7 +131,12 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   // Danh sách dữ liệu đã được lọc
   List<ToolAndSuppliesHandoverDto> _filteredData = [];
   final List<SgTableColumn<ToolAndSuppliesHandoverDto>> _columns = [];
+
   ToolAndSuppliesHandoverDto? _item;
+
+  // Chi tiết CCDC theo lệnh điều động
+
+  List<ThreadNode> listSignatoryDetail = [];
 
   UserInfoDTO? _userInfo;
 
@@ -533,11 +539,9 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   }
 
   NhanVien getNhanVienByID(String idNhanVien) {
-    if (_dataStaff != null && _dataStaff!.isNotEmpty) {
-      return _dataStaff!.firstWhere(
-        (item) => item.id == idNhanVien,
-        orElse: () => const NhanVien(),
-      );
+    NhanVien? nhanVien = AccountHelper.instance.getNhanVienById(idNhanVien);
+    if (nhanVien != null) {
+      return nhanVien;
     } else {
       return const NhanVien();
     }

@@ -57,10 +57,10 @@ class DeleteAssetGroupEvent extends AssetGroupEvent {
 }
 
 class DeleteAssetGroupBatchEvent extends AssetGroupEvent {
-  final Map<String, dynamic> id;
+  final List<String> ids;
 
-  const DeleteAssetGroupBatchEvent(this.id);
+  const DeleteAssetGroupBatchEvent(this.ids);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [ids];
 }
