@@ -192,7 +192,12 @@ class _CommonContractState extends State<CommonContract> {
       final double y = sig["y"]?.toDouble() ?? 0;
       final int loaiKy = sig["loaiKy"] ?? 1;
       final String? idNguoiKy = sig["idNguoiKy"]?.toString();
-      final String? signatureUrl = sig["signatureUrl"]?.toString();
+      String signatureUrl = "";
+      if (loaiKy == 1) {
+        signatureUrl = sig["chuKyNhay"].toString();
+      } else if (loaiKy == 2) {
+        signatureUrl = sig["chuKyThuong"].toString();
+      }
       if (loaiKy == 3) {
         setState(() {
           _isDigital = true;
@@ -202,11 +207,11 @@ class _CommonContractState extends State<CommonContract> {
           _addSignature(imgBytes, loaiKy, y, x, false);
         }
       } else {
-         // Sử dụng URL chữ ký từ API response nếu có
+        // Sử dụng URL chữ ký từ API response nếu có
         String? urlToUse = signatureUrl;
 
         // Nếu không có signatureUrl từ API, fallback về signatureList
-        if (urlToUse == null || urlToUse.isEmpty) {
+        if (urlToUse.isEmpty) {
           if (widget.signatureList.isNotEmpty) {
             // Tìm URL tương ứng với người ký trong signatureList
             if (idNguoiKy != null && widget.signatureList.length > 1) {
@@ -223,8 +228,10 @@ class _CommonContractState extends State<CommonContract> {
           }
         }
 
-        if (urlToUse != null && urlToUse.isNotEmpty) {
+        if (urlToUse.isNotEmpty) {
           try {
+            urlToUse =
+                '${ApiConfig.getBaseURL()}/api/upload/download/$urlToUse';
             final response = await http.get(Uri.parse(urlToUse));
             if (response.statusCode == 200) {
               _addSignature(response.bodyBytes, loaiKy, y, x, false);
@@ -806,7 +813,9 @@ class _CommonContractState extends State<CommonContract> {
                                       );
                                       return;
                                     }
-                                    log("widget.nhanVien!.savePin: ${widget.nhanVien!.savePin}");
+                                    log(
+                                      "widget.nhanVien!.savePin: ${widget.nhanVien!.savePin}",
+                                    );
                                     if (!(widget.nhanVien!.savePin ?? false)) {
                                       showPopupInputPin(
                                         context: context,
