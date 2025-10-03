@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/capital_source_by_asset_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_request.dart';
 
@@ -98,11 +99,22 @@ class CreateAssetEvent extends AssetManagementEvent {
   final BuildContext context;
   final AssetRequest request;
   final List<ChildAssetDto> childAssets;
+  final List<CapitalSourceByAssetDto> requestCapitalSource;
 
-  const CreateAssetEvent(this.context, this.request, this.childAssets);
+  const CreateAssetEvent(
+    this.context,
+    this.request,
+    this.childAssets,
+    this.requestCapitalSource,
+  );
 
   @override
-  List<Object> get props => [context, request];
+  List<Object> get props => [
+    context,
+    request,
+    childAssets,
+    requestCapitalSource,
+  ];
 }
 
 class CreateAssetBatchEvent extends AssetManagementEvent {

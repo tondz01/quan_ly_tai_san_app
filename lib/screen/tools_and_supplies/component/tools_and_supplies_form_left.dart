@@ -50,7 +50,6 @@ class ToolsAndSuppliesFormLeft extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime? selected;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

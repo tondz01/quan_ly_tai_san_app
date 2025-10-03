@@ -105,22 +105,23 @@ Widget buildOtherInformation(
         },
       ),
 
-      CmFormDropdownObject<NguonKinhPhi>(
-        label: 'Nguồn kinh phí',
-        controller: ctrlNguonKinhPhi,
-        isEditing: isEditing,
-        items: itemsNguonKinhPhi,
-        defaultValue:
-            ctrlNguonKinhPhi.text.isNotEmpty
-                ? getNguonKinhPhi(
-                  listNguonKinhPhi: listNguonKinhPhi,
-                  idAssetGroup: ctrlNguonKinhPhi.text,
-                )
-                : null,
-        onChanged: onNguonKinhPhiChanged,
-        fieldName: 'nguonKinhPhi',
-        validationErrors: validationErrors,
-      ),
+      // CmFormDropdownObject<NguonKinhPhi>(
+      //   label: 'Nguồn kinh phí',
+      //   controller: ctrlNguonKinhPhi,
+      //   isEditing: isEditing,
+      //   items: itemsNguonKinhPhi,
+      //   defaultValue:
+      //       ctrlNguonKinhPhi.text.isNotEmpty
+      //           ? getNguonKinhPhi(
+      //             listNguonKinhPhi: listNguonKinhPhi,
+      //             idAssetGroup: ctrlNguonKinhPhi.text,
+      //           )
+      //           : null,
+      //   onChanged: onNguonKinhPhiChanged,
+      //   fieldName: 'nguonKinhPhi',
+      //   validationErrors: validationErrors,
+      // ),
+      SizedBox(height: 10),
 
       CommonFormInput(
         label: 'Ký hiệu',

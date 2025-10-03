@@ -215,6 +215,7 @@ class AssetManagementBloc
     Map<String, dynamic> result = await AssetManagementRepository().createAsset(
       event.request,
       event.childAssets,
+      event.requestCapitalSource,
     );
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {

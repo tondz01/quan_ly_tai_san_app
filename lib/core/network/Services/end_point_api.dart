@@ -6,6 +6,7 @@ class EndPointAPI {
   static String TOOL_AND_SUPPLIES_HANDOVER = "/api/bangiaoccdcvattu";
   static String DU_AN = "/api/duan";
   static String NGUON_KINH_PHI = "/api/nguonvon";
+  static String NGUON_KINH_PHI_BY_ASSET = "/api/setnguonkinhphi";
   static String PHONG_BAN = "/api/phongban";
   static String NHOM_DON_VI = "/api/nhomdonvi";
   static String NHAN_VIEN = "/api/nhanvien";

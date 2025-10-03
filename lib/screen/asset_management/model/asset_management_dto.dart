@@ -16,6 +16,9 @@ class AssetManagementDto {
     return value;
   }
 
+  List<String> get listIdNguonKinhPhi =>
+      nguonKinhPhiList?.map((e) => e.idNguonKinhPhi ?? '').toList() ?? [];
+
   /// Dữ liệu export cho tài sản
   Map<String, dynamic> toExportJson() {
     DateTime? ngayTao = DateTime.tryParse(this.ngayTao ?? '');
@@ -229,8 +232,8 @@ class AssetManagementDto {
               : [],
       isTaiSanCon: json['isTaiSanCon'],
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'],
-      nguonKinhPhiList: json['nguonKinhPhiList'] != null
-          ? (json['nguonKinhPhiList'] as List<dynamic>)
+      nguonKinhPhiList: json['setNguonKinhPhiList'] != null
+          ? (json['setNguonKinhPhiList'] as List<dynamic>)
               .map<CapitalSourceByAssetDto>(
                 (item) => CapitalSourceByAssetDto.fromJson(item as Map<String, dynamic>),
               )
@@ -285,7 +288,7 @@ class AssetManagementDto {
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
       'isTaiSanCon': isTaiSanCon,
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
-      'nguonKinhPhiList': nguonKinhPhiList?.map((item) => item.toJson()).toList(),
+      'setNguonKinhPhiList': nguonKinhPhiList?.map((item) => item.toJson()).toList(),
     };
   }
 

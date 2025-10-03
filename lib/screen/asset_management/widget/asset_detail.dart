@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/capital_source_by_asset_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
@@ -48,6 +49,7 @@ class _AssetDetailState extends State<AssetDetail> {
 
   List<AssetCategoryDto> listAssetCategory = [];
   List<NguonKinhPhi> listNguonKinhPhi = [];
+  List<CapitalSourceByAssetDto> listNguonKinhPhiByAsset = [];
   List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory = [];
 
   TextEditingController ctrlMaTaiSan = TextEditingController();
@@ -276,8 +278,18 @@ class _AssetDetailState extends State<AssetDetail> {
                       initialSelectedNguonKinhPhi: listNguonKinhPhi,
                       onChangedNguonKinhPhi: (value) {
                         setState(() {
-                          // listNguonKinhPhi = value;
                           log('onChangedNguonKinhPhi: ${jsonEncode(value)}');
+                          // listNguonKinhPhiByAsset =
+                          //     value
+                          //         .map(
+                          //           (e) => CapitalSourceByAssetDto(
+                          //             id: e.id,
+                          //             idTaiSan: '',
+                          //             idNguonKinhPhi: e.id,
+                          //             tenNguonKinhPhi: e.tenNguonKinhPhi,
+                          //           ),
+                          //         )
+                          //         .toList();
                         });
                       },
                       validationErrors: validationErrors,
@@ -419,7 +431,6 @@ class _AssetDetailState extends State<AssetDetail> {
     }
     if (widget.provider.dataDetail == null) {
       isEditing = true;
-
       ctrlMaTaiSan.text = '';
       ctrlSoThe.text = '';
       ctrlIdNhomTaiSan.text = '';
@@ -460,6 +471,9 @@ class _AssetDetailState extends State<AssetDetail> {
       }
       if (!widget.provider.isCanUpdate && !widget.provider.isNew) {
         isEditing = false;
+      }
+      if (widget.provider.initialSelectedNguonKinhPhi != null) {
+        listNguonKinhPhi = widget.provider.initialSelectedNguonKinhPhi ?? [];
       }
       // If data is not null, set controllers with data values
       ctrlMaTaiSan.text = data!.id ?? '';
@@ -575,7 +589,7 @@ class _AssetDetailState extends State<AssetDetail> {
     if (ctrlMaTaiSan.text.isEmpty) {
       newValidationErrors['id'] = true;
     }
-  
+
     if (idAssetGroup == null) {
       newValidationErrors['idNhomTaiSan'] = true;
     }
@@ -679,7 +693,14 @@ class _AssetDetailState extends State<AssetDetail> {
                 ),
               )
               .toList();
-      bloc.add(CreateAssetEvent(context, request, childAssets));
+      bloc.add(
+        CreateAssetEvent(
+          context,
+          request,
+          childAssets,
+          listNguonKinhPhiByAsset,
+        ),
+      );
     } else {
       // Cập nhật chi tiết nếu có thay đổi
       if (_detailsChanged()) {

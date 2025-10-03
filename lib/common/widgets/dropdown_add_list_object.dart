@@ -327,7 +327,7 @@ class _CMDropdownTriggerAddListObjectState<T>
       maxHeight: widget.maxHeight,
     );
     if (result != null) {
-      setState(() {
+    setState(() {
         _selected = result;
       });
       widget.onChanged?.call(_selected);

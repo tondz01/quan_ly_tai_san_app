@@ -16,7 +16,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
@@ -58,16 +57,13 @@ class AssetManagementProvider with ChangeNotifier {
   get dataKhauHao => _dataKhauHao;
   get itemsLyDoTang => _itemsLyDoTang;
   get itemsHienTrang => _itemsHienTrang;
+  get initialSelectedNguonKinhPhi => _initialSelectedNguonKinhPhi;
 
   get itemsAssetGroup => _itemsAssetGroup;
   get itemsDuAn => _itemsDuAn;
   get itemsNguonKinhPhi => _itemsNguonKinhPhi;
   get itemsPhongBan => _itemsPhongBan;
   get itemsCountry => _itemsCountry;
-
-  get selectedFileName => _selectedFileName;
-  get selectedFilePath => _selectedFilePath;
-  get selectedFileBytes => _selectedFileBytes;
 
   get dataPage => _dataPage;
 
@@ -110,9 +106,6 @@ class AssetManagementProvider with ChangeNotifier {
   String _searchTerm = '';
 
   String? _subScreen;
-  String? _selectedFileName;
-  String? _selectedFilePath;
-  Uint8List? _selectedFileBytes;
 
   UserInfoDTO? _userInfo;
 
@@ -129,6 +122,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<AssetManagementDto>? _filteredData;
   List<ChildAssetDto>? _dataChildAssets;
   List<AssetDepreciationDto>? _dataKhauHao;
+  List<NguonKinhPhi>? _initialSelectedNguonKinhPhi;
   //List dropdown
   List<DropdownMenuItem<AssetGroupDto>>? _itemsAssetGroup;
   List<DropdownMenuItem<DuAn>>? _itemsDuAn;
@@ -161,7 +155,7 @@ class AssetManagementProvider with ChangeNotifier {
     const DropdownMenuItem(value: 50, child: Text('50')),
   ];
 
-    set searchTerm(String value) {
+  set searchTerm(String value) {
     _searchTerm = value;
     _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
     notifyListeners();
@@ -209,12 +203,12 @@ class AssetManagementProvider with ChangeNotifier {
       String searchLower = _searchTerm.toLowerCase();
       _filteredData =
           _data!.where((item) {
-            String departmentName = AccountHelper.instance
-                        .getDepartmentById(item.id ?? '')
-                        ?.tenPhongBan
-                        ?.toLowerCase() ??
-                    '';
-            log('message test: departmentName: $departmentName');
+            String departmentName =
+                AccountHelper.instance
+                    .getDepartmentById(item.id ?? '')
+                    ?.tenPhongBan
+                    ?.toLowerCase() ??
+                '';
             return (item.id?.toLowerCase().contains(searchLower) ?? false) ||
                 (item.tenTaiSan?.toLowerCase().contains(searchLower) ??
                     false) ||
@@ -347,6 +341,22 @@ class AssetManagementProvider with ChangeNotifier {
       _dataDetail = _dataDetail?.copyWith(
         childAssets: getListChildAssetsByIdAsset(item.id ?? ''),
       );
+      if (_dataDetail?.nguonKinhPhiList != null) {
+        log('message test: _dataDetail?.nguonKinhPhiList: ${jsonEncode(_dataDetail?.nguonKinhPhiList)}');
+        _initialSelectedNguonKinhPhi = itemsNguonKinhPhi
+            ?.where(
+              (element) => _dataDetail?.nguonKinhPhiList?.any(
+                        (e) => e.id == element.value?.id,
+                      ) ??
+                  false,
+            )
+            .map((e) => e.value)
+            .whereType<NguonKinhPhi>()
+            .toList();
+        log(
+          'message test: _initialSelectedNguonKinhPhi: ${jsonEncode(_initialSelectedNguonKinhPhi)}',
+        );
+      }
     } else {
       _dataDetail = null;
       _isNew = isNew;
@@ -645,76 +655,6 @@ class AssetManagementProvider with ChangeNotifier {
       for (var element in listHienTrang)
         DropdownMenuItem<HienTrang>(value: element, child: Text(element.name)),
     ];
-  }
-
-  void onSubmit(
-    BuildContext context,
-    String fileName,
-    String filePath,
-    Uint8List fileBytes,
-  ) {
-    _selectedFileName = fileName;
-    _selectedFilePath = filePath;
-    _selectedFileBytes = fileBytes;
-    insertData(context, fileName, filePath, fileBytes);
-    notifyListeners();
-  }
-
-  Future<Map<String, dynamic>?> insertData(
-    BuildContext context,
-    String fileName,
-    String filePath,
-    Uint8List fileBytes,
-  ) async {
-    if (kIsWeb) {
-      if (fileName.isEmpty || filePath.isEmpty) return null;
-    } else {
-      if (filePath.isEmpty) return null;
-    }
-    try {
-      final result =
-          kIsWeb
-              ? await AssetManagementRepository().insertDataFileBytes(
-                fileName,
-                fileBytes,
-              )
-              : await AssetManagementRepository().insertDataFile(filePath);
-      final statusCode = result['status_code'] as int? ?? 0;
-      if (statusCode >= 200 && statusCode < 300) {
-        if (context.mounted) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(
-          //     content: Text('Tệp "$fileName" đã được tải lên thành công'),
-          //     backgroundColor: Colors.green.shade600,
-          //   ),
-          // );
-          getDataAll(context);
-        }
-        return result['data'];
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tải lên thất bại (mã $statusCode)'),
-              backgroundColor: Colors.red.shade600,
-            ),
-          );
-        }
-        return null;
-      }
-    } catch (e) {
-      SGLog.debug("AssetTransferDetail", ' Error uploading file: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi tải lên tệp: ${e.toString()}'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
-        return null;
-      }
-    }
-    return null;
   }
 
   // check permission

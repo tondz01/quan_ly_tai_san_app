@@ -66,7 +66,7 @@ class TableBaseView<T> extends StatefulWidget {
 
 class _TableBaseViewState<T> extends State<TableBaseView<T>> {
   /// Controller cho thanh cuộn ngang của bảng
-  late final ScrollController _horizontalController;
+  // late final ScrollController _horizontalController;
 
   /// Controller cho ô nhập ngày bắt đầu
   final TextEditingController _textTimeStartController =
@@ -97,7 +97,7 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
         widget.startDate ?? DateTime.now().subtract(const Duration(days: 30));
     _endDate = widget.endDate ?? DateTime.now();
     // Khởi tạo controller cuộn ngang
-    _horizontalController = widget.horizontalController ?? ScrollController();
+    // _horizontalController = widget.horizontalController ?? ScrollController();
     // Khởi tạo dữ liệu ban đầu chưa lọc
     _filteredData = widget.data;
   }
