@@ -1,7 +1,7 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -56,6 +56,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
+  late TextEditingController controllerDocumentCreationDate =
+      TextEditingController();
   // late TextEditingController controllerLeader = TextEditingController();
   late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
@@ -110,6 +112,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   final List<NhanVien?> _additionalSigners = [];
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
+
+  DateTime? ngayBanGiao;
+  DateTime? ngayTaoChungTu;
 
   @override
   void initState() {
@@ -203,6 +208,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
+
+      ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
+      ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
+
       isRepresentativeUnitConfirm =
           item?.donViDaiDienXacNhan == "0" ? false : true;
       getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
@@ -310,6 +319,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     if (controllerTransferDate.text.isEmpty) {
       newValidationErrors['transferDate'] = true;
     }
+    if (controllerDocumentCreationDate.text.isEmpty) {
+      newValidationErrors['documentCreationDate'] = true;
+    }
     // if (controllerLeader.text.isEmpty) {
     //   newValidationErrors['leader'] = true;
     // }
@@ -353,7 +365,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       widget.provider.getListDetailAssetMobilization(controllerOrder.text);
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-      controllerTransferDate.text = item?.ngayBanGiao ?? '';
+      // controllerTransferDate.text = item?.ngayBanGiao ?? '';
+      // controllerDocumentCreationDate.text = item?.ngayTaoChungTu ?? '';
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
@@ -375,10 +388,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
     assetHandoverProvider.isLoading = true;
 
-    DateTime ngaybangiao = DateFormat(
-      "dd/MM/yyyy HH:mm:ss",
-    ).parse(controllerTransferDate.text);
-
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
@@ -394,7 +403,12 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
-      "ngayBanGiao": AppUtility.formatDateString(ngaybangiao),
+      "ngayTaoChungTu": AppUtility.formatFromISOString(
+        controllerDocumentCreationDate.text,
+      ),
+      "ngayBanGiao": AppUtility.formatFromISOString(
+        controllerTransferDate.text,
+      ),
       "ngayTao": AppUtility.formatDateString(DateTime.now()),
       "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
       "trangThai": 0,
@@ -429,6 +443,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
+
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(newRequest, listSignatory),
       );
@@ -523,6 +538,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
     controllerTransferDate.dispose();
+    controllerDocumentCreationDate.dispose();
     // controllerLeader.dispose();
     controllerIssuingUnitRepresentative.dispose();
     controllerDelivererRepresentative.dispose();
@@ -695,6 +711,10 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
                 hintText: 'Định dạng hỗ trợ: .pdf',
                 allowedExtensions: ['pdf'],
+                document: previewDocumentDecisionAssetHandover(
+                  context: context,
+                  document: _document,
+                ),
               ),
               const SizedBox(height: 20),
               Visibility(
@@ -713,7 +733,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
                 isShowKy: false,
-                document: _document,
               ),
             ],
           ),
@@ -740,7 +759,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   Widget _buildInfoAssetHandover() {
-    DateTime? ngayBanGiao;
     return Column(
       spacing: 10,
       children: [
@@ -853,6 +871,16 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           onChanged: (dt) {},
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
+          isRequired: true,
+        ),
+        CmFormDate(
+          label: 'Ngày tạo chứng từ',
+          controller: controllerDocumentCreationDate,
+          isEditing: isEditing,
+          value: ngayTaoChungTu,
+          onChanged: (dt) {},
+          validationErrors: _validationErrors,
+          fieldName: 'documentCreationDate',
           isRequired: true,
         ),
       ],
@@ -1018,6 +1046,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       idDonViDaiDien: nguoiDaiDienBanHanhQD?.id ?? '',
       tenDonViDaiDien: nguoiDaiDienBanHanhQD?.hoTen ?? '',
       ngayBanGiao: controllerTransferDate.text,
+      ngayTaoChungTu: controllerDocumentCreationDate.text,
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',

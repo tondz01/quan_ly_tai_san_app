@@ -20,7 +20,6 @@ export 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_200.d
 export 'package:quan_ly_tai_san_app/screen/report/views/so_theo_doi.dart';
 export 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_doi_chieu_screen.dart';
 export 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_ccdc_screen.dart';
-export 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 export 'package:quan_ly_tai_san_app/screen/report/widget/report_screen.dart';
 export 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/tool_and_material_transfer_view.dart';
 export 'package:quan_ly_tai_san_app/screen/tools_and_supplies/tools_and_supplies_view.dart';

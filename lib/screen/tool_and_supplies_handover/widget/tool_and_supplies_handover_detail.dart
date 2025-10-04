@@ -65,6 +65,8 @@ class _ToolAndSuppliesHandoverDetailState
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
+  late TextEditingController controllerDocumentCreationDate =
+      TextEditingController();
   late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
@@ -120,7 +122,9 @@ class _ToolAndSuppliesHandoverDetailState
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
   List<AdditionalSignerData> initialSignersDetailed = [];
+
   DateTime? ngayBanGiao;
+  DateTime? ngayTaoChungTu;
 
   @override
   void initState() {
@@ -284,6 +288,8 @@ class _ToolAndSuppliesHandoverDetailState
       _selectedFilePath = item?.duongDanFile ?? '';
 
       ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
+      ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
+
       isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       initialDetails = item?.listDetailSubppliesHandover ?? [];
       initialSignersDetailed =
@@ -380,6 +386,9 @@ class _ToolAndSuppliesHandoverDetailState
     if (controllerTransferDate.text.isEmpty) {
       newValidationErrors['transferDate'] = true;
     }
+    if (controllerDocumentCreationDate.text.isEmpty) {
+      newValidationErrors['documentCreationDate'] = true;
+    }
     // if (controllerLeader.text.isEmpty) {
     //   newValidationErrors['leader'] = true;
     // }
@@ -425,9 +434,14 @@ class _ToolAndSuppliesHandoverDetailState
       controllerOrder.text = item?.lenhDieuDong ?? '';
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-      controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
-        ngayBanGiao ?? DateTime.now(),
-      );
+
+      // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
+      //   ngayBanGiao ?? DateTime.now(),
+      // );
+      // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
+      //   ngayTaoChungTu ?? DateTime.now(),
+      // );
+      
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
@@ -448,10 +462,7 @@ class _ToolAndSuppliesHandoverDetailState
     final bloc = context.read<ToolAndSuppliesHandoverBloc>();
 
     provider.isLoading = true;
-
-    DateTime ngaybangiao =
-        AppUtility.parseDate(controllerTransferDate.text) ?? DateTime.now();
-
+    
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
@@ -473,7 +484,12 @@ class _ToolAndSuppliesHandoverDetailState
       "nguoiCapNhat": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
-      "ngayBanGiao": AppUtility.formatDateString(ngaybangiao),
+      "ngayBanGiao": AppUtility.formatFromISOString(
+        controllerTransferDate.text,
+      ),
+      "ngayTaoChungTu": AppUtility.formatFromISOString(
+        controllerDocumentCreationDate.text,
+      ),
       "ngayTao": AppUtility.formatDateString(DateTime.now()),
       "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
       "byStep": isByStep,
@@ -642,6 +658,7 @@ class _ToolAndSuppliesHandoverDetailState
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
     controllerTransferDate.dispose();
+    controllerDocumentCreationDate.dispose();
     // controllerLeader.dispose();
     controllerIssuingUnitRepresentative.dispose();
     controllerDelivererRepresentative.dispose();
@@ -801,6 +818,10 @@ class _ToolAndSuppliesHandoverDetailState
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
                 hintText: 'Định dạng hỗ trợ: .pdf',
                 allowedExtensions: ['pdf'],
+                document: previewDocumentCcdcDecisionHandover(
+                  context: context,
+                  document: _document,
+                ),
               ),
               const SizedBox(height: 20),
               Visibility(
@@ -834,6 +855,9 @@ class _ToolAndSuppliesHandoverDetailState
                                     ngayTao: AppUtility.formatDateString(
                                       DateTime.now(),
                                     ),
+                                    ngayTaoChungTu: AppUtility.formatDateString(
+                                      DateTime.now(),
+                                    ),
                                     ngayCapNhat: AppUtility.formatDateString(
                                       DateTime.now(),
                                     ),
@@ -854,7 +878,6 @@ class _ToolAndSuppliesHandoverDetailState
                 dieuDongCcdc: getToolAndSuppliesHandoverPreview(),
                 provider: widget.provider,
                 isShowKy: false,
-                document: _document,
               ),
             ],
           ),
@@ -986,9 +1009,21 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerTransferDate,
           isEditing: isEditing,
           value: ngayBanGiao,
-          onChanged: (dt) {},
+          onChanged: (dt) {
+          },
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
+          isRequired: true,
+        ),
+        CmFormDate(
+          label: 'Ngày tạo chứng từ',
+          controller: controllerDocumentCreationDate,
+          isEditing: isEditing,
+          value: ngayTaoChungTu,
+          onChanged: (dt) {
+          },
+          validationErrors: _validationErrors,
+          fieldName: 'documentCreationDate',
           isRequired: true,
         ),
       ],
@@ -1151,6 +1186,7 @@ class _ToolAndSuppliesHandoverDetailState
       idDonViNhan: donViNhan?.id ?? '',
       tenDonViNhan: donViNhan?.tenPhongBan ?? '',
       ngayBanGiao: controllerTransferDate.text,
+      ngayTaoChungTu: controllerDocumentCreationDate.text,
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',

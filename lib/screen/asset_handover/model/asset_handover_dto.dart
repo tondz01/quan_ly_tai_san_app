@@ -14,6 +14,7 @@ class AssetHandoverDto {
   final String? idDonViDaiDien;
   final String? tenDonViDaiDien;
   final String? ngayBanGiao;
+  final String? ngayTaoChungTu;
   final String? idLanhDao;
   final String? tenLanhDao;
   final String? idDaiDiendonviBanHanhQD;
@@ -53,6 +54,7 @@ class AssetHandoverDto {
     this.idDonViDaiDien,
     this.tenDonViDaiDien,
     this.ngayBanGiao,
+    this.ngayTaoChungTu,
     this.idLanhDao,
     this.tenLanhDao,
     this.idDaiDiendonviBanHanhQD,
@@ -94,6 +96,9 @@ class AssetHandoverDto {
       idDonViDaiDien: json['idDonViDaiDien'],
       tenDonViDaiDien: json['tenDonViDaiDien'],
       ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        json['ngayTaoChungTu'] ?? '',
+      ),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
@@ -141,6 +146,7 @@ class AssetHandoverDto {
       'idDonViDaiDien': idDonViDaiDien,
       'tenDonViDaiDien': tenDonViDaiDien,
       'ngayBanGiao': AppUtility.formatFromISOString(ngayBanGiao ?? ''),
+      'ngayTaoChungTu': AppUtility.formatFromISOString(ngayTaoChungTu ?? ''),
       'idLanhDao': idLanhDao,
       'tenLanhDao': tenLanhDao,
       'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
@@ -182,6 +188,7 @@ class AssetHandoverDto {
     String? idDonViDaiDien,
     String? tenDonViDaiDien,
     String? ngayBanGiao,
+    String? ngayTaoChungTu,
     String? idLanhDao,
     String? tenLanhDao,
     String? idDaiDiendonviBanHanhQD,
@@ -221,6 +228,7 @@ class AssetHandoverDto {
       idDonViDaiDien: idDonViDaiDien ?? this.idDonViDaiDien,
       tenDonViDaiDien: tenDonViDaiDien ?? this.tenDonViDaiDien,
       ngayBanGiao: ngayBanGiao ?? this.ngayBanGiao,
+      ngayTaoChungTu: ngayTaoChungTu ?? this.ngayTaoChungTu,
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
       idDaiDiendonviBanHanhQD:

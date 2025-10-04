@@ -27,8 +27,9 @@ class BienBanKiemKeScreen extends StatefulWidget {
 
 class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   List<InventoryMinutes> _list = [];
+  List<List<InventoryMinutes>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
-  final GlobalKey _contractKey = GlobalKey();
+  final List<GlobalKey> _pageKeys = [];
 
   TextEditingController controllerImportDate = TextEditingController();
   TextEditingController controllerDonVi = TextEditingController();
@@ -37,11 +38,20 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   PhongBan? donVi;
   bool _isLoading = false;
   bool _isExporting = false;
+  int numberPageStart = 5;
+  int numberPage = 17;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    controllerImportDate.dispose();
+    controllerDonVi.dispose();
+    super.dispose();
   }
 
   Future<void> _exportToPdf() async {
@@ -50,49 +60,52 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
     });
     try {
       final pdf = pw.Document();
-      final boundary =
-          _contractKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary != null) {
-        // Đợi để đảm bảo UI đã được render hoàn toàn
-        await Future.delayed(const Duration(milliseconds: 100));
+      // Đợi frame hiện tại kết thúc để đảm bảo UI render hoàn toàn
+      await WidgetsBinding.instance.endOfFrame;
+      if (_pageKeys.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Không có trang để xuất.')),
+          );
+        }
+        return;
+      }
 
-        // Tăng pixelRatio để có độ phân giải cao hơn
-        final image = await boundary.toImage(pixelRatio: 3.0);
+      // Đợi thêm một khoảng nhỏ để ổn định layout (phòng trường hợp scroll/layout vừa thay đổi)
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      for (final key in _pageKeys) {
+        final boundary =
+            key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+        if (boundary == null) continue;
+
+        final image = await boundary.toImage(pixelRatio: 1.0);
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         final pngBytes = byteData!.buffer.asUint8List();
 
-        // Kiểm tra kích thước ảnh
         final imageWidth = image.width.toDouble();
         final imageHeight = image.height.toDouble();
-
         if (imageWidth.isNaN ||
             imageHeight.isNaN ||
             imageWidth <= 0 ||
             imageHeight <= 0) {
-          throw Exception(
-            'Kích thước ảnh không hợp lệ: ${imageWidth}x$imageHeight',
-          );
+          continue;
         }
 
         final imageProvider = pw.MemoryImage(pngBytes);
-
-        // Tính toán tỷ lệ để giữ nguyên aspect ratio
         final aspectRatio = imageWidth / imageHeight;
         final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
 
         pdf.addPage(
           pw.Page(
             pageFormat: PdfPageFormat.a4.portrait,
-            margin: const pw.EdgeInsets.all(20), // Thêm margin nhỏ
+            margin: const pw.EdgeInsets.all(20),
             build: (context) {
               if (aspectRatio > a4AspectRatio) {
-                // Ảnh rộng hơn trang A4, fit theo chiều rộng
                 return pw.Center(
                   child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
                 );
               } else {
-                // Ảnh cao hơn trang A4, fit theo chiều cao
                 return pw.Center(
                   child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
                 );
@@ -100,13 +113,13 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
             },
           ),
         );
-
-        await Printing.sharePdf(
-          bytes: await pdf.save(),
-          filename:
-              'bien_ban_kiem_ke_${DateTime.now().millisecondsSinceEpoch}.pdf',
-        );
       }
+
+      await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename:
+            'bien_ban_kiem_ke_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
     } catch (e) {
       SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
       if (mounted) {
@@ -139,8 +152,7 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
     });
 
     // Format date to YYYY-MM-DD format
-    String formattedDate = controllerImportDate.text.trim();
-    formattedDate = formatteDate(formattedDate);
+    String formattedDate = formatToYyyyMmDd(controllerImportDate.text.trim());
 
     final result = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
     if (!mounted) return;
@@ -148,6 +160,12 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
       setState(() {
         _list = [];
         _list = (result['data'] as List).cast<InventoryMinutes>();
+        _listPages = _chunkInventoryMinutes(_list);
+        final int totalPages =
+            _listPages.isEmpty ? 1 : _listPages.length + 1; // +1 trang footer
+        _pageKeys
+          ..clear()
+          ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
         if (_list.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
@@ -163,14 +181,17 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
     }
   }
 
-  String formatDate(String date) {
-    final String input = date.trim();
+  String formatToYyyyMmDd(String input) {
+    final String trimmed = input.trim();
+    if (trimmed.isEmpty) return trimmed;
     try {
-      final DateTime parsedDate = DateTime.parse(input);
-      return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
-    } catch (e) {
+      // Thử parse ISO trực tiếp (e.g., 2025-10-01 hoặc có time)
+      final DateTime parsedIso = DateTime.parse(trimmed.split(' ').first);
+      return "${parsedIso.year}-${parsedIso.month.toString().padLeft(2, '0')}-${parsedIso.day.toString().padLeft(2, '0')}";
+    } catch (_) {
       try {
-        final String dateOnly = input.split(' ').first;
+        // Thử định dạng DD/MM/YYYY (có thể kèm time)
+        final String dateOnly = trimmed.split(' ').first;
         final List<String> parts = dateOnly.split('/');
         if (parts.length == 3) {
           final int day = int.parse(parts[0]);
@@ -178,11 +199,46 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
           final int year = int.parse(parts[2]);
           return "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
         }
-      } catch (_) {
-        return date;
+      } catch (e) {
+        SGLog.info('formattedDate', 'DD/MM/YYYY parse error: $e');
       }
-      return date;
     }
+    return trimmed;
+  }
+
+  List<List<InventoryMinutes>> _chunkInventoryMinutes(
+    List<InventoryMinutes> source,
+  ) {
+    if (source.isEmpty) return [];
+
+    final List<List<InventoryMinutes>> pages = [];
+
+    // First page: up to 20 items
+    final int firstPageCount =
+        source.length >= numberPageStart ? numberPageStart : source.length;
+    pages.add(source.sublist(0, firstPageCount));
+
+    // Remaining pages: 50 items each
+    int startIndex = firstPageCount;
+    int subsequentPageSize = numberPage;
+    while (startIndex < source.length) {
+      final int endIndex =
+          (startIndex + subsequentPageSize <= source.length)
+              ? startIndex + subsequentPageSize
+              : source.length;
+      pages.add(source.sublist(startIndex, endIndex));
+      startIndex = endIndex;
+    }
+
+    return pages;
+  }
+
+  int _pageStartIndex(int pageIndex) {
+    int start = 0;
+    for (int i = 0; i < pageIndex && i < _listPages.length; i++) {
+      start += _listPages[i].length;
+    }
+    return start;
   }
 
   @override
@@ -292,19 +348,180 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                     child: Stack(
                       children: [
                         SingleChildScrollView(
-                          child: RepaintBoundary(
-                            key: _contractKey,
-                            child: A4Canvas(
-                              marginsMm: EdgeInsets.all(4),
-                              scale: 1.2,
-                              maxWidth: 800,
-                              maxHeight: 800 * (297 / 210),
-                              child: BienBanKiemKePage(
-                                inventoryMinutes: _list,
-                                denNgay: formatDate(controllerImportDate.text),
-                                tenDonVi: donVi?.tenPhongBan ?? '',
-                              ),
-                            ),
+                          child: Column(
+                            children: [
+                              if (_listPages.isEmpty)
+                                RepaintBoundary(
+                                  key:
+                                      _pageKeys.isNotEmpty
+                                          ? _pageKeys[0]
+                                          : GlobalKey(),
+                                  child: Stack(
+                                    children: [
+                                      A4Canvas(
+                                        marginsMm: EdgeInsets.all(4),
+                                        scale: 1.2,
+                                        maxWidth: 800,
+                                        maxHeight: 800 * (297 / 210),
+                                        child: BienBanKiemKePage(
+                                          inventoryMinutes: _list,
+                                          denNgay: formatToYyyyMmDd(
+                                            controllerImportDate.text,
+                                          ),
+                                          tenDonVi: donVi?.tenPhongBan ?? '',
+                                        ),
+                                      ),
+                                      NumberPageView(index: 0),
+                                    ],
+                                  ),
+                                )
+                              else if (_listPages.length < numberPageStart)
+                                RepaintBoundary(
+                                  key:
+                                      _pageKeys.isNotEmpty
+                                          ? _pageKeys[0]
+                                          : GlobalKey(),
+                                  child: Stack(
+                                    children: [
+                                      A4Canvas(
+                                        marginsMm: EdgeInsets.all(4),
+                                        scale: 1.2,
+                                        maxWidth: 800,
+                                        maxHeight: 800 * (297 / 210),
+                                        child: BienBanKiemKePage(
+                                          inventoryMinutes: _list,
+                                          denNgay: formatToYyyyMmDd(
+                                            controllerImportDate.text,
+                                          ),
+                                          tenDonVi: donVi?.tenPhongBan ?? '',
+                                        ),
+                                      ),
+                                      NumberPageView(index: 0),
+                                    ],
+                                  ),
+                                )
+                              else
+                                ...List.generate(_listPages.length, (index) {
+                                  if (index == 0) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12.0,
+                                      ),
+                                      child: RepaintBoundary(
+                                        key: _pageKeys[index],
+                                        child: Stack(
+                                          children: [
+                                            A4Canvas(
+                                              marginsMm: EdgeInsets.all(4),
+                                              scale: 1.2,
+                                              maxWidth: 800,
+                                              maxHeight: 800 * (297 / 210),
+                                              child: Column(
+                                                children: [
+                                                  HeaderBienBanKiemKe(
+                                                    tenDonVi:
+                                                        donVi?.tenPhongBan ??
+                                                        '',
+                                                    denNgay: formatToYyyyMmDd(
+                                                      controllerImportDate.text,
+                                                    ),
+                                                  ),
+                                                  BodyBienBanKiemKe(
+                                                    inventoryMinutes:
+                                                        _listPages[index],
+                                                    startIndex: _pageStartIndex(
+                                                      index,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            NumberPageView(index: index),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  if (index == _listPages.length - 1) {
+                                    return Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 12.0,
+                                          ),
+                                          child: RepaintBoundary(
+                                            key: _pageKeys[index],
+                                            child: Stack(
+                                              children: [
+                                                A4Canvas(
+                                                  marginsMm: EdgeInsets.all(4),
+                                                  scale: 1.2,
+                                                  maxWidth: 800,
+                                                  maxHeight: 800 * (297 / 210),
+                                                  child: BodyBienBanKiemKe(
+                                                    inventoryMinutes:
+                                                        _listPages[index],
+                                                    startIndex: _pageStartIndex(
+                                                      index,
+                                                    ),
+                                                  ),
+                                                ),
+                                                NumberPageView(index: index),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 12.0,
+                                          ),
+                                          child: RepaintBoundary(
+                                            key: _pageKeys[index + 1],
+                                            child: Stack(
+                                              children: [
+                                                A4Canvas(
+                                                  marginsMm: EdgeInsets.all(4),
+                                                  scale: 1.2,
+                                                  maxWidth: 800,
+                                                  maxHeight: 800 * (297 / 210),
+                                                  child: FooterBienBanKiemKe(),
+                                                ),
+                                                NumberPageView(index: index),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 12.0,
+                                    ),
+                                    child: RepaintBoundary(
+                                      key: _pageKeys[index],
+                                      child: Stack(
+                                        children: [
+                                          A4Canvas(
+                                            marginsMm: EdgeInsets.all(4),
+                                            scale: 1.2,
+                                            maxWidth: 800,
+                                            maxHeight: 800 * (297 / 210),
+                                            child: BodyBienBanKiemKe(
+                                              inventoryMinutes:
+                                                  _listPages[index],
+                                              startIndex: _pageStartIndex(
+                                                index,
+                                              ),
+                                            ),
+                                          ),
+                                          NumberPageView(index: index),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                            ],
                           ),
                         ),
 
@@ -337,6 +554,25 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class NumberPageView extends StatelessWidget {
+  const NumberPageView({super.key, required this.index});
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 20,
+      child: SGText(
+        text: "Page $index",
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }

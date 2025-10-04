@@ -12,6 +12,7 @@ class ToolAndSuppliesHandoverDto {
   final String? idDonViNhan;
   final String? tenDonViNhan;
   final String? ngayBanGiao;
+  final String? ngayTaoChungTu;
   final String? idLanhDao;
   final String? tenLanhDao;
   final String? idDaiDiendonviBanHanhQD;
@@ -47,6 +48,7 @@ class ToolAndSuppliesHandoverDto {
     this.idDonViNhan,
     this.tenDonViNhan,
     this.ngayBanGiao,
+    this.ngayTaoChungTu,
     this.idLanhDao,
     this.tenLanhDao,
     this.idDaiDiendonviBanHanhQD,
@@ -85,6 +87,9 @@ class ToolAndSuppliesHandoverDto {
       idDonViNhan: json['idDonViNhan'],
       tenDonViNhan: json['tenDonViNhan'],
       ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        json['ngayTaoChungTu'] ?? '',
+      ),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
@@ -136,6 +141,7 @@ class ToolAndSuppliesHandoverDto {
       'idDonViNhan': idDonViNhan,
       'tenDonViNhan': tenDonViNhan,
       'ngayBanGiao': AppUtility.formatFromISOString(ngayBanGiao ?? ''),
+      'ngayTaoChungTu': AppUtility.formatFromISOString(ngayTaoChungTu ?? ''),
       'idLanhDao': idLanhDao,
       'tenLanhDao': tenLanhDao,
       'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
@@ -174,6 +180,7 @@ class ToolAndSuppliesHandoverDto {
     String? idDonViNhan,
     String? tenDonViNhan,
     String? ngayBanGiao,
+    String? ngayTaoChungTu,
     String? idLanhDao,
     String? tenLanhDao,
     String? idDaiDiendonviBanHanhQD,
@@ -209,7 +216,12 @@ class ToolAndSuppliesHandoverDto {
       tenDonViGiao: tenDonViGiao ?? this.tenDonViGiao,
       idDonViNhan: idDonViNhan ?? this.idDonViNhan,
       tenDonViNhan: tenDonViNhan ?? this.tenDonViNhan,
-      ngayBanGiao: AppUtility.formatFromISOString(ngayBanGiao ?? this.ngayBanGiao ?? ''),
+      ngayBanGiao: AppUtility.formatFromISOString(
+        ngayBanGiao ?? this.ngayBanGiao ?? '',
+      ),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        ngayTaoChungTu ?? this.ngayTaoChungTu ?? '',
+      ),
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
       idDaiDiendonviBanHanhQD:
