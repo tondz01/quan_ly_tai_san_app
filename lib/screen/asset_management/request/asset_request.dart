@@ -22,7 +22,7 @@ class AssetRequest {
   final String congSuat;
   final String nuocSanXuat;
   final int namSanXuat;
-  final int lyDoTang;
+  final String lyDoTang;
   final int hienTrang;
   final int soLuong;
   final String donViTinh;
@@ -39,6 +39,9 @@ class AssetRequest {
   final String idLoaiTaiSanCon;
   final bool isTaiSanCon;
   final String soThe;
+  final double vonNS;
+  final double vonVay;
+  final double vonKhac;
 
   AssetRequest({
     required this.id,
@@ -81,6 +84,9 @@ class AssetRequest {
     required this.idLoaiTaiSanCon,
     required this.isTaiSanCon,
     required this.soThe,
+    required this.vonNS,
+    required this.vonVay,
+    required this.vonKhac,
   });
 
   factory AssetRequest.fromJson(Map<String, dynamic> json) {
@@ -125,6 +131,9 @@ class AssetRequest {
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'] ?? '',
       isTaiSanCon: json['isTaiSanCon'] ?? false,
       soThe: json['soThe'] ?? '',
+      vonNS: json['nvNS'] ?? 0.0,
+      vonVay: json['vonVay'] ?? 0.0,
+      vonKhac: json['vonKhac'] ?? 0.0,
     );
   }
 
@@ -170,6 +179,9 @@ class AssetRequest {
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
       'isTaiSanCon': isTaiSanCon,
       'soThe': soThe,
+      'nvNS': vonNS,
+      'vonVay': vonVay,
+      'vonKhac': vonKhac,
     };
   }
 
@@ -198,7 +210,7 @@ class AssetRequest {
     String? congSuat,
     String? nuocSanXuat,
     int? namSanXuat,
-    int? lyDoTang,
+    String? lyDoTang,
     int? hienTrang,
     int? soLuong,
     String? donViTinh,
@@ -215,6 +227,9 @@ class AssetRequest {
     String? idLoaiTaiSanCon,
     bool? isTaiSanCon,
     String? soThe,
+    double? vonNS,
+    double? vonVay,
+    double? vonKhac,
   }) {
     return AssetRequest(
       id: id ?? this.id,
@@ -257,6 +272,9 @@ class AssetRequest {
       idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
       isTaiSanCon: isTaiSanCon ?? this.isTaiSanCon,
       soThe: soThe ?? this.soThe,
+      vonNS: vonNS ?? this.vonNS,
+      vonVay: vonVay ?? this.vonVay,
+      vonKhac: vonKhac ?? this.vonKhac,
     );
   }
 }

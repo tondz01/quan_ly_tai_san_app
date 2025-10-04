@@ -75,7 +75,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
             sizeBorderCircular: 7,
             sizeBorderCircularItem: 5,
             colorLabel: Colors.black.withOpacity(0.7),
-            contentPadding: const EdgeInsets.only(left: 10, top: 8, bottom: 8),
+            contentPadding: const EdgeInsets.only(left: 10, top: 10, bottom: 8),
             onChanged: (value) {
               if (value != null) {
                 widget.onChanged?.call(value);

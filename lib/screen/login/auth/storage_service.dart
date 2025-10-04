@@ -58,4 +58,5 @@ class StorageKey {
   static const TYPE_CCDCV = "TYPE_CCDCV";
   static const ASSET_CATEGORY = "ASSET_CATEGORY";
   static const UNIT = "UNIT";
+  static const REASON_INCREASE = "REASON_INCREASE";
 }

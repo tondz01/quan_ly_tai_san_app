@@ -19,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/request/auth/auth_request.dart';
+import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
@@ -140,11 +141,12 @@ class AuthRepository extends ApiBase {
     await _loadUserEmployee(idCongTy);
     await _loadAssetGroup(idCongTy);
     await _loadCCDCGroup(idCongTy);
+    await loadReasonIncrease();
     await _loadChucVu(idCongTy);
     await _loadTypeAsset(idCongTy);
     await _loadTypeCcdc(idCongTy);
     await _loadAssetCategory(idCongTy);
-    await _loadUnit(idCongTy);
+    await loadUnit(idCongTy);
   }
 
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
@@ -239,6 +241,41 @@ class AuthRepository extends ApiBase {
     }
   }
 
+  Future<void> loadReasonIncrease() async {
+    try {
+      final response = await get(EndPointAPI.REASON_INCREASE);
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final rawReasonIncrease = response.data;
+        
+        // Handle both direct array and object with data field
+        List<dynamic> reasonIncreaseList;
+        if (rawReasonIncrease is List) {
+          // Direct array response
+          reasonIncreaseList = rawReasonIncrease;
+        } else if (rawReasonIncrease is Map<String, dynamic>) {
+          // Object response - try to get data field
+          if (rawReasonIncrease.containsKey('data') && rawReasonIncrease['data'] is List) {
+            reasonIncreaseList = rawReasonIncrease['data'] as List<dynamic>;
+          } else {
+            SGLog.info('_loadData', 'Error: API response format not recognized for REASON_INCREASE');
+            return;
+          }
+        } else {
+          SGLog.info('_loadData', 'Error: Unexpected response type for REASON_INCREASE: ${rawReasonIncrease.runtimeType}');
+          return;
+        }
+        
+        final parsedReasonIncrease = reasonIncreaseList
+            .map((e) => ReasonIncrease.fromJson(e as Map<String, dynamic>))
+            .toList();
+        AccountHelper.instance.setReasonIncrease(parsedReasonIncrease);
+        SGLog.info('_loadData', 'loadReasonIncrease');
+      }
+    } catch (e) {
+      log('Error calling API REASON_INCREASE: $e');
+    }
+  }
+
   /// Load thông tin chức vụ của user và lưu vào AccountHelper
   Future<void> _loadChucVu(String idCongTy) async {
     try {
@@ -305,7 +342,7 @@ class AuthRepository extends ApiBase {
     }
   }
 
-  Future<void> _loadUnit(String idCongTy) async {
+  Future<void> loadUnit(String idCongTy) async {
     try {
       final response = await UnitRepository().getListUnit();
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
@@ -500,9 +537,7 @@ class AuthRepository extends ApiBase {
   }
 
   List<String> onGetPermission(String idUser) {
-    log("check onGetPermission: $idUser");
     List<String> roles = [];
-    log('Getting permissions for user: $idUser');
     if (idUser.toLowerCase() == 'admin') {
       roles = [
         RoleCode.NHANVIEN,

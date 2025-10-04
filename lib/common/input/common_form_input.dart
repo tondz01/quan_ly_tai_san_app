@@ -166,7 +166,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
                 textAlign: TextAlign.left,
                 textAlignItem: TextAlign.left,
                 sizeBorderCircular: 10,
-                contentPadding: const EdgeInsets.only(top: 8, bottom: 8),
+                contentPadding: const EdgeInsets.only(top: 10, bottom: 8),
                 onChanged: (value) {
                   if (value != null) {
                     widget.onChanged?.call(value);
@@ -202,6 +202,7 @@ class _CommonFormInputState extends State<CommonFormInput> {
 
                 // onlyLine: true,
                 color: Colors.black,
+                colorLabel: Colors.black.withOpacity(0.7),
                 enabledBorderColor: ColorValue.darkGrey,
                 showBorder: true,
                 borderColor: hasError ? Colors.red : ColorValue.darkGrey,
@@ -220,6 +221,12 @@ class _CommonFormInputState extends State<CommonFormInput> {
                     });
                   }
                 },
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  top: 10,
+                  bottom: 8,
+                  right: 10,
+                ),
               ),
           if (hasError)
             Padding(

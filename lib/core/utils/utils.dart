@@ -19,6 +19,22 @@ class HienTrang {
   final String name;
 
   HienTrang({required this.id, required this.name});
+  toJson() {
+    return {
+      'id': id,
+      'name': name,
+    };
+  }
+  fromJson(Map<String, dynamic> json) {
+    return HienTrang(
+      id: json['id'],
+      name: json['name'],
+    );
+  }
+  @override
+  String toString() {
+    return name;
+  }
 }
 
 class RoleDto {
@@ -37,8 +53,9 @@ abstract class AppUtility {
   static List<HienTrang> get listHienTrang => [
     HienTrang(id: 1, name: 'Đang sử dụng'),
     HienTrang(id: 2, name: 'Chờ thanh lý'),
-    HienTrang(id: 3, name: 'Không sử dụng'),
-    HienTrang(id: 4, name: 'Hỏng'),
+    HienTrang(id: 3, name: 'Chưa sử dụng'),
+    HienTrang(id: 4, name: 'Ngừng khấu hao'),
+    HienTrang(id: 5, name: 'Thanh lý'),
   ];
 
   static List<RoleDto> get listRoles => [
@@ -79,6 +96,14 @@ abstract class AppUtility {
       }
     }
     return true;
+  }
+
+  static HienTrang getHienTrang(int id) {
+
+    return listHienTrang.firstWhere(
+      (element) => element.id == id,
+      orElse: () => listHienTrang.first,
+    );
   }
 
   static List<DropdownMenuItem<String>> phuongPhapKhauHaos = [

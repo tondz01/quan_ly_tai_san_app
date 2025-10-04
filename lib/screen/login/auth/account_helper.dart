@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/storage_service.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/auth_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
@@ -239,6 +240,15 @@ class AccountHelper {
     return null;
   }
 
+  AssetGroupDto? getAssetGroupById(String id) {
+    final list = getAssetGroup();
+    if (list == null) return null;
+    return list.firstWhere(
+      (assetGroup) => assetGroup.id == id,
+      orElse: () => AssetGroupDto(),
+    );
+  }
+
   //CCDC GROUP
   setCcdcGroup(List<CcdcGroup> ccdcGroups) {
     StorageService.write(StorageKey.CCDC_GROUP, ccdcGroups);
@@ -257,6 +267,35 @@ class AccountHelper {
         return raw
             .whereType()
             .map((e) => CcdcGroup.fromJson(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  //REASON INCREASE
+  setReasonIncrease(List<ReasonIncrease> reasonIncrease) {
+    StorageService.write(StorageKey.REASON_INCREASE, reasonIncrease);
+  }
+
+  void clearReasonIncrease() {
+    StorageService.remove(StorageKey.REASON_INCREASE);
+  }
+
+  List<ReasonIncrease>? getReasonIncrease() {
+    final raw = StorageService.read(StorageKey.REASON_INCREASE);
+    if (raw == null) return null;
+    if (raw is List<ReasonIncrease>) return raw;
+    if (raw is List) {
+      try {
+        return raw
+            .whereType()
+            .map(
+              (e) =>
+                  ReasonIncrease.fromJson(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
       } catch (_) {
         return null;
@@ -321,6 +360,15 @@ class AccountHelper {
       }
     }
     return null;
+  }
+
+  ReasonIncrease? getReasonIncreaseById(String id) {
+    final list = getReasonIncrease();
+    if (list == null) return null;
+    return list.firstWhere(
+      (reasonIncrease) => reasonIncrease.id == id,
+      orElse: () => ReasonIncrease(),
+    );
   }
 
   void clearAssetCategory() {

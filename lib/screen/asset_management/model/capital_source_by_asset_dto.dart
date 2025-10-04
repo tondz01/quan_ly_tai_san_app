@@ -14,8 +14,8 @@ class CapitalSourceByAssetDto {
   factory CapitalSourceByAssetDto.fromJson(Map<String, dynamic> json) {
     return CapitalSourceByAssetDto(
       id: json['id'],
-      idTaiSan: json['ten'],
-      idNguonKinhPhi: json['note'],
+      idTaiSan: json['idTaiSan'],
+      idNguonKinhPhi: json['idNguonKinhPhi'],
       tenNguonKinhPhi: json['tenNguonKinhPhi'],
     );
   }
@@ -23,8 +23,8 @@ class CapitalSourceByAssetDto {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'ten': idTaiSan,
-      'note': idNguonKinhPhi,
+      'idTaiSan': idTaiSan,
+      'idNguonKinhPhi': idNguonKinhPhi,
       'tenNguonKinhPhi': tenNguonKinhPhi,
     };
   }

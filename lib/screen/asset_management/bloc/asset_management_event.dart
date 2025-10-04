@@ -99,22 +99,11 @@ class CreateAssetEvent extends AssetManagementEvent {
   final BuildContext context;
   final AssetRequest request;
   final List<ChildAssetDto> childAssets;
-  final List<CapitalSourceByAssetDto> requestCapitalSource;
 
-  const CreateAssetEvent(
-    this.context,
-    this.request,
-    this.childAssets,
-    this.requestCapitalSource,
-  );
+  const CreateAssetEvent(this.context, this.request, this.childAssets);
 
   @override
-  List<Object> get props => [
-    context,
-    request,
-    childAssets,
-    requestCapitalSource,
-  ];
+  List<Object> get props => [context, request, childAssets];
 }
 
 class CreateAssetBatchEvent extends AssetManagementEvent {

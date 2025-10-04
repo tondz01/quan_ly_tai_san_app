@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -21,6 +19,8 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 enum ShowBody { taiSan, khauHao }
@@ -47,10 +47,10 @@ class AssetManagementProvider with ChangeNotifier {
   get dataDetail => _dataDetail;
   get dataDepreciationDetail => _dataDepreciationDetail;
   get filteredData => _filteredData ?? _data;
-
+  get dataGroup => _dataGroup;
+  get dataUnit => _dataUnit;
   get userInfo => _userInfo;
 
-  get dataGroup => _dataGroup;
   get dataProject => _dataProject;
   get dataCapitalSource => _dataCapitalSource;
   get dataDepartment => _dataDepartment;
@@ -114,6 +114,7 @@ class AssetManagementProvider with ChangeNotifier {
 
   List<AssetManagementDto>? _data;
   List<AssetManagementDto>? _dataPage;
+  
 
   List<AssetGroupDto>? _dataGroup;
   List<DuAn>? _dataProject;
@@ -123,6 +124,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<ChildAssetDto>? _dataChildAssets;
   List<AssetDepreciationDto>? _dataKhauHao;
   List<NguonKinhPhi>? _initialSelectedNguonKinhPhi;
+  List<UnitDto>? _dataUnit;
   //List dropdown
   List<DropdownMenuItem<AssetGroupDto>>? _itemsAssetGroup;
   List<DropdownMenuItem<DuAn>>? _itemsDuAn;
@@ -147,6 +149,26 @@ class AssetManagementProvider with ChangeNotifier {
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
+
+  // Track batch loading of multiple parallel requests
+  int _pendingLoadCount = 0;
+  void _beginBatchLoad(int total) {
+    _pendingLoadCount = total;
+    _isLoading = true;
+    notifyListeners();
+  }
+
+  void _completeOneLoad(String message) {
+    if (_pendingLoadCount > 0) {
+      _pendingLoadCount -= 1;
+    }
+    log('message test: _completeOneLoad: $_pendingLoadCount: $message');
+    if (_pendingLoadCount <= 0) {
+      _pendingLoadCount = 0;
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -267,9 +289,14 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  onInit(BuildContext context) {
+  onInit(BuildContext context) async {
     reset();
     _userInfo = AccountHelper.instance.getUserInfo();
+    _dataGroup = AccountHelper.instance.getAssetGroup();
+    if (AccountHelper.instance.getAllUnit().isEmpty) {
+      await AuthRepository().loadUnit('ct001');
+    }
+    _dataUnit = AccountHelper.instance.getAllUnit();
     checkPermission();
     controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
@@ -299,12 +326,12 @@ class AssetManagementProvider with ChangeNotifier {
 
   Future<void> getDataAll(BuildContext context) async {
     try {
-      _isLoading = true;
+      // 7 parallel loads below
+      _beginBatchLoad(6);
       final bloc = context.read<AssetManagementBloc>();
       String idCongTy = _userInfo?.idCongTy ?? '';
       // Gọi song song, không cần delay
       bloc.add(GetListAssetManagementEvent(context, idCongTy));
-      bloc.add(GetListAssetGroupEvent(context, idCongTy));
       bloc.add(GetListProjectEvent(context, idCongTy));
       bloc.add(GetListCapitalSourceEvent(context, idCongTy));
       bloc.add(GetListDepartmentEvent(context, idCongTy));
@@ -315,6 +342,10 @@ class AssetManagementProvider with ChangeNotifier {
         "AssetManagementProvider",
         "Error adding AssetManagement events: $e",
       );
+      // On error starting batch, ensure loading state is reset
+      _isLoading = false;
+      _pendingLoadCount = 0;
+      notifyListeners();
     }
   }
 
@@ -341,22 +372,22 @@ class AssetManagementProvider with ChangeNotifier {
       _dataDetail = _dataDetail?.copyWith(
         childAssets: getListChildAssetsByIdAsset(item.id ?? ''),
       );
-      if (_dataDetail?.nguonKinhPhiList != null) {
-        log('message test: _dataDetail?.nguonKinhPhiList: ${jsonEncode(_dataDetail?.nguonKinhPhiList)}');
-        _initialSelectedNguonKinhPhi = itemsNguonKinhPhi
-            ?.where(
-              (element) => _dataDetail?.nguonKinhPhiList?.any(
-                        (e) => e.id == element.value?.id,
-                      ) ??
-                  false,
-            )
-            .map((e) => e.value)
-            .whereType<NguonKinhPhi>()
-            .toList();
-        log(
-          'message test: _initialSelectedNguonKinhPhi: ${jsonEncode(_initialSelectedNguonKinhPhi)}',
-        );
-      }
+      // if (_dataDetail?.nguonKinhPhiList != null) {
+      //   // Debug: Check each step of the filtering
+      //   final filteredItems = itemsNguonKinhPhi?.where(
+      //     (element) {
+      //       final isMatch = _dataDetail?.nguonKinhPhiList?.any(
+      //         (e) => e.idNguonKinhPhi == element.value?.id,
+      //       ) ?? false;
+      //       return isMatch;
+      //     },
+      //   ).toList();
+
+      //   _initialSelectedNguonKinhPhi = filteredItems
+      //       ?.map((e) => e.value)
+      //       .whereType<NguonKinhPhi>()
+      //       .toList();
+      // }
     } else {
       _dataDetail = null;
       _isNew = isNew;
@@ -396,19 +427,15 @@ class AssetManagementProvider with ChangeNotifier {
     _error = null;
     if (state.data.isEmpty) {
       _data = [];
-      // _filteredData = [];
-      _isLoading = false;
       _filteredData = [];
       _dataPage = [];
     } else {
       _data =
           state.data.where((element) => element.isTaiSanCon == false).toList();
-      _filteredData = List.from(_data!); // Khởi tạo filteredData
+      _filteredData = _data; // Khởi tạo filteredData
       _updatePagination();
-      _isLoading = false;
     }
-    onCloseDetail(context);
-    notifyListeners();
+    _completeOneLoad('getListAssetManagementSuccess');
   }
 
   getListChildAssetsSuccess(
@@ -423,7 +450,7 @@ class AssetManagementProvider with ChangeNotifier {
       _dataChildAssets = state.data;
       _filteredData = List.from(_dataChildAssets!); // Khởi tạo filteredData
     }
-    notifyListeners();
+    _completeOneLoad('getListChildAssetsSuccess');
   }
 
   getListKhauHaoSuccess(
@@ -437,51 +464,7 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataKhauHao = state.data;
     }
-    notifyListeners();
-  }
-
-  createAssetSuccess(BuildContext context, CreateAssetSuccessState state) {
-    _error = null;
-    // Thêm tài sản mới vào danh sách
-    // if (state.data != null) {
-    //   _data?.add(state.data!);
-    //   _filteredData = List.from(_data!);
-    // }
-    getDataAll(context);
-    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
-    notifyListeners();
-  }
-
-  createAssetError(BuildContext context, CreateAssetFailedState state) {
-    _error = state.message;
-    _isLoading = false;
-    AppUtility.showSnackBar(context, state.message, isError: true);
-    notifyListeners();
-  }
-
-  AssetManagementDto? getInfoAssetByChildAsset(String idTaiSan) {
-    return data.firstWhere((element) => element.idTaiSan == idTaiSan);
-  }
-
-  getListAssetGroupSuccess(
-    BuildContext context,
-    GetListAssetGroupSuccessState state,
-  ) {
-    _error = null;
-    if (state.data.isEmpty) {
-      _dataGroup = [];
-    } else {
-      _dataGroup = state.data;
-      _initializeCheckBoxList();
-      _itemsAssetGroup = [
-        for (var element in _dataGroup!)
-          DropdownMenuItem<AssetGroupDto>(
-            value: element,
-            child: Text(element.tenNhom ?? ''),
-          ),
-      ];
-    }
-    notifyListeners();
+    _completeOneLoad('getListKhauHaoSuccess');
   }
 
   getListProjectSuccess(
@@ -502,7 +485,7 @@ class AssetManagementProvider with ChangeNotifier {
           ),
       ];
     }
-    notifyListeners();
+    _completeOneLoad('getListProjectSuccess');
   }
 
   getListCapitalSourceSuccess(
@@ -518,7 +501,7 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenNguonKinhPhi ?? ''),
         ),
     ];
-    notifyListeners();
+    _completeOneLoad('getListCapitalSourceSuccess');
   }
 
   getListDepartmentSuccess(
@@ -534,7 +517,7 @@ class AssetManagementProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
-    notifyListeners();
+    _completeOneLoad('getListDepartmentSuccess');
   }
 
   getAllChildAssetsSuccess(
@@ -543,11 +526,34 @@ class AssetManagementProvider with ChangeNotifier {
   ) {
     _error = null;
     _dataChildAssets = state.data;
+    _completeOneLoad('getAllChildAssetsSuccess');
     notifyListeners();
   }
 
-  void updateAssetSuccess(BuildContext context, UpdateAssetSuccessState state) {
+  createAssetSuccess(BuildContext context, CreateAssetSuccessState state) {
+    _error = null;
+    // Thêm tài sản mới vào danh sách
+    // if (state.data != null) {
+    //   _data?.add(state.data!);
+    //   _filteredData = List.from(_data!);
+    // }
+    AppUtility.showSnackBar(context, 'Thêm mới thành công!');
+    notifyListeners();
+  }
+
+  createAssetError(BuildContext context, CreateAssetFailedState state) {
+    _error = state.message;
+    _isLoading = false;
     onCloseDetail(context);
+    AppUtility.showSnackBar(context, state.message, isError: true);
+    notifyListeners();
+  }
+
+  AssetManagementDto? getInfoAssetByChildAsset(String idTaiSan) {
+    return data.firstWhere((element) => element.idTaiSan == idTaiSan);
+  }
+
+  void updateAssetSuccess(BuildContext context, UpdateAssetSuccessState state) {
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
     getDataAll(context);
     notifyListeners();

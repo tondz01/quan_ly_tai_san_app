@@ -24,6 +24,7 @@ class CMDropwdownAddListObject<T> extends StatefulWidget {
     this.searchDebounceMs = 0,
     this.maxHeight,
     this.shouldPopOnConfirm = true,
+    this.readOnly = false,
   });
 
   final List<T> items;
@@ -38,6 +39,7 @@ class CMDropwdownAddListObject<T> extends StatefulWidget {
   final int searchDebounceMs;
   final double? maxHeight;
   final bool shouldPopOnConfirm;
+  final bool readOnly;
 
   @override
   State<CMDropwdownAddListObject<T>> createState() =>
@@ -147,12 +149,14 @@ class _CMDropwdownAddListObjectState<T>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _SearchField(
-                controller: _searchController,
-                focusNode: _searchFocus,
-                hintText: widget.hintText,
-              ),
-              const SizedBox(height: 8),
+              if (!widget.readOnly) ...[
+                _SearchField(
+                  controller: _searchController,
+                  focusNode: _searchFocus,
+                  hintText: widget.hintText,
+                ),
+                const SizedBox(height: 8),
+              ],
               Flexible(
                 child: Scrollbar(
                   controller: _scrollController,
@@ -170,7 +174,7 @@ class _CMDropwdownAddListObjectState<T>
                           horizontal: 4,
                         ),
                         value: checked,
-                        onChanged: (v) => _toggle(item, v ?? false),
+                        onChanged: widget.readOnly ? null : (v) => _toggle(item, v ?? false),
                         title: Text(
                           widget.itemLabel(item),
                           overflow: TextOverflow.ellipsis,
@@ -181,24 +185,26 @@ class _CMDropwdownAddListObjectState<T>
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(onPressed: _reset, child: Text(widget.resetText)),
-                  FilledButton(
-                    onPressed: () {
-                      final result = _selectedObjects();
-                      widget.onConfirmed?.call(result);
-                      if (widget.shouldPopOnConfirm &&
-                          Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop(result);
-                      }
-                    },
-                    child: Text(widget.okText),
-                  ),
-                ],
-              ),
+              if (!widget.readOnly) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(onPressed: _reset, child: Text(widget.resetText)),
+                    FilledButton(
+                      onPressed: () {
+                        final result = _selectedObjects();
+                        widget.onConfirmed?.call(result);
+                        if (widget.shouldPopOnConfirm &&
+                            Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop(result);
+                        }
+                      },
+                      child: Text(widget.okText),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -245,6 +251,7 @@ Future<List<T>?> showMultiSelectObjectDialog<T>({
   String resetText = 'Reset',
   int searchDebounceMs = 0,
   double? maxHeight,
+  bool readOnly = false,
 }) {
   return showDialog<List<T>>(
     context: context,
@@ -265,6 +272,7 @@ Future<List<T>?> showMultiSelectObjectDialog<T>({
           searchDebounceMs: searchDebounceMs,
           maxHeight: maxHeight,
           shouldPopOnConfirm: true,
+          readOnly: readOnly,
         ),
       );
     },
@@ -285,6 +293,7 @@ class CMDropdownTriggerAddListObject<T> extends StatefulWidget {
     this.labelText,
     this.placeholderText,
     this.maxHeight,
+    this.readOnly = false,
   });
 
   final List<T> items;
@@ -298,6 +307,7 @@ class CMDropdownTriggerAddListObject<T> extends StatefulWidget {
   final String? labelText;
   final String? placeholderText;
   final double? maxHeight;
+  final bool readOnly;
 
   @override
   State<CMDropdownTriggerAddListObject<T>> createState() =>
@@ -315,6 +325,8 @@ class _CMDropdownTriggerAddListObjectState<T>
   }
 
   Future<void> _openDialog() async {
+    if (widget.readOnly) return;
+    
     final result = await showMultiSelectObjectDialog<T>(
       context: context,
       items: widget.items,
@@ -325,6 +337,7 @@ class _CMDropdownTriggerAddListObjectState<T>
       okText: widget.okText,
       resetText: widget.resetText,
       maxHeight: widget.maxHeight,
+      readOnly: widget.readOnly,
     );
     if (result != null) {
     setState(() {
@@ -357,7 +370,7 @@ class _CMDropdownTriggerAddListObjectState<T>
             ),
           ),
         InkWell(
-          onTap: _openDialog,
+          onTap: widget.readOnly ? null : _openDialog,
           borderRadius: BorderRadius.circular(8),
           child: InputDecorator(
             isEmpty: _selected.isEmpty,
@@ -370,7 +383,9 @@ class _CMDropdownTriggerAddListObjectState<T>
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              suffixIcon: const Icon(Icons.arrow_drop_down),
+              suffixIcon: widget.readOnly 
+                ? (_selected.isNotEmpty ? null : const Icon(Icons.arrow_drop_down))
+                : const Icon(Icons.arrow_drop_down),
             ),
             child: Text(
               _displayText(),
@@ -406,6 +421,7 @@ class CMObjectMultiSelectDropdownField<T> extends StatefulWidget {
     this.decoration,
     this.enabled = true,
     this.labelText,
+    this.readOnly = false,
   });
 
   final List<T> items;
@@ -425,6 +441,7 @@ class CMObjectMultiSelectDropdownField<T> extends StatefulWidget {
   final InputDecoration? decoration;
   final bool enabled;
   final String? labelText;
+  final bool readOnly;
 
   @override
   State<CMObjectMultiSelectDropdownField<T>> createState() => _CMObjectMultiSelectDropdownFieldState<T>();
@@ -471,7 +488,7 @@ class _CMObjectMultiSelectDropdownFieldState<T> extends State<CMObjectMultiSelec
   }
 
   void _showOverlay() {
-    if (!widget.enabled) return;
+    if (!widget.enabled || widget.readOnly) return;
     _removeOverlay();
 
     final overlay = Overlay.of(context);
@@ -589,7 +606,7 @@ class _CMObjectMultiSelectDropdownFieldState<T> extends State<CMObjectMultiSelec
     final decoration = (widget.decoration ?? const InputDecoration()).copyWith(
       hintText: null,
       labelText: widget.labelText,
-      suffixIcon: const Icon(Icons.arrow_drop_down),
+      suffixIcon: widget.readOnly && hasValue ? null : const Icon(Icons.arrow_drop_down),
       enabled: widget.enabled,
       border: widget.decoration?.border ?? baseBorder,
       enabledBorder: widget.decoration?.enabledBorder ?? baseBorder,
@@ -599,7 +616,7 @@ class _CMObjectMultiSelectDropdownFieldState<T> extends State<CMObjectMultiSelec
     return CompositedTransformTarget(
       link: _layerLink,
       child: InkWell(
-        onTap: _showOverlay,
+        onTap: widget.readOnly ? null : _showOverlay,
         borderRadius: BorderRadius.circular(8),
         child: InputDecorator(
           isEmpty: !hasValue,

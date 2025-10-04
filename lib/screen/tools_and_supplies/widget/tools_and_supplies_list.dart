@@ -231,7 +231,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
               getValue:
                   (item) => NumberFormat.currency(
                     locale: 'vi_VN',
-                    symbol: '₫',
+                    symbol: '',
                   ).format(item.giaTri),
               width: 120,
               searchValueGetter: (item) => item.giaTri.toString(),

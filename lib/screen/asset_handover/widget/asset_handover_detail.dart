@@ -754,7 +754,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           isRequired: true,
         ),
         CommonFormInput(
-          label: 'Bàn giao tài sản',
+          label: 'Tên biên bản bàn giao tài sản',
           controller: controllerDocumentName,
           isEditing: isEditing,
           textContent: item?.banGiaoTaiSan ?? '',

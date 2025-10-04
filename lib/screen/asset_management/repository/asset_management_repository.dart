@@ -239,7 +239,6 @@ class AssetManagementRepository extends ApiBase {
   Future<Map<String, dynamic>> createAsset(
     AssetRequest request,
     List<ChildAssetDto> requestDetail,
-    List<CapitalSourceByAssetDto> requestCapitalSource,
   ) async {
     final Map<String, dynamic> result = {
       'data': null,
@@ -285,17 +284,6 @@ class AssetManagementRepository extends ApiBase {
         }
 
         await updateStatusAsset(requestStatus);
-        requestCapitalSource = requestCapitalSource
-            .map((e) => e.copyWith(idTaiSan: idTaiSan))
-            .toList();
-        final responseCapitalSource = await createListCapitalSourceByAsset(
-          requestCapitalSource,
-        );
-        if (responseCapitalSource['status_code'] !=
-            Numeral.STATUS_CODE_SUCCESS) {
-          result['status_code'] = responseCapitalSource['status_code'];
-          return result;
-        }
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
