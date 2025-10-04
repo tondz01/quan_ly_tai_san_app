@@ -588,7 +588,7 @@ class ContractPage {
         SGText(
           text:
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.quyetDinhDieuDongSo ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayTaoChungTu ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
 
@@ -793,7 +793,7 @@ class ContractPage {
         SGText(
           text:
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${banGiaoCCDCVatTu.quyetDinhDieuDongSo ?? ''}, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${banGiaoCCDCVatTu.tenDonViGiao ?? ''}  đến  ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} , tại ${banGiaoCCDCVatTu.tenDonViGiao}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayTaoChungTu ?? '')} , tại ${banGiaoCCDCVatTu.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
         SGText(
