@@ -45,7 +45,6 @@ class _AssetGroupDetailState extends State<AssetGroupDetail> {
   void didUpdateWidget(covariant AssetGroupDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.provider.dataDetail != data) {
-      log('message didUpdateWidget: ${widget.provider.dataDetail?.toJson()}');
       _initData();
     }
   }

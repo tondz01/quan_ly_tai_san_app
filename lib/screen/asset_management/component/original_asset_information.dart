@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bl
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -37,17 +38,18 @@ Widget buildOriginalAssetInfomation(
   Map<String, bool>? validationErrors,
   bool isEditing = false,
   Function(String)? onDepreciationMethodChanged,
+  required AssetGroupDto assetGroup,
   required List<TypeAsset> listTypeAsset,
   Function(AssetCategoryDto)? onAssetCategoryChanged,
   Function(AssetGroupDto)? onAssetGroupChanged,
   required List<AssetCategoryDto> listAssetCategory,
-  required List<AssetGroupDto> listAssetGroup,
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
-  required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
   required Function(DateTime?)? onChangedNgayVaoSo,
   required Function(DateTime?)? onChangedNgaySuDung,
   required Function(TypeAsset)? onTypeAssetChanged,
 }) {
+  List<AssetGroupDto>? assetGroups = AccountHelper.instance.getAssetGroup();
+
   if (listAssetCategory.isEmpty) {
     try {
       final assetHandoverBloc = BlocProvider.of<AssetCategoryBloc>(context);
@@ -103,7 +105,7 @@ Widget buildOriginalAssetInfomation(
       CommonFormInput(
         label: 'Nguyên giá tài sản',
         controller: ctrlNguyenGia,
-        isEditing: isEditing,
+        isEditing: false,
         textContent: ctrlNguyenGia.text,
         fieldName: 'nguyenGia',
         inputType: TextInputType.number,
@@ -205,14 +207,17 @@ Widget buildOriginalAssetInfomation(
         label: 'Nhóm tài sản',
         controller: ctrlIdNhomTaiSan,
         isEditing: isEditing,
-        items: itemsAssetGroup,
-        defaultValue:
-            ctrlIdNhomTaiSan.text.isNotEmpty
-                ? getAssetGroup(
-                  listAssetGroup: listAssetGroup,
-                  idAssetGroup: ctrlIdNhomTaiSan.text,
-                )
-                : null,
+        value: assetGroup,
+        items: [
+          ...assetGroups?.map(
+                (e) => DropdownMenuItem<AssetGroupDto>(
+                  value: e,
+                  child: Text(e.tenNhom ?? ''),
+                ),
+              ) ??
+              [],
+        ],
+        defaultValue: assetGroup,
         onChanged: onAssetGroupChanged,
         fieldName: 'idNhomTaiSan',
         validationErrors: validationErrors,
@@ -270,18 +275,6 @@ AssetCategoryDto getAssetCategory({
   if (found.isEmpty) {
     // Trả về một AssetCategoryDto mặc định nếu không tìm thấy
     return AssetCategoryDto();
-  }
-  return found.first;
-}
-
-AssetGroupDto getAssetGroup({
-  required List<AssetGroupDto> listAssetGroup,
-  required String idAssetGroup,
-}) {
-  final found = listAssetGroup.where((item) => item.id == idAssetGroup);
-  if (found.isEmpty) {
-    // Trả về một AssetGroupDto mặc định nếu không tìm thấy
-    return AssetGroupDto();
   }
   return found.first;
 }

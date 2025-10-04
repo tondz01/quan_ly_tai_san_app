@@ -894,7 +894,7 @@ class _ToolAndSuppliesHandoverDetailState
           isRequired: true,
         ),
         CommonFormInput(
-          label: 'Bàn giao ccdc-vật tư',
+          label: 'Tên biên bản bàn giao ccdc-vật tư',
           controller: controllerDocumentName,
           isEditing: isEditing,
           textContent: item?.banGiaoCCDCVatTu ?? '',

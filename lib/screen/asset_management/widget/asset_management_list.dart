@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
@@ -38,6 +39,9 @@ class _AssetManagementListState extends State<AssetManagementList> {
     'so_the',
     'name_asset',
     'book_entry_date',
+    'von_ns',
+    'von_vay',
+    'von_khac',
     'usage_tart_date',
     'using_unit',
     'so_luong_ts_con',
@@ -96,6 +100,21 @@ class _AssetManagementListState extends State<AssetManagementList> {
         id: 'book_entry_date',
         label: 'Ngày vào sổ',
         isChecked: visibleColumnIds.contains('book_entry_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'von_ns',
+        label: 'Vốn NS',
+        isChecked: visibleColumnIds.contains('von_ns'),
+      ),
+      ColumnDisplayOption(
+        id: 'von_vay',
+        label: 'Vốn vay',
+        isChecked: visibleColumnIds.contains('von_vay'),
+      ),
+      ColumnDisplayOption(
+        id: 'von_khac',
+        label: 'Vốn khác',
+        isChecked: visibleColumnIds.contains('von_khac'),
       ),
       ColumnDisplayOption(
         id: 'usage_start_date',
@@ -217,6 +236,66 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
           );
           break;
+        case 'nguyen_gia':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Nguyên giá',
+              getValue:
+                  (item) => NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '',
+                  ).format(item.nguyenGia ?? 0.0),
+              width: 120,
+              searchValueGetter: (item) => item.nguyenGia?.toString() ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'von_ns':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Vốn NS',
+              getValue:
+                  (item) => NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '',
+                  ).format(item.vonNS ?? 0.0),
+              width: 120,
+              searchValueGetter: (item) => item.vonNS?.toString() ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'von_vay':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Vốn vay',
+              getValue:
+                  (item) => NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '',
+                  ).format(item.vonVay ?? 0.0),
+              width: 120,
+              searchValueGetter: (item) => item.vonVay?.toString() ?? '',
+              filterable: true,
+            ),
+          );
+          break;
+        case 'von_khac':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Vốn khác',
+              getValue:
+                  (item) => NumberFormat.currency(
+                    locale: 'vi_VN',
+                    symbol: '',
+                  ).format(item.vonKhac ?? 0.0),
+              width: 120,
+              searchValueGetter: (item) => item.vonKhac?.toString() ?? '',
+              filterable: true,
+            ),
+          );
+          break;
         case 'usage_start_date':
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
@@ -299,11 +378,28 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
           );
           break;
+        case 'ly_do_tang':
+          columns.add(
+            TableBaseConfig.columnTable<AssetManagementDto>(
+              title: 'Lý do tăng',
+              getValue:
+                  (item) =>
+                      AccountHelper.instance
+                          .getReasonIncreaseById(item.lyDoTang ?? '')
+                          ?.ten ??
+                      '',
+              width: 100,
+              filterable: true,
+            ),
+          );
+          break;
         case 'hien_trang':
           columns.add(
             TableBaseConfig.columnTable<AssetManagementDto>(
               title: 'Hiện trạng',
-              getValue: (item) => widget.provider.getHienTrang(item.hienTrang ?? 0).name,
+              getValue:
+                  (item) =>
+                      widget.provider.getHienTrang(item.hienTrang ?? 0).name,
               width: 100,
               filterable: true,
             ),
@@ -409,12 +505,9 @@ class _AssetManagementListState extends State<AssetManagementList> {
             spacing: 8,
             children: [
               SGText(
-                text: 'Danh sách loại tài sản',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[700],
-                  fontSize: 16,
-                ),
+                text: 'Danh sách nhóm tài sản',
+                size: 16,
+                fontWeight: FontWeight.bold,
               ),
               Visibility(visible: groups.isNotEmpty, child: Divider()),
               Visibility(
@@ -659,6 +752,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                       )
                       : null,
               onRowTap: (item) {
+                // return;
                 widget.provider.onChangeDetail(item);
               },
               onSelectionChanged:

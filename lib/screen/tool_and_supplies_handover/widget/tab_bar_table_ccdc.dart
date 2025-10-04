@@ -17,6 +17,7 @@ class TabBarTableCcdc extends StatefulWidget {
 
 class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
   List<ToolAndMaterialTransferDto> dataAssetTransfer = [];
+  int quyetDinhCount = 0;
   @override
   void initState() {
     super.initState();
@@ -37,6 +38,7 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
             // .where((element) => element.daBanGiao == false)
             .toList() ??
         [];
+    quyetDinhCount = dataAssetTransfer.length;
   }
 
   @override
@@ -83,8 +85,40 @@ class _TabBarTableCcdcState extends State<TabBarTableCcdc> {
                           text: 'Biên bản bàn giao',
                         ),
                         Tab(
-                          icon: Icon(Icons.table_chart, size: 18),
-                          text: 'Quyết định điều động',
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.table_chart, size: 18),
+                                  SizedBox(width: 6),
+                                  Text('Quyết định điều động'),
+                                ],
+                              ),
+                              Positioned(
+                                right: -10,
+                                top: -6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    '$quyetDinhCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

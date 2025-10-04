@@ -25,6 +25,7 @@ class TableBaseView<T> extends StatefulWidget {
     this.startDate,
     this.endDate,
     this.filterPopupOffset = const Offset(-10, -70),
+    this.showQuantityColumn = 10,
   });
 
   /// Từ khóa tìm kiếm
@@ -60,14 +61,14 @@ class TableBaseView<T> extends StatefulWidget {
 
   final DateTime? startDate;
   final DateTime? endDate;
+  
+  /// Số lượng dòng hiển thị mặc định trong bảng
+  final double showQuantityColumn;
   @override
   State<TableBaseView<T>> createState() => _TableBaseViewState<T>();
 }
 
 class _TableBaseViewState<T> extends State<TableBaseView<T>> {
-  /// Controller cho thanh cuộn ngang của bảng
-  late final ScrollController _horizontalController;
-
   /// Controller cho ô nhập ngày bắt đầu
   final TextEditingController _textTimeStartController =
       TextEditingController();
@@ -96,8 +97,6 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
     _startDate =
         widget.startDate ?? DateTime.now().subtract(const Duration(days: 30));
     _endDate = widget.endDate ?? DateTime.now();
-    // Khởi tạo controller cuộn ngang
-    _horizontalController = widget.horizontalController ?? ScrollController();
     // Khởi tạo dữ liệu ban đầu chưa lọc
     _filteredData = widget.data;
   }
@@ -463,6 +462,7 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
                 widget.onSelectionChanged?.call(items);
               },
               filterPopupOffset: widget.filterPopupOffset,
+              showQuantityColumn: widget.showQuantityColumn,
             ),
           ),
         ),

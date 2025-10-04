@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/check_vaildate_import.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/convert_excel_to_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
@@ -62,7 +62,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         listen: false,
       ).onInit(context);
     });
-    log('message test: didChangeDependencies');
   }
 
   @override
@@ -112,15 +111,17 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     subScreen: provider.subScreen,
                     onFileSelected: (fileName, filePath, fileBytes) async {
                       final assetBloc = context.read<AssetManagementBloc>();
+                      final ok = await checkValidateImportAsset(
+                        context,
+                        bytes: fileBytes,
+                        filePath: filePath,
+                      );
+                      if (!ok) return;
                       final List<AssetManagementDto> assets =
                           await convertExcelToAsset(
                             bytes: fileBytes,
                             filePath: filePath,
                           );
-                      log(
-                        'message test: CreateAssetBatchEvent ${jsonEncode(assets)}',
-                      );
-                      // return;
                       provider.onLoading(true);
                       assetBloc.add(CreateAssetBatchEvent(assets));
                     },
@@ -232,12 +233,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         }
         if (state is GetListKhauHaoFailedState) {
           log('GetListChildAssetsFailedState');
-        }
-        if (state is GetListAssetGroupSuccessState) {
-          context.read<AssetManagementProvider>().getListAssetGroupSuccess(
-            context,
-            state,
-          );
         }
         if (state is GetListAssetGroupFailedState) {
           log('GetListAssetGroupFailedState');

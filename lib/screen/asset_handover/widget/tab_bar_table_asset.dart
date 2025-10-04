@@ -20,6 +20,7 @@ class TabBarTableAsset extends StatefulWidget {
 class _TabBarTableAssetState extends State<TabBarTableAsset> {
   List<DieuDongTaiSanDto> dataAssetTransfer = [];
   UserInfoDTO? userInfo;
+  int quyetDinhCount = 0;
   @override
   void initState() {
     super.initState();
@@ -27,11 +28,13 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
     _getDataAssetTransfer();
     log('dataAssetTransfer: ${dataAssetTransfer.length}');
   }
+
   @override
   void dispose() {
     super.dispose();
     dataAssetTransfer = [];
   }
+
   @override
   void didUpdateWidget(TabBarTableAsset oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -45,6 +48,7 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
             .where((element) => element.daBanGiao == false)
             .toList() ??
         [];
+    quyetDinhCount = dataAssetTransfer.length;
   }
 
   @override
@@ -91,9 +95,45 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
                           text: 'Biên bản bàn giao',
                         ),
                         Tab(
-                          icon: Icon(Icons.table_chart, size: 18),
-                          text: 'Quyết định điều động',
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Icons.table_chart, size: 18),
+                                  SizedBox(width: 6),
+                                  Text('Quyết định điều động'),
+                                ],
+                              ),
+                              Positioned(
+                                right: -10,
+                                top: -6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    '$quyetDinhCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        // Tab(
+                        //   icon: Icon(Icons.table_chart, size: 18),
+                        //   text: 'Quyết định điều động',
+                        // ),
                       ],
                     ),
                   ),

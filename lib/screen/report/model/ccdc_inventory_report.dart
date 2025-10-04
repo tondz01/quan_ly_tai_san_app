@@ -15,7 +15,7 @@ class CCDCInventoryReport {
     String parseString(dynamic v) => v?.toString() ?? '';
 
     return CCDCInventoryReport(
-      tenTaiSan: parseString(json['tenTaiSan']),
+      tenTaiSan: parseString(json['ten']),
       donViTinh: parseString(json['donViTinh']),
       nuocSanXuat: parseString(json['nuocSanXuat']),
       ghiChu: parseString(json['ghiChu']),

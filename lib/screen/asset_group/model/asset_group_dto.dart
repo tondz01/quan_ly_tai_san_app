@@ -103,4 +103,9 @@ class AssetGroupDto {
       'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
     };
   }
+
+  @override
+  String toString() {
+    return tenNhom ?? '';
+  }
 }

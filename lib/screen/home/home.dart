@@ -73,7 +73,12 @@ class _HomeState extends State<Home> {
     _popupManager.addGlobalListener(_onPopupStateChanged);
     userInfo = AccountHelper.instance.getUserInfo();
     if (userInfo == null) {
-      context.go(AppRoute.login.path);
+      // Use addPostFrameCallback to avoid navigation during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.go(AppRoute.login.path);
+        }
+      });
     }
   }
 

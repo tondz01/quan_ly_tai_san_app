@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/prov
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/provider/role_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/reason_increase/provider/reason_increase_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
@@ -31,5 +32,6 @@ List<SingleChildWidget> get providers {
     ChangeNotifierProvider(create: (context) => TypeAssetProvider()),
     ChangeNotifierProvider(create: (context) => TypeCcdcProvider()),
     ChangeNotifierProvider(create: (context) => UnitProvider()),
+    ChangeNotifierProvider(create: (context) => ReasonIncreaseProvider()),
   ];
 }

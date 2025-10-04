@@ -1,11 +1,11 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/dropdown_add_list_object.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -14,6 +14,9 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -21,6 +24,9 @@ Widget buildOtherInformation(
   BuildContext context, {
   required TextEditingController ctrlDuAn,
   required TextEditingController ctrlNguonKinhPhi,
+  required TextEditingController ctrlVonNS,
+  required TextEditingController ctrlVonVay,
+  required TextEditingController ctrlVonKhac,
   required TextEditingController ctrlKyHieu,
   required TextEditingController ctrlSoKyHieu,
   required TextEditingController ctrlCongSuat,
@@ -40,30 +46,65 @@ Widget buildOtherInformation(
   Function(PhongBan)? onChangeInitialUsage,
   Function(PhongBan)? onChangeCurrentUnit,
   Function(DuAn)? onDuAnChanged,
-  Function(LyDoTang)? onLyDoTangChanged,
+  Function(ReasonIncrease)? onLyDoTangChanged,
   Function(HienTrang)? onHienTrangChanged,
   Function(NguonKinhPhi)? onNguonKinhPhiChanged,
   Function(bool)? onKhoiTaoDonViChanged,
   Function(UnitDto)? onUnitChanged,
   required List<PhongBan> listPhongBan,
   required List<DuAn> listDuAn,
-  required List<NguonKinhPhi> listNguonKinhPhi,
-  required List<NguonKinhPhi> initialSelectedNguonKinhPhi,
+  required List<ReasonIncrease> listLyDoTang,
   required List<UnitDto> listUnit,
   required List<DropdownMenuItem<PhongBan>> itemsPhongBan,
   required List<DropdownMenuItem<DuAn>> itemsDuAn,
-  required List<DropdownMenuItem<NguonKinhPhi>> itemsNguonKinhPhi,
+  required List<DropdownMenuItem<ReasonIncrease>> itemsLyDoTang,
+  required List<DropdownMenuItem<UnitDto>> itemsUnit,
   required Function(Country)? onNuocSanXuatChanged,
-  required Function(List<NguonKinhPhi>)? onChangedNguonKinhPhi,
+  Function(double)? onTotalCapitalChanged,
   required AssetManagementProvider provider,
   DuAn? duAn,
   HienTrang? hienTrang,
-  LyDoTang? lyDoTang,
   Country? country,
   PhongBan? phongBanBanDau,
   PhongBan? phongBanHienThoi,
   UnitDto? unit,
+  ReasonIncrease? lyDoTang,
 }) {
+  // Function to calculate total capital
+  void calculateTotalCapital() {
+    // Clean text by removing all non-numeric characters except decimal point
+    // Handle money format with thousand separators (dots)
+    String cleanText(String text) {
+      if (text.isEmpty) return '';
+
+      String cleaned = text.replaceAll(RegExp(r'[^\d.]'), '');
+
+      List<String> parts = cleaned.split('.');
+      if (parts.length > 2) {
+        // For numbers like "1.111.111", we need to treat dots as thousand separators
+        // So "1.111.111" should become "1111111" (no decimal part)
+        String integerPart = parts.join('');
+        cleaned = integerPart;
+      }
+      return cleaned;
+    }
+
+    final vonNSText = cleanText(ctrlVonNS.text);
+    final vonVayText = cleanText(ctrlVonVay.text);
+    final vonKhacText = cleanText(ctrlVonKhac.text);
+
+    final vonNS = double.tryParse(vonNSText) ?? 0.0;
+    final vonVay = double.tryParse(vonVayText) ?? 0.0;
+    final vonKhac = double.tryParse(vonKhacText) ?? 0.0;
+
+    // Round to avoid floating point precision issues
+    final total = (vonNS + vonVay + vonKhac).roundToDouble();
+    // Use addPostFrameCallback to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      onTotalCapitalChanged?.call(total);
+    });
+  }
+
   return Column(
     children: [
       SGText(text: 'Thông tin khác', size: 16, fontWeight: FontWeight.w600),
@@ -88,40 +129,63 @@ Widget buildOtherInformation(
         fieldName: 'duAn',
         validationErrors: validationErrors,
       ),
-
-      CMObjectMultiSelectDropdownField<NguonKinhPhi>(
-        labelText: 'Nguồn kinh phí',
-        items: listNguonKinhPhi,
-        itemLabel: (o) => o.tenNguonKinhPhi ?? '',
-        itemKey: (o) => o.id ?? '',
-        initialSelected: initialSelectedNguonKinhPhi,
-        onChanged: (list) {
-          onChangedNguonKinhPhi?.call(list);
-          initialSelectedNguonKinhPhi = list;
-        },
-        onConfirmed: (list) {
-          onChangedNguonKinhPhi?.call(list);
-          initialSelectedNguonKinhPhi = list;
+      CommonFormInput(
+        label: 'Vốn NS',
+        controller: ctrlVonNS,
+        isEditing: isEditing,
+        textContent: ctrlVonNS.text,
+        fieldName: 'vonNS',
+        inputType: TextInputType.number,
+        isMoney: true,
+        validationErrors: validationErrors,
+        onChanged: (value) {
+          calculateTotalCapital();
         },
       ),
-
-      CmFormDropdownObject<NguonKinhPhi>(
-        label: 'Nguồn kinh phí',
-        controller: ctrlNguonKinhPhi,
+      CommonFormInput(
+        label: 'Vốn vay',
+        controller: ctrlVonVay,
         isEditing: isEditing,
-        items: itemsNguonKinhPhi,
-        defaultValue:
-            ctrlNguonKinhPhi.text.isNotEmpty
-                ? getNguonKinhPhi(
-                  listNguonKinhPhi: listNguonKinhPhi,
-                  idAssetGroup: ctrlNguonKinhPhi.text,
-                )
-                : null,
-        onChanged: onNguonKinhPhiChanged,
-        fieldName: 'nguonKinhPhi',
+        textContent: ctrlVonVay.text,
+        fieldName: 'vonVay',
+        inputType: TextInputType.number,
+        isMoney: true,
+        validationErrors: validationErrors,
+        onChanged: (value) {
+          calculateTotalCapital();
+        },
+      ),
+      CommonFormInput(
+        label: 'Vốn khác',
+        controller: ctrlVonKhac,
+        isEditing: isEditing,
+        textContent: ctrlVonKhac.text,
+        fieldName: 'vonKhac',
+        inputType: TextInputType.number,
+        isMoney: true,
+        onChanged: (value) {
+          log('message test [OtherInformation]: value: $value');
+          calculateTotalCapital();
+        },
         validationErrors: validationErrors,
       ),
 
+      // CMObjectMultiSelectDropdownField<NguonKinhPhi>(
+      //   labelText: 'Nguồn kinh phí',
+      //   items: listNguonKinhPhi,
+      //   readOnly: !isEditing,
+      //   itemLabel: (o) => o.tenNguonKinhPhi ?? '',
+      //   itemKey: (o) => o.id ?? '',
+      //   initialSelected: initialSelectedNguonKinhPhi,
+      //   onChanged: (list) {
+      //     onChangedNguonKinhPhi?.call(list);
+      //     initialSelectedNguonKinhPhi = list;
+      //   },
+      //   onConfirmed: (list) {
+      //     onChangedNguonKinhPhi?.call(list);
+      //     initialSelectedNguonKinhPhi = list;
+      //   },
+      // ),
       CommonFormInput(
         label: 'Ký hiệu',
         controller: ctrlKyHieu,
@@ -177,17 +241,13 @@ Widget buildOtherInformation(
         validationErrors: validationErrors,
       ),
 
-      CmFormDropdownObject<LyDoTang>(
+      CmFormDropdownObject<ReasonIncrease>(
         label: 'Lý do tăng',
         controller: ctrlLyDoTang,
         isEditing: isEditing,
-        items: provider.itemsLyDoTang,
+        items: itemsLyDoTang,
         fieldName: 'lyDoTang',
-        defaultValue:
-            ctrlLyDoTang.text.isNotEmpty &&
-                    int.tryParse(ctrlLyDoTang.text) != null
-                ? provider.getLyDoTang(int.parse(ctrlLyDoTang.text))
-                : null,
+        value: lyDoTang,
         onChanged: (value) {
           // ctrlLyDoTang.text = value.name;
           onLyDoTangChanged?.call(value);
@@ -200,11 +260,7 @@ Widget buildOtherInformation(
         isEditing: isEditing,
         items: provider.itemsHienTrang,
         fieldName: 'hienTrang',
-        defaultValue:
-            ctrlHienTrang.text.isNotEmpty &&
-                    int.tryParse(ctrlHienTrang.text) != null
-                ? provider.getHienTrang(int.parse(ctrlHienTrang.text))
-                : null,
+        value: hienTrang,
         onChanged: (value) {
           // ctrlHienTrang.text = value.name;
           onHienTrangChanged?.call(value);
@@ -225,16 +281,16 @@ Widget buildOtherInformation(
         label: 'tas.unit'.tr,
         controller: ctrlDonViTinh,
         isEditing: isEditing,
-        items: [
-          ...listUnit.map(
-            (unit) => DropdownMenuItem<UnitDto>(
-              value: unit,
-              child: Text(unit.tenDonVi ?? ''),
-            ),
-          ),
-        ],
+        items: itemsUnit,
+       
         defaultValue: unit,
-        onChanged: onUnitChanged,
+        onChanged: (value) {
+          if (listUnit.isEmpty) {
+            AuthRepository().loadUnit('ct001');
+            listUnit = AccountHelper.instance.getAllUnit();
+          }
+          onUnitChanged?.call(value);
+        },
         value: unit,
         fieldName: 'donViTinh',
         validationErrors: validationErrors,

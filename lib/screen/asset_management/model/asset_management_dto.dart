@@ -16,6 +16,9 @@ class AssetManagementDto {
     return value;
   }
 
+  List<String> get listIdNguonKinhPhi =>
+      nguonKinhPhiList?.map((e) => e.idNguonKinhPhi ?? '').toList() ?? [];
+
   /// Dữ liệu export cho tài sản
   Map<String, dynamic> toExportJson() {
     DateTime? ngayTao = DateTime.tryParse(this.ngayTao ?? '');
@@ -24,7 +27,7 @@ class AssetManagementDto {
       'Số thẻ tài sản': _nullIfEmpty(id),
       'Mã tài sản': _nullIfEmpty(soThe),
       'Tên tài sản': _nullIfEmpty(tenTaiSan),
-      'Nguyên giá': nguyenGia ?? 0.0,
+      // 'Nguyên giá': nguyenGia ?? 0.0,
       'Giá trị khấu hao ban đầu': giaTriKhauHaoBanDau ?? 0.0,
       'Kỳ khấu hao ban đầu': kyKhauHaoBanDau ?? 0,
       'Giá trị thanh lý': giaTriThanhLy ?? 0.0,
@@ -32,8 +35,9 @@ class AssetManagementDto {
       'Mã nhóm tài sản': _nullIfEmpty(idNhomTaiSan),
       'Mã loại tài sản': _nullIfEmpty(idLoaiTaiSanCon),
       'Mã dự án': _nullIfEmpty(idDuAn),
-      'Mã nguồn vốn': _nullIfEmpty(idNguonVon),
-      'Tên nguồn kinh phí': _nullIfEmpty(tenNguonKinhPhi),
+      'Vốn NS': vonNS ?? 0.0,
+      'Vốn vay': vonVay ?? 0.0,
+      'Vốn khác': vonKhac ?? 0.0,
       'Phương pháp khấu hao': phuongPhapKhauHao ?? 0,
       'Số kỳ khấu hao': soKyKhauHao ?? 0,
       'TK tài sản': taiKhoanTaiSan ?? 0,
@@ -46,7 +50,7 @@ class AssetManagementDto {
       'Công suất': _nullIfEmpty(congSuat),
       'Nước sản xuất': _nullIfEmpty(nuocSanXuat),
       'Năm sản xuất': namSanXuat ?? 0,
-      'Lý do tăng': lyDoTang ?? 0,
+      'Lý do tăng': _nullIfEmpty(lyDoTang),
       'Hiện trạng': hienTrang ?? 0,
       'Số lượng': soLuong ?? 0,
       'Đơn vị tính': _nullIfEmpty(donViTinh),
@@ -90,7 +94,7 @@ class AssetManagementDto {
   String? congSuat;
   String? nuocSanXuat;
   int? namSanXuat;
-  int? lyDoTang;
+  String? lyDoTang;
   int? hienTrang;
   int? soLuong;
   String? donViTinh;
@@ -108,6 +112,9 @@ class AssetManagementDto {
   bool? isTaiSanCon;
   String? idLoaiTaiSanCon;
   List<CapitalSourceByAssetDto>? nguonKinhPhiList;
+  double? vonNS;
+  double? vonVay;
+  double? vonKhac;
 
   AssetManagementDto({
     this.id,
@@ -155,6 +162,9 @@ class AssetManagementDto {
     this.isTaiSanCon,
     this.idLoaiTaiSanCon,
     this.nguonKinhPhiList,
+    this.vonNS,
+    this.vonVay,
+    this.vonKhac,
   });
 
   factory AssetManagementDto.fromJson(Map<String, dynamic> json) {
@@ -192,21 +202,9 @@ class AssetManagementDto {
       congSuat: json['congSuat'],
       nuocSanXuat: json['nuocSanXuat'],
       namSanXuat: json['namSanXuat'],
-      lyDoTang: json['lyDoTang'] == null
-        ? null
-        : (json['lyDoTang'] is int
-            ? json['lyDoTang'] as int
-            : int.tryParse(json['lyDoTang'].toString())),
-      hienTrang: json['hienTrang'] == null
-        ? null
-        : (json['hienTrang'] is int
-            ? json['hienTrang'] as int
-            : int.tryParse(json['hienTrang'].toString())),
-    soLuong: json['soLuong'] == null
-        ? null
-        : (json['soLuong'] is int
-            ? json['soLuong'] as int
-            : int.tryParse(json['soLuong'].toString())),
+      lyDoTang: json['lyDoTang'],
+      hienTrang: json['hienTrang'],
+      soLuong: json['soLuong'],
       donViTinh: json['donViTinh'],
       ghiChu: json['ghiChu'],
       idDonViBanDau: json['idDonViBanDau'],
@@ -229,13 +227,16 @@ class AssetManagementDto {
               : [],
       isTaiSanCon: json['isTaiSanCon'],
       idLoaiTaiSanCon: json['idLoaiTaiSanCon'],
-      nguonKinhPhiList: json['nguonKinhPhiList'] != null
-          ? (json['nguonKinhPhiList'] as List<dynamic>)
+      nguonKinhPhiList: json['setNguonKinhPhiList'] != null
+          ? (json['setNguonKinhPhiList'] as List<dynamic>)
               .map<CapitalSourceByAssetDto>(
                 (item) => CapitalSourceByAssetDto.fromJson(item as Map<String, dynamic>),
               )
               .toList()
           : [],
+      vonNS: json['nvNS']?.toDouble(),
+      vonVay: json['vonVay']?.toDouble(),
+      vonKhac: json['vonKhac']?.toDouble(),
     );
   }
 
@@ -285,7 +286,10 @@ class AssetManagementDto {
       'childAssets': childAssets?.map((asset) => asset.toJson()).toList(),
       'isTaiSanCon': isTaiSanCon,
       'idLoaiTaiSanCon': idLoaiTaiSanCon,
-      'nguonKinhPhiList': nguonKinhPhiList?.map((item) => item.toJson()).toList(),
+      'setNguonKinhPhiList': nguonKinhPhiList?.map((item) => item.toJson()).toList(),
+      'nvNS': vonNS,
+      'vonVay': vonVay,
+      'vonKhac': vonKhac,
     };
   }
 
@@ -358,6 +362,9 @@ class AssetManagementDto {
       isTaiSanCon: false,
       idLoaiTaiSanCon: '',
       nguonKinhPhiList: [],
+      vonNS: 0.0,
+      vonVay: 0.0,
+      vonKhac: 0.0,
     );
   }
 
@@ -394,7 +401,7 @@ class AssetManagementDto {
     String? congSuat,
     String? nuocSanXuat,
     int? namSanXuat,
-    int? lyDoTang,
+    String? lyDoTang,
     int? hienTrang,
     int? soLuong,
     String? donViTinh,
@@ -412,6 +419,9 @@ class AssetManagementDto {
     bool? isTaiSanCon,
     String? idLoaiTaiSanCon,
     List<CapitalSourceByAssetDto>? nguonKinhPhiList,
+    double? vonNS,
+    double? vonVay,
+    double? vonKhac,
   }) {
     return AssetManagementDto(
       id: id ?? this.id,
@@ -459,6 +469,9 @@ class AssetManagementDto {
       isTaiSanCon: isTaiSanCon ?? this.isTaiSanCon,
       idLoaiTaiSanCon: idLoaiTaiSanCon ?? this.idLoaiTaiSanCon,
       nguonKinhPhiList: nguonKinhPhiList ?? this.nguonKinhPhiList,
+      vonNS: vonNS ?? this.vonNS,
+      vonVay: vonVay ?? this.vonVay,
+      vonKhac: vonKhac ?? this.vonKhac,
     );
   }
 }
