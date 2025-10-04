@@ -1009,7 +1009,6 @@ class _ToolAndSuppliesHandoverDetailState
           isEditing: isEditing,
           value: ngayBanGiao,
           onChanged: (dt) {
-            ngayBanGiao = dt;
           },
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
@@ -1021,7 +1020,6 @@ class _ToolAndSuppliesHandoverDetailState
           isEditing: isEditing,
           value: ngayTaoChungTu,
           onChanged: (dt) {
-            ngayTaoChungTu = dt;
           },
           validationErrors: _validationErrors,
           fieldName: 'documentCreationDate',

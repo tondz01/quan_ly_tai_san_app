@@ -87,7 +87,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     },
     {
       'Ngày tạo chứng từ':
-          (item) => DateTime.tryParse(item.ngayTaoChungTu ?? '') ?? DateTime.now(),
+          (item) =>
+              DateTime.tryParse(item.ngayTaoChungTu ?? '') ?? DateTime.now(),
     },
     {
       'Ngày tạo':

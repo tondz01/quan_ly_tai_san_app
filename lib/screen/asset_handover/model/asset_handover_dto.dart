@@ -96,6 +96,9 @@ class AssetHandoverDto {
       idDonViDaiDien: json['idDonViDaiDien'],
       tenDonViDaiDien: json['tenDonViDaiDien'],
       ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        json['ngayTaoChungTu'] ?? '',
+      ),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],

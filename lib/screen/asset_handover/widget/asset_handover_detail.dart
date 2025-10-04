@@ -1,9 +1,7 @@
-import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -117,6 +115,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
 
   DateTime? ngayBanGiao;
   DateTime? ngayTaoChungTu;
+
   @override
   void initState() {
     setState(() {
@@ -209,7 +208,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
+
       ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
+      ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
 
       isRepresentativeUnitConfirm =
           item?.donViDaiDienXacNhan == "0" ? false : true;
@@ -364,8 +365,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       widget.provider.getListDetailAssetMobilization(controllerOrder.text);
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-      controllerTransferDate.text = item?.ngayBanGiao ?? '';
-      controllerDocumentCreationDate.text = item?.ngayTaoChungTu ?? '';
+      // controllerTransferDate.text = item?.ngayBanGiao ?? '';
+      // controllerDocumentCreationDate.text = item?.ngayTaoChungTu ?? '';
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
