@@ -876,20 +876,35 @@ class AccountHelper {
 
   List<UnitDto> getAllUnit() {
     final raw = StorageService.read(StorageKey.UNIT);
-    if (raw == null) return [];
-    if (raw is List<UnitDto>) return raw;
-    return [];
+    if (raw == null) {
+      return [];
+    }
+
+    try {
+      if (raw is List) {
+        final units =
+            raw
+                .map((e) => UnitDto.fromJson(e as Map<String, dynamic>))
+                .toList();
+        return units;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
   }
 
   UnitDto? getUnitById(String idUnit) {
-    final raw = StorageService.read(StorageKey.UNIT);
-    if (raw == null) return null;
-    if (raw is List<UnitDto>) {
-      return raw.firstWhere(
+    final units = getAllUnit();
+    if (units.isEmpty) return null;
+
+    try {
+      return units.firstWhere(
         (unit) => unit.id == idUnit,
         orElse: () => UnitDto(),
       );
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 }

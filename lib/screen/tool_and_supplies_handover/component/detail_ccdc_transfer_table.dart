@@ -1,11 +1,9 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
@@ -103,7 +101,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
             idDonVi: asset.idDonVi,
             donViTinh: asset.donViTinh,
             namSanXuat: detailAsset.namSanXuat ?? 2010,
-            soLuong: e.soLuongXuat,
+            soLuong: e.soLuongXuat - e.soLuongDaBanGiao,
             soLuongXuat: 0,
             ghiChu: asset.ghiChu,
             asset: asset,
@@ -117,10 +115,10 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
 
     // Khởi tạo các biến late trước
     listDetailAsset = [];
+    listAsset = [];
     listDetailOwnershipUnit = [];
     listItemDropdownDetailAsset = [];
     movementDetails = List.from(widget.initialDetails);
-
     // Đồng bộ dữ liệu chi tiết tài sản
     _syncDetailAssets();
   }
@@ -177,8 +175,6 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
 
     for (final c in chiTietDieuDong) {
       final id = c.idChiTietCCDCVatTu;
-      log('Check số lượng: ${c.soLuongXuat - c.soLuongDaBanGiao}');
-
       final idAsset = getDetailAssetByID(id);
       if (idAsset.idTaiSan == null) {
         continue;
@@ -204,7 +200,10 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 asset: asset,
               ),
         );
-        final newDetailAsset = detailAsset.copyWith(soLuongXuat: 0);
+        final newDetailAsset = detailAsset.copyWith(
+          soLuong: c.soLuongXuat - c.soLuongDaBanGiao,
+          soLuongXuat: 0,
+        );
         result.add(newDetailAsset);
       }
     }
@@ -216,22 +215,13 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     List<DetailSubppliesHandoverDto> details,
     List<DetailToolAndMaterialTransferDto> chiTietDieuDong,
   ) {
-    log('Check số lượng [getAssetsByHandoverDetails]: ${chiTietDieuDong}');
     final result = <ItemDropdownDetailCcdc>[];
     for (final d in details) {
-      final detail = chiTietDieuDong.firstWhere(
-        (element) {
-          log('Check số lượng [getAssetsByHandoverDetails]: ${element.id} - ${d.idChiTietDieuDong}');
-          return element.id == d.idChiTietDieuDong;
-        },
-        orElse: () => DetailToolAndMaterialTransferDto.empty(),
-      );
-      log('Check số lượng [getAssetsByHandoverDetails]: ${jsonEncode(detail)}');
-
-      log(
-        'Check số lượng [getAssetsByHandoverDetails]: ${detail.soLuongXuat} - ${detail.soLuongDaBanGiao} = ${detail.soLuongXuat - detail.soLuongDaBanGiao}',
-      );
+      final detail = chiTietDieuDong.firstWhere((element) {
+        return element.id == d.idChiTietDieuDong;
+      }, orElse: () => DetailToolAndMaterialTransferDto.empty());
       // Tìm item dropdown theo id chi tiết CCDC VT đã lưu trong bàn giao
+      final soLuong = detail.soLuongXuat - detail.soLuongDaBanGiao;
       final dropdownItem = listItemDropdownDetailAsset.firstWhere(
         (element) => element.id == d.iddieudongccdcvattu,
         orElse: () {
@@ -249,15 +239,15 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
             idDonVi: asset.idDonVi,
             donViTinh: asset.donViTinh,
             namSanXuat: detail.namSanXuat ?? 2010,
-            soLuong: detail.soLuongXuat - detail.soLuongDaBanGiao,
+            soLuong: soLuong,
             ghiChu: asset.ghiChu,
             asset: asset,
           );
         },
       );
-
       // Cập nhật số lượng theo dữ liệu bàn giao
       final mapped = dropdownItem.copyWith(
+        soLuong: soLuong,
         donViTinh: detail.donViTinh,
         soLuongXuat: d.soLuong,
         // soLuongDaBanGiao: d.soLuong,
@@ -336,7 +326,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                   item.idDetaiAsset = value.idDetaiAsset;
                   item.tenDetailAsset = value.tenDetailAsset;
                   item.idDonVi = value.idDonVi;
-                  item.donViTinh = value.donViTinh;
+                  item.donViTinh =
+                      AccountHelper.instance
+                          .getUnitById(value.idDonVi)
+                          ?.tenDonVi ??
+                      '';
                   item.namSanXuat = value.namSanXuat;
                   item.soLuong = value.soLuongXuat - value.soLuongDaBanGiao;
                   item.ghiChu = value.ghiChu;
@@ -367,9 +361,19 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
                 title: 'Đơn vị tính',
                 titleAlignment: TextAlign.center,
                 width: 100,
-                getValue: (item) => item.donViTinh,
+                getValue:
+                    (item) =>
+                        AccountHelper.instance
+                            .getUnitById(item.donViTinh)
+                            ?.tenDonVi ??
+                        '',
                 setValue: (item, value) => item.donViTinh = value,
-                sortValueGetter: (item) => item.donViTinh,
+                sortValueGetter:
+                    (item) =>
+                        AccountHelper.instance
+                            .getUnitById(item.donViTinh)
+                            ?.tenDonVi ??
+                        '',
                 isEditable: false,
               ),
               DetailEditableColumn<ItemDropdownDetailCcdc>(
