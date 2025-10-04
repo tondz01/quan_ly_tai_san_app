@@ -24,7 +24,7 @@ class DetailSubppliesHandoverDto {
   // Link to transfer detail
   final String? idChiTietDieuDong; // mirrors iddieudongccdcvattu
   final DetailToolAndMaterialTransferDto? chiTietDieuDongCCDCVatTuDTO;
-
+  final String ngayTaoChungTu;
   final String ngayTao;
   final String ngayCapNhat;
   final String nguoiTao;
@@ -49,6 +49,7 @@ class DetailSubppliesHandoverDto {
     this.idChiTietDieuDong,
     this.chiTietDieuDongCCDCVatTuDTO,
     required this.ngayTao,
+    required this.ngayTaoChungTu,
     required this.ngayCapNhat,
     required this.nguoiTao,
     required this.nguoiCapNhat,
@@ -102,6 +103,9 @@ class DetailSubppliesHandoverDto {
                 json['chiTietDieuDongCCDCVatTuDTO'] as Map<String, dynamic>,
               ),
       ngayTao: AppUtility.formatFromISOString(parseString(json['ngayTao'])),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        parseString(json['ngayTaoChungTu']),
+      ),
       ngayCapNhat: AppUtility.formatFromISOString(
         parseString(json['ngayCapNhat']),
       ),
@@ -126,6 +130,7 @@ class DetailSubppliesHandoverDto {
       'namSanXuat': namSanXuat,
       'soLuong': soLuong,
       'ngayTao': AppUtility.formatFromISOString(ngayTao),
+      'ngayTaoChungTu': AppUtility.formatFromISOString(ngayTaoChungTu),
       'ngayCapNhat': AppUtility.formatFromISOString(ngayCapNhat),
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
@@ -161,6 +166,7 @@ class DetailSubppliesHandoverDto {
       idChiTietDieuDong: null,
       chiTietDieuDongCCDCVatTuDTO: null,
       ngayTao: AppUtility.formatFromISOString(now),
+      ngayTaoChungTu: AppUtility.formatFromISOString(now),
       ngayCapNhat: AppUtility.formatFromISOString(now),
       nguoiTao: '',
       nguoiCapNhat: '',
@@ -185,6 +191,7 @@ class DetailSubppliesHandoverDto {
     String? namSanXuat,
     DetailToolAndMaterialTransferDto? chiTietDieuDongCCDCVatTuDTO,
     String? ngayTao,
+    String? ngayTaoChungTu,
     String? ngayCapNhat,
     String? nguoiTao,
     String? nguoiCapNhat,
@@ -209,6 +216,9 @@ class DetailSubppliesHandoverDto {
       chiTietDieuDongCCDCVatTuDTO:
           chiTietDieuDongCCDCVatTuDTO ?? this.chiTietDieuDongCCDCVatTuDTO,
       ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        ngayTaoChungTu ?? this.ngayTaoChungTu,
+      ),
       ngayCapNhat: AppUtility.formatFromISOString(
         ngayCapNhat ?? this.ngayCapNhat,
       ),

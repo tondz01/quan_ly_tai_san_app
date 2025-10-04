@@ -173,14 +173,14 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         isChecked: visibleColumnIds.contains('decision_number'),
       ),
       ColumnDisplayOption(
-        id: 'transfer_order',
-        label: 'Lệnh điều động',
-        isChecked: visibleColumnIds.contains('transfer_order'),
-      ),
-      ColumnDisplayOption(
         id: 'transfer_date',
         label: 'Ngày bàn giao',
         isChecked: visibleColumnIds.contains('transfer_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'transfer_order',
+        label: 'Lệnh điều động',
+        isChecked: visibleColumnIds.contains('transfer_order'),
       ),
       ColumnDisplayOption(
         id: 'document_creation_date',

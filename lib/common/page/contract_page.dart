@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
@@ -19,22 +21,34 @@ class SettingPage {
     fontSize: 13 * scale,
     height: 1.5,
   );
+  
   static String formatted(String? date) {
     if (date == null || date.trim().isEmpty) {
       SGLog.debug("formatted", "Empty date string");
       return '';
     }
     try {
-      DateTime dateTime = DateFormat("yyyy-MM-ddTHH:mm:ss.SSSZ").parse(date);
+      // Thử parse với định dạng mới trước: yyyy-MM-dd HH:mm:ss
+      DateTime dateTime = DateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
       return DateFormat(
         "'ngày' dd 'tháng' MM 'năm' yyyy",
         'vi',
       ).format(dateTime);
     } catch (e) {
-      SGLog.debug("formatted", e.toString());
-      return '';
+      try {
+        // Fallback về định dạng cũ nếu định dạng mới không khớp
+        DateTime dateTime = DateFormat("yyyy-MM-ddTHH:mm:ss.SSSZ").parse(date);
+        return DateFormat(
+          "'ngày' dd 'tháng' MM 'năm' yyyy",
+          'vi',
+        ).format(dateTime);
+      } catch (e2) {
+        SGLog.debug("formatted", "Failed to parse date: $date, Error: ${e2.toString()}");
+        return '';
+      }
     }
   }
+
 }
 
 class ContractPage {
@@ -577,7 +591,7 @@ class ContractPage {
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
-        
+
         SGText(
           text: "Chúng tôi gồm có:",
           style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
@@ -731,6 +745,7 @@ class ContractPage {
     List<DetailToolAndMaterialTransferDto>? listDetailAssetMobilization,
     List<SigneInfo>? listSigneInfo,
   ) {
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

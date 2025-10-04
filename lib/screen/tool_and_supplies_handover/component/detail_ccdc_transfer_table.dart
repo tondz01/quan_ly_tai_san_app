@@ -222,7 +222,7 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
       final detail = chiTietDieuDong.firstWhere(
         (element) {
           log('Check số lượng [getAssetsByHandoverDetails]: ${element.id} - ${d.idChiTietDieuDong}');
-          return element.id == d.idChiTietDieuDong;
+        return element.id == d.idChiTietDieuDong;
         },
         orElse: () => DetailToolAndMaterialTransferDto.empty(),
       );

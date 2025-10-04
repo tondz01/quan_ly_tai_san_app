@@ -59,11 +59,11 @@ class _ToolAndSuppliesHandoverListState
 
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
   List<String> visibleColumnIds = [
-    
     'name',
     'decision_number',
     'transfer_order',
     'transfer_date',
+    'document_creation_date',
     'sender_unit',
     'receiver_unit',
     'created_by',
@@ -81,6 +81,18 @@ class _ToolAndSuppliesHandoverListState
     {
       'Ngày bàn giao':
           (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày tạo chứng từ':
+          (item) => DateTime.tryParse(item.ngayTaoChungTu ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày tạo':
+          (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày cập nhật':
+          (item) => DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
     },
   ];
 
@@ -166,6 +178,11 @@ class _ToolAndSuppliesHandoverListState
         id: 'transfer_date',
         label: 'Ngày bàn giao',
         isChecked: visibleColumnIds.contains('transfer_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'document_creation_date',
+        label: 'Ngày tạo chứng từ',
+        isChecked: visibleColumnIds.contains('document_creation_date'),
       ),
       ColumnDisplayOption(
         id: 'sender_unit',
@@ -338,6 +355,23 @@ class _ToolAndSuppliesHandoverListState
                       item.ngayBanGiao != null
                           ? AppUtility.formatDateDdMmYyyy(
                             AppUtility.parseDate(item.ngayBanGiao) ??
+                                DateTime.now(),
+                          )
+                          : '',
+              width: 150,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'document_creation_date':
+          columns.add(
+            TableBaseConfig.columnTable<ToolAndSuppliesHandoverDto>(
+              title: 'Ngày tạo chứng từ',
+              getValue:
+                  (item) =>
+                      item.ngayTaoChungTu != null
+                          ? AppUtility.formatDateDdMmYyyy(
+                            AppUtility.parseDate(item.ngayTaoChungTu) ??
                                 DateTime.now(),
                           )
                           : '',
@@ -686,7 +720,6 @@ class _ToolAndSuppliesHandoverListState
                 provider: widget.provider,
                 isShowKy: false,
                 dieuDongCcdc: item,
-                document: _document,
               );
             }
           });
@@ -950,7 +983,6 @@ class _ToolAndSuppliesHandoverListState
             provider: widget.provider,
             isShowKy: true,
             dieuDongCcdc: item,
-            document: _document,
           );
         }
       });

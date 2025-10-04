@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -113,6 +115,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
 
+  DateTime? ngayBanGiao;
+  DateTime? ngayTaoChungTu;
   @override
   void initState() {
     setState(() {
@@ -205,6 +209,8 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
+      ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
+
       isRepresentativeUnitConfirm =
           item?.donViDaiDienXacNhan == "0" ? false : true;
       getStaffDonViGiaoAndNhan(item!.idDonViNhan!, item!.idDonViGiao!);
@@ -436,6 +442,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
+
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(newRequest, listSignatory),
       );
@@ -751,8 +758,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   }
 
   Widget _buildInfoAssetHandover() {
-    DateTime? ngayBanGiao;
-    DateTime? ngayTaoChungTu;
     return Column(
       spacing: 10,
       children: [
