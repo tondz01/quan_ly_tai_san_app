@@ -225,7 +225,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'permission_signing':
           columns.add(
             TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Quyền ký',
+              // title: 'Quyền ký',
+              title: 'Trạng thái ký',
               cellBuilder:
                   (item) => AppUtility.showPermissionSigning(
                     getPermissionSigning(item),
@@ -272,7 +273,8 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         case 'signing_status':
           columns.add(
             SgTableColumn<DieuDongTaiSanDto>(
-              title: 'Trạng thái ký',
+              // title: 'Trạng thái ký',
+              title: 'Quyền ký',
               cellBuilder: (item) => showSigningStatus(item),
               searchValueGetter: (item) {
                 final status = widget.provider.isCheckSigningStatus(item);
