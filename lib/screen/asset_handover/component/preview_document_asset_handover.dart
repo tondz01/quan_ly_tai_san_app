@@ -29,7 +29,6 @@ Widget previewDocumentAssetHandover({
   required List<ChiTietDieuDongTaiSan> itemsDetail,
   bool isShowKy = true,
   bool isDisabled = false,
-  PdfDocument? document,
 }) {
   return InkWell(
     onTap: () {
@@ -41,7 +40,6 @@ Widget previewDocumentAssetHandover({
         provider: provider,
         isShowKy: isShowKy,
         itemsDetail: itemsDetail,
-        document: document,
       );
     },
     child: Row(
@@ -71,13 +69,48 @@ Widget previewDocumentAssetHandover({
   );
 }
 
+Widget previewDocumentDecisionAssetHandover({
+  required BuildContext context,
+  PdfDocument? document,
+}) {
+  return InkWell(
+    onTap: () {
+      if (document == null) return;
+      previewDocumentDecisionHandover(context: context, document: document);
+    },
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 2.5),
+          child: SGText(
+            text: "Xem trước tài liệu",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: document == null ? Colors.grey : ColorValue.link,
+            ),
+          ),
+        ),
+        SizedBox(width: 8),
+        Icon(
+          Icons.visibility,
+          color: document == null ? Colors.grey : ColorValue.link,
+          size: 18,
+        ),
+      ],
+    ),
+  );
+}
+
 previewDocumentHandover({
   required BuildContext context,
   required AssetHandoverDto item,
   required List<ChiTietDieuDongTaiSan> itemsDetail,
   required AssetHandoverProvider provider,
   bool isShowKy = true,
-  PdfDocument? document,
 }) {
   UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
   NhanVien nhanVien = provider.getNhanVien(idNhanVien: userInfo.tenDangNhap);
@@ -150,13 +183,6 @@ previewDocumentHandover({
           ),
           child: CommonContract(
             contractPages: [
-              if (document != null)
-                for (var index = 0; index < document.pages.length; index++)
-                  PdfPageView(
-                    document: document,
-                    pageNumber: index + 1,
-                    alignment: Alignment.center,
-                  ),
               A4Canvas(
                 marginsMm: const EdgeInsets.all(20),
                 scale: 1.2,
@@ -204,5 +230,38 @@ previewDocumentHandover({
             },
           ),
         ),
+  );
+}
+
+previewDocumentDecisionHandover({
+  required BuildContext context,
+  PdfDocument? document,
+}) {
+  return showDialog(
+    context: context,
+    barrierDismissible: true,
+
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.only(
+          left: 24.0,
+          right: 24.0,
+          top: 16.0,
+          bottom: 16.0,
+        ),
+        child: CommonContract(
+          contractPages: [
+            if (document != null)
+              for (var index = 0; index < document.pages.length; index++)
+                PdfPageView(
+                  document: document,
+                  pageNumber: index + 1,
+                  alignment: Alignment.center,
+                ),
+          ],
+          signatureList: [],
+        ),
+      );
+    },
   );
 }

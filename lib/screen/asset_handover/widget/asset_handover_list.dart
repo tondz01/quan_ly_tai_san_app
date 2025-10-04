@@ -65,6 +65,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'decision_number',
     'transfer_order',
     'transfer_date',
+    'document_creation_date',
     'sender_unit',
     'receiver_unit',
     'created_by',
@@ -83,6 +84,18 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     {
       'Ngày bàn giao':
           (item) => DateTime.tryParse(item.ngayBanGiao ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày tạo chứng từ':
+          (item) => DateTime.tryParse(item.ngayTaoChungTu ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày tạo':
+          (item) => DateTime.tryParse(item.ngayTao ?? '') ?? DateTime.now(),
+    },
+    {
+      'Ngày cập nhật':
+          (item) => DateTime.tryParse(item.ngayCapNhat ?? '') ?? DateTime.now(),
     },
   ];
 
@@ -168,6 +181,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         id: 'transfer_date',
         label: 'Ngày bàn giao',
         isChecked: visibleColumnIds.contains('transfer_date'),
+      ),
+      ColumnDisplayOption(
+        id: 'document_creation_date',
+        label: 'Ngày tạo chứng từ',
+        isChecked: visibleColumnIds.contains('document_creation_date'),
       ),
       ColumnDisplayOption(
         id: 'movement_details',
@@ -345,6 +363,23 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                       item.ngayBanGiao != null
                           ? AppUtility.formatDateDdMmYyyy(
                             AppUtility.parseDate(item.ngayBanGiao) ??
+                                DateTime.now(),
+                          )
+                          : '',
+              width: 150,
+              filterable: true,
+            ),
+          );
+          break;
+        case 'document_creation_date':
+          columns.add(
+            TableBaseConfig.columnTable<AssetHandoverDto>(
+              title: 'Ngày tạo chứng từ',
+              getValue:
+                  (item) =>
+                      item.ngayTaoChungTu != null
+                          ? AppUtility.formatDateDdMmYyyy(
+                            AppUtility.parseDate(item.ngayTaoChungTu) ??
                                 DateTime.now(),
                           )
                           : '',
@@ -692,7 +727,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                 itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
                 provider: widget.provider,
                 isShowKy: false,
-                document: _document,
               );
             }
           });
@@ -994,7 +1028,6 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             item: item,
             itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
             provider: widget.provider,
-            document: _document,
           );
         }
       });
