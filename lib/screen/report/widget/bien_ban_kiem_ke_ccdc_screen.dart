@@ -39,8 +39,8 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
   PhongBan? donVi;
   bool _isLoading = false;
   bool _isExporting = false;
-  int numberPageStart = 5;
-  int numberPage = 17;
+  int numberPageStart = 6;
+  int numberPage = 18;
 
   @override
   void initState() {

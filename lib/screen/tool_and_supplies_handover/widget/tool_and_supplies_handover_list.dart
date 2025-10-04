@@ -127,7 +127,8 @@ class _ToolAndSuppliesHandoverListState
     columnOptions = [
       ColumnDisplayOption(
         id: 'permission_signing',
-        label: 'Quyền ký',
+        // label: 'Quyền ký',
+        label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('permission_signing'),
       ),
       ColumnDisplayOption(
@@ -137,7 +138,8 @@ class _ToolAndSuppliesHandoverListState
       ),
       ColumnDisplayOption(
         id: 'signing_status',
-        label: 'Trạng thái ký',
+        label: 'Quyền ký',
+        // label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
       ),
       ColumnDisplayOption(
@@ -207,7 +209,8 @@ class _ToolAndSuppliesHandoverListState
         case 'permission_signing':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
-              title: 'Quyền ký',
+              // title: 'Quyền ký',
+              title: 'Trạng thái ký',
               cellBuilder:
                   (item) => AppUtility.showPermissionSigning(
                     getPermissionSigning(item),
@@ -254,7 +257,8 @@ class _ToolAndSuppliesHandoverListState
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
-              title: 'Trạng thái ký',
+              // title: 'Trạng thái ký',
+              title: 'Quyền ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchValueGetter: (item) {

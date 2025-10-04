@@ -129,7 +129,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     columnOptions = [
       ColumnDisplayOption(
         id: 'permission_signing',
-        label: 'Quyền ký',
+        // label: 'Quyền ký',
+        label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('permission_signing'),
       ),
       ColumnDisplayOption(
@@ -139,7 +140,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       ColumnDisplayOption(
         id: 'signing_status',
-        label: 'Trạng thái ký',
+        label: 'Quyền ký',
+        // label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
       ),
       ColumnDisplayOption(
@@ -214,7 +216,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         case 'permission_signing':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: 'Quyền ký',
+              // title: 'Quyền ký',
+              title: 'Trạng thái ký',
               cellBuilder:
                   (item) => AppUtility.showPermissionSigning(
                     getPermissionSigning(item),
@@ -261,7 +264,8 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              title: 'Trạng thái ký',
+              // title: 'Trạng thái ký',
+              title: 'Quyền ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchValueGetter: (item) {

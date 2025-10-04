@@ -137,7 +137,8 @@ class _ToolAndMaterialTransferListState
     columnOptions = [
       ColumnDisplayOption(
         id: 'permission_signing',
-        label: 'Quyền ký',
+        // label: 'Quyền ký',
+        label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('permission_signing'),
       ),
       ColumnDisplayOption(
@@ -147,6 +148,7 @@ class _ToolAndMaterialTransferListState
       ),
       ColumnDisplayOption(
         id: 'signing_status',
+        // label: 'Quyền ký'',
         label: 'Trạng thái ký',
         isChecked: visibleColumnIds.contains('signing_status'),
       ),
@@ -222,7 +224,8 @@ class _ToolAndMaterialTransferListState
         case 'permission_signing':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Quyền ký',
+              // title: 'Quyền ký',
+              title: 'Trạng thái ký',
               cellBuilder:
                   (item) => AppUtility.showPermissionSigning(
                     getPermissionSigning(item),
@@ -269,7 +272,8 @@ class _ToolAndMaterialTransferListState
         case 'signing_status':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Trạng thái ký',
+              // title: 'Trạng thái ký',
+              title: 'Quyền ký',
               cellBuilder: (item) => showSigningStatus(item),
               width: 150,
               searchValueGetter: (item) {
