@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -134,6 +135,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   String idCongTy = 'CT001';
 
+  Timer? _autoReloadTimer;
+
   set subScreen(String? value) {
     _subScreen = value;
     notifyListeners();
@@ -249,6 +252,10 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void onInit(BuildContext context, int type) {
     typeToolAndMaterialTransfer = type;
     _initData(context);
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      onReloadDataToolAndMaterialTransfer();
+    });
   }
 
   void refreshData(BuildContext context, int type) {
@@ -270,6 +277,43 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     getDataAll(context);
   }
 
+  void onReloadDataToolAndMaterialTransfer() async {
+    List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
+        await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(
+          typeToolAndMaterialTransfer,
+        );
+    _data = toolAndMaterialTransfers;
+    _data =
+        _data
+          ?..where((element) => element.loai == typeToolAndMaterialTransfer)
+              .where(
+                (item) =>
+                    item.share == true ||
+                    item.nguoiTao == userInfo?.tenDangNhap,
+              )
+              .where((item) {
+                final idSignatureGroup =
+                    [
+                      item.nguoiTao,
+                      item.idNguoiKyNhay,
+                      item.idTrinhDuyetCapPhong,
+                      item.idTrinhDuyetGiamDoc,
+                      if (item.listSignatory != null)
+                        ...item.listSignatory!.map((e) => e.idNguoiKy),
+                    ].whereType<String>().toList();
+
+                final inGroup = idSignatureGroup
+                    .map((e) => e.toLowerCase())
+                    .contains(userInfo.tenDangNhap.toLowerCase());
+                return inGroup;
+              })
+              .toList();
+    _filteredData = List.from(_data!);
+    log('message test: onReloadDataToolAndMaterialTransfer');
+    _updatePagination();
+    notifyListeners();
+  }
+
   void onDispose() {
     _data = null;
     _error = null;
@@ -283,6 +327,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
+
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = null;
   }
 
   void getDataAll(BuildContext context) {
@@ -345,9 +392,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     isShowCollapse = true;
     if (item != null) {
       _listDetailTransferCCDC = await getListDetailTransferCCDC(item.id!);
-      log(
-        "check result listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
-      );
       buildThreadNodes(item);
     }
     notifyListeners();
