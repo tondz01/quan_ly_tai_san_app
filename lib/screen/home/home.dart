@@ -343,7 +343,7 @@ class _HomeState extends State<Home> {
                   // Header - ưu tiên cuộn trước
                   GradientHeader(
                     logoPath: AppImage.imageLogo,
-                    title: 'HỆ THỐNG QUẢN LÝ TÀI SẢN',
+                    title: 'PHẦN MỀM QUẢN LÝ TÀI SẢN',
                     onLogoTap: () {
                       // Handle logo tap if needed
                     },
