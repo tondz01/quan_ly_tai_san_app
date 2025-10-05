@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
@@ -103,6 +106,7 @@ class AssetHandoverRepository extends ApiBase {
   Future<Map<String, dynamic>> createAssetHandover(
     Map<String, dynamic> request,
     List<SignatoryDto> listSignatory,
+    List<DetailAssetHandoverDto> listDetailAssetHandover,
   ) async {
     Map<String, dynamic> result = {
       'data': "",
@@ -119,6 +123,20 @@ class AssetHandoverRepository extends ApiBase {
           status == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
       if (!isOk) {
         result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+      log('listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}');
+      final responseDetail = await post(
+        '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
+        data: jsonEncode(listDetailAssetHandover),
+      );
+      final int? statusDetail = responseDetail.statusCode;
+      final bool isOkDetail =
+          statusDetail == Numeral.STATUS_CODE_SUCCESS ||
+          statusDetail == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+          statusDetail == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
+      if (!isOkDetail) {
+        result['status_code'] = statusDetail ?? Numeral.STATUS_CODE_DEFAULT;
         return result;
       }
       for (var signatory in listSignatory) {
@@ -289,9 +307,7 @@ class AssetHandoverRepository extends ApiBase {
       // Parse response data using the common ResponseParser utility
       result['data'] = response.data;
     } catch (e) {
-      log(
-        "Error at updateStateBanGiao - AssetTransferRepository: $e",
-      );
+      log("Error at updateStateBanGiao - AssetTransferRepository: $e");
     }
 
     return result;
@@ -420,6 +436,99 @@ class AssetHandoverRepository extends ApiBase {
       );
     }
 
+    return result;
+  }
+
+  Future<Map<String, dynamic>> createDetailHandoverAsset(
+    List<DetailAssetHandoverDto> request,
+  ) async {
+    log('request: $request');
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await post(
+        '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
+        data: jsonEncode(request),
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = response.data;
+    } catch (e) {
+      log(
+        "Error at updateStateBanGiao - ToolAndMaterialTransferRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateDetailHandoverAsset(
+    Map<String, dynamic> request,
+  ) async {
+    log('request: $request');
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await put(
+        EndPointAPI.DETAIL_ASSET_HANDOVER,
+        data: request,
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_NO_CONTENT ||
+          response.statusCode != Numeral.STATUS_CODE_SUCCESS_CREATE) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = response.data;
+    } catch (e) {
+      log(
+        "Error at updateStateBanGiao - ToolAndMaterialTransferRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> deleteDetailHandoverCCDC(String id) async {
+    Map<String, dynamic> result = {
+      'data': "",
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await delete("${EndPointAPI.DETAIL_ASSET_HANDOVER}/$id");
+      final int? status = response.statusCode;
+      if (checkStatusCodeFailed(status ?? 0)) {
+        result['status_code'] = status ?? Numeral.STATUS_CODE_DEFAULT;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      result['data'] = response.data.toString();
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at deleteDetailHandoverCCDC - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
     return result;
   }
 }

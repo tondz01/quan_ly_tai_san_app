@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/components/commom_loading.dart';
 import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/config_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/gradient_header.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -256,7 +257,14 @@ class _HomeState extends State<Home> {
         // Lấy danh sách items từ model
         final sidebarItems = _getItems();
         return MainWrapper(
-          header: null,
+          header: GradientHeader(
+            logoPath: AppImage.imageLogo,
+            title: 'HỆ THỐNG QUẢN LÝ ĐIỀU PHỐI VÀ SỬ DỤNG MÁY MÓC THIẾT BỊ',
+            height: 120.0,
+            onLogoTap: () {
+              // Handle logo tap if needed
+            },
+          ),
           sidebar: Container(
             padding: const EdgeInsets.only(
               top: 8,

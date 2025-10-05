@@ -28,6 +28,7 @@ class SgEditableTable<T> extends StatefulWidget {
   final bool showVerticalLines;
   final bool showHorizontalLines;
   final String addRowText;
+  final double subtractedSize;
   final Function(List<T>)? onDataChanged;
   final T Function() createEmptyItem;
   final bool isEditing; // Add isEditing property
@@ -42,6 +43,7 @@ class SgEditableTable<T> extends StatefulWidget {
     required this.columns,
     required this.initialData,
     required this.createEmptyItem,
+    this.subtractedSize = 0,
     this.rowHeight = 48.0,
     this.textHeaderColor,
     this.headerBackgroundColor = SGAppColors.neutral100,
@@ -318,7 +320,7 @@ class SgEditableTableState<T> extends State<SgEditableTable<T>> {
   @override
   Widget build(BuildContext context) {
     final screenWidth =
-        MediaQuery.of(context).size.width - (widget.omittedSize ?? 0);
+        MediaQuery.of(context).size.width - (widget.omittedSize ?? 0) - widget.subtractedSize;
     final newWidths = adjustColumnWidths(
       originalWidths: {for (final col in widget.columns) col.title: col.width},
       minTableWidth: screenWidth,

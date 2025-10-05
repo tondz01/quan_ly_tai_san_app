@@ -65,6 +65,8 @@ class _ToolAndSuppliesHandoverDetailState
   late TextEditingController controllerSenderUnit = TextEditingController();
   late TextEditingController controllerReceiverUnit = TextEditingController();
   late TextEditingController controllerTransferDate = TextEditingController();
+  late TextEditingController controllerDocumentCreationDate =
+      TextEditingController();
   late TextEditingController controllerIssuingUnitRepresentative =
       TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
@@ -120,7 +122,9 @@ class _ToolAndSuppliesHandoverDetailState
   final List<TextEditingController> _additionalSignerControllers = [];
   List<AdditionalSignerData> _additionalSignersDetailed = [];
   List<AdditionalSignerData> initialSignersDetailed = [];
+
   DateTime? ngayBanGiao;
+  DateTime? ngayTaoChungTu;
 
   @override
   void initState() {
@@ -284,6 +288,8 @@ class _ToolAndSuppliesHandoverDetailState
       _selectedFilePath = item?.duongDanFile ?? '';
 
       ngayBanGiao = AppUtility.parseDate(item?.ngayBanGiao ?? '');
+      ngayTaoChungTu = AppUtility.parseDate(item?.ngayTaoChungTu ?? '');
+
       isRepresentativeUnitConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       initialDetails = item?.listDetailSubppliesHandover ?? [];
       initialSignersDetailed =
@@ -380,6 +386,9 @@ class _ToolAndSuppliesHandoverDetailState
     if (controllerTransferDate.text.isEmpty) {
       newValidationErrors['transferDate'] = true;
     }
+    if (controllerDocumentCreationDate.text.isEmpty) {
+      newValidationErrors['documentCreationDate'] = true;
+    }
     // if (controllerLeader.text.isEmpty) {
     //   newValidationErrors['leader'] = true;
     // }
@@ -425,9 +434,14 @@ class _ToolAndSuppliesHandoverDetailState
       controllerOrder.text = item?.lenhDieuDong ?? '';
       controllerSenderUnit.text = item?.tenDonViGiao ?? '';
       controllerReceiverUnit.text = item?.tenDonViNhan ?? '';
-      controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
-        ngayBanGiao ?? DateTime.now(),
-      );
+
+      // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
+      //   ngayBanGiao ?? DateTime.now(),
+      // );
+      // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
+      //   ngayTaoChungTu ?? DateTime.now(),
+      // );
+      
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
@@ -448,10 +462,7 @@ class _ToolAndSuppliesHandoverDetailState
     final bloc = context.read<ToolAndSuppliesHandoverBloc>();
 
     provider.isLoading = true;
-
-    DateTime ngaybangiao =
-        AppUtility.parseDate(controllerTransferDate.text) ?? DateTime.now();
-
+    
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
@@ -473,7 +484,12 @@ class _ToolAndSuppliesHandoverDetailState
       "nguoiCapNhat": currentUser?.tenDangNhap ?? '',
       "isActive": true,
       "share": false,
-      "ngayBanGiao": AppUtility.formatDateString(ngaybangiao),
+      "ngayBanGiao": AppUtility.formatFromISOString(
+        controllerTransferDate.text,
+      ),
+      "ngayTaoChungTu": AppUtility.formatFromISOString(
+        controllerDocumentCreationDate.text,
+      ),
       "ngayTao": AppUtility.formatDateString(DateTime.now()),
       "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
       "byStep": isByStep,
@@ -503,7 +519,6 @@ class _ToolAndSuppliesHandoverDetailState
 
       request['duongDanFile'] = result!['filePath'] ?? '';
       request['tenFile'] = result['fileName'] ?? '';
-      log('check request: ${jsonEncode(listDetailSubppliesHandover)}');
       // return;
       List<Map<String, dynamic>> requestDetail =
           listDetailSubppliesHandover
@@ -514,7 +529,9 @@ class _ToolAndSuppliesHandoverDetailState
                   "idCCDCVatTu": e.idCCDCVatTu,
                   "soLuong": e.soLuong,
                   "idChiTietCCDCVatTu": e.idChiTietCCDCVatTu,
-                  "idChiTietDieuDong": e.idChiTietDieuDong ?? e.iddieudongccdcvattu,
+                  "idChiTietDieuDong":
+                      e.idChiTietDieuDong ?? e.iddieudongccdcvattu,
+                  "iddieudongccdcvattu": e.iddieudongccdcvattu,
                   "ngayTao": e.ngayTao,
                   "ngayCapNhat": e.ngayCapNhat,
                   "nguoiTao": e.nguoiTao,
@@ -523,7 +540,6 @@ class _ToolAndSuppliesHandoverDetailState
                 },
               )
               .toList();
-      log('Check số lượng requestDetail: ${jsonEncode(requestDetail)}');
       bloc.add(
         CreateToolAndSuppliesHandoverEvent(
           request,
@@ -640,6 +656,7 @@ class _ToolAndSuppliesHandoverDetailState
     controllerSenderUnit.dispose();
     controllerReceiverUnit.dispose();
     controllerTransferDate.dispose();
+    controllerDocumentCreationDate.dispose();
     // controllerLeader.dispose();
     controllerIssuingUnitRepresentative.dispose();
     controllerDelivererRepresentative.dispose();
@@ -799,6 +816,10 @@ class _ToolAndSuppliesHandoverDetailState
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
                 hintText: 'Định dạng hỗ trợ: .pdf',
                 allowedExtensions: ['pdf'],
+                document: previewDocumentCcdcDecisionHandover(
+                  context: context,
+                  document: _document,
+                ),
               ),
               const SizedBox(height: 20),
               Visibility(
@@ -829,8 +850,15 @@ class _ToolAndSuppliesHandoverDetailState
                                     soLuong: e.soLuongXuat,
                                     idChiTietCCDCVatTu: e.idDetaiAsset,
                                     iddieudongccdcvattu: e.id,
-                                    ngayTao: AppUtility.formatDateString(DateTime.now()),
-                                    ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+                                    ngayTao: AppUtility.formatDateString(
+                                      DateTime.now(),
+                                    ),
+                                    ngayTaoChungTu: AppUtility.formatDateString(
+                                      DateTime.now(),
+                                    ),
+                                    ngayCapNhat: AppUtility.formatDateString(
+                                      DateTime.now(),
+                                    ),
                                     nguoiTao: currentUser!.tenDangNhap,
                                     nguoiCapNhat: '',
                                     isActive: true,
@@ -848,7 +876,6 @@ class _ToolAndSuppliesHandoverDetailState
                 dieuDongCcdc: getToolAndSuppliesHandoverPreview(),
                 provider: widget.provider,
                 isShowKy: false,
-                document: _document,
               ),
             ],
           ),
@@ -980,9 +1007,21 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerTransferDate,
           isEditing: isEditing,
           value: ngayBanGiao,
-          onChanged: (dt) {},
+          onChanged: (dt) {
+          },
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
+          isRequired: true,
+        ),
+        CmFormDate(
+          label: 'Ngày tạo chứng từ',
+          controller: controllerDocumentCreationDate,
+          isEditing: isEditing,
+          value: ngayTaoChungTu,
+          onChanged: (dt) {
+          },
+          validationErrors: _validationErrors,
+          fieldName: 'documentCreationDate',
           isRequired: true,
         ),
       ],
@@ -1145,6 +1184,7 @@ class _ToolAndSuppliesHandoverDetailState
       idDonViNhan: donViNhan?.id ?? '',
       tenDonViNhan: donViNhan?.tenPhongBan ?? '',
       ngayBanGiao: controllerTransferDate.text,
+      ngayTaoChungTu: controllerDocumentCreationDate.text,
       idLanhDao: nguoiLanhDao?.id ?? '',
       tenLanhDao: nguoiLanhDao?.hoTen ?? '',
       idDaiDiendonviBanHanhQD: nguoiDaiDienBanHanhQD?.id ?? '',
@@ -1189,7 +1229,7 @@ class _ToolAndSuppliesHandoverDetailState
                 'idCCDCVatTu': d.idCCDCVatTu,
                 'soLuong': d.soLuong,
                 'idChiTietCCDCVatTu': d.idChiTietCCDCVatTu,
-                'idBanGiaoCCDCVatTu': d.idBanGiaoCCDCVatTu,
+                'idBanGiaoCCDCVatTu': d.iddieudongccdcvattu,
                 "ngayTao": d.ngayTao,
                 "ngayCapNhat": d.ngayCapNhat,
                 "nguoiTao": d.nguoiTao,
@@ -1224,68 +1264,72 @@ class _ToolAndSuppliesHandoverDetailState
       _normalizeDetails(listDetailSubppliesHandover),
     );
 
-    log('Details changed check:');
-    log('Before: $beforeJson');
-    log('After: $afterJson');
-
     return beforeJson != afterJson;
   }
 
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = ToolAndSuppliesHandoverRepository();
-
-      String keyOf(String idCCDCVatTu, String idChiTietCCDCVatTu) =>
-          '$idCCDCVatTu|$idChiTietCCDCVatTu';
+      String keyOf(
+        String idCCDCVatTu,
+        String idChiTietCCDCVatTu,
+        String idBanGiaoCCDCVatTu,
+        String idChiTietDieuDong,
+        String iddieudongccdcvattu,
+      ) =>
+          '$idCCDCVatTu|$idChiTietCCDCVatTu|$idBanGiaoCCDCVatTu|$idChiTietDieuDong|$iddieudongccdcvattu';
 
       // Tạo map từ initial details (dữ liệu cũ)
       final initialByKey = {
         for (final d in initialDetails)
-          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+          keyOf(
+                d.idCCDCVatTu,
+                d.idChiTietCCDCVatTu,
+                d.idBanGiaoCCDCVatTu,
+                d.idChiTietDieuDong ?? d.iddieudongccdcvattu,
+                d.iddieudongccdcvattu,
+              ):
+              d,
       };
 
       // Tạo map từ list hiện tại (dữ liệu mới)
       final newByKey = {
         for (final d in listDetailSubppliesHandover)
-          keyOf(d.idCCDCVatTu, d.idChiTietCCDCVatTu): d,
+          keyOf(
+                d.idCCDCVatTu,
+                d.idChiTietCCDCVatTu,
+                d.idBanGiaoCCDCVatTu,
+                d.idChiTietDieuDong ?? d.iddieudongccdcvattu,
+                d.iddieudongccdcvattu,
+              ):
+              d,
       };
 
-      log(
-        'Sync details - Initial count: ${initialDetails.length}, New count: ${listDetailSubppliesHandover.length}',
-      );
-      log('Initial keys: ${initialByKey.keys.toList()}');
-      log('New keys: ${newByKey.keys.toList()}');
-
       // Hàm kiểm tra có thay đổi không
-      bool changed(
-        DetailSubppliesHandoverDto a,
-        DetailSubppliesHandoverDto b,
-      ) =>
-          a.soLuong != b.soLuong ||
-          a.idCCDCVatTu != b.idCCDCVatTu ||
-          a.idChiTietCCDCVatTu != b.idChiTietCCDCVatTu ||
-          a.idBanGiaoCCDCVatTu != b.idBanGiaoCCDCVatTu;
+      bool changed(DetailSubppliesHandoverDto a, DetailSubppliesHandoverDto b) {
+        return a.soLuong != b.soLuong ||
+            a.idCCDCVatTu != b.idCCDCVatTu ||
+            a.idChiTietCCDCVatTu != b.idChiTietCCDCVatTu ||
+            a.idBanGiaoCCDCVatTu != b.idBanGiaoCCDCVatTu ||
+            a.idChiTietDieuDong != b.idChiTietDieuDong ||
+            a.iddieudongccdcvattu != b.iddieudongccdcvattu;
+      }
 
       // 1. DELETE: Những item có trong list cũ nhưng không có trong list mới
       final itemsToDelete =
           initialByKey.keys.where((k) => !newByKey.containsKey(k)).toList();
 
-      log('Items to delete: ${itemsToDelete.length}');
       for (final k in itemsToDelete) {
         final itemToDelete = initialByKey[k]!;
         final id = itemToDelete.id;
 
         if (id.isEmpty) {
-          log('Skipping delete for item with empty ID: $k');
           continue;
         }
 
         try {
-          log('Deleting item with ID: $id, Key: $k');
           await repo.deleteDetailHandoverCCDC(id);
-          log('Successfully deleted item: $id');
         } catch (e) {
-          log('Error deleting item $id: $e');
           if (!e.toString().contains('404')) rethrow;
         }
       }
@@ -1294,35 +1338,24 @@ class _ToolAndSuppliesHandoverDetailState
       final itemsToUpdate =
           newByKey.keys.where(initialByKey.containsKey).toList();
 
-      log('Items to check for update: ${itemsToUpdate.length}');
       for (final k in itemsToUpdate) {
         final oldVal = initialByKey[k]!;
         final newVal = newByKey[k]!;
-
         if (!changed(oldVal, newVal)) {
-          log('No changes for item: $k');
           continue;
         }
-
         if (oldVal.id.isEmpty) {
-          log('Skipping update for item with empty ID: $k');
           continue;
         }
-
-        log('Updating item: $k');
-        log(
-          'Old: soLuong=${oldVal.soLuong}, idCCDCVatTu=${oldVal.idCCDCVatTu}',
-        );
-        log(
-          'New: soLuong=${newVal.soLuong}, idCCDCVatTu=${newVal.idCCDCVatTu}',
-        );
-
         Map<String, dynamic> request = {
           "id": oldVal.id,
           "idBanGiaoCCDCVatTu": newVal.idBanGiaoCCDCVatTu,
           "idCCDCVatTu": newVal.idCCDCVatTu,
           "soLuong": newVal.soLuong,
           "idChiTietCCDCVatTu": newVal.idChiTietCCDCVatTu,
+          "idChiTietDieuDong":
+              newVal.idChiTietDieuDong ?? newVal.iddieudongccdcvattu,
+          "iddieudongccdcvattu": newVal.iddieudongccdcvattu,
           "ngayTao": newVal.ngayTao,
           "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
           "nguoiTao": newVal.nguoiTao,
@@ -1332,9 +1365,7 @@ class _ToolAndSuppliesHandoverDetailState
 
         try {
           await repo.updateDetailHandoverCCDC(request);
-          log('Successfully updated item: ${oldVal.id}');
         } catch (e) {
-          log('Error updating item ${oldVal.id}: $e');
           rethrow;
         }
       }
@@ -1346,7 +1377,6 @@ class _ToolAndSuppliesHandoverDetailState
               .map((k) => newByKey[k]!)
               .toList();
 
-      log('Items to create: ${itemsToCreate.length}');
       if (itemsToCreate.isNotEmpty) {
         final creates =
             itemsToCreate
@@ -1357,7 +1387,9 @@ class _ToolAndSuppliesHandoverDetailState
                     "idCCDCVatTu": d.idCCDCVatTu,
                     "soLuong": d.soLuong,
                     "idChiTietCCDCVatTu": d.idChiTietCCDCVatTu,
-                    "idChiTietDieuDong": d.iddieudongccdcvattu,
+                    "idChiTietDieuDong":
+                        d.idChiTietDieuDong ?? d.iddieudongccdcvattu,
+                    "iddieudongccdcvattu": d.iddieudongccdcvattu,
                     "ngayTao": d.ngayTao,
                     "ngayCapNhat": d.ngayCapNhat,
                     "nguoiTao": d.nguoiTao,
@@ -1367,21 +1399,14 @@ class _ToolAndSuppliesHandoverDetailState
                 )
                 .toList();
 
-        log('Creating ${creates.length} new items');
-        for (final create in creates) {
-          log('Creating item: ${create['idCCDCVatTu']} - ${create['soLuong']}');
-        }
-
         try {
           await repo.createDetailHandoverCCDC(creates);
-          log('Successfully created ${creates.length} new items');
         } catch (e) {
           log('Error creating items: $e');
           rethrow;
         }
       }
 
-      log('Sync completed successfully');
     } catch (e) {
       log('Sync details error: $e');
       rethrow; // Re-throw để caller có thể handle

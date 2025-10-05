@@ -1,4 +1,5 @@
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 class AssetHandoverDto {
@@ -14,6 +15,7 @@ class AssetHandoverDto {
   final String? idDonViDaiDien;
   final String? tenDonViDaiDien;
   final String? ngayBanGiao;
+  final String? ngayTaoChungTu;
   final String? idLanhDao;
   final String? tenLanhDao;
   final String? idDaiDiendonviBanHanhQD;
@@ -39,6 +41,7 @@ class AssetHandoverDto {
   final bool? byStep;
   final int? trangThaiPhieu;
   List<SignatoryDto>? listSignatory;
+  List<DetailAssetHandoverDto>? chiTietBanGiaoTaiSan;
 
   AssetHandoverDto({
     this.id,
@@ -53,6 +56,7 @@ class AssetHandoverDto {
     this.idDonViDaiDien,
     this.tenDonViDaiDien,
     this.ngayBanGiao,
+    this.ngayTaoChungTu,
     this.idLanhDao,
     this.tenLanhDao,
     this.idDaiDiendonviBanHanhQD,
@@ -78,6 +82,7 @@ class AssetHandoverDto {
     this.listSignatory,
     this.byStep,
     this.trangThaiPhieu,
+    this.chiTietBanGiaoTaiSan,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -94,6 +99,9 @@ class AssetHandoverDto {
       idDonViDaiDien: json['idDonViDaiDien'],
       tenDonViDaiDien: json['tenDonViDaiDien'],
       ngayBanGiao: AppUtility.formatFromISOString(json['ngayBanGiao']),
+      ngayTaoChungTu: AppUtility.formatFromISOString(
+        json['ngayTaoChungTu'] ?? '',
+      ),
       idLanhDao: json['idLanhDao'],
       tenLanhDao: json['tenLanhDao'],
       idDaiDiendonviBanHanhQD: json['idDaiDiendonviBanHanhQD'],
@@ -124,6 +132,14 @@ class AssetHandoverDto {
               : null,
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],
+      chiTietBanGiaoTaiSan:
+          json['chiTietBanGiaoTaiSan'] != null
+              ? List<DetailAssetHandoverDto>.from(
+                json['chiTietBanGiaoTaiSan'].map(
+                  (x) => DetailAssetHandoverDto.fromJson(x),
+                ),
+              )
+              : null,
     );
   }
 
@@ -141,6 +157,7 @@ class AssetHandoverDto {
       'idDonViDaiDien': idDonViDaiDien,
       'tenDonViDaiDien': tenDonViDaiDien,
       'ngayBanGiao': AppUtility.formatFromISOString(ngayBanGiao ?? ''),
+      'ngayTaoChungTu': AppUtility.formatFromISOString(ngayTaoChungTu ?? ''),
       'idLanhDao': idLanhDao,
       'tenLanhDao': tenLanhDao,
       'idDaiDiendonviBanHanhQD': idDaiDiendonviBanHanhQD,
@@ -166,6 +183,8 @@ class AssetHandoverDto {
       'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
       'byStep': byStep,
       'trangThaiPhieu': trangThaiPhieu,
+      'chiTietBanGiaoTaiSan':
+          chiTietBanGiaoTaiSan?.map((x) => x.toJson()).toList(),
     };
   }
 
@@ -182,6 +201,7 @@ class AssetHandoverDto {
     String? idDonViDaiDien,
     String? tenDonViDaiDien,
     String? ngayBanGiao,
+    String? ngayTaoChungTu,
     String? idLanhDao,
     String? tenLanhDao,
     String? idDaiDiendonviBanHanhQD,
@@ -207,6 +227,7 @@ class AssetHandoverDto {
     List<SignatoryDto>? listSignatory,
     bool? byStep,
     int? trangThaiPhieu,
+    List<DetailAssetHandoverDto>? chiTietBanGiaoTaiSan,
   }) {
     return AssetHandoverDto(
       id: id ?? this.id,
@@ -221,6 +242,7 @@ class AssetHandoverDto {
       idDonViDaiDien: idDonViDaiDien ?? this.idDonViDaiDien,
       tenDonViDaiDien: tenDonViDaiDien ?? this.tenDonViDaiDien,
       ngayBanGiao: ngayBanGiao ?? this.ngayBanGiao,
+      ngayTaoChungTu: ngayTaoChungTu ?? this.ngayTaoChungTu,
       idLanhDao: idLanhDao ?? this.idLanhDao,
       tenLanhDao: tenLanhDao ?? this.tenLanhDao,
       idDaiDiendonviBanHanhQD:
@@ -249,6 +271,7 @@ class AssetHandoverDto {
       listSignatory: listSignatory ?? this.listSignatory,
       byStep: byStep ?? this.byStep,
       trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
+      chiTietBanGiaoTaiSan: chiTietBanGiaoTaiSan ?? this.chiTietBanGiaoTaiSan,
     );
   }
 }

@@ -20,17 +20,13 @@ class HienTrang {
 
   HienTrang({required this.id, required this.name});
   toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
+    return {'id': id, 'name': name};
   }
+
   fromJson(Map<String, dynamic> json) {
-    return HienTrang(
-      id: json['id'],
-      name: json['name'],
-    );
+    return HienTrang(id: json['id'], name: json['name']);
   }
+
   @override
   String toString() {
     return name;
@@ -99,7 +95,6 @@ abstract class AppUtility {
   }
 
   static HienTrang getHienTrang(int id) {
-
     return listHienTrang.firstWhere(
       (element) => element.id == id,
       orElse: () => listHienTrang.first,
@@ -177,11 +172,25 @@ abstract class AppUtility {
   }
 
   static String formatFromISOString(String isoString) {
+    if (isoString.trim().isEmpty) {
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    }
+
     try {
-      DateTime dateTime = DateTime.parse(isoString);
+      // Thử parse với định dạng dd/MM/yyyy HH:mm:ss trước
+      DateTime dateTime = DateFormat(
+        'dd/MM/yyyy HH:mm:ss',
+      ).parse(isoString.trim());
       return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
     } catch (_) {
-      return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      try {
+        // Fallback về định dạng ISO string
+        DateTime dateTime = DateTime.parse(isoString);
+        return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+      } catch (_) {
+        // Nếu cả hai đều fail, trả về thời gian hiện tại
+        return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      }
     }
   }
 
@@ -360,6 +369,7 @@ abstract class AppUtility {
       ),
     );
   }
+
   static Widget showStatusDocument(int status) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 48.0),

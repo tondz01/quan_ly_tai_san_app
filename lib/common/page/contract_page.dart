@@ -19,22 +19,34 @@ class SettingPage {
     fontSize: 13 * scale,
     height: 1.5,
   );
+  
   static String formatted(String? date) {
     if (date == null || date.trim().isEmpty) {
       SGLog.debug("formatted", "Empty date string");
       return '';
     }
     try {
-      DateTime dateTime = DateFormat("yyyy-MM-ddTHH:mm:ss.SSSZ").parse(date);
+      // Thử parse với định dạng mới trước: yyyy-MM-dd HH:mm:ss
+      DateTime dateTime = DateFormat("yyyy-MM-dd HH:mm:ss").parse(date);
       return DateFormat(
         "'ngày' dd 'tháng' MM 'năm' yyyy",
         'vi',
       ).format(dateTime);
     } catch (e) {
-      SGLog.debug("formatted", e.toString());
-      return '';
+      try {
+        // Fallback về định dạng cũ nếu định dạng mới không khớp
+        DateTime dateTime = DateFormat("yyyy-MM-ddTHH:mm:ss.SSSZ").parse(date);
+        return DateFormat(
+          "'ngày' dd 'tháng' MM 'năm' yyyy",
+          'vi',
+        ).format(dateTime);
+      } catch (e2) {
+        SGLog.debug("formatted", "Failed to parse date: $date, Error: ${e2.toString()}");
+        return '';
+      }
     }
   }
+
 }
 
 class ContractPage {
@@ -574,10 +586,10 @@ class ContractPage {
         SGText(
           text:
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${assetHandoverDto.quyetDinhDieuDongSo ?? ''}, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${assetHandoverDto.tenDonViGiao ?? ''}  đến  ${assetHandoverDto.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayBanGiao ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(assetHandoverDto.ngayTaoChungTu ?? '')} , tại ${assetHandoverDto.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
-        
+
         SGText(
           text: "Chúng tôi gồm có:",
           style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
@@ -731,6 +743,7 @@ class ContractPage {
     List<DetailToolAndMaterialTransferDto>? listDetailAssetMobilization,
     List<SigneInfo>? listSigneInfo,
   ) {
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -778,7 +791,7 @@ class ContractPage {
         SGText(
           text:
               "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Căn cứ vào Quyết định điều động số ${banGiaoCCDCVatTu.quyetDinhDieuDongSo ?? ''}, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} của Giám đốc Công ty V/v điều động tài sản từ ${banGiaoCCDCVatTu.tenDonViGiao ?? ''}  đến  ${banGiaoCCDCVatTu.tenDonViNhan ?? ''}.\n"
-              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayBanGiao ?? '')} , tại ${banGiaoCCDCVatTu.tenDonViGiao}.",
+              "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Hôm nay, ${SettingPage.formatted(banGiaoCCDCVatTu.ngayTaoChungTu ?? '')} , tại ${banGiaoCCDCVatTu.tenDonViGiao}.",
           style: SettingPage.textStyle,
         ),
         SGText(

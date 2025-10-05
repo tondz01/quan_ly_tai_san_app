@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,6 +18,7 @@ class DocumentUploadWidget extends StatefulWidget {
   final String? hintText;
   final List<String> allowedExtensions;
   final bool isInsertData;
+  final Widget? document;
 
   const DocumentUploadWidget({
     super.key,
@@ -34,6 +34,7 @@ class DocumentUploadWidget extends StatefulWidget {
     this.hintText,
     this.allowedExtensions = const ['doc', 'docx', 'pdf'],
     this.isInsertData = false,
+    this.document,
   });
 
   @override
@@ -44,7 +45,6 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
   @override
   Widget build(BuildContext context) {
     bool hasError = widget.validationErrors['document'] == true;
-
     return widget.isInsertData
         ? _buildInsertData()
         : Column(
@@ -189,6 +189,12 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                       ),
                     ),
                   ),
+                  widget.document != null
+                      ? Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: widget.document,
+                      )
+                      : SizedBox.shrink(),
                 ],
               ),
             ),
@@ -230,7 +236,6 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
       }
     }
   }
-
 
   Widget _buildInsertData() {
     return Padding(

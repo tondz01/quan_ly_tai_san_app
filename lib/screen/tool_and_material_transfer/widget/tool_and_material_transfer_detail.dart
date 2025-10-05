@@ -173,7 +173,8 @@ class _ToolAndMaterialTransferDetailState
     // }
 
     // If it's a new item, document is required
-    if (item == null && _selectedFileName == null) {
+    if ((_selectedFileName ?? '').isEmpty ||
+        (_selectedFilePath ?? '').isEmpty) {
       newValidationErrors['document'] = true;
     }
 
@@ -1138,8 +1139,12 @@ class _ToolAndMaterialTransferDetailState
                             donViTinh: e.donViTinh,
                             soLuong: e.soLuong,
                             ghiChu: e.ghiChu,
-                            ngayTao: AppUtility.formatDateString(DateTime.now()),
-                            ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+                            ngayTao: AppUtility.formatDateString(
+                              DateTime.now(),
+                            ),
+                            ngayCapNhat: AppUtility.formatDateString(
+                              DateTime.now(),
+                            ),
                             nguoiTao: widget.provider.userInfo?.id ?? '',
                             nguoiCapNhat: widget.provider.userInfo?.id ?? '',
                             active: true,
