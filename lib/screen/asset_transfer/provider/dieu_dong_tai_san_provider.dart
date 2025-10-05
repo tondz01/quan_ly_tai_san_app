@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -121,6 +122,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   UserInfoDTO? _userInfo;
 
   String idCongTy = 'CT001';
+
+  Timer? _autoReloadTimer;
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -250,6 +253,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     controllerDropdownPage = TextEditingController(text: '10');
 
     getDataAll(context);
+
+    // Start auto reload every 20 seconds
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      onReloadDataAssetTransfer();
+    });
   }
 
   void onDispose() {
@@ -272,6 +281,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
+
+    // Stop auto reload timer
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = null;
   }
 
   void getDataAll(BuildContext context) {
@@ -290,6 +303,39 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
+  }
+
+  void onReloadDataAssetTransfer() async {
+    Map<String, dynamic> dieuDongTaiSans = await AssetTransferRepository()
+        .getListDieuDongTaiSan(type: typeDieuDongTaiSan);
+    _data = dieuDongTaiSans['data'];
+    _data =
+        _data?.where((element) => element.loai == typeDieuDongTaiSan)
+            .where((item) {
+              return item.share == true ||
+                  item.nguoiTao == userInfo?.tenDangNhap;
+            })
+            .where((item) {
+              final idSignatureGroup =
+                  [
+                    item.nguoiTao,
+                    item.idNguoiKyNhay,
+                    item.idTrinhDuyetCapPhong,
+                    item.idTrinhDuyetGiamDoc,
+                    if (item.listSignatory != null)
+                      ...item.listSignatory!.map((e) => e.idNguoiKy),
+                  ].whereType<String>().toList();
+
+              final inGroup = idSignatureGroup
+                  .map((e) => e.toLowerCase())
+                  .contains(userInfo.tenDangNhap.toLowerCase());
+              return inGroup;
+            })
+            .toList();
+    _filteredData = List.from(_data!);
+    log('message test: onReloadDataAssetTransfer');
+    _updatePagination();
+    notifyListeners();
   }
 
   void _updatePagination() {

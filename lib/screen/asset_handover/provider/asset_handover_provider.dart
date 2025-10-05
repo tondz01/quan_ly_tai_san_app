@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -127,6 +129,8 @@ class AssetHandoverProvider with ChangeNotifier {
   AssetHandoverDto? _item;
 
   UserInfoDTO? _userInfo;
+
+  Timer? _autoReloadTimer;
 
   // Method để refresh data và filter
   void refreshData(BuildContext context) {
@@ -283,6 +287,27 @@ class AssetHandoverProvider with ChangeNotifier {
 
     _body = Container();
     getListAssetHandover(context);
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      onReloadDataAssetHandover();
+    });
+  }
+
+  void onReloadDataAssetHandover() async {
+    Map<String, dynamic> result =
+        await AssetTransferRepository().getListDieuDongTaiSan();
+    _data = result['data'];
+    _data =
+        _data
+            ?.where(
+              (item) =>
+                  item.share == true || item.nguoiTao == userInfo?.tenDangNhap,
+            )
+            .toList();
+    _filteredData = List.from(_data!);
+    log('message test: onReloadDataAssetHandover');
+    _updatePagination();
+    notifyListeners();
   }
 
   void onDispose() {
@@ -296,6 +321,8 @@ class AssetHandoverProvider with ChangeNotifier {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = null;
   }
 
   void onTapBackHeader() {
@@ -401,7 +428,8 @@ class AssetHandoverProvider with ChangeNotifier {
           state.data
               .where(
                 (item) =>
-                    item.share == true || item.nguoiTao == userInfo?.tenDangNhap,
+                    item.share == true ||
+                    item.nguoiTao == userInfo?.tenDangNhap,
               )
               .toList();
 
@@ -520,12 +548,14 @@ class AssetHandoverProvider with ChangeNotifier {
     }
 
     final currentSigner = signatureFlow[currentIndex];
-    
-    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap && 
+
+    if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap &&
         currentSigner["signed"] != -1) {
-      return currentSigner["signed"] == true ? 3 : 5; // 3: Đã ký & tạo, 5: Chưa ký & tạo
+      return currentSigner["signed"] == true
+          ? 3
+          : 5; // 3: Đã ký & tạo, 5: Chưa ký & tạo
     }
-    
+
     if (item.idDaiDiendonviBanHanhQD == userInfo.tenDangNhap) {
       return -1; // Chỉ là người tạo, không phải người ký
     }

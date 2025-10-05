@@ -253,7 +253,7 @@ class AssetManagementProvider with ChangeNotifier {
     // Sau khi lọc, cập nhật lại phân trang
     _updatePagination();
   }
-
+  
   void _updatePagination() {
     totalEntries = _filteredData?.length ?? 0;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);

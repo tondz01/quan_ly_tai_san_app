@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -19,6 +20,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -94,6 +96,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
+  Timer? _autoReloadTimer;
 
   int typeAssetTransfer = 1;
 
@@ -297,6 +300,25 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
     _body = Container();
     getListToolAndSuppliesHandover(context);
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      onReloadDataToolAndMaterialHandover();
+    });
+  }
+
+  void onReloadDataToolAndMaterialHandover() async {
+    Map<String, dynamic> result =
+        await ToolAndSuppliesHandoverRepository()
+            .getListToolAndSuppliesHandover();
+    _data = result['data'];
+    _data =
+        _data?.where((item) {
+            return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
+          }).toList();
+    _filteredData = List.from(_data!);
+    log('message test: onReloadDataToolAndMaterialHandover');
+    _updatePagination();
+    notifyListeners();
   }
 
   void onDispose() {
@@ -310,6 +332,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = null;
   }
 
   void onTapBackHeader() {
