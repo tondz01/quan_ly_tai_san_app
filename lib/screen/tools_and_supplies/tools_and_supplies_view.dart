@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_detail_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
@@ -32,14 +33,20 @@ class ToolsAndSuppliesView extends StatefulWidget {
 class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
-
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     Provider.of<ToolsAndSuppliesProvider>(
       context,
       listen: false,
     ).onInit(context);
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -53,6 +60,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -251,19 +259,30 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
               body: Column(
                 children: [
                   Flexible(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        childInput: ToolsAndSuppliesDetail(provider: provider),
-                        childTableView: ToolsAndSuppliesList(
-                          provider: provider,
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          childInput: ToolsAndSuppliesDetail(
+                            provider: provider,
+                          ),
+                          childTableView: ToolsAndSuppliesList(
+                            provider: provider,
+                          ),
+                          isShowInput: provider.isShowInput,
+                          isShowCollapse: provider.isShowCollapse,
+                          onExpandedChanged: (isExpanded) {
+                            provider.onSetsShowCollapse(isExpanded);
+                          },
+                          title: 'Chi tiết CCDC - Vật tư',
                         ),
-                        isShowInput: provider.isShowInput,
-                        isShowCollapse: provider.isShowCollapse,
-                        onExpandedChanged: (isExpanded) {
-                          provider.onSetsShowCollapse(isExpanded);
-                        },
-                        title: 'Chi tiết CCDC - Vật tư',
                       ),
                     ),
                   ),

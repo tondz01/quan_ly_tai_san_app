@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/role/widget/role_lis
 import 'package:flutter/foundation.dart';
 
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'bloc/role_state.dart';
 import 'provider/role_provide.dart';
@@ -27,10 +28,17 @@ class RoleView extends StatefulWidget {
 class _RoleViewState extends State<RoleView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     Provider.of<RoleProvider>(context, listen: false).onInit(context);
   }
 
@@ -42,6 +50,7 @@ class _RoleViewState extends State<RoleView> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -121,17 +130,26 @@ class _RoleViewState extends State<RoleView> {
               body: Column(
                 children: [
                   Flexible(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        title: 'Chi tiết chức vụ',
-                        childInput: RoleDetail(provider: provider),
-                        childTableView: RoleList(provider: provider),
-                        isShowInput: provider.isShowInput,
-                        isShowCollapse: provider.isShowCollapse,
-                        onExpandedChanged: (isExpanded) {
-                          provider.onSetsShowCollapse(isExpanded);
-                        },
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          title: 'Chi tiết chức vụ',
+                          childInput: RoleDetail(provider: provider),
+                          childTableView: RoleList(provider: provider),
+                          isShowInput: provider.isShowInput,
+                          isShowCollapse: provider.isShowCollapse,
+                          onExpandedChanged: (isExpanded) {
+                            provider.onSetsShowCollapse(isExpanded);
+                          },
+                        ),
                       ),
                     ),
                   ),

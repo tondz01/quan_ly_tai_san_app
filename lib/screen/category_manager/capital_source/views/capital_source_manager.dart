@@ -19,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/model
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/pages/capital_source_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/providers/capital_source_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -54,7 +55,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
   bool isCanUpdate = false;
   bool isCanDelete = false;
   bool isNew = false;
-
+  late HomeScrollController _scrollController;
   void _showForm([NguonKinhPhi? capitalSource]) {
     setState(() {
       isShowInput = true;
@@ -65,10 +66,16 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     _checkPermission();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CapitalSourceBloc>().add(const LoadCapitalSources());
     });
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -82,6 +89,12 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CapitalSourceBloc>().add(const LoadCapitalSources());
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   void _showDeleteDialog(BuildContext context, NguonKinhPhi capitalSource) {
@@ -353,43 +366,52 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
               body: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        title: 'Chi tiết nguồn vốn',
-                        childInput: CapitalSourceFormPage(
-                          isNew: isNew = true,
-                          isCanUpdate: isCanUpdate = true,
-                          capitalSource: editingCapitalSource,
-                          onCancel: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
-                          },
-                          onSaved: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
-                          },
-                        ),
-                        childTableView: CapitalSourceList(
-                          data: dataPage,
-                          onChangeDetail: (item) {
-                            _showForm(item);
-                          },
-                          onDelete: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          onEdit: (item) {
-                            _showForm(item);
-                          },
-                        ),
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          title: 'Chi tiết nguồn vốn',
+                          childInput: CapitalSourceFormPage(
+                            isNew: isNew = true,
+                            isCanUpdate: isCanUpdate = true,
+                            capitalSource: editingCapitalSource,
+                            onCancel: () {
+                              setState(() {
+                                isShowInput = false;
+                              });
+                            },
+                            onSaved: () {
+                              setState(() {
+                                isShowInput = false;
+                              });
+                            },
+                          ),
+                          childTableView: CapitalSourceList(
+                            data: dataPage,
+                            onChangeDetail: (item) {
+                              _showForm(item);
+                            },
+                            onDelete: (item) {
+                              _showDeleteDialog(context, item);
+                            },
+                            onEdit: (item) {
+                              _showForm(item);
+                            },
+                          ),
 
-                        // Container(height: 200,color: Colors.limeAccent,),
-                        isShowInput: isShowInput,
-                        onExpandedChanged: (isExpanded) {
-                          isShowInput = isExpanded;
-                        },
+                          // Container(height: 200,color: Colors.limeAccent,),
+                          isShowInput: isShowInput,
+                          onExpandedChanged: (isExpanded) {
+                            isShowInput = isExpanded;
+                          },
+                        ),
                       ),
                     ),
                   ),

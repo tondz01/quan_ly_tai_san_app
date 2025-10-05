@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
@@ -43,13 +44,25 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   List<PhongBan> dataPage = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
-
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DepartmentBloc>().add(const LoadDepartments());
     });
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   @override
@@ -334,40 +347,49 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
               body: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        title: 'Chi tiết phòng ban',
-                        childInput: DepartmentFormPage(
-                          department: editingDepartment,
-                          onCancel: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
-                          },
-                          onSaved: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
-                          },
-                        ),
-                        childTableView: DepartmentList(
-                          data: dataPage,
-                          onChangeDetail: (item) {
-                            _showForm(item);
-                          },
-                          onDelete: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          onEdit: (item) {
-                            _showForm(item);
-                          },
-                        ),
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          title: 'Chi tiết phòng ban',
+                          childInput: DepartmentFormPage(
+                            department: editingDepartment,
+                            onCancel: () {
+                              setState(() {
+                                isShowInput = false;
+                              });
+                            },
+                            onSaved: () {
+                              setState(() {
+                                isShowInput = false;
+                              });
+                            },
+                          ),
+                          childTableView: DepartmentList(
+                            data: dataPage,
+                            onChangeDetail: (item) {
+                              _showForm(item);
+                            },
+                            onDelete: (item) {
+                              _showDeleteDialog(context, item);
+                            },
+                            onEdit: (item) {
+                              _showForm(item);
+                            },
+                          ),
 
-                        isShowInput: isShowInput,
-                        onExpandedChanged: (isExpanded) {
-                          isShowInput = isExpanded;
-                        },
+                          isShowInput: isShowInput,
+                          onExpandedChanged: (isExpanded) {
+                            isShowInput = isExpanded;
+                          },
+                        ),
                       ),
                     ),
                   ),

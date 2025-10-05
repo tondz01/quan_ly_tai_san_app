@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_list.dart';
@@ -15,10 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
 
 class ToolAndMaterialTransferView extends StatefulWidget {
-
-  const ToolAndMaterialTransferView({
-    super.key,
-  });
+  const ToolAndMaterialTransferView({super.key});
 
   @override
   State<ToolAndMaterialTransferView> createState() =>
@@ -35,13 +33,21 @@ class _ToolAndMaterialTransferViewState
   bool _isInitialized = false;
   ToolAndMaterialTransferProvider? _providerRef;
 
+  late HomeScrollController _scrollController;
+
   @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     currentType = 0;
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -89,6 +95,7 @@ class _ToolAndMaterialTransferViewState
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     // Reset provider state when leaving this page using cached reference
     _providerRef?.onDispose();
@@ -139,24 +146,33 @@ class _ToolAndMaterialTransferViewState
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          childInput: ToolAndMaterialTransferDetail(
-                            provider: provider,
-                            type: currentType,
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            childInput: ToolAndMaterialTransferDetail(
+                              provider: provider,
+                              type: currentType,
+                            ),
+                            childTableView: ToolAndMaterialTransferList(
+                              provider: provider,
+                              typeAssetTransfer: currentType,
+                              idCongTy: 'CT001',
+                            ),
+                            title: "Chi tiết điều chuyển CCDC - Vật tư",
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
                           ),
-                          childTableView: ToolAndMaterialTransferList(
-                            provider: provider,
-                            typeAssetTransfer: currentType,
-                            idCongTy: 'CT001',
-                          ),
-                          title: "Chi tiết điều chuyển CCDC - Vật tư",
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
                         ),
                       ),
                     ),
@@ -246,7 +262,9 @@ class _ToolAndMaterialTransferViewState
               .updateSigningTAMTStatusSuccess(context, state);
         }
         if (state is CancelToolAndMaterialTransferSuccessState) {
-          context.read<ToolAndMaterialTransferProvider>().onCloseDetail(context);
+          context.read<ToolAndMaterialTransferProvider>().onCloseDetail(
+            context,
+          );
           AppUtility.showSnackBar(context, 'Đã hủy phiếu thành cồng!');
           context.read<ToolAndMaterialTransferProvider>().getDataAll(context);
         }

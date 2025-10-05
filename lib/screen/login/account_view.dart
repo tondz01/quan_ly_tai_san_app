@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
@@ -20,9 +21,23 @@ class AccountView extends StatefulWidget {
 }
 
 class _AccountViewState extends State<AccountView> {
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<LoginProvider>(context, listen: false).onInit(context);
     });
@@ -68,8 +83,15 @@ class _AccountViewState extends State<AccountView> {
                           },
                           onTap: () {},
                           onNew: () {
-                            if(AccountHelper.instance.getUserInfo()?.tenDangNhap != "admin") {
-                              AppUtility.showSnackBar(context, "Bạn không có quyền tạo tài khoản", isError: true);
+                            if (AccountHelper.instance
+                                    .getUserInfo()
+                                    ?.tenDangNhap !=
+                                "admin") {
+                              AppUtility.showSnackBar(
+                                context,
+                                "Bạn không có quyền tạo tài khoản",
+                                isError: true,
+                              );
                               return;
                             }
                             showDialog(
@@ -97,15 +119,24 @@ class _AccountViewState extends State<AccountView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết user",
-                          childInput: Container(),
-                          childTableView: AccountList(provider: provider),
-                          isShowInput: false,
-                          isShowCollapse: false,
-                          onExpandedChanged: (isExpanded) {},
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết user",
+                            childInput: Container(),
+                            childTableView: AccountList(provider: provider),
+                            isShowInput: false,
+                            isShowCollapse: false,
+                            onExpandedChanged: (isExpanded) {},
+                          ),
                         ),
                       ),
                     ),
