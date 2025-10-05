@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetTransferView extends StatefulWidget {
@@ -28,12 +29,18 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   String idCongTy = "CT001";
   DieuDongTaiSanProvider? _providerRef;
   bool _isInitialized = false;
-
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     currentType = 0;
     _initData();
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -82,6 +89,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     // Reset provider state when leaving this page using cached reference
     _providerRef?.onDispose();
@@ -130,24 +138,33 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          childInput: DieuDongTaiSanDetail(
-                            provider: provider,
-                            type: currentType,
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            childInput: DieuDongTaiSanDetail(
+                              provider: provider,
+                              type: currentType,
+                            ),
+                            childTableView: DieuDongTaiSanList(
+                              provider: provider,
+                              typeAssetTransfer: currentType,
+                              idCongTy: 'CT001',
+                            ),
+                            title: "Chi tiết điều chuyển tài sản",
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
                           ),
-                          childTableView: DieuDongTaiSanList(
-                            provider: provider,
-                            typeAssetTransfer: currentType,
-                            idCongTy: 'CT001',
-                          ),
-                          title: "Chi tiết điều chuyển tài sản",
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
                         ),
                       ),
                     ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,10 +18,12 @@ import 'package:quan_ly_tai_san_app/screen/home/utils/menu_prefs.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
+import 'package:se_gay_components/common/sg_colors.dart' show SGAppColors;
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:se_gay_components/main_wrapper/index.dart';
 import 'models/menu_data.dart';
+import 'scroll_controller.dart';
 
 class Home extends StatefulWidget {
   final Widget child;
@@ -28,6 +32,9 @@ class Home extends StatefulWidget {
   @override
   State<Home> createState() => _HomeState();
 }
+
+// Global key để truy cập từ bên ngoài
+final GlobalKey<_HomeState> homeKey = GlobalKey<_HomeState>();
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
@@ -40,48 +47,6 @@ class _HomeState extends State<Home> {
   bool _isPopupOpen = false;
 
   bool isItemOne = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // 🔥 SỬA: Sử dụng singleton instance
-    _menuData = AppMenuData.instance;
-    _popupManager = SGPopupManager();
-    _selectedIndex = 0;
-    _selectedSubIndex = 0;
-
-    // Khôi phục trạng thái menu đã lưu (web)
-    final savedIndex = MenuPrefs.getSelectedIndex();
-    final savedSubIndex = MenuPrefs.getSelectedSubIndex();
-    if (savedIndex != null) {
-      // Ràng buộc trong phạm vi
-      if (savedIndex >= 0 && savedIndex < _menuData.menuItems.length) {
-        _selectedIndex = savedIndex;
-      }
-    }
-    if (savedSubIndex != null) {
-      final hasSubs =
-          _menuData.menuItems[_selectedIndex].reportSubItems.isNotEmpty ||
-          _menuData.menuItems[_selectedIndex].projectGroups.isNotEmpty;
-      if (hasSubs) {
-        _selectedSubIndex = savedSubIndex;
-      } else {
-        _selectedSubIndex = 0;
-      }
-    }
-
-    // Đăng ký lắng nghe thay đổi trạng thái popup
-    _popupManager.addGlobalListener(_onPopupStateChanged);
-    userInfo = AccountHelper.instance.getUserInfo();
-    if (userInfo == null) {
-      // Use addPostFrameCallback to avoid navigation during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.go(AppRoute.login.path);
-        }
-      });
-    }
-  }
 
   void _updateSelectedIndex(int index, int subIndex) {
     if (_selectedIndex != index || _selectedSubIndex != subIndex) {
@@ -98,6 +63,10 @@ class _HomeState extends State<Home> {
   void dispose() {
     // Hủy đăng ký khi widget bị hủy
     _popupManager.removeGlobalListener(_onPopupStateChanged);
+    _scrollController.removeListener(_onScrollStateChanged);
+    _parentScrollController.removeListener(_onParentScrollChanged);
+    _parentScrollController.dispose();
+    _scrollDebounceTimer?.cancel();
 
     // Reset về trạng thái ban đầu
     _selectedIndex = 0;
@@ -249,6 +218,110 @@ class _HomeState extends State<Home> {
     });
   }
 
+  late HomeScrollController _scrollController;
+  late ScrollController _parentScrollController;
+  Timer? _scrollDebounceTimer;
+  bool _lastScrollState = true; // Track last state to prevent rapid changes
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener(_onScrollStateChanged);
+    _parentScrollController = ScrollController();
+    _parentScrollController.addListener(_onParentScrollChanged);
+
+    // Khởi tạo state ban đầu
+    _lastScrollState = true;
+
+    // 🔥 SỬA: Sử dụng singleton instance
+    _menuData = AppMenuData.instance;
+    _popupManager = SGPopupManager();
+    _selectedIndex = 0;
+    _selectedSubIndex = 0;
+
+    // Khôi phục trạng thái menu đã lưu (web)
+    final savedIndex = MenuPrefs.getSelectedIndex();
+    final savedSubIndex = MenuPrefs.getSelectedSubIndex();
+    if (savedIndex != null) {
+      // Ràng buộc trong phạm vi
+      if (savedIndex >= 0 && savedIndex < _menuData.menuItems.length) {
+        _selectedIndex = savedIndex;
+      }
+    }
+    if (savedSubIndex != null) {
+      final hasSubs =
+          _menuData.menuItems[_selectedIndex].reportSubItems.isNotEmpty ||
+          _menuData.menuItems[_selectedIndex].projectGroups.isNotEmpty;
+      if (hasSubs) {
+        _selectedSubIndex = savedSubIndex;
+      } else {
+        _selectedSubIndex = 0;
+      }
+    }
+
+    // Đăng ký lắng nghe thay đổi trạng thái popup
+    _popupManager.addGlobalListener(_onPopupStateChanged);
+    userInfo = AccountHelper.instance.getUserInfo();
+    if (userInfo == null) {
+      // Use addPostFrameCallback to avoid navigation during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.go(AppRoute.login.path);
+        }
+      });
+    }
+  }
+
+  // Callback khi scroll state thay đổi
+  void _onScrollStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  // Callback khi parent scroll thay đổi
+  void _onParentScrollChanged() {
+    if (!_parentScrollController.hasClients) return;
+
+    // Hủy timer cũ nếu có
+    _scrollDebounceTimer?.cancel();
+
+    // Tạo timer mới để debounce
+    _scrollDebounceTimer = Timer(const Duration(milliseconds: 100), () {
+      _updateScrollState();
+    });
+  }
+
+  void _updateScrollState() {
+    if (!_parentScrollController.hasClients) return;
+
+    final currentPixels = _parentScrollController.position.pixels;
+    final maxScrollExtent = _parentScrollController.position.maxScrollExtent;
+
+    // Sử dụng hysteresis để tránh rapid state changes
+    const double bottomThreshold =
+        20.0; // Phải scroll xuống ít nhất 20px từ bottom
+    const double topThreshold = 20.0; // Phải scroll lên ít nhất 20px từ top
+
+    bool shouldParentScroll;
+
+    if (_lastScrollState) {
+      // Nếu đang ở state "parent scroll", chỉ chuyển sang "child scroll" khi thực sự ở bottom
+      shouldParentScroll = currentPixels < (maxScrollExtent - bottomThreshold);
+    } else {
+      // Nếu đang ở state "child scroll", chỉ chuyển sang "parent scroll" khi thực sự ở top
+      // HOẶC khi parent scroll về 0 (đầu trang)
+      shouldParentScroll = currentPixels <= topThreshold;
+    }
+
+    // Chỉ thay đổi state khi thực sự cần thiết
+    if (_lastScrollState != shouldParentScroll) {
+      _lastScrollState = shouldParentScroll;
+      _scrollController.setParentScrollState(shouldParentScroll);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -256,73 +329,76 @@ class _HomeState extends State<Home> {
       builder: (context, child) {
         // Lấy danh sách items từ model
         final sidebarItems = _getItems();
-        return MainWrapper(
-          header: GradientHeader(
-            logoPath: AppImage.imageLogo,
-            title: 'HỆ THỐNG QUẢN LÝ ĐIỀU PHỐI VÀ SỬ DỤNG MÁY MÓC THIẾT BỊ',
-            height: 120.0,
-            onLogoTap: () {
-              // Handle logo tap if needed
+        return Scaffold(
+          key: homeKey, // Thêm key để có thể truy cập từ bên ngoài
+          backgroundColor: SGAppColors.neutral0,
+          body: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              return true; // Parent xử lý scroll event
             },
-          ),
-          sidebar: Container(
-            padding: const EdgeInsets.only(
-              top: 8,
-              left: 24,
-              right: 24,
-              bottom: 8,
-            ),
-            decoration: BoxDecoration(color: Colors.blue),
-            child: Row(
-              children: [
-                if (AppImage.imageLogo.isNotEmpty)
-                  CircleAvatar(
-                    radius: 24,
-                    child: Image.asset(
-                      AppImage.imageLogo,
-                      fit: BoxFit.cover,
-                    ), // kích thước avatar
+            child: SingleChildScrollView(
+              controller: _parentScrollController,
+              child: Column(
+                children: [
+                  // Header - ưu tiên cuộn trước
+                  GradientHeader(
+                    logoPath: AppImage.imageLogo,
+                    title: 'PHẦN MỀM QUẢN LÝ TÀI SẢN',
+                    onLogoTap: () {
+                      // Handle logo tap if needed
+                    },
                   ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child:
-                      sidebarItems.isNotEmpty
-                          ? SGSidebarHorizontal(
-                            items: sidebarItems,
-                            onShowSubItems: (subItems) {
-                              // Cập nhật lại UI nếu cần thiết
-                              setState(() {});
-                            },
-                          )
-                          : const SizedBox.shrink(),
-                ),
-                const SizedBox(width: 16),
-                userInfo != null
-                    ? _buildHeaderActionRight(userInfo!)
-                    : const SizedBox.shrink(),
-              ],
-            ),
-          ),
-          body: Container(
-            decoration: BoxDecoration(color: ColorValue.neutral50),
-            child: Stack(
-              children: [
-                // Content
-                widget.child,
-                // Thêm barrier chỉ hiển thị khi popup đang mở
-                if (_isPopupOpen && !isItemOne)
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: () {
-                        primaryFocus?.unfocus();
-                        FocusScope.of(context).unfocus();
-                        _popupManager.closeAllPopups();
-                      },
-                      behavior: HitTestBehavior.translucent,
-                      child: Container(color: Colors.transparent),
+                  Container(
+                    height: 64,
+                    padding: const EdgeInsets.only(left: 24, right: 24),
+                    decoration: BoxDecoration(color: Colors.blue),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child:
+                              sidebarItems.isNotEmpty
+                                  ? SGSidebarHorizontal(
+                                    items: sidebarItems,
+                                    onShowSubItems: (subItems) {
+                                      setState(() {});
+                                    },
+                                  )
+                                  : const SizedBox.shrink(),
+                        ),
+                        const SizedBox(width: 16),
+                        userInfo != null
+                            ? _buildHeaderActionRight(userInfo!)
+                            : const SizedBox.shrink(),
+                      ],
                     ),
                   ),
-              ],
+                  // Body - chỉ cuộn khi header đã cuộn hết
+                  Container(
+                    height: MediaQuery.of(context).size.height - 64,
+                    decoration: BoxDecoration(color: ColorValue.neutral50),
+                    child: Stack(
+                      children: [
+                        // Content
+                        widget.child,
+                        // Thêm barrier chỉ hiển thị khi popup đang mở
+                        if (_isPopupOpen && !isItemOne)
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onTap: () {
+                                primaryFocus?.unfocus();
+                                FocusScope.of(context).unfocus();
+                                _popupManager.closeAllPopups();
+                              },
+                              behavior: HitTestBehavior.translucent,
+                              child: Container(color: Colors.transparent),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );

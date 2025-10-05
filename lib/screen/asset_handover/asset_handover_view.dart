@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_ev
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/tab_bar_table_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
@@ -31,11 +32,17 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
   Map<String, dynamic>? menuSelectionData;
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
-
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     _initData();
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -106,6 +113,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -221,20 +229,31 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết biên bản bàn giao tài sản",
-                          childInput: AssetHandoverDetail(
-                            provider: provider,
-                            isFindNew: provider.isFindNew,
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết biên bản bàn giao tài sản",
+                            childInput: AssetHandoverDetail(
+                              provider: provider,
+                              isFindNew: provider.isFindNew,
+                            ),
+                            childTableView: TabBarTableAsset(
+                              provider: provider,
+                            ),
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
                           ),
-                          childTableView: TabBarTableAsset(provider: provider),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
                         ),
                       ),
                     ),

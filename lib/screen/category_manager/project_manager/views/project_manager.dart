@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/mode
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/pages/project_form_page.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/providers/project_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class ProjectManager extends StatefulWidget {
@@ -37,10 +38,18 @@ class _ProjectManagerState extends State<ProjectManager> {
   bool isFirstLoad = false;
   bool isShowInput = false;
 
+  late HomeScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     Provider.of<ProjectProvider>(context, listen: false).onInit(context);
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -54,6 +63,12 @@ class _ProjectManagerState extends State<ProjectManager> {
       isShowInput = true;
       editingProject = duAn;
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   void _showDeleteDialog(BuildContext context, DuAn? duAn) {
@@ -164,39 +179,48 @@ class _ProjectManagerState extends State<ProjectManager> {
               body: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        childInput: ProjectFormPage(
-                          duAn: editingProject,
-                          onCancel: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          childInput: ProjectFormPage(
+                            duAn: editingProject,
+                            onCancel: () {
+                              setState(() {
+                                isShowInput = false;
+                              });
+                            },
+                            onSaved: () {
+                              setState(() {
+                                isShowInput = false;
+                              });
+                            },
+                          ),
+                          childTableView: ProjectManagerList(
+                            data: provider.dataPage,
+                            onChangeDetail: (item) {
+                              _showForm(item as DuAn?);
+                            },
+                            onDelete: (item) {
+                              _showDeleteDialog(context, item as DuAn?);
+                            },
+                            onEdit: (item) {
+                              _showForm(item as DuAn?);
+                            },
+                          ),
+                          isShowInput: isShowInput,
+                          onExpandedChanged: (isExpanded) {
+                            isShowInput = isExpanded;
                           },
-                          onSaved: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
-                          },
+                          title: 'Chi tiết dự án',
                         ),
-                        childTableView: ProjectManagerList(
-                          data: provider.dataPage,
-                          onChangeDetail: (item) {
-                            _showForm(item as DuAn?);
-                          },
-                          onDelete: (item) {
-                            _showDeleteDialog(context, item as DuAn?);
-                          },
-                          onEdit: (item) {
-                            _showForm(item as DuAn?);
-                          },
-                        ),
-                        isShowInput: isShowInput,
-                        onExpandedChanged: (isExpanded) {
-                          isShowInput = isExpanded;
-                        },
-                        title: 'Chi tiết dự án',
                       ),
                     ),
                   ),

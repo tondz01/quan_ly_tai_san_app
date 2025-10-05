@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_prov
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetGroupView extends StatefulWidget {
@@ -26,13 +27,25 @@ class AssetGroupView extends StatefulWidget {
 class _AssetGroupViewState extends State<AssetGroupView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
-
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AssetGroupProvider>(context, listen: false).onInit(context);
     });
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   @override
@@ -90,9 +103,7 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                           errorMessages.add(errorText);
                         }
 
-                        log(
-                          '[AssetGroupView] errorMessages: $errorMessages',
-                        );
+                        log('[AssetGroupView] errorMessages: $errorMessages');
                         if (!mounted) return;
 
                         // Hiển thị thông báo tổng quan
@@ -117,17 +128,26 @@ class _AssetGroupViewState extends State<AssetGroupView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết nhóm tài sản",
-                          childInput: AssetGroupDetail(provider: provider),
-                          childTableView: AssetGroupList(provider: provider),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết nhóm tài sản",
+                            childInput: AssetGroupDetail(provider: provider),
+                            childTableView: AssetGroupList(provider: provider),
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
+                          ),
                         ),
                       ),
                     ),

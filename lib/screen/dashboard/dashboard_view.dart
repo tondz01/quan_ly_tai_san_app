@@ -1,7 +1,9 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:graphic/graphic.dart' as graphic;
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_text_style.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/scrollable_bar_chart.dart';
@@ -59,10 +61,14 @@ class _DashboardViewState extends State<DashboardView> {
   List<dynamic> _ccdcGroupPercentageData = [];
   bool _isLoadingCcdcGroupPercentage = false;
   String? _ccdcGroupPercentageError;
+  
+  late HomeScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener(_onScrollStateChanged);
     _loadAssetStatusData();
     _loadCcdcStatusData();
     _loadAssetGroupData();
@@ -70,6 +76,16 @@ class _DashboardViewState extends State<DashboardView> {
     _loadDepreciationData();
     _loadAssetGroupPercentageData();
     _loadCcdcGroupPercentageData();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.removeListener(_onScrollStateChanged);
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   Future<void> _loadAssetStatusData() async {
@@ -572,43 +588,52 @@ class _DashboardViewState extends State<DashboardView> {
           stops: const [0.0, 0.5, 1.0],
         ),
       ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatisticsSection(data),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: _buildAssetStatusSection(data)),
-                const SizedBox(width: 24),
-                Expanded(child: _buildCcdcStatusSection(data)),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: _buildAssetGroupPercentageSection()),
-                const SizedBox(width: 24),
-                Expanded(child: _buildAssetGroupDistributionSection(data)),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: _buildCcdcGroupPercentageSection()),
-                const SizedBox(width: 24),
-                Expanded(child: _buildCcdcGroupDistributionSection(data)),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildTopAssetsSection(data),
-            const SizedBox(height: 24),
-            _buildTrendAnalysisSection(data),
-            const SizedBox(height: 24),
-            _buildMaintenanceSection(data),
-          ],
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          return true; // Xử lý scroll event bình thường
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          physics:
+              _scrollController.isParentScrolling
+                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStatisticsSection(data),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(child: _buildAssetStatusSection(data)),
+                  const SizedBox(width: 24),
+                  Expanded(child: _buildCcdcStatusSection(data)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(child: _buildAssetGroupPercentageSection()),
+                  const SizedBox(width: 24),
+                  Expanded(child: _buildAssetGroupDistributionSection(data)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(child: _buildCcdcGroupPercentageSection()),
+                  const SizedBox(width: 24),
+                  Expanded(child: _buildCcdcGroupDistributionSection(data)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildTopAssetsSection(data),
+              const SizedBox(height: 24),
+              _buildTrendAnalysisSection(data),
+              const SizedBox(height: 24),
+              _buildMaintenanceSection(data),
+            ],
+          ),
         ),
       ),
     );
@@ -1320,14 +1345,15 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 16),
           Expanded(
             child: ScrollableBarChart(
-              data: groupData
-                  .map(
-                    (item) => <String, Object>{
-                      'label': item['TenLoai'] ?? 'Chưa xác định',
-                      'value': item['SoLuong'] ?? 0,
-                    },
-                  )
-                  .toList(),
+              data:
+                  groupData
+                      .map(
+                        (item) => <String, Object>{
+                          'label': item['TenLoai'] ?? 'Chưa xác định',
+                          'value': item['SoLuong'] ?? 0,
+                        },
+                      )
+                      .toList(),
               categoryKey: 'label',
               valueKey: 'value',
               barWidth: 40,
@@ -1588,14 +1614,15 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 16),
           Expanded(
             child: ScrollableBarChart(
-              data: groupData
-                  .map(
-                    (item) => <String, Object>{
-                      'label': item['TenLoai'] ?? 'Chưa xác định',
-                      'value': item['SoLuong'] ?? 0,
-                    },
-                  )
-                  .toList(),
+              data:
+                  groupData
+                      .map(
+                        (item) => <String, Object>{
+                          'label': item['TenLoai'] ?? 'Chưa xác định',
+                          'value': item['SoLuong'] ?? 0,
+                        },
+                      )
+                      .toList(),
               categoryKey: 'label',
               valueKey: 'value',
               barWidth: 40,
@@ -1691,7 +1718,11 @@ class _DashboardViewState extends State<DashboardView> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red[400],
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         _assetGroupPercentageError!,
@@ -1716,15 +1747,16 @@ class _DashboardViewState extends State<DashboardView> {
                   )
                 else if (_assetGroupPercentageData.isNotEmpty)
                   PieDonutChartWithLegend(
-                    data: _assetGroupPercentageData
-                        .map(
-                          (item) => <String, Object>{
-                            'label': item['TenNhom'] ?? 'Chưa xác định',
-                            'value': item['SoLuong'] ?? 0,
-                            'percentage': item['TiLePhanTram'] ?? 0,
-                          },
-                        )
-                        .toList(),
+                    data:
+                        _assetGroupPercentageData
+                            .map(
+                              (item) => <String, Object>{
+                                'label': item['TenNhom'] ?? 'Chưa xác định',
+                                'value': item['SoLuong'] ?? 0,
+                                'percentage': item['TiLePhanTram'] ?? 0,
+                              },
+                            )
+                            .toList(),
                     categoryKey: 'label',
                     valueKey: 'value',
                     colors: [
@@ -1744,11 +1776,7 @@ class _DashboardViewState extends State<DashboardView> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.pie_chart,
-                        size: 48,
-                        color: Colors.grey[400],
-                      ),
+                      Icon(Icons.pie_chart, size: 48, color: Colors.grey[400]),
                       const SizedBox(height: 16),
                       Text(
                         'Không có dữ liệu phân bố tài sản',
@@ -1850,7 +1878,11 @@ class _DashboardViewState extends State<DashboardView> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+                      Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red[400],
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         _ccdcGroupPercentageError!,
@@ -1875,15 +1907,16 @@ class _DashboardViewState extends State<DashboardView> {
                   )
                 else if (_ccdcGroupPercentageData.isNotEmpty)
                   PieDonutChartWithLegend(
-                    data: _ccdcGroupPercentageData
-                        .map(
-                          (item) => <String, Object>{
-                            'label': item['TenNhom'] ?? 'Chưa xác định',
-                            'value': item['SoLuong'] ?? 0,
-                            'percentage': item['TiLePhanTram'] ?? 0,
-                          },
-                        )
-                        .toList(),
+                    data:
+                        _ccdcGroupPercentageData
+                            .map(
+                              (item) => <String, Object>{
+                                'label': item['TenNhom'] ?? 'Chưa xác định',
+                                'value': item['SoLuong'] ?? 0,
+                                'percentage': item['TiLePhanTram'] ?? 0,
+                              },
+                            )
+                            .toList(),
                     categoryKey: 'label',
                     valueKey: 'value',
                     colors: [

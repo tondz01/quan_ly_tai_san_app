@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_event.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_state.dart';
@@ -26,13 +27,26 @@ class UnitView extends StatefulWidget {
 class _UnitViewState extends State<UnitView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<UnitProvider>(context, listen: false).onInit(context);
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   @override
@@ -72,9 +86,7 @@ class _UnitViewState extends State<UnitView> {
                       if (!mounted) return;
                       if (result['success']) {
                         List<UnitDto> units = result['data'];
-                        unitBloc.add(
-                          CreateUnitBatchEvent(units),
-                        );
+                        unitBloc.add(CreateUnitBatchEvent(units));
                       } else {
                         List<dynamic> errors = result['errors'];
 
@@ -115,17 +127,26 @@ class _UnitViewState extends State<UnitView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết đơn vị tính",
-                          childInput: UnitDetail(provider: provider),
-                          childTableView: UnitList(provider: provider),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết đơn vị tính",
+                            childInput: UnitDetail(provider: provider),
+                            childTableView: UnitList(provider: provider),
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -155,47 +176,26 @@ class _UnitViewState extends State<UnitView> {
           // Hiển thị loading
         }
         if (state is GetListUnitSuccessState) {
-          context.read<UnitProvider>().getListUnitSuccess(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().getListUnitSuccess(context, state);
         }
         if (state is CreateUnitSuccessState) {
-          context.read<UnitProvider>().createUnitSuccess(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().createUnitSuccess(context, state);
         }
         if (state is CreateUnitFailedState) {
-          context.read<UnitProvider>().createUnitFailed(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().createUnitFailed(context, state);
         }
         if (state is GetListUnitFailedState) {
           // Xử lý lỗi
-          context.read<UnitProvider>().getListUnitFailed(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().getListUnitFailed(context, state);
         }
         if (state is UpdateUnitSuccessState) {
-          context.read<UnitProvider>().updateUnitSuccess(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().updateUnitSuccess(context, state);
         }
         if (state is DeleteUnitSuccessState) {
-          context.read<UnitProvider>().deleteUnitSuccess(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().deleteUnitSuccess(context, state);
         }
         if (state is PutPostDeleteFailedState) {
-          context.read<UnitProvider>().putPostDeleteFailed(
-            context,
-            state,
-          );
+          context.read<UnitProvider>().putPostDeleteFailed(context, state);
         }
       },
     );

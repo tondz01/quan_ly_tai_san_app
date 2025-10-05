@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
@@ -31,9 +32,22 @@ class _ReportScreenState extends State<ReportScreen> {
   List<DieuDongTaiSanDto> _list = [];
   bool _isLoading = true;
   PdfDocument? _document;
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
+  }
 
   @override
   void initState() {
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     super.initState();
     _loadData();
   }
@@ -108,136 +122,150 @@ class _ReportScreenState extends State<ReportScreen> {
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: MediaQuery.of(context).size.height,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
+              : NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  return true; // Xử lý scroll event bình thường
+                },
+                child: SingleChildScrollView(
+                  physics:
+                      _scrollController.isParentScrolling
+                          ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                          : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                  scrollDirection: Axis.vertical,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      height: MediaQuery.of(context).size.height,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(8),
-                              topRight: Radius.circular(8),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.table_chart,
+                                      color: Colors.grey.shade600,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Báo cáo cấp phát tài sản trong kỳ (${_list.length})',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // FindByStateAssetHandover(provider: widget.provider),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.table_chart,
-                                    color: Colors.grey.shade600,
-                                    size: 18,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Báo cáo cấp phát tài sản trong kỳ (${_list.length})',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              // FindByStateAssetHandover(provider: widget.provider),
-                            ],
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: SGAppColors.colorBorderGray.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
-                        ),
-                        Divider(
-                          height: 1,
-                          thickness: 1,
-                          color: SGAppColors.colorBorderGray.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                        Expanded(
-                          child: TableBaseView<DieuDongTaiSanDto>(
-                            searchTerm: '',
-                            columns: columns,
-                            data: _list,
-                            horizontalController: ScrollController(),
-                            isShowCheckboxes: false,
-                            onRowTap: (item) async {
-                              UserInfoDTO userInfo =
-                                  AccountHelper.instance.getUserInfo()!;
+                          Expanded(
+                            child: TableBaseView<DieuDongTaiSanDto>(
+                              searchTerm: '',
+                              columns: columns,
+                              data: _list,
+                              horizontalController: ScrollController(),
+                              isShowCheckboxes: false,
+                              onRowTap: (item) async {
+                                UserInfoDTO userInfo =
+                                    AccountHelper.instance.getUserInfo()!;
 
-                              item = await DieuDongTaiSanRepository().getById(
-                                item.id.toString(),
-                              );
-
-                              await _loadPdfNetwork(item.tenFile ?? "");
-                              if (mounted) {
-                                showDialog(
-                                  context: this.context,
-                                  barrierDismissible: true,
-                                  builder:
-                                      (context) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 24.0,
-                                          right: 24.0,
-                                          top: 16.0,
-                                          bottom: 16.0,
-                                        ),
-                                        child: CommonContract(
-                                          contractPages: [
-                                            if (_document != null)
-                                              for (
-                                                var index = 0;
-                                                index < _document!.pages.length;
-                                                index++
-                                              )
-                                                PdfPageView(
-                                                  document: _document!,
-                                                  pageNumber: index + 1,
-                                                  alignment: Alignment.center,
-                                                ),
-                                            A4Canvas(
-                                              marginsMm: const EdgeInsets.all(
-                                                20,
-                                              ),
-                                              scale: 1.2,
-                                              maxWidth: 800,
-                                              maxHeight: 800 * (297 / 210),
-                                              child: ContractPage.assetMovePage(
-                                                item,
-                                              ),
-                                            ),
-                                          ],
-                                          signatureList: [],
-                                          idTaiLieu: item.id.toString(),
-                                          idNguoiKy: userInfo.tenDangNhap,
-                                          tenNguoiKy: userInfo.hoTen,
-                                          isShowKy: false,
-                                        ),
-                                      ),
+                                item = await DieuDongTaiSanRepository().getById(
+                                  item.id.toString(),
                                 );
-                              }
-                            },
+
+                                await _loadPdfNetwork(item.tenFile ?? "");
+                                if (mounted) {
+                                  showDialog(
+                                    context: this.context,
+                                    barrierDismissible: true,
+                                    builder:
+                                        (context) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 24.0,
+                                            right: 24.0,
+                                            top: 16.0,
+                                            bottom: 16.0,
+                                          ),
+                                          child: CommonContract(
+                                            contractPages: [
+                                              if (_document != null)
+                                                for (
+                                                  var index = 0;
+                                                  index <
+                                                      _document!.pages.length;
+                                                  index++
+                                                )
+                                                  PdfPageView(
+                                                    document: _document!,
+                                                    pageNumber: index + 1,
+                                                    alignment: Alignment.center,
+                                                  ),
+                                              A4Canvas(
+                                                marginsMm: const EdgeInsets.all(
+                                                  20,
+                                                ),
+                                                scale: 1.2,
+                                                maxWidth: 800,
+                                                maxHeight: 800 * (297 / 210),
+                                                child:
+                                                    ContractPage.assetMovePage(
+                                                      item,
+                                                    ),
+                                              ),
+                                            ],
+                                            signatureList: [],
+                                            idTaiLieu: item.id.toString(),
+                                            idNguoiKy: userInfo.tenDangNhap,
+                                            tenNguoiKy: userInfo.hoTen,
+                                            isShowKy: false,
+                                          ),
+                                        ),
+                                  );
+                                }
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
