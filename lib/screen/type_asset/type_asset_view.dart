@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_event.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/bloc/type_asset_state.dart';
@@ -26,13 +27,26 @@ class TypeAssetView extends StatefulWidget {
 class _TypeAssetViewState extends State<TypeAssetView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<TypeAssetProvider>(context, listen: false).onInit(context);
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   @override
@@ -138,17 +152,26 @@ class _TypeAssetViewState extends State<TypeAssetView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết loại tài sản",
-                          childInput: TypeAssetDetail(provider: provider),
-                          childTableView: TypeAssetList(provider: provider),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết loại tài sản",
+                            childInput: TypeAssetDetail(provider: provider),
+                            childTableView: TypeAssetList(provider: provider),
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
+                          ),
                         ),
                       ),
                     ),

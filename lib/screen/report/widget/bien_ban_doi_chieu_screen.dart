@@ -7,6 +7,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/dieu_dong_tai_san_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_doi_chieu_page.dart';
@@ -26,11 +27,24 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
   final AssetHandoverRepository _repo = AssetHandoverRepository();
   List<AssetHandoverDto> _list = [];
   bool _isLoading = true;
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -55,83 +69,154 @@ class _BienBanDoiChieuScreenState extends State<BienBanDoiChieuScreen> {
   @override
   Widget build(BuildContext context) {
     final columns = [
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Phiếu bàn giao', getValue: (item) => item.quyetDinhDieuDongSo ?? '', width: 0),
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị giao', getValue: (item) => item.tenDonViGiao ?? '', width: 0),
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Đơn vị nhận', getValue: (item) => item.tenDonViNhan ?? '', width: 0),
-      TableBaseConfig.columnTable<AssetHandoverDto>(title: 'Ngày hiệu lực', getValue: (item) => _formatDate(item.ngayBanGiao), width: 0),
-      TableBaseConfig.columnWidgetBase<AssetHandoverDto>(title: 'Trạng thái', cellBuilder: (item) => ConfigViewAT.showStatus(item.trangThai ?? 0), width: 120, searchable: true),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Phiếu bàn giao',
+        getValue: (item) => item.quyetDinhDieuDongSo ?? '',
+        width: 0,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Đơn vị giao',
+        getValue: (item) => item.tenDonViGiao ?? '',
+        width: 0,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Đơn vị nhận',
+        getValue: (item) => item.tenDonViNhan ?? '',
+        width: 0,
+      ),
+      TableBaseConfig.columnTable<AssetHandoverDto>(
+        title: 'Ngày hiệu lực',
+        getValue: (item) => _formatDate(item.ngayBanGiao),
+        width: 0,
+      ),
+      TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+        title: 'Trạng thái',
+        cellBuilder: (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
+        width: 120,
+        searchable: true,
+      ),
     ];
     return Scaffold(
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    height: MediaQuery.of(context).size.height,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300, width: 1),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: Offset(0, 2))],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Biên bản kiểm tra đối chiếu kiểm kê (${_list.length})',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
-                                  ),
-                                ],
+              : NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  return true; // Xử lý scroll event bình thường
+                },
+                child: SingleChildScrollView(
+                  physics:
+                      _scrollController.isParentScrolling
+                          ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                          : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                  scrollDirection: Axis.vertical,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      height: MediaQuery.of(context).size.height,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8),
                               ),
-                              // FindByStateAssetHandover(provider: widget.provider),
-                            ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.table_chart,
+                                      color: Colors.grey.shade600,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Biên bản kiểm tra đối chiếu kiểm kê (${_list.length})',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // FindByStateAssetHandover(provider: widget.provider),
+                              ],
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: TableBaseView<AssetHandoverDto>(
-                            searchTerm: '',
-                            columns: columns,
-                            data: _list,
-                            horizontalController: ScrollController(),
-                            onRowTap: (item) async {
-                              DieuDongTaiSanDto dieuDongTaiSanDto = await DieuDongTaiSanRepository().getById(item.quyetDinhDieuDongSo.toString());
-                              List<ChiTietDieuDongTaiSan>? chiTietDieuDongTaiSans = dieuDongTaiSanDto.chiTietDieuDongTaiSans;
-                              if (chiTietDieuDongTaiSans != null) {
-                                if (mounted) {
-                                  UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
-                                  showDialog(
-                                    context: this.context,
-                                    barrierDismissible: true,
-                                    builder:
-                                        (context) => Padding(
-                                          padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 16.0, bottom: 16.0),
-                                          child: CommonContract(
-                                            contractPages: [BienBanDoiChieuKiemKePage()],
-                                            signatureList: <String>['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s'],
-                                            idTaiLieu: item.id.toString(),
-                                            idNguoiKy: userInfo.tenDangNhap,
-                                            tenNguoiKy: userInfo.hoTen,
+                          Expanded(
+                            child: TableBaseView<AssetHandoverDto>(
+                              searchTerm: '',
+                              columns: columns,
+                              data: _list,
+                              horizontalController: ScrollController(),
+                              onRowTap: (item) async {
+                                DieuDongTaiSanDto dieuDongTaiSanDto =
+                                    await DieuDongTaiSanRepository().getById(
+                                      item.quyetDinhDieuDongSo.toString(),
+                                    );
+                                List<ChiTietDieuDongTaiSan>?
+                                chiTietDieuDongTaiSans =
+                                    dieuDongTaiSanDto.chiTietDieuDongTaiSans;
+                                if (chiTietDieuDongTaiSans != null) {
+                                  if (mounted) {
+                                    UserInfoDTO userInfo =
+                                        AccountHelper.instance.getUserInfo()!;
+                                    showDialog(
+                                      context: this.context,
+                                      barrierDismissible: true,
+                                      builder:
+                                          (context) => Padding(
+                                            padding: const EdgeInsets.only(
+                                              left: 24.0,
+                                              right: 24.0,
+                                              top: 16.0,
+                                              bottom: 16.0,
+                                            ),
+                                            child: CommonContract(
+                                              contractPages: [
+                                                BienBanDoiChieuKiemKePage(),
+                                              ],
+                                              signatureList: <String>[
+                                                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8wBK0d0QukghPwb_8QvKjEzjtEjIszRwbA&s',
+                                              ],
+                                              idTaiLieu: item.id.toString(),
+                                              idNguoiKy: userInfo.tenDangNhap,
+                                              tenNguoiKy: userInfo.hoTen,
+                                            ),
                                           ),
-                                        ),
-                                  );
+                                    );
+                                  }
                                 }
-                              }
-                            },
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

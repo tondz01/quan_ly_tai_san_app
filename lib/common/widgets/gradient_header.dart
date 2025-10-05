@@ -36,28 +36,33 @@ class GradientHeader extends StatelessWidget {
           // Color bands decoration
           _buildColorBands(),
           // Main content
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 16.0,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo section
-                if (logoPath != null)
-                  CircleAvatar(
-                    radius: 32,
-                    child: Image.asset(
-                      logoPath ?? AppImage.imageLogo,
-                      fit: BoxFit.cover,
-                    ), // kích thước avatar
-                  ),
-                const SizedBox(width: 24),
-                // Title section
-                _buildTitle(),
-              ],
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo section
+                  if (logoPath != null)
+                    CircleAvatar(
+                      radius: 32,
+                      child: Image.asset(
+                        logoPath ?? AppImage.imageLogo,
+                        fit: BoxFit.cover,
+                      ), // kích thước avatar
+                    ),
+                  const SizedBox(width: 24),
+                  // Title section
+                  _buildTitle(),
+                ],
+              ),
             ),
           ),
         ],
@@ -80,8 +85,8 @@ class GradientHeader extends StatelessWidget {
         title,
         style: TextStyle(
           color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
           fontFamily: 'serif',
           shadows: [
             Shadow(

@@ -610,7 +610,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "7c5f72f5562a68f1080ef34f85a844255fc44d3e"
+      resolved-ref: b6008be78f1757a6284e7947526c4a0427cb603e
       url: "https://github.com/congcuong207/SeGayComponent.git"
     source: git
     version: "1.0.0+1"

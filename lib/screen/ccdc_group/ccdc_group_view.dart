@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/provider/ccdc_group_provid
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class CcdcGroupView extends StatefulWidget {
@@ -26,13 +27,26 @@ class CcdcGroupView extends StatefulWidget {
 class _CcdcGroupViewState extends State<CcdcGroupView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CcdcGroupProvider>(context, listen: false).onInit(context);
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.removeListener(_onScrollStateChanged);
   }
 
   @override
@@ -140,9 +154,7 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                           errorMessages.add(errorText);
                         }
 
-                        log(
-                          '[CcdcGroupView] errorMessages: $errorMessages',
-                        );
+                        log('[CcdcGroupView] errorMessages: $errorMessages');
                         if (!mounted) return;
 
                         // Hiển thị thông báo tổng quan
@@ -167,17 +179,26 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết nhóm ccdc",
-                          childInput: CcdcGroupDetail(provider: provider),
-                          childTableView: CcdcGroupList(provider: provider),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết nhóm ccdc",
+                            childInput: CcdcGroupDetail(provider: provider),
+                            childTableView: CcdcGroupList(provider: provider),
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
+                          ),
                         ),
                       ),
                     ),

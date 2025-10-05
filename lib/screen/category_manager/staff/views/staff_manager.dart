@@ -21,6 +21,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/constants/staf
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -80,13 +81,20 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     });
   }
 
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StaffBloc>().add(const LoadStaffs());
     });
     _checkPermission();
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -109,6 +117,12 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
       isShowInput = false;
       _checkPermission();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   void _searchStaff(String value) {
@@ -331,62 +345,73 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
               body: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        title: 'Chi tiết nhân viên',
-                        childInput: StaffFormPage(
-                          staff: editingStaff,
-                          staffs: staffs,
-                          isNew: isNew,
-                          isCanUpdate: isCanUpdate,
-                          onCancel: () {
-                            setState(() {
-                              isShowInput = false;
-                            });
-                          },
-                          onSaved:
-                              () => setState(() {
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          title: 'Chi tiết nhân viên',
+                          childInput: StaffFormPage(
+                            staff: editingStaff,
+                            staffs: staffs,
+                            isNew: isNew,
+                            isCanUpdate: isCanUpdate,
+                            onCancel: () {
+                              setState(() {
                                 isShowInput = false;
-                              }),
-                        ),
-                        childTableView: StaffList(
-                          data: dataPage,
-                          isCanDelete: isCanDelete,
-                          onChangeDetail: (item) {
-                            _showForm(item);
-                            isShowInput = true;
-                          },
-                          onDelete: (item) {
-                            setState(() {
-                              if (!isCanDelete) {
-                                AppUtility.showSnackBar(
-                                  context,
-                                  'Bạn không có quyền xóa nhân viên',
-                                );
-                                return;
-                              }
-                              isShowInput = false;
-                              context.read<StaffBloc>().add(DeleteStaff(item));
-                            });
-                          },
-                          onEdit: (item) {
-                            _showForm(item);
-                          },
-                          onDeleteBatch:
-                              (p0) => setState(() {
+                              });
+                            },
+                            onSaved:
+                                () => setState(() {
+                                  isShowInput = false;
+                                }),
+                          ),
+                          childTableView: StaffList(
+                            data: dataPage,
+                            isCanDelete: isCanDelete,
+                            onChangeDetail: (item) {
+                              _showForm(item);
+                              isShowInput = true;
+                            },
+                            onDelete: (item) {
+                              setState(() {
+                                if (!isCanDelete) {
+                                  AppUtility.showSnackBar(
+                                    context,
+                                    'Bạn không có quyền xóa nhân viên',
+                                  );
+                                  return;
+                                }
                                 isShowInput = false;
                                 context.read<StaffBloc>().add(
-                                  DeleteStaffBatch(p0),
+                                  DeleteStaff(item),
                                 );
-                              }),
-                        ),
+                              });
+                            },
+                            onEdit: (item) {
+                              _showForm(item);
+                            },
+                            onDeleteBatch:
+                                (p0) => setState(() {
+                                  isShowInput = false;
+                                  context.read<StaffBloc>().add(
+                                    DeleteStaffBatch(p0),
+                                  );
+                                }),
+                          ),
 
-                        // Container(height: 200,color: Colors.limeAccent,),
-                        isShowInput: isShowInput,
-                        onExpandedChanged: (isExpanded) {
-                          isShowInput = isExpanded;
-                        },
+                          // Container(height: 200,color: Colors.limeAccent,),
+                          isShowInput: isShowInput,
+                          onExpandedChanged: (isExpanded) {
+                            isShowInput = isExpanded;
+                          },
+                        ),
                       ),
                     ),
                   ),

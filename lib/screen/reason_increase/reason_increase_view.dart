@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/bloc/reason_increase_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/bloc/reason_increase_event.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/bloc/reason_increase_state.dart';
@@ -26,16 +27,29 @@ class ReasonIncreaseView extends StatefulWidget {
 class _ReasonIncreaseViewState extends State<ReasonIncreaseView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ReasonIncreaseProvider>(
         context,
         listen: false,
       ).onInit(context);
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   @override
@@ -188,19 +202,30 @@ class _ReasonIncreaseViewState extends State<ReasonIncreaseView> {
                 body: Column(
                   children: [
                     Flexible(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          title: "Chi tiết lý do tăng",
-                          childInput: ReasonIncreaseDetail(provider: provider),
-                          childTableView: ReasonIncreaseList(
-                            provider: provider,
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController.isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            title: "Chi tiết lý do tăng",
+                            childInput: ReasonIncreaseDetail(
+                              provider: provider,
+                            ),
+                            childTableView: ReasonIncreaseList(
+                              provider: provider,
+                            ),
+                            isShowInput: provider.isShowInput,
+                            isShowCollapse: provider.isShowCollapse,
+                            onExpandedChanged: (isExpanded) {
+                              provider.isShowCollapse = isExpanded;
+                            },
                           ),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.isShowCollapse = isExpanded;
-                          },
                         ),
                       ),
                     ),

@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreci
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetManagementView extends StatefulWidget {
@@ -34,9 +35,13 @@ class _AssetManagementViewState extends State<AssetManagementView> {
   String searchTerm = "";
   bool isShowKhauHao = false;
 
+  late HomeScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AssetManagementProvider>(
         context,
@@ -46,9 +51,14 @@ class _AssetManagementViewState extends State<AssetManagementView> {
     log('message test: initState');
   }
 
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
+
   @override
   void dispose() {
     super.dispose();
+    _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     _searchKhauHaoController.dispose();
   }
@@ -143,38 +153,57 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                   children: [
                     provider.typeBody == ShowBody.taiSan
                         ? Flexible(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: CommonPageView(
-                              childInput: AssetDetail(provider: provider),
-                              childTableView: AssetManagementList(
-                                provider: provider,
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              return true; // Xử lý scroll event bình thường
+                            },
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.all(24),
+                              physics:
+                                  _scrollController.isParentScrolling
+                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                              scrollDirection: Axis.vertical,
+                              child: CommonPageView(
+                                childInput: AssetDetail(provider: provider),
+                                childTableView: AssetManagementList(
+                                  provider: provider,
+                                ),
+                                title: "Tạo tài sản",
+                                isShowInput: provider.isShowInput,
+                                isShowCollapse: provider.isShowCollapse,
+                                onExpandedChanged: (isExpanded) {
+                                  provider.isShowCollapse = isExpanded;
+                                },
                               ),
-                              title: "Tạo tài sản",
-                              isShowInput: provider.isShowInput,
-                              isShowCollapse: provider.isShowCollapse,
-                              onExpandedChanged: (isExpanded) {
-                                provider.isShowCollapse = isExpanded;
-                              },
                             ),
                           ),
                         )
                         : Flexible(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: CommonPageView(
-                              childInput: AssetDepreciationDetail(
-                                provider: provider,
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              return true; // Xử lý scroll event bình thường
+                            },
+                            child: SingleChildScrollView(
+                              physics:
+                                  _scrollController.isParentScrolling
+                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                              scrollDirection: Axis.vertical,
+                              child: CommonPageView(
+                                childInput: AssetDepreciationDetail(
+                                  provider: provider,
+                                ),
+                                childTableView: AssetDepreciationList(
+                                  provider: provider,
+                                ),
+                                title: "Chi tiết khấu hao tài sản",
+                                isShowInput: provider.isShowInputKhauHao,
+                                isShowCollapse: provider.isShowCollapseKhauHao,
+                                onExpandedChanged: (isExpanded) {
+                                  provider.isShowCollapseKhauHao = isExpanded;
+                                },
                               ),
-                              childTableView: AssetDepreciationList(
-                                provider: provider,
-                              ),
-                              title: "Chi tiết khấu hao tài sản",
-                              isShowInput: provider.isShowInputKhauHao,
-                              isShowCollapse: provider.isShowCollapseKhauHao,
-                              onExpandedChanged: (isExpanded) {
-                                provider.isShowCollapseKhauHao = isExpanded;
-                              },
                             ),
                           ),
                         ),

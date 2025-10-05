@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
@@ -40,15 +41,24 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   bool _isExporting = false;
   int numberPageStart = 5;
   int numberPage = 17;
+  late HomeScrollController _scrollController;
+
+  void _onScrollStateChanged() {
+    setState(() {});
+  }
 
   @override
   void initState() {
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     super.initState();
     _loadData();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+
     controllerImportDate.dispose();
     controllerDonVi.dispose();
     super.dispose();
@@ -347,62 +357,172 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                   Expanded(
                     child: Stack(
                       children: [
-                        SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              if (_listPages.isEmpty)
-                                RepaintBoundary(
-                                  key:
-                                      _pageKeys.isNotEmpty
-                                          ? _pageKeys[0]
-                                          : GlobalKey(),
-                                  child: Stack(
-                                    children: [
-                                      A4Canvas(
-                                        marginsMm: EdgeInsets.all(4),
-                                        scale: 1.2,
-                                        maxWidth: 800,
-                                        maxHeight: 800 * (297 / 210),
-                                        child: BienBanKiemKePage(
-                                          inventoryMinutes: _list,
-                                          denNgay: formatToYyyyMmDd(
-                                            controllerImportDate.text,
+                        NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            return true; // Xử lý scroll event bình thường
+                          },
+                          child: SingleChildScrollView(
+                            physics:
+                                _scrollController.isParentScrolling
+                                    ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                    : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                            scrollDirection: Axis.vertical,
+                            child: Column(
+                              children: [
+                                if (_listPages.isEmpty)
+                                  RepaintBoundary(
+                                    key:
+                                        _pageKeys.isNotEmpty
+                                            ? _pageKeys[0]
+                                            : GlobalKey(),
+                                    child: Stack(
+                                      children: [
+                                        A4Canvas(
+                                          marginsMm: EdgeInsets.all(4),
+                                          scale: 1.2,
+                                          maxWidth: 800,
+                                          maxHeight: 800 * (297 / 210),
+                                          child: BienBanKiemKePage(
+                                            inventoryMinutes: _list,
+                                            denNgay: formatToYyyyMmDd(
+                                              controllerImportDate.text,
+                                            ),
+                                            tenDonVi: donVi?.tenPhongBan ?? '',
                                           ),
-                                          tenDonVi: donVi?.tenPhongBan ?? '',
                                         ),
-                                      ),
-                                      NumberPageView(index: 0),
-                                    ],
-                                  ),
-                                )
-                              else if (_listPages.length < numberPageStart)
-                                RepaintBoundary(
-                                  key:
-                                      _pageKeys.isNotEmpty
-                                          ? _pageKeys[0]
-                                          : GlobalKey(),
-                                  child: Stack(
-                                    children: [
-                                      A4Canvas(
-                                        marginsMm: EdgeInsets.all(4),
-                                        scale: 1.2,
-                                        maxWidth: 800,
-                                        maxHeight: 800 * (297 / 210),
-                                        child: BienBanKiemKePage(
-                                          inventoryMinutes: _list,
-                                          denNgay: formatToYyyyMmDd(
-                                            controllerImportDate.text,
+                                        NumberPageView(index: 0),
+                                      ],
+                                    ),
+                                  )
+                                else if (_listPages.length < numberPageStart)
+                                  RepaintBoundary(
+                                    key:
+                                        _pageKeys.isNotEmpty
+                                            ? _pageKeys[0]
+                                            : GlobalKey(),
+                                    child: Stack(
+                                      children: [
+                                        A4Canvas(
+                                          marginsMm: EdgeInsets.all(4),
+                                          scale: 1.2,
+                                          maxWidth: 800,
+                                          maxHeight: 800 * (297 / 210),
+                                          child: BienBanKiemKePage(
+                                            inventoryMinutes: _list,
+                                            denNgay: formatToYyyyMmDd(
+                                              controllerImportDate.text,
+                                            ),
+                                            tenDonVi: donVi?.tenPhongBan ?? '',
                                           ),
-                                          tenDonVi: donVi?.tenPhongBan ?? '',
                                         ),
-                                      ),
-                                      NumberPageView(index: 0),
-                                    ],
-                                  ),
-                                )
-                              else
-                                ...List.generate(_listPages.length, (index) {
-                                  if (index == 0) {
+                                        NumberPageView(index: 0),
+                                      ],
+                                    ),
+                                  )
+                                else
+                                  ...List.generate(_listPages.length, (index) {
+                                    if (index == 0) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12.0,
+                                        ),
+                                        child: RepaintBoundary(
+                                          key: _pageKeys[index],
+                                          child: Stack(
+                                            children: [
+                                              A4Canvas(
+                                                marginsMm: EdgeInsets.all(4),
+                                                scale: 1.2,
+                                                maxWidth: 800,
+                                                maxHeight: 800 * (297 / 210),
+                                                child: Column(
+                                                  children: [
+                                                    HeaderBienBanKiemKe(
+                                                      tenDonVi:
+                                                          donVi?.tenPhongBan ??
+                                                          '',
+                                                      denNgay: formatToYyyyMmDd(
+                                                        controllerImportDate
+                                                            .text,
+                                                      ),
+                                                    ),
+                                                    BodyBienBanKiemKe(
+                                                      inventoryMinutes:
+                                                          _listPages[index],
+                                                      startIndex:
+                                                          _pageStartIndex(
+                                                            index,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              NumberPageView(index: index),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    if (index == _listPages.length - 1) {
+                                      return Column(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 12.0,
+                                            ),
+                                            child: RepaintBoundary(
+                                              key: _pageKeys[index],
+                                              child: Stack(
+                                                children: [
+                                                  A4Canvas(
+                                                    marginsMm: EdgeInsets.all(
+                                                      4,
+                                                    ),
+                                                    scale: 1.2,
+                                                    maxWidth: 800,
+                                                    maxHeight:
+                                                        800 * (297 / 210),
+                                                    child: BodyBienBanKiemKe(
+                                                      inventoryMinutes:
+                                                          _listPages[index],
+                                                      startIndex:
+                                                          _pageStartIndex(
+                                                            index,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  NumberPageView(index: index),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 12.0,
+                                            ),
+                                            child: RepaintBoundary(
+                                              key: _pageKeys[index + 1],
+                                              child: Stack(
+                                                children: [
+                                                  A4Canvas(
+                                                    marginsMm: EdgeInsets.all(
+                                                      4,
+                                                    ),
+                                                    scale: 1.2,
+                                                    maxWidth: 800,
+                                                    maxHeight:
+                                                        800 * (297 / 210),
+                                                    child:
+                                                        FooterBienBanKiemKe(),
+                                                  ),
+                                                  NumberPageView(index: index),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }
                                     return Padding(
                                       padding: const EdgeInsets.only(
                                         bottom: 12.0,
@@ -416,24 +536,12 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                               scale: 1.2,
                                               maxWidth: 800,
                                               maxHeight: 800 * (297 / 210),
-                                              child: Column(
-                                                children: [
-                                                  HeaderBienBanKiemKe(
-                                                    tenDonVi:
-                                                        donVi?.tenPhongBan ??
-                                                        '',
-                                                    denNgay: formatToYyyyMmDd(
-                                                      controllerImportDate.text,
-                                                    ),
-                                                  ),
-                                                  BodyBienBanKiemKe(
-                                                    inventoryMinutes:
-                                                        _listPages[index],
-                                                    startIndex: _pageStartIndex(
-                                                      index,
-                                                    ),
-                                                  ),
-                                                ],
+                                              child: BodyBienBanKiemKe(
+                                                inventoryMinutes:
+                                                    _listPages[index],
+                                                startIndex: _pageStartIndex(
+                                                  index,
+                                                ),
                                               ),
                                             ),
                                             NumberPageView(index: index),
@@ -441,87 +549,9 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                         ),
                                       ),
                                     );
-                                  }
-                                  if (index == _listPages.length - 1) {
-                                    return Column(
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 12.0,
-                                          ),
-                                          child: RepaintBoundary(
-                                            key: _pageKeys[index],
-                                            child: Stack(
-                                              children: [
-                                                A4Canvas(
-                                                  marginsMm: EdgeInsets.all(4),
-                                                  scale: 1.2,
-                                                  maxWidth: 800,
-                                                  maxHeight: 800 * (297 / 210),
-                                                  child: BodyBienBanKiemKe(
-                                                    inventoryMinutes:
-                                                        _listPages[index],
-                                                    startIndex: _pageStartIndex(
-                                                      index,
-                                                    ),
-                                                  ),
-                                                ),
-                                                NumberPageView(index: index),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            bottom: 12.0,
-                                          ),
-                                          child: RepaintBoundary(
-                                            key: _pageKeys[index + 1],
-                                            child: Stack(
-                                              children: [
-                                                A4Canvas(
-                                                  marginsMm: EdgeInsets.all(4),
-                                                  scale: 1.2,
-                                                  maxWidth: 800,
-                                                  maxHeight: 800 * (297 / 210),
-                                                  child: FooterBienBanKiemKe(),
-                                                ),
-                                                NumberPageView(index: index),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: 12.0,
-                                    ),
-                                    child: RepaintBoundary(
-                                      key: _pageKeys[index],
-                                      child: Stack(
-                                        children: [
-                                          A4Canvas(
-                                            marginsMm: EdgeInsets.all(4),
-                                            scale: 1.2,
-                                            maxWidth: 800,
-                                            maxHeight: 800 * (297 / 210),
-                                            child: BodyBienBanKiemKe(
-                                              inventoryMinutes:
-                                                  _listPages[index],
-                                              startIndex: _pageStartIndex(
-                                                index,
-                                              ),
-                                            ),
-                                          ),
-                                          NumberPageView(index: index),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }),
-                            ],
+                                  }),
+                              ],
+                            ),
                           ),
                         ),
 

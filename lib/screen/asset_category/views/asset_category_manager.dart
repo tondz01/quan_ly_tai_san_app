@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_
 import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetCategoryManager extends StatefulWidget {
@@ -47,15 +48,21 @@ class _AssetCategoryManagerState extends State<AssetCategoryManager>
   List<AssetCategoryDto> dataPage = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
-
+  late HomeScrollController _scrollController;
   @override
   void initState() {
     super.initState();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AssetCategoryBloc>().add(
         GetListAssetCategoryEvent(context, 'ct001'),
       );
     });
+  }
+
+  void _onScrollStateChanged() {
+    setState(() {});
   }
 
   @override
@@ -71,6 +78,12 @@ class _AssetCategoryManagerState extends State<AssetCategoryManager>
         GetListAssetCategoryEvent(context, 'ct001'),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScrollStateChanged);
+    super.dispose();
   }
 
   void _showForm([AssetCategoryDto? assetCategory]) {
@@ -322,7 +335,7 @@ class _AssetCategoryManagerState extends State<AssetCategoryManager>
                       log(
                         '[AssetCategoryManager] errorMessages: $errorMessages',
                       );
-                      
+
                       if (!mounted) return;
 
                       // Hiển thị thông báo tổng quan
@@ -347,53 +360,62 @@ class _AssetCategoryManagerState extends State<AssetCategoryManager>
               body: Column(
                 children: [
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: CommonPageView(
-                        title: 'Chi tiết mô hình tài sản',
-                        childInput: AssetCategoryFormPage(
-                          data: editingAssetCategory,
-                          onSave: (assetCategory) {
-                            if (editingAssetCategory != null) {
-                              context.read<AssetCategoryBloc>().add(
-                                UpdateAssetCategoryEvent(
-                                  context,
-                                  assetCategory,
-                                  editingAssetCategory!.id ?? '',
-                                ),
-                              );
-                            } else {
-                              context.read<AssetCategoryBloc>().add(
-                                CreateAssetCategoryEvent(
-                                  context,
-                                  assetCategory,
-                                ),
-                              );
-                            }
-                          },
-                          onCancel: () {
-                            setState(() {
-                              isShowInput = false;
-                              editingAssetCategory = null;
-                            });
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        return true; // Xử lý scroll event bình thường
+                      },
+                      child: SingleChildScrollView(
+                        physics:
+                            _scrollController.isParentScrolling
+                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                        scrollDirection: Axis.vertical,
+                        child: CommonPageView(
+                          title: 'Chi tiết mô hình tài sản',
+                          childInput: AssetCategoryFormPage(
+                            data: editingAssetCategory,
+                            onSave: (assetCategory) {
+                              if (editingAssetCategory != null) {
+                                context.read<AssetCategoryBloc>().add(
+                                  UpdateAssetCategoryEvent(
+                                    context,
+                                    assetCategory,
+                                    editingAssetCategory!.id ?? '',
+                                  ),
+                                );
+                              } else {
+                                context.read<AssetCategoryBloc>().add(
+                                  CreateAssetCategoryEvent(
+                                    context,
+                                    assetCategory,
+                                  ),
+                                );
+                              }
+                            },
+                            onCancel: () {
+                              setState(() {
+                                isShowInput = false;
+                                editingAssetCategory = null;
+                              });
+                            },
+                          ),
+                          childTableView: AssetCategoryList(
+                            data: dataPage,
+                            onChangeDetail: (item) {
+                              _showForm(item);
+                            },
+                            onDelete: (item) {
+                              _showDeleteDialog(context, item);
+                            },
+                            onEdit: (item) {
+                              _showForm(item);
+                            },
+                          ),
+                          isShowInput: isShowInput,
+                          onExpandedChanged: (isExpanded) {
+                            isShowInput = isExpanded;
                           },
                         ),
-                        childTableView: AssetCategoryList(
-                          data: dataPage,
-                          onChangeDetail: (item) {
-                            _showForm(item);
-                          },
-                          onDelete: (item) {
-                            _showDeleteDialog(context, item);
-                          },
-                          onEdit: (item) {
-                            _showForm(item);
-                          },
-                        ),
-                        isShowInput: isShowInput,
-                        onExpandedChanged: (isExpanded) {
-                          isShowInput = isExpanded;
-                        },
                       ),
                     ),
                   ),
