@@ -45,7 +45,6 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
   @override
   Widget build(BuildContext context) {
     bool hasError = widget.validationErrors['document'] == true;
-
     return widget.isInsertData
         ? _buildInsertData()
         : Column(

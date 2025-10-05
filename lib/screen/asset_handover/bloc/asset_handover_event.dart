@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 abstract class AssetHandoverEvent extends Equatable {
@@ -29,22 +30,26 @@ class SendToSignerAsetHandoverEvent extends AssetHandoverEvent {
 class CreateAssetHandoverEvent extends AssetHandoverEvent {
   final Map<String, dynamic> request;
   final List<SignatoryDto> listSignatory;
+  final List<DetailAssetHandoverDto> listDetailAssetHandover;
 
-  const CreateAssetHandoverEvent(this.request, this.listSignatory);
+  const CreateAssetHandoverEvent(
+    this.request,
+    this.listSignatory,
+    this.listDetailAssetHandover,
+  );
 
   @override
-  List<Object?> get props => [request, listSignatory];
+  List<Object?> get props => [request, listSignatory, listDetailAssetHandover];
 }
 
 class UpdateAssetHandoverEvent extends AssetHandoverEvent {
-  final BuildContext context;
   final Map<String, dynamic> request;
   final String id;
 
-  const UpdateAssetHandoverEvent(this.context, this.request, this.id);
+  const UpdateAssetHandoverEvent(this.request, this.id);
 
   @override
-  List<Object?> get props => [context, request];
+  List<Object?> get props => [request];
 }
 
 class DeleteAssetHandoverEvent extends AssetHandoverEvent {
@@ -65,7 +70,13 @@ class UpdateSigningStatusEvent extends AssetHandoverEvent {
   final List<Map<String, dynamic>> request;
   final String idDieuChuyen;
 
-  const UpdateSigningStatusEvent(this.context, this.id, this.userId, this.request, this.idDieuChuyen);
+  const UpdateSigningStatusEvent(
+    this.context,
+    this.id,
+    this.userId,
+    this.request,
+    this.idDieuChuyen,
+  );
 
   @override
   List<Object?> get props => [context, id, userId, request, idDieuChuyen];

@@ -78,7 +78,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'actions',
   ];
 
-  PdfDocument? _document;
+  PdfDocument? pdfDocument;
   DieuDongTaiSanDto? _selectedAssetTransfer;
   List<Map<String, DateTime Function(AssetHandoverDto)>> getters = [
     {
@@ -129,11 +129,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
       );
       setState(() {
-        _document = document;
+        pdfDocument = document;
       });
     } catch (e) {
       setState(() {
-        _document = null;
+        pdfDocument = null;
       });
       SGLog.error("Error loading PDF", e.toString());
     }

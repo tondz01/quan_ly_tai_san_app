@@ -96,6 +96,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         nguoiDaiDienBanHanhQD: state.nguoiKyGiamDoc,
         item: state.item,
         selectedFileName: state.selectedFileName,
+        selectedFilePath: state.selectedFilePath,
       );
     });
     return validation.validationErrors.isEmpty;

@@ -58,7 +58,6 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
 
       final dynamic respData = response.data;
-      log('listNewDetails test1: requestDetail: ${jsonEncode(requestDetail)}');
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_TOOL_AND_MATERIAL_TRANSFER}/batch',
         data: jsonEncode(requestDetail),

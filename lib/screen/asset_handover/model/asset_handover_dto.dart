@@ -1,4 +1,5 @@
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 
 class AssetHandoverDto {
@@ -40,6 +41,7 @@ class AssetHandoverDto {
   final bool? byStep;
   final int? trangThaiPhieu;
   List<SignatoryDto>? listSignatory;
+  List<DetailAssetHandoverDto>? chiTietBanGiaoTaiSan;
 
   AssetHandoverDto({
     this.id,
@@ -80,6 +82,7 @@ class AssetHandoverDto {
     this.listSignatory,
     this.byStep,
     this.trangThaiPhieu,
+    this.chiTietBanGiaoTaiSan,
   });
 
   factory AssetHandoverDto.fromJson(Map<String, dynamic> json) {
@@ -129,6 +132,14 @@ class AssetHandoverDto {
               : null,
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],
+      chiTietBanGiaoTaiSan:
+          json['chiTietBanGiaoTaiSan'] != null
+              ? List<DetailAssetHandoverDto>.from(
+                json['chiTietBanGiaoTaiSan'].map(
+                  (x) => DetailAssetHandoverDto.fromJson(x),
+                ),
+              )
+              : null,
     );
   }
 
@@ -172,6 +183,8 @@ class AssetHandoverDto {
       'listSignatory': listSignatory?.map((x) => x.toJson()).toList(),
       'byStep': byStep,
       'trangThaiPhieu': trangThaiPhieu,
+      'chiTietBanGiaoTaiSan':
+          chiTietBanGiaoTaiSan?.map((x) => x.toJson()).toList(),
     };
   }
 
@@ -214,6 +227,7 @@ class AssetHandoverDto {
     List<SignatoryDto>? listSignatory,
     bool? byStep,
     int? trangThaiPhieu,
+    List<DetailAssetHandoverDto>? chiTietBanGiaoTaiSan,
   }) {
     return AssetHandoverDto(
       id: id ?? this.id,
@@ -257,6 +271,7 @@ class AssetHandoverDto {
       listSignatory: listSignatory ?? this.listSignatory,
       byStep: byStep ?? this.byStep,
       trangThaiPhieu: trangThaiPhieu ?? this.trangThaiPhieu,
+      chiTietBanGiaoTaiSan: chiTietBanGiaoTaiSan ?? this.chiTietBanGiaoTaiSan,
     );
   }
 }

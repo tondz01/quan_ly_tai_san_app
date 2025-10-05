@@ -1,21 +1,21 @@
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 
 class ChiTietDieuDongTaiSan {
-  final String id;
-  final String idDieuDongTaiSan;
-  final String soQuyetDinh;
-  final String tenPhieu;
-  final String idTaiSan;
-  final String tenTaiSan;
-  final String donViTinh;
-  final int hienTrang;
-  final int soLuong;
-  final String ghiChu;
-  final String ngayTao;
-  final String ngayCapNhat;
-  final String nguoiTao;
-  final String nguoiCapNhat;
-  final bool isActive;
+  String id;
+  String idDieuDongTaiSan;
+  String soQuyetDinh;
+  String tenPhieu;
+  String idTaiSan;
+  String tenTaiSan;
+  String donViTinh;
+  int hienTrang;
+  int soLuong;
+  String ghiChu;
+  String ngayTao;
+  String ngayCapNhat;
+  String nguoiTao;
+  String nguoiCapNhat;
+  bool isActive;
 
   ChiTietDieuDongTaiSan({
     required this.id,
@@ -42,6 +42,7 @@ class ChiTietDieuDongTaiSan {
       if (v is num) return v.toInt();
       return int.tryParse(v?.toString() ?? '0') ?? 0;
     }
+
     bool parseBool(dynamic v) {
       if (v is bool) return v;
       if (v is num) return v != 0;
@@ -101,10 +102,16 @@ class ChiTietDieuDongTaiSan {
       soLuong: 0,
       ghiChu: '',
       ngayTao: AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
-      ngayCapNhat: AppUtility.formatFromISOString(DateTime.now().toIso8601String()),
+      ngayCapNhat: AppUtility.formatFromISOString(
+        DateTime.now().toIso8601String(),
+      ),
       nguoiTao: '',
       nguoiCapNhat: '',
       isActive: true,
     );
+  }
+  @override
+  String toString() {
+    return tenTaiSan;
   }
 }

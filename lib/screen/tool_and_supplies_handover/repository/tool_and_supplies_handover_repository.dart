@@ -642,7 +642,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     };
 
     try {
-      log('Check số lượng [getAssetsByHandoverDetails] [update]: $request');
       final response = await put(
         EndPointAPI.DETAIL_SUPPLIES_HANDOVER,
         data: request,

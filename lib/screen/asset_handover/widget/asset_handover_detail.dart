@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,10 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_ev
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/preview_document_asset_handover.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_movement_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
@@ -78,6 +83,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   bool isRepresentativeUnitConfirm = false;
   bool isExpanded = false;
   bool isByStep = false;
+  bool isDetail = false;
 
   String? proposingUnit;
   String? _selectedFileName;
@@ -91,6 +97,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   List<NhanVien> listNhanVienDonViNhan = [];
   List<NhanVien> listNhanVienDonViGiao = [];
   List<DieuDongTaiSanDto> listAssetTransfer = [];
+  List<DetailAssetHandoverDto> listDetailAssetHandover = [];
 
   List<DropdownMenuItem<NhanVien>> itemsNhanVien = [];
   List<DropdownMenuItem<PhongBan>> itemsPhongBan = [];
@@ -199,8 +206,38 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         [];
 
     if (item != null) {
+      isDetail = true;
       if (widget.isFindNew) {
         isEditing = widget.isFindNew;
+        isDetail = false;
+        listDetailAssetHandover =
+            (widget.provider.dataDetailAssetMobilization != null
+                ? widget.provider.dataDetailAssetMobilization!
+                    .map(
+                      (e) => DetailAssetHandoverDto(
+                        id: UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
+                        idBanGiaoTaiSan: item?.id ?? '',
+                        banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
+                        quyetDinhDieuDongSo: item?.quyetDinhDieuDongSo ?? '',
+                        idTaiSan: e.idTaiSan,
+                        tenTaiSan: e.tenTaiSan,
+                        donViTinh: e.donViTinh,
+                        hienTrang: e.hienTrang,
+                        soLuong: e.soLuong,
+                        ngayTao: AppUtility.formatDateString(DateTime.now()),
+                        ngayCapNhat: AppUtility.formatDateString(
+                          DateTime.now(),
+                        ),
+                        nguoiTao: currentUser?.tenDangNhap ?? '',
+                        nguoiCapNhat: '',
+                        isActive: true,
+                      ),
+                    )
+                    .toList()
+                : <DetailAssetHandoverDto>[]);
+        log('listDetailAssetHandover: $listDetailAssetHandover');
+      } else {
+        listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
       }
       isByStep = item?.byStep ?? false;
       isUnitConfirm = item?.daXacNhan ?? false;
@@ -231,6 +268,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         _loadPdfNetwork(item?.tenFile ?? '');
       }
     } else {
+      isDetail = false;
       isByStep = false;
       isUnitConfirm = false;
       isDelivererConfirm = false;
@@ -337,15 +375,19 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     // if (controllerRepresentativeUnit.text.isEmpty) {
     //   newValidationErrors['representativeUnit'] = true;
     // }
-    if (item == null && _selectedFileName == null) {
+    log('selectedFileName: $_selectedFileName');
+    log('selectedFilePath: $_selectedFilePath');
+    if ((_selectedFileName ?? '').isEmpty ||
+        (_selectedFilePath ?? '').isEmpty) {
+      log('document is null');
       newValidationErrors['document'] = true;
     }
 
     bool hasChanges = !mapEquals(_validationErrors, newValidationErrors);
     if (hasChanges) {
-      SGLog.debug("AssetHandoverDetail", "hasChanges");
       setState(() {
         _validationErrors = newValidationErrors;
+        log('newValidationErrors: $_validationErrors');
       });
     }
 
@@ -445,9 +487,40 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       newRequest['tenFile'] = result['fileName'] ?? '';
 
       assetHandoverBloc.add(
-        CreateAssetHandoverEvent(newRequest, listSignatory),
+        CreateAssetHandoverEvent(
+          newRequest,
+          listSignatory,
+          listDetailAssetHandover,
+        ),
       );
     } else {
+      // Chỉ thực hiện CRUD khi cập nhật và có thay đổi trong listDetailAssetHandover
+      if (listDetailAssetHandover.isNotEmpty) {
+        _updateDetailAssetHandover(
+          listDetailAssetHandover
+              .map(
+                (e) => ChiTietDieuDongTaiSan(
+                  id: e.id ?? '',
+                  idDieuDongTaiSan: e.idBanGiaoTaiSan ?? '',
+                  soQuyetDinh: e.quyetDinhDieuDongSo ?? '',
+                  tenPhieu: e.banGiaoTaiSan ?? '',
+                  idTaiSan: e.idTaiSan ?? '',
+                  tenTaiSan: e.tenTaiSan ?? '',
+                  donViTinh: e.donViTinh ?? '',
+                  hienTrang: e.hienTrang ?? 0,
+                  soLuong: e.soLuong ?? 0,
+                  ghiChu: e.moTa ?? '',
+                  ngayTao: e.ngayTao ?? '',
+                  ngayCapNhat: e.ngayCapNhat ?? '',
+                  nguoiTao: e.nguoiTao ?? '',
+                  nguoiCapNhat: e.nguoiCapNhat ?? '',
+                  isActive: e.isActive ?? true,
+                ),
+              )
+              .toList(),
+        );
+      }
+
       int trangThai = item!.trangThai == 2 ? 0 : item!.trangThai!;
       if (item!.tenFile != _selectedFileName ||
           item!.duongDanFile != _selectedFilePath) {
@@ -467,9 +540,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       request['trangThai'] = trangThai;
       request['share'] = item!.share ?? false;
       request['nguoiCapNhat'] = currentUser?.tenDangNhap ?? '';
-      assetHandoverBloc.add(
-        UpdateAssetHandoverEvent(context, request, item!.id!),
-      );
+      assetHandoverBloc.add(UpdateAssetHandoverEvent(request, item!.id!));
     }
 
     // Sử dụng addPostFrameCallback để tránh gọi trong quá trình build
@@ -724,6 +795,42 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                   child: TableAssetMovementDetail(
                     listDetailAssetMobilization:
                         widget.provider.dataDetailAssetMobilization,
+                    listDetailAssetHandover: item?.chiTietBanGiaoTaiSan,
+                    isDetail: isDetail,
+                    isEditing: isEditing,
+                    onDataChanged: (data) {
+                      setState(() {
+                        listDetailAssetHandover =
+                            data
+                                .map(
+                                  (e) => DetailAssetHandoverDto(
+                                    id: UUIDGenerator.generateWithFormat(
+                                      'CTBGCCDC-******',
+                                    ),
+                                    idBanGiaoTaiSan: item?.id ?? '',
+                                    banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
+                                    quyetDinhDieuDongSo:
+                                        item?.quyetDinhDieuDongSo ?? '',
+                                    idTaiSan: e.idTaiSan,
+                                    tenTaiSan: e.tenTaiSan,
+                                    donViTinh: e.donViTinh,
+                                    hienTrang: e.hienTrang,
+                                    soLuong: e.soLuong,
+                                    ngayTao: AppUtility.formatDateString(
+                                      DateTime.now(),
+                                    ),
+                                    ngayCapNhat: AppUtility.formatDateString(
+                                      DateTime.now(),
+                                    ),
+                                    nguoiTao: currentUser?.tenDangNhap ?? '',
+                                    nguoiCapNhat: '',
+                                    isActive: true,
+                                  ),
+                                )
+                                .toList();
+                        log('data: $data');
+                      });
+                    },
                   ),
                 ),
               ),
@@ -1082,5 +1189,121 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       tenFile: _selectedFileName ?? '',
       duongDanFile: _selectedFilePath ?? '',
     );
+  }
+
+  void _updateDetailAssetHandover(List<ChiTietDieuDongTaiSan> newData) {
+    log('_updateDetailAssetHandover: Starting CRUD operations...');
+    final currentList = item?.chiTietBanGiaoTaiSan ?? [];
+    final repository = AssetHandoverRepository();
+
+    log(
+      '_updateDetailAssetHandover: currentList length: ${currentList.length}',
+    );
+    log('_updateDetailAssetHandover: newData length: ${newData.length}');
+
+    final newList =
+        newData.map((newItem) {
+          final existing = currentList.firstWhere(
+            (h) => h.tenTaiSan == newItem.tenTaiSan,
+            orElse: () => DetailAssetHandoverDto(),
+          );
+
+          log(
+            '_updateDetailAssetHandover: Processing ${newItem.tenTaiSan} - existing.id: ${existing.id}',
+          );
+
+          return DetailAssetHandoverDto(
+            id:
+                existing.id ??
+                UUIDGenerator.generateWithFormat('CTBGCCDC-******'),
+            idBanGiaoTaiSan: item?.id ?? '',
+            banGiaoTaiSan: item?.banGiaoTaiSan ?? '',
+            quyetDinhDieuDongSo: item?.quyetDinhDieuDongSo ?? '',
+            idTaiSan: newItem.idTaiSan,
+            tenTaiSan: newItem.tenTaiSan,
+            donViTinh: newItem.donViTinh,
+            kyHieu: existing.kyHieu,
+            soKyHieu: existing.soKyHieu,
+            hienTrang: newItem.hienTrang,
+            moTa: newItem.ghiChu,
+            soLuong: newItem.soLuong,
+            ngayTao:
+                existing.ngayTao ?? AppUtility.formatDateString(DateTime.now()),
+            ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+            nguoiTao: existing.nguoiTao ?? currentUser?.tenDangNhap ?? '',
+            nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+            isActive: newItem.isActive,
+          );
+        }).toList();
+
+    log('_updateDetailAssetHandover: newList length: ${newList.length}');
+    _performCRUDOperations(repository, currentList, newList);
+
+    listDetailAssetHandover = newList;
+    if (item != null) {
+      item!.chiTietBanGiaoTaiSan = newList;
+    }
+    log('_updateDetailAssetHandover: CRUD operations completed');
+  }
+
+  void _performCRUDOperations(
+    AssetHandoverRepository repository,
+    List<DetailAssetHandoverDto> currentList,
+    List<DetailAssetHandoverDto> newList,
+  ) {
+    log('_performCRUDOperations: Starting comparison...');
+
+    final itemsToAdd =
+        newList
+            .where(
+              (newItem) =>
+                  !currentList.any(
+                    (currentItem) => currentItem.id == newItem.id,
+                  ),
+            )
+            .toList();
+
+    final itemsToDelete =
+        currentList
+            .where(
+              (currentItem) =>
+                  !newList.any((newItem) => newItem.id == currentItem.id),
+            )
+            .toList();
+
+    log('_performCRUDOperations: itemsToAdd count: ${itemsToAdd.length}');
+    log('_performCRUDOperations: itemsToDelete count: ${itemsToDelete.length}');
+
+    if (itemsToAdd.isNotEmpty) {
+      log('_performCRUDOperations: Items to add:');
+      for (final item in itemsToAdd) {
+        log('  - ${item.tenTaiSan} (id: ${item.id})');
+      }
+    }
+
+    if (itemsToDelete.isNotEmpty) {
+      log('_performCRUDOperations: Items to delete:');
+      for (final item in itemsToDelete) {
+        log('  - ${item.tenTaiSan} (id: ${item.id})');
+      }
+    }
+
+    // Thực hiện thêm mới
+    if (itemsToAdd.isNotEmpty) {
+      log('_performCRUDOperations: Calling createDetailHandoverAsset...');
+      repository.createDetailHandoverAsset(itemsToAdd);
+    }
+
+    // Thực hiện xóa
+    for (final item in itemsToDelete) {
+      if (item.id != null) {
+        log(
+          '_performCRUDOperations: Calling deleteDetailHandoverCCDC for ${item.id}...',
+        );
+        repository.deleteDetailHandoverCCDC(item.id!);
+      }
+    }
+
+    log('_performCRUDOperations: CRUD operations completed');
   }
 }

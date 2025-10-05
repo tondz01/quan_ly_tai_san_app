@@ -24,6 +24,7 @@ class AssetTransferValidation {
     required NhanVien? nguoiDaiDienBanHanhQD,
     required DieuDongTaiSanDto? item,
     required String? selectedFileName,
+    required String? selectedFilePath,
   }) {
     Map<String, bool> newValidationErrors = {};
 
@@ -67,7 +68,7 @@ class AssetTransferValidation {
       newValidationErrors['approver'] = true;
     }
     // If it's a new item, document is required
-    if (item == null && selectedFileName == null) {
+    if ((selectedFileName == null || selectedFilePath == null)) {
       newValidationErrors['document'] = true;
     }
 

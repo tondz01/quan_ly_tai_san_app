@@ -76,7 +76,7 @@ class _ToolAndSuppliesHandoverListState
     'actions',
   ];
 
-  PdfDocument? _document;
+  PdfDocument? pdfDocument;
   List<Map<String, DateTime Function(ToolAndSuppliesHandoverDto)>> getters = [
     {
       'Ngày bàn giao':
@@ -125,11 +125,11 @@ class _ToolAndSuppliesHandoverListState
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
       );
       setState(() {
-        _document = document;
+        pdfDocument = document;
       });
     } catch (e) {
       setState(() {
-        _document = null;
+        pdfDocument = null;
       });
       SGLog.error("Error loading PDF", e.toString());
     }

@@ -519,7 +519,6 @@ class _ToolAndSuppliesHandoverDetailState
 
       request['duongDanFile'] = result!['filePath'] ?? '';
       request['tenFile'] = result['fileName'] ?? '';
-      log('check request: ${jsonEncode(listDetailSubppliesHandover)}');
       // return;
       List<Map<String, dynamic>> requestDetail =
           listDetailSubppliesHandover
@@ -541,7 +540,6 @@ class _ToolAndSuppliesHandoverDetailState
                 },
               )
               .toList();
-      log('Check số lượng requestDetail: ${jsonEncode(requestDetail)}');
       bloc.add(
         CreateToolAndSuppliesHandoverEvent(
           request,
@@ -1272,9 +1270,6 @@ class _ToolAndSuppliesHandoverDetailState
   Future<void> _syncDetails(String idDieuDongTaiSan) async {
     try {
       final repo = ToolAndSuppliesHandoverRepository();
-      log(
-        'Check số lượng [_syncDetails] [initialDetails]: ${jsonEncode(initialDetails)}',
-      );
       String keyOf(
         String idCCDCVatTu,
         String idChiTietCCDCVatTu,
@@ -1368,16 +1363,9 @@ class _ToolAndSuppliesHandoverDetailState
           "isActive": true,
         };
 
-        log('Check số lượng [getAssetsByHandoverDetails] [request]: $request');
-
         try {
-          log(
-            'Check số lượng [getAssetsByHandoverDetails] [request]: $request',
-          );
           await repo.updateDetailHandoverCCDC(request);
-          log('Successfully updated item: ${oldVal.id}');
         } catch (e) {
-          log('Error updating item ${oldVal.id}: $e');
           rethrow;
         }
       }
@@ -1389,7 +1377,6 @@ class _ToolAndSuppliesHandoverDetailState
               .map((k) => newByKey[k]!)
               .toList();
 
-      log('Items to create: ${itemsToCreate.length}');
       if (itemsToCreate.isNotEmpty) {
         final creates =
             itemsToCreate
@@ -1411,22 +1398,15 @@ class _ToolAndSuppliesHandoverDetailState
                   },
                 )
                 .toList();
-        log('Check số lượng [getAssetsByHandoverDetails] [creates]: $creates');
-        log('Creating ${creates.length} new items');
-        for (final create in creates) {
-          log('Creating item: ${create['idCCDCVatTu']} - ${create['soLuong']}');
-        }
 
         try {
           await repo.createDetailHandoverCCDC(creates);
-          log('Successfully created ${creates.length} new items');
         } catch (e) {
           log('Error creating items: $e');
           rethrow;
         }
       }
 
-      log('Sync completed successfully');
     } catch (e) {
       log('Sync details error: $e');
       rethrow; // Re-throw để caller có thể handle
