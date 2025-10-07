@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -74,7 +75,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
     // Khởi tạo controller với callbacks
     _controller = ToolsAndSuppliesController(
-      onStateChanged: () => setState(() {}),
+      onStateChanged: () {
+        log('message test: onStateChanged11');
+
+        setState(() {});
+      },
     );
 
     initData();
@@ -84,7 +89,8 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   @override
   void didUpdateWidget(ToolsAndSuppliesDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.provider.data != data) {
+    if (oldWidget.provider.data != data && widget.provider.isUpdateDetail) {
+      widget.provider.isUpdateDetail = false;
       initData();
     }
   }

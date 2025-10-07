@@ -5,6 +5,7 @@ import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:intl/intl.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
@@ -20,6 +21,18 @@ class AssetDepreciationList extends StatefulWidget {
 class _AssetDepreciationListState extends State<AssetDepreciationList> {
   late List<ColumnDisplayOption> columnOptions;
   final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
+
+  List<AssetDepreciationDto>? _dataKhauHao;
+  List<AssetDepreciationDto>? _dataPage;
+  List<AssetDepreciationDto>? _filteredData;
+
+  late int totalEntries;
+  late int totalPages = 1;
+  late int startIndex;
+  late int endIndex;
+  int rowsPerPage = 10;
+  int currentPage = 1;
+  TextEditingController? controllerDropdownPage;
 
   String _fmtNum(double? v) {
     if (v == null) return '';
@@ -54,21 +67,25 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     'khauHaoBinhQuan',
     'soTien',
     'chenhLech',
-    'khKyTruoc',
-    'clKyTruoc',
-    'hsdCkh',
-    'tkNo',
-    'tkCo',
-    'dtgt',
-    'dtth',
-    'kmcp',
-    'ghiChuKhao',
-    'userId',
+    // 'khKyTruoc',
+    // 'clKyTruoc',
+    // 'hsdCkh',
+    // 'tkNo',
+    // 'tkCo',
+    // 'dtgt',
+    // 'dtth',
+    // 'kmcp',
+    // 'ghiChuKhao',
+    // 'userId',
   ];
   @override
   void initState() {
     super.initState();
     _initializeColumnOptions();
+    _dataKhauHao = widget.provider.dataKhauHao;
+    _filteredData = _dataKhauHao;
+    controllerDropdownPage = TextEditingController(text: '10');
+    _updatePagination();
   }
 
   void _initializeColumnOptions() {
@@ -214,7 +231,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.soThe ?? '',
               width: 120,
               searchValueGetter: (item) => item.soThe ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -225,7 +242,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.tenTaiSan ?? '',
               width: 220,
               searchValueGetter: (item) => item.tenTaiSan ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -236,7 +253,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.nguonVon ?? '',
               width: 140,
               searchValueGetter: (item) => item.nguonVon ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -247,7 +264,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.maTk ?? '',
               width: 140,
               searchValueGetter: (item) => item.maTk ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -258,7 +275,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtDate(item.ngayTinhKhao),
               width: 160,
               searchValueGetter: (item) => _fmtDate(item.ngayTinhKhao),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -269,7 +286,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.thangKh?.toString() ?? '',
               width: 100,
               searchValueGetter: (item) => item.thangKh?.toString() ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -280,7 +297,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.nguyenGia),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.nguyenGia),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -291,7 +308,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.khauHaoBanDau),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.khauHaoBanDau),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -302,7 +319,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.khauHaoPsdk),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.khauHaoPsdk),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -313,7 +330,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.gtclBanDau),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.gtclBanDau),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -324,7 +341,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.khauHaoPsck),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.khauHaoPsck),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -335,7 +352,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.gtclHienTai),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.gtclHienTai),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -346,7 +363,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.khauHaoBinhQuan),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.khauHaoBinhQuan),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -357,7 +374,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.soTien),
               width: 120,
               searchValueGetter: (item) => _fmtNum(item.soTien),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -368,7 +385,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.chenhLech),
               width: 120,
               searchValueGetter: (item) => _fmtNum(item.chenhLech),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -379,7 +396,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.khKyTruoc),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.khKyTruoc),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -390,7 +407,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.clKyTruoc),
               width: 140,
               searchValueGetter: (item) => _fmtNum(item.clKyTruoc),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -401,7 +418,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => _fmtNum(item.hsdCkh),
               width: 120,
               searchValueGetter: (item) => _fmtNum(item.hsdCkh),
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -412,7 +429,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.tkNo ?? '',
               width: 140,
               searchValueGetter: (item) => item.tkNo ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -423,7 +440,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.tkCo ?? '',
               width: 140,
               searchValueGetter: (item) => item.tkCo ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -434,7 +451,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.dtgt ?? '',
               width: 100,
               searchValueGetter: (item) => item.dtgt ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -445,7 +462,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.dtth ?? '',
               width: 100,
               searchValueGetter: (item) => item.dtth ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -456,7 +473,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.kmcp ?? '',
               width: 100,
               searchValueGetter: (item) => item.kmcp ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -467,7 +484,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.ghiChuKhao ?? '',
               width: 220,
               searchValueGetter: (item) => item.ghiChuKhao ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -478,7 +495,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
               getValue: (item) => item.userId ?? '',
               width: 120,
               searchValueGetter: (item) => item.userId ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -488,6 +505,43 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     return columns;
   }
 
+  void _updatePagination() {
+    totalEntries = _filteredData?.length ?? 0;
+    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
+    startIndex = (currentPage - 1) * rowsPerPage;
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+
+    if (startIndex >= totalEntries && totalEntries > 0) {
+      currentPage = 1;
+      startIndex = 0;
+      endIndex = rowsPerPage.clamp(0, totalEntries);
+    }
+
+    _dataPage =
+        _filteredData?.isNotEmpty ?? false
+            ? _filteredData!.sublist(
+              startIndex < totalEntries ? startIndex : 0,
+              endIndex < totalEntries ? endIndex : totalEntries,
+            )
+            : [];
+  }
+
+  void onPageChanged(int page) {
+    setState(() {
+      currentPage = page;
+      _updatePagination();
+    });
+  }
+
+  void onRowsPerPageChanged(int? value) {
+    if (value == null) return;
+
+    setState(() {
+      rowsPerPage = value;
+      currentPage = 1;
+      _updatePagination();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -495,6 +549,12 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [_buildAssetManagementTable()],
     );
+  }
+
+  @override
+  void dispose() {
+    controllerDropdownPage?.dispose();
+    super.dispose();
   }
 
   void _showColumnDisplayPopup() async {
@@ -529,7 +589,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   Widget _buildAssetManagementTable() {
     final List<SgTableColumn<AssetDepreciationDto>> columns = _buildColumns();
     return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
+      height: MediaQuery.of(context).size.height * 0.8,
 
       decoration: BoxDecoration(
         color: Colors.white,
@@ -606,11 +666,24 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
             child: TableBaseView<AssetDepreciationDto>(
               searchTerm: '',
               columns: columns,
-              data: widget.provider.dataKhauHao ?? [],
+              data: _dataPage ?? [],
               horizontalController: ScrollController(),
               onRowTap: (item) {
                 widget.provider.onChangeDepreciationDetail(item);
               },
+            ),
+          ),
+
+          Visibility(
+            visible: (widget.provider.dataKhauHao?.length ?? 0) >= 5,
+            child: SGPaginationControls(
+              totalPages: totalPages,
+              currentPage: currentPage,
+              rowsPerPage: rowsPerPage,
+              controllerDropdownPage: controllerDropdownPage!,
+              items: widget.provider.items,
+              onPageChanged: onPageChanged,
+              onRowsPerPageChanged: onRowsPerPageChanged,
             ),
           ),
         ],
