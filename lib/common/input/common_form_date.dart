@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/common/sg_datetime_input_button.dart';
+import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
 class CmFormDate extends StatefulWidget {
   const CmFormDate({
@@ -22,6 +23,8 @@ class CmFormDate extends StatefulWidget {
     this.includeSeconds = true,
     this.initialIncludeTime = false,
     this.isRequired = false,
+    this.sizePadding = 10,
+    this.dateTimeMode = SGDateTimeMode.dayMonthYear,
   });
   final String label;
   final TextEditingController controller;
@@ -38,6 +41,8 @@ class CmFormDate extends StatefulWidget {
   final String? fieldName;
   final Map<String, bool>? validationErrors;
   final bool isRequired;
+  final double sizePadding;
+  final SGDateTimeMode dateTimeMode;
   @override
   State<CmFormDate> createState() => _CmFormDateState();
 }
@@ -52,7 +57,7 @@ class _CmFormDateState extends State<CmFormDate> {
           widget.validationErrors![widget.fieldName] == true;
     }
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: widget.sizePadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -78,6 +83,7 @@ class _CmFormDateState extends State<CmFormDate> {
               timeOptional: widget.timeOptional,
               includeSeconds: widget.includeSeconds,
               initialIncludeTime: widget.initialIncludeTime,
+              dateTimeMode: widget.dateTimeMode,
               colorBorder:
                   (widget.validationErrors != null &&
                           widget.fieldName != null &&

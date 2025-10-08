@@ -724,7 +724,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                       message: 'Chuyển sang trang khấu hao tài sản',
                       child: InkWell(
                         onTap: () {
-                          widget.provider.onChangeBody(ShowBody.khauHao);
+                          widget.provider.onChangeBody(ShowBody.khauHao, context);
                         },
                         child: SGText(
                           size: 14,

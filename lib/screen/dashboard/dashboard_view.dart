@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:graphic/graphic.dart' as graphic;
 import 'package:intl/intl.dart';

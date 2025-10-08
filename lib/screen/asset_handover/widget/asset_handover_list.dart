@@ -71,7 +71,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     'created_by',
     'permission_signing',
     'status_document',
-    'signing_status',
+    // 'signing_status',
     'share',
     'status',
     // 'by_step',
@@ -152,12 +152,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status_document'),
       ),
-      ColumnDisplayOption(
-        id: 'signing_status',
-        label: 'Quyền ký',
-        // label: 'Trạng thái ký',
-        isChecked: visibleColumnIds.contains('signing_status'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'signing_status',
+      //   label: 'Quyền ký',
+      //   // label: 'Trạng thái ký',
+      //   isChecked: visibleColumnIds.contains('signing_status'),
+      // ),
       ColumnDisplayOption(
         id: 'share',
         label: 'Chia sẻ',
@@ -250,6 +250,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                     ? 'Chưa đến lượt ký'
                     : status == 3
                     ? 'Đã ký'
+                    : status == 4
+                    ? 'Đã ký & tạo'
+                    : status == 5
+                    ? 'Cần ký & tạo'
                     : 'Cần ký';
               },
               searchable: true,
@@ -280,34 +284,34 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             ),
           );
           break;
-        case 'signing_status':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
-              // title: 'Trạng thái ký',
-              title: 'Quyền ký',
-              cellBuilder: (item) => showSigningStatus(item),
-              width: 150,
-              searchValueGetter: (item) {
-                final status = widget.provider.isCheckSigningStatus(item);
-                return status == 1
-                    ? 'Đã ký'
-                    : status == 0
-                    ? 'Chưa ký'
-                    : status == 2
-                    ? 'Đã ký nháy'
-                    : status == 3
-                    ? 'Đã ký & tạo'
-                    : status == 4
-                    ? 'Chưa ký nháy'
-                    : status == 5
-                    ? 'Chưa ký & tạo'
-                    : 'Người tạo phiếu';
-              },
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
+        // case 'signing_status':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
+        //       // title: 'Trạng thái ký',
+        //       title: 'Quyền ký',
+        //       cellBuilder: (item) => showSigningStatus(item),
+        //       width: 150,
+        //       searchValueGetter: (item) {
+        //         final status = widget.provider.isCheckSigningStatus(item);
+        //         return status == 1
+        //             ? 'Đã ký'
+        //             : status == 0
+        //             ? 'Chưa ký'
+        //             : status == 2
+        //             ? 'Đã ký nháy'
+        //             : status == 3
+        //             ? 'Đã ký & tạo'
+        //             : status == 4
+        //             ? 'Chưa ký nháy'
+        //             : status == 5
+        //             ? 'Chưa ký & tạo'
+        //             : 'Người tạo phiếu';
+        //       },
+        //       searchable: true,
+        //       filterable: true,
+        //     ),
+        //   );
+        //   break;
         case 'share':
           columns.add(
             TableBaseConfig.columnWidgetBase<AssetHandoverDto>(
@@ -1233,6 +1237,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       (s) => s["id"] == userInfo?.tenDangNhap,
     );
     if (currentIndex == -1) return 2;
+    if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap &&
+        signatureFlow[currentIndex]["signed"] != -1) {
+      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
+    }
     if (signatureFlow[currentIndex]["signed"] == true) return 3;
     final previousNotSigned = signatureFlow
         .take(currentIndex)

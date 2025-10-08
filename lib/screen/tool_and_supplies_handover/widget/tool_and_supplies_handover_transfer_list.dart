@@ -105,7 +105,6 @@ class _ToolAndSuppliesHandoverTransferListState
     userInfo = AccountHelper.instance.getUserInfo();
     dataAssetTransfer = widget.data;
     dataAssetTransferFilter = dataAssetTransfer;
-    log('message dataAssetTransfer: ${dataAssetTransfer.length}');
     _initializeColumnOptions();
   }
 

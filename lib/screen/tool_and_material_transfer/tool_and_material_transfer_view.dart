@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
@@ -14,6 +15,8 @@ import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/services/websocket_service.dart';
 
 class ToolAndMaterialTransferView extends StatefulWidget {
   const ToolAndMaterialTransferView({super.key});
@@ -44,7 +47,29 @@ class _ToolAndMaterialTransferViewState
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
     currentType = 0;
+    // _initWebSocket();
   }
+
+  // Future<void> _initWebSocket() async {
+  //   final user = AccountHelper.instance.getUserInfo();
+  //   final companyId = user?.idCongTy ?? '';
+  //   final userId = user?.id ?? '';
+  //   if (companyId.isEmpty || userId.isEmpty) return;
+
+  //   final ws = WebSocketService();
+  //   await ws.initializeNotifications();
+  //   await ws.connect(
+  //     serverUrl: Config.baseUrl,
+  //     companyId: companyId,
+  //     userId: userId,
+  //     onNotification: (n) {
+  //       if (!mounted) return;
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(n.title.isNotEmpty ? n.title : n.message)),
+  //       );
+  //     },
+  //   );
+  // }
 
   void _onScrollStateChanged() {
     setState(() {});
@@ -53,20 +78,22 @@ class _ToolAndMaterialTransferViewState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _providerRef ??= Provider.of<ToolAndMaterialTransferProvider>(context, listen: false);
     final state = GoRouterState.of(context);
     final String? typeParam = state.uri.queryParameters['type'];
     final int newType = int.tryParse(typeParam ?? '') ?? 0;
     // Cache provider reference for safe use in dispose
-    _providerRef ??= Provider.of<ToolAndMaterialTransferProvider>(
-      context,
-      listen: false,
-    );
     if (!_isInitialized) {
       currentType = newType;
       _initData();
     } else if (newType != currentType) {
       currentType = newType;
-      _reloadData();
+      // Defer reload to avoid calling notifyListeners during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _reloadData();
+        }
+      });
     }
   }
 
@@ -89,16 +116,20 @@ class _ToolAndMaterialTransferViewState
 
     // Chỉ tải lại dữ liệu nếu đã khởi tạo trước đó
     if (_isInitialized) {
-      provider.refreshData(context, currentType);
+      // Defer provider refresh to avoid calling notifyListeners during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          provider.refreshData(context, currentType);
+        }
+      });
     }
   }
 
   @override
   void dispose() {
+    _providerRef?.onDispose();
     _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
-    // Reset provider state when leaving this page using cached reference
-    _providerRef?.onDispose();
     _isInitialized = false;
     super.dispose();
   }

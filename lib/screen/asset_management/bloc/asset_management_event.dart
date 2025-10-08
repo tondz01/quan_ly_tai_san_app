@@ -22,11 +22,12 @@ class GetListAssetManagementEvent extends AssetManagementEvent {
 class GetListKhauHaoEvent extends AssetManagementEvent {
   final BuildContext context;
   final String idCongTy;
+  final DateTime? date;
 
-  const GetListKhauHaoEvent(this.context, this.idCongTy);
+  const GetListKhauHaoEvent(this.context, this.idCongTy, this.date);
 
   @override
-  List<Object?> get props => [context, idCongTy];
+  List<Object?> get props => [context, idCongTy, date];
 }
 
 // Nhóm tài sản

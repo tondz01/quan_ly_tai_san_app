@@ -96,6 +96,7 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           fieldName: 'giaTri',
           validationErrors: validationErrors,
           isRequired: true,
+          isMoney: true,
         ),
         CommonFormInput(
           label: 'tas.symbol'.tr,

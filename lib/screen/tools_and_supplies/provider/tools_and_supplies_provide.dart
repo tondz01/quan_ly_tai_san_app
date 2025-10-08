@@ -235,6 +235,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
+      _updatePagination();
     } else {
       _data = state.data;
       _filteredData = state.data;

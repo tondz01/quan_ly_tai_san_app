@@ -1,14 +1,19 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:intl/intl.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
 class AssetDepreciationList extends StatefulWidget {
   const AssetDepreciationList({super.key, required this.provider});
@@ -21,6 +26,8 @@ class AssetDepreciationList extends StatefulWidget {
 class _AssetDepreciationListState extends State<AssetDepreciationList> {
   late List<ColumnDisplayOption> columnOptions;
   final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
+
+  TextEditingController ctrlSelectDate = TextEditingController();
 
   List<AssetDepreciationDto>? _dataKhauHao;
   List<AssetDepreciationDto>? _dataPage;
@@ -41,7 +48,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   String _fmtNum(double? v) {
     if (v == null) return '';
     try {
-      return "${_vnNumber.format(v)}đ";
+      return _vnNumber.format(v);
     } catch (_) {
       return v.toString();
     }
@@ -93,7 +100,45 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     _dataKhauHao = widget.provider.dataKhauHao ?? [];
     _filteredData = _dataKhauHao;
     controllerDropdownPage = TextEditingController(text: '10');
+    ctrlSelectDate = TextEditingController(text: _fmtDate(DateTime.now()));
     _updatePagination();
+    // Lắng nghe thay đổi từ provider để cập nhật UI khi dữ liệu khấu hao thay đổi
+    widget.provider.addListener(_onProviderChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant AssetDepreciationList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Nếu instance provider thay đổi, gỡ listener cũ và đăng ký lại
+    if (oldWidget.provider != widget.provider) {
+      oldWidget.provider.removeListener(_onProviderChanged);
+      widget.provider.addListener(_onProviderChanged);
+    }
+  }
+
+  void _onProviderChanged() {
+    log(
+      'providerChanged: isLoadingKhauHao=${widget.provider.isLoadingKhauHao}',
+    );
+    // Khi provider báo loading xong hoặc dữ liệu thay đổi, cập nhật danh sách và phân trang
+    if (!widget.provider.isLoadingKhauHao) {
+      setState(() {
+        _dataKhauHao = widget.provider.dataKhauHao;
+        _filteredData = _dataKhauHao;
+        _updatePagination();
+      });
+      log(
+        'getListKhauHaoSuccess providerChanged: ${widget.provider.dataKhauHao?.length}',
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.provider.removeListener(_onProviderChanged);
+    ctrlSelectDate.dispose();
+    controllerDropdownPage?.dispose();
+    super.dispose();
   }
 
   void _initializeColumnOptions() {
@@ -414,7 +459,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   List<SgTableColumn<AssetDepreciationDto>> _buildColumns() {
     // Tạo hash để kiểm tra xem visibleColumnIds có thay đổi không
     final currentHash = visibleColumnIds.join(',');
-    
+
     // Nếu columns đã được cache và visibleColumnIds không thay đổi, trả về cache
     if (_cachedColumns != null && _lastVisibleColumnIdsHash == currentHash) {
       return _cachedColumns!;
@@ -482,11 +527,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     );
   }
 
-  @override
-  void dispose() {
-    controllerDropdownPage?.dispose();
-    super.dispose();
-  }
+  // Removed duplicate dispose; consolidated cleanup in the first dispose()
 
   void _showColumnDisplayPopup() async {
     await showColumnDisplayPopup(
@@ -580,32 +621,73 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
                     ),
                   ],
                 ),
-                Tooltip(
-                  message: 'Chuyển sang trang quản lý tài sản',
-                  child: InkWell(
-                    onTap: () {
-                      widget.provider.onChangeBody(ShowBody.taiSan);
-                    },
-                    child: SGText(
-                      size: 14,
-                      text: "Quản lý tài sản",
-                      color: ColorValue.link,
+
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 128,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 180),
+                      child: CmFormDate(
+                        sizePadding: 0,
+                        label: 'Chọn thời gian khấu hao',
+                        controller: ctrlSelectDate,
+                        isEditing: true,
+                        onChanged: (value) {
+                          widget.provider.getDepreciationByDate(
+                            context,
+                            value ?? DateTime.now(),
+                          );
+                          setState(() {});
+                        },
+                        dateTimeMode: SGDateTimeMode.monthYear,
+                        showTimeSection: false,
+                        // value:
+                        //     ctrlSelectDate.text.isNotEmpty
+                        //         ? AppUtility.parseFlexibleDateTime(
+                        //           ctrlSelectDate.text,
+                        //         )
+                        //         : DateTime.now(),
+                      ),
                     ),
-                  ),
+                    Tooltip(
+                      message: 'Chuyển sang trang quản lý tài sản',
+                      child: InkWell(
+                        onTap: () {
+                          widget.provider.onChangeBody(
+                            ShowBody.taiSan,
+                            context,
+                          );
+                        },
+                        child: SGText(
+                          size: 14,
+                          text: "Quản lý tài sản",
+                          color: ColorValue.link,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           Expanded(
-            child: TableBaseView<AssetDepreciationDto>(
-              searchTerm: '',
-              columns: columns,
-              data: _dataPage ?? [],
-              horizontalController: ScrollController(),
-              onRowTap: (item) {
-                widget.provider.onChangeDepreciationDetail(item);
-              },
-            ),
+            child:
+                widget.provider.isLoadingKhauHao
+                    ? Center(child: CircularProgressIndicator())
+                    : widget.provider.dataKhauHao?.isEmpty ?? true
+                        ? Center(child: Text('Không có dữ liệu'))
+                        : TableBaseView<AssetDepreciationDto>(
+                          searchTerm: '',
+                          columns: columns,
+                          data: _dataPage ?? [],
+                          horizontalController: ScrollController(),
+                          onRowTap: (item) {
+                            widget.provider.onChangeDepreciationDetail(item);
+                          },
+                        ),
           ),
 
           Visibility(

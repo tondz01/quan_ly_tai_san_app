@@ -73,6 +73,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           assetCategories.expand((item) => item.chiTietTaiSanList).toList();
 
       if (listDetailAsset.isNotEmpty) {
+        log('listDetailAsset: ${jsonEncode(listDetailAsset)}');
         Map<String, dynamic> resultAssetDetail =
             await AssetManagementDetailRepository().createAssetDetail(
               jsonEncode(listDetailAsset),
@@ -172,6 +173,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                           (sum, e) => sum + (e.soLuong ?? 0),
                         );
                       }
+                      log('assetCategories: ${jsonEncode(assetCategories)}');
                       _importData(assetCategories);
                     } else {
                       List<dynamic> errors = result['errors'];
