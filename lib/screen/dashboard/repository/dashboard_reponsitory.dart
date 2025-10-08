@@ -9,26 +9,27 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 class DashboardRepository extends ApiBase {
   Future<Map<String, dynamic>> getDashboardData() async {
     Map<String, dynamic> result = {
-      'data': null,
+      'data': {},
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
+
     try {
       final response = await get(EndPointAPI.DASHBOARD);
-
-      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
+        final jsonRes = response.data;
+        result['data'] = jsonRes['data'] ?? {};
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      } else {
         result['status_code'] = response.statusCode;
-        return result;
+        result['data'] = {};
       }
-      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
-      DashboardReport dashboardData = DashboardReport.fromJson(response.data);
-      result['data'] = dashboardData;
-      SGLog.debug("Dashboard", jsonEncode(dashboardData));
     } catch (e) {
       SGLog.error(
         "Dashboard",
         "Error at getDashboardData - DashboardRepository: $e",
       );
+      result['status_code'] = 400;
+      result['data'] = {};
     }
 
     return result;
