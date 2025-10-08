@@ -34,6 +34,10 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
 
+  // Cache cho columns để tránh tạo lại mỗi lần build
+  List<SgTableColumn<AssetDepreciationDto>>? _cachedColumns;
+  String? _lastVisibleColumnIdsHash;
+
   String _fmtNum(double? v) {
     if (v == null) return '';
     try {
@@ -54,7 +58,10 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   List<String> visibleColumnIds = [
     'soThe',
     'tenTaiSan',
-    'nguonVon',
+    // 'nguonVon',
+    'nvNS',
+    'vonVay',
+    'vonKhac',
     'maTk',
     'ngayTinhKhao',
     'thangKh',
@@ -82,7 +89,8 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
   void initState() {
     super.initState();
     _initializeColumnOptions();
-    _dataKhauHao = widget.provider.dataKhauHao;
+    _initializeAllColumns(); // Khởi tạo tất cả columns
+    _dataKhauHao = widget.provider.dataKhauHao ?? [];
     _filteredData = _dataKhauHao;
     controllerDropdownPage = TextEditingController(text: '10');
     _updatePagination();
@@ -100,10 +108,25 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
         label: 'Tên tài sản',
         isChecked: visibleColumnIds.contains('tenTaiSan'),
       ),
+      // ColumnDisplayOption(
+      //   id: 'nguonVon',
+      //   label: 'Nguồn vốn',
+      //   isChecked: visibleColumnIds.contains('nguonVon'),
+      // ),
       ColumnDisplayOption(
-        id: 'nguonVon',
-        label: 'Nguồn vốn',
-        isChecked: visibleColumnIds.contains('nguonVon'),
+        id: 'nvNS',
+        label: 'Vốn NS',
+        isChecked: visibleColumnIds.contains('nvNS'),
+      ),
+      ColumnDisplayOption(
+        id: 'vonVay',
+        label: 'Vốn vay',
+        isChecked: visibleColumnIds.contains('vonVay'),
+      ),
+      ColumnDisplayOption(
+        id: 'vonKhac',
+        label: 'Vốn khác',
+        isChecked: visibleColumnIds.contains('vonKhac'),
       ),
       ColumnDisplayOption(
         id: 'maTk',
@@ -218,289 +241,197 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
     ];
   }
 
-  List<SgTableColumn<AssetDepreciationDto>> _buildColumns() {
-    final List<SgTableColumn<AssetDepreciationDto>> columns = [];
+  // Tạo map chứa tất cả columns để tránh switch case
+  late final Map<String, SgTableColumn<AssetDepreciationDto>> _allColumns;
 
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'soThe':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Số thẻ',
-              getValue: (item) => item.soThe ?? '',
-              width: 120,
-              searchValueGetter: (item) => item.soThe ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'tenTaiSan':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tên tài sản',
-              getValue: (item) => item.tenTaiSan ?? '',
-              width: 220,
-              searchValueGetter: (item) => item.tenTaiSan ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'nguonVon':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Nguồn vốn',
-              getValue: (item) => item.nguonVon ?? '',
-              width: 140,
-              searchValueGetter: (item) => item.nguonVon ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'maTk':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Mã tài khoản',
-              getValue: (item) => item.maTk ?? '',
-              width: 140,
-              searchValueGetter: (item) => item.maTk ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'ngayTinhKhao':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Ngày tính khấu hao',
-              getValue: (item) => _fmtDate(item.ngayTinhKhao),
-              width: 160,
-              searchValueGetter: (item) => _fmtDate(item.ngayTinhKhao),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'thangKh':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tháng khấu hao',
-              getValue: (item) => item.thangKh?.toString() ?? '',
-              width: 100,
-              searchValueGetter: (item) => item.thangKh?.toString() ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'nguyenGia':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Nguyên giá',
-              getValue: (item) => _fmtNum(item.nguyenGia),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.nguyenGia),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'khauHaoBanDau':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Khấu hao ban đầu',
-              getValue: (item) => _fmtNum(item.khauHaoBanDau),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.khauHaoBanDau),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'khauHaoPsdk':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Khấu hao PSDK',
-              getValue: (item) => _fmtNum(item.khauHaoPsdk),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.khauHaoPsdk),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'gtclBanDau':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'GTCL ban đầu',
-              getValue: (item) => _fmtNum(item.gtclBanDau),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.gtclBanDau),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'khauHaoPsck':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Khấu hao PSCK',
-              getValue: (item) => _fmtNum(item.khauHaoPsck),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.khauHaoPsck),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'gtclHienTai':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'GTCL hiện tại',
-              getValue: (item) => _fmtNum(item.gtclHienTai),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.gtclHienTai),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'khauHaoBinhQuan':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Khấu hao bình quân',
-              getValue: (item) => _fmtNum(item.khauHaoBinhQuan),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.khauHaoBinhQuan),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'soTien':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Số tiền',
-              getValue: (item) => _fmtNum(item.soTien),
-              width: 120,
-              searchValueGetter: (item) => _fmtNum(item.soTien),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'chenhLech':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Chênh lệch',
-              getValue: (item) => _fmtNum(item.chenhLech),
-              width: 120,
-              searchValueGetter: (item) => _fmtNum(item.chenhLech),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'khKyTruoc':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Khấu hao kỳ trước',
-              getValue: (item) => _fmtNum(item.khKyTruoc),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.khKyTruoc),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'clKyTruoc':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Chênh lệch kỳ trước',
-              getValue: (item) => _fmtNum(item.clKyTruoc),
-              width: 140,
-              searchValueGetter: (item) => _fmtNum(item.clKyTruoc),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'hsdCkh':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'HSDCKH',
-              getValue: (item) => _fmtNum(item.hsdCkh),
-              width: 120,
-              searchValueGetter: (item) => _fmtNum(item.hsdCkh),
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'tkNo':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tài khoản nợ',
-              getValue: (item) => item.tkNo ?? '',
-              width: 140,
-              searchValueGetter: (item) => item.tkNo ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'tkCo':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Tài khoản có',
-              getValue: (item) => item.tkCo ?? '',
-              width: 140,
-              searchValueGetter: (item) => item.tkCo ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'dtgt':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'DTGT',
-              getValue: (item) => item.dtgt ?? '',
-              width: 100,
-              searchValueGetter: (item) => item.dtgt ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'dtth':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'DTTH',
-              getValue: (item) => item.dtth ?? '',
-              width: 100,
-              searchValueGetter: (item) => item.dtth ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'kmcp':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'KMCP',
-              getValue: (item) => item.kmcp ?? '',
-              width: 100,
-              searchValueGetter: (item) => item.kmcp ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'ghiChuKhao':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Ghi chú khấu hao',
-              getValue: (item) => item.ghiChuKhao ?? '',
-              width: 220,
-              searchValueGetter: (item) => item.ghiChuKhao ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
-        case 'userId':
-          columns.add(
-            TableBaseConfig.columnTable<AssetDepreciationDto>(
-              title: 'Người tạo',
-              getValue: (item) => item.userId ?? '',
-              width: 120,
-              searchValueGetter: (item) => item.userId ?? '',
-              // filterable: true,
-            ),
-          );
-          break;
+  void _initializeAllColumns() {
+    _allColumns = {
+      'soThe': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Số thẻ',
+        getValue: (item) => item.soThe ?? '',
+        width: 120,
+        searchValueGetter: (item) => item.soThe ?? '',
+      ),
+      'tenTaiSan': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Tên tài sản',
+        getValue: (item) => item.tenTaiSan ?? '',
+        width: 220,
+        searchValueGetter: (item) => item.tenTaiSan ?? '',
+      ),
+      'nvNS': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Vốn NS',
+        getValue: (item) => _fmtNum(item.nvNS),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.nvNS),
+      ),
+      'vonVay': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Vốn vay',
+        getValue: (item) => _fmtNum(item.vonVay),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.vonVay),
+      ),
+      'vonKhac': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Vốn khác',
+        getValue: (item) => _fmtNum(item.vonKhac),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.vonKhac),
+      ),
+      'maTk': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Mã tài khoản',
+        getValue: (item) => item.maTk ?? '',
+        width: 140,
+        searchValueGetter: (item) => item.maTk ?? '',
+      ),
+      'ngayTinhKhao': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Ngày tính khấu hao',
+        getValue: (item) => _fmtDate(item.ngayTinhKhao),
+        width: 160,
+        searchValueGetter: (item) => _fmtDate(item.ngayTinhKhao),
+      ),
+      'thangKh': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Tháng khấu hao',
+        getValue: (item) => item.thangKh?.toString() ?? '',
+        width: 100,
+        searchValueGetter: (item) => item.thangKh?.toString() ?? '',
+      ),
+      'nguyenGia': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Nguyên giá',
+        getValue: (item) => _fmtNum(item.nguyenGia),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.nguyenGia),
+      ),
+      'khauHaoBanDau': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Khấu hao ban đầu',
+        getValue: (item) => _fmtNum(item.khauHaoBanDau),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.khauHaoBanDau),
+      ),
+      'khauHaoPsdk': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Khấu hao PSDK',
+        getValue: (item) => _fmtNum(item.khauHaoPsdk),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.khauHaoPsdk),
+      ),
+      'gtclBanDau': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'GTCL ban đầu',
+        getValue: (item) => _fmtNum(item.gtclBanDau),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.gtclBanDau),
+      ),
+      'khauHaoPsck': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Khấu hao PSCK',
+        getValue: (item) => _fmtNum(item.khauHaoPsck),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.khauHaoPsck),
+      ),
+      'gtclHienTai': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'GTCL hiện tại',
+        getValue: (item) => _fmtNum(item.gtclHienTai),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.gtclHienTai),
+      ),
+      'khauHaoBinhQuan': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Khấu hao bình quân',
+        getValue: (item) => _fmtNum(item.khauHaoBinhQuan),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.khauHaoBinhQuan),
+      ),
+      'soTien': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Số tiền',
+        getValue: (item) => _fmtNum(item.soTien),
+        width: 120,
+        searchValueGetter: (item) => _fmtNum(item.soTien),
+      ),
+      'chenhLech': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Chênh lệch',
+        getValue: (item) => _fmtNum(item.chenhLech),
+        width: 120,
+        searchValueGetter: (item) => _fmtNum(item.chenhLech),
+      ),
+      'khKyTruoc': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Khấu hao kỳ trước',
+        getValue: (item) => _fmtNum(item.khKyTruoc),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.khKyTruoc),
+      ),
+      'clKyTruoc': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Chênh lệch kỳ trước',
+        getValue: (item) => _fmtNum(item.clKyTruoc),
+        width: 140,
+        searchValueGetter: (item) => _fmtNum(item.clKyTruoc),
+      ),
+      'hsdCkh': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'HSDCKH',
+        getValue: (item) => _fmtNum(item.hsdCkh),
+        width: 120,
+        searchValueGetter: (item) => _fmtNum(item.hsdCkh),
+      ),
+      'tkNo': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Tài khoản nợ',
+        getValue: (item) => item.tkNo ?? '',
+        width: 140,
+        searchValueGetter: (item) => item.tkNo ?? '',
+      ),
+      'tkCo': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Tài khoản có',
+        getValue: (item) => item.tkCo ?? '',
+        width: 140,
+        searchValueGetter: (item) => item.tkCo ?? '',
+      ),
+      'dtgt': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'DTGT',
+        getValue: (item) => item.dtgt ?? '',
+        width: 100,
+        searchValueGetter: (item) => item.dtgt ?? '',
+      ),
+      'dtth': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'DTTH',
+        getValue: (item) => item.dtth ?? '',
+        width: 100,
+        searchValueGetter: (item) => item.dtth ?? '',
+      ),
+      'kmcp': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'KMCP',
+        getValue: (item) => item.kmcp ?? '',
+        width: 100,
+        searchValueGetter: (item) => item.kmcp ?? '',
+      ),
+      'ghiChuKhao': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Ghi chú khấu hao',
+        getValue: (item) => item.ghiChuKhao ?? '',
+        width: 220,
+        searchValueGetter: (item) => item.ghiChuKhao ?? '',
+      ),
+      'userId': TableBaseConfig.columnTable<AssetDepreciationDto>(
+        title: 'Người tạo',
+        getValue: (item) => item.userId ?? '',
+        width: 120,
+        searchValueGetter: (item) => item.userId ?? '',
+      ),
+    };
+  }
+
+  List<SgTableColumn<AssetDepreciationDto>> _buildColumns() {
+    // Tạo hash để kiểm tra xem visibleColumnIds có thay đổi không
+    final currentHash = visibleColumnIds.join(',');
+    
+    // Nếu columns đã được cache và visibleColumnIds không thay đổi, trả về cache
+    if (_cachedColumns != null && _lastVisibleColumnIdsHash == currentHash) {
+      return _cachedColumns!;
+    }
+
+    // Tạo columns mới dựa trên visibleColumnIds
+    final columns = <SgTableColumn<AssetDepreciationDto>>[];
+    for (final columnId in visibleColumnIds) {
+      final column = _allColumns[columnId];
+      if (column != null) {
+        columns.add(column);
       }
     }
+
+    // Cache kết quả
+    _cachedColumns = columns;
+    _lastVisibleColumnIdsHash = currentHash;
 
     return columns;
   }
@@ -565,6 +496,9 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
         setState(() {
           visibleColumnIds = selectedColumns;
           _updateColumnOptions();
+          // Xóa cache để force rebuild columns
+          _cachedColumns = null;
+          _lastVisibleColumnIdsHash = null;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -628,7 +562,7 @@ class _AssetDepreciationListState extends State<AssetDepreciationList> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2.5),
                       child: Text(
-                        'Danh sách khấu hao(${widget.provider.dataKhauHao.length})',
+                        'Danh sách khấu hao(${widget.provider.dataKhauHao?.length ?? 0})',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

@@ -26,6 +26,9 @@ class AssetDepreciationDto {
   final String? kmcp;
   final String? ghiChuKhao;
   final String? userId;
+  final double? nvNS;
+  final double? vonVay;
+  final double? vonKhac;
   final DateTime? userTime;
   final List<ChildAssetDto>? childAssets;
 
@@ -55,6 +58,9 @@ class AssetDepreciationDto {
     this.kmcp,
     this.ghiChuKhao,
     this.userId,
+    this.nvNS,
+    this.vonVay,
+    this.vonKhac,
     this.userTime,
     this.childAssets,
   });
@@ -90,6 +96,9 @@ class AssetDepreciationDto {
       kmcp: json['kmcp']?.toString(),
       ghiChuKhao: json['ghiChuKhao']?.toString(),
       userId: json['userId']?.toString(),
+      nvNS: asDouble(json['nvNS']),
+      vonVay: asDouble(json['vonVay']),
+      vonKhac: asDouble(json['vonKhac']),
       userTime: asDate(json['userTime']),
       childAssets: json['childAssets'] != null
           ? (json['childAssets'] as List)
@@ -126,6 +135,9 @@ class AssetDepreciationDto {
       'kmcp': kmcp,
       'ghiChuKhao': ghiChuKhao,
       'userId': userId,
+      'nvNS': nvNS,
+      'vonVay': vonVay,
+      'vonKhac': vonKhac,
       'userTime': userTime?.toIso8601String(),
       'childAssets': childAssets?.map((e) => e.toJson()).toList(),
     };
