@@ -77,7 +77,7 @@ class AssetManagementBloc
     emit(AssetManagementInitialState());
     emit(AssetManagementLoadingState());
     Map<String, dynamic> result = await AssetManagementRepository()
-        .getListKhauHao(event.idCongTy);
+        .getListKhauHao(event.idCongTy, date: event.date);
     emit(AssetManagementLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetListKhauHaoSuccessState(data: result['data']));

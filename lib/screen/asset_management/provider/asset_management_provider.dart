@@ -30,6 +30,7 @@ class AssetManagementProvider with ChangeNotifier {
   get isCanUpdate => _isCanUpdate;
   get isCanDelete => _isCanDelete;
   get isNew => _isNew;
+  get isLoadingKhauHao => _isLoadingKhauHao;
 
   String get searchTerm => _searchTerm;
 
@@ -96,6 +97,7 @@ class AssetManagementProvider with ChangeNotifier {
   bool _isShowCollapse = false;
   bool _isShowInputKhauHao = false;
   bool _isShowCollapseKhauHao = false;
+  bool _isLoadingKhauHao = false;
 
   bool _isCanCreate = false;
   bool _isCanUpdate = false;
@@ -114,7 +116,6 @@ class AssetManagementProvider with ChangeNotifier {
 
   List<AssetManagementDto>? _data;
   List<AssetManagementDto>? _dataPage;
-  
 
   List<AssetGroupDto>? _dataGroup;
   List<DuAn>? _dataProject;
@@ -253,7 +254,7 @@ class AssetManagementProvider with ChangeNotifier {
     // Sau khi lọc, cập nhật lại phân trang
     _updatePagination();
   }
-  
+
   void _updatePagination() {
     totalEntries = _filteredData?.length ?? 0;
     totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
@@ -290,7 +291,7 @@ class AssetManagementProvider with ChangeNotifier {
   }
 
   onInit(BuildContext context) async {
-    reset();
+    reset(context);
     _userInfo = AccountHelper.instance.getUserInfo();
     _dataGroup = AccountHelper.instance.getAssetGroup();
     if (AccountHelper.instance.getAllUnit().isEmpty) {
@@ -300,9 +301,11 @@ class AssetManagementProvider with ChangeNotifier {
     checkPermission();
     controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
+    // ignore: use_build_context_synchronously
     onCloseDetail(context);
     isShowInputKhauHao = false;
     isShowCollapseKhauHao = false;
+    // ignore: use_build_context_synchronously
     getDataAll(context);
     notifyListeners();
   }
@@ -318,9 +321,9 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  reset() {
+  reset(BuildContext context) {
     _isLoading = true;
-    onChangeBody(ShowBody.taiSan);
+    onChangeBody(ShowBody.taiSan, context);
     clearFilter();
   }
 
@@ -330,12 +333,13 @@ class AssetManagementProvider with ChangeNotifier {
       _beginBatchLoad(6);
       final bloc = context.read<AssetManagementBloc>();
       String idCongTy = _userInfo?.idCongTy ?? '';
+      // DateTime date = DateTime.now();
       // Gọi song song, không cần delay
       bloc.add(GetListAssetManagementEvent(context, idCongTy));
       bloc.add(GetListProjectEvent(context, idCongTy));
       bloc.add(GetListCapitalSourceEvent(context, idCongTy));
       bloc.add(GetListDepartmentEvent(context, idCongTy));
-      bloc.add(GetListKhauHaoEvent(context, idCongTy));
+      // bloc.add(GetListKhauHaoEvent(context, idCongTy, date));
       bloc.add(GetAllChildAssetsEvent(context, idCongTy));
     } catch (e) {
       SGLog.error(
@@ -349,7 +353,7 @@ class AssetManagementProvider with ChangeNotifier {
     }
   }
 
-  void onChangeBody(ShowBody type) {
+  void onChangeBody(ShowBody type, BuildContext context) {
     switch (type) {
       case ShowBody.taiSan:
         _subScreen = '';
@@ -361,6 +365,8 @@ class AssetManagementProvider with ChangeNotifier {
         _subScreen = 'Khấu hao tài sản';
         _isShowCollapseKhauHao = false;
         isShowInputKhauHao = false;
+        getDepreciationByDate(context, DateTime.now());
+        log('onChangeBody: khauHao');
         typeBody = ShowBody.khauHao;
         break;
     }
@@ -465,6 +471,12 @@ class AssetManagementProvider with ChangeNotifier {
       _dataKhauHao = state.data;
     }
     _completeOneLoad('getListKhauHaoSuccess');
+    onLoadingKhauHao(false);
+  }
+
+  onLoadingKhauHao(bool value) {
+    _isLoadingKhauHao = value;
+    notifyListeners();
   }
 
   getListProjectSuccess(
@@ -680,6 +692,25 @@ class AssetManagementProvider with ChangeNotifier {
         "_checkPermission",
         'isCanCreate: $isCanCreate -- isCanDelete: $isCanDelete -- isCanUpdate: $isCanUpdate',
       );
+    }
+  }
+
+  Future<void> getDepreciationByDate(
+    BuildContext context,
+    DateTime date,
+  ) async {
+    try {
+      final bloc = context.read<AssetManagementBloc>();
+      String idCongTy = _userInfo?.idCongTy ?? 'ct001';
+      onLoadingKhauHao(true);
+      bloc.add(GetListKhauHaoEvent(context, idCongTy, date));
+    } catch (e) {
+      SGLog.error(
+        "AssetManagementProvider",
+        "Error adding AssetManagement events: $e",
+      );
+      onLoadingKhauHao(false);
+      notifyListeners();
     }
   }
 }

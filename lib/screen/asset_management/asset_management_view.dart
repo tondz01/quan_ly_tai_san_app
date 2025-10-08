@@ -102,7 +102,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     },
                     onTap: () {
                       // provider.onChangeDetailAssetManagement(null);
-                      provider.onChangeBody(ShowBody.taiSan);
+                      provider.onChangeBody(ShowBody.taiSan, context);
                     },
                     onNew: () {
                       // provider.onChangeDetailAssetManagement(null);

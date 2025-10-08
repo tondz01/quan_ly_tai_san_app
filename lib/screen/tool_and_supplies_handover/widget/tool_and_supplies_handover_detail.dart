@@ -189,8 +189,13 @@ class _ToolAndSuppliesHandoverDetailState
       // Cập nhật lại trạng thái editing
       if (mounted) {
         setState(() {
-          widget.provider.isUpdateDetail = false;
           _initData();
+        });
+        // Defer provider update to avoid calling notifyListeners during build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            widget.provider.isUpdateDetail = false;
+          }
         });
       }
     }

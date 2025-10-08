@@ -70,7 +70,7 @@ class _ToolAndSuppliesHandoverListState
     // 'by_step',
     'permission_signing',
     'status_document',
-    'signing_status',
+    // 'signing_status',
     'share',
     'status',
     'actions',
@@ -84,7 +84,8 @@ class _ToolAndSuppliesHandoverListState
     },
     {
       'Ngày tạo chứng từ':
-          (item) => DateTime.tryParse(item.ngayTaoChungTu ?? '') ?? DateTime.now(),
+          (item) =>
+              DateTime.tryParse(item.ngayTaoChungTu ?? '') ?? DateTime.now(),
     },
     {
       'Ngày tạo':
@@ -148,12 +149,12 @@ class _ToolAndSuppliesHandoverListState
         label: 'Trạng thái bàn giao',
         isChecked: visibleColumnIds.contains('status_document'),
       ),
-      ColumnDisplayOption(
-        id: 'signing_status',
-        label: 'Quyền ký',
-        // label: 'Trạng thái ký',
-        isChecked: visibleColumnIds.contains('signing_status'),
-      ),
+      // ColumnDisplayOption(
+      //   id: 'signing_status',
+      //   label: 'Quyền ký',
+      //   // label: 'Trạng thái ký',
+      //   isChecked: visibleColumnIds.contains('signing_status'),
+      // ),
       ColumnDisplayOption(
         id: 'share',
         label: 'Chia sẻ',
@@ -241,6 +242,10 @@ class _ToolAndSuppliesHandoverListState
                     ? 'Chưa đến lượt ký'
                     : status == 3
                     ? 'Đã ký'
+                    : status == 4
+                    ? 'Đã ký & tạo'
+                    : status == 5
+                    ? 'Cần ký & tạo'
                     : 'Cần ký';
               },
               searchable: true,
@@ -271,34 +276,34 @@ class _ToolAndSuppliesHandoverListState
             ),
           );
           break;
-        case 'signing_status':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
-              // title: 'Trạng thái ký',
-              title: 'Quyền ký',
-              cellBuilder: (item) => showSigningStatus(item),
-              width: 150,
-              searchValueGetter: (item) {
-                final status = widget.provider.isCheckSigningStatus(item);
-                return status == 1
-                    ? 'Đã ký'
-                    : status == 0
-                    ? 'Chưa ký'
-                    : status == 2
-                    ? 'Đã ký nháy'
-                    : status == 3
-                    ? 'Đã ký & tạo'
-                    : status == 4
-                    ? 'Chưa ký nháy'
-                    : status == 5
-                    ? 'Chưa ký & tạo'
-                    : 'Người tạo phiếu';
-              },
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
+        // case 'signing_status':
+        //   columns.add(
+        //     TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
+        //       // title: 'Trạng thái ký',
+        //       title: 'Quyền ký',
+        //       cellBuilder: (item) => showSigningStatus(item),
+        //       width: 150,
+        //       searchValueGetter: (item) {
+        //         final status = widget.provider.isCheckSigningStatus(item);
+        //         return status == 1
+        //             ? 'Đã ký'
+        //             : status == 0
+        //             ? 'Chưa ký'
+        //             : status == 2
+        //             ? 'Đã ký nháy'
+        //             : status == 3
+        //             ? 'Đã ký & tạo'
+        //             : status == 4
+        //             ? 'Chưa ký nháy'
+        //             : status == 5
+        //             ? 'Chưa ký & tạo'
+        //             : 'Người tạo phiếu';
+        //       },
+        //       searchable: true,
+        //       filterable: true,
+        //     ),
+        //   );
+        //   break;
         case 'share':
           columns.add(
             TableBaseConfig.columnWidgetBase<ToolAndSuppliesHandoverDto>(
@@ -834,46 +839,46 @@ class _ToolAndSuppliesHandoverListState
     }
   }
 
-  Widget showSigningStatus(ToolAndSuppliesHandoverDto item) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? Colors.red
-                  : widget.provider.isCheckSigningStatus(item) == 3
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 5
-                  ? Colors.purple
-                  : Colors.blue,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: SGText(
-          text:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? 'Đã ký'
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? 'Chưa ký'
-                  : widget.provider.isCheckSigningStatus(item) == 3
-                  ? 'Đã ký & tạo'
-                  : widget.provider.isCheckSigningStatus(item) == 5
-                  ? 'Chưa ký & tạo'
-                  : "Người tạo phiếu",
-          size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget showSigningStatus(ToolAndSuppliesHandoverDto item) {
+  //   return Container(
+  //     constraints: const BoxConstraints(maxHeight: 48.0),
+  //     child: Container(
+  //       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+  //       margin: const EdgeInsets.only(bottom: 2),
+  //       decoration: BoxDecoration(
+  //         color:
+  //             widget.provider.isCheckSigningStatus(item) == 1
+  //                 ? Colors.green
+  //                 : widget.provider.isCheckSigningStatus(item) == 0
+  //                 ? Colors.red
+  //                 : widget.provider.isCheckSigningStatus(item) == 3
+  //                 ? Colors.green
+  //                 : widget.provider.isCheckSigningStatus(item) == 5
+  //                 ? Colors.purple
+  //                 : Colors.blue,
+  //         borderRadius: BorderRadius.circular(4),
+  //       ),
+  //       child: SGText(
+  //         text:
+  //             widget.provider.isCheckSigningStatus(item) == 1
+  //                 ? 'Đã ký'
+  //                 : widget.provider.isCheckSigningStatus(item) == 0
+  //                 ? 'Chưa ký'
+  //                 : widget.provider.isCheckSigningStatus(item) == 3
+  //                 ? 'Đã ký & tạo'
+  //                 : widget.provider.isCheckSigningStatus(item) == 5
+  //                 ? 'Chưa ký & tạo'
+  //                 : "Người tạo phiếu",
+  //         size: 12,
+  //         style: TextStyle(
+  //           fontWeight: FontWeight.w500,
+  //           color: Colors.white,
+  //           fontSize: 12,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   //  all('Tất cả', ColorValue.darkGrey),
   //   draft('Nháp', ColorValue.silverGray),
@@ -1172,10 +1177,15 @@ class _ToolAndSuppliesHandoverListState
       (s) => s["id"] == userInfo?.tenDangNhap,
     );
     if (currentIndex == -1) return 2;
+    if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap &&
+        signatureFlow[currentIndex]["signed"] != -1) {
+      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
+    }
     if (signatureFlow[currentIndex]["signed"] == true) return 3;
     final previousNotSigned = signatureFlow
         .take(currentIndex)
         .firstWhere((s) => s["signed"] == false, orElse: () => {});
+
     if (previousNotSigned.isNotEmpty) return 1;
     return 0;
   }

@@ -36,8 +36,30 @@ class _AssetTransferViewState extends State<AssetTransferView> {
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
     currentType = 0;
+    // _initWebSocket();
     _initData();
   }
+
+  // Future<void> _initWebSocket() async {
+  //   final user = AccountHelper.instance.getUserInfo();
+  //   final companyId = user?.idCongTy ?? '';
+  //   final userId = user?.id ?? '';
+  //   if (companyId.isEmpty || userId.isEmpty) return;
+
+  //   final ws = WebSocketService();
+  //   await ws.initializeNotifications();
+  //   await ws.connect(
+  //     serverUrl: Config.baseUrl,
+  //     companyId: companyId,
+  //     userId: userId,
+  //     onNotification: (n) {
+  //       if (!mounted) return;
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(n.title.isNotEmpty ? n.title : n.message)),
+  //       );
+  //     },
+  //   );
+  // }
 
   void _onScrollStateChanged() {
     setState(() {});
@@ -46,14 +68,11 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _providerRef ??= Provider.of<DieuDongTaiSanProvider>(context, listen: false);
     final state = GoRouterState.of(context);
     final String? typeParam = state.uri.queryParameters['type'];
     final int newType = int.tryParse(typeParam ?? '') ?? 0;
     // Cache provider reference for safe use in dispose
-    _providerRef ??= Provider.of<DieuDongTaiSanProvider>(
-      context,
-      listen: false,
-    );
 
     if (!_isInitialized) {
       currentType = newType;
@@ -65,14 +84,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   }
 
   void _reloadData() {
-    final provider = Provider.of<DieuDongTaiSanProvider>(
-      context,
-      listen: false,
-    );
-
     // Chỉ tải lại dữ liệu nếu đã khởi tạo trước đó
     if (_isInitialized) {
-      provider.refreshData(context, currentType);
+      _providerRef?.refreshData(context, currentType);
     }
     _initData();
   }
@@ -89,10 +103,9 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
   @override
   void dispose() {
+    _providerRef?.onDispose();
     _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
-    // Reset provider state when leaving this page using cached reference
-    _providerRef?.onDispose();
     _isInitialized = false;
     super.dispose();
   }

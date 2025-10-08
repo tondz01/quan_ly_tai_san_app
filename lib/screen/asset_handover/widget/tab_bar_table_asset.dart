@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
@@ -26,7 +24,6 @@ class _TabBarTableAssetState extends State<TabBarTableAsset> {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
     _getDataAssetTransfer();
-    log('dataAssetTransfer: ${dataAssetTransfer.length}');
   }
 
   @override

@@ -222,6 +222,25 @@ abstract class AppUtility {
     return null;
   }
 
+  // Parse only month and year. Supported formats: MM/yyyy, M/yyyy, yyyy-MM, yyyy-M
+  // Returns a DateTime at the first day of that month, or null if invalid
+  static DateTime? parseMonthYear(String input) {
+    if (input.isEmpty) return null;
+    final List<String> patterns = [
+      'MM/yyyy',
+      'M/yyyy',
+      'yyyy-MM',
+      'yyyy-M',
+    ];
+    for (final pattern in patterns) {
+      try {
+        final parsed = DateFormat(pattern).parseStrict(input);
+        return DateTime(parsed.year, parsed.month, 1);
+      } catch (_) {}
+    }
+    return null;
+  }
+
   static Future exportData(
     BuildContext context,
     String fileName,
@@ -347,6 +366,10 @@ abstract class AppUtility {
                   ? Colors.deepOrangeAccent
                   : status == 3
                   ? Colors.blue
+                  : status == 4
+                  ? Colors.purple
+                  : status == 5
+                  ? Colors.orange
                   : Colors.green,
           borderRadius: BorderRadius.circular(4),
         ),
@@ -358,6 +381,10 @@ abstract class AppUtility {
                   ? 'Chưa đến lượt ký'
                   : status == 3
                   ? 'Đã ký'
+                  : status == 4
+                  ? 'Đã ký & tạo'
+                  : status == 5
+                  ? 'Cần ký & tạo'
                   : 'Cần ký',
           size: 12,
           style: TextStyle(

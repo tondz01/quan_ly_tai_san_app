@@ -33,13 +33,37 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late HomeScrollController _scrollController;
+  AssetHandoverProvider? _providerRef;
   @override
   void initState() {
     super.initState();
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
+    // _initWebSocket();
     _initData();
   }
+
+
+  // Future<void> _initWebSocket() async {
+  //   final user = AccountHelper.instance.getUserInfo();
+  //   final companyId = user?.idCongTy ?? '';
+  //   final userId = user?.id ?? '';
+  //   if (companyId.isEmpty || userId.isEmpty) return;
+
+  //   final ws = WebSocketService();
+  //   await ws.initializeNotifications();
+  //   await ws.connect(
+  //     serverUrl: Config.baseUrl,
+  //     companyId: companyId,
+  //     userId: userId,
+  //     onNotification: (n) {
+  //       if (!mounted) return;
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text(n.title.isNotEmpty ? n.title : n.message)),
+  //       );
+  //     },
+  //   );
+  // }
 
   void _onScrollStateChanged() {
     setState(() {});
@@ -48,6 +72,10 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    
+    // Store provider reference for safe access in dispose()
+    _providerRef ??= Provider.of<AssetHandoverProvider>(context, listen: false);
+    
     final extra = GoRouterState.of(context).extra;
 
     if (extra is Map<String, dynamic>) {
@@ -113,6 +141,8 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
 
   @override
   void dispose() {
+    // Use stored provider reference to avoid unsafe ancestor lookup
+    _providerRef?.onDispose();
     _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     super.dispose();
