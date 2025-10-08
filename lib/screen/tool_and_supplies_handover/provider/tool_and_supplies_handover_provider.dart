@@ -56,6 +56,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   get filteredData => _filteredData;
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
+  bool get isUpdateDetail => _isUpdateDetail;
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -77,6 +78,11 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   set isLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  set isUpdateDetail(bool value) {
+    _isUpdateDetail = value;
     notifyListeners();
   }
 
@@ -123,6 +129,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   Widget? _body;
 
   bool _isLoading = false;
+  bool _isUpdateDetail = false;
 
   List<ToolAndSuppliesHandoverDto>? _data;
   List<ToolAndSuppliesHandoverDto>? _dataPage;
@@ -303,6 +310,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       onReloadDataToolAndMaterialHandover();
+      print("reload data tool and supplies handover");
     });
   }
 
@@ -316,7 +324,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
             return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
           }).toList();
     _filteredData = List.from(_data!);
-    log('message test: onReloadDataToolAndMaterialHandover');
     _updatePagination();
     notifyListeners();
   }
@@ -473,6 +480,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
                     isShowInput = true;
                     isShowCollapse = true;
                     hasUnsavedChanges = false;
+                    _isUpdateDetail = true;
                     Navigator.of(context).pop();
                   },
                   child: const Text('Rời khỏi'),
@@ -495,6 +503,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       _item = item;
       isShowInput = true;
       isShowCollapse = true;
+      _isUpdateDetail = true;
     }
     return true;
   }

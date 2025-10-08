@@ -14,12 +14,16 @@ class DepartmentFormPage extends StatefulWidget {
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
+  final bool isUpdateDetail;
+  final VoidCallback? onUpdateDetail;
   const DepartmentFormPage({
     super.key,
     this.department,
     this.index,
     this.onCancel,
     this.onSaved,
+    this.isUpdateDetail = false,
+    this.onUpdateDetail,
   });
 
   @override
@@ -44,7 +48,8 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   @override
   void didUpdateWidget(DepartmentFormPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.department != widget.department) {
+    if (oldWidget.department != widget.department && widget.isUpdateDetail) {
+      widget.onUpdateDetail?.call();
       _initData();
     }
   }

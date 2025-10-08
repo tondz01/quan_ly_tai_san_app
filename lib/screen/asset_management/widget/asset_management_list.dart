@@ -212,7 +212,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Mã tài sản',
               getValue: (item) => item.soThe ?? '',
               width: 120,
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -222,7 +222,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Tên tài sản',
               getValue: (item) => item.tenTaiSan ?? '',
               width: 200,
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -262,7 +262,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   ).format(item.vonNS ?? 0.0),
               width: 120,
               searchValueGetter: (item) => item.vonNS?.toString() ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -277,7 +277,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   ).format(item.vonVay ?? 0.0),
               width: 120,
               searchValueGetter: (item) => item.vonVay?.toString() ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -292,7 +292,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   ).format(item.vonKhac ?? 0.0),
               width: 120,
               searchValueGetter: (item) => item.vonKhac?.toString() ?? '',
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -302,7 +302,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Ngày bàn giao',
               getValue: (item) => item.ngaySuDung?.toString() ?? '',
               width: 120,
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -342,7 +342,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           .length
                           .toString(),
               width: 120,
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;
@@ -411,7 +411,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
               title: 'Số lượng',
               getValue: (item) => item.soLuong?.toString() ?? '',
               width: 100,
-              filterable: true,
+              // filterable: true,
             ),
           );
           break;

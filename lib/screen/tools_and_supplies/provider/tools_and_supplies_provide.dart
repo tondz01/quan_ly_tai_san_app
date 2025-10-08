@@ -14,7 +14,6 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/show_un_
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesProvider with ChangeNotifier {
   bool get isLoading => _data == null || _dataPhongBan == null;
@@ -29,6 +28,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   get dataDetail => _dataDetail;
   get dataPage => _dataPage;
   get filteredData => _filteredData;
+  bool get isUpdateDetail => _isUpdateDetail;
 
   get selectedFileName => _selectedFileName;
   get selectedFilePath => _selectedFilePath;
@@ -39,8 +39,15 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   Widget? get body => _body;
 
+  bool _isUpdateDetail = false;
+
   set subScreen(String? value) {
     _subScreen = value;
+    notifyListeners();
+  }
+
+  set isUpdateDetail(bool value) {
+    _isUpdateDetail = value;
     notifyListeners();
   }
 
@@ -234,10 +241,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _updatePagination();
     }
     _dataGroupCCDC = state.dataGroupCCDC;
-    SGLog.debug(
-      "GetListToolsAndSuppliesSuccess",
-      "GetListToolsAndSuppliesSuccessState: data: ${_data!.length}, dataGroupCCDC: ${_dataGroupCCDC!.length}",
-    );
     notifyListeners();
   }
 
@@ -328,6 +331,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _dataDetail = item;
       _isShowInput = true;
       _isShowCollapse = true;
+      _isUpdateDetail = true;
+      log('message test: _showUnsavedChangesDialog: $isUpdateDetail');
       hasUnsavedChanges = false;
       Navigator.of(context).pop();
     });
@@ -344,6 +349,8 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _dataDetail = item;
       _isShowInput = true;
       _isShowCollapse = true;
+      _isUpdateDetail = true;
+      log('message test: _showUnsavedChangesDialog: $isUpdateDetail');
     }
     return true;
   }

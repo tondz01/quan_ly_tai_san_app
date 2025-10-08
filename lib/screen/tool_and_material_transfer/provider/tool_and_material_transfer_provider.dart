@@ -255,6 +255,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       onReloadDataToolAndMaterialTransfer();
+      print("reload data tool and material transfer");
     });
   }
 
@@ -309,7 +310,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
     _filteredData = List.from(_data!);
-    log('message test: onReloadDataToolAndMaterialTransfer');
     _updatePagination();
     notifyListeners();
   }

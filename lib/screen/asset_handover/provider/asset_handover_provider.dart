@@ -290,6 +290,7 @@ class AssetHandoverProvider with ChangeNotifier {
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       onReloadDataAssetHandover();
+      print("reload data asset handover");
     });
   }
 

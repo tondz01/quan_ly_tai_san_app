@@ -184,10 +184,12 @@ class _ToolAndSuppliesHandoverDetailState
     super.didUpdateWidget(oldWidget);
     // Kiểm tra nếu có thay đổi trong item hoặc isEditing
     if (oldWidget.provider.item != item ||
-        oldWidget.isEditing != widget.isEditing) {
+        oldWidget.isEditing != widget.isEditing ||
+        oldWidget.provider.isUpdateDetail) {
       // Cập nhật lại trạng thái editing
       if (mounted) {
         setState(() {
+          widget.provider.isUpdateDetail = false;
           _initData();
         });
       }
@@ -349,14 +351,11 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   void getStaffDonViGiaoAndNhan(String idDonViNhan, String idDonViGiao) {
-    log('idDonViNhan: $idDonViNhan');
     listNhanVien = AccountHelper.instance.getNhanVien() ?? [];
     listNhanVienDonViNhan =
         listNhanVien
             .where((element) => element.phongBanId == idDonViNhan)
             .toList();
-    log('listNhanVienDonViNhan: ${listNhanVienDonViNhan.length}');
-
     listNhanVienDonViGiao =
         widget.provider.dataStaff
             ?.where((element) => element.phongBanId == idDonViGiao)
@@ -441,7 +440,7 @@ class _ToolAndSuppliesHandoverDetailState
       // controllerTransferDate.text = AppUtility.formatDateDdMmYyyy(
       //   ngayTaoChungTu ?? DateTime.now(),
       // );
-      
+
       // controllerLeader.text = item?.tenLanhDao ?? '';
       controllerIssuingUnitRepresentative.text =
           item?.tenDaiDienBanHanhQD ?? '';
@@ -462,7 +461,7 @@ class _ToolAndSuppliesHandoverDetailState
     final bloc = context.read<ToolAndSuppliesHandoverBloc>();
 
     provider.isLoading = true;
-    
+
     final Map<String, dynamic> request = {
       "id": controllerHandoverNumber.text,
       "idCongTy": currentUser?.idCongTy ?? "CT001",
@@ -1007,8 +1006,7 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerTransferDate,
           isEditing: isEditing,
           value: ngayBanGiao,
-          onChanged: (dt) {
-          },
+          onChanged: (dt) {},
           validationErrors: _validationErrors,
           fieldName: 'transferDate',
           isRequired: true,
@@ -1018,8 +1016,7 @@ class _ToolAndSuppliesHandoverDetailState
           controller: controllerDocumentCreationDate,
           isEditing: isEditing,
           value: ngayTaoChungTu,
-          onChanged: (dt) {
-          },
+          onChanged: (dt) {},
           validationErrors: _validationErrors,
           fieldName: 'documentCreationDate',
           isRequired: true,
@@ -1406,7 +1403,6 @@ class _ToolAndSuppliesHandoverDetailState
           rethrow;
         }
       }
-
     } catch (e) {
       log('Sync details error: $e');
       rethrow; // Re-throw để caller có thể handle

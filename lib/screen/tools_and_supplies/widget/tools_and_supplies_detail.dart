@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
@@ -74,7 +76,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
     // Khởi tạo controller với callbacks
     _controller = ToolsAndSuppliesController(
-      onStateChanged: () => setState(() {}),
+      onStateChanged: () {
+        log('message test: onStateChanged11');
+
+        setState(() {});
+      },
     );
 
     initData();
@@ -84,7 +90,8 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
   @override
   void didUpdateWidget(ToolsAndSuppliesDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.provider.data != data) {
+    if (oldWidget.provider.data != data && widget.provider.isUpdateDetail) {
+      widget.provider.isUpdateDetail = false;
       initData();
     }
   }
@@ -425,10 +432,10 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         data?.soLuong,
         defaultValue: '0',
       );
-      controllerValue.text = _controller.formatDisplayValue(
-        data?.giaTri,
-        defaultValue: '0.0',
-      );
+      controllerValue.text = NumberFormat.currency(
+        locale: 'vi_VN',
+        symbol: '',
+      ).format(data?.giaTri ?? 0.0);
       controllerSymbol.text = _controller.formatDisplayValue(data?.kyHieu);
       controllerNote.text = _controller.formatDisplayValue(data?.ghiChu);
 

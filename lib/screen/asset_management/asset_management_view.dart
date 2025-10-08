@@ -208,7 +208,9 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                           ),
                         ),
                     Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
+                      visible:
+                          (provider.data?.length ?? 0) >= 5 &&
+                          provider.typeBody == ShowBody.taiSan,
                       child: SGPaginationControls(
                         totalPages: provider.totalPages,
                         currentPage: provider.currentPage,

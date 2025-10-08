@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_input.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -16,7 +17,7 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
   final TextEditingController controllerTypeCCDC;
   final List<DropdownMenuItem<CcdcGroup>> itemsGroupCCDC;
   final List<DropdownMenuItem<TypeCcdc>> itemsTypeCCDC;
-  final Function(CcdcGroup?) onGroupCCDCChanged;    
+  final Function(CcdcGroup?) onGroupCCDCChanged;
   final List<CcdcGroup> listGroupCCDC;
   final List<TypeCcdc> listTypeCCDC;
   final Function(TypeCcdc?) onTypeCCDCChanged;
@@ -58,9 +59,9 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           onChanged: onGroupCCDCChanged,
           fieldName: 'idNhomCcdc',
           validationErrors: validationErrors,
-          isRequired: true
+          isRequired: true,
         ),
-         CmFormDropdownObject<TypeCcdc>(
+        CmFormDropdownObject<TypeCcdc>(
           label: 'Loại ccdc',
           controller: controllerTypeCCDC,
           isEditing: isEditing,
@@ -72,7 +73,7 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           onChanged: onTypeCCDCChanged,
           fieldName: 'idLoaiCCDCCon',
           validationErrors: validationErrors,
-          isRequired: true
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'tas.quantity'.tr,
@@ -87,11 +88,14 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           label: 'tas.value'.tr,
           controller: controllerValue,
           isEditing: isEditing,
-          textContent: item?.giaTri.toString() ?? '0.0',
+          textContent: NumberFormat.currency(
+            locale: 'vi_VN',
+            symbol: '',
+          ).format(item?.giaTri ?? 0.0),
           inputType: TextInputType.number,
           fieldName: 'giaTri',
           validationErrors: validationErrors,
-          isRequired: true
+          isRequired: true,
         ),
         CommonFormInput(
           label: 'tas.symbol'.tr,
@@ -101,7 +105,6 @@ class ToolsAndSuppliesFormRight extends StatelessWidget {
           fieldName: 'kyHieu',
           validationErrors: validationErrors,
         ),
-       
       ],
     );
   }

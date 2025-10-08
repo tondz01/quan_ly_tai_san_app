@@ -449,7 +449,7 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
         ),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 0),
             child: TableBaseConfig.tableBase<T>(
               columns: newColumns,
               isShowCheckboxes: widget.isShowCheckboxes,
