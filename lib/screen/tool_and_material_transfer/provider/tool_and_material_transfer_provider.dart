@@ -309,7 +309,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
     _filteredData = List.from(_data!);
-    log('message test: onReloadDataToolAndMaterialTransfer');
     _updatePagination();
     notifyListeners();
   }

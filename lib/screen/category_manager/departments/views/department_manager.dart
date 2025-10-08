@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
@@ -44,6 +46,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   List<PhongBan> dataPage = [];
   bool isFirstLoad = false;
   bool isShowInput = false;
+  bool isUpdateDetail = false;
   late HomeScrollController _scrollController;
   @override
   void initState() {
@@ -82,6 +85,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
     setState(() {
       isShowInput = true;
       editingDepartment = department;
+      isUpdateDetail = true;
     });
   }
 
@@ -369,6 +373,13 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                             onSaved: () {
                               setState(() {
                                 isShowInput = false;
+                                isUpdateDetail = false;
+                              });
+                            },
+                            onUpdateDetail: () {
+                              setState(() {
+                                isUpdateDetail = false;
+                                log('message test: onUpdateDetail');
                               });
                             },
                           ),

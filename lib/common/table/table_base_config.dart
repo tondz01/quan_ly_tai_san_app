@@ -48,6 +48,7 @@ abstract class TableBaseConfig {
         gridLineColor: Colors.grey.shade100,
         colorLineVertical: ColorValue.disabledText.withOpacity(0.3),
         gridLineWidth: 1,
+        
         showCheckboxes: isShowCheckboxes,
         showVerticalLines: true,
         showHorizontalLines: true,
