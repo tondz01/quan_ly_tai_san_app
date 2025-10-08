@@ -60,7 +60,12 @@ class _DashboardViewState extends State<DashboardView> {
   List<dynamic> _ccdcGroupPercentageData = [];
   bool _isLoadingCcdcGroupPercentage = false;
   String? _ccdcGroupPercentageError;
-  
+
+  // Statistics data
+  Map<String, dynamic> _statisticsData = {};
+  bool _isLoadingStatistics = false;
+  String? _statisticsError;
+
   late HomeScrollController _scrollController;
 
   @override
@@ -75,6 +80,7 @@ class _DashboardViewState extends State<DashboardView> {
     _loadDepreciationData();
     _loadAssetGroupPercentageData();
     _loadCcdcGroupPercentageData();
+    _loadStatisticsData();
   }
 
   @override
@@ -299,280 +305,45 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
+  Future<void> _loadStatisticsData() async {
+    setState(() {
+      _isLoadingStatistics = true;
+      _statisticsError = null;
+    });
+
+    try {
+      final result = await _dashboardRepository.getDashboardData();
+      print("Statistics API Result: $result");
+
+      if (result['status_code'] == 200) {
+        setState(() {
+          // The API returns data directly in the 'data' field
+          print("Statistics API Success - result['data']: ${result['data']}");
+          _statisticsData = result['data'] as Map<String, dynamic>? ?? {};
+          print("Statistics Data Set - _statisticsData: $_statisticsData");
+          _isLoadingStatistics = false;
+        });
+      } else {
+        setState(() {
+          _statisticsError = result['message'] ?? 'Có lỗi xảy ra';
+          _isLoadingStatistics = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _statisticsError = 'Lỗi khi tải dữ liệu: $e';
+        _isLoadingStatistics = false;
+      });
+    }
+  }
+
   // Dữ liệu mẫu từ API
-  final Map<String, dynamic> apiData = {
-    "success": true,
-    "message": "Lấy thống kê dashboard thành công",
-    "data": {
-      "giaTriTheoCongTy": [
-        {"congTy": "Công ty ABC", "soLuong": 9, "tongGiaTri": 1.7050715103E10},
-      ],
-      "taiSanTheoTrangThaiPhanTram": [
-        {
-          "trangThai": "Đang sử dụng",
-          "soLuong": 8,
-          "tongGiaTri": 3.050715103E9,
-          "phanTramSoLuong": 88.89,
-          "phanTramGiaTri": 17.89,
-        },
-        {
-          "trangThai": "Mất",
-          "soLuong": 1,
-          "tongGiaTri": 1.4E10,
-          "phanTramSoLuong": 11.11,
-          "phanTramGiaTri": 82.11,
-        },
-      ],
-      "taiSanTheoLoai": [],
-      "taiSanTheoTrangThai": [
-        {
-          "trangThai": "Đang sử dụng",
-          "soLuong": 8,
-          "tongGiaTri": 3.050715103E9,
-        },
-        {"trangThai": "Mất", "soLuong": 1, "tongGiaTri": 1.4E10},
-      ],
-      "taiSanTheoDuAnPhanTram": [],
-      "taiSanTheoCongTyPhanTram": [
-        {
-          "congTy": "Công ty ABC",
-          "soLuong": 9,
-          "tongGiaTri": 1.7050715103E10,
-          "phanTramSoLuong": 100.00,
-          "phanTramGiaTri": 100.0,
-        },
-      ],
-      "ccdcTheoPhongBan": [
-        {
-          "phongBan": "Phân xưởng Cơ giới -Cơ khí 1",
-          "tongSoLuong": 139,
-          "tongGiaTri": 5.5175E8,
-        },
-      ],
-      "tongTaiSan": 9,
-      "taiSanTheoLoaiConPhanTram": [
-        {
-          "ten": "Máy",
-          "idLoaiTaiSan": "TS_MMTB",
-          "tenLoai": "Máy",
-          "soLuong": 4,
-          "tongGiaTri": 1.4001255555E10,
-          "phanTramSoLuong": 44.44,
-          "phanTramGiaTri": 82.12,
-        },
-      ],
-      "taiSanTheoNhomPhanTram": [
-        {
-          "ten": "Máy móc, Trang thiết bị",
-          "soLuong": 8,
-          "tongGiaTri": 3.050715103E9,
-          "phanTramSoLuong": 88.89,
-          "phanTramGiaTri": 17.89,
-        },
-      ],
-      "top5TaiSanGiaTriCao": [
-        {
-          "TenTaiSan": "Nhà thờ 120 tỏi của HL",
-          "NguyenGia": 1.4E10,
-          "IdLoaiTaiSan": null,
-          "IdNhomTaiSan": "NT",
-          "HienTrang": 4,
-        },
-        {
-          "TenTaiSan": "Trạm BA 560 KVA (22)-6/0,4-0,23 KV",
-          "NguyenGia": 1.62474E9,
-          "IdLoaiTaiSan": null,
-          "IdNhomTaiSan": "TS_MMTB",
-          "HienTrang": 1,
-        },
-        {
-          "TenTaiSan":
-              "Trạm biến áp 400KVA-6/0,4KV MB +30 Tràng khê ( Cung cấp điện nhà điều hành )",
-          "NguyenGia": 1.09898E9,
-          "IdLoaiTaiSan": null,
-          "IdNhomTaiSan": "TS_MMTB",
-          "HienTrang": 1,
-        },
-        {
-          "TenTaiSan":
-              "Tủ cầu dao phòng nổ 6KV ( máy cắt phòng nổ ) mã hiệu PJG9L-630/6 ( Thiết bị khống chế và bảo vệ mạng điện )",
-          "NguyenGia": 1.49437E8,
-          "IdLoaiTaiSan": null,
-          "IdNhomTaiSan": "TS_MMTB",
-          "HienTrang": 1,
-        },
-        {
-          "TenTaiSan": "Tủ nạp ắc quy",
-          "NguyenGia": 1.41359E8,
-          "IdLoaiTaiSan": null,
-          "IdNhomTaiSan": "TS_MMTB",
-          "HienTrang": 1,
-        },
-      ],
-      "tongCCDC": 3,
-      "taiSanTheoQuy": [
-        {"nam": 2025, "quy": 3, "soLuong": 9, "tongGiaTri": 1.7050715103E10},
-      ],
-      "giaTriTheoNguonVon": [
-        {
-          "nguonVon": "Vốn Tự Bổ Sung",
-          "soLuong": 5,
-          "tongGiaTri": 2.724982531E9,
-        },
-      ],
-      "tongNhanVien": 23,
-      "taiSanTheoLoaiChinhPhanTram": [],
-      "taiSanTheoLoaiChinhChiTietPhanTram": [],
-      "tongNguyenGia": 1.7050715103E10,
-      "taiSanTheoNamTao": [
-        {"nam": 2025, "soLuong": 9, "tongGiaTri": 1.7050715103E10},
-      ],
-      "tongPhongBan": 94,
-      "tongCongTy": 1,
-      "taiSanTheoThang": [
-        {"nam": 2025, "thang": 9, "soLuong": 9, "tongGiaTri": 1.7050715103E10},
-      ],
-      "ccdcTheoLoai": [
-        {
-          "ten": "TEST-02",
-          "soLuong": 3,
-          "tongSoLuong": 139,
-          "tongGiaTri": 5.5175E8,
-        },
-      ],
-      "taiSanSapHetHanBaoHanh": [
-        {
-          "Id": "Test_002",
-          "TenTaiSan": "Test 01",
-          "NguyenGia": 55555.0,
-          "NgayVaoSo": "2025-09-18 22:53:00",
-          "ThoiHanBaoHanh": "Không có thông tin bảo hành",
-          "NgayHetHanBaoHanh": "Không có thông tin bảo hành",
-          "SoNgayConLai": 0,
-        },
-      ],
-      "taiSanTheoPhongBan": [
-        {
-          "phongBan": "Phân xưởng Cơ điện lò 2",
-          "soLuong": 4,
-          "tongGiaTri": 1.625997571E9,
-        },
-        {"phongBan": "Phòng Giám Đốc", "soLuong": 1, "tongGiaTri": 1.4E10},
-      ],
-      "ccdcTheoLoaiConChiTietPhanTram": [
-        {
-          "ten": "TEST-02",
-          "idLoaiCCDC": "NCCDC001",
-          "tenLoai": "TEST-02",
-          "soLuong": 3,
-          "tongSoLuong": 139,
-          "tongGiaTri": 5.5175E8,
-          "phanTramSoLuong": 100.00,
-          "phanTramTongSoLuong": 100.00,
-          "phanTramGiaTri": 100.0,
-        },
-      ],
-      "tongDuAn": 6,
-      "taiSanTheoNhom": [
-        {
-          "ten": "Máy móc, Trang thiết bị",
-          "soLuong": 8,
-          "tongGiaTri": 3.050715103E9,
-        },
-      ],
-      "taiSanCanBaoTri": [],
-      "giaTriTheoDuAn": [],
-      "taiSanTheoLoaiConChiTietPhanTram": [
-        {
-          "idLoaiTaiSanCon": "lts_01",
-          "tenLoaiTaiSanCon": "Máy",
-          "idLoaiTaiSan": "TS_MMTB",
-          "tenLoaiTaiSan": null,
-          "soLuong": 4,
-          "tongGiaTri": 1.4001255555E10,
-          "phanTramSoLuong": 44.44,
-          "phanTramGiaTri": 82.12,
-        },
-      ],
-      "taiSanTheoNguonVonPhanTram": [
-        {
-          "nguonVon": "Vốn Tự Bổ Sung",
-          "soLuong": 5,
-          "tongGiaTri": 2.724982531E9,
-          "phanTramSoLuong": 55.56,
-          "phanTramGiaTri": 15.98,
-        },
-      ],
-      "taiSanTheoPhongBanPhanTram": [
-        {
-          "phongBan": "Phân xưởng Cơ điện lò 2",
-          "soLuong": 4,
-          "tongGiaTri": 1.625997571E9,
-          "phanTramSoLuong": 44.44,
-          "phanTramGiaTri": 9.54,
-        },
-        {
-          "phongBan": "Phòng Giám Đốc",
-          "soLuong": 1,
-          "tongGiaTri": 1.4E10,
-          "phanTramSoLuong": 11.11,
-          "phanTramGiaTri": 82.11,
-        },
-      ],
-      "tongGiaTriCCDC": 5.5175E8,
-      "ccdcTheoPhongBanPhanTram": [
-        {
-          "phongBan": "Phân xưởng Cơ giới -Cơ khí 1",
-          "soLuong": 3,
-          "tongSoLuong": 139,
-          "tongGiaTri": 5.5175E8,
-          "phanTramSoLuong": 100.00,
-          "phanTramTongSoLuong": 100.00,
-          "phanTramGiaTri": 100.0,
-        },
-      ],
-      "ccdcTheoLoaiChinhChiTietPhanTram": [
-        {
-          "idLoaiCCDC": "NCCDC001",
-          "tenLoaiCCDC": "Không có bảng LoaiCCDC",
-          "soLuong": 3,
-          "tongSoLuong": 139,
-          "tongGiaTri": 5.5175E8,
-          "phanTramSoLuong": 100.00,
-          "phanTramTongSoLuong": 100.00,
-          "phanTramGiaTri": 100.0,
-        },
-      ],
-      "taiSanChuaDieuDong": [
-        {
-          "Id": "HL14T",
-          "TenTaiSan": "Nhà thờ 120 tỏi của HL",
-          "NguyenGia": 1.4E10,
-          "HienTrang": 4,
-          "TenLoaiTaiSan": null,
-          "TenNhom": null,
-          "TenPhongBan": "Phòng Giám Đốc",
-        },
-      ],
-      "ccdcTheoLoaiConPhanTram": [
-        {
-          "ten": "TEST-02",
-          "idLoaiCCDC": "NCCDC001",
-          "tenLoai": "TEST-02",
-          "soLuong": 3,
-          "tongSoLuong": 139,
-          "tongGiaTri": 5.5175E8,
-          "phanTramSoLuong": 100.00,
-          "phanTramTongSoLuong": 100.00,
-          "phanTramGiaTri": 100.0,
-        },
-      ],
-    },
-  };
 
   @override
   Widget build(BuildContext context) {
-    final data = apiData['data'] as Map<String, dynamic>;
+    final data = _statisticsData as Map<String, dynamic>? ?? {};
+    print("Build - Statistics Data: $data");
+    print("Build - Top Assets: ${data['top5TaiSanGiaTriCao']}");
 
     return Container(
       decoration: BoxDecoration(
@@ -639,6 +410,193 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildStatisticsSection(Map<String, dynamic> data) {
+    if (_isLoadingStatistics) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white, Colors.blue.shade50, Colors.indigo.shade50],
+            stops: const [0.0, 0.7, 1.0],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.15),
+              blurRadius: 25,
+              offset: const Offset(0, 12),
+            ),
+            BoxShadow(
+              color: Colors.indigo.withOpacity(0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade600, Colors.indigo.shade700],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.dashboard, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SGText(
+                      text: "📊 Tổng quan thống kê",
+                      style: AppTextStyle.textStyleSemiBold24.copyWith(
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    Text(
+                      "Đang tải dữ liệu thống kê...",
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.blue.shade600,
+                    ),
+                    strokeWidth: 3,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Đang tải dữ liệu thống kê...",
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_statisticsError != null) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Colors.white, Colors.red.shade50],
+            stops: const [0.0, 1.0],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withOpacity(0.15),
+              blurRadius: 25,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade600, Colors.red.shade700],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SGText(
+                      text: "❌ Lỗi tải dữ liệu",
+                      style: AppTextStyle.textStyleSemiBold24.copyWith(
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                    Text(
+                      "Không thể tải dữ liệu thống kê",
+                      style: TextStyle(
+                        color: Colors.red.shade600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.red.shade400,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Lỗi tải dữ liệu thống kê',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.red.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _statisticsError!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.red.shade600),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadStatisticsData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Thử lại'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -708,7 +666,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               _buildEnhancedStatisticsCard(
                 'Tổng tài sản',
-                data['tongTaiSan'].toString(),
+                (data['tongTaiSan'] ?? 0).toString(),
                 Icons.inventory_2,
                 [Colors.purple.shade400, Colors.purple.shade600],
               ),
@@ -720,7 +678,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng CCDC',
-                data['tongCCDC'].toString(),
+                (data['tongCCDC'] ?? 0).toString(),
                 Icons.build,
                 [Colors.orange.shade400, Colors.orange.shade600],
               ),
@@ -732,25 +690,25 @@ class _DashboardViewState extends State<DashboardView> {
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng nhân viên',
-                data['tongNhanVien'].toString(),
+                (data['tongNhanVien'] ?? 0).toString(),
                 Icons.people,
                 [Colors.indigo.shade400, Colors.indigo.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng phòng ban',
-                data['tongPhongBan'].toString(),
+                (data['tongPhongBan'] ?? 0).toString(),
                 Icons.business,
                 [Colors.pink.shade400, Colors.pink.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng dự án',
-                data['tongDuAn'].toString(),
+                (data['tongDuAn'] ?? 0).toString(),
                 Icons.folder,
                 [Colors.cyan.shade400, Colors.cyan.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng công ty',
-                data['tongCongTy'].toString(),
+                (data['tongCongTy'] ?? 0).toString(),
                 Icons.corporate_fare,
                 [Colors.amber.shade400, Colors.amber.shade600],
               ),
@@ -1960,7 +1918,9 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildTopAssetsSection(Map<String, dynamic> data) {
-    final topAssets = data['top5TaiSanGiaTriCao'] as List<dynamic>;
+    final topAssets = (data['top5TaiSanGiaTriCao'] as List<dynamic>?) ?? [];
+    print("Top Assets Data: $topAssets");
+    print("Top Assets Count: ${topAssets.length}");
 
     return Container(
       decoration: BoxDecoration(
