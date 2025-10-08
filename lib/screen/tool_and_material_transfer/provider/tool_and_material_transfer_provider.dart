@@ -255,6 +255,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       onReloadDataToolAndMaterialTransfer();
+      print("reload data tool and material transfer");
     });
   }
 

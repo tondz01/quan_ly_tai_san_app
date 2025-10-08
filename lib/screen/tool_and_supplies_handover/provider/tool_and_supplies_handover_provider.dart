@@ -310,6 +310,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       onReloadDataToolAndMaterialHandover();
+      print("reload data tool and supplies handover");
     });
   }
 
