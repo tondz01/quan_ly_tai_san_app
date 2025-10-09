@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 
 class ItemDropdownDetailCcdc {
@@ -14,6 +15,7 @@ class ItemDropdownDetailCcdc {
   int soLuongXuat; // Thêm field này
   int soLuongDaBanGiao;
   ToolsAndSuppliesDto? asset;
+  DetailToolAndMaterialTransferDto? chiTietDieuDongCCDCVatTuDTO;
 
   ItemDropdownDetailCcdc({
     required this.id,
@@ -29,6 +31,7 @@ class ItemDropdownDetailCcdc {
     this.soLuongXuat = 0, // Thêm parameter này
     this.soLuongDaBanGiao = 0,
     this.asset,
+    this.chiTietDieuDongCCDCVatTuDTO,
   });
 
   factory ItemDropdownDetailCcdc.fromJson(Map<String, dynamic> json) {
@@ -49,6 +52,12 @@ class ItemDropdownDetailCcdc {
           json['asset'] != null
               ? ToolsAndSuppliesDto.fromJson(json['asset'])
               : null,
+      chiTietDieuDongCCDCVatTuDTO:
+          json['chiTietDieuDongCCDCVatTuDTO'] != null
+              ? DetailToolAndMaterialTransferDto.fromJson(
+                json['chiTietDieuDongCCDCVatTuDTO'],
+              )
+              : null,
     );
   }
 
@@ -67,6 +76,7 @@ class ItemDropdownDetailCcdc {
       'soLuongXuat': soLuongXuat,
       'soLuongDaBanGiao': soLuongDaBanGiao,
       'asset': asset?.toJson(),
+      'chiTietDieuDongCCDCVatTuDTO': chiTietDieuDongCCDCVatTuDTO?.toJson(),
     };
   }
 
@@ -88,6 +98,7 @@ class ItemDropdownDetailCcdc {
     String? ghiChu,
     int? soLuongDaBanGiao,
     ToolsAndSuppliesDto? asset,
+    DetailToolAndMaterialTransferDto? chiTietDieuDongCCDCVatTuDTO,
   }) {
     return ItemDropdownDetailCcdc(
       id: id,
@@ -103,6 +114,8 @@ class ItemDropdownDetailCcdc {
       soLuongXuat: soLuongXuat ?? this.soLuongXuat,
       soLuongDaBanGiao: soLuongDaBanGiao ?? this.soLuongDaBanGiao,
       asset: asset ?? this.asset,
+      chiTietDieuDongCCDCVatTuDTO:
+          chiTietDieuDongCCDCVatTuDTO ?? this.chiTietDieuDongCCDCVatTuDTO,
     );
   }
 
@@ -121,6 +134,7 @@ class ItemDropdownDetailCcdc {
       soLuongXuat: 0,
       soLuongDaBanGiao: 0,
       asset: null,
+      chiTietDieuDongCCDCVatTuDTO: null,
     );
   }
 }

@@ -729,7 +729,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
               previewDocumentHandover(
                 context: context,
                 item: item,
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                itemsDetail: item.chiTietBanGiaoTaiSan ?? [],
                 provider: widget.provider,
                 isShowKy: false,
               );
@@ -1031,7 +1031,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           previewDocumentHandover(
             context: context,
             item: item,
-            itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+            itemsDetail: item.chiTietBanGiaoTaiSan ?? [],
             provider: widget.provider,
           );
         }

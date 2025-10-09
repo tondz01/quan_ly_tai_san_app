@@ -25,6 +25,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
@@ -866,9 +867,12 @@ class _ToolAndSuppliesHandoverDetailState
                                     nguoiTao: currentUser!.tenDangNhap,
                                     nguoiCapNhat: '',
                                     isActive: true,
+                                    chiTietDieuDongCCDCVatTuDTO:
+                                        e.chiTietDieuDongCCDCVatTuDTO,
                                   ),
                                 )
                                 .toList();
+                        getToolAndSuppliesHandoverPreview();
                       });
                     },
                   ),
@@ -962,6 +966,28 @@ class _ToolAndSuppliesHandoverDetailState
               );
             });
             await widget.provider.getListOwnership(donViGiao!.id.toString());
+            listDetailSubppliesHandover = [
+              ...dieuDongCcdc?.detailToolAndMaterialTransfers?.map(
+                    (e) => DetailSubppliesHandoverDto(
+                      id: e.id,
+                      idBanGiaoCCDCVatTu: item?.id ?? '',
+                      idCCDCVatTu: e.idCCDCVatTu,
+                      idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
+                      iddieudongccdcvattu: e.id,
+                      ngayTao: AppUtility.formatDateString(DateTime.now()),
+                      ngayTaoChungTu: AppUtility.formatDateString(
+                        DateTime.now(),
+                      ),
+                      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+                      nguoiTao: currentUser?.tenDangNhap ?? '',
+                      nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+                      isActive: true,
+                      soLuong: 0,
+                      chiTietDieuDongCCDCVatTuDTO: e,
+                    ),
+                  ) ??
+                  [],
+            ];
           },
           validationErrors: _validationErrors,
           isRequired: true,
@@ -1218,6 +1244,7 @@ class _ToolAndSuppliesHandoverDetailState
                 ),
               )
               .toList(),
+      listDetailSubppliesHandover: listDetailSubppliesHandover,
     );
   }
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/model/item_dropwdown_ccdc.dart';
 import 'package:quan_ly_tai_san_app/common/table/detail_editable_table.dart';
@@ -102,9 +104,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
             donViTinh: asset.donViTinh,
             namSanXuat: detailAsset.namSanXuat ?? 2010,
             soLuong: e.soLuongXuat - e.soLuongDaBanGiao,
+            soLuongDaBanGiao: e.soLuongDaBanGiao,
             soLuongXuat: 0,
             ghiChu: asset.ghiChu,
             asset: asset,
+            chiTietDieuDongCCDCVatTuDTO: e,
           );
         }).toList();
   }
@@ -121,6 +125,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     movementDetails = List.from(widget.initialDetails);
     // Đồng bộ dữ liệu chi tiết tài sản
     _syncDetailAssets();
+
+    // Gọi onDataChanged tự động khi component được khởi tạo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _forceNotifyDataChanged();
+    });
   }
 
   @override
@@ -132,6 +141,9 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     final assetsChanged = oldWidget.allAssets != widget.allAssets;
     if (ownershipChanged || assetsChanged) {
       _syncDetailAssets();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _forceNotifyDataChanged();
+      });
     }
 
     // Ưu tiên dữ liệu từ initialDetailsSuppliesHandover nếu có

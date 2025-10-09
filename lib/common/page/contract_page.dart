@@ -3,11 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
 import 'package:quan_ly_tai_san_app/common/page/signers_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -19,7 +23,7 @@ class SettingPage {
     fontSize: 13 * scale,
     height: 1.5,
   );
-  
+
   static String formatted(String? date) {
     if (date == null || date.trim().isEmpty) {
       SGLog.debug("formatted", "Empty date string");
@@ -41,12 +45,14 @@ class SettingPage {
           'vi',
         ).format(dateTime);
       } catch (e2) {
-        SGLog.debug("formatted", "Failed to parse date: $date, Error: ${e2.toString()}");
+        SGLog.debug(
+          "formatted",
+          "Failed to parse date: $date, Error: ${e2.toString()}",
+        );
         return '';
       }
     }
   }
-
 }
 
 class ContractPage {
@@ -536,7 +542,7 @@ class ContractPage {
 
   static Widget assetHandoverPageV2(
     AssetHandoverDto assetHandoverDto,
-    List<ChiTietDieuDongTaiSan>? listDetailAssetMobilization,
+    List<DetailAssetHandoverDto>? listDetailAssetMobilization,
     List<SigneInfo>? listSigneInfo,
   ) {
     return Column(
@@ -676,17 +682,17 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization![i].tenTaiSan,
+                    listDetailAssetMobilization![i].tenTaiSan ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].idTaiSan,
+                    listDetailAssetMobilization[i].idTaiSan ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].donViTinh,
+                    listDetailAssetMobilization[i].donViTinh ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -696,12 +702,12 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].hienTrang.toString(),
+                    listDetailAssetMobilization[i].hienTrang?.toString() ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].ghiChu,
+                    listDetailAssetMobilization[i].moTa ?? '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -740,10 +746,9 @@ class ContractPage {
 
   static Widget toolAndSuppliesHandoverPageV2(
     ToolAndSuppliesHandoverDto banGiaoCCDCVatTu,
-    List<DetailToolAndMaterialTransferDto>? listDetailAssetMobilization,
+    List<DetailSubppliesHandoverDto>? listDetailAssetMobilization,
     List<SigneInfo>? listSigneInfo,
   ) {
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -848,7 +853,7 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Số lượng",
+                  "Số lượng cần bàn giao",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -875,12 +880,28 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization![i].tenCCDCVatTu ?? '',
+                    listDetailAssetMobilization![i]
+                            .chiTietDieuDongCCDCVatTuDTO
+                            ?.tenCCDCVatTu ??
+                        '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].donViTinh ?? '',
+                    AccountHelper.instance
+                            .getUnitById(
+                              listDetailAssetMobilization[i]
+                                      .chiTietDieuDongCCDCVatTuDTO
+                                      ?.donViTinh ??
+                                  '',
+                            )
+                            ?.tenDonVi ??
+                        '',
+                    SettingPage.scale,
+                    SettingPage.textStyle,
+                  ),
+                  tableCell(
+                    "${(listDetailAssetMobilization[i].chiTietDieuDongCCDCVatTuDTO?.soLuongXuat ?? 0) - (listDetailAssetMobilization[i].chiTietDieuDongCCDCVatTuDTO?.soLuongDaBanGiao ?? 0)}",
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
@@ -890,12 +911,11 @@ class ContractPage {
                     SettingPage.textStyle,
                   ),
                   tableCell(
-                    listDetailAssetMobilization[i].soLuongXuat.toString(),
-                    SettingPage.scale,
-                    SettingPage.textStyle,
-                  ),
-                  tableCell(
-                    listDetailAssetMobilization[i].ghiChu,
+                    listDetailAssetMobilization[i]
+                            .chiTietDieuDongCCDCVatTuDTO
+                            ?.ghiChu
+                            .toString() ??
+                        '',
                     SettingPage.scale,
                     SettingPage.textStyle,
                   ),
