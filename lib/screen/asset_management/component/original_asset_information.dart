@@ -61,6 +61,8 @@ Widget buildOriginalAssetInfomation(
     }
   }
 
+  ctrlIdNhomTaiSan.text = assetGroup.tenNhom ?? '';
+  
   return Column(
     children: [
       SGText(
@@ -204,7 +206,7 @@ Widget buildOriginalAssetInfomation(
         label: 'Nhóm tài sản',
         controller: ctrlIdNhomTaiSan,
         isEditing: isEditing,
-        value:  assetGroup,
+        value: assetGroup,
         items: itemsAssetGroup,
         onChanged: (value) {
           // ctrlLyDoTang.text = value.name;

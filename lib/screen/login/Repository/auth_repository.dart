@@ -246,7 +246,7 @@ class AuthRepository extends ApiBase {
       final response = await get(EndPointAPI.REASON_INCREASE);
       if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
         final rawReasonIncrease = response.data;
-        
+
         // Handle both direct array and object with data field
         List<dynamic> reasonIncreaseList;
         if (rawReasonIncrease is List) {
@@ -254,20 +254,28 @@ class AuthRepository extends ApiBase {
           reasonIncreaseList = rawReasonIncrease;
         } else if (rawReasonIncrease is Map<String, dynamic>) {
           // Object response - try to get data field
-          if (rawReasonIncrease.containsKey('data') && rawReasonIncrease['data'] is List) {
+          if (rawReasonIncrease.containsKey('data') &&
+              rawReasonIncrease['data'] is List) {
             reasonIncreaseList = rawReasonIncrease['data'] as List<dynamic>;
           } else {
-            SGLog.info('_loadData', 'Error: API response format not recognized for REASON_INCREASE');
+            SGLog.info(
+              '_loadData',
+              'Error: API response format not recognized for REASON_INCREASE',
+            );
             return;
           }
         } else {
-          SGLog.info('_loadData', 'Error: Unexpected response type for REASON_INCREASE: ${rawReasonIncrease.runtimeType}');
+          SGLog.info(
+            '_loadData',
+            'Error: Unexpected response type for REASON_INCREASE: ${rawReasonIncrease.runtimeType}',
+          );
           return;
         }
-        
-        final parsedReasonIncrease = reasonIncreaseList
-            .map((e) => ReasonIncrease.fromJson(e as Map<String, dynamic>))
-            .toList();
+
+        final parsedReasonIncrease =
+            reasonIncreaseList
+                .map((e) => ReasonIncrease.fromJson(e as Map<String, dynamic>))
+                .toList();
         AccountHelper.instance.setReasonIncrease(parsedReasonIncrease);
         SGLog.info('_loadData', 'loadReasonIncrease');
       }
@@ -346,9 +354,10 @@ class AuthRepository extends ApiBase {
     try {
       final response = await UnitRepository().getListUnit();
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final unitList = response['data'] as List<UnitDto>;
-        AccountHelper.instance.setUnit(unitList);
-        SGLog.info('_loadData', 'loadUnit');
+        AccountHelper.instance.setUnit(response['data']);
+        log('message test [loadUnit]: unitList: ${jsonEncode(response['data'])}');
+        List<UnitDto> unitListLog = AccountHelper.instance.getAllUnit();
+        SGLog.info('_loadData', 'loadUnit: ${jsonEncode(unitListLog)}');
       }
     } catch (e) {
       log('Error calling API ASSET_CATEGORY: $e');

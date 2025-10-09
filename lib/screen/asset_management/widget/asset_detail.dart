@@ -229,12 +229,6 @@ class _AssetDetailState extends State<AssetDetail> {
                           listTypeAsset = AccountHelper.instance.getTypeAsset(
                             assetGroup?.id ?? '',
                           );
-                          log(
-                            'message test [AssetDetail]: assetGroup: ${assetGroup?.tenNhom}',
-                          );
-                          log(
-                            'message test [AssetDetail]: listTypeAsset: ${ctrlIdNhomTaiSan.text}',
-                          );
                         });
                       },
                       onDepreciationMethodChanged: (value) {
@@ -540,17 +534,12 @@ class _AssetDetailState extends State<AssetDetail> {
       assetGroup = AccountHelper.instance.getAssetGroupById(
         data!.idNhomTaiSan ?? '',
       );
-      log(
-        'message test [AssetDetail]: data!.idNhomTaiSan: ${data!.idNhomTaiSan}',
-      );
-      log('message test [AssetDetail]: assetGroup: ${assetGroup?.tenNhom}');
       ctrlIdNhomTaiSan.text = assetGroup?.tenNhom ?? '';
       lyDoTang = listLyDoTang.where((e) => e.id == data!.lyDoTang).firstOrNull;
       ctrlLyDoTang.text = lyDoTang?.ten ?? '';
 
       unit = AccountHelper.instance.getUnitById(data!.donViTinh ?? '');
       ctrlDonViTinh.text = unit?.tenDonVi ?? '';
-
       ctrlVonNS.text =
           NumberFormat.currency(
             locale: 'vi_VN',
