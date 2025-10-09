@@ -866,9 +866,12 @@ class _ToolAndSuppliesHandoverDetailState
                                     nguoiTao: currentUser!.tenDangNhap,
                                     nguoiCapNhat: '',
                                     isActive: true,
+                                    chiTietDieuDongCCDCVatTuDTO:
+                                        e.chiTietDieuDongCCDCVatTuDTO,
                                   ),
                                 )
                                 .toList();
+                        getToolAndSuppliesHandoverPreview();
                       });
                     },
                   ),
@@ -962,6 +965,28 @@ class _ToolAndSuppliesHandoverDetailState
               );
             });
             await widget.provider.getListOwnership(donViGiao!.id.toString());
+            listDetailSubppliesHandover = [
+              ...dieuDongCcdc?.detailToolAndMaterialTransfers?.map(
+                    (e) => DetailSubppliesHandoverDto(
+                      id: e.id,
+                      idBanGiaoCCDCVatTu: item?.id ?? '',
+                      idCCDCVatTu: e.idCCDCVatTu,
+                      idChiTietCCDCVatTu: e.idChiTietCCDCVatTu,
+                      iddieudongccdcvattu: e.id,
+                      ngayTao: AppUtility.formatDateString(DateTime.now()),
+                      ngayTaoChungTu: AppUtility.formatDateString(
+                        DateTime.now(),
+                      ),
+                      ngayCapNhat: AppUtility.formatDateString(DateTime.now()),
+                      nguoiTao: currentUser?.tenDangNhap ?? '',
+                      nguoiCapNhat: currentUser?.tenDangNhap ?? '',
+                      isActive: true,
+                      soLuong: 0,
+                      chiTietDieuDongCCDCVatTuDTO: e,
+                    ),
+                  ) ??
+                  [],
+            ];
           },
           validationErrors: _validationErrors,
           isRequired: true,
@@ -1218,6 +1243,7 @@ class _ToolAndSuppliesHandoverDetailState
                 ),
               )
               .toList(),
+      listDetailSubppliesHandover: listDetailSubppliesHandover,
     );
   }
 

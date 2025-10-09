@@ -187,7 +187,7 @@ prevDocumentCcdcHandover({
                 maxHeight: 800 * (297 / 210),
                 child: ContractPage.toolAndSuppliesHandoverPageV2(
                   dieuDongCcdc!,
-                  item.detailToolAndMaterialTransfers,
+                  dieuDongCcdc.listDetailSubppliesHandover,
                   listSigneInfo,
                 ),
               ),

@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bl
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
@@ -43,6 +44,8 @@ class AssetHandoverProvider with ChangeNotifier {
   List<NhanVien>? get dataStaff => _dataStaff;
   List<ChiTietDieuDongTaiSan>? get dataDetailAssetMobilization =>
       _dataDetailAssetMobilization;
+  List<DetailAssetHandoverDto>? get dataDetailAssetHandover =>
+      _dataDetailAssetHandover;
 
   AssetHandoverDto? get item => _item;
   get data => _data;
@@ -71,6 +74,11 @@ class AssetHandoverProvider with ChangeNotifier {
 
   set isLoading(bool value) {
     _isLoading = value;
+    notifyListeners();
+  }
+
+  set dataDetailAssetHandover(List<DetailAssetHandoverDto>? value) {
+    _dataDetailAssetHandover = value;
     notifyListeners();
   }
 
@@ -126,6 +134,7 @@ class AssetHandoverProvider with ChangeNotifier {
   List<AssetHandoverDto> _filteredData = [];
   final List<SgTableColumn<AssetHandoverDto>> _columns = [];
   AssetHandoverDto? _item;
+  List<DetailAssetHandoverDto>? _dataDetailAssetHandover;
 
   UserInfoDTO? _userInfo;
 
@@ -497,6 +506,24 @@ class AssetHandoverProvider with ChangeNotifier {
         .getListDetailAssetMobilization(id);
     _dataDetailAssetMobilization = result['data'];
     // _isLoading = false;
+    _dataDetailAssetHandover =
+        _dataDetailAssetMobilization
+            ?.map(
+              (e) => DetailAssetHandoverDto(
+                id: e.id,
+                idBanGiaoTaiSan: id,
+                banGiaoTaiSan: '',
+                quyetDinhDieuDongSo: '',
+                idTaiSan: e.idTaiSan,
+                tenTaiSan: e.tenTaiSan,
+                donViTinh: e.donViTinh,
+                hienTrang: e.hienTrang,
+                soLuong: 0,
+              ),
+            )
+            .toList();
+    log('dataDetailAssetMobilization22: ${_dataDetailAssetMobilization}');
+
     notifyListeners();
   }
 

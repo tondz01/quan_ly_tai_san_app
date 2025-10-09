@@ -827,7 +827,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                                   ),
                                 )
                                 .toList();
-                        log('data: $data');
+                        widget.provider.dataDetailAssetHandover =
+                            listDetailAssetHandover;
+                        getAssetHandoverPreview();
                       });
                     },
                   ),
@@ -836,7 +838,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
               previewDocumentAssetHandover(
                 context: context,
                 item: getAssetHandoverPreview(),
-                itemsDetail: widget.provider.dataDetailAssetMobilization ?? [],
+                itemsDetail:
+                    widget.provider.dataDetailAssetHandover ??
+                    listDetailAssetHandover,
                 provider: widget.provider,
                 isShowKy: false,
               ),
@@ -926,6 +930,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                 dieuDongTaiSan?.idDonViGiao ?? '',
               );
               widget.provider.getListDetailAssetMobilization(value.id ?? '');
+              getAssetHandoverPreview();
             });
           },
           validationErrors: _validationErrors,
