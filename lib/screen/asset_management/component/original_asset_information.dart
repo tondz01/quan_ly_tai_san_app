@@ -11,7 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bl
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -31,7 +30,6 @@ Widget buildOriginalAssetInfomation(
   required TextEditingController ctrlTaiKhoanTaiSan,
   required TextEditingController ctrlTaiKhoanKhauHao,
   required TextEditingController ctrlTaiKhoanChiPhi,
-  required TextEditingController ctrlTenNhom,
   required TextEditingController ctrlTenLoaiTaiSan,
   required TextEditingController ctrlNgayVaoSo,
   required TextEditingController ctrlNgaySuDung,
@@ -44,12 +42,11 @@ Widget buildOriginalAssetInfomation(
   Function(AssetGroupDto)? onAssetGroupChanged,
   required List<AssetCategoryDto> listAssetCategory,
   required List<DropdownMenuItem<AssetCategoryDto>> itemsAssetCategory,
+  required List<DropdownMenuItem<AssetGroupDto>> itemsAssetGroup,
   required Function(DateTime?)? onChangedNgayVaoSo,
   required Function(DateTime?)? onChangedNgaySuDung,
   required Function(TypeAsset)? onTypeAssetChanged,
 }) {
-  List<AssetGroupDto>? assetGroups = AccountHelper.instance.getAssetGroup();
-
   if (listAssetCategory.isEmpty) {
     try {
       final assetHandoverBloc = BlocProvider.of<AssetCategoryBloc>(context);
@@ -207,18 +204,13 @@ Widget buildOriginalAssetInfomation(
         label: 'Nhóm tài sản',
         controller: ctrlIdNhomTaiSan,
         isEditing: isEditing,
-        value: assetGroup,
-        items: [
-          ...assetGroups?.map(
-                (e) => DropdownMenuItem<AssetGroupDto>(
-                  value: e,
-                  child: Text(e.tenNhom ?? ''),
-                ),
-              ) ??
-              [],
-        ],
+        value:  assetGroup,
+        items: itemsAssetGroup,
+        onChanged: (value) {
+          // ctrlLyDoTang.text = value.name;
+          onAssetGroupChanged?.call(value);
+        },
         defaultValue: assetGroup,
-        onChanged: onAssetGroupChanged,
         fieldName: 'idNhomTaiSan',
         validationErrors: validationErrors,
         isRequired: true,

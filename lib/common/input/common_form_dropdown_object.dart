@@ -34,6 +34,21 @@ class CmFormDropdownObject<T> extends StatefulWidget {
 }
 
 class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer initialization to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     bool hasError = false;
@@ -47,46 +62,65 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SGDropdownInputButton<T>(
-            required: widget.isRequired,
-            label: widget.label,
-            height: 45,
-            controller: widget.controller,
-            textOverflow: TextOverflow.ellipsis,
-            enable: !widget.isEditing,
-            value: widget.value,
-            defaultValue: widget.defaultValue,
-            items: widget.items ?? [],
-            colorBorder:
-                (widget.validationErrors != null &&
-                        widget.fieldName != null &&
-                        widget.validationErrors![widget.fieldName] == true)
-                    ? Colors.red
-                    : SGAppColors.neutral400,
-            // showUnderlineBorderOnly: true,
-            enableSearch: false,
-            isClearController: widget.isEditing,
-            fontSize: 14,
-            inputType: widget.inputType,
-            isShowSuffixIcon: true,
-            hintText: 'Chọn ${widget.label.toLowerCase()}',
-            textAlign: TextAlign.left,
-            textAlignItem: TextAlign.left,
-            sizeBorderCircular: 7,
-            sizeBorderCircularItem: 5,
-            colorLabel: Colors.black.withOpacity(0.7),
-            contentPadding: const EdgeInsets.only(left: 10, top: 10, bottom: 8),
-            onChanged: (value) {
-              if (value != null) {
-                widget.onChanged?.call(value);
-                if (hasError) {
-                  setState(() {
-                    widget.validationErrors?.remove(widget.fieldName);
-                  });
-                }
-              }
-            },
-          ),
+          _isInitialized
+              ? SGDropdownInputButton<T>(
+                  required: widget.isRequired,
+                  label: widget.label,
+                  height: 45,
+                  controller: widget.controller,
+                  textOverflow: TextOverflow.ellipsis,
+                  enable: !widget.isEditing,
+                  value: widget.value,
+                  defaultValue: widget.defaultValue,
+                  items: widget.items ?? [],
+                  colorBorder:
+                      (widget.validationErrors != null &&
+                              widget.fieldName != null &&
+                              widget.validationErrors![widget.fieldName] == true)
+                          ? Colors.red
+                          : SGAppColors.neutral400,
+                  // showUnderlineBorderOnly: true,
+                  enableSearch: false,
+                  isClearController: widget.isEditing,
+                  fontSize: 14,
+                  inputType: widget.inputType,
+                  isShowSuffixIcon: true,
+                  hintText: 'Chọn ${widget.label.toLowerCase()}',
+                  textAlign: TextAlign.left,
+                  textAlignItem: TextAlign.left,
+                  sizeBorderCircular: 7,
+                  sizeBorderCircularItem: 5,
+                  colorLabel: Colors.black.withOpacity(0.7),
+                  contentPadding: const EdgeInsets.only(left: 10, top: 10, bottom: 8),
+                  onChanged: (value) {
+                    if (value != null) {
+                      widget.onChanged?.call(value);
+                      if (hasError) {
+                        setState(() {
+                          widget.validationErrors?.remove(widget.fieldName);
+                        });
+                      }
+                    }
+                  },
+                )
+              : Container(
+                  height: 45,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: hasError ? Colors.red : SGAppColors.neutral400,
+                    ),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Chọn ${widget.label.toLowerCase()}',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
 
           if (hasError)
             Padding(

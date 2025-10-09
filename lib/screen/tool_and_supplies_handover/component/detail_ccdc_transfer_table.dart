@@ -43,9 +43,13 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
   late List<ItemDropdownDetailCcdc> listItemDropdownDetailAsset;
   final GlobalKey<DetailEditableTableState<ItemDropdownDetailCcdc>> _tableKey =
       GlobalKey(); // Thay đổi generic type
+  
+  bool _isInitialized = false;
 
   void _forceNotifyDataChanged() {
-    widget.onDataChanged?.call(List.from(listAsset));
+    if (_isInitialized && widget.onDataChanged != null) {
+      widget.onDataChanged?.call(List.from(listAsset));
+    }
   }
 
   ToolsAndSuppliesDto getAssetByID(String idAsset) {
@@ -123,9 +127,10 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     movementDetails = List.from(widget.initialDetails);
     // Đồng bộ dữ liệu chi tiết tài sản
     _syncDetailAssets();
-
+    
     // Gọi onDataChanged tự động khi component được khởi tạo
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _isInitialized = true;
       _forceNotifyDataChanged();
     });
   }
@@ -139,9 +144,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
     final assetsChanged = oldWidget.allAssets != widget.allAssets;
     if (ownershipChanged || assetsChanged) {
       _syncDetailAssets();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _forceNotifyDataChanged();
-      });
+      if (_isInitialized) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _forceNotifyDataChanged();
+        });
+      }
     }
 
     // Ưu tiên dữ liệu từ initialDetailsSuppliesHandover nếu có
@@ -154,6 +161,11 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
           movementDetails,
         );
         setState(() {});
+        if (_isInitialized) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _forceNotifyDataChanged();
+          });
+        }
         return;
       }
     }
@@ -164,12 +176,22 @@ class _DetailCcdcTransferTableState extends State<DetailCcdcTransferTable> {
       _syncDetailAssets();
       listAsset = getAssetsByChildAssets(widget.allAssets, movementDetails);
       setState(() {});
+      if (_isInitialized) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _forceNotifyDataChanged();
+        });
+      }
       return;
     }
     if (oldWidget.initialDetails.isNotEmpty && widget.initialDetails.isEmpty) {
       _syncDetailAssets();
       listAsset = [];
       setState(() {});
+      if (_isInitialized) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _forceNotifyDataChanged();
+        });
+      }
     }
   }
 

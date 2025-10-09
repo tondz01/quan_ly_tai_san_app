@@ -14,8 +14,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -54,7 +52,6 @@ Widget buildOtherInformation(
   required List<PhongBan> listPhongBan,
   required List<DuAn> listDuAn,
   required List<ReasonIncrease> listLyDoTang,
-  required List<UnitDto> listUnit,
   required List<DropdownMenuItem<PhongBan>> itemsPhongBan,
   required List<DropdownMenuItem<DuAn>> itemsDuAn,
   required List<DropdownMenuItem<ReasonIncrease>> itemsLyDoTang,
@@ -285,10 +282,6 @@ Widget buildOtherInformation(
        
         defaultValue: unit,
         onChanged: (value) {
-          if (listUnit.isEmpty) {
-            AuthRepository().loadUnit('ct001');
-            listUnit = AccountHelper.instance.getAllUnit();
-          }
           onUnitChanged?.call(value);
         },
         value: unit,

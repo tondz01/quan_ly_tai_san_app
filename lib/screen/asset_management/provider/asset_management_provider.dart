@@ -163,7 +163,6 @@ class AssetManagementProvider with ChangeNotifier {
     if (_pendingLoadCount > 0) {
       _pendingLoadCount -= 1;
     }
-    log('message test: _completeOneLoad: $_pendingLoadCount: $message');
     if (_pendingLoadCount <= 0) {
       _pendingLoadCount = 0;
       _isLoading = false;
@@ -183,7 +182,8 @@ class AssetManagementProvider with ChangeNotifier {
     _applyFilters(); // Áp dụng filter khi thay đổi nội dung tìm kiếm
     notifyListeners();
   }
-
+  
+  List<DropdownMenuItem<UnitDto>> itemsUnit = [];
   //Tài sản con
   HienTrang getHienTrang(int id) {
     return listHienTrang.firstWhere(
@@ -294,6 +294,10 @@ class AssetManagementProvider with ChangeNotifier {
     reset(context);
     _userInfo = AccountHelper.instance.getUserInfo();
     _dataGroup = AccountHelper.instance.getAssetGroup();
+    _itemsAssetGroup = [
+      for (var element in _dataGroup!)
+        DropdownMenuItem<AssetGroupDto>(value: element, child: Text(element.tenNhom ?? '')),
+    ];
     if (AccountHelper.instance.getAllUnit().isEmpty) {
       await AuthRepository().loadUnit('ct001');
     }
@@ -330,7 +334,7 @@ class AssetManagementProvider with ChangeNotifier {
   Future<void> getDataAll(BuildContext context) async {
     try {
       // 7 parallel loads below
-      _beginBatchLoad(6);
+      _beginBatchLoad(5);
       final bloc = context.read<AssetManagementBloc>();
       String idCongTy = _userInfo?.idCongTy ?? '';
       // DateTime date = DateTime.now();
@@ -470,7 +474,6 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataKhauHao = state.data;
     }
-    _completeOneLoad('getListKhauHaoSuccess');
     onLoadingKhauHao(false);
   }
 
@@ -672,6 +675,11 @@ class AssetManagementProvider with ChangeNotifier {
     _itemsHienTrang = [
       for (var element in listHienTrang)
         DropdownMenuItem<HienTrang>(value: element, child: Text(element.name)),
+    ];
+
+    itemsUnit = [
+      for (var element in _dataUnit!)
+        DropdownMenuItem<UnitDto>(value: element, child: Text(element.tenDonVi ?? '')),
     ];
   }
 
