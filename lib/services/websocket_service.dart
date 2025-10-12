@@ -280,7 +280,7 @@ class WebSocketService {
         
         // Create a test connection
         final testConfig = StompConfig(
-          url: wsUrl,
+          url: 'wss://ecotel-odoo.id.vn:8386/ws',
           onConnect: (frame) {
             print('Test connection successful to: $wsUrl');
           },

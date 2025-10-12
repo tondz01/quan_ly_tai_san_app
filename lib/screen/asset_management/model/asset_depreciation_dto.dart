@@ -1,6 +1,7 @@
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
 
 class AssetDepreciationDto {
+  final String? id;
   final String? soThe;
   final String? tenTaiSan;
   final String? nguonVon;
@@ -33,6 +34,7 @@ class AssetDepreciationDto {
   final List<ChildAssetDto>? childAssets;
 
   const AssetDepreciationDto({
+    this.id,
     this.soThe,
     this.tenTaiSan,
     this.nguonVon,
@@ -71,6 +73,7 @@ class AssetDepreciationDto {
     DateTime? asDate(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
 
     return AssetDepreciationDto(
+      id: json['id']?.toString(),
       soThe: json['soThe']?.toString(),
       tenTaiSan: json['tenTaiSan']?.toString(),
       nguonVon: json['nguonVon']?.toString(),
@@ -110,6 +113,7 @@ class AssetDepreciationDto {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'soThe': soThe,
       'tenTaiSan': tenTaiSan,
       'nguonVon': nguonVon,

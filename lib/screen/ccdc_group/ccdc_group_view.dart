@@ -122,8 +122,9 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                   title: HeaderComponent(
                     controller: _searchController,
                     onSearchChanged: (value) {
-                      provider.searchTerm = value;
+                      // provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: () {},
                     onNew: () {
                       provider.onChangeDetail(null);
@@ -202,19 +203,19 @@ class _CcdcGroupViewState extends State<CcdcGroupView> {
                         ),
                       ),
                     ),
-                    Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
-                    ),
+                    // Visibility(
+                    //   visible: (provider.data?.length ?? 0) >= 5,
+                    //   child: SGPaginationControls(
+                    //     totalPages: provider.totalPages,
+                    //     currentPage: provider.currentPage,
+                    //     rowsPerPage: provider.rowsPerPage,
+                    //     controllerDropdownPage:
+                    //         provider.controllerDropdownPage!,
+                    //     items: provider.items,
+                    //     onPageChanged: provider.onPageChanged,
+                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    //   ),
+                    // ),
                   ],
                 ),
               );

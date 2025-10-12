@@ -42,6 +42,7 @@ class _ToolAndSuppliesHandoverViewState
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
     _initData();
+    // _initWebSocket();
   }
 
   @override
@@ -52,26 +53,26 @@ class _ToolAndSuppliesHandoverViewState
     super.dispose();
   }
 
-  // Future<void> _initWebSocket() async {
-  //   final user = AccountHelper.instance.getUserInfo();
-  //   final companyId = user?.idCongTy ?? '';
-  //   final userId = user?.id ?? '';
-  //   if (companyId.isEmpty || userId.isEmpty) return;
+  Future<void> _initWebSocket() async {
+    final user = AccountHelper.instance.getUserInfo();
+    final companyId = user?.idCongTy ?? '';
+    final userId = user?.id ?? '';
+    if (companyId.isEmpty || userId.isEmpty) return;
 
-  //   final ws = WebSocketService();
-  //   await ws.initializeNotifications();
-  //   await ws.connect(
-  //     serverUrl: Config.baseUrl,
-  //     companyId: companyId,
-  //     userId: userId,
-  //     onNotification: (n) {
-  //       if (!mounted) return;
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(n.title.isNotEmpty ? n.title : n.message)),
-  //       );
-  //     },
-  //   );
-  // }
+    final ws = WebSocketService();
+    await ws.initializeNotifications();
+    await ws.connect(
+      serverUrl: Config.baseUrl,
+      companyId: companyId,
+      userId: userId,
+      onNotification: (n) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(n.title.isNotEmpty ? n.title : n.message)),
+        );
+      },
+    );
+  }
 
   void _onScrollStateChanged() {
     setState(() {});

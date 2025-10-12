@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -19,7 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AssetManagementView extends StatefulWidget {
   const AssetManagementView({super.key});
@@ -43,7 +43,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetManagementProvider>(
+      provider.Provider.of<AssetManagementProvider>(
         context,
         listen: false,
       ).onInit(context);
@@ -67,7 +67,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AssetManagementProvider>(
+      provider.Provider.of<AssetManagementProvider>(
         context,
         listen: false,
       ).onInit(context);
@@ -76,265 +76,253 @@ class _AssetManagementViewState extends State<AssetManagementView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AssetManagementBloc, AssetManagementState>(
-      builder: (context, state) {
-        return ChangeNotifierProvider.value(
-          value: context.read<AssetManagementProvider>(),
-          child: Consumer<AssetManagementProvider>(
-            builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (provider.data == null) {
-                return const Center(child: Text('Không có dữ liệu'));
-              }
+    return ProviderScope(
+      child: BlocConsumer<AssetManagementBloc, AssetManagementState>(
+        builder: (context, state) {
+          return provider.ChangeNotifierProvider.value(
+            value: context.read<AssetManagementProvider>(),
+            child: provider.Consumer<AssetManagementProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (provider.data == null) {
+                  return const Center(child: Text('Không có dữ liệu'));
+                }
 
-              return Scaffold(
-                backgroundColor: ColorValue.neutral50,
-                appBar: AppBar(
-                  title: HeaderComponent(
-                    controller:
-                        provider.typeBody == ShowBody.taiSan
-                            ? _searchController
-                            : _searchKhauHaoController,
-                    onSearchChanged: (value) {
-                      provider.searchTerm = value;
-                    },
-                    onTap: () {
-                      // provider.onChangeDetailAssetManagement(null);
-                      provider.onChangeBody(ShowBody.taiSan, context);
-                    },
-                    onNew: () {
-                      // provider.onChangeDetailAssetManagement(null);
-                      if (!provider.isCanCreate) {
-                        AppUtility.showSnackBar(
-                          context,
-                          'Bạn không có quyền tạo tài sản',
-                        );
-                        return;
-                      }
-                      if (provider.typeBody == ShowBody.taiSan) {
-                        provider.onChangeDetail(null, isNew: true);
-                      }
-                    },
-                    mainScreen: "Quản lý tài sản",
-                    subScreen: provider.subScreen,
-                    onFileSelected: (fileName, filePath, fileBytes) async {
-                      final assetBloc = context.read<AssetManagementBloc>();
-                      final ok = await checkValidateImportAsset(
-                        context,
-                        bytes: fileBytes,
-                        filePath: filePath,
-                      );
-                      if (!ok) return;
-                      final List<AssetManagementDto> assets =
-                          await convertExcelToAsset(
-                            bytes: fileBytes,
-                            filePath: filePath,
+                return Scaffold(
+                  backgroundColor: ColorValue.neutral50,
+                  appBar: AppBar(
+                    title: HeaderComponent(
+                      controller:
+                          provider.typeBody == ShowBody.taiSan
+                              ? _searchController
+                              : _searchKhauHaoController,
+                      onSearchChanged: (value) {},
+                      isShowSearch: false,
+                      onTap: () {
+                        // provider.onChangeDetailAssetManagement(null);
+                        provider.onChangeBody(ShowBody.taiSan, context);
+                      },
+                      onNew: () {
+                        // provider.onChangeDetailAssetManagement(null);
+                        if (!provider.isCanCreate) {
+                          AppUtility.showSnackBar(
+                            context,
+                            'Bạn không có quyền tạo tài sản',
                           );
-                      provider.onLoading(true);
-                      assetBloc.add(CreateAssetBatchEvent(assets));
-                    },
-                    onExportData: () {
-                      AppUtility.exportData(
-                        context,
-                        "tai_san",
-                        provider.data?.map((e) => e.toExportJson()).toList() ??
-                            [],
-                      );
-                    },
-                    isShowInput:
-                        provider.typeBody == ShowBody.taiSan ? true : false,
-                    isShownew:
-                        provider.typeBody == ShowBody.taiSan ? true : false,
-                  ),
-                ),
-                body: Column(
-                  children: [
-                    provider.typeBody == ShowBody.taiSan
-                        ? Flexible(
-                          child: NotificationListener<ScrollNotification>(
-                            onNotification: (notification) {
-                              return true; // Xử lý scroll event bình thường
-                            },
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.all(24),
-                              physics:
-                                  _scrollController.isParentScrolling
-                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                              scrollDirection: Axis.vertical,
-                              child: CommonPageView(
-                                childInput: AssetDetail(provider: provider),
-                                childTableView: AssetManagementList(
-                                  provider: provider,
-                                ),
-                                title: "Tạo tài sản",
-                                isShowInput: provider.isShowInput,
-                                isShowCollapse: provider.isShowCollapse,
-                                onExpandedChanged: (isExpanded) {
-                                  provider.isShowCollapse = isExpanded;
-                                },
-                              ),
-                            ),
-                          ),
-                        )
-                        : Flexible(
-                          child: NotificationListener<ScrollNotification>(
-                            onNotification: (notification) {
-                              return true; // Xử lý scroll event bình thường
-                            },
-                            child: SingleChildScrollView(
-                              physics:
-                                  _scrollController.isParentScrolling
-                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                              scrollDirection: Axis.vertical,
-                              child: CommonPageView(
-                                childInput: AssetDepreciationDetail(
-                                  provider: provider,
-                                ),
-                                childTableView: AssetDepreciationList(
-                                  provider: provider,
-                                ),
-                                title: "Chi tiết khấu hao tài sản",
-                                isShowInput: provider.isShowInputKhauHao,
-                                isShowCollapse: provider.isShowCollapseKhauHao,
-                                onExpandedChanged: (isExpanded) {
-                                  provider.isShowCollapseKhauHao = isExpanded;
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                    Visibility(
-                      visible:
-                          (provider.data?.length ?? 0) >= 5 &&
-                          provider.typeBody == ShowBody.taiSan,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
+                          return;
+                        }
+                        if (provider.typeBody == ShowBody.taiSan) {
+                          provider.onChangeDetail(null, isNew: true);
+                        }
+                      },
+                      mainScreen: "Quản lý tài sản",
+                      subScreen: provider.subScreen,
+                      onFileSelected: (fileName, filePath, fileBytes) async {
+                        final assetBloc = context.read<AssetManagementBloc>();
+                        final ok = await checkValidateImportAsset(
+                          context,
+                          bytes: fileBytes,
+                          filePath: filePath,
+                        );
+                        if (!ok) return;
+                        final List<AssetManagementDto> assets =
+                            await convertExcelToAsset(
+                              bytes: fileBytes,
+                              filePath: filePath,
+                            );
+                        provider.onLoading(true);
+                        assetBloc.add(CreateAssetBatchEvent(assets));
+                      },
+                      onExportData: () {
+                        AppUtility.exportData(
+                          context,
+                          "tai_san",
+                          provider.data
+                                  ?.map((e) => e.toExportJson())
+                                  .toList() ??
+                              [],
+                        );
+                      },
+                      isShowInput:
+                          provider.typeBody == ShowBody.taiSan ? true : false,
+                      isShownew:
+                          provider.typeBody == ShowBody.taiSan ? true : false,
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-      listener: (context, state) {
-        if (state is AssetManagementLoadingState) {
-          // Mostrar loading
-        }
-        if (state is GetListAssetManagementSuccessState) {
-          context.read<AssetManagementProvider>().getListAssetManagementSuccess(
-            context,
-            state,
+                  ),
+                  body: Column(
+                    children: [
+                      provider.typeBody == ShowBody.taiSan
+                          ? Flexible(
+                            child: NotificationListener<ScrollNotification>(
+                              onNotification: (notification) {
+                                return true; // Xử lý scroll event bình thường
+                              },
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.all(24),
+                                physics:
+                                    _scrollController.isParentScrolling
+                                        ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                        : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                                scrollDirection: Axis.vertical,
+                                child: CommonPageView(
+                                  childInput: AssetDetail(provider: provider),
+                                  childTableView: AssetManagementList(
+                                    provider: provider,
+                                  ),
+                                  title: "Tạo tài sản",
+                                  isShowInput: provider.isShowInput,
+                                  isShowCollapse: provider.isShowCollapse,
+                                  onExpandedChanged: (isExpanded) {
+                                    provider.isShowCollapse = isExpanded;
+                                  },
+                                ),
+                              ),
+                            ),
+                          )
+                          : Flexible(
+                            child: NotificationListener<ScrollNotification>(
+                              onNotification: (notification) {
+                                return true; // Xử lý scroll event bình thường
+                              },
+                              child: SingleChildScrollView(
+                                physics:
+                                    _scrollController.isParentScrolling
+                                        ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                        : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                                scrollDirection: Axis.vertical,
+                                child: CommonPageView(
+                                  childInput: AssetDepreciationDetail(
+                                    provider: provider,
+                                  ),
+                                  childTableView: AssetDepreciationList(
+                                    provider: provider,
+                                  ),
+                                  title: "Chi tiết khấu hao tài sản",
+                                  isShowInput: provider.isShowInputKhauHao,
+                                  isShowCollapse:
+                                      provider.isShowCollapseKhauHao,
+                                  onExpandedChanged: (isExpanded) {
+                                    provider.isShowCollapseKhauHao = isExpanded;
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                    ],
+                  ),
+                );
+              },
+            ),
           );
-        }
-        if (state is GetListAssetManagementFailedState) {
-          // Manejar error
-          log('GetListAssetManagementFailedState');
-          // context.read<AssetManagementProvider>().getListAssetManagementFailed(
-          //   context,
-          //   state,
-          // );
-        }
-        if (state is GetListChildAssetsSuccessState) {
-          context.read<AssetManagementProvider>().getListChildAssetsSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListChildAssetsFailedState) {
-          log('GetListChildAssetsFailedState');
-        }
-        if (state is GetListKhauHaoSuccessState) {
-          context.read<AssetManagementProvider>().getListKhauHaoSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListKhauHaoFailedState) {
-          log('GetListChildAssetsFailedState');
-        }
-        if (state is GetListAssetGroupFailedState) {
-          log('GetListAssetGroupFailedState');
-        }
-        if (state is GetListProjectSuccessState) {
-          context.read<AssetManagementProvider>().getListProjectSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListKhauHaoFailedState) {
-          log('GetListProjectFailedState');
-        }
-        if (state is GetListCapitalSourceSuccessState) {
-          context.read<AssetManagementProvider>().getListCapitalSourceSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListCapitalSourceFailedState) {
-          log('GetListCapitalSourceFailedState');
-        }
-        if (state is GetListDepartmentSuccessState) {
-          context.read<AssetManagementProvider>().getListDepartmentSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListDepartmentFailedState) {
-          log('Error at GetListDepartmentFailedState: ${state.message}');
-        }
-        if (state is GetAllChildAssetsSuccessState) {
-          context.read<AssetManagementProvider>().getAllChildAssetsSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is CreateAssetFailedState) {
-          log('CreateAssetFailedState');
-          context.read<AssetManagementProvider>().createAssetError(
-            context,
-            state,
-          );
-        }
-        if (state is GetAllChildAssetsFailedState) {
-          log('GetAllChildAssetsFailedState');
-        }
-        if (state is CreateAssetSuccessState) {
-          context.read<AssetManagementProvider>().createAssetSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is DeleteAssetSuccessState) {
-          log('DeleteAssetSuccessState');
-          context.read<AssetManagementProvider>().deleteAssetSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is UpdateAssetSuccessState) {
-          context.read<AssetManagementProvider>().updateAssetSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is UpdateAndDeleteAssetFailedState) {
-          log('DeleteAssetFailedState');
-          AppUtility.showSnackBar(context, state.message);
-        }
-      },
+        },
+        listener: (context, state) {
+          if (state is AssetManagementLoadingState) {
+            // Mostrar loading
+          }
+          if (state is GetListAssetManagementSuccessState) {
+            context
+                .read<AssetManagementProvider>()
+                .getListAssetManagementSuccess(context, state);
+          }
+          if (state is GetListAssetManagementFailedState) {
+            // Manejar error
+            log('GetListAssetManagementFailedState');
+            // context.read<AssetManagementProvider>().getListAssetManagementFailed(
+            //   context,
+            //   state,
+            // );
+          }
+          if (state is GetListChildAssetsSuccessState) {
+            context.read<AssetManagementProvider>().getListChildAssetsSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is GetListChildAssetsFailedState) {
+            log('GetListChildAssetsFailedState');
+          }
+          if (state is GetListKhauHaoSuccessState) {
+            context.read<AssetManagementProvider>().getListKhauHaoSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is GetListKhauHaoFailedState) {
+            log('GetListChildAssetsFailedState');
+          }
+          if (state is GetListAssetGroupFailedState) {
+            log('GetListAssetGroupFailedState');
+          }
+          if (state is GetListProjectSuccessState) {
+            context.read<AssetManagementProvider>().getListProjectSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is GetListKhauHaoFailedState) {
+            log('GetListProjectFailedState');
+          }
+          if (state is GetListCapitalSourceSuccessState) {
+            context.read<AssetManagementProvider>().getListCapitalSourceSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is GetListCapitalSourceFailedState) {
+            log('GetListCapitalSourceFailedState');
+          }
+          if (state is GetListDepartmentSuccessState) {
+            context.read<AssetManagementProvider>().getListDepartmentSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is GetListDepartmentFailedState) {
+            log('Error at GetListDepartmentFailedState: ${state.message}');
+          }
+          if (state is GetAllChildAssetsSuccessState) {
+            context.read<AssetManagementProvider>().getAllChildAssetsSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is CreateAssetFailedState) {
+            log('CreateAssetFailedState');
+            context.read<AssetManagementProvider>().createAssetError(
+              context,
+              state,
+            );
+          }
+          if (state is GetAllChildAssetsFailedState) {
+            log('GetAllChildAssetsFailedState');
+          }
+          if (state is CreateAssetSuccessState) {
+            context.read<AssetManagementProvider>().createAssetSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is DeleteAssetSuccessState) {
+            log('DeleteAssetSuccessState');
+            context.read<AssetManagementProvider>().deleteAssetSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is UpdateAssetSuccessState) {
+            context.read<AssetManagementProvider>().updateAssetSuccess(
+              context,
+              state,
+            );
+          }
+          if (state is UpdateAndDeleteAssetFailedState) {
+            log('DeleteAssetFailedState');
+            AppUtility.showSnackBar(context, state.message);
+          }
+        },
+      ),
     );
   }
 }

@@ -3,7 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -19,7 +20,6 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_su
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/widget/tools_and_supplies_list.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'bloc/tools_and_supplies_state.dart';
 import 'provider/tools_and_supplies_provide.dart';
 
@@ -39,7 +39,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
     super.initState();
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
-    Provider.of<ToolsAndSuppliesProvider>(
+    provider.Provider.of<ToolsAndSuppliesProvider>(
       context,
       listen: false,
     ).onInit(context);
@@ -52,7 +52,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Provider.of<ToolsAndSuppliesProvider>(
+    provider.Provider.of<ToolsAndSuppliesProvider>(
       context,
       listen: false,
     ).onInit(context);
@@ -121,9 +121,10 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ToolsAndSuppliesBloc, ToolsAndSuppliesState>(
-      builder: (context, state) {
-        return Consumer<ToolsAndSuppliesProvider>(
+    return ProviderScope(
+      child: BlocConsumer<ToolsAndSuppliesBloc, ToolsAndSuppliesState>(
+        builder: (context, state) {
+          return provider.Consumer<ToolsAndSuppliesProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -288,18 +289,6 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                       ),
                     ),
                   ),
-                  Visibility(
-                    visible: (provider.data?.length ?? 0) >= 5,
-                    child: SGPaginationControls(
-                      totalPages: provider.totalPages,
-                      currentPage: provider.currentPage,
-                      rowsPerPage: provider.rowsPerPage,
-                      controllerDropdownPage: provider.controllerDropdownPage!,
-                      items: provider.items,
-                      onPageChanged: provider.onPageChanged,
-                      onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                    ),
-                  ),
                 ],
               ),
             );
@@ -410,6 +399,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
           );
         }
       },
+      ),
     );
   }
 }

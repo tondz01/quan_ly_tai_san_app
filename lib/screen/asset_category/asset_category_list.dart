@@ -1,17 +1,27 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/export.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
+import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/component/table_asset_category_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/sg_text.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_category/provider/table_asset_category_provider.dart';
+import 'package:se_gay_components/common/switch/sg_checkbox.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:table_base/core/themes/app_color.dart';
+import 'package:table_base/core/themes/app_icon_svg.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 
 class AssetCategoryList extends StatefulWidget {
   final List<AssetCategoryDto> data;
@@ -31,73 +41,84 @@ class AssetCategoryList extends StatefulWidget {
 }
 
 class _AssetCategoryListState extends State<AssetCategoryList> {
-  List<AssetCategoryDto> selectedItems = [];
+  List<AssetCategoryDto> listSelected = [];
+  List<String> _hiddenKeys = [];
+  bool showCheckboxColumn = true;
+  final bool _showActionsColumn = true;
+
+  late final List<TableColumnData> _allColumns;
+  List<TableColumnData> _columns = [];
+  late final List<ColumnDefinition> _definitions;
+  late final Map<String, TableCellBuilder> _buildersByKey;
+
+  // Column display options
+  late List<ColumnDisplayOption> columnOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _definitions = TableAssetCategoryConfig.getColumns();
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
+  }
+
+  dynamic getValueForColumn(AssetCategoryDto item, int columnIndex) {
+    final int offset = showCheckboxColumn ? 1 : 0;
+    final int adjustedIndex = columnIndex - offset;
+
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
+    }
+
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+      case 'code_asset_category':
+        return item.id;
+      case 'name_asset_category':
+        return item.tenMoHinh;
+      case 'depreciation_method':
+        return item.phuongPhapKhauHao == 1 ? 'Đường thẳng' : 'Khác';
+      case 'depreciation_period':
+        return item.kyKhauHao?.toString();
+      case 'depreciation_period_type':
+        if (item.loaiKyKhauHao == '1') return 'Tháng';
+        if (item.loaiKyKhauHao == '2') return 'Năm';
+        return item.loaiKyKhauHao;
+      case 'asset_account':
+        return item.taiKhoanTaiSan;
+      case 'depreciation_account':
+        return item.taiKhoanKhauHao;
+      case 'expense_account':
+        return item.taiKhoanChiPhi;
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _openColumnConfigDialog() async {
+    try {
+      final apply = await showColumnConfigAndApply(
+        context: context,
+        allColumns: _allColumns,
+        currentColumns: _columns,
+        initialHiddenKeys: _hiddenKeys,
+        title: 'table.config_column'.tr,
+      );
+      if (apply != null) {
+        setState(() {
+          _hiddenKeys = apply.hiddenKeys;
+          _columns = apply.updatedColumns;
+        });
+      }
+    } catch (e) {
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final columns = [
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Mã mô hình',
-        getValue: (item) => item.id ?? "",
-        width: 100,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Tên mô hình tài sản',
-        getValue: (item) => item.tenMoHinh ?? "",
-        width: 200,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Phương pháp khấu hao',
-        getValue:
-            (item) => item.phuongPhapKhauHao == 1 ? 'Đường thẳng' : 'Khác',
-        width: 150,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Kỳ khấu hao',
-        getValue: (item) => item.kyKhauHao?.toString() ?? "",
-        width: 100,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Loại kỳ khấu hao',
-        getValue:
-            (item) =>
-                item.loaiKyKhauHao == '1'
-                    ? 'Tháng'
-                    : item.loaiKyKhauHao == '2'
-                    ? 'Năm'
-                    : item.loaiKyKhauHao ?? "",
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Tài khoản tài sản',
-        getValue: (item) => item.taiKhoanTaiSan ?? "",
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Tài khoản khấu hao',
-        getValue: (item) => item.taiKhoanKhauHao ?? "",
-        width: 120,
-      ),
-      TableBaseConfig.columnTable<AssetCategoryDto>(
-        title: 'Tài khoản chi phí',
-        getValue: (item) => item.taiKhoanChiPhi ?? "",
-        width: 120,
-      ),
-      TableBaseConfig.columnWidgetBase<AssetCategoryDto>(
-        title: 'Thao tác',
-        cellBuilder:
-            (item) => TableBaseConfig.viewActionBase<AssetCategoryDto>(
-              item: item,
-              onDelete: (item) {
-                widget.onDelete?.call(item);
-              },
-            ),
-        width: 120,
-      ),
-    ];
-
     return Container(
-      height: MediaQuery.of(context).size.height - 200,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -132,8 +153,8 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
                       size: 18,
                     ),
                     SizedBox(width: 8),
-                    SGText(
-                      text: 'Danh sách mô hình tài sản',
+                    Text(
+                      'Quản lý mô hình tài sản (${widget.data.length})',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -142,79 +163,229 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
                     ),
                   ],
                 ),
-                Visibility(
-                  visible: selectedItems.isNotEmpty,
-                  child: Row(
-                    children: [
-                      SGText(
-                        text:
-                            'Danh sách mô hình tài sản đã chọn: ${selectedItems.length}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      MaterialTextButton(
-                        text: 'Xóa đã chọn',
-                        icon: Icons.delete,
-                        backgroundColor: ColorValue.error,
-                        foregroundColor: Colors.white,
-                        onPressed: () {
-                          setState(() {
-                            List<String> data =
-                                selectedItems.map((e) => e.id!).toList();
-
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa mô hình tài sản',
-                              message:
-                                  'Bạn có chắc muốn xóa ${selectedItems.length} mô hình tài sản',
-                              highlight: selectedItems.length.toString(),
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                final assetCategoryBloc =
-                                    context.read<AssetCategoryBloc>();
-                                assetCategoryBloc.add(
-                                  DeleteAssetCategoryBatchEvent(context, data),
-                                );
-                              },
-                            );
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
-          ),
-          Expanded(
-            child: TableBaseView<AssetCategoryDto>(
-              searchTerm: '',
-              columns: columns,
-              data: widget.data,
-              horizontalController: ScrollController(),
-              onRowTap: (item) {
-                widget.onChangeDetail?.call(item);
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final availableWidth = constraints.maxWidth;
+                return Row(
+                  children: [
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        return BoxSearch(
+                          width: (availableWidth * 0.35).toDouble(),
+                          onSearch: (value) {
+                            ref
+                                .read(tableAssetCategoryProvider.notifier)
+                                .searchTerm = value;
+                          },
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      width: (availableWidth * 0.65).toDouble(),
+                      child: riverpod.Consumer(
+                        builder: (context, ref, _) {
+                          final hasFilters = ref.watch(
+                            tableAssetCategoryProvider.select(
+                              (s) => s.filterState.hasActiveFilters,
+                            ),
+                          );
+                          final tableState = ref.watch(
+                            tableAssetCategoryProvider,
+                          );
+                          final selectedCount = tableState.selectedItems.length;
+                          listSelected = tableState.selectedItems;
+                          final buttons = _buildButtonList(selectedCount);
+                          final processedButtons =
+                              buttons.map((button) {
+                                if (button.text == 'table.clear_filters'.tr) {
+                                  return ResponsiveButtonData.fromButtonIcon(
+                                    text: button.text,
+                                    iconPath: button.iconPath!,
+                                    backgroundColor: button.backgroundColor!,
+                                    iconColor: button.iconColor!,
+                                    textColor: button.textColor!,
+                                    width: button.width,
+                                    onPressed: () {
+                                      ref
+                                          .read(
+                                            tableAssetCategoryProvider.notifier,
+                                          )
+                                          .clearAllFilters();
+                                    },
+                                  );
+                                }
+                                return button;
+                              }).toList();
+
+                          final filteredButtons =
+                              hasFilters
+                                  ? processedButtons
+                                  : processedButtons
+                                      .where(
+                                        (button) =>
+                                            button.text !=
+                                            'table.clear_filters'.tr,
+                                      )
+                                      .toList();
+
+                          return ResponsiveButtonBar(
+                            buttons: filteredButtons,
+                            spacing: 12,
+                            overflowSide: OverflowSide.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            popupPosition: PopupMenuPosition.under,
+                            popupOffset: const Offset(0, 8),
+                            popupShape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            popupElevation: 6,
+                            moreLabel: 'Khác',
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
               },
-              onSelectionChanged: (items) {
-                setState(() {
-                  selectedItems = items;
-                });
+            ),
+          ),
+          // bộ lọc
+          ClipRRect(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(8.0),
+              bottomRight: Radius.circular(8.0),
+            ),
+            child: riverpod.Consumer(
+              builder: (context, ref, child) {
+                ref
+                    .read(tableAssetCategoryProvider.notifier)
+                    .setData(widget.data);
+
+                return RiverpodTable<AssetCategoryDto>(
+                  tableProvider: tableAssetCategoryProvider,
+                  columns: _columns,
+                  showCheckboxColumn: showCheckboxColumn,
+                  enableRowSelection: true,
+                  enableRowHover: true,
+                  showAlternatingRowColors: true,
+                  valueGetter: getValueForColumn,
+                  cellsBuilder: (_) => [],
+                  cellBuilderByKey: (item, key) {
+                    final builder = _buildersByKey[key];
+                    if (builder != null) return builder(item);
+                    return null;
+                  },
+                  onRowTap: (item) {
+                    widget.onChangeDetail?.call(item);
+                  },
+                  onDelete: (item) {
+                    showConfirmDialog(
+                      context,
+                      type: ConfirmType.delete,
+                      title: 'Xóa mô hình tài sản',
+                      message: 'Bạn có chắc muốn xóa ${item.tenMoHinh}',
+                      highlight: item.tenMoHinh ?? '',
+                      cancelText: 'Không',
+                      confirmText: 'Xóa',
+                      onConfirm: () {
+                        widget.onDelete?.call(item);
+                      },
+                    );
+                  },
+                  showActionsColumn: _showActionsColumn,
+                  actionsColumnWidth: 120,
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                );
               },
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget showCheckBoxActive(bool isActive) {
+    return SgCheckbox(value: isActive);
+  }
+
+  String getNameColumnAssetCategory(AssetCategoryDto item) {
+    return "${item.id} - ${item.tenMoHinh}";
+  }
+
+  Widget viewAction(AssetCategoryDto item) {
+    return viewActionButtons([
+      ActionButtonConfig(
+        icon: Icons.delete,
+        tooltip: 'Xóa',
+        iconColor: Colors.red.shade700,
+        backgroundColor: Colors.red.shade50,
+        borderColor: Colors.red.shade200,
+        onPressed:
+            () => {
+              showConfirmDialog(
+                context,
+                type: ConfirmType.delete,
+                title: 'Xóa mô hình tài sản',
+                message: 'Bạn có chắc muốn xóa ${item.tenMoHinh}',
+                highlight: item.tenMoHinh ?? '',
+                cancelText: 'Không',
+                confirmText: 'Xóa',
+                onConfirm: () {
+                  widget.onDelete?.call(item);
+                },
+              ),
+            },
+      ),
+    ]);
+  }
+
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+    return [
+      // Configure columns button
+      ResponsiveButtonData.fromButtonIcon(
+        text: 'table.config_column'.tr,
+        iconPath: AppIconSvg.iconSetting,
+        backgroundColor: AppColor.white,
+        iconColor: AppColor.textDark,
+        textColor: AppColor.textDark,
+        width: 130,
+        onPressed: () {
+          _openColumnConfigDialog();
+        },
+      ),
+      if (itemCount > 0)
+        ResponsiveButtonData.fromButtonIcon(
+          text: '$itemCount ${'table.delete_selected'.tr}',
+          iconPath: AppIconSvg.iconSetting,
+          backgroundColor: Colors.redAccent,
+          iconColor: AppColor.textWhite,
+          textColor: AppColor.textWhite,
+          width: 130,
+          onPressed: () {
+            final ids = listSelected.map((e) => e.id!).toList();
+            showConfirmDialog(
+              context,
+              type: ConfirmType.delete,
+              title: 'Xóa mô hình tài sản',
+              message:
+                  'Bạn có chắc muốn xóa ${listSelected.length} mô hình tài sản',
+              highlight: listSelected.length.toString(),
+              cancelText: 'Không',
+              confirmText: 'Xóa',
+              onConfirm: () {
+                final assetCategoryBloc = context.read<AssetCategoryBloc>();
+                assetCategoryBloc.add(
+                  DeleteAssetCategoryBatchEvent(context, ids),
+                );
+              },
+            );
+          },
+        ),
+    ];
   }
 }

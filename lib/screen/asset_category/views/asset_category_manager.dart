@@ -19,7 +19,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_list.da
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetCategoryManager extends StatefulWidget {
   const AssetCategoryManager({super.key});
@@ -417,28 +416,6 @@ class _AssetCategoryManagerState extends State<AssetCategoryManager>
                           },
                         ),
                       ),
-                    ),
-                  ),
-                  Visibility(
-                    visible:
-                        assetCategories.length >=
-                        AssetCategoryConstants.minPaginationThreshold,
-                    child: SGPaginationControls(
-                      totalPages: totalPages,
-                      currentPage: currentPage,
-                      rowsPerPage: rowsPerPage,
-                      controllerDropdownPage: controller,
-                      items:
-                          (AssetCategoryConstants.mobilePaginationOptions)
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value.toString()),
-                                ),
-                              )
-                              .toList(),
-                      onPageChanged: onPageChanged,
-                      onRowsPerPageChanged: onRowsPerPageChanged,
                     ),
                   ),
                 ],
