@@ -5,7 +5,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
 
@@ -114,9 +113,29 @@ class TableAssetHandoverConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
+          name: 'Tài liệu',
+          key: 'document',
+          width: 150,
+          flex: 1,
+          isFixed: false,
+        ),
+        builder: (item) {
+          return TableCellData(
+            widget:
+                item.tenFile != null && item.tenFile!.isNotEmpty
+                    ? SgDownloadFile(
+                      name: item.tenFile!,
+                      url: item.duongDanFile ?? '',
+                    )
+                    : Text('Không có tài liệu'),
+          );
+        },
+      ),
+      ColumnDefinition(
+        config: TableColumnData.select(
           name: 'Trạng thái ký',
           key: 'trang_thai_ky',
-          width: 150,
+          width: 170,
           flex: 1,
           isFixed: false,
         ),
@@ -142,26 +161,7 @@ class TableAssetHandoverConfig {
           );
         },
       ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Tài liệu',
-          key: 'document',
-          width: 150,
-          flex: 1,
-          isFixed: false,
-        ),
-        builder: (item) {
-          return TableCellData(
-            widget:
-                item.tenFile != null && item.tenFile!.isNotEmpty
-                    ? SgDownloadFile(
-                      name: item.tenFile!,
-                      url: item.duongDanFile ?? '',
-                    )
-                    : Text('Không có tài liệu'),
-          );
-        },
-      ),
+
       ColumnDefinition(
         config: TableColumnData.select(
           name: 'Trạng thái phiếu',
@@ -334,7 +334,7 @@ class TableAssetHandoverConfig {
   }
 
   static int getPermissionSigning(
-    ToolAndSuppliesHandoverDto item,
+    AssetHandoverDto item,
     UserInfoDTO userInfo,
   ) {
     final signatureFlow =
