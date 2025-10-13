@@ -2203,8 +2203,8 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Widget _buildTrendAnalysisSection(Map<String, dynamic> data) {
-    final yearData = data['taiSanTheoNamTao'] as List<dynamic>;
-    final monthData = data['taiSanTheoThang'] as List<dynamic>;
+    final yearData = (data['taiSanTheoNamTao'] as List<dynamic>?) ?? const [];
+    final monthData = (data['taiSanTheoThang'] as List<dynamic>?) ?? const [];
 
     return Container(
       decoration: BoxDecoration(

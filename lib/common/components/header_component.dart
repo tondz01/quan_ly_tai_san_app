@@ -157,7 +157,8 @@ Widget _buildHeaderScreenLarge(
       // if (subScreen != null && subScreen.isNotEmpty)
       const SizedBox(width: 16),
       // if (subScreen == null || subScreen.isEmpty)
-      Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
+      if (isShowSearch == true)
+        Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
       if (child != null) child,
     ],
   );

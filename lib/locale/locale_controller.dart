@@ -8,12 +8,14 @@ class MyLocale implements Translations {
       ...vn["TOOLS_AND_SUPPLIES"]!,
       ...vn["ASSET_TRANSFER"]!,
       ...vn["ASSET_HANDOVER"]!,
+      ...vn["table"]!,
     },
     "en_US": {
       ...en["COMMON"]!,
       ...en["TOOLS_AND_SUPPLIES"]!,
       ...en["ASSET_TRANSFER"]!,
-    }
+      ...en["table"]!,
+    },
   };
 
   Map<String, Map<String, String>> vn = {
@@ -29,7 +31,7 @@ class MyLocale implements Translations {
       "common.cancel": "Hủy",
       "common.quantity": "Số lượng",
       "common.unit": "Đơn vị tính",
-    },    
+    },
     "TOOLS_AND_SUPPLIES": {
       // "tas.title": "Công cụ và dụng cụ",
       "tas.import_unit": "Đơn vị nhập",
@@ -89,8 +91,12 @@ class MyLocale implements Translations {
       "ah.representative_unit_confirm": "Đơn vị Đại diện Đã xác nhận",
       "ah.property_handover_minutes": "Thời gian bàn giao tài sản",
       "ah.asset_handover_details": "Chi tiết bàn giao tài sản",
-    }
-
+    },
+    "table": {
+      "table.config_column": "Cấu hình cột",
+      "table.clear_filters": "Xóa bộ lọc",
+      "table.delete_selected": "Xóa chọn",
+    },
   };
   Map<String, Map<String, String>> en = {
     "COMMON": {
@@ -139,6 +145,12 @@ class MyLocale implements Translations {
       "at.viewer_departments": "Viewer Departments",
       "at.viewerUsers": "Viewer Users",
       "at.is_effective": "Effective",
-    }
+    },
+
+    "table": {
+      "table.config_column": "Column Config",
+      "table.clear_filters": "Clear Filters",
+      "table.delete_selected": "Delete Selected",
+    },
   };
 }

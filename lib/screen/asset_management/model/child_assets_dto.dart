@@ -55,7 +55,6 @@ class ChildAssetDto {
 
   Map<String, dynamic> toJson() {
    
-
     return {
       'id': id,
       'idTaiSanCon': idTaiSanCon,

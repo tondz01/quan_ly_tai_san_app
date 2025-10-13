@@ -1,6 +1,5 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
@@ -14,8 +13,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -54,7 +51,6 @@ Widget buildOtherInformation(
   required List<PhongBan> listPhongBan,
   required List<DuAn> listDuAn,
   required List<ReasonIncrease> listLyDoTang,
-  required List<UnitDto> listUnit,
   required List<DropdownMenuItem<PhongBan>> itemsPhongBan,
   required List<DropdownMenuItem<DuAn>> itemsDuAn,
   required List<DropdownMenuItem<ReasonIncrease>> itemsLyDoTang,
@@ -72,8 +68,6 @@ Widget buildOtherInformation(
 }) {
   // Function to calculate total capital
   void calculateTotalCapital() {
-    // Clean text by removing all non-numeric characters except decimal point
-    // Handle money format with thousand separators (dots)
     String cleanText(String text) {
       if (text.isEmpty) return '';
 
@@ -81,8 +75,6 @@ Widget buildOtherInformation(
 
       List<String> parts = cleaned.split('.');
       if (parts.length > 2) {
-        // For numbers like "1.111.111", we need to treat dots as thousand separators
-        // So "1.111.111" should become "1111111" (no decimal part)
         String integerPart = parts.join('');
         cleaned = integerPart;
       }
@@ -97,14 +89,13 @@ Widget buildOtherInformation(
     final vonVay = double.tryParse(vonVayText) ?? 0.0;
     final vonKhac = double.tryParse(vonKhacText) ?? 0.0;
 
-    // Round to avoid floating point precision issues
     final total = (vonNS + vonVay + vonKhac).roundToDouble();
-    // Use addPostFrameCallback to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       onTotalCapitalChanged?.call(total);
     });
   }
 
+  ctrlDonViTinh.text = unit?.tenDonVi ?? '';
   return Column(
     children: [
       SGText(text: 'Thông tin khác', size: 16, fontWeight: FontWeight.w600),
@@ -164,28 +155,11 @@ Widget buildOtherInformation(
         inputType: TextInputType.number,
         isMoney: true,
         onChanged: (value) {
-          log('message test [OtherInformation]: value: $value');
           calculateTotalCapital();
         },
         validationErrors: validationErrors,
       ),
 
-      // CMObjectMultiSelectDropdownField<NguonKinhPhi>(
-      //   labelText: 'Nguồn kinh phí',
-      //   items: listNguonKinhPhi,
-      //   readOnly: !isEditing,
-      //   itemLabel: (o) => o.tenNguonKinhPhi ?? '',
-      //   itemKey: (o) => o.id ?? '',
-      //   initialSelected: initialSelectedNguonKinhPhi,
-      //   onChanged: (list) {
-      //     onChangedNguonKinhPhi?.call(list);
-      //     initialSelectedNguonKinhPhi = list;
-      //   },
-      //   onConfirmed: (list) {
-      //     onChangedNguonKinhPhi?.call(list);
-      //     initialSelectedNguonKinhPhi = list;
-      //   },
-      // ),
       CommonFormInput(
         label: 'Ký hiệu',
         controller: ctrlKyHieu,
@@ -282,15 +256,8 @@ Widget buildOtherInformation(
         controller: ctrlDonViTinh,
         isEditing: isEditing,
         items: itemsUnit,
-       
         defaultValue: unit,
-        onChanged: (value) {
-          if (listUnit.isEmpty) {
-            AuthRepository().loadUnit('ct001');
-            listUnit = AccountHelper.instance.getAllUnit();
-          }
-          onUnitChanged?.call(value);
-        },
+        onChanged: onUnitChanged,
         value: unit,
         fieldName: 'donViTinh',
         validationErrors: validationErrors,

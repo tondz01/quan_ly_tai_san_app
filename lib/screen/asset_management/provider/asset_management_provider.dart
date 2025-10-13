@@ -19,7 +19,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -50,6 +49,7 @@ class AssetManagementProvider with ChangeNotifier {
   get filteredData => _filteredData ?? _data;
   get dataGroup => _dataGroup;
   get dataUnit => _dataUnit;
+  get itemsUnit => _itemsUnit;
   get userInfo => _userInfo;
 
   get dataProject => _dataProject;
@@ -131,6 +131,7 @@ class AssetManagementProvider with ChangeNotifier {
   List<DropdownMenuItem<DuAn>>? _itemsDuAn;
   List<DropdownMenuItem<NguonKinhPhi>>? _itemsNguonKinhPhi;
   List<DropdownMenuItem<PhongBan>>? _itemsPhongBan;
+  List<DropdownMenuItem<UnitDto>>? _itemsUnit;
 
   List<Country> listCountry = countries;
   List<DropdownMenuItem<Country>> _itemsCountry = [];
@@ -163,7 +164,6 @@ class AssetManagementProvider with ChangeNotifier {
     if (_pendingLoadCount > 0) {
       _pendingLoadCount -= 1;
     }
-    log('message test: _completeOneLoad: $_pendingLoadCount: $message');
     if (_pendingLoadCount <= 0) {
       _pendingLoadCount = 0;
       _isLoading = false;
@@ -293,11 +293,21 @@ class AssetManagementProvider with ChangeNotifier {
   onInit(BuildContext context) async {
     reset(context);
     _userInfo = AccountHelper.instance.getUserInfo();
-    _dataGroup = AccountHelper.instance.getAssetGroup();
-    if (AccountHelper.instance.getAllUnit().isEmpty) {
-      await AuthRepository().loadUnit('ct001');
-    }
     _dataUnit = AccountHelper.instance.getAllUnit();
+    _itemsUnit = [
+      ..._dataUnit!.map(
+        (e) =>
+            DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
+      ),
+    ];
+    _dataGroup = AccountHelper.instance.getAssetGroup();
+    _itemsAssetGroup = [
+      for (var element in _dataGroup!)
+        DropdownMenuItem<AssetGroupDto>(
+          value: element,
+          child: Text(element.tenNhom ?? ''),
+        ),
+    ];
     checkPermission();
     controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
@@ -330,7 +340,7 @@ class AssetManagementProvider with ChangeNotifier {
   Future<void> getDataAll(BuildContext context) async {
     try {
       // 7 parallel loads below
-      _beginBatchLoad(6);
+      _beginBatchLoad(5);
       final bloc = context.read<AssetManagementBloc>();
       String idCongTy = _userInfo?.idCongTy ?? '';
       // DateTime date = DateTime.now();
@@ -470,7 +480,6 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataKhauHao = state.data;
     }
-    _completeOneLoad('getListKhauHaoSuccess');
     onLoadingKhauHao(false);
   }
 

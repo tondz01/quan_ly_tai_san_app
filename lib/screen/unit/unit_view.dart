@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
@@ -12,10 +12,11 @@ import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_state.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/component/convert_excel_to_unit.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/provider/unit_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/unit/provider/table_unit_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/widget/unit_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/widget/unit_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class UnitView extends StatefulWidget {
   const UnitView({super.key});
@@ -39,7 +40,7 @@ class _UnitViewState extends State<UnitView> {
     _scrollController = HomeScrollController();
     _scrollController.addListener((_onScrollStateChanged));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<UnitProvider>(context, listen: false).onInit(context);
+      provider.Provider.of<UnitProvider>(context, listen: false).onInit(context);
     });
   }
 
@@ -51,19 +52,26 @@ class _UnitViewState extends State<UnitView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<UnitBloc, UnitState>(
-      builder: (context, state) {
-        // Sử dụng ChangeNotifierProvider.value để đảm bảo tất cả thay đổi trong provider cập nhật UI
-        return ChangeNotifierProvider.value(
+    return ProviderScope(
+      child: BlocConsumer<UnitBloc, UnitState>(
+        builder: (context, state) {
+          // Sử dụng ChangeNotifierProvider.value để đảm bảo tất cả thay đổi trong provider cập nhật UI
+        return provider.ChangeNotifierProvider.value(
           value: context.read<UnitProvider>(),
-          child: Consumer<UnitProvider>(
-            builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (provider.data == null) {
-                return const Center(child: Text('Không có dữ liệu'));
-              }
+          child: provider.Consumer<UnitProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (provider.data == null) {
+                  return const Center(child: Text('Không có dữ liệu'));
+                }
+
+                // Khởi tạo dữ liệu cho bảng mới
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final tableNotifier = context.read<TableUnitProvider>();
+                  tableNotifier.setData(provider.data ?? []);
+                });
 
               return Scaffold(
                 appBar: AppBar(
@@ -72,6 +80,7 @@ class _UnitViewState extends State<UnitView> {
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: () {},
                     onNew: () {
                       provider.onChangeDetail(null);
@@ -150,54 +159,42 @@ class _UnitViewState extends State<UnitView> {
                         ),
                       ),
                     ),
-                    Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
-                    ),
                   ],
                 ),
               );
-            },
-          ),
-        );
-      },
+              },
+            ),
+          );
+        },
 
-      listener: (context, state) {
-        if (state is UnitLoadingState) {
-          // Hiển thị loading
-        }
-        if (state is GetListUnitSuccessState) {
-          context.read<UnitProvider>().getListUnitSuccess(context, state);
-        }
-        if (state is CreateUnitSuccessState) {
-          context.read<UnitProvider>().createUnitSuccess(context, state);
-        }
-        if (state is CreateUnitFailedState) {
-          context.read<UnitProvider>().createUnitFailed(context, state);
-        }
-        if (state is GetListUnitFailedState) {
-          // Xử lý lỗi
-          context.read<UnitProvider>().getListUnitFailed(context, state);
-        }
-        if (state is UpdateUnitSuccessState) {
-          context.read<UnitProvider>().updateUnitSuccess(context, state);
-        }
-        if (state is DeleteUnitSuccessState) {
-          context.read<UnitProvider>().deleteUnitSuccess(context, state);
-        }
-        if (state is PutPostDeleteFailedState) {
-          context.read<UnitProvider>().putPostDeleteFailed(context, state);
-        }
-      },
+        listener: (context, state) {
+          if (state is UnitLoadingState) {
+            // Hiển thị loading
+          }
+          if (state is GetListUnitSuccessState) {
+            context.read<UnitProvider>().getListUnitSuccess(context, state);
+          }
+          if (state is CreateUnitSuccessState) {
+            context.read<UnitProvider>().createUnitSuccess(context, state);
+          }
+          if (state is CreateUnitFailedState) {
+            context.read<UnitProvider>().createUnitFailed(context, state);
+          }
+          if (state is GetListUnitFailedState) {
+            // Xử lý lỗi
+            context.read<UnitProvider>().getListUnitFailed(context, state);
+          }
+          if (state is UpdateUnitSuccessState) {
+            context.read<UnitProvider>().updateUnitSuccess(context, state);
+          }
+          if (state is DeleteUnitSuccessState) {
+            context.read<UnitProvider>().deleteUnitSuccess(context, state);
+          }
+          if (state is PutPostDeleteFailedState) {
+            context.read<UnitProvider>().putPostDeleteFailed(context, state);
+          }
+        },
+      ),
     );
   }
 }

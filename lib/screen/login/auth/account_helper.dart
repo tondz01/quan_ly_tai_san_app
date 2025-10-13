@@ -98,8 +98,9 @@ class AccountHelper {
             .map((e) {
               if (e is PhongBan) return e;
               if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
-              if (e is Map)
+              if (e is Map) {
                 return PhongBan.fromJson(Map<String, dynamic>.from(e));
+              }
               return null;
             })
             .whereType<PhongBan>()

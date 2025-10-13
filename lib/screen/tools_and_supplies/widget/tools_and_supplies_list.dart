@@ -1,24 +1,25 @@
-// ignore_for_file: deprecated_member_use
-
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/ownership_unit_details.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/table_tools_and_supplies_config.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/table_tools_and_supplies_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
-import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:table_base/core/themes/app_color.dart';
+import 'package:table_base/core/themes/app_icon_svg.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class ToolsAndSuppliesList extends StatefulWidget {
   final ToolsAndSuppliesProvider provider;
@@ -32,30 +33,31 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   final ScrollController horizontalController = ScrollController();
 
   ToolsAndSuppliesDto? selectedItem;
-  List<ToolsAndSuppliesDto> selectedItems = [];
+  List<ToolsAndSuppliesDto> listSelected = [];
 
-  String searchTerm = "";
   String titleDetailDepartmentTree = "";
   bool isShowDetailDepartmentTree = false;
-  List<Map<String, DateTime Function(ToolsAndSuppliesDto)>> getters = [
-    {'Ngày tạo': (item) => DateTime.tryParse(item.ngayTao) ?? DateTime.now()},
-    {'Ngày cập nhật': (item) => DateTime.tryParse(item.ngayCapNhat) ?? DateTime.now()},
-    {'Ngày nhập': (item) => DateTime.tryParse(item.ngayNhap) ?? DateTime.now()},
-  ];
 
-  // Column display options
-  late List<ColumnDisplayOption> columnOptions;
-  List<String> visibleColumnIds = [
-    'id',
-    'ten',
-    'idDonVi',
-    'ngayNhap',
-    'donViTinh',
-    'soLuong',
-    'giaTri',
-    'kyHieu',
-    'actions',
-  ];
+  // Table configuration
+  late List<ColumnDefinition> _definitions;
+  late List<TableColumnData> _columns;
+  late List<TableColumnData> _allColumns;
+  late Map<String, TableCellBuilder> _buildersByKey;
+  late List<String> _hiddenKeys;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeTableConfig();
+  }
+
+  void _initializeTableConfig() {
+    _definitions = TableToolsAndSuppliesConfig.getColumns();
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
+    _hiddenKeys = <String>[];
+  }
 
   void _showDetailDepartmentTree(ToolsAndSuppliesDto item) {
     setState(() {
@@ -67,245 +69,102 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeColumnOptions();
+  String _fmtDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return '';
+    try {
+      final date = DateTime.tryParse(dateStr);
+      if (date == null) return dateStr;
+      final dd = date.day.toString().padLeft(2, '0');
+      final mm = date.month.toString().padLeft(2, '0');
+      final yyyy = date.year.toString();
+      return '$dd/$mm/$yyyy';
+    } catch (e) {
+      return dateStr;
+    }
   }
 
-  void _initializeColumnOptions() {
-    columnOptions = [
-      ColumnDisplayOption(
-        id: 'id',
-        label: 'Mã công cụ dụng cụ',
-        isChecked: visibleColumnIds.contains('id'),
-      ),
-      ColumnDisplayOption(
-        id: 'ten',
-        label: 'Công cụ dụng cụ',
-        isChecked: visibleColumnIds.contains('ten'),
-      ),
-      ColumnDisplayOption(
-        id: 'idDonVi',
-        label: 'Đơn vị nhập',
-        isChecked: visibleColumnIds.contains('idDonVi'),
-      ),
-      ColumnDisplayOption(
-        id: 'ngayNhap',
-        label: 'Ngày nhập',
-        isChecked: visibleColumnIds.contains('ngayNhap'),
-      ),
-      ColumnDisplayOption(
-        id: 'donViTinh',
-        label: 'Đơn vị tính',
-        isChecked: visibleColumnIds.contains('donViTinh'),
-      ),
-      ColumnDisplayOption(
-        id: 'soLuong',
-        label: 'Số lượng',
-        isChecked: visibleColumnIds.contains('soLuong'),
-      ),
-      ColumnDisplayOption(
-        id: 'giaTri',
-        label: 'Giá trị',
-        isChecked: visibleColumnIds.contains('giaTri'),
-      ),
-      ColumnDisplayOption(
-        id: 'kyHieu',
-        label: 'Ký hiệu',
-        isChecked: visibleColumnIds.contains('kyHieu'),
-      ),
-      ColumnDisplayOption(
-        id: 'actions',
-        label: 'Thao tác',
-        isChecked: visibleColumnIds.contains('actions'),
-      ),
-    ];
+  String _fmtNum(double? value) {
+    if (value == null) return '';
+    try {
+      final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
+      return _vnNumber.format(value);
+    } catch (e) {
+      return value.toString();
+    }
   }
 
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
+  dynamic getValueForColumn(ToolsAndSuppliesDto item, int columnIndex) {
+    final int offset = 1; // showCheckboxColumn
+    final int adjustedIndex = columnIndex - offset;
+
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
+    }
+
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+      case 'id':
+        return item.id;
+      case 'ten':
+        return item.ten;
+      case 'tenDonVi':
+        return item.tenDonVi;
+      case 'tenNhomCCDC':
+        return item.tenNhomCCDC;
+      case 'ngayNhap':
+        return _fmtDate(item.ngayNhap);
+      case 'donViTinh':
+        return item.donViTinh;
+      case 'soLuong':
+        return item.soLuong.toString();
+      case 'giaTri':
+        return _fmtNum(item.giaTri);
+      case 'kyHieu':
+        return item.kyHieu;
+      case 'congSuat':
+        return item.congSuat;
+      case 'nuocSanXuat':
+        return item.nuocSanXuat;
+      case 'namSanXuat':
+        return item.namSanXuat.toString();
+      case 'soKyHieu':
+        return item.soKyHieu;
+      case 'ghiChu':
+        return item.ghiChu;
+      case 'nguoiTao':
+        return item.nguoiTao;
+      case 'ngayTao':
+        return _fmtDate(item.ngayTao);
+      case 'isActive':
+        return item.isActive ? 'Hoạt động' : 'Không hoạt động';
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _openColumnConfigDialog() async {
+    try {
+      final apply = await showColumnConfigAndApply(
+        context: context,
+        allColumns: _allColumns,
+        currentColumns: _columns,
+        initialHiddenKeys: _hiddenKeys,
+        title: 'table.config_column'.tr,
+      );
+      if (apply != null) {
         setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
+          _hiddenKeys = apply.hiddenKeys;
+          _columns = apply.updatedColumns;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
-    }
-  }
-
-  List<SgTableColumn<ToolsAndSuppliesDto>> _buildColumns() {
-    final List<SgTableColumn<ToolsAndSuppliesDto>> columns = [];
-
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'id':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Mã công cụ dụng cụ',
-              getValue: (item) => item.id,
-              width: 170,
-              searchValueGetter: (item) => item.id,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'ten':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Công cụ dụng cụ',
-              getValue: (item) => item.ten,
-              width: 170,
-              searchValueGetter: (item) => item.ten,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'idDonVi':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Đơn vị nhập',
-              getValue: (item) => item.idDonVi,
-              width: 170,
-              searchValueGetter: (item) => item.idDonVi,
-              filterable: true,
-            ),
-          );
-          break;
-
-        case 'ngayNhap':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Ngày nhập',
-              getValue: (item) => item.ngayNhap.toString(),
-              width: 120,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'donViTinh':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Đơn vị tính',
-              getValue: (item) => item.donViTinh,
-              width: 120,
-              searchValueGetter: (item) => item.donViTinh,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'soLuong':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Số lượng',
-              getValue: (item) => item.soLuong.toString(),
-              width: 120,
-              searchValueGetter: (item) => item.soLuong.toString(),
-              filterable: true,
-            ),
-          );
-          break;
-        case 'giaTri':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Giá trị',
-              getValue:
-                  (item) => NumberFormat.currency(
-                    locale: 'vi_VN',
-                    symbol: '',
-                  ).format(item.giaTri),
-              width: 120,
-              searchValueGetter: (item) => item.giaTri.toString(),
-              filterable: true,
-            ),
-          );
-          break;
-        case 'kyHieu':
-          columns.add(
-            TableBaseConfig.columnTable<ToolsAndSuppliesDto>(
-              title: 'Ký hiệu',
-              getValue: (item) => item.kyHieu,
-              width: 120,
-              searchValueGetter: (item) => item.kyHieu,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolsAndSuppliesDto>(
-              title: 'Thao tác',
-              cellBuilder:
-                  (item) => TableBaseConfig.viewActionBase<ToolsAndSuppliesDto>(
-                    item: item,
-                    onDelete: (item) {
-                      // widget.onDelete?.call(item);
-                      showConfirmDialog(
-                        context,
-                        type: ConfirmType.delete,
-                        title: 'Xóa CCDC - Vật Tư?',
-                        message: 'Bạn có chắc muốn xóa ${item.ten}',
-                        highlight: item.ten,
-                        cancelText: 'Không',
-                        confirmText: 'Xóa',
-                        onConfirm: () {
-                          List<String> listIdAssetDetail =
-                              item.chiTietTaiSanList
-                                  .where(
-                                    (detail) =>
-                                        detail.id != null &&
-                                        detail.id!.isNotEmpty,
-                                  )
-                                  .map((detail) => detail.id!)
-                                  .toList();
-
-                          final jsonIdAssetDetail = jsonEncode(
-                            listIdAssetDetail,
-                          );
-
-                          context.read<ToolsAndSuppliesBloc>().add(
-                            DeleteToolsAndSuppliesEvent(
-                              item.id,
-                              jsonIdAssetDetail,
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
       }
+    } catch (e) {
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
     }
-
-    return columns;
   }
 
   @override
   Widget build(BuildContext context) {
-    final columns = _buildColumns();
+    final data = widget.provider.data ?? <ToolsAndSuppliesDto>[];
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -347,118 +206,147 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            'Quản lý CCDC - Vật tư (${widget.provider.data?.length ?? 0})',
+                            'Quản lý CCDC - Vật tư (${data.length})',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Colors.grey.shade700,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: _showColumnDisplayPopup,
-                            child: Icon(
-                              Icons.settings,
-                              color: ColorValue.link,
-                              size: 18,
-                            ),
-                          ),
                         ],
                       ),
-
-                      Row(
-                        spacing: 16,
-                        children: [
-                          Visibility(
-                            visible: selectedItems.isNotEmpty,
-                            child: Row(
-                              children: [
-                                SGText(
-                                  text:
-                                      'Danh sách CCDC - Vật tư đã chọn: ${selectedItems.length}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                                SizedBox(width: 16),
-                                MaterialTextButton(
-                                  text: 'Xóa đã chọn',
-                                  icon: Icons.delete,
-                                  backgroundColor: ColorValue.error,
-                                  foregroundColor: Colors.white,
-                                  onPressed: () {
-                                    List<String> data =
-                                        selectedItems
-                                            .map((e) => e.id)
-                                            .whereType<String>()
-                                            .toList();
-                                    showConfirmDialog(
-                                      context,
-                                      type: ConfirmType.delete,
-                                      title: 'Xóa CCDC - Vật tư',
-                                      message:
-                                          'Bạn có chắc muốn xóa ${selectedItems.length} CCDC - Vật tư đã chọn',
-                                      highlight:
-                                          selectedItems.length.toString(),
-                                      cancelText: 'Không',
-                                      confirmText: 'Xóa',
-                                      onConfirm: () {
-                                        final roleBloc =
-                                            context
-                                                .read<ToolsAndSuppliesBloc>();
-                                        roleBloc.add(
-                                          DeleteAssetBatchEvent(data),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      // FindByStateAssetHandover(provider: widget.provider),
                     ],
                   ),
                 ),
-                Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final availableWidth = constraints.maxWidth;
+                      return Row(
+                        children: [
+                          riverpod.Consumer(
+                            builder: (context, ref, _) {
+                              return BoxSearch(
+                                width: (availableWidth * 0.30).toDouble(),
+                                onSearch: (value) {
+                                  ref
+                                      .read(
+                                        tableToolsAndSuppliesProvider.notifier,
+                                      )
+                                      .searchTerm = value;
+                                },
+                              );
+                            },
+                          ),
+                          SizedBox(width: 16),
+                          SizedBox(
+                            width: (availableWidth * 0.65).toDouble(),
+                            child: riverpod.Consumer(
+                              builder: (context, ref, _) {
+                                final hasFilters = ref.watch(
+                                  tableToolsAndSuppliesProvider.select(
+                                    (s) => s.filterState.hasActiveFilters,
+                                  ),
+                                );
+                                final tableState = ref.watch(
+                                  tableToolsAndSuppliesProvider,
+                                );
+                                final selectedCount =
+                                    tableState.selectedItems.length;
+                                listSelected = tableState.selectedItems;
+                                final buttons = _buildButtonList(selectedCount);
+                                final processedButtons =
+                                    buttons.map((button) {
+                                      if (button.text == 'Xóa bộ lọc') {
+                                        return ResponsiveButtonData.fromButtonIcon(
+                                          text: button.text,
+                                          iconPath: button.iconPath!,
+                                          backgroundColor:
+                                              button.backgroundColor!,
+                                          iconColor: button.iconColor!,
+                                          textColor: button.textColor!,
+                                          width: button.width,
+                                          onPressed: () {
+                                            ref
+                                                .read(
+                                                  tableToolsAndSuppliesProvider
+                                                      .notifier,
+                                                )
+                                                .clearAllFilters();
+                                          },
+                                        );
+                                      }
+                                      return button;
+                                    }).toList();
+
+                                final filteredButtons =
+                                    hasFilters
+                                        ? processedButtons
+                                        : processedButtons
+                                            .where(
+                                              (button) =>
+                                                  button.text != 'Xóa bộ lọc',
+                                            )
+                                            .toList();
+
+                                return ResponsiveButtonBar(
+                                  buttons: filteredButtons,
+                                  spacing: 12,
+                                  overflowSide: OverflowSide.start,
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  popupPosition: PopupMenuPosition.under,
+                                  popupOffset: const Offset(0, 8),
+                                  popupShape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  popupElevation: 6,
+                                  moreLabel: 'Khác',
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
                 Expanded(
-                  child:
-                      widget.provider.dataPage != null
-                          ? TableBaseView<ToolsAndSuppliesDto>(
-                            searchTerm: '',
-                            columns: columns,
-                            data: widget.provider.dataPage!,
-                            horizontalController: ScrollController(),
-                            getters: getters,
-                            startDate: DateTime.tryParse(
-                              widget.provider.dataPage!.isNotEmpty
-                                  ? widget.provider.dataPage!.first.ngayTao
-                                      .toString()
-                                  : '',
-                            ),
+                  child: riverpod.Consumer(
+                    builder: (context, ref, child) {
+                      ref
+                          .read(tableToolsAndSuppliesProvider.notifier)
+                          .setData(data);
+
+                      return data.isEmpty
+                          ? const Center(
+                            child: Text('Không có dữ liệu để hiển thị'),
+                          )
+                          : RiverpodTable<ToolsAndSuppliesDto>(
+                            tableProvider: tableToolsAndSuppliesProvider,
+                            columns: _columns,
+                            showCheckboxColumn: true,
+                            enableRowSelection: true,
+                            enableRowHover: true,
+                            showAlternatingRowColors: true,
+                            valueGetter: getValueForColumn,
+                            cellsBuilder: (_) => [],
+                            cellBuilderByKey: (item, key) {
+                              final builder = _buildersByKey[key];
+                              if (builder != null) return builder(item);
+                              return null;
+                            },
                             onRowTap: (item) {
                               widget.provider.onChangeDetail(context, item);
                               setState(() {
                                 _showDetailDepartmentTree(item);
                               });
                             },
-                            onSelectionChanged: (items) {
-                              setState(() {
-                                selectedItems = items;
-                              });
-                            },
-                          )
-                          : const Center(
-                            child: Text('Không có dữ liệu để hiển thị'),
-                          ),
+                            showActionsColumn: false,
+                            maxHeight: MediaQuery.of(context).size.height * 0.6,
+                          );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -481,5 +369,47 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         ],
       ),
     );
+  }
+
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+    return [
+      // Configure columns button
+      ResponsiveButtonData.fromButtonIcon(
+        text: 'table.config_column'.tr,
+        iconPath: AppIconSvg.iconSetting,
+        backgroundColor: AppColor.white,
+        iconColor: AppColor.textDark,
+        textColor: AppColor.textDark,
+        width: 130,
+        onPressed: () {
+          _openColumnConfigDialog();
+        },
+      ),
+      if (itemCount > 0)
+        ResponsiveButtonData.fromButtonIcon(
+          text: '$itemCount ${'table.delete_selected'.tr}',
+          iconPath: AppIconSvg.iconSetting,
+          backgroundColor: Colors.redAccent,
+          iconColor: AppColor.textWhite,
+          textColor: AppColor.textWhite,
+          width: 130,
+          onPressed: () {
+            final ids = listSelected.map((e) => e.id!).toList();
+            showConfirmDialog(
+              context,
+              type: ConfirmType.delete,
+              title: 'Xóa loại CCDC',
+              message: 'Bạn có chắc muốn xóa ${listSelected.length} loại CCDC',
+              highlight: listSelected.length.toString(),
+              cancelText: 'Không',
+              confirmText: 'Xóa',
+              onConfirm: () {
+                final bloc = context.read<ToolsAndSuppliesBloc>();
+                bloc.add(DeleteAssetBatchEvent(ids));
+              },
+            );
+          },
+        ),
+    ];
   }
 }

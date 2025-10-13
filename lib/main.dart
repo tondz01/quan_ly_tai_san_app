@@ -14,7 +14,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 
 class Config {
-  static const String environment = "dev";
+  static const String environment = "prd";
 
   static String get baseUrl {
     switch (environment) {

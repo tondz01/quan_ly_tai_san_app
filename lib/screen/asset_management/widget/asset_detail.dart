@@ -68,7 +68,6 @@ class _AssetDetailState extends State<AssetDetail> {
   TextEditingController ctrlTaiKhoanTaiSan = TextEditingController();
   TextEditingController ctrlTaiKhoanKhauHao = TextEditingController();
   TextEditingController ctrlTaiKhoanChiPhi = TextEditingController();
-  TextEditingController ctrlTenNhom = TextEditingController();
   TextEditingController ctrlTenLoaiTaiSan = TextEditingController();
   TextEditingController ctrlNgayVaoSo = TextEditingController();
   TextEditingController ctrlNgaySuDung = TextEditingController();
@@ -201,7 +200,6 @@ class _AssetDetailState extends State<AssetDetail> {
                       ctrlTaiKhoanTaiSan: ctrlTaiKhoanTaiSan,
                       ctrlTaiKhoanKhauHao: ctrlTaiKhoanKhauHao,
                       ctrlTaiKhoanChiPhi: ctrlTaiKhoanChiPhi,
-                      ctrlTenNhom: ctrlTenNhom,
                       ctrlTenLoaiTaiSan: ctrlTenLoaiTaiSan,
                       ctrlNgayVaoSo: ctrlNgayVaoSo,
                       ctrlNgaySuDung: ctrlNgaySuDung,
@@ -246,6 +244,7 @@ class _AssetDetailState extends State<AssetDetail> {
                           typeAsset = value;
                         });
                       },
+                      itemsAssetGroup: widget.provider.itemsAssetGroup ?? [],
                     ),
                   ),
                   SizedBox(width: 30),
@@ -273,8 +272,7 @@ class _AssetDetailState extends State<AssetDetail> {
                       listLyDoTang: listLyDoTang,
                       itemsLyDoTang: itemsLyDoTang,
                       lyDoTang: lyDoTang,
-                      listUnit: listUnit,
-                      itemsUnit: itemsUnit,
+                      itemsUnit: widget.provider.itemsUnit,
                       itemsPhongBan: widget.provider.itemsPhongBan!,
                       itemsDuAn:
                           widget
@@ -292,14 +290,8 @@ class _AssetDetailState extends State<AssetDetail> {
                       unit: unit,
                       validationErrors: validationErrors,
                       onTotalCapitalChanged: (value) {
-                        log(
-                          'message test [AssetDetail]: onTotalCapitalChanged called with value: $value',
-                        );
                         setState(() {
                           ctrlNguyenGia.text = value.toString();
-                          log(
-                            'message test [AssetDetail]: ctrlNguyenGia.text set to: ${ctrlNguyenGia.text}',
-                          );
                         });
                       },
                       onNuocSanXuatChanged: (value) {
@@ -430,7 +422,6 @@ class _AssetDetailState extends State<AssetDetail> {
     // If data is null, set all controllers to empty string
     _clearValidationErrors();
     listAssetCategory = AccountHelper.instance.getAssetCategory() ?? [];
-    listUnit = widget.provider.dataUnit ?? [];
     listLyDoTang = AccountHelper.instance.getReasonIncrease() ?? [];
     itemsLyDoTang.clear();
     itemsLyDoTang.addAll([
@@ -441,20 +432,6 @@ class _AssetDetailState extends State<AssetDetail> {
         ),
       ),
     ]);
-
-    log('message test [AssetDetail]: listUnit: ${AccountHelper.instance.getAllUnit()}');
-    log('message test [AssetDetail]: listUnit [2]: ${jsonEncode(listUnit)}');
-    
-    itemsUnit.clear();
-    itemsUnit.addAll([
-      ...listUnit.map(
-        (e) => DropdownMenuItem<UnitDto>(
-          value: e,
-          child: Text(e.tenDonVi ?? ''),
-        ),
-      ),
-    ]);
-
     if (listAssetCategory.isNotEmpty) {
       itemsAssetCategory.clear();
       itemsAssetCategory.addAll([
@@ -481,7 +458,6 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlTaiKhoanTaiSan.text = '';
       ctrlTaiKhoanKhauHao.text = '';
       ctrlTaiKhoanChiPhi.text = '';
-      ctrlTenNhom.text = '';
       ctrlNgayVaoSo.text = '';
       ctrlNgaySuDung.text = '';
       ctrlDuAn.text = '';
@@ -538,7 +514,6 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlTaiKhoanTaiSan.text = data!.taiKhoanTaiSan?.toString() ?? '';
       ctrlTaiKhoanKhauHao.text = data!.taiKhoanKhauHao?.toString() ?? '';
       ctrlTaiKhoanChiPhi.text = data!.taiKhoanChiPhi?.toString() ?? '';
-      ctrlTenNhom.text = data!.idNhomTaiSan ?? '';
       ctrlNgayVaoSo.text = data!.ngayVaoSo?.toString() ?? '';
       ctrlNgaySuDung.text = data!.ngaySuDung?.toString() ?? '';
       ctrlDuAn.text = data!.idDuAn ?? '';
@@ -549,8 +524,7 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlNuocSanXuat.text = data!.nuocSanXuat ?? '';
       ctrlNamSanXuat.text = data!.namSanXuat?.toString() ?? '';
       ctrlSoLuong.text = data!.soLuong?.toString() ?? '';
-      unit = AccountHelper.instance.getUnitById(data!.donViTinh ?? '');
-      ctrlDonViTinh.text = unit?.tenDonVi ?? '';
+
       ctrlGhiChu.text = data!.ghiChu ?? '';
       ctrlDonViBanDau.text = data!.idDonViBanDau ?? '';
       ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
@@ -561,18 +535,11 @@ class _AssetDetailState extends State<AssetDetail> {
         data!.idNhomTaiSan ?? '',
       );
       ctrlIdNhomTaiSan.text = assetGroup?.tenNhom ?? '';
-      log('message test [AssetDetail]: data!.lyDoTang: ${data!.lyDoTang}');
-      log(
-        'message test [AssetDetail]: AccountHelper.instance.getReasonIncreaseById(data!.lyDoTang ?? '
-        '): ${AccountHelper.instance.getReasonIncreaseById(data!.lyDoTang ?? '')}',
-      );
       lyDoTang = listLyDoTang.where((e) => e.id == data!.lyDoTang).firstOrNull;
       ctrlLyDoTang.text = lyDoTang?.ten ?? '';
 
-
-      unit = listUnit.where((e) => e.id == data!.donViTinh).firstOrNull;
+      unit = AccountHelper.instance.getUnitById(data!.donViTinh ?? '');
       ctrlDonViTinh.text = unit?.tenDonVi ?? '';
-
       ctrlVonNS.text =
           NumberFormat.currency(
             locale: 'vi_VN',
@@ -786,73 +753,4 @@ class _AssetDetailState extends State<AssetDetail> {
       bloc.add(UpdateAssetEvent(request, data!.id!));
     }
   }
-
-  // Future<void> _syncCapitalSources(
-  //   String assetId,
-  //   List<NguonKinhPhi> selected,
-  // ) async {
-  //   try {
-  //     final repo = AssetManagementRepository();
-
-  //     // Old list from current asset data
-  //     final List<CapitalSourceByAssetDto> oldList =
-  //         data?.nguonKinhPhiList ?? [];
-  //     final Map<String, CapitalSourceByAssetDto> oldByCapitalId = {
-  //       for (final x in oldList) (x.idNguonKinhPhi ?? ''): x,
-  //     };
-
-  //     final Set<String> oldIds =
-  //         oldByCapitalId.keys.where((e) => e.isNotEmpty).toSet();
-  //     final Set<String> newIds =
-  //         selected.map((e) => e.id ?? '').where((e) => e.isNotEmpty).toSet();
-
-  //     // Build new list dto mapped from selected
-  //     final List<CapitalSourceByAssetDto> newList =
-  //         selected.map((e) {
-  //           return CapitalSourceByAssetDto(
-  //             id: oldByCapitalId[e.id ?? '']?.id ?? UUIDGenerator.generateWithFormat('NKP-******'),
-  //             idTaiSan: assetId,
-  //             idNguonKinhPhi: e.id,
-  //             tenNguonKinhPhi: e.tenNguonKinhPhi,
-  //           );
-  //         }).toList();
-
-  //     // CREATE new
-  //     final List<CapitalSourceByAssetDto> toCreate =
-  //         newList
-  //             .where((n) => !oldIds.contains(n.idNguonKinhPhi ?? ''))
-  //             .toList();
-  //     if (toCreate.isNotEmpty) {
-  //       await repo.createListCapitalSourceByAsset(toCreate);
-  //     }
-
-  //     // UPDATE changed
-  //     for (final n in newList) {
-  //       final key = n.idNguonKinhPhi ?? '';
-  //       if (oldIds.contains(key)) {
-  //         final old = oldByCapitalId[key]!;
-  //         final bool changed =
-  //             (old.tenNguonKinhPhi ?? '') != (n.tenNguonKinhPhi ?? '');
-  //         if (changed && (old.id ?? '').isNotEmpty) {
-  //           await repo.updateListCapitalSourceByAsset(old.id!, n);
-  //         }
-  //       }
-  //     }
-
-  //     // DELETE removed
-  //     final List<String> removedIds = oldIds.difference(newIds).toList();
-  //     if (removedIds.isNotEmpty) {
-  //       final List<String> toDeleteRecordIds =
-  //           removedIds
-  //               .map((idCap) => oldByCapitalId[idCap]?.id)
-  //               .whereType<String>()
-  //               .toList();
-  //       if (toDeleteRecordIds.isNotEmpty) {
-  //         await repo.deleteListCapitalSourceByAsset(toDeleteRecordIds);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     log('Sync capital sources error: $e');
-  //   }
-  // }
 }
