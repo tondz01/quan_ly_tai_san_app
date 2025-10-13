@@ -172,7 +172,7 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
               builder: (context, constraints) {
                 final availableWidth = constraints.maxWidth;
                 return Row(
-                  children: [
+                    children: [
                     riverpod.Consumer(
                       builder: (context, ref, _) {
                         return BoxSearch(
@@ -284,15 +284,15 @@ class _AssetCategoryListState extends State<AssetCategoryList> {
                     widget.onChangeDetail?.call(item);
                   },
                   onDelete: (item) {
-                    showConfirmDialog(
-                      context,
-                      type: ConfirmType.delete,
-                      title: 'Xóa mô hình tài sản',
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa mô hình tài sản',
                       message: 'Bạn có chắc muốn xóa ${item.tenMoHinh}',
                       highlight: item.tenMoHinh ?? '',
-                      cancelText: 'Không',
-                      confirmText: 'Xóa',
-                      onConfirm: () {
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
                         widget.onDelete?.call(item);
                       },
                     );

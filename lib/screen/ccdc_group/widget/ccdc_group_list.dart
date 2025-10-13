@@ -1,14 +1,11 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/src/extensions/export.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/bloc/ccdc_group_event.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/component/table_ccdc_group_config.dart';
@@ -48,15 +45,6 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
   late final List<ColumnDefinition> _definitions;
   late final Map<String, TableCellBuilder> _buildersByKey;
 
-  // Column display options
-  late List<ColumnDisplayOption> columnOptions;
-  List<String> visibleColumnIds = [
-    'code_ccdc_group',
-    'name_ccdc_group',
-    // 'is_active',
-    'actions',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -95,9 +83,6 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
 
   Future<void> _openColumnConfigDialog() async {
     try {
-      log('allColumns: $_allColumns');
-      log('columns: $_columns');
-      log('hiddenKeys: $_hiddenKeys');
       final apply = await showColumnConfigAndApply(
         context: context,
         allColumns: _allColumns,
@@ -179,7 +164,6 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                         return BoxSearch(
                           width: (availableWidth * 0.35).toDouble(),
                           onSearch: (value) {
-                            log('value: $value');
                             ref
                                 .read(tableCcdcGroupProvider.notifier)
                                 .searchTerm = value;
@@ -198,7 +182,7 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
                           );
                           final tableState = ref.watch(tableCcdcGroupProvider);
                           final selectedCount = tableState.selectedItems.length;
-                          log('selectedCount: $selectedCount');
+                          listSelected = tableState.selectedItems;
                           final buttons = _buildButtonList(selectedCount);
                           final processedButtons =
                               buttons.map((button) {
@@ -370,7 +354,9 @@ class _CcdcGroupListState extends State<CcdcGroupList> {
           width: 130,
           onPressed: () {
             if (itemCount > 0) {
-              _openColumnConfigDialog();
+              final ids = listSelected.map((e) => e.id!).toList();
+              final bloc = context.read<CcdcGroupBloc>();
+              bloc.add(DeleteCcdcGroupBatchEvent(ids));
             }
           },
         ),

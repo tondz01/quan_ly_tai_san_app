@@ -6,17 +6,13 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/widget/tool_and_material_transfer_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/services/websocket_service.dart';
 
 class ToolAndMaterialTransferView extends StatefulWidget {
   const ToolAndMaterialTransferView({super.key});
@@ -205,19 +201,6 @@ class _ToolAndMaterialTransferViewState
                             },
                           ),
                         ),
-                      ),
-                    ),
-                    Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
                       ),
                     ),
                   ],

@@ -96,6 +96,8 @@ class MyLocale implements Translations {
       "table.config_column": "Cấu hình cột",
       "table.clear_filters": "Xóa bộ lọc",
       "table.delete_selected": "Xóa chọn",
+      "table.signing": "Ký biên bản",
+      "table.send": "Chia sẻ với người ký",
     },
   };
   Map<String, Map<String, String>> en = {
@@ -151,6 +153,8 @@ class MyLocale implements Translations {
       "table.config_column": "Column Config",
       "table.clear_filters": "Clear Filters",
       "table.delete_selected": "Delete Selected",
+      "table.signing": "Signing",
+      "table.send": "Send to signer",
     },
   };
 }

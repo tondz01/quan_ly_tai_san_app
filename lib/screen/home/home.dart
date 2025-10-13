@@ -101,7 +101,7 @@ class _HomeState extends State<Home> {
         buttonEnterColor: Colors.grey.shade100,
         heightButton: 28.0,
         borderRadiusButton: 4.0,
-        paddingButton: const EdgeInsets.only(bottom: 4, left: 18, right: 18),
+        paddingButton: const EdgeInsets.only(bottom: 4, left: 10, right: 10),
         popupOffsetY: 3.0,
         popupPadding: EdgeInsets.symmetric(
           vertical:

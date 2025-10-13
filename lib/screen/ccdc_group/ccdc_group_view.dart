@@ -15,7 +15,6 @@ import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_detail.d
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/widget/ccdc_group_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class CcdcGroupView extends StatefulWidget {
   const CcdcGroupView({super.key});

@@ -522,8 +522,6 @@ class AssetHandoverProvider with ChangeNotifier {
               ),
             )
             .toList();
-    log('dataDetailAssetMobilization22: ${_dataDetailAssetMobilization}');
-
     notifyListeners();
   }
 
