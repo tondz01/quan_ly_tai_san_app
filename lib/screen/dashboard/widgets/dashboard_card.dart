@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 
 class DashboardCard extends StatelessWidget {
   final String title;
@@ -27,39 +26,35 @@ class DashboardCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: ColorValue.neutral200.withOpacity(0.3),
+                color: Colors.green.withOpacity(0.1),
                 spreadRadius: 0,
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Icon(
-                      icon,
-                      color: color,
-                      size: 24,
-                    ),
+                    child: Icon(icon, color: Colors.green.shade600, size: 16),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,18 +62,18 @@ class DashboardCard extends StatelessWidget {
                         Text(
                           title,
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: ColorValue.neutral900,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.green.shade700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 1),
                         Text(
                           subtitle,
                           style: TextStyle(
-                            fontSize: 14,
-                            color: ColorValue.neutral600,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                            color: Colors.green.shade600,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
@@ -86,14 +81,11 @@ class DashboardCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (child != null) ...[
-                const SizedBox(height: 20),
-                child!,
-              ],
+              if (child != null) ...[const SizedBox(height: 8), child!],
             ],
           ),
         ),
       ),
     );
   }
-} 
+}

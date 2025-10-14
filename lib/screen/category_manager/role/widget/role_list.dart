@@ -2,21 +2,25 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
-import 'package:quan_ly_tai_san_app/core/constants/index.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/component/table_role_config.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/provider/role_provide.dart';
-import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/providers/table_role_provider.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:table_base/core/themes/app_color.dart';
+import 'package:table_base/core/themes/app_icon_svg.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 
 class RoleList extends StatefulWidget {
   final RoleProvider provider;
@@ -29,104 +33,118 @@ class RoleList extends StatefulWidget {
 class _RoleListState extends State<RoleList> {
   final ScrollController horizontalController = ScrollController();
   String searchTerm = "";
+
   List<ChucVu> listSelected = [];
+  List<String> _hiddenKeys = [];
+  bool showCheckboxColumn = true;
+  final bool _showActionsColumn = true;
+
+  late final List<TableColumnData> _allColumns;
+  List<TableColumnData> _columns = [];
+  late final List<ColumnDefinition> _definitions;
+  late final Map<String, TableCellBuilder> _buildersByKey;
 
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<String> visibleColumnIds = [
-    'id',
-    'name',
-    'quanLyNhanVien',
-    'quanLyPhongBan',
-    'quanLyDuAn',
-    'quanLyNguonVon',
-    'quanLyMoHinhTaiSan',
-    'quanLyTaiSan',
-    'quanLyCCDCVatTu',
-    'dieuDongTaiSan',
-    'dieuDongCCDCVatTu',
-    'banGiaoTaiSan',
-    'banGiaoCCDCVatTu',
-    'baoCao',
+    'role_code',
+    'role_name',
+    'manage_staff',
+    'manage_department',
+    'manage_project',
+    'manage_capital',
+    'manage_asset_model',
+    'manage_asset',
+    'manage_supplies',
+    'transfer_asset',
+    'transfer_supplies',
+    'handover_asset',
+    'handover_supplies',
+    'report',
     'actions',
   ];
+
   @override
   void initState() {
     super.initState();
+    _definitions = TableRoleConfig.getColumns();
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
     _initializeColumnOptions();
   }
 
   void _initializeColumnOptions() {
     columnOptions = [
       ColumnDisplayOption(
-        id: 'id',
+        id: 'role_code',
         label: 'Mã chức vụ',
-        isChecked: visibleColumnIds.contains('id'),
+        isChecked: visibleColumnIds.contains('role_code'),
       ),
       ColumnDisplayOption(
-        id: 'name',
+        id: 'role_name',
         label: 'Tên chức vụ',
-        isChecked: visibleColumnIds.contains('name'),
+        isChecked: visibleColumnIds.contains('role_name'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyNhanVien',
+        id: 'manage_staff',
         label: 'Quản lý nhân viên',
-        isChecked: visibleColumnIds.contains('quanLyNhanVien'),
+        isChecked: visibleColumnIds.contains('manage_staff'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyPhongBan',
+        id: 'manage_department',
         label: 'Quản lý phòng ban',
-        isChecked: visibleColumnIds.contains('quanLyPhongBan'),
+        isChecked: visibleColumnIds.contains('manage_department'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyDuAn',
+        id: 'manage_project',
         label: 'Quản lý dự án',
-        isChecked: visibleColumnIds.contains('quanLyDuAn'),
+        isChecked: visibleColumnIds.contains('manage_project'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyNguonVon',
+        id: 'manage_capital',
         label: 'Quản lý nguồn vốn',
-        isChecked: visibleColumnIds.contains('quanLyNguonVon'),
+        isChecked: visibleColumnIds.contains('manage_capital'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyMoHinhTaiSan',
+        id: 'manage_asset_model',
         label: 'Quản lý mô hình tài sản',
-        isChecked: visibleColumnIds.contains('quanLyMoHinhTaiSan'),
+        isChecked: visibleColumnIds.contains('manage_asset_model'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyTaiSan',
+        id: 'manage_asset',
         label: 'Quản lý tài sản',
-        isChecked: visibleColumnIds.contains('quanLyTaiSan'),
+        isChecked: visibleColumnIds.contains('manage_asset'),
       ),
       ColumnDisplayOption(
-        id: 'quanLyCCDCVatTu',
+        id: 'manage_supplies',
         label: 'Quản lý CCDC - Vật tư',
-        isChecked: visibleColumnIds.contains('quanLyCCDCVatTu'),
+        isChecked: visibleColumnIds.contains('manage_supplies'),
       ),
       ColumnDisplayOption(
-        id: 'dieuDongTaiSan',
+        id: 'transfer_asset',
         label: 'Điều động tài sản',
-        isChecked: visibleColumnIds.contains('dieuDongTaiSan'),
+        isChecked: visibleColumnIds.contains('transfer_asset'),
       ),
       ColumnDisplayOption(
-        id: 'dieuDongCCDCVatTu',
+        id: 'transfer_supplies',
         label: 'Điều động CCDC - Vật tư',
-        isChecked: visibleColumnIds.contains('dieuDongCCDCVatTu'),
+        isChecked: visibleColumnIds.contains('transfer_supplies'),
       ),
       ColumnDisplayOption(
-        id: 'banGiaoTaiSan',
+        id: 'handover_asset',
         label: 'Bán giao tài sản',
-        isChecked: visibleColumnIds.contains('banGiaoTaiSan'),
+        isChecked: visibleColumnIds.contains('handover_asset'),
       ),
       ColumnDisplayOption(
-        id: 'banGiaoCCDCVatTu',
+        id: 'handover_supplies',
         label: 'Bán giao CCDC - Vật tư',
-        isChecked: visibleColumnIds.contains('banGiaoCCDCVatTu'),
+        isChecked: visibleColumnIds.contains('handover_supplies'),
       ),
       ColumnDisplayOption(
-        id: 'baoCao',
+        id: 'report',
         label: 'Báo cáo',
-        isChecked: visibleColumnIds.contains('baoCao'),
+        isChecked: visibleColumnIds.contains('report'),
       ),
       ColumnDisplayOption(
         id: 'actions',
@@ -136,234 +154,66 @@ class _RoleListState extends State<RoleList> {
     ];
   }
 
-  List<SgTableColumn<ChucVu>> _buildColumns() {
-    final List<SgTableColumn<ChucVu>> columns = [];
+  dynamic getValueForColumn(ChucVu item, int columnIndex) {
+    final int offset = showCheckboxColumn ? 1 : 0;
+    final int adjustedIndex = columnIndex - offset;
 
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'id':
-          columns.add(
-            TableBaseConfig.columnTable<ChucVu>(
-              title: 'Id chức vụ',
-              width: 150,
-              getValue: (item) => item.id,
-            ),
-          );
-          break;
-        case 'name':
-          columns.add(
-            TableBaseConfig.columnTable<ChucVu>(
-              title: 'Tên chức vụ',
-              width: 100,
-              getValue: (item) => item.tenChucVu,
-            ),
-          );
-          break;
-        case 'quanLyNhanVien':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý nhân viên',
-              cellBuilder:
-                  (item) =>
-                      _buildShowRole(item.quanLyNhanVien, 'quản lý nhân viên'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyPhongBan':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý phòng ban',
-              cellBuilder:
-                  (item) =>
-                      _buildShowRole(item.quanLyPhongBan, 'quản lý phòng ban'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyDuAn':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý dự án',
-              cellBuilder:
-                  (item) => _buildShowRole(item.quanLyDuAn, 'quản lý dự án'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyNguonVon':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý nguồn vốn',
-              cellBuilder:
-                  (item) =>
-                      _buildShowRole(item.quanLyNguonVon, 'quản lý nguồn vốn'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyMoHinhTaiSan':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý mô hình tài sản',
-              cellBuilder:
-                  (item) => _buildShowRole(
-                    item.quanLyMoHinhTaiSan,
-                    'quản lý mô hình tài sản',
-                  ),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyNhomTaiSan':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý nhóm tài sản',
-              cellBuilder:
-                  (item) => _buildShowRole(
-                    item.quanLyNhomTaiSan,
-                    'quản lý nhóm tài sản',
-                  ),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyTaiSan':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý tài sản',
-              cellBuilder:
-                  (item) =>
-                      _buildShowRole(item.quanLyTaiSan, 'quản lý tài sản'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'quanLyCCDCVatTu':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Quản lý CCDC vật tư',
-              cellBuilder:
-                  (item) => _buildShowRole(
-                    item.quanLyCCDCVatTu,
-                    'quản lý CCDC vật tư',
-                  ),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'dieuDongTaiSan':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Điều động tài sản',
-              cellBuilder:
-                  (item) =>
-                      _buildShowRole(item.dieuDongTaiSan, 'điều động tài sản'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'dieuDongCCDCVatTu':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Điều động CCDC vật tư',
-              cellBuilder:
-                  (item) => _buildShowRole(
-                    item.dieuDongCCDCVatTu,
-                    'điều động CCDC vật tư',
-                  ),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'banGiaoTaiSan':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Bán giao tài sản',
-              cellBuilder:
-                  (item) =>
-                      _buildShowRole(item.banGiaoTaiSan, 'ban giao tài sản'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'banGiaoCCDCVatTu':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Bán giao CCDC vật tư',
-              cellBuilder:
-                  (item) => _buildShowRole(
-                    item.banGiaoCCDCVatTu,
-                    'ban giao CCDC vật tư',
-                  ),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'baoCao':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Báo cáo',
-              cellBuilder: (item) => _buildShowRole(item.baoCao, 'bao cáo'),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ChucVu>(
-              title: 'Thao tác',
-              cellBuilder: (item) => viewAction(item),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-      }
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
     }
-    return columns;
+
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+      case 'role_code':
+        return item.id;
+      case 'role_name':
+        return item.tenChucVu;
+      case 'manage_staff':
+        return item.quanLyNhanVien;
+      case 'manage_department':
+        return item.quanLyPhongBan;
+      case 'manage_project':
+        return item.quanLyDuAn;
+      case 'manage_capital':
+        return item.quanLyNguonVon;
+      case 'manage_asset_model':
+        return item.quanLyMoHinhTaiSan;
+      case 'manage_asset':
+        return item.quanLyTaiSan;
+      case 'manage_supplies':
+        return item.quanLyCCDCVatTu;
+      case 'transfer_asset':
+        return item.dieuDongTaiSan;
+      case 'transfer_supplies':
+        return item.dieuDongCCDCVatTu;
+      case 'handover_asset':
+        return item.banGiaoTaiSan;
+      case 'handover_supplies':
+        return item.banGiaoCCDCVatTu;
+      case 'report':
+        return item.baoCao;
+      default:
+        return null;
+    }
   }
 
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
+  Future<void> _openColumnConfigDialog() async {
+    try {
+      final apply = await showColumnConfigAndApply(
+        context: context,
+        allColumns: _allColumns,
+        currentColumns: _columns,
+        initialHiddenKeys: _hiddenKeys,
+        title: 'Cấu hình cột',
+      );
+      if (apply != null) {
         setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
+          _hiddenKeys = apply.hiddenKeys;
+          _columns = apply.updatedColumns;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
+      }
+    } catch (e) {
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
     }
   }
 
@@ -398,7 +248,6 @@ class _RoleListState extends State<RoleList> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  spacing: 8,
                   children: [
                     Icon(
                       Icons.table_chart,
@@ -414,84 +263,138 @@ class _RoleListState extends State<RoleList> {
                         color: Colors.grey.shade700,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: GestureDetector(
-                        onTap: _showColumnDisplayPopup,
-                        child: Icon(
-                          Icons.settings,
-                          color: ColorValue.link,
-                          size: 18,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-                Visibility(
-                  visible: listSelected.isNotEmpty,
-                  child: Row(
-                    children: [
-                      SGText(
-                        text:
-                            'Danh sách chức vụ đã chọn: ${listSelected.length}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      MaterialTextButton(
-                        text: 'Xóa đã chọn',
-                        icon: Icons.delete,
-                        backgroundColor: ColorValue.error,
-                        foregroundColor: Colors.white,
-                        onPressed: () {
-                          setState(() {
-                            List<String> data =
-                                listSelected.map((e) => e.id).toList();
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa chức vụ',
-                              message:
-                                  'Bạn có chắc muốn xóa ${listSelected.length} chức vụ',
-                              highlight: listSelected.length.toString(),
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                final roleBloc = context.read<RoleBloc>();
-                                roleBloc.add(DeleteRoleBatchEvent(data));
-                              },
-                            );
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                // FindByStateAssetHandover(provider: widget.provider),
               ],
             ),
           ),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: SGAppColors.colorBorderGray.withValues(alpha: 0.3),
-          ),
-          Expanded(
-            child: TableBaseView<ChucVu>(
-              searchTerm: '',
-              columns: _buildColumns(),
-              data: widget.provider.dataPage,
-              horizontalController: ScrollController(),
-              onRowTap: (item) {
-                widget.provider.onChangeDetail(context, item);
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final availableWidth = constraints.maxWidth;
+                return Row(
+                  children: [
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        return BoxSearch(
+                          width: (availableWidth * 0.35).toDouble(),
+                          onSearch: (value) {
+                            ref.read(tableRoleProvider.notifier).searchTerm =
+                                value;
+                          },
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      width: (availableWidth * 0.65).toDouble(),
+                      child: riverpod.Consumer(
+                        builder: (context, ref, _) {
+                          final hasFilters = ref.watch(
+                            tableRoleProvider.select(
+                              (s) => s.filterState.hasActiveFilters,
+                            ),
+                          );
+                          final tableState = ref.watch(tableRoleProvider);
+                          final selectedCount = tableState.selectedItems.length;
+                          listSelected = tableState.selectedItems;
+                          final buttons = _buildButtonList(selectedCount);
+                          final processedButtons =
+                              buttons.map((button) {
+                                if (button.text == 'Xóa bộ lọc') {
+                                  return ResponsiveButtonData.fromButtonIcon(
+                                    text: button.text,
+                                    iconPath: button.iconPath!,
+                                    backgroundColor: button.backgroundColor!,
+                                    iconColor: button.iconColor!,
+                                    textColor: button.textColor!,
+                                    width: button.width,
+                                    onPressed: () {
+                                      ref
+                                          .read(tableRoleProvider.notifier)
+                                          .clearAllFilters();
+                                    },
+                                  );
+                                }
+                                return button;
+                              }).toList();
+
+                          final filteredButtons =
+                              hasFilters
+                                  ? processedButtons
+                                  : processedButtons
+                                      .where(
+                                        (button) => button.text != 'Xóa bộ lọc',
+                                      )
+                                      .toList();
+
+                          return ResponsiveButtonBar(
+                            buttons: filteredButtons,
+                            spacing: 12,
+                            overflowSide: OverflowSide.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            popupPosition: PopupMenuPosition.under,
+                            popupOffset: const Offset(0, 8),
+                            popupShape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            popupElevation: 6,
+                            moreLabel: 'Khác',
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
               },
-              onSelectionChanged: (data) {
-                setState(() {
-                  listSelected = data;
-                });
+            ),
+          ),
+          // bộ lọc
+          ClipRRect(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(8.0),
+              bottomRight: Radius.circular(8.0),
+            ),
+            child: riverpod.Consumer(
+              builder: (context, ref, child) {
+                final data = widget.provider.dataPage;
+                ref.read(tableRoleProvider.notifier).setData(data);
+
+                return RiverpodTable<ChucVu>(
+                  tableProvider: tableRoleProvider,
+                  columns: _columns,
+                  showCheckboxColumn: showCheckboxColumn,
+                  enableRowSelection: true,
+                  enableRowHover: true,
+                  showAlternatingRowColors: true,
+                  valueGetter: getValueForColumn,
+                  cellsBuilder: (_) => [],
+                  cellBuilderByKey: (item, key) {
+                    final builder = _buildersByKey[key];
+                    if (builder != null) return builder(item);
+                    return null;
+                  },
+                  onRowTap: (item) {
+                    widget.provider.onChangeDetail(context, item);
+                  },
+                  onDelete: (item) {
+                    showConfirmDialog(
+                      context,
+                      type: ConfirmType.delete,
+                      title: 'Xóa chức vụ',
+                      message: 'Bạn có chắc muốn xóa ${item.tenChucVu}',
+                      highlight: item.tenChucVu,
+                      cancelText: 'Không',
+                      confirmText: 'Xóa',
+                      onConfirm: () {
+                        context.read<RoleBloc>().add(DeleteRoleEvent(item.id));
+                      },
+                    );
+                  },
+                  showActionsColumn: _showActionsColumn,
+                  actionsColumnWidth: 120,
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                );
               },
             ),
           ),
@@ -500,12 +403,46 @@ class _RoleListState extends State<RoleList> {
     );
   }
 
-  Widget _buildShowRole(bool isTrue, String text) {
-    return SgCheckbox(
-      value: isTrue,
-      isDisabled: true,
-      // onChanged: (value) {},
-    );
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+    return [
+      // Configure columns button
+      ResponsiveButtonData.fromButtonIcon(
+        text: 'Cấu hình cột',
+        iconPath: AppIconSvg.iconSetting,
+        backgroundColor: AppColor.white,
+        iconColor: AppColor.textDark,
+        textColor: AppColor.textDark,
+        width: 130,
+        onPressed: () {
+          _openColumnConfigDialog();
+        },
+      ),
+      if (itemCount > 0)
+        ResponsiveButtonData.fromButtonIcon(
+          text: '$itemCount Xóa đã chọn',
+          iconPath: AppIconSvg.iconSetting,
+          backgroundColor: Colors.redAccent,
+          iconColor: AppColor.textWhite,
+          textColor: AppColor.textWhite,
+          width: 130,
+          onPressed: () {
+            final ids = listSelected.map((e) => e.id).toList();
+            showConfirmDialog(
+              context,
+              type: ConfirmType.delete,
+              title: 'Xóa chức vụ',
+              message: 'Bạn có chắc muốn xóa ${listSelected.length} chức vụ',
+              highlight: listSelected.length.toString(),
+              cancelText: 'Không',
+              confirmText: 'Xóa',
+              onConfirm: () {
+                final roleBloc = context.read<RoleBloc>();
+                roleBloc.add(DeleteRoleBatchEvent(ids));
+              },
+            );
+          },
+        ),
+    ];
   }
 
   Widget viewAction(ChucVu item) {

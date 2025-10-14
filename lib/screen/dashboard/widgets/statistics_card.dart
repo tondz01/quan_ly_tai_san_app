@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/theme/app_text_style.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 
 class StatisticsCard extends StatelessWidget {
   final String title;
@@ -19,23 +16,38 @@ class StatisticsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: backgroundColor ?? ColorValue.backgroundBG4,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            spreadRadius: 0,
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 8,
         children: [
-          SGText(text: title, style: AppTextStyle.textStyleRegular14),
-          Row(
-            spacing: 8,
-            children: [
-              SGText(text: value, style: AppTextStyle.textStyleSemiBold24.copyWith(height: 1.4)),
-              Expanded(child: SizedBox.shrink()),
-              // SGText(text: trend!, style: AppTextStyle.textStyleRegular12),
-              // Icon((trendUp ?? true) ? Icons.trending_up : Icons.trending_down, size: 12, color: Colors.black),
-            ],
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.green.shade600,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.green.shade700,
+              height: 1.1,
+            ),
           ),
         ],
       ),

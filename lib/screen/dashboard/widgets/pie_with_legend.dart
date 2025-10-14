@@ -17,15 +17,28 @@ class PieDonutChartWithLegend extends StatelessWidget {
     this.categoryKey = 'genre',
     this.valueKey = 'sold',
     this.colors,
-    this.chartWidth = 420,
-    this.chartHeight = 420,
+    this.chartWidth = 200,
+    this.chartHeight = 200,
     this.labelTextStyle,
     this.showLegend = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final List<Color> resolvedColors = colors ?? Defaults.colors10;
+    final List<Color> resolvedColors =
+        colors ??
+        [
+          Colors.green.shade300,
+          Colors.green.shade400,
+          Colors.green.shade500,
+          Colors.green.shade600,
+          Colors.green.shade700,
+          Colors.green.shade300,
+          Colors.green.shade400,
+          Colors.green.shade500,
+          Colors.green.shade600,
+          Colors.green.shade700,
+        ];
     final List<String> categories =
         data.map((e) => e[categoryKey] as String).toList();
 
@@ -80,7 +93,7 @@ class PieDonutChartWithLegend extends StatelessWidget {
             axes: [],
           ),
         ),
-        if (showLegend) const SizedBox(width: 24),
+        if (showLegend) const SizedBox(width: 16),
         if (showLegend)
           Expanded(
             child: SingleChildScrollView(
@@ -89,37 +102,37 @@ class PieDonutChartWithLegend extends StatelessWidget {
                 children: [
                   for (int i = 0; i < categories.length; i++)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.only(bottom: 6),
                       child: Row(
                         children: [
                           Container(
-                            width: 12,
-                            height: 12,
+                            width: 8,
+                            height: 8,
                             decoration: BoxDecoration(
                               color: resolvedColors[i % resolvedColors.length],
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   categories[i],
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF667085),
-                                    fontWeight: FontWeight.w500,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.green.shade600,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 if (i < data.length)
                                   Text(
                                     '${(data[i][valueKey] as num).toInt()} (${((data[i][valueKey] as num) / data.fold(0.0, (sum, item) => sum + (item[valueKey] as num)) * 100).toStringAsFixed(1)}%)',
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: Color(0xFF667085),
+                                    style: TextStyle(
+                                      fontSize: 8,
+                                      color: Colors.green.shade500,
                                     ),
                                   ),
                               ],
