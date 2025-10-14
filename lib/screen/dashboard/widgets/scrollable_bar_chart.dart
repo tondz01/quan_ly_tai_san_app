@@ -17,7 +17,7 @@ class ScrollableBarChart extends StatelessWidget {
     this.valueKey = 'sold',
     this.barWidth = 18,
     this.spacing = 64,
-    this.height = 300,
+    this.height = 200,
     this.barColor,
   });
 
@@ -32,7 +32,7 @@ class ScrollableBarChart extends StatelessWidget {
           final double contentWidth = count * (barWidth + spacing) + 40;
           final double chartWidth =
               contentWidth < minWidth ? minWidth : contentWidth;
-          
+
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),

@@ -6,7 +6,6 @@ import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/scrollable_bar_chart.dart';
-import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/horizontal_progress_chart.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/pie_with_legend.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/repository/dashboard_reponsitory.dart';
 
@@ -346,24 +345,13 @@ class _DashboardViewState extends State<DashboardView> {
     print("Build - Top Assets: ${data['top5TaiSanGiaTriCao']}");
 
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.grey.shade50,
-            Colors.blue.shade50,
-            Colors.indigo.shade50,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ),
-      ),
+      decoration: BoxDecoration(color: Colors.white),
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           return true; // Xử lý scroll event bình thường
         },
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(12),
           physics:
               _scrollController.isParentScrolling
                   ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
@@ -372,35 +360,35 @@ class _DashboardViewState extends State<DashboardView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildStatisticsSection(data),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(child: _buildAssetStatusSection(data)),
-                  const SizedBox(width: 24),
-                  Expanded(child: _buildCcdcStatusSection(data)),
-                ],
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              // Row(
+              //   children: [
+              //     Expanded(child: _buildAssetStatusSection(data)),
+              //     const SizedBox(width: 12),
+              //     Expanded(child: _buildCcdcStatusSection(data)),
+              //   ],
+              // ),
+              // const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(child: _buildAssetGroupPercentageSection()),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 4),
                   Expanded(child: _buildAssetGroupDistributionSection(data)),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
+                  const SizedBox(width: 4),
                   Expanded(child: _buildCcdcGroupPercentageSection()),
-                  const SizedBox(width: 24),
+                  const SizedBox(width: 4),
                   Expanded(child: _buildCcdcGroupDistributionSection(data)),
                 ],
               ),
-              const SizedBox(height: 24),
-              _buildTopAssetsSection(data),
-              const SizedBox(height: 24),
-              _buildTrendAnalysisSection(data),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: _buildTopAssetsSection(data)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildTrendAnalysisSection(data)),
+                ],
+              ),
+              const SizedBox(height: 12),
               _buildMaintenanceSection(data),
             ],
           ),
@@ -413,80 +401,52 @@ class _DashboardViewState extends State<DashboardView> {
     if (_isLoadingStatistics) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.blue.shade50, Colors.indigo.shade50],
-            stops: const [0.0, 0.7, 1.0],
-          ),
-          borderRadius: BorderRadius.circular(24),
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.15),
-              blurRadius: 25,
-              offset: const Offset(0, 12),
-            ),
-            BoxShadow(
-              color: Colors.indigo.withOpacity(0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              color: Colors.green.withOpacity(0.1),
+              spreadRadius: 0,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade600, Colors.indigo.shade700],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+                Icon(Icons.dashboard, color: Colors.green.shade700, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  "Tổng quan thống kê",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.green.shade600,
                   ),
-                  child: Icon(Icons.dashboard, color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SGText(
-                      text: "📊 Tổng quan thống kê",
-                      style: AppTextStyle.textStyleSemiBold24.copyWith(
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    Text(
-                      "Đang tải dữ liệu thống kê...",
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
             Center(
               child: Column(
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.blue.shade600,
+                      Colors.green.shade600,
                     ),
-                    strokeWidth: 3,
+                    strokeWidth: 2,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   Text(
-                    "Đang tải dữ liệu thống kê...",
+                    "Đang tải dữ liệu...",
                     style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      color: Colors.green.shade700,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
@@ -500,92 +460,60 @@ class _DashboardViewState extends State<DashboardView> {
     if (_statisticsError != null) {
       return Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.red.shade50],
-            stops: const [0.0, 1.0],
-          ),
-          borderRadius: BorderRadius.circular(24),
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withOpacity(0.15),
-              blurRadius: 25,
-              offset: const Offset(0, 12),
+              color: Colors.green.withOpacity(0.1),
+              spreadRadius: 0,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(28),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.red.shade600, Colors.red.shade700],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
+                Icon(Icons.error_outline, color: Colors.red.shade600, size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  "Lỗi tải dữ liệu",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.red.shade600,
                   ),
-                  child: Icon(
-                    Icons.error_outline,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SGText(
-                      text: "❌ Lỗi tải dữ liệu",
-                      style: AppTextStyle.textStyleSemiBold24.copyWith(
-                        color: Colors.red.shade700,
-                      ),
-                    ),
-                    Text(
-                      "Không thể tải dữ liệu thống kê",
-                      style: TextStyle(
-                        color: Colors.red.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
             Center(
               child: Column(
                 children: [
                   Icon(
                     Icons.error_outline,
-                    size: 64,
+                    size: 32,
                     color: Colors.red.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Lỗi tải dữ liệu thống kê',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.red.shade700,
-                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _statisticsError!,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.red.shade600),
+                    style: TextStyle(color: Colors.red.shade600, fontSize: 12),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: _loadStatisticsData,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade600,
                       foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                     ),
                     child: const Text('Thử lại'),
                   ),
@@ -599,21 +527,16 @@ class _DashboardViewState extends State<DashboardView> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.blue.shade50, Colors.indigo.shade50],
-          stops: const [0.0, 0.7, 1.0],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.15),
+            color: Colors.grey.withOpacity(0.15),
             blurRadius: 25,
             offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: Colors.indigo.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -628,26 +551,31 @@ class _DashboardViewState extends State<DashboardView> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade600, Colors.indigo.shade700],
-                  ),
+                  color: Colors.green.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.dashboard, color: Colors.white, size: 24),
+                child: Icon(
+                  Icons.dashboard,
+                  color: Colors.green.shade700,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SGText(
-                    text: "📊 Tổng quan thống kê",
+                    text: "Tổng quan thống kê",
                     style: AppTextStyle.textStyleSemiBold24.copyWith(
-                      color: Colors.grey.shade800,
+                      color: Colors.green.shade700,
                     ),
                   ),
                   Text(
                     "Thống kê tổng quan về tài sản và thiết bị",
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    style: TextStyle(
+                      color: Colors.green.shade700,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -668,7 +596,7 @@ class _DashboardViewState extends State<DashboardView> {
                 'Tổng tài sản',
                 (data['tongTaiSan'] ?? 0).toString(),
                 Icons.inventory_2,
-                [Colors.orange.shade400, Colors.teal.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng nguyên giá',
@@ -680,37 +608,37 @@ class _DashboardViewState extends State<DashboardView> {
                 'Tổng CCDC',
                 (data['tongCCDC'] ?? 0).toString(),
                 Icons.build,
-                [Colors.orange.shade400, Colors.teal.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng giá trị CCDC',
                 formatter.format(data['tongGiaTriCCDC'] ?? 0),
                 Icons.monetization_on,
-                [Colors.teal.shade400, Colors.green.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng nhân viên',
                 (data['tongNhanVien'] ?? 0).toString(),
                 Icons.people,
-                [Colors.orange.shade400, Colors.teal.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng phòng ban',
                 (data['tongPhongBan'] ?? 0).toString(),
                 Icons.business,
-                [Colors.teal.shade400, Colors.green.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng dự án',
                 (data['tongDuAn'] ?? 0).toString(),
                 Icons.folder,
-                [Colors.orange.shade400, Colors.teal.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
               _buildEnhancedStatisticsCard(
                 'Tổng công ty',
                 (data['tongCongTy'] ?? 0).toString(),
                 Icons.corporate_fare,
-                [Colors.teal.shade400, Colors.green.shade600],
+                [Colors.green.shade400, Colors.green.shade600],
               ),
             ],
           ),
@@ -719,182 +647,347 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildAssetStatusSection(Map<String, dynamic> data) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.blue.shade50],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade600, Colors.blue.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "📊 Tài sản theo hiện trạng",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (_assetStatusError != null)
-                IconButton(
-                  onPressed: _loadAssetStatusData,
-                  icon: Icon(Icons.refresh, color: Colors.blue.shade600),
-                  tooltip: 'Tải lại dữ liệu',
-                ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          if (_isLoadingAssetStatus)
-            Container(
-              height: 200,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Colors.blue.shade600),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Đang tải dữ liệu...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (_assetStatusError != null)
-            Container(
-              height: 200,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      _assetStatusError!,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.red[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: _loadAssetStatusData,
-                      icon: Icon(Icons.refresh, size: 16),
-                      label: Text('Thử lại'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade600,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (_assetStatusData.isNotEmpty)
-            HorizontalProgressChart(
-              data:
-                  _assetStatusData
-                      .map(
-                        (item) => <String, dynamic>{
-                          'label': item['TenHienTrang'] ?? 'Chưa xác định',
-                          'value': item['SoLuong'] ?? 0,
-                          'percentage': item['TiLePhanTram'] ?? 0,
-                        },
-                      )
-                      .toList(),
-              labelKey: 'label',
-              valueKey: 'value',
-              percentageKey: 'percentage',
-              colors: [
-                Colors.blue.shade600,
-                Colors.green.shade600,
-                Colors.orange.shade600,
-                Colors.red.shade600,
-                Colors.purple.shade600,
-                Colors.teal.shade600,
-              ],
-              height: 200,
-              showValues: true,
-              showPercentages: true,
-            )
-          else
-            Container(
-              height: 300,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.inventory_2_outlined,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Không có dữ liệu tài sản',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildAssetStatusSection(Map<String, dynamic> data) {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       gradient: LinearGradient(
+  //         begin: Alignment.topLeft,
+  //         end: Alignment.bottomRight,
+  //         colors: [Colors.white, Colors.blue.shade50],
+  //       ),
+  //       borderRadius: BorderRadius.circular(20),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.blue.withOpacity(0.1),
+  //           blurRadius: 20,
+  //           offset: const Offset(0, 10),
+  //         ),
+  //       ],
+  //     ),
+  //     padding: const EdgeInsets.all(16),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Container(
+  //               padding: const EdgeInsets.symmetric(
+  //                 horizontal: 16,
+  //                 vertical: 8,
+  //               ),
+  //               decoration: BoxDecoration(
+  //                 gradient: LinearGradient(
+  //                   colors: [Colors.blue.shade600, Colors.blue.shade800],
+  //                 ),
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //               child: SGText(
+  //                 text: "📊 Tài sản theo hiện trạng",
+  //                 style: AppTextStyle.textStyleSemiBold24.copyWith(
+  //                   color: Colors.green.shade50,
+  //                   shadows: [
+  //                     Shadow(
+  //                       color: Colors.black.withOpacity(0.3),
+  //                       blurRadius: 4,
+  //                       offset: const Offset(0, 2),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             if (_assetStatusError != null)
+  //               IconButton(
+  //                 onPressed: _loadAssetStatusData,
+  //                 icon: Icon(Icons.refresh, color: Colors.blue.shade600),
+  //                 tooltip: 'Tải lại dữ liệu',
+  //               ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 24),
+  //         if (_isLoadingAssetStatus)
+  //           Container(
+  //             height: 200,
+  //             child: Center(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   CircularProgressIndicator(color: Colors.blue.shade600),
+  //                   const SizedBox(height: 16),
+  //                   Text(
+  //                     'Đang tải dữ liệu...',
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.grey[600],
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           )
+  //         else if (_assetStatusError != null)
+  //           Container(
+  //             height: 200,
+  //             child: Center(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+  //                   const SizedBox(height: 16),
+  //                   Text(
+  //                     _assetStatusError!,
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.red[600],
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                     textAlign: TextAlign.center,
+  //                   ),
+  //                   const SizedBox(height: 8),
+  //                   ElevatedButton.icon(
+  //                     onPressed: _loadAssetStatusData,
+  //                     icon: Icon(Icons.refresh, size: 16),
+  //                     label: Text('Thử lại'),
+  //                     style: ElevatedButton.styleFrom(
+  //                       backgroundColor: Colors.blue.shade600,
+  //                       foregroundColor: Colors.white,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           )
+  //         else if (_assetStatusData.isNotEmpty)
+  //           HorizontalProgressChart(
+  //             data:
+  //                 _assetStatusData
+  //                     .map(
+  //                       (item) => <String, dynamic>{
+  //                         'label': item['TenHienTrang'] ?? 'Chưa xác định',
+  //                         'value': item['SoLuong'] ?? 0,
+  //                         'percentage': item['TiLePhanTram'] ?? 0,
+  //                       },
+  //                     )
+  //                     .toList(),
+  //             labelKey: 'label',
+  //             valueKey: 'value',
+  //             percentageKey: 'percentage',
+  //             colors: [
+  //               Colors.blue.shade600,
+  //               Colors.green.shade600,
+  //               Colors.orange.shade600,
+  //               Colors.red.shade600,
+  //               Colors.purple.shade600,
+  //               Colors.teal.shade600,
+  //             ],
+  //             height: 200,
+  //             showValues: true,
+  //             showPercentages: true,
+  //           )
+  //         else
+  //           Container(
+  //             height: 300,
+  //             child: Center(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   Icon(
+  //                     Icons.inventory_2_outlined,
+  //                     size: 48,
+  //                     color: Colors.grey[400],
+  //                   ),
+  //                   const SizedBox(height: 16),
+  //                   Text(
+  //                     'Không có dữ liệu tài sản',
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.grey[600],
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildCcdcStatusSection(Map<String, dynamic> data) {
+  // Widget _buildCcdcStatusSection(Map<String, dynamic> data) {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       gradient: LinearGradient(
+  //         begin: Alignment.topLeft,
+  //         end: Alignment.bottomRight,
+  //         colors: [Colors.white, Colors.green.shade50],
+  //       ),
+  //       borderRadius: BorderRadius.circular(20),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.green.withOpacity(0.1),
+  //           blurRadius: 20,
+  //           offset: const Offset(0, 10),
+  //         ),
+  //       ],
+  //     ),
+  //     padding: const EdgeInsets.all(16),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Container(
+  //               padding: const EdgeInsets.symmetric(
+  //                 horizontal: 16,
+  //                 vertical: 8,
+  //               ),
+  //               decoration: BoxDecoration(
+  //                 gradient: LinearGradient(
+  //                   colors: [Colors.green.shade600, Colors.green.shade800],
+  //                 ),
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //               child: SGText(
+  //                 text: "🔧 CCDC theo hiện trạng",
+  //                 style: AppTextStyle.textStyleSemiBold24.copyWith(
+  //                   color: Colors.green.shade50,
+  //                   shadows: [
+  //                     Shadow(
+  //                       color: Colors.black.withOpacity(0.3),
+  //                       blurRadius: 4,
+  //                       offset: const Offset(0, 2),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //             if (_ccdcStatusError != null)
+  //               IconButton(
+  //                 onPressed: _loadCcdcStatusData,
+  //                 icon: Icon(Icons.refresh, color: Colors.green.shade600),
+  //                 tooltip: 'Tải lại dữ liệu',
+  //               ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 24),
+  //         if (_isLoadingCcdcStatus)
+  //           Container(
+  //             height: 300,
+  //             child: Center(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   CircularProgressIndicator(color: Colors.green.shade600),
+  //                   const SizedBox(height: 16),
+  //                   Text(
+  //                     'Đang tải dữ liệu...',
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.grey[600],
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           )
+  //         else if (_ccdcStatusError != null)
+  //           Container(
+  //             height: 300,
+  //             child: Center(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+  //                   const SizedBox(height: 16),
+  //                   Text(
+  //                     _ccdcStatusError!,
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.red[600],
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                     textAlign: TextAlign.center,
+  //                   ),
+  //                   const SizedBox(height: 8),
+  //                   ElevatedButton.icon(
+  //                     onPressed: _loadCcdcStatusData,
+  //                     icon: Icon(Icons.refresh, size: 16),
+  //                     label: Text('Thử lại'),
+  //                     style: ElevatedButton.styleFrom(
+  //                       backgroundColor: Colors.green.shade600,
+  //                       foregroundColor: Colors.white,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           )
+  //         else if (_ccdcStatusData.isNotEmpty)
+  //           HorizontalProgressChart(
+  //             data:
+  //                 _ccdcStatusData
+  //                     .map(
+  //                       (item) => <String, dynamic>{
+  //                         'label': item['TenHienTrang'] ?? 'Chưa xác định',
+  //                         'value': item['SoLuong'] ?? 0,
+  //                         'percentage': item['TiLePhanTram'] ?? 0,
+  //                       },
+  //                     )
+  //                     .toList(),
+  //             labelKey: 'label',
+  //             valueKey: 'value',
+  //             percentageKey: 'percentage',
+  //             colors: [
+  //               Colors.green.shade600,
+  //               Colors.blue.shade600,
+  //               Colors.orange.shade600,
+  //               Colors.red.shade600,
+  //               Colors.purple.shade600,
+  //               Colors.teal.shade600,
+  //             ],
+  //             height: 200,
+  //             showValues: true,
+  //             showPercentages: true,
+  //           )
+  //         else
+  //           Container(
+  //             height: 200,
+  //             child: Center(
+  //               child: Column(
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   Icon(
+  //                     Icons.build_outlined,
+  //                     size: 48,
+  //                     color: Colors.grey[400],
+  //                   ),
+  //                   const SizedBox(height: 16),
+  //                   Text(
+  //                     'Không có dữ liệu CCDC',
+  //                     style: TextStyle(
+  //                       fontSize: 14,
+  //                       color: Colors.grey[600],
+  //                       fontWeight: FontWeight.w500,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget _buildAssetGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
+      height: 400, // Fixed height
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.green.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -904,211 +997,24 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.green.shade600, Colors.green.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "🔧 CCDC theo hiện trạng",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (_ccdcStatusError != null)
-                IconButton(
-                  onPressed: _loadCcdcStatusData,
-                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
-                  tooltip: 'Tải lại dữ liệu',
-                ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          if (_isLoadingCcdcStatus)
-            Container(
-              height: 300,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Colors.green.shade600),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Đang tải dữ liệu...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (_ccdcStatusError != null)
-            Container(
-              height: 300,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      _ccdcStatusError!,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.red[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      onPressed: _loadCcdcStatusData,
-                      icon: Icon(Icons.refresh, size: 16),
-                      label: Text('Thử lại'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade600,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (_ccdcStatusData.isNotEmpty)
-            HorizontalProgressChart(
-              data:
-                  _ccdcStatusData
-                      .map(
-                        (item) => <String, dynamic>{
-                          'label': item['TenHienTrang'] ?? 'Chưa xác định',
-                          'value': item['SoLuong'] ?? 0,
-                          'percentage': item['TiLePhanTram'] ?? 0,
-                        },
-                      )
-                      .toList(),
-              labelKey: 'label',
-              valueKey: 'value',
-              percentageKey: 'percentage',
-              colors: [
-                Colors.green.shade600,
-                Colors.blue.shade600,
-                Colors.orange.shade600,
-                Colors.red.shade600,
-                Colors.purple.shade600,
-                Colors.teal.shade600,
-              ],
-              height: 200,
-              showValues: true,
-              showPercentages: true,
-            )
-          else
-            Container(
-              height: 200,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.build_outlined,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Không có dữ liệu CCDC',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAssetGroupDistributionSection(Map<String, dynamic> data) {
-    return Container(
-      height: 700, // Fixed height
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.purple.shade50],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.purple.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple.shade600, Colors.purple.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "📊 Phân bố tài sản theo loại",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Phân bố tài sản theo loại",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  fontSize: 14,
+                  color: Colors.green.shade600,
                 ),
               ),
               if (_assetGroupError != null)
                 IconButton(
                   onPressed: _loadAssetGroupData,
-                  icon: Icon(Icons.refresh, color: Colors.purple.shade600),
+                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -1116,7 +1022,7 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 24),
           if (_isLoadingAssetGroup)
             Container(
-              height: 450,
+              height: 300,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1126,7 +1032,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(
                       'Đang tải dữ liệu...',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -1137,7 +1043,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else if (_assetGroupError != null)
             Container(
-              height: 450,
+              height: 300,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1147,7 +1053,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(
                       _assetGroupError!,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.red[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -1210,12 +1116,12 @@ class _DashboardViewState extends State<DashboardView> {
                   _buildGroupChart(_selectedGroup!)
                 else
                   Container(
-                    height: 450,
+                    height: 300,
                     child: Center(
                       child: Text(
                         'Vui lòng chọn nhóm tài sản',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1226,7 +1132,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else
             Container(
-              height: 450,
+              height: 300,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1240,7 +1146,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(
                       'Không có dữ liệu nhóm tài sản',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -1259,7 +1165,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (groupData.isEmpty) {
       return Container(
-        height: 450,
+        height: 300,
         child: Center(
           child: Text(
             'Nhóm "$groupName" không có dữ liệu',
@@ -1291,7 +1197,7 @@ class _DashboardViewState extends State<DashboardView> {
                 Text(
                   'Phân bố tài sản theo loại trong nhóm "$groupName"',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.purple.shade700,
                   ),
@@ -1326,58 +1232,36 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildCcdcGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
-      height: 700, // Fixed height
+      height: 400, // Fixed height
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.orange.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.orange.shade600, Colors.orange.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "🔧 Phân bố CCDC theo loại",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Phân bố CCDC theo loại",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  fontSize: 14,
+                  color: Colors.green.shade600,
                 ),
               ),
               if (_ccdcGroupError != null)
                 IconButton(
                   onPressed: _loadCcdcGroupData,
-                  icon: Icon(Icons.refresh, color: Colors.orange.shade600),
+                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -1385,7 +1269,7 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 24),
           if (_isLoadingCcdcGroup)
             Container(
-              height: 450,
+              height: 300,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1395,7 +1279,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(
                       'Đang tải dữ liệu...',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -1406,7 +1290,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else if (_ccdcGroupError != null)
             Container(
-              height: 450,
+              height: 300,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1416,7 +1300,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(
                       _ccdcGroupError!,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.red[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -1479,12 +1363,12 @@ class _DashboardViewState extends State<DashboardView> {
                   _buildCcdcGroupChart(_selectedCcdcGroup!)
                 else
                   Container(
-                    height: 450,
+                    height: 300,
                     child: Center(
                       child: Text(
                         'Vui lòng chọn nhóm CCDC',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1495,7 +1379,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else
             Container(
-              height: 450,
+              height: 300,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1509,7 +1393,7 @@ class _DashboardViewState extends State<DashboardView> {
                     Text(
                       'Không có dữ liệu nhóm CCDC',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
@@ -1528,7 +1412,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (groupData.isEmpty) {
       return Container(
-        height: 450,
+        height: 300,
         child: Center(
           child: Text(
             'Nhóm "$groupName" không có dữ liệu',
@@ -1560,7 +1444,7 @@ class _DashboardViewState extends State<DashboardView> {
                 Text(
                   'Phân bố CCDC theo loại trong nhóm "$groupName"',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.orange.shade700,
                   ),
@@ -1595,13 +1479,9 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildAssetGroupPercentageSection() {
     return Container(
-      height: 700, // Fixed height
+      height: 400, // Fixed height
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.green.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -1611,35 +1491,17 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.green.shade600, Colors.green.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "📊 Phân bố tài sản theo nhóm (%)",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Phân bố tài sản theo nhóm (%)",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  fontSize: 14,
+                  color: Colors.green.shade600,
                 ),
               ),
               if (_assetGroupPercentageError != null)
@@ -1664,7 +1526,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Text(
                         'Đang tải dữ liệu...',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1684,7 +1546,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Text(
                         _assetGroupPercentageError!,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.red[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1726,8 +1588,8 @@ class _DashboardViewState extends State<DashboardView> {
                       Colors.indigo.shade600,
                       Colors.pink.shade600,
                     ],
-                    chartWidth: 400,
-                    chartHeight: 400,
+                    chartWidth: 150,
+                    chartHeight: 150,
                   )
                 else
                   Column(
@@ -1738,7 +1600,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Text(
                         'Không có dữ liệu phân bố tài sản',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1755,57 +1617,35 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildCcdcGroupPercentageSection() {
     return Container(
-      height: 700, // Fixed height
+      height: 400, // Fixed height
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.amber.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.amber.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.amber.shade600, Colors.amber.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "🔧 Phân bố CCDC theo nhóm (%)",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Phân bố CCDC theo nhóm (%)",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  fontSize: 14,
+                  color: Colors.green.shade600,
                 ),
               ),
               if (_ccdcGroupPercentageError != null)
                 IconButton(
                   onPressed: _loadCcdcGroupPercentageData,
-                  icon: Icon(Icons.refresh, color: Colors.amber.shade600),
+                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -1824,7 +1664,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Text(
                         'Đang tải dữ liệu...',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1844,7 +1684,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Text(
                         _ccdcGroupPercentageError!,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.red[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1886,8 +1726,8 @@ class _DashboardViewState extends State<DashboardView> {
                       Colors.indigo.shade600,
                       Colors.pink.shade600,
                     ],
-                    chartWidth: 400,
-                    chartHeight: 400,
+                    chartWidth: 150,
+                    chartHeight: 150,
                   )
                 else
                   Column(
@@ -1902,7 +1742,7 @@ class _DashboardViewState extends State<DashboardView> {
                       Text(
                         'Không có dữ liệu phân bố CCDC',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -1923,50 +1763,28 @@ class _DashboardViewState extends State<DashboardView> {
     print("Top Assets Count: ${topAssets.length}");
 
     return Container(
+      height: 638,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.indigo.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.indigo.shade600, Colors.indigo.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "🏆 Top 5 tài sản giá trị cao",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Top 5 tài sản giá trị cao",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  color: Colors.green.shade600,
                 ),
               ),
               const Spacer(),
@@ -2005,11 +1823,11 @@ class _DashboardViewState extends State<DashboardView> {
           Container(
             height: 420,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.green.shade50,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -2052,10 +1870,10 @@ class _DashboardViewState extends State<DashboardView> {
                         (tuple) => graphic.Label(
                           formatter.format(tuple['sold']),
                           graphic.LabelStyle(
-                            textStyle: const TextStyle(
+                            textStyle: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.green.shade700,
                             ),
                           ),
                         ),
@@ -2166,22 +1984,22 @@ class _DashboardViewState extends State<DashboardView> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: Colors.green.shade100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: Colors.green.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: color),
+              Icon(icon, size: 16, color: Colors.green.shade700),
               const SizedBox(width: 6),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 12,
-                  color: color.withOpacity(0.8),
+                  color: Colors.green.shade600,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -2192,7 +2010,7 @@ class _DashboardViewState extends State<DashboardView> {
             value,
             style: TextStyle(
               fontSize: 16,
-              color: color.withOpacity(0.9),
+              color: Colors.green.shade700,
               fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,
@@ -2207,50 +2025,28 @@ class _DashboardViewState extends State<DashboardView> {
     final monthData = (data['taiSanTheoThang'] as List<dynamic>?) ?? const [];
 
     return Container(
+      height: 638,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.indigo.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.indigo.shade600, Colors.indigo.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "📈 Phân tích xu hướng",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Phân tích xu hướng",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  color: Colors.green.shade600,
                 ),
               ),
               const Spacer(),
@@ -2291,11 +2087,11 @@ class _DashboardViewState extends State<DashboardView> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.green.withOpacity(0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -2322,9 +2118,9 @@ class _DashboardViewState extends State<DashboardView> {
                           Text(
                             "Tài sản theo năm tạo",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade800,
+                              color: Colors.green.shade700,
                             ),
                           ),
                         ],
@@ -2354,11 +2150,11 @@ class _DashboardViewState extends State<DashboardView> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.green.withOpacity(0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -2385,9 +2181,9 @@ class _DashboardViewState extends State<DashboardView> {
                           Text(
                             "Tài sản theo tháng",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade800,
+                              color: Colors.green.shade700,
                             ),
                           ),
                         ],
@@ -2428,12 +2224,12 @@ class _DashboardViewState extends State<DashboardView> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.orange.shade50],
+            colors: [Colors.white, Colors.green.shade50],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.green.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -2503,12 +2299,12 @@ class _DashboardViewState extends State<DashboardView> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.grey.shade50],
+            colors: [Colors.white, Colors.green.shade50],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.green.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -2546,49 +2342,26 @@ class _DashboardViewState extends State<DashboardView> {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.orange.shade50],
-        ),
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.1),
+            color: Colors.green.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.orange.shade600, Colors.orange.shade800],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: SGText(
-                  text: "⚠️ Tài sản sắp hết hạn khấu hao",
-                  style: AppTextStyle.textStyleSemiBold24.copyWith(
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+              SGText(
+                text: "Tài sản sắp hết hạn khấu hao",
+                style: AppTextStyle.textStyleSemiBold24.copyWith(
+                  color: Colors.green.shade600,
                 ),
               ),
               const Spacer(),
@@ -2603,7 +2376,7 @@ class _DashboardViewState extends State<DashboardView> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.green.shade50,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.orange.shade300),
                     ),
@@ -2615,16 +2388,16 @@ class _DashboardViewState extends State<DashboardView> {
                           size: 16,
                           color: Colors.orange.shade700,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
                         Text(
                           'Hiển thị:',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
                         DropdownButton<int>(
                           value: _displayCount,
                           underline: const SizedBox(),
@@ -2695,7 +2468,7 @@ class _DashboardViewState extends State<DashboardView> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ],
@@ -2709,7 +2482,7 @@ class _DashboardViewState extends State<DashboardView> {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.green.shade50,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -2718,7 +2491,7 @@ class _DashboardViewState extends State<DashboardView> {
                   offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -2743,7 +2516,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'ID',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2755,7 +2528,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Tên tài sản',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2767,7 +2540,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Ngày sử dụng',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2779,7 +2552,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Số kỳ khấu hao',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2791,7 +2564,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Nguyên giá',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2803,7 +2576,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Ngày hết hạn',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2815,7 +2588,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Thời hạn còn lại',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2827,7 +2600,7 @@ class _DashboardViewState extends State<DashboardView> {
                           'Trạng thái',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ),
@@ -2847,9 +2620,9 @@ class _DashboardViewState extends State<DashboardView> {
                                 states,
                               ) {
                                 if (states.contains(MaterialState.hovered)) {
-                                  return Colors.orange.shade50;
+                                  return Colors.grey.shade100;
                                 }
-                                return isUrgent ? Colors.red.shade50 : null;
+                                return Colors.white;
                               }),
                               cells: [
                                 DataCell(
@@ -2859,14 +2632,14 @@ class _DashboardViewState extends State<DashboardView> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.shade100,
+                                      color: Colors.green.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       item['Id']?.toString() ?? '',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.orange.shade800,
+                                        color: Colors.green.shade700,
                                       ),
                                     ),
                                   ),
@@ -2903,7 +2676,7 @@ class _DashboardViewState extends State<DashboardView> {
                                       '${item['SoKyKhauHao'] ?? 0} kỳ',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.blue.shade800,
+                                        color: Colors.green.shade700,
                                       ),
                                     ),
                                   ),
@@ -2929,20 +2702,14 @@ class _DashboardViewState extends State<DashboardView> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color:
-                                          isUrgent
-                                              ? Colors.red.shade100
-                                              : Colors.green.shade100,
+                                      color: Colors.green.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       '${remainingDays} tháng',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        color:
-                                            isUrgent
-                                                ? Colors.red.shade800
-                                                : Colors.green.shade800,
+                                        color: Colors.green.shade700,
                                       ),
                                     ),
                                   ),
@@ -2954,12 +2721,7 @@ class _DashboardViewState extends State<DashboardView> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color:
-                                          isUrgent
-                                              ? Colors.red.shade100
-                                              : remainingDays <= 60
-                                              ? Colors.orange.shade100
-                                              : Colors.green.shade100,
+                                      color: Colors.green.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -2971,12 +2733,7 @@ class _DashboardViewState extends State<DashboardView> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 10,
-                                        color:
-                                            isUrgent
-                                                ? Colors.red.shade800
-                                                : remainingDays <= 60
-                                                ? Colors.orange.shade800
-                                                : Colors.green.shade800,
+                                        color: Colors.red,
                                       ),
                                     ),
                                   ),
@@ -2994,16 +2751,12 @@ class _DashboardViewState extends State<DashboardView> {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.orange.shade50, Colors.amber.shade50],
-              ),
+              color: Colors.green.shade50,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.orange.shade200, width: 1.5),
+              border: Border.all(color: Colors.grey.shade300, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.green.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -3017,12 +2770,12 @@ class _DashboardViewState extends State<DashboardView> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade100,
+                        color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.info_outline,
-                        color: Colors.orange.shade700,
+                        color: Colors.green.shade700,
                         size: 20,
                       ),
                     ),
@@ -3033,7 +2786,7 @@ class _DashboardViewState extends State<DashboardView> {
                         Text(
                           'Tổng quan tài sản sắp hết hạn',
                           style: TextStyle(
-                            color: Colors.orange.shade700,
+                            color: Colors.green.shade700,
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
                           ),
@@ -3042,10 +2795,7 @@ class _DashboardViewState extends State<DashboardView> {
                           _displayCount == -1
                               ? 'Hiển thị tất cả ${_depreciationData.length} tài sản'
                               : 'Hiển thị ${_depreciationData.take(_displayCount).length}/${_depreciationData.length} tài sản',
-                          style: TextStyle(
-                            color: Colors.orange.shade600,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.black, fontSize: 12),
                         ),
                       ],
                     ),
@@ -3059,23 +2809,19 @@ class _DashboardViewState extends State<DashboardView> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade100,
+                        color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.red.shade300),
+                        border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.warning,
-                            color: Colors.red.shade700,
-                            size: 14,
-                          ),
+                          Icon(Icons.warning, color: Colors.black, size: 14),
                           const SizedBox(width: 4),
                           Text(
                             'Khẩn cấp: ${_depreciationData.where((item) => (item['ThoiHanConLai'] as int? ?? 0) <= 30).length}',
                             style: TextStyle(
-                              color: Colors.red.shade800,
+                              color: Colors.green.shade50,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -3083,25 +2829,21 @@ class _DashboardViewState extends State<DashboardView> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade100,
+                        color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.orange.shade300),
+                        border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.schedule,
-                            color: Colors.orange.shade700,
-                            size: 14,
-                          ),
+                          Icon(Icons.schedule, color: Colors.black, size: 14),
                           const SizedBox(width: 4),
                           Text(
                             'Cảnh báo: ${_depreciationData.where((item) {
@@ -3109,7 +2851,7 @@ class _DashboardViewState extends State<DashboardView> {
                               return days > 30 && days <= 60;
                             }).length}',
                             style: TextStyle(
-                              color: Colors.orange.shade800,
+                              color: Colors.green.shade700,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -3145,15 +2887,11 @@ class _DashboardViewState extends State<DashboardView> {
   ) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradientColors,
-        ),
+        color: Colors.green.shade100,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: gradientColors[0].withOpacity(0.3),
+            color: Colors.green.withOpacity(0.2),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -3166,13 +2904,13 @@ class _DashboardViewState extends State<DashboardView> {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.white, size: 24),
+                Icon(icon, color: Colors.green.shade700, size: 24),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     title,
                     style: AppTextStyle.textStyleRegular14.copyWith(
-                      color: Colors.white,
+                      color: Colors.green.shade700,
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 2,
@@ -3185,15 +2923,8 @@ class _DashboardViewState extends State<DashboardView> {
             Text(
               value,
               style: AppTextStyle.textStyleSemiBold24.copyWith(
-                color: Colors.white,
+                color: Colors.green.shade700,
                 fontSize: 20,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
               ),
             ),
           ],

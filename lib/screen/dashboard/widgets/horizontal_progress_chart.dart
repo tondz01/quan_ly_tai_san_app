@@ -18,7 +18,7 @@ class HorizontalProgressChart extends StatelessWidget {
     this.valueKey = 'value',
     this.percentageKey = 'percentage',
     this.colors,
-    this.height = 200,
+    this.height = 150,
     this.showValues = true,
     this.showPercentages = true,
   });
