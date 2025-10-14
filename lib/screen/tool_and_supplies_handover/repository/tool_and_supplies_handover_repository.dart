@@ -432,7 +432,7 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
 
     try {
       final response = await post(
-        '${EndPointAPI.ASSET_TRANSFER}/huytrangthai?id=$id',
+        '${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/huytrangthai?id=$id',
       );
       unawaited(delete('/api/chuky/$id'));
 

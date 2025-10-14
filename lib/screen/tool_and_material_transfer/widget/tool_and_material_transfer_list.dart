@@ -3,32 +3,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
-import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:get/utils.dart';
+import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
+import 'package:table_base/core/themes/app_color.dart';
+import 'package:table_base/core/themes/app_icon_svg.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/row_find_by_status_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/table_tool_and_material_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/table_tool_and_material_transfer_config.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:table_base/widgets/table/widgets/table_actions_widget.dart';
 
 class ToolAndMaterialTransferList extends StatefulWidget {
   final ToolAndMaterialTransferProvider provider;
@@ -62,43 +66,79 @@ class _ToolAndMaterialTransferListState
   bool isShowDetailDepartmentTree = false;
   String nameBenBan = "";
 
-  // Column display options
-  late List<ColumnDisplayOption> columnOptions;
-  List<String> visibleColumnIds = [
-    'type',
-    'effective_date',
-    'approver',
-    'document',
-    'id',
-    'decision_date',
-    'to_date',
-    'don_vi_giao',
-    'don_vi_nhan',
-    'permission_signing',
-    'status_document',
-    // 'signing_status',
-    'share',
-    'status',
-    'actions',
-  ];
+  final bool _showCheckboxColumn = true;
+  final bool _showActionsColumn = true;
 
-  List<Map<String, DateTime Function(ToolAndMaterialTransferDto)>> getters = [
-    {
-      'Thời gian giao nhận từ ngày':
-          (item) => DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
-    },
-    {
-      'Thời gian giao nhận đến ngày':
-          (item) => DateTime.tryParse(item.tggnDenNgay ?? '') ?? DateTime.now(),
-    },
-  ];
+  // Table configuration
+  late List<ColumnDefinition> _definitions;
+  late List<TableColumnData> _columns;
+  late List<TableColumnData> _allColumns;
+  late Map<String, TableCellBuilder> _buildersByKey;
+  List<String> _hiddenKeys = [];
 
   @override
   void initState() {
     super.initState();
-    _initializeColumnOptions();
+    _definitions = TableToolAndMaterialTransferConfig.getColumns(
+      userInfo ?? UserInfoDTO.empty(),
+    );
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
     _callGetListAssetHandover();
     userInfo = widget.provider.userInfo;
+  }
+
+  dynamic getValueForColumn(ToolAndMaterialTransferDto item, int columnIndex) {
+    final int offset = 1; // showCheckboxColumn
+    final int adjustedIndex = columnIndex - offset;
+
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
+    }
+
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+      case 'type':
+        return TableToolAndMaterialTransferConfig.getName(item.loai ?? 0);
+      case 'effective_date':
+        return item.tggnTuNgay;
+      case 'approver':
+        return item.tenTrinhDuyetGiamDoc;
+      case 'document':
+        return item.tenFile;
+      case 'id':
+        return item.id;
+      case 'decision_date':
+        return item.tggnTuNgay;
+      case 'to_date':
+        return item.tggnDenNgay;
+      case 'don_vi_giao':
+        return AccountHelper.instance
+                .getDepartmentById(item.idDonViGiao ?? '')
+                ?.tenPhongBan ??
+            '';
+      case 'don_vi_nhan':
+        return AccountHelper.instance
+                .getDepartmentById(item.idDonViNhan ?? '')
+                ?.tenPhongBan ??
+            '';
+      case 'status':
+        return TableToolAndMaterialTransferConfig.getStatus(
+          item.trangThai ?? 0,
+        );
+      case 'permission_signing':
+        return TableToolAndMaterialTransferConfig.getStatusSigningName(
+          item,
+          userInfo ?? UserInfoDTO.empty(),
+        );
+      case 'status_document':
+        return TableToolAndMaterialTransferConfig.getStatusDocumentName(item);
+      case 'share':
+        return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+      default:
+        return null;
+    }
   }
 
   @override
@@ -133,366 +173,25 @@ class _ToolAndMaterialTransferListState
     }
   }
 
-  void _initializeColumnOptions() {
-    columnOptions = [
-      ColumnDisplayOption(
-        id: 'permission_signing',
-        // label: 'Quyền ký',
-        label: 'Trạng thái ký',
-        isChecked: visibleColumnIds.contains('permission_signing'),
-      ),
-      ColumnDisplayOption(
-        id: 'status_document',
-        label: 'Trạng thái bàn giao',
-        isChecked: visibleColumnIds.contains('status_document'),
-      ),
-      // ColumnDisplayOption(
-      //   id: 'signing_status',
-      //   // label: 'Quyền ký'',
-      //   label: 'Trạng thái ký',
-      //   isChecked: visibleColumnIds.contains('signing_status'),
-      // ),
-      ColumnDisplayOption(
-        id: 'share',
-        label: 'Chia sẻ',
-        isChecked: visibleColumnIds.contains('share'),
-      ),
-      ColumnDisplayOption(
-        id: 'type',
-        label: 'Phiếu ký nội sinh',
-        isChecked: visibleColumnIds.contains('type'),
-      ),
-      ColumnDisplayOption(
-        id: 'effective_date',
-        label: 'Ngày có hiệu lực',
-        isChecked: visibleColumnIds.contains('effective_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'approver',
-        label: 'Trình duyệt ban giám đốc',
-        isChecked: visibleColumnIds.contains('approver'),
-      ),
-      ColumnDisplayOption(
-        id: 'document',
-        label: 'Tài liệu duyệt',
-        isChecked: visibleColumnIds.contains('document'),
-      ),
-      ColumnDisplayOption(
-        id: 'id',
-        label: 'Ký số',
-        isChecked: visibleColumnIds.contains('id'),
-      ),
-      ColumnDisplayOption(
-        id: 'decision_date',
-        label: 'Thời gian giao nhận từ ngày',
-        isChecked: visibleColumnIds.contains('decision_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'to_date',
-        label: 'Thời gian giao nhận đến ngày',
-        isChecked: visibleColumnIds.contains('to_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'don_vi_giao',
-        label: 'Đơn vị giao',
-        isChecked: visibleColumnIds.contains('don_vi_giao'),
-      ),
-      ColumnDisplayOption(
-        id: 'don_vi_nhan',
-        label: 'Đơn vị nhận',
-        isChecked: visibleColumnIds.contains('don_vi_nhan'),
-      ),
-      ColumnDisplayOption(
-        id: 'status',
-        label: 'Trạng thái phiếu',
-        isChecked: visibleColumnIds.contains('status'),
-      ),
-      ColumnDisplayOption(
-        id: 'actions',
-        label: 'Thao tác',
-        isChecked: visibleColumnIds.contains('actions'),
-      ),
-    ];
-  }
-
-  List<SgTableColumn<ToolAndMaterialTransferDto>> _buildColumns() {
-    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns = [];
-
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'permission_signing':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              // title: 'Quyền ký',
-              title: 'Trạng thái ký',
-              cellBuilder:
-                  (item) => AppUtility.showPermissionSigning(
-                    getPermissionSigning(item),
-                  ),
-              width: 150,
-              searchValueGetter: (item) {
-                final status = getPermissionSigning(item);
-                return status == 2
-                    ? 'Không được phép ký'
-                    : status == 1
-                    ? 'Chưa đến lượt ký'
-                    : status == 3
-                    ? 'Đã ký'
-                    : status == 4
-                    ? 'Đã ký & tạo'
-                    : status == 5
-                    ? 'Cần ký & tạo'
-                    : 'Cần ký';
-              },
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'status_document':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Trạng thái bàn giao',
-              cellBuilder:
-                  (item) =>
-                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
-              width: 150,
-              searchValueGetter: (item) {
-                final status = item.trangThaiPhieu ?? 0;
-                return status == 0
-                    ? 'Chưa hoàn thành'
-                    : status == 1
-                    ? 'Sắp hết hạn'
-                    : status == 2
-                    ? 'Đã hoàn thành'
-                    : 'Không xác đinh';
-              },
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        // case 'signing_status':
-        //   columns.add(
-        //     TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-        //       // title: 'Trạng thái ký',
-        //       title: 'Quyền ký',
-        //       cellBuilder: (item) => showSigningStatus(item),
-        //       width: 150,
-        //       searchValueGetter: (item) {
-        //         final status = widget.provider.isCheckSigningStatus(item);
-        //         return status == 1
-        //             ? 'Đã ký'
-        //             : status == 0
-        //             ? 'Chưa ký'
-        //             : status == 2
-        //             ? 'Đã ký nháy'
-        //             : status == 3
-        //             ? 'Đã ký & tạo'
-        //             : status == 4
-        //             ? 'Chưa ký nháy'
-        //             : status == 5
-        //             ? 'Chưa ký & tạo'
-        //             : 'Người tạo phiếu';
-        //       },
-        //       searchable: true,
-        //       filterable: true,
-        //     ),
-        //   );
-        //   break;
-        case 'share':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Chia sẻ',
-              width: 150,
-              cellBuilder:
-                  (item) => ConfigViewAT.showShareStatus(
-                    item.share ?? false,
-                    item.nguoiTao == userInfo?.tenDangNhap,
-                  ),
-              searchValueGetter: (item) {
-                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
-              },
-              filterable: true,
-            ),
-          );
-          break;
-        case 'type':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Phiếu ký nội sinh',
-              width: 150,
-              getValue: (item) => getName(item.loai ?? 0),
-              filterable: true,
-            ),
-          );
-          break;
-        case 'effective_date':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Ngày có hiệu lực',
-              width: 100,
-              getValue: (item) => item.tggnTuNgay ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'approver':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Trình duyệt ban giám đốc',
-              width: 150,
-              getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'document':
-          columns.add(
-            SgTableColumn<ToolAndMaterialTransferDto>(
-              title: 'Tài liệu duyệt',
-              cellBuilder:
-                  (item) => SgDownloadFile(
-                    url: item.duongDanFile.toString(),
-                    name: item.tenFile ?? '',
-                  ),
-              sortValueGetter: (item) => item.tenFile ?? '',
-              searchValueGetter: (item) => item.tenFile ?? '',
-              cellAlignment: TextAlign.center,
-              titleAlignment: TextAlign.center,
-              width: 150,
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'id':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Ký số',
-              width: 120,
-              getValue: (item) => item.id ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'decision_date':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Thời gian giao nhận từ ngày',
-              width: 150,
-              getValue: (item) => item.tggnTuNgay ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'to_date':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Thời gian giao nhận đến ngày',
-              width: 150,
-              getValue: (item) {
-                if (item.tggnDenNgay == null) {
-                  return '';
-                }
-                return item.tggnDenNgay!;
-              },
-              filterable: true,
-            ),
-          );
-          break;
-        case 'don_vi_giao':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Đơn vị giao',
-              width: 150,
-              getValue:
-                  (item) =>
-                      AccountHelper.instance
-                          .getDepartmentById(item.idDonViGiao ?? '')
-                          ?.tenPhongBan ??
-                      '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'don_vi_nhan':
-          columns.add(
-            TableBaseConfig.columnTable<ToolAndMaterialTransferDto>(
-              title: 'Đơn vị nhận',
-              width: 150,
-              getValue:
-                  (item) =>
-                      AccountHelper.instance
-                          .getDepartmentById(item.idDonViNhan ?? '')
-                          ?.tenPhongBan ??
-                      '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'status':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Trạng thái phiếu',
-              cellBuilder:
-                  (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
-              width: 150,
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<ToolAndMaterialTransferDto>(
-              title: 'Thao tác',
-              cellBuilder: (item) => viewAction(item),
-              width: 180,
-              searchable: true,
-            ),
-          );
-          break;
-      }
-    }
-
-    return columns;
-  }
-
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
+  Future<void> _openColumnConfigDialog() async {
+    final apply = await showColumnConfigAndApply(
       context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
+      allColumns: _allColumns,
+      currentColumns: _columns,
+      initialHiddenKeys: _hiddenKeys,
+      title: 'table.config_column'.tr,
     );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
+    if (apply != null) {
+      setState(() {
+        _hiddenKeys = apply.hiddenKeys;
+        _columns = apply.updatedColumns;
+      });
     }
   }
 
+  // Legacy columns removed after migration to RiverpodTable
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<ToolAndMaterialTransferDto>> columns =
-        _buildColumns();
     return MultiBlocListener(
       listeners: [
         BlocListener<ToolAndMaterialTransferBloc, ToolAndMaterialTransferState>(
@@ -534,34 +233,202 @@ class _ToolAndMaterialTransferListState
                     ),
                     child: headerList(),
                   ),
-                  Expanded(
-                    child: TableBaseView<ToolAndMaterialTransferDto>(
-                      searchTerm: '',
-                      columns: columns,
-                      data: widget.provider.dataPage ?? [],
-                      horizontalController: ScrollController(),
-                      getters: getters,
-                      startDate: DateTime.tryParse(
-                        widget.provider.filteredData!.isNotEmpty
-                            ? widget.provider.filteredData!.first.tggnDenNgay
-                                .toString()
-                            : '',
-                      ),
-                      onRowTap: (item) {
-                        widget.provider.onChangeDetailToolAndMaterialTransfer(
-                          item,
-                        );
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final availableWidth = constraints.maxWidth;
+                        return Row(
+                          children: [
+                            riverpod.Consumer(
+                              builder: (context, ref, _) {
+                                return BoxSearch(
+                                  width: (availableWidth * 0.35).toDouble(),
+                                  onSearch: (value) {
+                                    ref
+                                        .read(
+                                          tableToolAndMaterialTransferProvider
+                                              .notifier,
+                                        )
+                                        .searchTerm = value;
+                                  },
+                                );
+                              },
+                            ),
+                            SizedBox(
+                              width: (availableWidth * 0.65).toDouble(),
+                              child: riverpod.Consumer(
+                                builder: (context, ref, _) {
+                                  final hasFilters = ref.watch(
+                                    tableToolAndMaterialTransferProvider.select(
+                                      (s) => s.filterState.hasActiveFilters,
+                                    ),
+                                  );
+                                  final tableState = ref.watch(
+                                    tableToolAndMaterialTransferProvider,
+                                  );
+                                  final selectedCount =
+                                      tableState.selectedItems.length;
+                                  listItemSelected = tableState.selectedItems;
+                                  final buttons = _buildButtonList(
+                                    selectedCount,
+                                  );
+                                  final processedButtons =
+                                      buttons.map((button) {
+                                        if (button.text ==
+                                            'table.clear_filters'.tr) {
+                                          return ResponsiveButtonData.fromButtonIcon(
+                                            text: button.text,
+                                            iconPath: button.iconPath!,
+                                            backgroundColor:
+                                                button.backgroundColor!,
+                                            iconColor: button.iconColor!,
+                                            textColor: button.textColor!,
+                                            width: button.width,
+                                            onPressed: () {
+                                              ref
+                                                  .read(
+                                                    tableToolAndMaterialTransferProvider
+                                                        .notifier,
+                                                  )
+                                                  .clearAllFilters();
+                                            },
+                                          );
+                                        }
+                                        return button;
+                                      }).toList();
 
-                        setState(() {
-                          nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
-                          isShowDetailDepartmentTree = true;
-                          _buildDetailDepartmentTree(item);
-                        });
+                                  final filteredButtons =
+                                      hasFilters
+                                          ? processedButtons
+                                          : processedButtons
+                                              .where(
+                                                (button) =>
+                                                    button.text !=
+                                                    'table.clear_filters'.tr,
+                                              )
+                                              .toList();
+
+                                  return ResponsiveButtonBar(
+                                    buttons: filteredButtons,
+                                    spacing: 12,
+                                    overflowSide: OverflowSide.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    popupPosition: PopupMenuPosition.under,
+                                    popupOffset: const Offset(0, 8),
+                                    popupShape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    popupElevation: 6,
+                                    moreLabel: 'Khác',
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
                       },
-                      onSelectionChanged: (items) {
-                        setState(() {
-                          listItemSelected = items;
+                    ),
+                  ),
+                  // bộ lọc
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(8.0),
+                      bottomRight: Radius.circular(8.0),
+                    ),
+                    child: riverpod.Consumer(
+                      builder: (context, ref, child) {
+                        final data = widget.provider.filteredData ?? [];
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ref
+                              .read(
+                                tableToolAndMaterialTransferProvider.notifier,
+                              )
+                              .setData(data);
                         });
+
+                        return RiverpodTable<ToolAndMaterialTransferDto>(
+                          tableProvider: tableToolAndMaterialTransferProvider,
+                          columns: _columns,
+                          showCheckboxColumn: _showCheckboxColumn,
+                          enableRowSelection: true,
+                          enableRowHover: true,
+                          showAlternatingRowColors: true,
+                          valueGetter: getValueForColumn,
+                          cellsBuilder: (_) => [],
+                          cellBuilderByKey: (item, key) {
+                            final builder = _buildersByKey[key];
+                            if (builder != null) return builder(item);
+                            return null;
+                          },
+                          onRowTap: (item) {
+                            widget.provider
+                                .onChangeDetailToolAndMaterialTransfer(item);
+                            setState(() {
+                              nameBenBan =
+                                  'Trạng thái ký " Biên bản ${item.id} "';
+                              isShowDetailDepartmentTree = true;
+                              _buildDetailDepartmentTree(item);
+                            });
+                          },
+                          // onEdit: (item) {},
+                          onDelete: (item) {
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa nhóm tài sản',
+                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                              highlight: item.tenPhieu ?? '',
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                if (item.trangThai == 0 ||
+                                    item.trangThai == 2) {
+                                  showConfirmDialog(
+                                    context,
+                                    type: ConfirmType.delete,
+                                    title: 'Xóa nhóm tài sản',
+                                    message:
+                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                                    highlight: item.tenPhieu!,
+                                    cancelText: 'Không',
+                                    confirmText: 'Xóa',
+                                    onConfirm: () {
+                                      context.read<DieuDongTaiSanBloc>().add(
+                                        DeleteDieuDongEvent(context, item.id!),
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            );
+                          },
+                          showActionsColumn: _showActionsColumn,
+                          customActions: [
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: AppIconSvgPath.iconEye,
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                _loadPdfNetwork(item.tenFile!).then((_) {
+                                  if (!context.mounted) return;
+                                  previewDocumentToolAndMaterial(
+                                    context: context,
+                                    item: item,
+                                    nhanVien: widget.provider.getNhanVienByID(
+                                      widget.provider.userInfo?.tenDangNhap ??
+                                          '',
+                                    ),
+                                    document: _document,
+                                    isShowKy: false,
+                                  );
+                                });
+                              },
+                            ),
+                          ],
+                          actionsColumnWidth: 120,
+                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                        );
                       },
                     ),
                   ),
@@ -604,144 +471,19 @@ class _ToolAndMaterialTransferListState
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              '${TableToolAndMaterialTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade700,
               ),
             ),
-            // Spacer(),
-            GestureDetector(
-              onTap: _showColumnDisplayPopup,
-              child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-            ),
             SizedBox(width: 8),
-            _buildActionKy(),
           ],
         ),
         Expanded(child: RowFindByStatusCcdc(provider: widget.provider)),
       ],
     );
-  }
-
-  Visibility _buildActionKy() {
-    return Visibility(
-      visible: listItemSelected.isNotEmpty,
-      child: Row(
-        spacing: 8,
-        children: [
-          Visibility(
-            visible:
-                listItemSelected.isNotEmpty &&
-                listItemSelected.length < 2 &&
-                getPermissionSigning(listItemSelected.first) == 0,
-            child: Tooltip(
-              message: 'Ký biên bản',
-              child: InkWell(
-                onTap: () {
-                  if (listItemSelected.isNotEmpty) {
-                    ToolAndMaterialTransferDto? item = listItemSelected.first;
-                    _handleSignDocument(
-                      item,
-                      widget.provider.userInfo!,
-                      widget.provider,
-                    );
-                  }
-                },
-                child: Icon(Icons.edit, color: Colors.green, size: 18),
-              ),
-            ),
-          ),
-          Tooltip(
-            message: 'Chia sẻ với người ký',
-            child: InkWell(
-              onTap: () {
-                if (listItemSelected.isNotEmpty) {
-                  _handleSendToSigner(listItemSelected);
-                }
-              },
-              child: Icon(Icons.send_sharp, color: Colors.blue, size: 18),
-            ),
-          ),
-          SGText(
-            text: 'Số lượng biên bản đã chọn: ${listItemSelected.length}',
-            color: Colors.blue,
-            size: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget viewAction(ToolAndMaterialTransferDto item) {
-    return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.visibility,
-        tooltip: 'Xem',
-        iconColor: ColorValue.cyan,
-        backgroundColor: Colors.green.shade50,
-        borderColor: Colors.green.shade200,
-        onPressed: () {
-          _loadPdfNetwork(item.tenFile!).then((_) {
-            if (mounted) {
-              previewDocumentToolAndMaterial(
-                context: context,
-                item: item,
-                nhanVien: widget.provider.getNhanVienByID(
-                  widget.provider.userInfo?.tenDangNhap ?? '',
-                ),
-                document: _document,
-                isShowKy: false,
-              );
-            }
-          });
-        },
-      ),
-      ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
-        iconColor:
-            (item.trangThai == 0 || item.trangThai == 2)
-                ? Colors.red.shade700
-                : Colors.grey,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed:
-            () => {
-              if (item.trangThai == 0 || item.trangThai == 2)
-                {
-                  showConfirmDialog(
-                    context,
-                    type: ConfirmType.delete,
-                    title: 'Xóa nhóm tài sản',
-                    message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                    highlight: item.tenPhieu!,
-                    cancelText: 'Không',
-                    confirmText: 'Xóa',
-                    onConfirm: () {
-                      context.read<ToolAndMaterialTransferBloc>().add(
-                        DeleteToolAndMaterialTransferEvent(context, item.id!),
-                      );
-                    },
-                  ),
-                },
-            },
-      ),
-    ]);
-  }
-
-  String getName(int type) {
-    switch (type) {
-      case 1:
-        return 'Phiếu duyệt cấp phát CCDC - Vật tư';
-      case 2:
-        return 'Phiếu duyệt chuyển CCDC - Vật tư';
-      case 3:
-        return 'Phiếu duyệt thu hồi CCDC - Vật tư';
-    }
-    return '';
   }
 
   void _callGetListAssetHandover() {
@@ -860,55 +602,6 @@ class _ToolAndMaterialTransferListState
     });
   }
 
-  Widget showSigningStatus(ToolAndMaterialTransferDto item) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? Colors.red
-                  : widget.provider.isCheckSigningStatus(item) == 2
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 3
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 4
-                  ? Colors.orange
-                  : widget.provider.isCheckSigningStatus(item) == 5
-                  ? Colors.purple
-                  : Colors.blue,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: SGText(
-          text:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? 'Đã ký'
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? 'Chưa ký'
-                  : widget.provider.isCheckSigningStatus(item) == 2
-                  ? 'Đã ký nháy'
-                  : widget.provider.isCheckSigningStatus(item) == 3
-                  ? 'Đã ký & tạo'
-                  : widget.provider.isCheckSigningStatus(item) == 4
-                  ? 'Chưa ký nháy'
-                  : widget.provider.isCheckSigningStatus(item) == 5
-                  ? 'Chưa ký & tạo'
-                  : "Người tạo phiếu",
-          size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
   void _buildDetailDepartmentTree(ToolAndMaterialTransferDto item) {
     listSignatoryDetail.clear();
     selected = item;
@@ -1010,130 +703,52 @@ class _ToolAndMaterialTransferListState
     );
   }
 
-  List<ToolAndMaterialTransferDto> _getNotSharedAndNotify(
-    List<ToolAndMaterialTransferDto> items,
-  ) {
-    if (items.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Không có phiếu nào để chia sẻ',
-        isError: true,
-      );
-      return const [];
-    }
-
-    final List<ToolAndMaterialTransferDto> alreadyShared =
-        items.where((e) => e.share == true).toList();
-    final List<ToolAndMaterialTransferDto> notShared =
-        items.where((e) => e.share != true).toList();
-    if (notShared.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Các phiếu này đều đã được chia sẻ',
-        isError: true,
-      );
-      return const [];
-    }
-    if (alreadyShared.isNotEmpty) {
-      final String names = alreadyShared
-          .map(
-            (e) =>
-                e.tenPhieu?.trim().isNotEmpty == true
-                    ? e.tenPhieu!
-                    : (e.id ?? ''),
-          )
-          .where((s) => s.isNotEmpty)
-          .join(', ');
-      if (names.isNotEmpty) {
-        AppUtility.showSnackBar(
-          context,
-          'Các phiếu đã được chia sẻ: $names',
-          isError: true,
-        );
-      } else {
-        AppUtility.showSnackBar(
-          context,
-          'Có phiếu đã được chia sẻ trong danh sách chọn',
-          isError: true,
-        );
-      }
-    }
-    return notShared;
-  }
-
-  void _handleSendToSigner(List<ToolAndMaterialTransferDto> items) {
-    if (items.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Không có phiếu nào để chia sẻ',
-        isError: true,
-      );
-      return;
-    }
-
-    showConfirmDialog(
-      context,
-      type: ConfirmType.delete,
-      title: 'Chia sẻ',
-      message: 'Bạn có chắc muốn chia sẻ với người ký?',
-      cancelText: 'Không',
-      confirmText: 'Chia sẻ',
-      onConfirm: () {
-        final notShared = _getNotSharedAndNotify(items);
-        if (notShared.isEmpty) return;
-        context.read<ToolAndMaterialTransferBloc>().add(
-          SendToSignerTAMTEvent(context, items),
-        );
-      },
-    );
-  }
-
-  // Implement check permission signing
-  int getPermissionSigning(ToolAndMaterialTransferDto item) {
-    final signatureFlow =
-        [
-              if (item.nguoiLapPhieuKyNhay == true)
-                {
-                  "id": item.idNguoiKyNhay,
-                  "signed": item.trangThaiKyNhay == true,
-                  "label":
-                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
-                },
-              {
-                "id": item.idTrinhDuyetCapPhong,
-                "signed": item.trinhDuyetCapPhongXacNhan == true,
-                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
-              },
-              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
-                {
-                  "id": item.listSignatory![i].idNguoiKy,
-                  "signed": item.listSignatory![i].trangThai == 1,
-                  "label":
-                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
-                },
-              {
-                "id": item.idTrinhDuyetGiamDoc,
-                "signed": item.trinhDuyetGiamDocXacNhan == true,
-                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
-              },
-            ]
-            .where(
-              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
-            )
-            .toList();
-    final currentIndex = signatureFlow.indexWhere(
-      (s) => s["id"] == userInfo?.tenDangNhap,
-    );
-    if (currentIndex == -1) return 2;
-    if (item.nguoiTao == userInfo?.tenDangNhap &&
-        signatureFlow[currentIndex]["signed"] != -1) {
-      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
-    }
-    if (signatureFlow[currentIndex]["signed"] == true) return 3;
-    final previousNotSigned = signatureFlow
-        .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
-    if (previousNotSigned.isNotEmpty) return 1;
-    return 0;
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+    return [
+      // Configure columns button
+      ResponsiveButtonData.fromButtonIcon(
+        text: 'table.config_column'.tr,
+        iconPath: AppIconSvg.iconSetting,
+        backgroundColor: AppColor.white,
+        iconColor: AppColor.textDark,
+        textColor: AppColor.textDark,
+        width: 130,
+        onPressed: () {
+          _openColumnConfigDialog();
+        },
+      ),
+      if (listItemSelected.isNotEmpty && listItemSelected.length < 2)
+        ResponsiveButtonData.fromButtonIcon(
+          text: 'table.signing'.tr,
+          iconPath: AppIconSvgPath.iconPenLine,
+          backgroundColor: AppColor.white,
+          iconColor: AppColor.textDark,
+          textColor: AppColor.textDark,
+          width: 150,
+          onPressed: () {
+            ToolAndMaterialTransferDto? item = listItemSelected.first;
+            _handleSignDocument(
+              item,
+              widget.provider.userInfo!,
+              widget.provider,
+            );
+          },
+        ),
+      if (listItemSelected.isNotEmpty)
+        ResponsiveButtonData.fromButtonIcon(
+          text: "${'table.send'.tr} (${listItemSelected.length})",
+          iconPath: AppIconSvgPath.iconSend,
+          backgroundColor: Colors.redAccent,
+          iconColor: AppColor.textWhite,
+          textColor: AppColor.textWhite,
+          width: 200,
+          onPressed: () {
+            TableToolAndMaterialTransferConfig.handleSendToSigner(
+              context,
+              listItemSelected,
+            );
+          },
+        ),
+    ];
   }
 }

@@ -226,12 +226,7 @@ abstract class AppUtility {
   // Returns a DateTime at the first day of that month, or null if invalid
   static DateTime? parseMonthYear(String input) {
     if (input.isEmpty) return null;
-    final List<String> patterns = [
-      'MM/yyyy',
-      'M/yyyy',
-      'yyyy-MM',
-      'yyyy-M',
-    ];
+    final List<String> patterns = ['MM/yyyy', 'M/yyyy', 'yyyy-MM', 'yyyy-M'];
     for (final pattern in patterns) {
       try {
         final parsed = DateFormat(pattern).parseStrict(input);

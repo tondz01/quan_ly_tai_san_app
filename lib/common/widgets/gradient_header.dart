@@ -24,9 +24,9 @@ class GradientHeader extends StatelessWidget {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            Color(0xFF1E3A8A), // Dark blue left
-            Color(0xFF10B981), // Green center
-            Color(0xFF1E3A8A), // Dark blue right
+            Color(0xFF009E60), // Dark blue left
+            Color(0xFF026E42), // Green center
+            Color(0xFF026E42), // Dark blue right
           ],
           stops: [0.0, 0.5, 1.0],
         ),
@@ -42,9 +42,7 @@ class GradientHeader extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -81,22 +79,63 @@ class GradientHeader extends StatelessWidget {
   Widget _buildTitle() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 32,
-          fontWeight: FontWeight.w700,
-          fontFamily: 'serif',
-          shadows: [
-            Shadow(
-              color: Colors.black.withOpacity(0.3),
-              offset: const Offset(2, 2),
-              blurRadius: 4,
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 25,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'serif',
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.3),
+                  offset: const Offset(2, 2),
+                  blurRadius: 4,
+                ),
+              ],
             ),
-          ],
-        ),
-        textAlign: TextAlign.center,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 2),
+          Text(
+            'CÔNG TY THAN UÔNG BÍ - TKV',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.phone, color: Colors.white, size: 14),
+              SizedBox(width: 4),
+              Text(
+                'Hotline: 02033.854491',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              SizedBox(width: 12),
+              Icon(Icons.email, color: Colors.white, size: 14),
+              SizedBox(width: 4),
+              Text(
+                'Email: ctythanub@gmail.com',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -110,11 +149,11 @@ class ColorBandsPainter extends CustomPainter {
     ];
 
     double currentY = 0;
-    
+
     for (final band in bands) {
       final paint = Paint()
-        ..color = band['color'] as Color
-        ..style = PaintingStyle.fill;
+            ..color = band['color'] as Color
+            ..style = PaintingStyle.fill;
 
       final rect = Rect.fromLTWH(
         0,
@@ -129,9 +168,9 @@ class ColorBandsPainter extends CustomPainter {
 
     // Add diagonal stripes for more visual interest
     final stripePaint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+          ..color = Colors.white.withOpacity(0.1)
+          ..strokeWidth = 2
+          ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < 8; i++) {
       final startX = (size.width / 8) * i;

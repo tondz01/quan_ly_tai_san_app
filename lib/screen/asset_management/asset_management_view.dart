@@ -160,7 +160,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                                 return true; // Xử lý scroll event bình thường
                               },
                               child: SingleChildScrollView(
-                                padding: const EdgeInsets.all(24),
+                                // padding: const EdgeInsets.all(24),
                                 physics:
                                     _scrollController.isParentScrolling
                                         ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn

@@ -246,6 +246,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: provider.onTapBackHeader,
                     onNew: () {
                       provider.onChangeDetail(context, null);

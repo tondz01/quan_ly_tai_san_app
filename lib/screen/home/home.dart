@@ -101,7 +101,7 @@ class _HomeState extends State<Home> {
         buttonEnterColor: Colors.grey.shade100,
         heightButton: 28.0,
         borderRadiusButton: 4.0,
-        paddingButton: const EdgeInsets.only(bottom: 8, left: 12, right: 12),
+        paddingButton: const EdgeInsets.only(bottom: 4, left: 10, right: 10),
         popupOffsetY: 3.0,
         popupPadding: EdgeInsets.symmetric(
           vertical:
@@ -350,7 +350,21 @@ class _HomeState extends State<Home> {
                   Container(
                     height: 64,
                     padding: const EdgeInsets.only(left: 24, right: 24),
-                    decoration: BoxDecoration(color: Colors.blue),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF009E60),
+                          Color(0xFF026E42),
+                          Color(0xFF026E42),
+                        ],
+                      ),
+                      border: const Border(
+                        top: BorderSide(
+                          color: Colors.white,
+                          width: 1,
+                        ),
+                      ),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

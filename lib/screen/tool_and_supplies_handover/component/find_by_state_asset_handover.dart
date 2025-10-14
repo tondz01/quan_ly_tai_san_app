@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 
-class FindByStateAssetHandover extends StatelessWidget {
-  const FindByStateAssetHandover({super.key, required this.provider});
-  final AssetHandoverProvider provider;
+class FindByStateToolHandover extends StatelessWidget {
+  const FindByStateToolHandover({super.key, required this.provider});
+  final ToolAndSuppliesHandoverProvider provider;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class FindByStateAssetHandover extends StatelessWidget {
 class _FilterCheckboxes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AssetHandoverProvider>(context);
+    final provider = Provider.of<ToolAndSuppliesHandoverProvider>(context);
     
     // Tạo map filter states từ provider
     final filterStates = {

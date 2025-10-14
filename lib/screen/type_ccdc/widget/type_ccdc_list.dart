@@ -144,16 +144,16 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                     SizedBox(width: 8),
                     Text(
                       'Quản lý loại CCDC (${widget.provider.data?.length ?? 0})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
+                  ],
                     ),
                   ],
                 ),
-              ],
-            ),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -161,7 +161,7 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
               builder: (context, constraints) {
                 final availableWidth = constraints.maxWidth;
                 return Row(
-                  children: [
+                    children: [
                     riverpod.Consumer(
                       builder: (context, ref, _) {
                         return BoxSearch(
@@ -197,7 +197,7 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                                     iconColor: button.iconColor!,
                                     textColor: button.textColor!,
                                     width: button.width,
-                                    onPressed: () {
+                        onPressed: () {
                                       ref
                                           .read(tableTypeCcdcProvider.notifier)
                                           .clearAllFilters();
@@ -232,9 +232,9 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                             moreLabel: 'Khác',
                           );
                         },
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ],
                 );
               },
             ),
@@ -264,9 +264,9 @@ class _TypeCcdcListState extends State<TypeCcdcList> {
                     if (builder != null) return builder(item);
                     return null;
                   },
-                  onRowTap: (item) {
-                    widget.provider.onChangeDetail(item);
-                  },
+              onRowTap: (item) {
+                widget.provider.onChangeDetail(item);
+              },
                   onDelete: (item) {
                     showConfirmDialog(
                       context,

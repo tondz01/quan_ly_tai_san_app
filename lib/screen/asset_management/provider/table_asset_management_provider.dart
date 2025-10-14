@@ -33,5 +33,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
 
   Future<void> refreshData() async {
     await generateData();
+    loadData();
+
   }
 }

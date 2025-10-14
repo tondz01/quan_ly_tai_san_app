@@ -1,14 +1,14 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
@@ -16,18 +16,27 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_st
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/tabel_asset_transfer_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
+import 'package:table_base/core/themes/app_color.dart';
+import 'package:table_base/core/themes/app_icon_svg.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
+import 'package:table_base/widgets/table/widgets/table_actions_widget.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
@@ -56,27 +65,20 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   List<ThreadNode> listSignatoryDetail = [];
   UserInfoDTO? userInfo;
 
+  late final List<TableColumnData> _allColumns;
+  List<String> _hiddenKeys = [];
+  List<TableColumnData> _columns = [];
+  late final List<ColumnDefinition> _definitions;
+  late final Map<String, TableCellBuilder> _buildersByKey;
+
+  final bool _showCheckboxColumn = true;
+  final bool _showActionsColumn = true;
+
   final List<AssetHandoverDto> listAssetHandover = [];
   PdfDocument? _document;
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
-  List<String> visibleColumnIds = [
-    'type',
-    'effective_date',
-    'approver',
-    'document',
-    'id',
-    'decision_date',
-    'to_date',
-    'don_vi_giao',
-    'don_vi_nhan',
-    'permission_signing',
-    'status_document',
-    // 'signing_status',
-    'share',
-    'status',
-    'actions',
-  ];
+
   List<Map<String, DateTime Function(DieuDongTaiSanDto)>> getters = [];
   @override
   void initState() {
@@ -86,8 +88,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     if (selected != null) {
       _buildDetailDepartmentTree(selected!);
     }
-    _initializeColumnOptions();
     _callGetListAssetHandover();
+    _definitions = TabelAssetTransferConfig.getColumns(
+      userInfo ?? UserInfoDTO.empty(),
+    );
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
   }
 
   @override
@@ -122,378 +129,85 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     }
   }
 
-  void _initializeColumnOptions() {
-    columnOptions = [
-      ColumnDisplayOption(
-        id: 'permission_signing',
-        label: 'Quyền ký',
-        isChecked: visibleColumnIds.contains('permission_signing'),
-      ),
-      ColumnDisplayOption(
-        id: 'status_document',
-        label: 'Trạng thái bàn giao',
-        isChecked: visibleColumnIds.contains('status_document'),
-      ),
-      // ColumnDisplayOption(
-      //   id: 'signing_status',
-      //   label: 'Trạng thái ký',
-      //   isChecked: visibleColumnIds.contains('signing_status'),
-      // ),
-      ColumnDisplayOption(
-        id: 'share',
-        label: 'Chia sẻ',
-        isChecked: visibleColumnIds.contains('share'),
-      ),
-      ColumnDisplayOption(
-        id: 'type',
-        label: 'Phiếu ký nội sinh',
-        isChecked: visibleColumnIds.contains('type'),
-      ),
+  dynamic getValueForColumn(DieuDongTaiSanDto item, int columnIndex) {
+    final int offset = _showCheckboxColumn ? 1 : 0;
+    final int adjustedIndex = columnIndex - offset;
 
-      ColumnDisplayOption(
-        id: 'effective_date',
-        label: 'Ngày có hiệu lực',
-        isChecked: visibleColumnIds.contains('effective_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'approver',
-        label: 'Trình duyệt ban giám đốc',
-        isChecked: visibleColumnIds.contains('approver'),
-      ),
-      ColumnDisplayOption(
-        id: 'document',
-        label: 'Tài liệu duyệt',
-        isChecked: visibleColumnIds.contains('document'),
-      ),
-      ColumnDisplayOption(
-        id: 'id',
-        label: 'Ký số',
-        isChecked: visibleColumnIds.contains('id'),
-      ),
-      ColumnDisplayOption(
-        id: 'decision_date',
-        label: 'Thời gian giao nhận từ ngày',
-        isChecked: visibleColumnIds.contains('decision_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'to_date',
-        label: 'Thời gian giao nhận đến ngày',
-        isChecked: visibleColumnIds.contains('to_date'),
-      ),
-      ColumnDisplayOption(
-        id: 'don_vi_giao',
-        label: 'Đơn vị giao',
-        isChecked: visibleColumnIds.contains('don_vi_giao'),
-      ),
-      ColumnDisplayOption(
-        id: 'don_vi_nhan',
-        label: 'Đơn vị nhận',
-        isChecked: visibleColumnIds.contains('don_vi_nhan'),
-      ),
-      ColumnDisplayOption(
-        id: 'status',
-        label: 'Trạng thái phiếu',
-        isChecked: visibleColumnIds.contains('status'),
-      ),
-      ColumnDisplayOption(
-        id: 'actions',
-        label: 'Thao tác',
-        isChecked: visibleColumnIds.contains('actions'),
-      ),
-    ];
-
-    getters = [
-      {
-        'Thời gian giao nhận từ ngày':
-            (item) =>
-                DateTime.tryParse(item.tggnTuNgay ?? '') ?? DateTime.now(),
-      },
-      {
-        'Thời gian giao nhận đến ngày':
-            (item) =>
-                DateTime.tryParse(item.tggnDenNgay ?? '') ?? DateTime.now(),
-      },
-    ];
-  }
-
-  List<SgTableColumn<DieuDongTaiSanDto>> _buildColumns() {
-    final List<SgTableColumn<DieuDongTaiSanDto>> columns = [];
-
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'permission_signing':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              // title: 'Quyền ký',
-              title: 'Trạng thái ký',
-              cellBuilder:
-                  (item) => AppUtility.showPermissionSigning(
-                    getPermissionSigning(item),
-                  ),
-              width: 150,
-              searchValueGetter: (item) {
-                final status = getPermissionSigning(item);
-                return status == 2
-                    ? 'Không được phép ký'
-                    : status == 1
-                    ? 'Chưa đến lượt ký'
-                    : status == 3
-                    ? 'Đã ký'
-                    : status == 4
-                    ? 'Đã ký & tạo'
-                    : status == 5
-                    ? 'Cần ký & tạo'
-                    : 'Cần ký';
-              },
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'status_document':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Trạng thái bàn giao',
-              cellBuilder:
-                  (item) =>
-                      AppUtility.showStatusDocument(item.trangThaiPhieu ?? 0),
-              width: 150,
-              searchValueGetter: (item) {
-                final status = item.trangThaiPhieu ?? 0;
-                return status == 0
-                    ? 'Chưa hoàn thành'
-                    : status == 1
-                    ? 'Sắp hết hạn'
-                    : status == 2
-                    ? 'Đã hoàn thành'
-                    : 'Không xác đinh';
-              },
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        // case 'signing_status':
-        //   columns.add(
-        //     SgTableColumn<DieuDongTaiSanDto>(
-        //       // title: 'Trạng thái ký',
-        //       title: 'Quyền ký',
-        //       cellBuilder: (item) => showSigningStatus(item),
-        //       searchValueGetter: (item) {
-        //         final status = widget.provider.isCheckSigningStatus(item);
-        //         return status == 1
-        //             ? 'Đã ký'
-        //             : status == 0
-        //             ? 'Chưa ký'
-        //             : status == 2
-        //             ? 'Đã ký nháy'
-        //             : status == 3
-        //             ? 'Đã ký & tạo'
-        //             : status == 4
-        //             ? 'Chưa ký nháy'
-        //             : status == 5
-        //             ? 'Chưa ký & tạo'
-        //             : 'Người tạo phiếu';
-        //       },
-        //       width: 150,
-        //       searchable: true,
-        //       filterable: true,
-        //     ),
-        //   );
-        //   break;
-        case 'share':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Chia sẻ',
-              width: 150,
-              cellBuilder:
-                  (item) => ConfigViewAT.showShareStatus(
-                    item.share ?? false,
-                    item.nguoiTao == userInfo?.tenDangNhap,
-                  ),
-              searchValueGetter: (item) {
-                return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
-              },
-              filterable: true,
-            ),
-          );
-          break;
-        case 'type':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Phiếu ký nội sinh',
-              width: 150,
-              getValue: (item) => getName(item.loai ?? 0),
-              filterable: true,
-            ),
-          );
-          break;
-        case 'effective_date':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Ngày có hiệu lực',
-              width: 100,
-              getValue: (item) => item.tggnTuNgay ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'approver':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Trình duyệt ban giám đốc',
-              width: 150,
-              getValue: (item) => item.tenTrinhDuyetGiamDoc ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'document':
-          columns.add(
-            SgTableColumn<DieuDongTaiSanDto>(
-              title: 'Tài liệu duyệt',
-              cellBuilder:
-                  (item) => SgDownloadFile(
-                    url: item.duongDanFile.toString(),
-                    name: item.tenFile ?? '',
-                  ),
-              sortValueGetter: (item) => item.tenFile ?? '',
-              searchValueGetter: (item) => item.tenFile ?? '',
-              cellAlignment: TextAlign.center,
-              titleAlignment: TextAlign.center,
-              width: 150,
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'id':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Ký số',
-              width: 120,
-              getValue: (item) => item.id ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'decision_date':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Thời gian giao nhận từ ngày',
-              width: 150,
-              getValue: (item) => item.tggnTuNgay ?? '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'to_date':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Thời gian giao nhận đến ngày',
-              width: 150,
-              getValue: (item) {
-                if (item.tggnDenNgay == null) {
-                  return '';
-                }
-                return item.tggnDenNgay!;
-              },
-              filterable: true,
-            ),
-          );
-          break;
-        case 'don_vi_giao':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Đơn vị giao',
-              width: 150,
-              getValue:
-                  (item) =>
-                      AccountHelper.instance
-                          .getDepartmentById(item.idDonViGiao ?? '')
-                          ?.tenPhongBan ??
-                      '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'don_vi_nhan':
-          columns.add(
-            TableBaseConfig.columnTable<DieuDongTaiSanDto>(
-              title: 'Đơn vị nhận',
-              width: 150,
-              getValue:
-                  (item) =>
-                      AccountHelper.instance
-                          .getDepartmentById(item.idDonViNhan ?? '')
-                          ?.tenPhongBan ??
-                      '',
-              filterable: true,
-            ),
-          );
-          break;
-        case 'status':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Trạng thái phiếu',
-              cellBuilder:
-                  (item) => ConfigViewAT.showStatus(item.trangThai ?? 0),
-              width: 150,
-              searchValueGetter:
-                  (item) => ConfigViewAT.getStatus(item.trangThai ?? 0),
-              searchable: true,
-              filterable: true,
-            ),
-          );
-          break;
-        case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<DieuDongTaiSanDto>(
-              title: 'Thao tác',
-              cellBuilder: (item) => viewAction(item),
-              width: 180,
-            ),
-          );
-          break;
-      }
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
     }
 
-    return columns;
-  }
-
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+      case 'type':
+        // Return human-readable name for searching/sorting consistency
+        return item.tenPhieu;
+      case 'effective_date':
+        return item.tggnTuNgay;
+      case 'approver':
+        return item.tenTrinhDuyetGiamDoc;
+      case 'document':
+        return item.tenFile;
+      case 'id':
+        return item.id;
+      case 'decision_date':
+        return item.tggnTuNgay;
+      case 'to_date':
+        return item.tggnDenNgay;
+      case 'don_vi_giao':
+        return AccountHelper.instance
+                .getDepartmentById(item.idDonViGiao ?? '')
+                ?.tenPhongBan ??
+            '';
+      case 'don_vi_nhan':
+        return AccountHelper.instance
+                .getDepartmentById(item.idDonViNhan ?? '')
+                ?.tenPhongBan ??
+            '';
+      case 'status':
+        return TabelAssetTransferConfig.getStatus(item.trangThai ?? 0);
+      case 'permission_signing':
+        return TabelAssetTransferConfig.getStatusSigningName(item);
+      case 'status_document':
+        return TabelAssetTransferConfig.getStatusDocumentName(item);
+      case 'share':
+        return item.share == true ? 'Đã chia sẻ' : 'Chưa chia sẻ';
+      default:
+        return null;
     }
   }
+
+  // void _showColumnDisplayPopup() async {
+  //   await showColumnDisplayPopup(
+  //     context: context,
+  //     columns: columnOptions,
+  //     onSave: (selectedColumns) {
+  //       setState(() {
+  //         visibleColumnIds = selectedColumns;
+  //         _updateColumnOptions();
+  //       });
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Đã cập nhật hiển thị cột'),
+  //           backgroundColor: Colors.green,
+  //         ),
+  //       );
+  //     },
+  //     onCancel: () {
+  //       // Reset về trạng thái ban đầu
+  //       _updateColumnOptions();
+  //     },
+  //   );
+  // }
+
+  // void _updateColumnOptions() {
+  //   for (var option in columnOptions) {
+  //     option.isChecked = visibleColumnIds.contains(option.id);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<DieuDongTaiSanDto>> columns = _buildColumns();
     return MultiBlocListener(
       listeners: [
         BlocListener<AssetHandoverBloc, AssetHandoverState>(
@@ -535,31 +249,216 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     ),
                     child: headerList(),
                   ),
-                  Expanded(
-                    child: TableBaseView<DieuDongTaiSanDto>(
-                      searchTerm: '',
-                      columns: columns,
-                      data: widget.provider.dataPage ?? [],
-                      horizontalController: ScrollController(),
-                      getters: getters,
-                      startDate: DateTime.tryParse(
-                        widget.provider.filteredData!.isNotEmpty
-                            ? widget.provider.filteredData!.first.tggnDenNgay
-                                .toString()
-                            : '',
-                      ),
-                      onRowTap: (item) {
-                        widget.provider.onChangeDetailDieuDongTaiSan(item);
-                        setState(() {
-                          nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
-                          isShowDetailDepartmentTree = true;
-                          _buildDetailDepartmentTree(item);
-                        });
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final availableWidth = constraints.maxWidth;
+                        return Row(
+                          children: [
+                            riverpod.Consumer(
+                              builder: (context, ref, _) {
+                                return BoxSearch(
+                                  width: (availableWidth * 0.35).toDouble(),
+                                  onSearch: (value) {
+                                    ref
+                                        .read(
+                                          tableAssetTransferProvider.notifier,
+                                        )
+                                        .searchTerm = value;
+                                  },
+                                );
+                              },
+                            ),
+                            SizedBox(
+                              width: (availableWidth * 0.65).toDouble(),
+                              child: riverpod.Consumer(
+                                builder: (context, ref, _) {
+                                  final hasFilters = ref.watch(
+                                    tableAssetTransferProvider.select(
+                                      (s) => s.filterState.hasActiveFilters,
+                                    ),
+                                  );
+                                  final tableState = ref.watch(
+                                    tableAssetTransferProvider,
+                                  );
+                                  final selectedCount =
+                                      tableState.selectedItems.length;
+                                  selectedItems = tableState.selectedItems;
+                                  final buttons = _buildButtonList(
+                                    selectedCount,
+                                  );
+                                  final processedButtons =
+                                      buttons.map((button) {
+                                        if (button.text ==
+                                            'table.clear_filters'.tr) {
+                                          return ResponsiveButtonData.fromButtonIcon(
+                                            text: button.text,
+                                            iconPath: button.iconPath!,
+                                            backgroundColor:
+                                                button.backgroundColor!,
+                                            iconColor: button.iconColor!,
+                                            textColor: button.textColor!,
+                                            width: button.width,
+                                            onPressed: () {
+                                              ref
+                                                  .read(
+                                                    tableAssetTransferProvider
+                                                        .notifier,
+                                                  )
+                                                  .clearAllFilters();
+                                            },
+                                          );
+                                        }
+                                        return button;
+                                      }).toList();
+
+                                  final filteredButtons =
+                                      hasFilters
+                                          ? processedButtons
+                                          : processedButtons
+                                              .where(
+                                                (button) =>
+                                                    button.text !=
+                                                    'table.clear_filters'.tr,
+                                              )
+                                              .toList();
+
+                                  return ResponsiveButtonBar(
+                                    buttons: filteredButtons,
+                                    spacing: 12,
+                                    overflowSide: OverflowSide.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    popupPosition: PopupMenuPosition.under,
+                                    popupOffset: const Offset(0, 8),
+                                    popupShape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    popupElevation: 6,
+                                    moreLabel: 'Khác',
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
                       },
-                      onSelectionChanged: (items) {
-                        setState(() {
-                          selectedItems = items;
+                    ),
+                  ),
+                  // bộ lọc
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(8.0),
+                      bottomRight: Radius.circular(8.0),
+                    ),
+                    child: riverpod.Consumer(
+                      builder: (context, ref, child) {
+                        final data = widget.provider.filteredData ?? [];
+                        // Defer provider mutation until after the current frame
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ref
+                              .read(tableAssetTransferProvider.notifier)
+                              .setData(data);
                         });
+
+                        return RiverpodTable<DieuDongTaiSanDto>(
+                          tableProvider: tableAssetTransferProvider,
+                          columns: _columns,
+                          showCheckboxColumn: _showCheckboxColumn,
+                          enableRowSelection: true,
+                          enableRowHover: true,
+                          showAlternatingRowColors: true,
+                          valueGetter: getValueForColumn,
+                          cellsBuilder: (_) => [],
+                          cellBuilderByKey: (item, key) {
+                            final builder = _buildersByKey[key];
+                            if (builder != null) return builder(item);
+                            return null;
+                          },
+                          onRowTap: (item) {
+                            widget.provider.onChangeDetailDieuDongTaiSan(item);
+                            setState(() {
+                              nameBenBan =
+                                  'Trạng thái ký " Biên bản ${item.id} "';
+                              isShowDetailDepartmentTree = true;
+                              _buildDetailDepartmentTree(item);
+                            });
+                          },
+                          // onEdit: (item) {},
+                          onDelete: (item) {
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa nhóm tài sản',
+                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                              highlight: item.tenPhieu ?? '',
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                if (item.trangThai == 0 ||
+                                    item.trangThai == 2) {
+                                  showConfirmDialog(
+                                    context,
+                                    type: ConfirmType.delete,
+                                    title: 'Xóa nhóm tài sản',
+                                    message:
+                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                                    highlight: item.tenPhieu!,
+                                    cancelText: 'Không',
+                                    confirmText: 'Xóa',
+                                    onConfirm: () {
+                                      context.read<DieuDongTaiSanBloc>().add(
+                                        DeleteDieuDongEvent(context, item.id!),
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            );
+                          },
+                          showActionsColumn: _showActionsColumn,
+                          customActions: [
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: 'assets/icons/building.svg',
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                if (listAssetHandover.isEmpty) {
+                                  AppUtility.showSnackBar(
+                                    context,
+                                    'Không có biên bản bàn giao tài sản nào cho phiếu này',
+                                    isError: true,
+                                  );
+                                  return;
+                                }
+                                PropertyHandoverMinutes.showPopup(
+                                  context,
+                                  listAssetHandover
+                                      .where((itemAH) => itemAH.id == item.id)
+                                      .toList(),
+                                );
+                              },
+                            ),
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: 'assets/icons/eye.svg',
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                await _loadPdfNetwork(item.tenFile!);
+                                if (!context.mounted) return;
+                                previewDocument(
+                                  context: context,
+                                  item: item,
+                                  provider: widget.provider,
+                                  isShowKy: false,
+                                  document: _document,
+                                );
+                              },
+                            ),
+                          ],
+                          actionsColumnWidth: 120,
+                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                        );
                       },
                     ),
                   ),
@@ -701,70 +600,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade700,
-              ),
-            ),
-
-            // Spacer(),
-            GestureDetector(
-              onTap: _showColumnDisplayPopup,
-              child: Icon(Icons.settings, color: ColorValue.link, size: 18),
-            ),
-            SizedBox(width: 8),
-            Visibility(
-              visible: selectedItems.isNotEmpty,
-              child: Row(
-                spacing: 8,
-                children: [
-                  Visibility(
-                    visible:
-                        selectedItems.isNotEmpty &&
-                        selectedItems.length < 2 &&
-                        getPermissionSigning(selectedItems.first) == 0,
-                    child: Tooltip(
-                      message: 'Ký biên bản',
-                      child: InkWell(
-                        onTap: () {
-                          if (selectedItems.isNotEmpty) {
-                            DieuDongTaiSanDto? item = selectedItems.first;
-
-                            _handleSignDocument(
-                              item,
-                              userInfo!,
-                              widget.provider,
-                            );
-                          }
-                        },
-                        child: Icon(Icons.edit, color: Colors.green, size: 18),
-                      ),
-                    ),
-                  ),
-                  Tooltip(
-                    message: 'Chia sẻ với người ký',
-                    child: InkWell(
-                      onTap: () {
-                        if (selectedItems.isNotEmpty) {
-                          _handleSendToSigner(selectedItems);
-                        }
-                      },
-                      child: Icon(
-                        Icons.send_sharp,
-                        color: Colors.blue,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                  SGText(
-                    text: 'Số lượng biên bản đã chọn: ${selectedItems.length}',
-                    color: Colors.blue,
-                    size: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ],
               ),
             ),
           ],
@@ -772,93 +612,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         Expanded(child: RowFindByStatus(provider: widget.provider)),
       ],
     );
-  }
-
-  Widget viewAction(DieuDongTaiSanDto item) {
-    return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.book_outlined,
-        tooltip: 'Biên bản bản giao',
-        iconColor: ColorValue.lightAmber,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed: () {
-          if (listAssetHandover.isEmpty) {
-            AppUtility.showSnackBar(
-              context,
-              'Không có biên bản bàn giao tài sản nào cho phiếu này',
-              isError: true,
-            );
-            return;
-          }
-          PropertyHandoverMinutes.showPopup(
-            context,
-            listAssetHandover.where((itemAH) => itemAH.id == item.id).toList(),
-          );
-        },
-      ),
-      ActionButtonConfig(
-        icon: Icons.visibility,
-        tooltip: 'Xem',
-        iconColor: ColorValue.cyan,
-        backgroundColor: Colors.green.shade50,
-        borderColor: Colors.green.shade200,
-        onPressed: () async {
-          await _loadPdfNetwork(item.tenFile!);
-          if (mounted) {
-            previewDocument(
-              context: context,
-              item: item,
-              provider: widget.provider,
-              isShowKy: false,
-              document: _document,
-            );
-          }
-        },
-      ),
-      ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: (item.trangThai == 0 || item.trangThai == 2) ? 'Xóa' : null,
-        iconColor:
-            (item.trangThai == 0 || item.trangThai == 2)
-                ? Colors.red.shade700
-                : Colors.grey,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed:
-            () => {
-              if (item.trangThai == 0 || item.trangThai == 2)
-                {
-                  showConfirmDialog(
-                    context,
-                    type: ConfirmType.delete,
-                    title: 'Xóa nhóm tài sản',
-                    message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                    highlight: item.tenPhieu!,
-                    cancelText: 'Không',
-                    confirmText: 'Xóa',
-                    onConfirm: () {
-                      context.read<DieuDongTaiSanBloc>().add(
-                        DeleteDieuDongEvent(context, item.id!),
-                      );
-                    },
-                  ),
-                },
-            },
-      ),
-    ]);
-  }
-
-  String getName(int type) {
-    switch (type) {
-      case 1:
-        return 'Phiếu duyệt cấp phát tài sản';
-      case 2:
-        return 'Phiếu duyệt chuyển tài sản';
-      case 3:
-        return 'Phiếu duyệt thu hồi tài sản';
-    }
-    return '';
   }
 
   void _callGetListAssetHandover() {
@@ -881,7 +634,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     }
   }
 
-  // Check show popup sign document
   void _handleSignDocument(
     DieuDongTaiSanDto item,
     UserInfoDTO userInfo,
@@ -976,178 +728,65 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     }
   }
 
-  Widget showSigningStatus(DieuDongTaiSanDto item) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-        margin: const EdgeInsets.only(bottom: 2),
-        decoration: BoxDecoration(
-          color:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? Colors.red
-                  : widget.provider.isCheckSigningStatus(item) == 2
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 3
-                  ? Colors.green
-                  : widget.provider.isCheckSigningStatus(item) == 4
-                  ? Colors.orange
-                  : widget.provider.isCheckSigningStatus(item) == 5
-                  ? Colors.purple
-                  : Colors.blue,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: SGText(
-          text:
-              widget.provider.isCheckSigningStatus(item) == 1
-                  ? 'Đã ký'
-                  : widget.provider.isCheckSigningStatus(item) == 0
-                  ? 'Chưa ký'
-                  : widget.provider.isCheckSigningStatus(item) == 2
-                  ? 'Đã ký nháy'
-                  : widget.provider.isCheckSigningStatus(item) == 3
-                  ? 'Đã ký & tạo'
-                  : widget.provider.isCheckSigningStatus(item) == 4
-                  ? 'Chưa ký nháy'
-                  : widget.provider.isCheckSigningStatus(item) == 5
-                  ? 'Chưa ký & tạo'
-                  : "Người tạo phiếu",
-          size: 12,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<DieuDongTaiSanDto> _getNotSharedAndNotify(
-    List<DieuDongTaiSanDto> items,
-  ) {
-    if (items.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Không có phiếu nào để chia sẻ',
-        isError: true,
+  Future<void> _openColumnConfigDialog() async {
+    try {
+      final apply = await showColumnConfigAndApply(
+        context: context,
+        allColumns: _allColumns,
+        currentColumns: _columns,
+        initialHiddenKeys: _hiddenKeys,
+        title: 'table.config_column'.tr,
       );
-      return const [];
-    }
-
-    final List<DieuDongTaiSanDto> alreadyShared =
-        items.where((e) => e.share == true).toList();
-    final List<DieuDongTaiSanDto> notShared =
-        items.where((e) => e.share != true).toList();
-    if (notShared.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Các phiếu này đều đã được chia sẻ',
-        isError: true,
-      );
-      return const [];
-    }
-    if (alreadyShared.isNotEmpty) {
-      final String names = alreadyShared
-          .map(
-            (e) =>
-                e.tenPhieu?.trim().isNotEmpty == true
-                    ? e.tenPhieu!
-                    : (e.id ?? ''),
-          )
-          .where((s) => s.isNotEmpty)
-          .join(', ');
-      if (names.isNotEmpty) {
-        AppUtility.showSnackBar(
-          context,
-          'Các phiếu đã được chia sẻ: $names',
-          isError: true,
-        );
-      } else {
-        AppUtility.showSnackBar(
-          context,
-          'Có phiếu đã được chia sẻ trong danh sách chọn',
-          isError: true,
-        );
+      if (apply != null) {
+        setState(() {
+          _hiddenKeys = apply.hiddenKeys;
+          _columns = apply.updatedColumns;
+        });
       }
+    } catch (e) {
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
     }
-    return notShared;
   }
 
-  void _handleSendToSigner(List<DieuDongTaiSanDto> items) {
-    if (items.isEmpty) {
-      AppUtility.showSnackBar(
-        context,
-        'Không có phiếu nào để chia sẻ',
-        isError: true,
-      );
-      return;
-    }
-    showConfirmDialog(
-      context,
-      type: ConfirmType.delete,
-      title: 'Chia sẻ',
-      message: 'Bạn có chắc muốn chia sẻ với người ký?',
-      cancelText: 'Không',
-      confirmText: 'Chia sẻ',
-      onConfirm: () {
-        final notShared = _getNotSharedAndNotify(items);
-        if (notShared.isEmpty) return;
-        context.read<DieuDongTaiSanBloc>().add(
-          SendToSignerEvent(context, notShared),
-        );
-      },
-    );
-  }
-
-  int getPermissionSigning(DieuDongTaiSanDto item) {
-    final signatureFlow =
-        [
-              if (item.nguoiLapPhieuKyNhay == true)
-                {
-                  "id": item.idNguoiKyNhay,
-                  "signed": item.trangThaiKyNhay == true,
-                  "label":
-                      "Người lập phiếu: ${AccountHelper.instance.getNhanVienById(item.idNguoiKyNhay ?? '')?.hoTen}",
-                },
-              {
-                "id": item.idTrinhDuyetCapPhong,
-                "signed": item.trinhDuyetCapPhongXacNhan == true,
-                "label": "Người duyệt: ${item.tenTrinhDuyetCapPhong}",
-              },
-              for (int i = 0; i < (item.listSignatory?.length ?? 0); i++)
-                {
-                  "id": item.listSignatory![i].idNguoiKy,
-                  "signed": item.listSignatory![i].trangThai == 1,
-                  "label":
-                      "Người ký ${i + 1}: ${item.listSignatory![i].tenNguoiKy}",
-                },
-              {
-                "id": item.idTrinhDuyetGiamDoc,
-                "signed": item.trinhDuyetGiamDocXacNhan == true,
-                "label": "Người phê duyệt: ${item.tenTrinhDuyetGiamDoc}",
-              },
-            ]
-            .where(
-              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
-            )
-            .toList();
-    final currentIndex = signatureFlow.indexWhere(
-      (s) => s["id"] == userInfo?.tenDangNhap,
-    );
-    if (currentIndex == -1) return 2;
-    if (item.nguoiTao == userInfo?.tenDangNhap &&
-        signatureFlow[currentIndex]["signed"] != -1) {
-      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
-    }
-    if (signatureFlow[currentIndex]["signed"] == true) return 3;
-
-    final previousNotSigned = signatureFlow
-        .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
-    if (previousNotSigned.isNotEmpty) return 1;
-    return 0;
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+    return [
+      // Configure columns button
+      ResponsiveButtonData.fromButtonIcon(
+        text: 'table.config_column'.tr,
+        iconPath: AppIconSvg.iconSetting,
+        backgroundColor: AppColor.white,
+        iconColor: AppColor.textDark,
+        textColor: AppColor.textDark,
+        width: 130,
+        onPressed: () {
+          _openColumnConfigDialog();
+        },
+      ),
+      if (selectedItems.isNotEmpty && selectedItems.length < 2)
+        ResponsiveButtonData.fromButtonIcon(
+          text: 'table.signing'.tr,
+          iconPath: AppIconSvgPath.iconPenLine,
+          backgroundColor: AppColor.white,
+          iconColor: ColorValue.limeYellow,
+          textColor: AppColor.textDark,
+          width: 130,
+          onPressed: () {
+            DieuDongTaiSanDto? item = selectedItems.first;
+            _handleSignDocument(item, userInfo!, widget.provider);
+          },
+        ),
+      if (selectedItems.isNotEmpty)
+        ResponsiveButtonData.fromButtonIcon(
+          text: "${'table.send'.tr} (${selectedItems.length})",
+          iconPath: AppIconSvgPath.iconSend,
+          backgroundColor: Colors.redAccent,
+          iconColor: AppColor.textWhite,
+          textColor: AppColor.textWhite,
+          width: 200,
+          onPressed: () {
+            TabelAssetTransferConfig.handleSendToSigner(context, selectedItems);
+          },
+        ),
+    ];
   }
 }

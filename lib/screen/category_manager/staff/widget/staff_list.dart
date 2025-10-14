@@ -235,9 +235,9 @@ class _StaffListState extends State<StaffList> {
                             moreLabel: 'Khác',
                           );
                         },
-                      ),
                     ),
-                  ],
+                  ),
+              ],
                 );
               },
             ),
@@ -266,21 +266,21 @@ class _StaffListState extends State<StaffList> {
                     if (builder != null) return builder(item);
                     return null;
                   },
-                  onRowTap: (item) {
-                    widget.onChangeDetail?.call(item);
-                  },
+              onRowTap: (item) {
+                widget.onChangeDetail?.call(item);
+              },
                   onDelete: (item) {
                     if (widget.isCanDelete) {
-                      showConfirmDialog(
-                        context,
-                        type: ConfirmType.delete,
-                        title: 'Xóa nhân viên',
-                        message: 'Bạn có chắc muốn xóa ${item.hoTen}',
-                        highlight: item.hoTen ?? '',
-                        cancelText: 'Không',
-                        confirmText: 'Xóa',
-                        onConfirm: () {
-                          widget.onDelete?.call(item);
+                  showConfirmDialog(
+                    context,
+                    type: ConfirmType.delete,
+                    title: 'Xóa nhân viên',
+                    message: 'Bạn có chắc muốn xóa ${item.hoTen}',
+                    highlight: item.hoTen ?? '',
+                    cancelText: 'Không',
+                    confirmText: 'Xóa',
+                    onConfirm: () {
+                      widget.onDelete?.call(item);
                         },
                       );
                     }

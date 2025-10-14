@@ -13,7 +13,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_s
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_san_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetTransferView extends StatefulWidget {
   const AssetTransferView({super.key});
@@ -86,7 +85,11 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   void _reloadData() {
     // Chỉ tải lại dữ liệu nếu đã khởi tạo trước đó
     if (_isInitialized) {
-      _providerRef?.refreshData(context, currentType);
+      // Tránh notifyListeners trong quá trình build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _providerRef?.refreshData(context, currentType);
+      });
     }
     _initData();
   }
@@ -132,6 +135,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: () {
                       // provider.onChangeDetailAssetTransfer(null);
                     },
@@ -181,19 +185,19 @@ class _AssetTransferViewState extends State<AssetTransferView> {
                         ),
                       ),
                     ),
-                    Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
-                    ),
+                    // Visibility(
+                    //   visible: (provider.data?.length ?? 0) >= 5,
+                    //   child: SGPaginationControls(
+                    //     totalPages: provider.totalPages,
+                    //     currentPage: provider.currentPage,
+                    //     rowsPerPage: provider.rowsPerPage,
+                    //     controllerDropdownPage:
+                    //         provider.controllerDropdownPage!,
+                    //     items: provider.items,
+                    //     onPageChanged: provider.onPageChanged,
+                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    //   ),
+                    // ),
                   ],
                 ),
               );

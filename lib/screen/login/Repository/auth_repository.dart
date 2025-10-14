@@ -24,7 +24,6 @@ import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/repository/type_asset_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/repository/type_ccdc_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/repository/unit_repository.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -355,9 +354,7 @@ class AuthRepository extends ApiBase {
       final response = await UnitRepository().getListUnit();
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         AccountHelper.instance.setUnit(response['data']);
-        log('message test [loadUnit]: unitList: ${jsonEncode(response['data'])}');
-        List<UnitDto> unitListLog = AccountHelper.instance.getAllUnit();
-        SGLog.info('_loadData', 'loadUnit: ${jsonEncode(unitListLog)}');
+        SGLog.info('_loadData', 'loadUnit');
       }
     } catch (e) {
       log('Error calling API ASSET_CATEGORY: $e');

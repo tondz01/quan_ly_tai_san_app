@@ -335,7 +335,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
             .toList();
     _filteredData = List.from(_data!);
     log('message test: onReloadDataAssetTransfer');
-    _updatePagination();
+    _applyFilters();
     notifyListeners();
   }
 
