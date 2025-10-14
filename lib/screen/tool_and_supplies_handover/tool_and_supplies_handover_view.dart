@@ -13,7 +13,6 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tab
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/services/websocket_service.dart';
 
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import 'bloc/tool_and_supplies_handover_bloc.dart';
@@ -254,6 +253,7 @@ class _ToolAndSuppliesHandoverViewState
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: provider.onTapBackHeader,
                     onNew: () {
                       provider.onChangeDetail(context, null);
@@ -293,19 +293,19 @@ class _ToolAndSuppliesHandoverViewState
                         ),
                       ),
                     ),
-                    Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
-                    ),
+                    // Visibility(
+                    //   visible: (provider.data?.length ?? 0) >= 5,
+                    //   child: SGPaginationControls(
+                    //     totalPages: provider.totalPages,
+                    //     currentPage: provider.currentPage,
+                    //     rowsPerPage: provider.rowsPerPage,
+                    //     controllerDropdownPage:
+                    //         provider.controllerDropdownPage!,
+                    //     items: provider.items,
+                    //     onPageChanged: provider.onPageChanged,
+                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    //   ),
+                    // ),
                   ],
                 ),
               );

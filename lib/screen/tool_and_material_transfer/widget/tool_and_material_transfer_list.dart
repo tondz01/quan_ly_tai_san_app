@@ -124,7 +124,9 @@ class _ToolAndMaterialTransferListState
                 ?.tenPhongBan ??
             '';
       case 'status':
-        return TableToolAndMaterialTransferConfig.getStatus(item.trangThai ?? 0);
+        return TableToolAndMaterialTransferConfig.getStatus(
+          item.trangThai ?? 0,
+        );
       case 'permission_signing':
         return TableToolAndMaterialTransferConfig.getStatusSigningName(
           item,
@@ -180,7 +182,7 @@ class _ToolAndMaterialTransferListState
       title: 'table.config_column'.tr,
     );
     if (apply != null) {
-        setState(() {
+      setState(() {
         _hiddenKeys = apply.hiddenKeys;
         _columns = apply.updatedColumns;
       });
@@ -336,10 +338,14 @@ class _ToolAndMaterialTransferListState
                     ),
                     child: riverpod.Consumer(
                       builder: (context, ref, child) {
-                        final data = widget.provider.data ?? [];
-                        ref
-                            .read(tableToolAndMaterialTransferProvider.notifier)
-                            .setData(data);
+                        final data = widget.provider.filteredData ?? [];
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ref
+                              .read(
+                                tableToolAndMaterialTransferProvider.notifier,
+                              )
+                              .setData(data);
+                        });
 
                         return RiverpodTable<ToolAndMaterialTransferDto>(
                           tableProvider: tableToolAndMaterialTransferProvider,
@@ -358,13 +364,13 @@ class _ToolAndMaterialTransferListState
                           onRowTap: (item) {
                             widget.provider
                                 .onChangeDetailToolAndMaterialTransfer(item);
-                        setState(() {
+                            setState(() {
                               nameBenBan =
                                   'Trạng thái ký " Biên bản ${item.id} "';
-                          isShowDetailDepartmentTree = true;
-                          _buildDetailDepartmentTree(item);
-                        });
-                      },
+                              isShowDetailDepartmentTree = true;
+                              _buildDetailDepartmentTree(item);
+                            });
+                          },
                           // onEdit: (item) {},
                           onDelete: (item) {
                             showConfirmDialog(
@@ -711,13 +717,7 @@ class _ToolAndMaterialTransferListState
           _openColumnConfigDialog();
         },
       ),
-      if (listItemSelected.isNotEmpty &&
-          listItemSelected.length < 2 &&
-          TableToolAndMaterialTransferConfig.getPermissionSigning(
-                listItemSelected.first,
-                userInfo ?? UserInfoDTO.empty(),
-              ) ==
-              0)
+      if (listItemSelected.isNotEmpty && listItemSelected.length < 2)
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -744,7 +744,7 @@ class _ToolAndMaterialTransferListState
           width: 200,
           onPressed: () {
             TableToolAndMaterialTransferConfig.handleSendToSigner(
-        context,
+              context,
               listItemSelected,
             );
           },

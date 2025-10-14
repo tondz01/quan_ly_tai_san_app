@@ -23,7 +23,7 @@ class TableToolAndMaterialTransferConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(getName(item.loai ?? 0)));
+          return TableCellData(widget: Text(item.tenPhieu ?? ''));
         },
       ),
       ColumnDefinition(

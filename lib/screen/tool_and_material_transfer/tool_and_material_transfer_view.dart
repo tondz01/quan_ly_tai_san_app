@@ -157,6 +157,7 @@ class _ToolAndMaterialTransferViewState
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: () {
                       // provider.onChangeDetailAssetTransfer(null);
                     },

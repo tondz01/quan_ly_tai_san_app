@@ -310,7 +310,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
     _filteredData = List.from(_data!);
-    _updatePagination();
+    _applyFilters();
     notifyListeners();
   }
 

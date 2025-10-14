@@ -6,5 +6,5 @@ class AppIconSvgPath {
   static const String iconSend = '${path}send.svg';
   static const String iconPenLine = '${path}pen-line.svg';
   static const String iconEye = '${path}eye.svg';
-
+  static const String iconNextDocument = '${path}list-plus.svg';
 }

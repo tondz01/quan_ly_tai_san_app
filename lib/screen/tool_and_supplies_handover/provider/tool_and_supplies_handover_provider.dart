@@ -324,7 +324,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
             return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
           }).toList();
     _filteredData = List.from(_data!);
-    _updatePagination();
+    _applyFilters();
     notifyListeners();
   }
 

@@ -5,12 +5,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_asset_management_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/table_asset_management_provider.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
@@ -39,6 +43,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
   late List<TableColumnData> _allColumns;
   late Map<String, TableCellBuilder> _buildersByKey;
   late List<String> _hiddenKeys;
+
+  ScrollController horizontalController = ScrollController();
 
   @override
   void initState() {
@@ -132,8 +138,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   @override
   Widget build(BuildContext context) {
+    final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
     final data = widget.provider.data ?? const <AssetManagementDto>[];
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -149,6 +155,79 @@ class _AssetManagementListState extends State<AssetManagementList> {
       ),
       child: Column(
         children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: ColorValue.accentCyan.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(8),
+              // border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [
+                SGText(
+                  text: 'Danh sách nhóm tài sản',
+                  size: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                Visibility(visible: groups.isNotEmpty, child: Divider()),
+                Visibility(
+                  visible: groups.isEmpty,
+                  child: Center(
+                    child: SGText(
+                      text: 'Không có loại tài sản nào',
+                      color: ColorValue.link,
+                      size: 14,
+                    ),
+                  ),
+                ),
+                if (groups.isNotEmpty)
+                  Scrollbar(
+                    controller: horizontalController,
+                    thumbVisibility: true,
+                    thickness: 4,
+                    notificationPredicate:
+                        (notification) =>
+                            notification.metrics.axis == Axis.horizontal,
+                    child: SingleChildScrollView(
+                      controller: horizontalController,
+                      scrollDirection: Axis.horizontal,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 13.0),
+                        child: Row(
+                          spacing: 16,
+                          children: [
+                            ...groups.map(
+                              (item) => ItemAssetGroup(
+                                titleName: item.tenNhom,
+                                numberAsset: getCountAssetByAssetManagement(
+                                  data,
+                                  '${item.id}',
+                                ),
+                                image: "assets/images/assets.png",
+                                onTap: () {
+                                  context.go(AppRoute.staffManager.path);
+                                },
+                                valueCheckBox: widget.provider
+                                    .getCheckBoxStatus(item.id),
+                                onChange: (value) {
+                                  widget.provider.updateCheckBoxStatus(
+                                    item.id,
+                                    value,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -277,7 +356,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
             child: riverpod.Consumer(
               builder: (context, ref, child) {
-                ref.read(tableAssetManagementProvider.notifier).setData(data);
+                final dataFiltered = widget.provider.filteredData ?? [];
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ref.read(tableAssetManagementProvider.notifier).setData(dataFiltered);
+                });
 
                 return RiverpodTable<AssetManagementDto>(
                   tableProvider: tableAssetManagementProvider,
@@ -322,6 +404,13 @@ class _AssetManagementListState extends State<AssetManagementList> {
         ],
       ),
     );
+  }
+
+  String getCountAssetByAssetManagement(
+    List<AssetManagementDto> data,
+    String idNhomTaiSan,
+  ) {
+    return data.where((i) => i.idNhomTaiSan == idNhomTaiSan).length.toString();
   }
 
   List<ResponsiveButtonData> _buildButtonList(int itemCount) {

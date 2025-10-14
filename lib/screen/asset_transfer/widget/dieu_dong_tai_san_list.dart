@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -5,6 +7,7 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
@@ -138,7 +141,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     switch (key) {
       case 'type':
         // Return human-readable name for searching/sorting consistency
-        return TabelAssetTransferConfig.getName(item.loai ?? 0);
+        return item.tenPhieu;
       case 'effective_date':
         return item.tggnTuNgay;
       case 'approver':
@@ -246,34 +249,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     ),
                     child: headerList(),
                   ),
-                  // Expanded(
-                  //   child: TableBaseView<DieuDongTaiSanDto>(
-                  //     searchTerm: '',
-                  //     columns: columns,
-                  //     data: widget.provider.dataPage ?? [],
-                  //     horizontalController: ScrollController(),
-                  //     getters: getters,
-                  //     startDate: DateTime.tryParse(
-                  //       widget.provider.filteredData!.isNotEmpty
-                  //           ? widget.provider.filteredData!.first.tggnDenNgay
-                  //               .toString()
-                  //           : '',
-                  //     ),
-                  //     onRowTap: (item) {
-                  //       widget.provider.onChangeDetailDieuDongTaiSan(item);
-                  //       setState(() {
-                  //         nameBenBan = 'trạng thái ký " Biên bản ${item.id} "';
-                  //         isShowDetailDepartmentTree = true;
-                  //         _buildDetailDepartmentTree(item);
-                  //       });
-                  //     },
-                  //     onSelectionChanged: (items) {
-                  //       setState(() {
-                  //         selectedItems = items;
-                  //       });
-                  //     },
-                  //   ),
-                  // ),
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: LayoutBuilder(
@@ -378,11 +353,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     ),
                     child: riverpod.Consumer(
                       builder: (context, ref, child) {
-                        final data = widget.provider.data ?? [];
-                        ref
-                            .read(tableAssetTransferProvider.notifier)
-                            .setData(data);
-
+                        final data = widget.provider.filteredData ?? [];
+                        // Defer provider mutation until after the current frame
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          ref
+                              .read(tableAssetTransferProvider.notifier)
+                              .setData(data);
+                        });
 
                         return RiverpodTable<DieuDongTaiSanDto>(
                           tableProvider: tableAssetTransferProvider,
@@ -464,8 +441,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             ),
                             CustomAction(
                               tooltip: 'Xem',
-                              iconPath:
-                                  'assets/icons/eye.svg',
+                              iconPath: 'assets/icons/eye.svg',
                               color: Colors.blue,
                               onPressed: (item) async {
                                 await _loadPdfNetwork(item.tenFile!);
@@ -786,20 +762,16 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           _openColumnConfigDialog();
         },
       ),
-      if (selectedItems.isNotEmpty &&
-          selectedItems.length < 2 &&
-          TabelAssetTransferConfig.getPermissionSigning(selectedItems.first) ==
-              0)
+      if (selectedItems.isNotEmpty && selectedItems.length < 2)
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
           backgroundColor: AppColor.white,
-          iconColor: AppColor.textDark,
+          iconColor: ColorValue.limeYellow,
           textColor: AppColor.textDark,
           width: 130,
           onPressed: () {
             DieuDongTaiSanDto? item = selectedItems.first;
-
             _handleSignDocument(item, userInfo!, widget.provider);
           },
         ),
@@ -810,7 +782,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           backgroundColor: Colors.redAccent,
           iconColor: AppColor.textWhite,
           textColor: AppColor.textWhite,
-          width: 130,
+          width: 200,
           onPressed: () {
             TabelAssetTransferConfig.handleSendToSigner(context, selectedItems);
           },

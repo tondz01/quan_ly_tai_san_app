@@ -24,7 +24,7 @@ class TabelAssetTransferConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(getName(item.loai ?? 0)));
+          return TableCellData(widget: Text(item.tenPhieu ?? ''));
         },
       ),
       ColumnDefinition(

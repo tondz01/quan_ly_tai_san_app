@@ -143,6 +143,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                   onSearchChanged: (value) {
                     provider.onSearchToolsAndSupplies(value);
                   },
+                  isShowSearch: false,
                   onTap: () {},
                   onNew: () {
                     provider.onChangeDetail(context, null);

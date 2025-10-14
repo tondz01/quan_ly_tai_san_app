@@ -315,7 +315,7 @@ class AssetHandoverProvider with ChangeNotifier {
             .toList();
     _filteredData = List.from(_data!);
     log('message test: onReloadDataAssetHandover');
-    _updatePagination();
+    _applyFilters();
     notifyListeners();
   }
 

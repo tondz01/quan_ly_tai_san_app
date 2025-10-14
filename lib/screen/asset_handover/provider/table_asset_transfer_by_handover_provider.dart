@@ -5,20 +5,16 @@ import 'package:table_base/widgets/table/providers/table_notifier.dart';
 import 'package:table_base/widgets/table/providers/table_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Provider cho TableCcdcGroupProvider với tối ưu performance
-final tableAssetTransferProvider = StateNotifierProvider.autoDispose<
-  TableAssetTransferProvider,
-  GenericTableState<DieuDongTaiSanDto>
->((ref) => TableAssetTransferProvider());
+final tableAssetTransferByHandoverProvider = StateNotifierProvider.autoDispose<
+    TableAssetTransferByHandoverProvider,
+    GenericTableState<DieuDongTaiSanDto>>(
+    (ref) => TableAssetTransferByHandoverProvider());
 
-class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
+class TableAssetTransferByHandoverProvider extends TableNotifier<DieuDongTaiSanDto> {
   List<DieuDongTaiSanDto> _data = [];
 
-  /// Set data từ widget level
   void setData(List<DieuDongTaiSanDto> data) {
     _data = data;
-    // updateData(data);
-    // Force refresh by calling generateData directly
     generateData().then((result) {
       state = state.copyWith(
         allData: result,

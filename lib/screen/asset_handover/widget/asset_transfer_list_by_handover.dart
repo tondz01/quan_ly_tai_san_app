@@ -7,16 +7,16 @@ import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/component/table_tool_and_supplies_handover_transfer_config.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/table_tool_and_supplies_handover_transfer_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/component/table_asset_transfer_by_handover_config.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/table_asset_transfer_by_handover_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/controller/find_by_type.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/component/preview_document_tool_and_meterial_transfer.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/controller/find_by_type_tool_and_supplies.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
@@ -41,27 +41,27 @@ enum FilterType {
   const FilterType(this.label, this.activeColor);
 }
 
-class ToolAndSuppliesHandoverTransferList extends StatefulWidget {
-  final List<ToolAndMaterialTransferDto> data;
-  final ToolAndSuppliesHandoverProvider provider;
+class AssetTransferListByHandover extends StatefulWidget {
+  final List<DieuDongTaiSanDto> data;
+  final AssetHandoverProvider provider;
 
-  const ToolAndSuppliesHandoverTransferList({
+  const AssetTransferListByHandover({
     super.key,
     required this.data,
     required this.provider,
   });
 
   @override
-  State<ToolAndSuppliesHandoverTransferList> createState() =>
-      _ToolAndSuppliesHandoverTransferListState();
+  State<AssetTransferListByHandover> createState() =>
+      _AssetTransferListByHandoverState();
 }
 
-class _ToolAndSuppliesHandoverTransferListState
-    extends State<ToolAndSuppliesHandoverTransferList> {
+class _AssetTransferListByHandoverState
+    extends State<AssetTransferListByHandover> {
   bool isUploading = false;
-  List<ToolAndMaterialTransferDto> dataAssetTransfer = [];
-  List<ToolAndMaterialTransferDto> dataAssetTransferFilter = [];
-  List<ToolAndMaterialTransferDto> selectedItems = [];
+  List<DieuDongTaiSanDto> dataAssetTransfer = [];
+  List<DieuDongTaiSanDto> dataAssetTransferFilter = [];
+  List<DieuDongTaiSanDto> selectedItems = [];
   UserInfoDTO? userInfo;
 
   final Map<FilterType, bool> _filterStatus = {
@@ -83,7 +83,7 @@ class _ToolAndSuppliesHandoverTransferListState
       dataAssetTransfer.where((item) => (item.loai) == 3).length;
 
   PdfDocument? _document;
-  
+
   // RiverpodTable configuration
   late List<ColumnDefinition> _definitions;
   late List<TableColumnData> _columns;
@@ -98,12 +98,13 @@ class _ToolAndSuppliesHandoverTransferListState
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
     dataAssetTransfer = widget.data;
-    dataAssetTransferFilter = dataAssetTransfer;
+    dataAssetTransferFilter =
+        dataAssetTransfer.where((item) => item.daBanGiao == false).toList();
     _initializeTableConfig();
   }
 
   void _initializeTableConfig() {
-    _definitions = TableToolAndSuppliesHandoverTransferConfig.getColumns(
+    _definitions = TableAssetTransferByHandoverConfig.getColumns(
       userInfo ?? UserInfoDTO.empty(),
     );
     _columns = _definitions.map((d) => d.config).toList(growable: true);
@@ -174,7 +175,7 @@ class _ToolAndSuppliesHandoverTransferListState
     ];
   }
 
-  dynamic getValueForColumn(ToolAndMaterialTransferDto item, int columnIndex) {
+  dynamic getValueForColumn(DieuDongTaiSanDto item, int columnIndex) {
     final int offset = _showCheckboxColumn ? 1 : 0;
     final int adjustedIndex = columnIndex - offset;
 
@@ -185,7 +186,7 @@ class _ToolAndSuppliesHandoverTransferListState
     final String key = _columns[adjustedIndex].key;
     switch (key) {
       case 'type':
-        return TableToolAndSuppliesHandoverTransferConfig.getName(item.loai ?? 0);
+        return TableAssetTransferByHandoverConfig.getName(item.loai ?? 0);
       case 'decision_date':
         return item.ngayKy;
       case 'effective_date':
@@ -200,35 +201,6 @@ class _ToolAndSuppliesHandoverTransferListState
         return 'Trạng thái'; // Will be handled by cellBuilder
       default:
         return null;
-    }
-  }
-
-  onViewDocument(ToolAndMaterialTransferDto item) async {
-    NhanVien nhanVien = widget.provider.dataStaff?.firstWhere(
-      (element) => element.id == widget.provider.userInfo?.tenDangNhap,
-      orElse: () => NhanVien(),
-    ) ?? NhanVien();
-    
-    if (nhanVien.id == null) {
-      AppUtility.showSnackBar(
-        context,
-        'Bạn không có quyền xem tài liệu',
-        isError: true,
-      );
-      return;
-    }
-
-    await _loadPdfNetwork(item.tenFile!);
-    if (mounted) {
-      previewDocumentToolAndMaterial(
-        context: context,
-        item: item,
-        isShowKy: false,
-        document: _document,
-        nhanVien: widget.provider.getNhanVienByID(
-          widget.provider.userInfo?.tenDangNhap ?? '',
-        ),
-      );
     }
   }
 
@@ -284,7 +256,9 @@ class _ToolAndSuppliesHandoverTransferListState
                           width: (availableWidth * 0.35).toDouble(),
                           onSearch: (value) {
                             ref
-                                .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
+                                .read(
+                                  tableAssetTransferByHandoverProvider.notifier,
+                                )
                                 .searchTerm = value;
                           },
                         );
@@ -295,38 +269,51 @@ class _ToolAndSuppliesHandoverTransferListState
                       child: riverpod.Consumer(
                         builder: (context, ref, _) {
                           final hasFilters = ref.watch(
-                            tableToolAndSuppliesHandoverTransferProvider.select(
+                            tableAssetTransferByHandoverProvider.select(
                               (s) => s.filterState.hasActiveFilters,
                             ),
                           );
-                          final tableState = ref.watch(tableToolAndSuppliesHandoverTransferProvider);
+                          final tableState = ref.watch(
+                            tableAssetTransferByHandoverProvider,
+                          );
                           final selectedCount = tableState.selectedItems.length;
-                          selectedItems = tableState.selectedItems.cast<ToolAndMaterialTransferDto>();
+                          selectedItems =
+                              tableState.selectedItems
+                                  .cast<DieuDongTaiSanDto>();
                           final buttons = _buildButtonList(selectedCount);
-                          final processedButtons = buttons.map((button) {
-                            if (button.text == 'table.clear_filters'.tr) {
-                              return ResponsiveButtonData.fromButtonIcon(
-                                text: button.text,
-                                iconPath: button.iconPath!,
-                                backgroundColor: button.backgroundColor!,
-                                iconColor: button.iconColor!,
-                                textColor: button.textColor!,
-                                width: button.width,
-                                onPressed: () {
-                                  ref
-                                      .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
-                                      .clearAllFilters();
-                                },
-                              );
-                            }
-                            return button;
-                          }).toList();
+                          final processedButtons =
+                              buttons.map((button) {
+                                if (button.text == 'table.clear_filters'.tr) {
+                                  return ResponsiveButtonData.fromButtonIcon(
+                                    text: button.text,
+                                    iconPath: button.iconPath!,
+                                    backgroundColor: button.backgroundColor!,
+                                    iconColor: button.iconColor!,
+                                    textColor: button.textColor!,
+                                    width: button.width,
+                                    onPressed: () {
+                                      ref
+                                          .read(
+                                            tableAssetTransferByHandoverProvider
+                                                .notifier,
+                                          )
+                                          .clearAllFilters();
+                                    },
+                                  );
+                                }
+                                return button;
+                              }).toList();
 
-                          final filteredButtons = hasFilters
-                              ? processedButtons
-                              : processedButtons
-                                  .where((button) => button.text != 'table.clear_filters'.tr)
-                                  .toList();
+                          final filteredButtons =
+                              hasFilters
+                                  ? processedButtons
+                                  : processedButtons
+                                      .where(
+                                        (button) =>
+                                            button.text !=
+                                            'table.clear_filters'.tr,
+                                      )
+                                      .toList();
 
                           return ResponsiveButtonBar(
                             buttons: filteredButtons,
@@ -360,11 +347,11 @@ class _ToolAndSuppliesHandoverTransferListState
                   final data = dataAssetTransferFilter;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ref
-                        .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
+                        .read(tableAssetTransferByHandoverProvider.notifier)
                         .setData(data);
                   });
-                  return RiverpodTable<ToolAndMaterialTransferDto>(
-                    tableProvider: tableToolAndSuppliesHandoverTransferProvider,
+                  return RiverpodTable<DieuDongTaiSanDto>(
+                    tableProvider: tableAssetTransferByHandoverProvider,
                     columns: _columns,
                     valueGetter: getValueForColumn,
                     cellsBuilder: (_) => [],
@@ -386,15 +373,18 @@ class _ToolAndSuppliesHandoverTransferListState
                         },
                       ),
                       CustomAction(
-                        tooltip: 'Tạo biên bản bàn giao ccdc-vật tư',
+                        tooltip: 'Tạo biên bản bàn giao tài sản',
                         iconPath: AppIconSvgPath.iconNextDocument,
                         color: ColorValue.mediumGreen,
                         onPressed: (item) {
                           widget.provider.onChangeDetail(
                             context,
-                            ToolAndSuppliesHandoverDto(
-                              id: UUIDGenerator.generateWithFormat('BBCCDC-******'),
-                              banGiaoCCDCVatTu: '',
+                            AssetHandoverDto(
+                              id: UUIDGenerator.generateWithFormat(
+                                'BG-************',
+                              ),
+                              idCongTy: item.idCongTy,
+                              banGiaoTaiSan: 'Biên bản bàn giao ${item.id}',
                               quyetDinhDieuDongSo: '',
                               lenhDieuDong: item.id,
                               idDonViGiao: item.idDonViGiao,
@@ -407,14 +397,13 @@ class _ToolAndSuppliesHandoverTransferListState
                               tenDaiDienBanHanhQD: '',
                               tenDaiDienBenGiao: '',
                               tenDaiDienBenNhan: '',
+                              tenDonViDaiDien: '',
                               daXacNhan: false,
                               daiDienBenGiaoXacNhan: false,
                               daiDienBenNhanXacNhan: false,
-                              tenFile: "",
-                              duongDanFile: "",
+                              donViDaiDienXacNhan: '0',
                             ),
                             isFindNew: true,
-                            isFindNewItem: true,
                           );
                         },
                       ),
@@ -449,7 +438,7 @@ class _ToolAndSuppliesHandoverTransferListState
             ),
           ],
         ),
-        FindByTypeToolAndSupplies(
+        FindByType(
           isCapPhat: isCapPhat,
           isDieuChuyen: isDieuChuyen,
           isThuHoi: isThuHoi,
@@ -466,7 +455,6 @@ class _ToolAndSuppliesHandoverTransferListState
       ],
     );
   }
-
 
   void setFilterStatus(FilterType status, bool? value) {
     _filterStatus[status] = value ?? false;
@@ -490,7 +478,7 @@ class _ToolAndSuppliesHandoverTransferListState
         .any((entry) => entry.value == true);
 
     // Lọc theo trạng thái
-    List<ToolAndMaterialTransferDto> statusFiltered;
+    List<DieuDongTaiSanDto> statusFiltered;
     if (_filterStatus[FilterType.all] == true || !hasActiveFilter) {
       statusFiltered = List.from(dataAssetTransfer);
     } else {
@@ -519,5 +507,45 @@ class _ToolAndSuppliesHandoverTransferListState
     setState(() {
       dataAssetTransferFilter = statusFiltered;
     });
+  }
+
+  void onViewDocument(DieuDongTaiSanDto item) async {
+    NhanVien nhanVien =
+        widget.provider.dataStaff?.firstWhere(
+          (element) => element.id == widget.provider.userInfo?.tenDangNhap,
+          orElse: () => NhanVien(),
+        ) ??
+        NhanVien();
+    if (nhanVien.id == null) {
+      AppUtility.showSnackBar(
+        context,
+        'Bạn không có quyền xem tài liệu',
+        isError: true,
+      );
+      return;
+    }
+
+    if (item.tenFile == null || item.tenFile!.isEmpty) {
+      previewDocumentView(
+        context: context,
+        item: item,
+        userInfo: userInfo!,
+        nhanVien: nhanVien,
+        isShowKy: false,
+        document: _document,
+      );
+    } else {
+      await _loadPdfNetwork(item.tenFile!);
+      if (mounted) {
+        previewDocumentView(
+          context: context,
+          item: item,
+          userInfo: userInfo!,
+          nhanVien: nhanVien,
+          isShowKy: false,
+          document: _document,
+        );
+      }
+    }
   }
 }

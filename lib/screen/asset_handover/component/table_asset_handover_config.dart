@@ -1,6 +1,13 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/sg_download_file.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/config_view_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
@@ -41,7 +48,6 @@ class TableAssetHandoverConfig {
           key: 'don_vi_giao',
           width: 150,
           flex: 1,
-          isFixed: false,
         ),
         builder: (item) {
           return TableCellData(
@@ -61,7 +67,6 @@ class TableAssetHandoverConfig {
           key: 'don_vi_nhan',
           width: 150,
           flex: 1,
-          isFixed: false,
         ),
         builder: (item) {
           return TableCellData(
@@ -81,7 +86,6 @@ class TableAssetHandoverConfig {
           key: 'ngay_ban_giao',
           width: 150,
           flex: 1,
-          isFixed: false,
         ),
         builder: (item) {
           return TableCellData(widget: Text(item.ngayBanGiao ?? ''));
@@ -93,7 +97,6 @@ class TableAssetHandoverConfig {
           key: 'ngay_tao_chung_tu',
           width: 150,
           flex: 1,
-          isFixed: false,
         ),
         builder: (item) {
           return TableCellData(widget: Text(item.ngayTaoChungTu ?? ''));
@@ -105,7 +108,6 @@ class TableAssetHandoverConfig {
           key: 'nguoi_lap_phieu',
           width: 150,
           flex: 1,
-          isFixed: false,
         ),
         builder: (item) {
           return TableCellData(widget: Text(item.nguoiTao ?? ''));
@@ -117,7 +119,6 @@ class TableAssetHandoverConfig {
           key: 'document',
           width: 150,
           flex: 1,
-          isFixed: false,
         ),
         builder: (item) {
           return TableCellData(
@@ -149,23 +150,22 @@ class TableAssetHandoverConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Trạng thái bàn giao',
-          key: 'trang_thai_ban_giao',
+          name: 'Trạng thái phiếu',
+          key: 'trang_thai_phieu',
           width: 150,
           flex: 1,
           isFixed: false,
         ),
         builder: (item) {
           return TableCellData(
-            widget: showStatusDocument(item.trangThaiPhieu ?? 0),
+            widget: showStatusHandover(item.trangThaiPhieu ?? 0),
           );
         },
       ),
-
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Trạng thái phiếu',
-          key: 'trang_thai_phieu',
+          name: 'Trạng thái',
+          key: 'trang_thai',
           width: 150,
           flex: 1,
           isFixed: false,
@@ -178,7 +178,7 @@ class TableAssetHandoverConfig {
         config: TableColumnData.select(
           name: 'Chia sẻ',
           key: 'share',
-          width: 100,
+          width: 150,
           flex: 1,
           isFixed: false,
         ),
@@ -195,38 +195,39 @@ class TableAssetHandoverConfig {
   }
 
   static Widget showStatus(int status) {
-    String statusText;
     Color statusColor;
-
     switch (status) {
       case 0:
-        statusText = 'Chưa xác nhận';
-        statusColor = Colors.orange;
+        statusColor = ColorValue.silverGray;
         break;
       case 1:
-        statusText = 'Đã xác nhận';
-        statusColor = Colors.green;
+        statusColor = ColorValue.amber;
         break;
       case 2:
-        statusText = 'Đã hủy';
-        statusColor = Colors.red;
+        statusColor = ColorValue.lightBlue;
+        break;
+      case 3:
+        statusColor = ColorValue.coral;
+        break;
+      case 4:
+        statusColor = ColorValue.forestGreen;
         break;
       default:
-        statusText = 'Không xác định';
-        statusColor = Colors.grey;
+        statusColor = ColorValue.darkGrey;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      margin: const EdgeInsets.only(bottom: 2),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: statusColor, width: 1),
       ),
       child: Text(
-        statusText,
+        getStatusText(status),
         style: TextStyle(
-          color: statusColor,
+          color: Colors.white,
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -234,98 +235,52 @@ class TableAssetHandoverConfig {
     );
   }
 
-  static Widget showPermissionSigning(AssetHandoverDto item) {
-    // Logic để xác định trạng thái ký dựa trên item
-    // Có thể cần thêm logic phức tạp hơn dựa trên business rules
-    if (item.daiDienBenGiaoXacNhan == true &&
-        item.daiDienBenNhanXacNhan == true) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: Colors.green, width: 1),
-        ),
-        child: Text(
-          'Đã ký',
-          style: TextStyle(
-            color: Colors.green,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
-    } else if (item.daiDienBenGiaoXacNhan == true ||
-        item.daiDienBenNhanXacNhan == true) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: Colors.orange, width: 1),
-        ),
-        child: Text(
-          'Đang ký',
-          style: TextStyle(
-            color: Colors.orange,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
-    } else {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: Colors.grey, width: 1),
-        ),
-        child: Text(
-          'Chưa ký',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
+  static String getStatusText(int status) {
+    switch (status) {
+      case 0:
+        return 'Nháp';
+      case 1:
+        return 'Duyệt';
+      case 2:
+        return 'Hủy';
+      case 3:
+        return 'Đã hủy';
+      case 4:
+        return 'Đã hủy';
+      default:
+        return 'Không xác định';
     }
   }
 
-  static Widget showStatusDocument(int status) {
-    String statusText;
+  static Widget showStatusHandover(int status) {
     Color statusColor;
 
     switch (status) {
       case 0:
-        statusText = 'Chưa bàn giao';
         statusColor = Colors.orange;
         break;
       case 1:
-        statusText = 'Đã bàn giao';
-        statusColor = Colors.green;
-        break;
-      case 2:
-        statusText = 'Đã hủy';
         statusColor = Colors.red;
         break;
+      case 2:
+        statusColor = Colors.green;
+        break;
       default:
-        statusText = 'Không xác định';
         statusColor = Colors.grey;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      constraints: const BoxConstraints(maxHeight: 48.0),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      margin: const EdgeInsets.only(bottom: 2),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: statusColor, width: 1),
       ),
       child: Text(
-        statusText,
+        getStatusHandoverText(status),
         style: TextStyle(
-          color: statusColor,
+          color: Colors.white,
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -333,10 +288,102 @@ class TableAssetHandoverConfig {
     );
   }
 
-  static int getPermissionSigning(
-    AssetHandoverDto item,
-    UserInfoDTO userInfo,
+  static String getStatusHandoverText(int status) {
+    switch (status) {
+      case 0:
+        return 'Chưa hoàn thành';
+      case 1:
+        return 'Sắp hết hạn';
+      case 2:
+        return 'Đã hoàn thành';
+      default:
+        return 'Không xác định';
+    }
+  }
+
+  static void handleSendToSigner(
+    List<AssetHandoverDto> items,
+    BuildContext context,
   ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return;
+    }
+
+    showConfirmDialog(
+      context,
+      type: ConfirmType.delete,
+      title: 'Chia sẻ',
+      message: 'Bạn có chắc muốn chia sẻ với người ký?',
+      cancelText: 'Không',
+      confirmText: 'Chia sẻ',
+      onConfirm: () {
+        final notShared = getNotSharedAndNotify(items, context);
+        if (notShared.isEmpty) return;
+        context.read<AssetHandoverBloc>().add(
+          SendToSignerAsetHandoverEvent(context, notShared),
+        );
+      },
+    );
+  }
+
+  static List<AssetHandoverDto> getNotSharedAndNotify(
+    List<AssetHandoverDto> items,
+    BuildContext context,
+  ) {
+    if (items.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Không có phiếu nào để chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+
+    final List<AssetHandoverDto> alreadyShared =
+        items.where((e) => e.share == true).toList();
+    final List<AssetHandoverDto> notShared =
+        items.where((e) => e.share != true).toList();
+    if (notShared.isEmpty) {
+      AppUtility.showSnackBar(
+        context,
+        'Các phiếu này đều đã được chia sẻ',
+        isError: true,
+      );
+      return const [];
+    }
+    if (alreadyShared.isNotEmpty) {
+      final String names = alreadyShared
+          .map(
+            (e) =>
+                e.quyetDinhDieuDongSo?.trim().isNotEmpty == true
+                    ? e.quyetDinhDieuDongSo!
+                    : (e.id ?? ''),
+          )
+          .where((s) => s.isNotEmpty)
+          .join(', ');
+      if (names.isNotEmpty) {
+        AppUtility.showSnackBar(
+          context,
+          'Các phiếu đã được chia sẻ: $names',
+          isError: true,
+        );
+      } else {
+        AppUtility.showSnackBar(
+          context,
+          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          isError: true,
+        );
+      }
+    }
+    return notShared;
+  }
+
+  static int getPermissionSigning(AssetHandoverDto item, UserInfoDTO userInfo) {
     final signatureFlow =
         [
               {
