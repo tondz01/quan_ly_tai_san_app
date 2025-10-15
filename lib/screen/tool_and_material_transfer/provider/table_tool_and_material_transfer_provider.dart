@@ -9,12 +9,14 @@ final tableToolAndMaterialTransferProvider = StateNotifierProvider.autoDispose<
   GenericTableState<ToolAndMaterialTransferDto>
 >((ref) => TableToolAndMaterialTransferProvider());
 
-class TableToolAndMaterialTransferProvider extends TableNotifier<ToolAndMaterialTransferDto> {
+class TableToolAndMaterialTransferProvider
+    extends TableNotifier<ToolAndMaterialTransferDto> {
   List<ToolAndMaterialTransferDto> _data = [];
 
   void setData(List<ToolAndMaterialTransferDto> data) {
     _data = data;
     refreshData();
+    loadData();
   }
 
   set searchTerm(String value) {
@@ -35,5 +37,3 @@ class TableToolAndMaterialTransferProvider extends TableNotifier<ToolAndMaterial
     await generateData();
   }
 }
-
-

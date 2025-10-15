@@ -67,6 +67,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   List<ThreadNode> listSignatoryDetail = [];
   UserInfoDTO? userInfo;
 
+  // Track previous filtered data for comparison
+  List<DieuDongTaiSanDto> _previousFilteredData = [];
+
   late final List<TableColumnData> _allColumns;
   List<String> _hiddenKeys = [];
   List<TableColumnData> _columns = [];
@@ -103,6 +106,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   @override
   void didUpdateWidget(covariant DieuDongTaiSanList oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldData = oldWidget.provider.filteredData ?? [];
+    final newData = widget.provider.filteredData ?? [];
+
+    if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
+      _onFilteredDataChanged(oldData, newData);
+    }
+
     setState(() {
       if (selected != null && widget.provider.dataPage != null) {
         selected = widget.provider.dataPage?.firstWhere(
@@ -114,6 +124,38 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         }
       }
     });
+  }
+
+  // Helper method để so sánh 2 list
+  bool _areListsEqual(
+    List<DieuDongTaiSanDto> list1,
+    List<DieuDongTaiSanDto> list2,
+  ) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      int statusSign1 = TabelAssetTransferConfig.getPermissionSigning(list1[i]);
+      int statusSign2 = TabelAssetTransferConfig.getPermissionSigning(list2[i]);
+      if (list1[i].id != list2[i].id) return false;
+      if (list1[i].trangThai != list2[i].trangThai) return false;
+      if (list1[i].share != list2[i].share) return false;
+      if (list1[i].trangThaiPhieu != list2[i].trangThaiPhieu) return false;
+      if (statusSign1 != statusSign2) return false;
+    }
+    return true;
+  }
+
+  // Callback khi filtered data thay đổi
+  void _onFilteredDataChanged(
+    List<DieuDongTaiSanDto> oldData,
+    List<DieuDongTaiSanDto> newData,
+  ) {
+    // Reset selection nếu item đã chọn không còn trong filtered data
+    if (selected != null && !newData.any((item) => item.id == selected?.id)) {
+      setState(() {
+        selected = null;
+        isShowDetailDepartmentTree = false;
+      });
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -239,346 +281,276 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           },
         ),
       ],
-      child:
-          isLoading
-              ? Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
+      child: Container(
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      ),
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          const Color(0xFF21A366),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Đang tải dữ liệu...',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    child: headerList(),
                   ),
-                ),
-              )
-              : Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                topRight: Radius.circular(8),
-                              ),
-                            ),
-                            child: headerList(),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final availableWidth = constraints.maxWidth;
-                                return Row(
-                                  children: [
-                                    riverpod.Consumer(
-                                      builder: (context, ref, _) {
-                                        return BoxSearch(
-                                          width:
-                                              (availableWidth * 0.35)
-                                                  .toDouble(),
-                                          onSearch: (value) {
-                                            ref
-                                                .read(
-                                                  tableAssetTransferProvider
-                                                      .notifier,
-                                                )
-                                                .searchTerm = value;
-                                          },
-                                        );
-                                      },
-                                    ),
-                                    SizedBox(
-                                      width: (availableWidth * 0.65).toDouble(),
-                                      child: riverpod.Consumer(
-                                        builder: (context, ref, _) {
-                                          final hasFilters = ref.watch(
-                                            tableAssetTransferProvider.select(
-                                              (s) =>
-                                                  s
-                                                      .filterState
-                                                      .hasActiveFilters,
-                                            ),
-                                          );
-                                          final tableState = ref.watch(
-                                            tableAssetTransferProvider,
-                                          );
-                                          final selectedCount =
-                                              tableState.selectedItems.length;
-                                          selectedItems =
-                                              tableState.selectedItems;
-                                          final buttons = _buildButtonList(
-                                            selectedCount,
-                                          );
-                                          final processedButtons =
-                                              buttons.map((button) {
-                                                if (button.text ==
-                                                    'table.clear_filters'.tr) {
-                                                  return ResponsiveButtonData.fromButtonIcon(
-                                                    text: button.text,
-                                                    iconPath: button.iconPath!,
-                                                    backgroundColor:
-                                                        button.backgroundColor!,
-                                                    iconColor:
-                                                        button.iconColor!,
-                                                    textColor:
-                                                        button.textColor!,
-                                                    width: button.width,
-                                                    onPressed: () {
-                                                      ref
-                                                          .read(
-                                                            tableAssetTransferProvider
-                                                                .notifier,
-                                                          )
-                                                          .clearAllFilters();
-                                                    },
-                                                  );
-                                                }
-                                                return button;
-                                              }).toList();
-
-                                          final filteredButtons =
-                                              hasFilters
-                                                  ? processedButtons
-                                                  : processedButtons
-                                                      .where(
-                                                        (button) =>
-                                                            button.text !=
-                                                            'table.clear_filters'
-                                                                .tr,
-                                                      )
-                                                      .toList();
-
-                                          return ResponsiveButtonBar(
-                                            buttons: filteredButtons,
-                                            spacing: 12,
-                                            overflowSide: OverflowSide.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            popupPosition:
-                                                PopupMenuPosition.under,
-                                            popupOffset: const Offset(0, 8),
-                                            popupShape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            popupElevation: 6,
-                                            moreLabel: 'Khác',
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final availableWidth = constraints.maxWidth;
+                        return Row(
+                          children: [
+                            riverpod.Consumer(
+                              builder: (context, ref, _) {
+                                return BoxSearch(
+                                  width: (availableWidth * 0.35).toDouble(),
+                                  onSearch: (value) {
+                                    ref
+                                        .read(
+                                          tableAssetTransferProvider.notifier,
+                                        )
+                                        .searchTerm = value;
+                                  },
                                 );
                               },
                             ),
-                          ),
-                          // bộ lọc
-                          ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(8.0),
-                              bottomRight: Radius.circular(8.0),
-                            ),
-                            child: riverpod.Consumer(
-                              builder: (context, ref, child) {
-                                final data = widget.provider.filteredData ?? [];
-                                // Defer provider mutation until after the current frame
-                                WidgetsBinding.instance.addPostFrameCallback((
-                                  _,
-                                ) {
-                                  ref
-                                      .read(tableAssetTransferProvider.notifier)
-                                      .setData(data);
-                                });
-
-                                return RiverpodTable<DieuDongTaiSanDto>(
-                                  tableProvider: tableAssetTransferProvider,
-                                  columns: _columns,
-                                  showCheckboxColumn: _showCheckboxColumn,
-                                  enableRowSelection: true,
-                                  enableRowHover: true,
-                                  showAlternatingRowColors: true,
-                                  valueGetter: getValueForColumn,
-                                  cellsBuilder: (_) => [],
-                                  cellBuilderByKey: (item, key) {
-                                    final builder = _buildersByKey[key];
-                                    if (builder != null) return builder(item);
-                                    return null;
-                                  },
-                                  onRowTap: (item) {
-                                    widget.provider
-                                        .onChangeDetailDieuDongTaiSan(item);
-                                    setState(() {
-                                      nameBenBan =
-                                          'Trạng thái ký " Biên bản ${item.id} "';
-                                      isShowDetailDepartmentTree = true;
-                                      _buildDetailDepartmentTree(item);
-                                    });
-                                  },
-                                  // onEdit: (item) {},
-                                  onDelete: (item) {
-                                    showConfirmDialog(
-                                      context,
-                                      type: ConfirmType.delete,
-                                      title: 'Xóa nhóm tài sản',
-                                      message:
-                                          'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                                      highlight: item.tenPhieu ?? '',
-                                      cancelText: 'Không',
-                                      confirmText: 'Xóa',
-                                      onConfirm: () {
-                                        if (item.trangThai == 0 ||
-                                            item.trangThai == 2) {
-                                          showConfirmDialog(
-                                            context,
-                                            type: ConfirmType.delete,
-                                            title: 'Xóa nhóm tài sản',
-                                            message:
-                                                'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                                            highlight: item.tenPhieu!,
-                                            cancelText: 'Không',
-                                            confirmText: 'Xóa',
-                                            onConfirm: () {
-                                              context
-                                                  .read<DieuDongTaiSanBloc>()
-                                                  .add(
-                                                    DeleteDieuDongEvent(
-                                                      context,
-                                                      item.id!,
-                                                    ),
-                                                  );
+                            SizedBox(
+                              width: (availableWidth * 0.65).toDouble(),
+                              child: riverpod.Consumer(
+                                builder: (context, ref, _) {
+                                  final hasFilters = ref.watch(
+                                    tableAssetTransferProvider.select(
+                                      (s) => s.filterState.hasActiveFilters,
+                                    ),
+                                  );
+                                  final tableState = ref.watch(
+                                    tableAssetTransferProvider,
+                                  );
+                                  final selectedCount =
+                                      tableState.selectedItems.length;
+                                  selectedItems = tableState.selectedItems;
+                                  final buttons = _buildButtonList(
+                                    selectedCount,
+                                  );
+                                  final processedButtons =
+                                      buttons.map((button) {
+                                        if (button.text ==
+                                            'table.clear_filters'.tr) {
+                                          return ResponsiveButtonData.fromButtonIcon(
+                                            text: button.text,
+                                            iconPath: button.iconPath!,
+                                            backgroundColor:
+                                                button.backgroundColor!,
+                                            iconColor: button.iconColor!,
+                                            textColor: button.textColor!,
+                                            width: button.width,
+                                            onPressed: () {
+                                              ref
+                                                  .read(
+                                                    tableAssetTransferProvider
+                                                        .notifier,
+                                                  )
+                                                  .clearAllFilters();
                                             },
                                           );
                                         }
-                                      },
-                                    );
-                                  },
-                                  showActionsColumn: _showActionsColumn,
-                                  customActions: [
-                                    CustomAction(
-                                      tooltip: 'Xem',
-                                      iconPath: 'assets/icons/building.svg',
-                                      color: Colors.green,
-                                      onPressed: (item) async {
-                                        if (listAssetHandover.isEmpty) {
-                                          AppUtility.showSnackBar(
-                                            context,
-                                            'Không có biên bản bàn giao tài sản nào cho phiếu này',
-                                            isError: true,
-                                          );
-                                          return;
-                                        }
-                                        PropertyHandoverMinutes.showPopup(
-                                          context,
-                                          listAssetHandover
+                                        return button;
+                                      }).toList();
+
+                                  final filteredButtons =
+                                      hasFilters
+                                          ? processedButtons
+                                          : processedButtons
                                               .where(
-                                                (itemAH) =>
-                                                    itemAH.id == item.id,
+                                                (button) =>
+                                                    button.text !=
+                                                    'table.clear_filters'.tr,
                                               )
-                                              .toList(),
-                                        );
-                                      },
+                                              .toList();
+
+                                  return ResponsiveButtonBar(
+                                    buttons: filteredButtons,
+                                    spacing: 12,
+                                    overflowSide: OverflowSide.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    popupPosition: PopupMenuPosition.under,
+                                    popupOffset: const Offset(0, 8),
+                                    popupShape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                    CustomAction(
-                                      tooltip: 'Xem',
-                                      iconPath: 'assets/icons/eye.svg',
-                                      color: Colors.green,
-                                      onPressed: (item) async {
-                                        await _loadPdfNetwork(item.tenFile!);
-                                        if (!context.mounted) return;
-                                        previewDocument(
-                                          context: context,
-                                          item: item,
-                                          provider: widget.provider,
-                                          isShowKy: false,
-                                          document: _document,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                  actionsColumnWidth: 120,
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height * 0.8,
+                                    popupElevation: 6,
+                                    moreLabel: 'Khác',
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  // bộ lọc
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(8.0),
+                      bottomRight: Radius.circular(8.0),
+                    ),
+                    child: riverpod.Consumer(
+                      builder: (context, ref, child) {
+                        final data = widget.provider.filteredData ?? [];
+                        // Defer provider mutation until after the current frame
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ref
+                                .read(tableAssetTransferProvider.notifier)
+                                .setData(data);
+                          });
+
+                        return RiverpodTable<DieuDongTaiSanDto>(
+                          tableProvider: tableAssetTransferProvider,
+                          columns: _columns,
+                          showCheckboxColumn: _showCheckboxColumn,
+                          enableRowSelection: true,
+                          enableRowHover: true,
+                          showAlternatingRowColors: true,
+                          valueGetter: getValueForColumn,
+                          cellsBuilder: (_) => [],
+                          cellBuilderByKey: (item, key) {
+                            final builder = _buildersByKey[key];
+                            if (builder != null) return builder(item);
+                            return null;
+                          },
+                          onRowTap: (item) {
+                            widget.provider.onChangeDetailDieuDongTaiSan(item);
+                            setState(() {
+                              nameBenBan =
+                                  'Trạng thái ký " Biên bản ${item.id} "';
+                              isShowDetailDepartmentTree = true;
+                              _buildDetailDepartmentTree(item);
+                            });
+                          },
+                          // onEdit: (item) {},
+                          onDelete: (item) {
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa nhóm tài sản',
+                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                              highlight: item.tenPhieu ?? '',
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                if (item.trangThai == 0 ||
+                                    item.trangThai == 2) {
+                                  showConfirmDialog(
+                                    context,
+                                    type: ConfirmType.delete,
+                                    title: 'Xóa nhóm tài sản',
+                                    message:
+                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                                    highlight: item.tenPhieu!,
+                                    cancelText: 'Không',
+                                    confirmText: 'Xóa',
+                                    onConfirm: () {
+                                      context.read<DieuDongTaiSanBloc>().add(
+                                        DeleteDieuDongEvent(context, item.id!),
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            );
+                          },
+                          showActionsColumn: _showActionsColumn,
+                          customActions: [
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: 'assets/icons/building.svg',
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                if (listAssetHandover.isEmpty) {
+                                  AppUtility.showSnackBar(
+                                    context,
+                                    'Không có biên bản bàn giao tài sản nào cho phiếu này',
+                                    isError: true,
+                                  );
+                                  return;
+                                }
+                                PropertyHandoverMinutes.showPopup(
+                                  context,
+                                  listAssetHandover
+                                      .where((itemAH) => itemAH.id == item.id)
+                                      .toList(),
                                 );
                               },
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Department tree sidebar
-                    Visibility(
-                      visible: isShowDetailDepartmentTree,
-                      child: Container(
-                        width: 300,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            left: BorderSide(
-                              color: Colors.grey.shade600,
-                              width: 1,
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: 'assets/icons/eye.svg',
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                await _loadPdfNetwork(item.tenFile!);
+                                if (!context.mounted) return;
+                                previewDocument(
+                                  context: context,
+                                  item: item,
+                                  provider: widget.provider,
+                                  isShowKy: false,
+                                  document: _document,
+                                );
+                              },
                             ),
-                          ),
-                        ),
-                        child: DetailedDiagram(
-                          title: nameBenBan,
-                          sample: listSignatoryDetail,
-                          onHiden: () {
-                            setState(() {
-                              isShowDetailDepartmentTree = false;
-                            });
-                          },
-                        ),
-                      ),
+                          ],
+                          actionsColumnWidth: 120,
+                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                        );
+                      },
                     ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+            // Department tree sidebar
+            Visibility(
+              visible: isShowDetailDepartmentTree,
+              child: Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(color: Colors.grey.shade600, width: 1),
+                  ),
+                ),
+                child: DetailedDiagram(
+                  title: nameBenBan,
+                  sample: listSignatoryDetail,
+                  onHiden: () {
+                    setState(() {
+                      isShowDetailDepartmentTree = false;
+                    });
+                  },
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -878,5 +850,45 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           },
         ),
     ];
+  }
+
+  _onDelete(DieuDongTaiSanDto item) {
+    userInfo?.tenDangNhap == 'admin'
+        ? showConfirmDialog(
+          context,
+          type: ConfirmType.delete,
+          title: 'Xóa biên bản bàn giao',
+          message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+          highlight: item.tenPhieu!,
+          cancelText: 'Không',
+          confirmText: 'Xóa',
+          onConfirm: () {
+            // widget.provider.isLoading = true;
+            context.read<DieuDongTaiSanBloc>().add(
+              DeleteDieuDongEvent(context, item.id!),
+            );
+          },
+        )
+        : item.trangThai == 0
+        ? showConfirmDialog(
+          context,
+          type: ConfirmType.delete,
+          title: 'Xóa biên bản bàn giao',
+          message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+          highlight: item.tenPhieu!,
+          cancelText: 'Không',
+          confirmText: 'Xóa',
+          onConfirm: () {
+            // widget.provider.isLoading = true;
+            context.read<DieuDongTaiSanBloc>().add(
+              DeleteDieuDongEvent(context, item.id!),
+            );
+          },
+        )
+        : AppUtility.showSnackBar(
+          context,
+          'Bạn không thể xóa biên bản bàn giao này',
+          isError: true,
+        );
   }
 }

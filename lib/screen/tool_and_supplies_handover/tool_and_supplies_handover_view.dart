@@ -176,7 +176,6 @@ class _ToolAndSuppliesHandoverViewState
           context.read<ToolAndSuppliesHandoverBloc>().add(
             GetListToolAndSuppliesHandoverEvent(context),
           );
-          AccountHelper.refreshAllCounts();
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is UpdateToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -243,9 +242,6 @@ class _ToolAndSuppliesHandoverViewState
                 return const Center(child: CircularProgressIndicator());
               }
               // Ensure pagination controller is initialized before use
-              provider.controllerDropdownPage ??= TextEditingController(
-                text: provider.rowsPerPage.toString(),
-              );
               return Scaffold(
                 appBar: AppBar(
                   title: HeaderComponent(

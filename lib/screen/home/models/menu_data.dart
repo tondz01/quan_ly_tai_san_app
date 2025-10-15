@@ -200,7 +200,7 @@ class AppMenuData extends ChangeNotifier {
                 () => countAssetTransfer2,
               ),
               route: AppRoute.assetTransfer.path,
-              extra: "3",
+              extra: "2",
             ),
             SubMenuItem(
               label: 'Thu hồi tài sản',
@@ -208,7 +208,7 @@ class AppMenuData extends ChangeNotifier {
                 () => countAssetTransfer3,
               ),
               route: AppRoute.assetTransfer.path,
-              extra: "2",
+              extra: "3",
             ),
           ],
         ),
@@ -237,7 +237,7 @@ class AppMenuData extends ChangeNotifier {
                 () => countToolAndSupplies2,
               ),
               route: AppRoute.toolAndMaterialTransfer.path,
-              extra: "3",
+              extra: "2",
             ),
             SubMenuItem(
               label: 'Thu hồi CCDC - vật tư',
@@ -245,7 +245,7 @@ class AppMenuData extends ChangeNotifier {
                 () => countToolAndSupplies3,
               ),
               route: AppRoute.toolAndMaterialTransfer.path,
-              extra: "2",
+              extra: "3",
             ),
           ],
         ),
@@ -316,7 +316,6 @@ class AppMenuData extends ChangeNotifier {
   void rebuildMenuItems() {
     MenuItem._nextIndex = 0;
     _buildMenuItems();
-    log('message rebuildMenuItems MenuDataNotifier');
     notifyListeners();
   }
 
@@ -340,6 +339,7 @@ class AppMenuData extends ChangeNotifier {
       valueListenable: _countTrigger,
       builder: (context, value, child) {
         final count = countGetter();
+        log('message test: count ${count}');
         return _buildShowCountInSubMenu(count);
       },
     );

@@ -160,11 +160,14 @@ class TableAssetManagementConfig {
           isFixed: false,
         ),
         builder: (item) {
-          if (item.idLoaiTaiSanCon == null) {
-            return TableCellData(widget: Text(''));
-          }
-         
-          return TableCellData(widget: Text(''));
+          return TableCellData(
+            widget: Text(
+              AccountHelper.instance
+                      .getTypeAssetById(item.idLoaiTaiSanCon ?? '')
+                      ?.tenLoai ??
+                  '',
+            ),
+          );
         },
       ),
       ColumnDefinition(

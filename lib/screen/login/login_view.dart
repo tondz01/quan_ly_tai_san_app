@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/gradient_header.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
+import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
@@ -14,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/login_input_view.dart';
 
 import 'package:se_gay_components/common/sg_colors.dart';
+import 'package:se_gay_components/common/sg_text.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -72,56 +74,71 @@ class _LoginViewState extends State<LoginView> {
                 return Scaffold(
                   backgroundColor: SGAppColors.neutral100,
 
-                  body: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/images/background.jpg"),
-                        fit:
-                            BoxFit
-                                .cover, // cover, contain, fill, fitWidth, fitHeight
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        GradientHeaderLogin(
-                          title: 'PHẦN MỀM QUẢN LÝ TÀI SẢN',
-                          onLogoTap: () {
-                            // Handle logo tap if needed
-                          },
-                        ),
-                        SizedBox(height: 150),
-                        Center(
-                          child: SingleChildScrollView(
-                            child: Container(
-                              width: 400,
-                              padding: const EdgeInsets.all(32),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    // ignore: deprecated_member_use
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: LoginInputView(
-                                data: provider.authRequest,
-                                errorText: provider.error,
-                                onLogin: (data) {
-                                  log('message LoginInputView');
-                                  provider.onPressLogin(context, data);
-                                },
-                              ),
-                            ),
+                  body: Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage("assets/images/background.jpg"),
+                            fit:
+                                BoxFit
+                                    .cover, // cover, contain, fill, fitWidth, fitHeight
                           ),
                         ),
-
-                        // Body - chỉ cuộn khi header đã cuộn hết
-                      ],
-                    ),
+                        child: Column(
+                          children: [
+                            GradientHeaderLogin(
+                              title: 'PHẦN MỀM QUẢN LÝ TÀI SẢN',
+                              onLogoTap: () {
+                                // Handle logo tap if needed
+                              },
+                            ),
+                           
+                            SizedBox(height: 150),
+                            Center(
+                              child: SingleChildScrollView(
+                                child: Container(
+                                  width: 400,
+                                  padding: const EdgeInsets.all(32),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        // ignore: deprecated_member_use
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 16,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  child: LoginInputView(
+                                    data: provider.authRequest,
+                                    errorText: provider.error,
+                                    onLogin: (data) {
+                                      log('message LoginInputView');
+                                      provider.onPressLogin(context, data);
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        left: 20,
+                        bottom: 20,
+                        child: SGText(
+                          text:
+                              'quanlytaisan - Version: ${Config.appVersion}_${Config.appBuild}',
+                          size: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },

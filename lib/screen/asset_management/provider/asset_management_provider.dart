@@ -19,6 +19,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -294,12 +295,19 @@ class AssetManagementProvider with ChangeNotifier {
     reset(context);
     _userInfo = AccountHelper.instance.getUserInfo();
     _dataUnit = AccountHelper.instance.getAllUnit();
+    if (_dataUnit != null) {
+      AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
+      _dataUnit = AccountHelper.instance.getAllUnit();
+      log('message test: _dataUnit2: ${_dataUnit!.length}');
+    }
+    log('message test: _dataUnit1: ${_dataUnit!.length}');
     _itemsUnit = [
       ..._dataUnit!.map(
         (e) =>
             DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
       ),
     ];
+    log('message test: _dataUnit: ${_itemsUnit!.length}');
     _dataGroup = AccountHelper.instance.getAssetGroup();
     _itemsAssetGroup = [
       for (var element in _dataGroup!)

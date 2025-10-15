@@ -368,13 +368,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   void onPageChanged(int page) {
     currentPage = page;
-    _updatePagination();
+    // _updatePagination();
+    _applyFilters();
     notifyListeners();
   }
 
   void onCloseDetail(BuildContext context) {
     _isShowCollapse = true;
     _isShowInput = false;
+    _applyFilters();
     notifyListeners();
   }
 
@@ -392,6 +394,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     rowsPerPage = value;
     currentPage = 1;
     _updatePagination();
+    // _applyFilters();
     notifyListeners();
   }
 
@@ -401,7 +404,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
     if (index != -1) {
       _data![index] = updatedItem;
-      _updatePagination();
+      // _updatePagination();
+      _applyFilters();
       notifyListeners();
     }
   }
@@ -418,9 +422,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
-      AccountHelper.instance.clearAssetTransfer();
-      AccountHelper.instance.setAssetTransfer(state.data);
-      AccountHelper.refreshAllCounts();
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
@@ -447,9 +448,17 @@ class DieuDongTaiSanProvider with ChangeNotifier {
               .toList();
       _filteredData = List.from(_data!);
     }
-    _updatePagination();
+    // _updatePagination();
+    // _applyFilters();
     notifyListeners();
   }
+
+  // refreshDataSuccess(List<DieuDongTaiSanDto> data) {
+  //   AccountHelper.instance.clearAssetTransfer();
+  //   AccountHelper.instance.setAssetTransfer(data);
+  //   AccountHelper.refreshAllCounts();
+  //   notifyListeners();
+  // }
 
   getLisTaiSanSuccess(BuildContext context, GetListAssetSuccessState state) {
     _error = null;
@@ -500,7 +509,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Tạo mới thành công!');
     getDataAll(context);
-    AccountHelper.refreshAllCounts();
+    // AccountHelper.refreshAllCounts();
     notifyListeners();
   }
 
@@ -672,7 +681,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       _data![index] = updatedItem;
 
       _filteredData = List.from(_data!);
-      _updatePagination();
+      // _updatePagination();
+      _applyFilters();
       notifyListeners();
     }
   }

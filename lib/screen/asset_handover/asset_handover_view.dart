@@ -212,7 +212,7 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
           context.read<AssetHandoverBloc>().add(
             GetListAssetHandoverEvent(context),
           );
-          AccountHelper.refreshAllCounts();
+          // AccountHelper.refreshAllCounts();
           context.read<AssetHandoverProvider>().isShowInput = false;
         } else if (state is CancelAssetHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(

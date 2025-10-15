@@ -66,4 +66,6 @@ abstract class ColorValue {
   static const Color darkPrimaryBlue = Color(0xFF0D47A1);
   static const Color veryDarkPrimaryBlue = Color(0xFF0D47A1);
   static const Color link = Color(0xFF1E88E5);
+
+  static const Color colorGreenDefault = Color(0xFF21A366);
 }

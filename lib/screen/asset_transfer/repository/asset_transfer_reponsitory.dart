@@ -47,7 +47,10 @@ class AssetTransferRepository extends ApiBase {
             response.data,
             DieuDongTaiSanDto.fromJson,
           );
-
+      log('message test: ${dieuDongTaiSans.length}');
+      AccountHelper.instance.clearAssetTransfer();
+      AccountHelper.instance.setAssetTransfer(dieuDongTaiSans);
+      AccountHelper.refreshAllCounts();
       if (type != null && type != -1) {
         dieuDongTaiSans = dieuDongTaiSans.where((e) => e.loai == type).toList();
       }
