@@ -489,7 +489,7 @@ class _ToolsAndSuppliesListState
           onPressed: () {
             final ids =
                 listSelected.map((e) => e.id!).toList();
-            final ids = listSelected.map((e) => e.id).toList();
+
             showConfirmDialog(
               context,
               type: ConfirmType.delete,
