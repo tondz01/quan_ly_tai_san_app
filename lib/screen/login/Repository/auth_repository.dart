@@ -354,6 +354,7 @@ class AuthRepository extends ApiBase {
       final response = await UnitRepository().getListUnit();
       if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         AccountHelper.instance.setUnit(response['data']);
+        log('message test: loadUnit: ${response['data'].length}');
         SGLog.info('_loadData', 'loadUnit');
       }
     } catch (e) {

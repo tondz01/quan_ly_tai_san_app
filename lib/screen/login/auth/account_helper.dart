@@ -308,6 +308,8 @@ class AccountHelper {
   //ASSET TRANSFER
   setAssetTransfer(assetTransfer) {
     StorageService.write(StorageKey.ASSET_TRANSFER, assetTransfer);
+    // Ensure menu badges refresh whenever dataset is updated
+    refreshAllCounts();
   }
 
   List<DieuDongTaiSanDto>? getAssetTransfer() {
@@ -433,12 +435,21 @@ class AccountHelper {
     return listAssetTransfer?.length ?? 0;
   }
 
+  /// Tổng số phiếu điều động theo loại (không lọc theo quyền ký)
+  int getTotalAssetTransferByType(int type) {
+    final list = getAssetTransfer();
+    if (list == null) return 0;
+    return list.where((e) => e.loai == type).length;
+  }
+
   //TOOL AND SUPPLIES
   setToolAndMaterialTransfer(toolAndSupplies) {
     StorageService.write(
       StorageKey.TOOL_AND_MATERIAL_TRANSFER,
       toolAndSupplies,
     );
+    // Keep menu counts in sync after updates
+    refreshAllCounts();
   }
 
   List<ToolAndMaterialTransferDto>? getToolAndMaterialTransfer() {
@@ -521,6 +532,8 @@ class AccountHelper {
   //ASSET HANDOVER
   setAssetHandover(assetHandover) {
     StorageService.write(StorageKey.ASSET_HANDOVER, assetHandover);
+    // Trigger global counts refresh
+    refreshAllCounts();
   }
 
   List<AssetHandoverDto>? getAssetHandover() {
@@ -611,6 +624,8 @@ class AccountHelper {
       StorageKey.TOOL_AND_MATERIAL_TRANSFER_HANDOVER,
       toolAndMaterialTransfer,
     );
+    // Refresh menu badges
+    refreshAllCounts();
   }
 
   List<ToolAndSuppliesHandoverDto>? getToolAndMaterialHandover() {
@@ -734,7 +749,6 @@ class AccountHelper {
 
   /// Global method để refresh counts từ bất kỳ đâu trong app
   static void refreshAllCounts() {
-    // 🔥 SỬA LẠI: Gọi AppMenuData.refreshAllCounts() thay vì MenuRefreshService
     AppMenuData.refreshAllCounts();
   }
 
@@ -790,18 +804,11 @@ class AccountHelper {
 
   TypeAsset? getTypeAssetById(String idTypeAsset) {
     if (idTypeAsset.isEmpty) return null;
-    final raw = StorageService.read(
-      StorageKey.TYPE_ASSET,
-    )?.firstWhere((element) => element.id == idTypeAsset, orElse: () => null);
-    final types =
-        raw?.map((e) => TypeAsset.fromJson(e as Map<String, dynamic>)).toList();
-
-    final TypeAsset? found = types?.firstWhere(
-      (t) => t.id == idTypeAsset,
-      orElse: () => null,
-    );
-    if (found == null) return null;
-    return found;
+    final List<TypeAsset> all = getAllTypeAsset();
+    for (final t in all) {
+      if (t.id == idTypeAsset) return t;
+    }
+    return null;
   }
 
   TypeAsset? getTypeAssetObject(String idAssetGroup) {
@@ -868,6 +875,10 @@ class AccountHelper {
   setUnit(List<UnitDto> unit) {
     if (unit.isNotEmpty) {
       StorageService.write(StorageKey.UNIT, unit);
+      List<UnitDto> units = StorageService.read(StorageKey.UNIT);
+      List<UnitDto> units2 = getAllUnit();
+
+      log('message test: loadUnit setUnit: ${units.length} units2: ${units2.length}');
     }
   }
 
@@ -877,22 +888,22 @@ class AccountHelper {
 
   List<UnitDto> getAllUnit() {
     final raw = StorageService.read(StorageKey.UNIT);
-    if (raw == null) {
-      return [];
-    }
-
+    if (raw == null) return [];
     try {
+      if (raw is List<UnitDto>) return raw;
       if (raw is List) {
-        final units =
-            raw
-                .map((e) => UnitDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-        return units;
+        return raw
+            .map((e) {
+              if (e is UnitDto) return e;
+              if (e is Map<String, dynamic>) return UnitDto.fromJson(e);
+              if (e is Map) return UnitDto.fromJson(Map<String, dynamic>.from(e));
+              return null;
+            })
+            .whereType<UnitDto>()
+            .toList();
       }
-      return [];
-    } catch (e) {
-      return [];
-    }
+    } catch (_) {}
+    return [];
   }
 
   UnitDto? getUnitById(String idUnit) {

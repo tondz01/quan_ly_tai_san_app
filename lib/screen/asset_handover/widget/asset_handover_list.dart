@@ -318,7 +318,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       if (selectedItems.isNotEmpty &&
           selectedItems.length < 2 &&
-          _getPermissionSigning(selectedItems.first) != 0)
+          _getPermissionSigning(selectedItems.first) == 0)
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,

@@ -308,7 +308,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
         }).toList();
     _filteredData = List.from(_data!);
     if (_data != null) {
-      refreshCountSign(_data!);
+      // refreshCountSign(_data!);
     }
     _applyFilters();
     notifyListeners();

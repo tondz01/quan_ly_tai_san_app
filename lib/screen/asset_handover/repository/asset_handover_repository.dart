@@ -45,6 +45,9 @@ class AssetHandoverRepository extends ApiBase {
             response.data,
             AssetHandoverDto.fromJson,
           );
+      AccountHelper.instance.clearAssetHandover();
+      AccountHelper.instance.setAssetHandover(assetHandover);
+      AccountHelper.refreshAllCounts();
       await Future.wait(
         assetHandover.map((assetHandover) async {
           try {

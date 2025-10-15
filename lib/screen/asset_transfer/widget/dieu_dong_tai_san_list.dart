@@ -16,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_st
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_event.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/preview_document_asset_transfer.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/property_handover_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/row_find_by_status.dart';
@@ -57,6 +58,7 @@ class DieuDongTaiSanList extends StatefulWidget {
 class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isUploading = false;
   bool isShowDetailDepartmentTree = false;
+  bool isLoading = true; // Thêm state loading
 
   String nameBenBan = "";
 
@@ -88,6 +90,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
     super.initState();
     userInfo = AccountHelper.instance.getUserInfo();
     isShowDetailDepartmentTree = false;
+    isLoading = true; // Đặt loading = true khi khởi tạo
     if (selected != null) {
       _buildDetailDepartmentTree(selected!);
     }
@@ -260,6 +263,23 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             } else if (state is ErrorState) {}
           },
         ),
+        BlocListener<DieuDongTaiSanBloc, DieuDongTaiSanState>(
+          listener: (context, state) {
+            if (state is GetListDieuDongTaiSanSuccessState) {
+              setState(() {
+                isLoading = false; // Đánh dấu đã load xong dữ liệu
+              });
+            } else if (state is DieuDongTaiSanLoadingState) {
+              setState(() {
+                isLoading = true; // Đánh dấu đang loading
+              });
+            } else if (state is GetListDieuDongTaiSanFailedState) {
+              setState(() {
+                isLoading = false; // Dừng loading khi có lỗi
+              });
+            }
+          },
+        ),
       ],
       child: Container(
         height: MediaQuery.of(context).size.height,
@@ -397,14 +417,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                       builder: (context, ref, child) {
                         final data = widget.provider.filteredData ?? [];
                         // Defer provider mutation until after the current frame
-                        if (!_areListsEqual(_previousFilteredData, data)) {
-                          _previousFilteredData = List.from(data);
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             ref
                                 .read(tableAssetTransferProvider.notifier)
                                 .setData(data);
                           });
-                        }
 
                         return RiverpodTable<DieuDongTaiSanDto>(
                           tableProvider: tableAssetTransferProvider,
@@ -430,11 +447,41 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             });
                           },
                           // onEdit: (item) {},
-                          onDelete: _onDelete,
+                          onDelete: (item) {
+                            showConfirmDialog(
+                              context,
+                              type: ConfirmType.delete,
+                              title: 'Xóa nhóm tài sản',
+                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                              highlight: item.tenPhieu ?? '',
+                              cancelText: 'Không',
+                              confirmText: 'Xóa',
+                              onConfirm: () {
+                                if (item.trangThai == 0 ||
+                                    item.trangThai == 2) {
+                                  showConfirmDialog(
+                                    context,
+                                    type: ConfirmType.delete,
+                                    title: 'Xóa nhóm tài sản',
+                                    message:
+                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
+                                    highlight: item.tenPhieu!,
+                                    cancelText: 'Không',
+                                    confirmText: 'Xóa',
+                                    onConfirm: () {
+                                      context.read<DieuDongTaiSanBloc>().add(
+                                        DeleteDieuDongEvent(context, item.id!),
+                                      );
+                                    },
+                                  );
+                                }
+                              },
+                            );
+                          },
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(
-                              tooltip: 'Danh sach biên bản bàn giao',
+                              tooltip: 'Xem',
                               iconPath: 'assets/icons/building.svg',
                               color: Colors.blue,
                               onPressed: (item) async {

@@ -176,7 +176,6 @@ class _ToolAndSuppliesHandoverViewState
           context.read<ToolAndSuppliesHandoverBloc>().add(
             GetListToolAndSuppliesHandoverEvent(context),
           );
-          AccountHelper.refreshAllCounts();
           context.read<ToolAndSuppliesHandoverProvider>().isShowInput = false;
         } else if (state is UpdateToolAndSuppliesHandoverSuccessState) {
           ScaffoldMessenger.of(context).showSnackBar(

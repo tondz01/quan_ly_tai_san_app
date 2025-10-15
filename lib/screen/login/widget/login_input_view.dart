@@ -102,15 +102,7 @@ class _LoginInputViewState extends State<LoginInputView> {
                 fit: BoxFit.cover,
               ), // kích thước avatar
             ),
-            const SizedBox(height: 18),
-             const SGText(
-              text: "PHẦN MỀM QUẢN LÝ TÀI SẢN",
-              size: 25,
-              fontWeight: FontWeight.bold,
-              color: SGAppColors.primary600,
-              textAlign: TextAlign.center,
-            ),
-            
+    
             const SizedBox(height: 16),
             const SGText(
               text: "Đăng nhập",
@@ -160,7 +152,9 @@ class _LoginInputViewState extends State<LoginInputView> {
               suffixIcon: IconButton(
                 alignment: Alignment.center,
                 icon: Icon(
-                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  _obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility,
                 ),
                 onPressed: () {
                   setState(() {

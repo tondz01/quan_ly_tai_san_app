@@ -336,9 +336,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
             .toList();
     _filteredData = List.from(_data!);
     log('message test: onReloadDataAssetTransfer');
-    if (_data != null) {
-      refreshDataSuccess(_data!);
-    }
     _applyFilters();
     notifyListeners();
   }
@@ -425,7 +422,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
-      refreshDataSuccess(state.data);
       _data =
           state.data
               .where((element) => element.loai == typeDieuDongTaiSan)
@@ -457,12 +453,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  refreshDataSuccess(List<DieuDongTaiSanDto> data) {
-    AccountHelper.instance.clearAssetTransfer();
-    AccountHelper.instance.setAssetTransfer(data);
-    AccountHelper.refreshAllCounts();
-    notifyListeners();
-  }
+  // refreshDataSuccess(List<DieuDongTaiSanDto> data) {
+  //   AccountHelper.instance.clearAssetTransfer();
+  //   AccountHelper.instance.setAssetTransfer(data);
+  //   AccountHelper.refreshAllCounts();
+  //   notifyListeners();
+  // }
 
   getLisTaiSanSuccess(BuildContext context, GetListAssetSuccessState state) {
     _error = null;
@@ -513,7 +509,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Tạo mới thành công!');
     getDataAll(context);
-    AccountHelper.refreshAllCounts();
+    // AccountHelper.refreshAllCounts();
     notifyListeners();
   }
 

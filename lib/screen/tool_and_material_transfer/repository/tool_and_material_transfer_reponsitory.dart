@@ -301,7 +301,9 @@ class ToolAndMaterialTransferRepository extends ApiBase {
                   .map((e) => ToolAndMaterialTransferDto.fromJson(e))
                   .where((e) => e.loai == type)
                   .toList();
-
+      AccountHelper.instance.clearToolAndMaterialTransfer();
+      AccountHelper.instance.setToolAndMaterialTransfer(res.data);
+      AccountHelper.refreshAllCounts();
       await Future.wait(
         toolAndMaterialTransfers.map((toolAndMaterialTransfer) async {
           try {
