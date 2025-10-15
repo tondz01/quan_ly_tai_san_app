@@ -6,7 +6,9 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:get/utils.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
 import 'package:table_base/widgets/box_search.dart';
@@ -62,6 +64,9 @@ class _ToolAndMaterialTransferListState
   PdfDocument? _document;
   List<ThreadNode> listSignatoryDetail = [];
   ToolAndMaterialTransferDto? selected;
+
+  // Track previous filtered data for comparison
+  List<ToolAndMaterialTransferDto> _previousFilteredData = [];
 
   bool isShowDetailDepartmentTree = false;
   String nameBenBan = "";
@@ -144,6 +149,13 @@ class _ToolAndMaterialTransferListState
   @override
   void didUpdateWidget(covariant ToolAndMaterialTransferList oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldData = oldWidget.provider.filteredData ?? [];
+    final newData = widget.provider.filteredData ?? [];
+
+    if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
+      _onFilteredDataChanged(oldData, newData);
+    }
+
     setState(() {
       if (selected != null && widget.provider.dataPage != null) {
         selected = widget.provider.dataPage?.firstWhere(
@@ -155,6 +167,44 @@ class _ToolAndMaterialTransferListState
         }
       }
     });
+  }
+
+  // Helper method để so sánh 2 list
+  bool _areListsEqual(
+    List<ToolAndMaterialTransferDto> list1,
+    List<ToolAndMaterialTransferDto> list2,
+  ) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      int statusSign1 = TableToolAndMaterialTransferConfig.getPermissionSigning(
+        list1[i],
+        userInfo!,
+      );
+      int statusSign2 = TableToolAndMaterialTransferConfig.getPermissionSigning(
+        list2[i],
+        userInfo!,
+      );
+      if (list1[i].id != list2[i].id) return false;
+      if (list1[i].trangThai != list2[i].trangThai) return false;
+      if (list1[i].share != list2[i].share) return false;
+      if (list1[i].trangThaiPhieu != list2[i].trangThaiPhieu) return false;
+      if (statusSign1 != statusSign2) return false;
+    }
+    return true;
+  }
+
+  // Callback khi filtered data thay đổi
+  void _onFilteredDataChanged(
+    List<ToolAndMaterialTransferDto> oldData,
+    List<ToolAndMaterialTransferDto> newData,
+  ) {
+    // Reset selection nếu item đã chọn không còn trong filtered data
+    if (selected != null && !newData.any((item) => item.id == selected?.id)) {
+      setState(() {
+        selected = null;
+        isShowDetailDepartmentTree = false;
+      });
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -339,13 +389,17 @@ class _ToolAndMaterialTransferListState
                     child: riverpod.Consumer(
                       builder: (context, ref, child) {
                         final data = widget.provider.filteredData ?? [];
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          ref
-                              .read(
-                                tableToolAndMaterialTransferProvider.notifier,
-                              )
-                              .setData(data);
-                        });
+                        
+                        if (!_areListsEqual(_previousFilteredData, data)) {
+                          _previousFilteredData = List.from(data);
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ref
+                                .read(
+                                  tableToolAndMaterialTransferProvider.notifier,
+                                )
+                                .setData(data);
+                          });
+                        }
 
                         return RiverpodTable<ToolAndMaterialTransferDto>(
                           tableProvider: tableToolAndMaterialTransferProvider,
@@ -372,37 +426,7 @@ class _ToolAndMaterialTransferListState
                             });
                           },
                           // onEdit: (item) {},
-                          onDelete: (item) {
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa nhóm tài sản',
-                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                              highlight: item.tenPhieu ?? '',
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                if (item.trangThai == 0 ||
-                                    item.trangThai == 2) {
-                                  showConfirmDialog(
-                                    context,
-                                    type: ConfirmType.delete,
-                                    title: 'Xóa nhóm tài sản',
-                                    message:
-                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                                    highlight: item.tenPhieu!,
-                                    cancelText: 'Không',
-                                    confirmText: 'Xóa',
-                                    onConfirm: () {
-                                      context.read<DieuDongTaiSanBloc>().add(
-                                        DeleteDieuDongEvent(context, item.id!),
-                                      );
-                                    },
-                                  );
-                                }
-                              },
-                            );
-                          },
+                          onDelete: _onDelete,
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(
@@ -722,7 +746,7 @@ class _ToolAndMaterialTransferListState
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
           backgroundColor: AppColor.white,
-          iconColor: AppColor.textDark,
+          iconColor: ColorValue.amber,
           textColor: AppColor.textDark,
           width: 150,
           onPressed: () {
@@ -750,5 +774,45 @@ class _ToolAndMaterialTransferListState
           },
         ),
     ];
+  }
+
+  _onDelete(ToolAndMaterialTransferDto item) {
+    userInfo?.tenDangNhap == 'admin'
+        ? showConfirmDialog(
+          context,
+          type: ConfirmType.delete,
+          title: 'Xóa biên bản bàn giao',
+          message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+          highlight: item.tenPhieu!,
+          cancelText: 'Không',
+          confirmText: 'Xóa',
+          onConfirm: () {
+            // widget.provider.isLoading = true;
+            context.read<ToolAndMaterialTransferBloc>().add(
+              DeleteToolAndMaterialTransferEvent(context, item.id!),
+            );
+          },
+        )
+        : item.trangThai == 0
+        ? showConfirmDialog(
+          context,
+          type: ConfirmType.delete,
+          title: 'Xóa biên bản bàn giao',
+          message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+          highlight: item.tenPhieu!,
+          cancelText: 'Không',
+          confirmText: 'Xóa',
+          onConfirm: () {
+            // widget.provider.isLoading = true;
+            context.read<ToolAndMaterialTransferBloc>().add(
+              DeleteToolAndMaterialTransferEvent(context, item.id!),
+            );
+          },
+        )
+        : AppUtility.showSnackBar(
+          context,
+          'Bạn không thể xóa biên bản bàn giao này',
+          isError: true,
+        );
   }
 }

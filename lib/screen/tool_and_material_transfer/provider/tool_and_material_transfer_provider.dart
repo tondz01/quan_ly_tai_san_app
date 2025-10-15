@@ -152,6 +152,11 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // set isLoading(bool value) {
+  //   isLoading = value;
+  //   notifyListeners();
+  // }
+
   set dataPage(List<ToolAndMaterialTransferDto>? value) {
     _dataPage = value;
     notifyListeners();
@@ -310,6 +315,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
     _filteredData = List.from(_data!);
+    log('Auto-reloaded data: ${_filteredData.length} items');
     _applyFilters();
     notifyListeners();
   }
@@ -457,6 +463,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
       _filteredData = List.from(_data!);
+      _applyFilters();
     }
     _updatePagination();
     notifyListeners();

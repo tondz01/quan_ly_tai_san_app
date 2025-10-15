@@ -181,7 +181,7 @@ class _TableChildAssetsState extends State<TableChildAssets> {
       case 0:
         return 'Đang sử dụng';
       case 1:
-        return 'Chờ sử lý';
+        return 'Chờ xử lý';
       case 2:
         return 'Không sử dụng';
       case 3:

@@ -57,6 +57,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   bool get isUpdateDetail => _isUpdateDetail;
+  bool get isReloadData => _isReloadData;
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -86,6 +87,11 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set isReloadData(bool value) {
+    _isReloadData = value;
+    notifyListeners();
+  }
+
   // Thuộc tính cho tìm kiếm
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -99,27 +105,14 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   bool _hasUnsavedChanges = false;
   bool _isFindNew = false;
   bool _isFindNewItem = false;
+  bool _isReloadData = false;  
+
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
   Timer? _autoReloadTimer;
 
   int typeAssetTransfer = 1;
-
-  late int totalEntries;
-  late int totalPages = 0;
-  late int startIndex;
-  late int endIndex;
-  int rowsPerPage = 10;
-  int currentPage = 1;
-  TextEditingController? controllerDropdownPage;
-
-  final List<DropdownMenuItem<int>> items = [
-    const DropdownMenuItem(value: 5, child: Text('5')),
-    const DropdownMenuItem(value: 10, child: Text('10')),
-    const DropdownMenuItem(value: 20, child: Text('20')),
-    const DropdownMenuItem(value: 50, child: Text('50')),
-  ];
 
   // List status
 
@@ -284,9 +277,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     } else {
       _filteredData = statusFiltered;
     }
-
-    // Sau khi lọc, cập nhật lại phân trang
-    _updatePagination();
   }
 
   // Lưu trữ trạng thái filter trong Map
@@ -303,7 +293,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   void onInit(BuildContext context) {
     _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
-    controllerDropdownPage = TextEditingController(text: '10');
 
     _body = Container();
     getListToolAndSuppliesHandover(context);
@@ -318,12 +307,14 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     Map<String, dynamic> result =
         await ToolAndSuppliesHandoverRepository()
             .getListToolAndSuppliesHandover();
+    
     _data = result['data'];
     _data =
         _data?.where((item) {
             return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
           }).toList();
     _filteredData = List.from(_data!);
+    _isReloadData = true;
     _applyFilters();
     notifyListeners();
   }
@@ -335,10 +326,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _error = null;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
-    if (controllerDropdownPage != null) {
-      controllerDropdownPage!.dispose();
-      controllerDropdownPage = null;
-    }
     _autoReloadTimer?.cancel();
     _autoReloadTimer = null;
   }
@@ -363,41 +350,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     });
   }
 
-  void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = _filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
-
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-  }
-
-  void onPageChanged(int page) {
-    currentPage = page;
-    _updatePagination();
-    notifyListeners();
-  }
-
-  void onRowsPerPageChanged(int? value) {
-    if (value == null) return;
-    rowsPerPage = value;
-    currentPage = 1;
-    _updatePagination();
-    notifyListeners();
-  }
-
   void onChangeDetail(
     BuildContext context,
     ToolAndSuppliesHandoverDto? item, {
@@ -416,8 +368,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     int index = _data!.indexWhere((item) => item.id == updatedItem.id);
     if (index != -1) {
       _data![index] = updatedItem;
-
-      _updatePagination();
+      _applyFilters();
       notifyListeners();
     } else {}
   }
@@ -451,7 +402,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
       _filteredData = List.from(_data!);
     }
-    _updatePagination();
+    _applyFilters();
     _isLoading = false;
     notifyListeners();
   }

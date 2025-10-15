@@ -243,7 +243,7 @@ class _AssetTransferMovementTableState
       case 0:
         return 'Đang sử dụng';
       case 1:
-        return 'Chờ sử lý';
+        return 'Chờ xử lý';
       case 2:
         return 'Không sử dụng';
       case 3:

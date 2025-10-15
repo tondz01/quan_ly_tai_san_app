@@ -64,6 +64,9 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   late final List<ColumnDefinition> _definitions;
   late final Map<String, TableCellBuilder> _buildersByKey;
 
+  // Track previous filtered data for comparison
+  List<AssetHandoverDto> _previousFilteredData = [];
+
   final bool _showCheckboxColumn = true;
   final bool _showActionsColumn = true;
 
@@ -137,6 +140,11 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
   @override
   void didUpdateWidget(covariant AssetHandoverList oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldData = oldWidget.provider.filteredData ?? [];
+    final newData = widget.provider.filteredData ?? [];
+    if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
+      _onFilteredDataChanged(oldData, newData);
+    }
     setState(() {
       if (selected != null && widget.provider.dataPage != null) {
         selected = widget.provider.dataPage?.firstWhere(
@@ -148,6 +156,43 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         }
       }
     });
+  }
+
+  bool _areListsEqual(
+    List<AssetHandoverDto> list1,
+    List<AssetHandoverDto> list2,
+  ) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      int statusSign1 = TableAssetHandoverConfig.getPermissionSigning(
+        list1[i],
+        userInfo!,
+      );
+      int statusSign2 = TableAssetHandoverConfig.getPermissionSigning(
+        list2[i],
+        userInfo!,
+      );
+      if (list1[i].id != list2[i].id) return false;
+      if (list1[i].trangThai != list2[i].trangThai) return false;
+      if (list1[i].share != list2[i].share) return false;
+      if (list1[i].trangThaiPhieu != list2[i].trangThaiPhieu) return false;
+      if (statusSign1 != statusSign2) return false;
+    }
+    return true;
+  }
+
+  // Callback khi filtered data thay đổi
+  void _onFilteredDataChanged(
+    List<AssetHandoverDto> oldData,
+    List<AssetHandoverDto> newData,
+  ) {
+    // Reset selection nếu item đã chọn không còn trong filtered data
+    if (selected != null && !newData.any((item) => item.id == selected?.id)) {
+      setState(() {
+        selected = null;
+        isShowDetailDepartmentTree = false;
+      });
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -172,21 +217,46 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     listSignatoryDetail = [
       ThreadNode(header: 'Trạng thái ký', depth: 0),
       ThreadNode(
-        header: 'Đại diện bên giao:',
+        header: 'Đại diện đơn vị để nghị:',
         depth: 1,
         child: viewSignatoryStatus(
-          item.daiDienBenGiaoXacNhan ?? false,
-          item.tenDaiDienBenGiao ?? '',
+          item.daXacNhan == true,
+          widget.provider
+              .getNhanVienByID(item.idDaiDiendonviBanHanhQD ?? '')
+              .hoTen
+              .toString(),
         ),
       ),
       ThreadNode(
-        header: 'Đại diện bên nhận:',
+        header: 'Đại diện đơn vị giao:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.daiDienBenGiaoXacNhan ?? false,
+          widget.provider
+              .getNhanVienByID(item.idDaiDienBenGiao ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
+      ThreadNode(
+        header: 'Đại diện đơn vị nhận:',
         depth: 1,
         child: viewSignatoryStatus(
           item.daiDienBenNhanXacNhan ?? false,
-          item.tenDaiDienBenNhan ?? '',
+          widget.provider
+              .getNhanVienByID(item.idDaiDienBenNhan ?? '')
+              .hoTen
+              .toString(),
         ),
       ),
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
     ];
   }
 
@@ -253,7 +323,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
           backgroundColor: AppColor.white,
-          iconColor: ColorValue.limeYellow,
+          iconColor: ColorValue.amber,
           textColor: AppColor.textDark,
           width: 130,
           onPressed: () {
@@ -456,12 +526,14 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                           builder: (context, ref, child) {
                             final data = widget.provider.filteredData ?? [];
                             // Defer provider mutation until after the current frame
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              ref
-                                  .read(tableAssetHandoverProvider.notifier)
-                                  .setData(data);
-                            });
-
+                            if (!_areListsEqual(_previousFilteredData, data)) {
+                              _previousFilteredData = List.from(data);
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                ref
+                                    .read(tableAssetHandoverProvider.notifier)
+                                    .setData(data);
+                              });
+                            }
                             return RiverpodTable<AssetHandoverDto>(
                               tableProvider: tableAssetHandoverProvider,
                               columns: _columns,
@@ -476,7 +548,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                 if (builder != null) return builder(item);
                                 return null;
                               },
-                              
+
                               onRowTap: (item) {
                                 widget.provider.onChangeDetail(context, item);
                                 setState(() {

@@ -65,6 +65,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   List<ThreadNode> listSignatoryDetail = [];
   UserInfoDTO? userInfo;
 
+  // Track previous filtered data for comparison
+  List<DieuDongTaiSanDto> _previousFilteredData = [];
+
   late final List<TableColumnData> _allColumns;
   List<String> _hiddenKeys = [];
   List<TableColumnData> _columns = [];
@@ -100,6 +103,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   @override
   void didUpdateWidget(covariant DieuDongTaiSanList oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldData = oldWidget.provider.filteredData ?? [];
+    final newData = widget.provider.filteredData ?? [];
+
+    if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
+      _onFilteredDataChanged(oldData, newData);
+    }
+
     setState(() {
       if (selected != null && widget.provider.dataPage != null) {
         selected = widget.provider.dataPage?.firstWhere(
@@ -111,6 +121,38 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         }
       }
     });
+  }
+
+  // Helper method để so sánh 2 list
+  bool _areListsEqual(
+    List<DieuDongTaiSanDto> list1,
+    List<DieuDongTaiSanDto> list2,
+  ) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      int statusSign1 = TabelAssetTransferConfig.getPermissionSigning(list1[i]);
+      int statusSign2 = TabelAssetTransferConfig.getPermissionSigning(list2[i]);
+      if (list1[i].id != list2[i].id) return false;
+      if (list1[i].trangThai != list2[i].trangThai) return false;
+      if (list1[i].share != list2[i].share) return false;
+      if (list1[i].trangThaiPhieu != list2[i].trangThaiPhieu) return false;
+      if (statusSign1 != statusSign2) return false;
+    }
+    return true;
+  }
+
+  // Callback khi filtered data thay đổi
+  void _onFilteredDataChanged(
+    List<DieuDongTaiSanDto> oldData,
+    List<DieuDongTaiSanDto> newData,
+  ) {
+    // Reset selection nếu item đã chọn không còn trong filtered data
+    if (selected != null && !newData.any((item) => item.id == selected?.id)) {
+      setState(() {
+        selected = null;
+        isShowDetailDepartmentTree = false;
+      });
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -355,11 +397,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                       builder: (context, ref, child) {
                         final data = widget.provider.filteredData ?? [];
                         // Defer provider mutation until after the current frame
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          ref
-                              .read(tableAssetTransferProvider.notifier)
-                              .setData(data);
-                        });
+                        if (!_areListsEqual(_previousFilteredData, data)) {
+                          _previousFilteredData = List.from(data);
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ref
+                                .read(tableAssetTransferProvider.notifier)
+                                .setData(data);
+                          });
+                        }
 
                         return RiverpodTable<DieuDongTaiSanDto>(
                           tableProvider: tableAssetTransferProvider,
@@ -385,41 +430,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             });
                           },
                           // onEdit: (item) {},
-                          onDelete: (item) {
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa nhóm tài sản',
-                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                              highlight: item.tenPhieu ?? '',
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                if (item.trangThai == 0 ||
-                                    item.trangThai == 2) {
-                                  showConfirmDialog(
-                                    context,
-                                    type: ConfirmType.delete,
-                                    title: 'Xóa nhóm tài sản',
-                                    message:
-                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                                    highlight: item.tenPhieu!,
-                                    cancelText: 'Không',
-                                    confirmText: 'Xóa',
-                                    onConfirm: () {
-                                      context.read<DieuDongTaiSanBloc>().add(
-                                        DeleteDieuDongEvent(context, item.id!),
-                                      );
-                                    },
-                                  );
-                                }
-                              },
-                            );
-                          },
+                          onDelete: _onDelete,
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(
-                              tooltip: 'Xem',
+                              tooltip: 'Danh sach biên bản bàn giao',
                               iconPath: 'assets/icons/building.svg',
                               color: Colors.blue,
                               onPressed: (item) async {
@@ -788,5 +803,45 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           },
         ),
     ];
+  }
+
+  _onDelete(DieuDongTaiSanDto item) {
+    userInfo?.tenDangNhap == 'admin'
+        ? showConfirmDialog(
+          context,
+          type: ConfirmType.delete,
+          title: 'Xóa biên bản bàn giao',
+          message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+          highlight: item.tenPhieu!,
+          cancelText: 'Không',
+          confirmText: 'Xóa',
+          onConfirm: () {
+            // widget.provider.isLoading = true;
+            context.read<DieuDongTaiSanBloc>().add(
+              DeleteDieuDongEvent(context, item.id!),
+            );
+          },
+        )
+        : item.trangThai == 0
+        ? showConfirmDialog(
+          context,
+          type: ConfirmType.delete,
+          title: 'Xóa biên bản bàn giao',
+          message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
+          highlight: item.tenPhieu!,
+          cancelText: 'Không',
+          confirmText: 'Xóa',
+          onConfirm: () {
+            // widget.provider.isLoading = true;
+            context.read<DieuDongTaiSanBloc>().add(
+              DeleteDieuDongEvent(context, item.id!),
+            );
+          },
+        )
+        : AppUtility.showSnackBar(
+          context,
+          'Bạn không thể xóa biên bản bàn giao này',
+          isError: true,
+        );
   }
 }

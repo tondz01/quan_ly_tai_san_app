@@ -1,17 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-// import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
@@ -23,7 +22,6 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/provider/tool_and_supplies_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/department_tree_demo.dart';
 import 'package:se_gay_components/common/sg_colors.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
@@ -71,6 +69,9 @@ class _ToolAndSuppliesHandoverListState
   // Column display options
   late List<ColumnDisplayOption> columnOptions;
   List<ToolAndSuppliesHandoverDto> selectedItems = [];
+
+  // Track previous filtered data for comparison
+  List<ToolAndSuppliesHandoverDto> _previousFilteredData = [];
 
   late final List<TableColumnData> _allColumns;
   List<String> _hiddenKeys = [];
@@ -175,6 +176,16 @@ class _ToolAndSuppliesHandoverListState
   @override
   void didUpdateWidget(covariant ToolAndSuppliesHandoverList oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Check filtered data changes
+    final oldData = oldWidget.provider.filteredData ?? [];
+    final newData = widget.provider.filteredData ?? [];
+
+    if (oldData.length != newData.length || !_areListsEqual(oldData, newData)) {
+      _onFilteredDataChanged(oldData, newData);
+      log('Filtered data changed in didUpdateWidget');
+    }
+
     setState(() {
       if (selected != null && widget.provider.dataPage != null) {
         selected = widget.provider.dataPage?.firstWhere(
@@ -186,6 +197,44 @@ class _ToolAndSuppliesHandoverListState
         }
       }
     });
+  }
+
+  // Helper method để so sánh 2 list
+  bool _areListsEqual(
+    List<ToolAndSuppliesHandoverDto> list1,
+    List<ToolAndSuppliesHandoverDto> list2,
+  ) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      int statusSign1 = TableToolAndSuppliesHandoverConfig.getPermissionSigning(
+        list1[i],
+        userInfo!,
+      );
+      int statusSign2 = TableToolAndSuppliesHandoverConfig.getPermissionSigning(
+        list2[i],
+        userInfo!,
+      );
+      if (list1[i].id != list2[i].id) return false;
+      if (list1[i].trangThai != list2[i].trangThai) return false;
+      if (list1[i].share != list2[i].share) return false;
+      if (list1[i].trangThaiPhieu != list2[i].trangThaiPhieu) return false;
+      if (statusSign1 != statusSign2) return false;
+    }
+    return true;
+  }
+
+  // Callback khi filtered data thay đổi
+  void _onFilteredDataChanged(
+    List<ToolAndSuppliesHandoverDto> oldData,
+    List<ToolAndSuppliesHandoverDto> newData,
+  ) {
+    // Reset selection nếu item đã chọn không còn trong filtered data
+    if (selected != null && !newData.any((item) => item.id == selected?.id)) {
+      setState(() {
+        selected = null;
+        isShowDetailDepartmentTree = false;
+      });
+    }
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
@@ -399,14 +448,23 @@ class _ToolAndSuppliesHandoverListState
                         child: riverpod.Consumer(
                           builder: (context, ref, child) {
                             final data = widget.provider.filteredData ?? [];
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              ref
-                                  .read(
-                                    tableToolAndSuppliesHandoverProvider
-                                        .notifier,
-                                  )
-                                  .setData(data);
-                            });
+
+                            // Check if data changed since last build
+                            if (!_areListsEqual(_previousFilteredData, data)) {
+                              log(
+                                'Filtered data changed in build: ${_previousFilteredData.length} -> ${data.length}',
+                              );
+                              _previousFilteredData = List.from(data);
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                ref
+                                    .read(
+                                      tableToolAndSuppliesHandoverProvider
+                                          .notifier,
+                                    )
+                                    .setData(data);
+                              });
+                            }
+
                             return RiverpodTable<ToolAndSuppliesHandoverDto>(
                               tableProvider:
                                   tableToolAndSuppliesHandoverProvider,
@@ -491,158 +549,6 @@ class _ToolAndSuppliesHandoverListState
     );
   }
 
-  Widget viewAction(ToolAndSuppliesHandoverDto item) {
-    return viewActionButtons([
-      ActionButtonConfig(
-        icon: Icons.visibility,
-        tooltip: 'Xem',
-        iconColor: ColorValue.cyan,
-        backgroundColor: Colors.green.shade50,
-        borderColor: Colors.green.shade200,
-        onPressed: () async {
-          SGLog.info(
-            "viewAction",
-            "View action pressed for item: ${item.tenFile}",
-          );
-          isShowPreview = true;
-          var dieuDongCcdc = widget.provider.dataAssetTransfer
-              ?.where((element) => element.trangThai == 3)
-              .toList()
-              .firstWhere(
-                (element) => element.id == item.lenhDieuDong,
-                orElse: () => ToolAndMaterialTransferDto(),
-              );
-
-          _loadPdfNetwork(item.tenFile!).then((_) {
-            if (mounted) {
-              prevDocumentCcdcHandover(
-                context: context,
-                item: dieuDongCcdc!,
-                provider: widget.provider,
-                isShowKy: false,
-                dieuDongCcdc: item,
-              );
-            }
-          });
-        },
-      ),
-      ActionButtonConfig(
-        icon: Icons.delete,
-        tooltip: item.trangThai != 0 ? null : 'Xóa',
-        iconColor: item.trangThai != 0 ? Colors.grey : Colors.red.shade700,
-        backgroundColor: Colors.red.shade50,
-        borderColor: Colors.red.shade200,
-        onPressed:
-            () => {
-              if (item.trangThai == 0)
-                {
-                  showConfirmDialog(
-                    context,
-                    type: ConfirmType.delete,
-                    title: 'Xóa biên bản bàn giao',
-                    message: 'Bạn có chắc muốn xóa ${item.banGiaoCCDCVatTu}',
-                    highlight: item.banGiaoCCDCVatTu!,
-                    cancelText: 'Không',
-                    confirmText: 'Xóa',
-                    onConfirm: () {
-                      widget.provider.isLoading = true;
-                      context.read<ToolAndSuppliesHandoverBloc>().add(
-                        DeleteToolAndSuppliesHandoverEvent(context, item.id!),
-                      );
-                    },
-                  ),
-                },
-            },
-      ),
-    ]);
-  }
-
-  Widget showMovementDetails(List<ChiTietDieuDongTaiSan> movementDetails) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 48.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children:
-                movementDetails
-                    .map(
-                      (detail) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          color: ColorValue.paleRose,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: SGText(
-                          text: detail.tenPhieu,
-                          size: 12,
-                          fontWeight: FontWeight.w500,
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                    )
-                    .toList(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Widget showSigningStatus(ToolAndSuppliesHandoverDto item) {
-  //   return Container(
-  //     constraints: const BoxConstraints(maxHeight: 48.0),
-  //     child: Container(
-  //       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-  //       margin: const EdgeInsets.only(bottom: 2),
-  //       decoration: BoxDecoration(
-  //         color:
-  //             widget.provider.isCheckSigningStatus(item) == 1
-  //                 ? Colors.green
-  //                 : widget.provider.isCheckSigningStatus(item) == 0
-  //                 ? Colors.red
-  //                 : widget.provider.isCheckSigningStatus(item) == 3
-  //                 ? Colors.green
-  //                 : widget.provider.isCheckSigningStatus(item) == 5
-  //                 ? Colors.purple
-  //                 : Colors.blue,
-  //         borderRadius: BorderRadius.circular(4),
-  //       ),
-  //       child: SGText(
-  //         text:
-  //             widget.provider.isCheckSigningStatus(item) == 1
-  //                 ? 'Đã ký'
-  //                 : widget.provider.isCheckSigningStatus(item) == 0
-  //                 ? 'Chưa ký'
-  //                 : widget.provider.isCheckSigningStatus(item) == 3
-  //                 ? 'Đã ký & tạo'
-  //                 : widget.provider.isCheckSigningStatus(item) == 5
-  //                 ? 'Chưa ký & tạo'
-  //                 : "Người tạo phiếu",
-  //         size: 12,
-  //         style: TextStyle(
-  //           fontWeight: FontWeight.w500,
-  //           color: Colors.white,
-  //           fontSize: 12,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  //  all('Tất cả', ColorValue.darkGrey),
-  //   draft('Nháp', ColorValue.silverGray),
-  //   ready('Sẵn sàng', ColorValue.lightAmber),
-  //   confirm('Xác nhận', ColorValue.mediumGreen),
-  //   browser('Trình duyệt', ColorValue.lightBlue),
-  //   complete('Hoàn thành', ColorValue.forestGreen),
-  //   cancel('Hủy', ColorValue.coral);
   onViewDocument(ToolAndSuppliesHandoverDto item) async {
     isShowPreview = true;
     var dieuDongCcdc = widget.provider.dataAssetTransfer
@@ -707,7 +613,6 @@ class _ToolAndSuppliesHandoverListState
   }
 
   List<ResponsiveButtonData> _buildButtonList(int itemCount) {
-
     return [
       ResponsiveButtonData.fromButtonIcon(
         text: 'table.config_column'.tr,
@@ -718,7 +623,9 @@ class _ToolAndSuppliesHandoverListState
         width: 130,
         onPressed: _openColumnConfigDialog,
       ),
-      if (selectedItems.isNotEmpty && selectedItems.length < 2 && getPermissionSigning(selectedItems.first) != 0)
+      if (selectedItems.isNotEmpty &&
+          selectedItems.length < 2 &&
+          getPermissionSigning(selectedItems.first) != 0)
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -924,9 +831,7 @@ class _ToolAndSuppliesHandoverListState
     );
   }
 
-int getPermissionSigning(
-    ToolAndSuppliesHandoverDto item,
-  ) {
+  int getPermissionSigning(ToolAndSuppliesHandoverDto item) {
     final flow =
         [
           {

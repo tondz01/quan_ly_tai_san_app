@@ -277,20 +277,17 @@ class TableToolAndSuppliesHandoverConfig {
   }
 
   static String getPermissionSigningText(int status) {
-    switch (status) {
-      case 0:
-        return 'Chưa ký';
-      case 1:
-        return 'Chưa đến lượt ký';
-      case 2:
-        return 'Đã ký';
-      case 3:
-        return 'Đã ký & tạo';
-      case 4:
-        return 'Cần ký & tạo';
-      default:
-        return 'Cần ký';
-    }
+    return status == 2
+        ? 'Không được phép ký'
+        : status == 1
+        ? 'Chưa đến lượt ký'
+        : status == 3
+        ? 'Đã ký'
+        : status == 4
+        ? 'Đã ký & tạo'
+        : status == 5
+        ? 'Cần ký & tạo'
+        : 'Cần ký';
   }
 
   static int getPermissionSigning(
