@@ -578,9 +578,9 @@ class _DashboardViewState extends State<DashboardView> {
                 flex: 2,
                 child: Column(
                   children: [
-                    _buildAssetGroupDistributionSection(data),
-                    const SizedBox(height: 16),
                     _buildCcdcGroupDistributionSection(data),
+                    const SizedBox(height: 16),
+                    _buildAssetGroupDistributionSection(data),
                   ],
                 ),
               ),

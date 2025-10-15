@@ -230,6 +230,7 @@ class TabelAssetTransferConfig {
     final currentIndex = signatureFlow.indexWhere(
       (s) => s["id"] == userInfo?.tenDangNhap,
     );
+    
     if (currentIndex == -1) return 2;
     if (item.nguoiTao == userInfo?.tenDangNhap &&
         signatureFlow[currentIndex]["signed"] != -1) {
