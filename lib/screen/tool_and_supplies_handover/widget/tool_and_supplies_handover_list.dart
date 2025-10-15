@@ -441,7 +441,7 @@ class _ToolAndSuppliesHandoverListState
                                 CustomAction(
                                   tooltip: 'Xem',
                                   iconPath: 'assets/icons/eye.svg',
-                                  color: Colors.blue,
+                                  color: Colors.green,
                                   onPressed: (item) async {
                                     onViewDocument(item);
                                   },
@@ -707,7 +707,6 @@ class _ToolAndSuppliesHandoverListState
   }
 
   List<ResponsiveButtonData> _buildButtonList(int itemCount) {
-
     return [
       ResponsiveButtonData.fromButtonIcon(
         text: 'table.config_column'.tr,
@@ -718,7 +717,9 @@ class _ToolAndSuppliesHandoverListState
         width: 130,
         onPressed: _openColumnConfigDialog,
       ),
-      if (selectedItems.isNotEmpty && selectedItems.length < 2 && getPermissionSigning(selectedItems.first) != 0)
+      if (selectedItems.isNotEmpty &&
+          selectedItems.length < 2 &&
+          getPermissionSigning(selectedItems.first) != 0)
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -924,9 +925,7 @@ class _ToolAndSuppliesHandoverListState
     );
   }
 
-int getPermissionSigning(
-    ToolAndSuppliesHandoverDto item,
-  ) {
+  int getPermissionSigning(ToolAndSuppliesHandoverDto item) {
     final flow =
         [
           {

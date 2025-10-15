@@ -311,7 +311,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         .getListDieuDongTaiSan(type: typeDieuDongTaiSan);
     _data = dieuDongTaiSans['data'];
     _data =
-        _data?.where((element) => element.loai == typeDieuDongTaiSan)
+        _data
+            ?.where((element) => element.loai == typeDieuDongTaiSan)
             .where((item) {
               return item.share == true ||
                   item.nguoiTao == userInfo?.tenDangNhap;
@@ -626,7 +627,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         //   ScaffoldMessenger.of(context).showSnackBar(
         //     SnackBar(
         //       content: Text('Tệp "$fileName" đã được tải lên thành công'),
-        //       backgroundColor: Colors.green.shade600,
+        //       backgroundColor: const Color(0xFF21A366),
         //     ),
         //   );
         // }

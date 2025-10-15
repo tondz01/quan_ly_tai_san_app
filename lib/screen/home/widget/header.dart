@@ -13,7 +13,15 @@ class Header extends StatefulWidget {
   final String? imageLogoLeft;
   final String? imageLogoRight;
 
-  const Header({super.key, this.height = 65, this.padding, this.margin, this.decoration, this.imageLogoLeft, this.imageLogoRight});
+  const Header({
+    super.key,
+    this.height = 65,
+    this.padding,
+    this.margin,
+    this.decoration,
+    this.imageLogoLeft,
+    this.imageLogoRight,
+  });
 
   @override
   State<Header> createState() => _HeaderState();
@@ -26,7 +34,10 @@ class _HeaderState extends State<Header> {
       onTap: () {
         SGLog.debug('Header', '$title selected');
       },
-      child: Padding(padding: const EdgeInsets.symmetric(vertical: 8.0), child: Text(title)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(title),
+      ),
     );
   }
 
@@ -36,7 +47,7 @@ class _HeaderState extends State<Header> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, size: 20),
+          Icon(icon, size: 20, color: const Color(0xFF21A366)),
           const SizedBox(width: 12),
           Text(title),
         ],
@@ -48,27 +59,33 @@ class _HeaderState extends State<Header> {
   Widget build(BuildContext context) {
     return Container(
       height: widget.height,
-      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding:
+          widget.padding ??
+          const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       margin: widget.margin,
-      decoration: widget.decoration ?? BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: ColorValue.neutral200.withOpacity(0.5),
-            offset: const Offset(0, 2),
-            blurRadius: 4,
+      decoration:
+          widget.decoration ??
+          BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: ColorValue.neutral200.withOpacity(0.5),
+                offset: const Offset(0, 2),
+                blurRadius: 4,
+              ),
+            ],
           ),
-        ],
-      ),
       child: Row(
         children: [
-          widget.imageLogoLeft != null ? CircleAvatar(
-              radius: 32,
-              child: Image.asset(
-                widget.imageLogoLeft!,
-                fit: BoxFit.cover,
-              ), // kích thước avatar
-            ): SvgPicture.asset(AppSvgs.iconLogo),
+          widget.imageLogoLeft != null
+              ? CircleAvatar(
+                radius: 32,
+                child: Image.asset(
+                  widget.imageLogoLeft!,
+                  fit: BoxFit.cover,
+                ), // kích thước avatar
+              )
+              : SvgPicture.asset(AppSvgs.iconLogo),
           const SizedBox(width: 24),
           Expanded(
             child: Row(
@@ -101,28 +118,29 @@ class _HeaderState extends State<Header> {
                           onPressed: null,
                           tooltip: 'Chat',
                         ),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'today',
-                            child: _buildTimeOption('Today'),
-                          ),
-                          PopupMenuItem(
-                            value: 'yesterday',
-                            child: _buildTimeOption('Yesterday'),
-                          ),
-                          PopupMenuItem(
-                            value: 'last7days',
-                            child: _buildTimeOption('Last 7 days'),
-                          ),
-                          PopupMenuItem(
-                            value: 'thismonth',
-                            child: _buildTimeOption('This month'),
-                          ),
-                          PopupMenuItem(
-                            value: 'custom',
-                            child: _buildTimeOption('Custom range'),
-                          ),
-                        ],
+                        itemBuilder:
+                            (context) => [
+                              PopupMenuItem(
+                                value: 'today',
+                                child: _buildTimeOption('Today'),
+                              ),
+                              PopupMenuItem(
+                                value: 'yesterday',
+                                child: _buildTimeOption('Yesterday'),
+                              ),
+                              PopupMenuItem(
+                                value: 'last7days',
+                                child: _buildTimeOption('Last 7 days'),
+                              ),
+                              PopupMenuItem(
+                                value: 'thismonth',
+                                child: _buildTimeOption('This month'),
+                              ),
+                              PopupMenuItem(
+                                value: 'custom',
+                                child: _buildTimeOption('Custom range'),
+                              ),
+                            ],
                         onSelected: (value) {
                           SGLog.debug('Header', '$value selected');
                         },
@@ -136,28 +154,29 @@ class _HeaderState extends State<Header> {
                           onPressed: null,
                           tooltip: 'Thời gian',
                         ),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'today',
-                            child: _buildTimeOption('Today'),
-                          ),
-                          PopupMenuItem(
-                            value: 'yesterday',
-                            child: _buildTimeOption('Yesterday'),
-                          ),
-                          PopupMenuItem(
-                            value: 'last7days',
-                            child: _buildTimeOption('Last 7 days'),
-                          ),
-                          PopupMenuItem(
-                            value: 'thismonth',
-                            child: _buildTimeOption('This month'),
-                          ),
-                          PopupMenuItem(
-                            value: 'custom',
-                            child: _buildTimeOption('Custom range'),
-                          ),
-                        ],
+                        itemBuilder:
+                            (context) => [
+                              PopupMenuItem(
+                                value: 'today',
+                                child: _buildTimeOption('Today'),
+                              ),
+                              PopupMenuItem(
+                                value: 'yesterday',
+                                child: _buildTimeOption('Yesterday'),
+                              ),
+                              PopupMenuItem(
+                                value: 'last7days',
+                                child: _buildTimeOption('Last 7 days'),
+                              ),
+                              PopupMenuItem(
+                                value: 'thismonth',
+                                child: _buildTimeOption('This month'),
+                              ),
+                              PopupMenuItem(
+                                value: 'custom',
+                                child: _buildTimeOption('Custom range'),
+                              ),
+                            ],
                         onSelected: (value) {
                           SGLog.debug('Header', '$value selected');
                         },
@@ -171,28 +190,43 @@ class _HeaderState extends State<Header> {
                           backgroundColor: ColorValue.primaryLightBlue,
                           child: CircleAvatar(
                             radius: 18,
-                            backgroundImage: const NetworkImage('https://i.pravatar.cc/150?img=3'),
+                            backgroundImage: const NetworkImage(
+                              'https://i.pravatar.cc/150?img=3',
+                            ),
                             backgroundColor: Colors.white,
                           ),
                         ),
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 'profile',
-                            child: _buildAvatarMenuOption('Thông tin cá nhân', Icons.person),
-                          ),
-                          PopupMenuItem(
-                            value: 'settings',
-                            child: _buildAvatarMenuOption('Cài đặt', Icons.settings),
-                          ),
-                          PopupMenuItem(
-                            value: 'help',
-                            child: _buildAvatarMenuOption('Trợ giúp', Icons.help),
-                          ),
-                          PopupMenuItem(
-                            value: 'logout',
-                            child: _buildAvatarMenuOption('Đăng xuất', Icons.logout),
-                          ),
-                        ],
+                        itemBuilder:
+                            (context) => [
+                              PopupMenuItem(
+                                value: 'profile',
+                                child: _buildAvatarMenuOption(
+                                  'Thông tin cá nhân',
+                                  Icons.person,
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'settings',
+                                child: _buildAvatarMenuOption(
+                                  'Cài đặt',
+                                  Icons.settings,
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'help',
+                                child: _buildAvatarMenuOption(
+                                  'Trợ giúp',
+                                  Icons.help,
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'logout',
+                                child: _buildAvatarMenuOption(
+                                  'Đăng xuất',
+                                  Icons.logout,
+                                ),
+                              ),
+                            ],
                         onSelected: (value) {
                           SGLog.debug('Header', 'Avatar menu: $value selected');
                           // Xử lý các action tương ứng

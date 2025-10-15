@@ -30,7 +30,8 @@ class SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: titleStyle ??
+                style:
+                    titleStyle ??
                     const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -42,17 +43,13 @@ class SectionHeader extends StatelessWidget {
           ),
         ),
         if (withDivider)
-          const Divider(
-            thickness: 1,
-            height: 1,
-            color: ColorValue.neutral200,
-          ),
+          const Divider(thickness: 1, height: 1, color: ColorValue.neutral200),
       ],
     );
   }
 }
 
-/// Widget cho Status Badge 
+/// Widget cho Status Badge
 class StatusBadge extends StatelessWidget {
   final String text;
   final Color color;
@@ -80,54 +77,36 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: textStyle ??
-            TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
+        style:
+            textStyle ??
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
       ),
     );
   }
 
   /// Factory constructor cho trạng thái thành công
   factory StatusBadge.success({required String text}) {
-    return StatusBadge(
-      text: text,
-      color: ColorValue.mediumGreen,
-    );
+    return StatusBadge(text: text, color: ColorValue.mediumGreen);
   }
 
   /// Factory constructor cho trạng thái đang xử lý
   factory StatusBadge.processing({required String text}) {
-    return StatusBadge(
-      text: text,
-      color: ColorValue.lightOceanBlue,
-    );
+    return StatusBadge(text: text, color: ColorValue.lightOceanBlue);
   }
 
   /// Factory constructor cho trạng thái cảnh báo
   factory StatusBadge.warning({required String text}) {
-    return StatusBadge(
-      text: text,
-      color: Colors.orange,
-    );
+    return StatusBadge(text: text, color: Colors.orange);
   }
 
   /// Factory constructor cho trạng thái lỗi
   factory StatusBadge.error({required String text}) {
-    return StatusBadge(
-      text: text,
-      color: ColorValue.brightRed,
-    );
+    return StatusBadge(text: text, color: ColorValue.brightRed);
   }
 
   /// Factory constructor cho trạng thái chờ xử lý
   factory StatusBadge.pending({required String text}) {
-    return StatusBadge(
-      text: text,
-      color: Colors.grey,
-    );
+    return StatusBadge(text: text, color: Colors.grey);
   }
 }
 
@@ -201,14 +180,17 @@ class MaterialSearchBar extends StatelessWidget {
             ],
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 0,
+          ),
         ),
       ),
     );
   }
 }
 
-/// Widget cho Empty State 
+/// Widget cho Empty State
 class EmptyStateWidget extends StatelessWidget {
   final String title;
   final String message;
@@ -233,11 +215,7 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
+            Icon(icon, size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               title,
@@ -251,10 +229,7 @@ class EmptyStateWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               message,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade700,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
               textAlign: TextAlign.center,
             ),
             if (onActionPressed != null && actionLabel != null) ...[
@@ -293,31 +268,31 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return imageUrl != null && imageUrl!.isNotEmpty
         ? CircleAvatar(
-            radius: size / 2,
-            backgroundImage: NetworkImage(imageUrl!),
-          )
+          radius: size / 2,
+          backgroundImage: NetworkImage(imageUrl!),
+        )
         : CircleAvatar(
-            radius: size / 2,
-            backgroundColor: backgroundColor,
-            child: Text(
-              _getInitials(name),
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.bold,
-                fontSize: size * 0.4,
-              ),
+          radius: size / 2,
+          backgroundColor: backgroundColor,
+          child: Text(
+            _getInitials(name),
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: size * 0.4,
             ),
-          );
+          ),
+        );
   }
 
   String _getInitials(String name) {
     if (name.isEmpty) return '';
-    
+
     final names = name.split(' ');
     if (names.length == 1) {
       return names[0][0].toUpperCase();
     }
-    
+
     return names.first[0].toUpperCase() + names.last[0].toUpperCase();
   }
 }
@@ -365,11 +340,7 @@ class InfoCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  icon,
-                  color: iconColor,
-                  size: 24,
-                ),
+                Icon(icon, color: iconColor, size: 24),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -429,10 +400,7 @@ class LabelValuePair extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 4),
               Text(
@@ -447,11 +415,7 @@ class LabelValuePair extends StatelessWidget {
           ),
         ),
         if (hasDivider)
-          const Divider(
-            height: 1,
-            thickness: 1,
-            color: ColorValue.divider,
-          ),
+          const Divider(height: 1, thickness: 1, color: ColorValue.divider),
       ],
     );
   }
@@ -484,10 +448,7 @@ class HorizontalLabelValuePair extends StatelessWidget {
                 flex: 2,
                 child: Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                 ),
               ),
               Expanded(
@@ -505,11 +466,7 @@ class HorizontalLabelValuePair extends StatelessWidget {
           ),
         ),
         if (hasDivider)
-          const Divider(
-            height: 1,
-            thickness: 1,
-            color: ColorValue.divider,
-          ),
+          const Divider(height: 1, thickness: 1, color: ColorValue.divider),
       ],
     );
   }
@@ -543,7 +500,7 @@ class MaterialIconButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(
         icon,
-        color: foregroundColor ?? ColorValue.primaryBlue,
+        color: foregroundColor ?? const Color(0xFF21A366),
         size: size ?? 20,
       ),
       tooltip: tooltip,
@@ -587,10 +544,9 @@ class MaterialTextButton extends StatelessWidget {
       icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
       label: Text(
         text,
-        style: textStyle ?? const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        style:
+            textStyle ??
+            const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor ?? ColorValue.primaryBlue,
@@ -600,7 +556,8 @@ class MaterialTextButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: borderRadius ?? BorderRadius.circular(8),
         ),
-        padding: padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
@@ -635,10 +592,9 @@ class MaterialOutlinedButton extends StatelessWidget {
       icon: icon != null ? Icon(icon, size: 16) : const SizedBox.shrink(),
       label: Text(
         text,
-        style: textStyle ?? const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        style:
+            textStyle ??
+            const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       style: OutlinedButton.styleFrom(
         foregroundColor: foregroundColor ?? ColorValue.primaryBlue,
@@ -649,7 +605,8 @@ class MaterialOutlinedButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: borderRadius ?? BorderRadius.circular(8),
         ),
-        padding: padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
@@ -689,21 +646,14 @@ class MaterialSearchField extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Icon(
-              Icons.search,
-              color: ColorValue.neutral500,
-              size: 20,
-            ),
+            child: Icon(Icons.search, color: ColorValue.neutral500, size: 20),
           ),
           Expanded(
             child: TextField(
               controller: controller,
               readOnly: readOnly,
               onTap: onTap,
-              style: TextStyle(
-                color: ColorValue.neutral900,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: ColorValue.neutral900, fontSize: 14),
               decoration: InputDecoration(
                 hintText: hintText ?? 'Tìm kiếm ...',
                 hintStyle: TextStyle(
@@ -711,7 +661,10 @@ class MaterialSearchField extends StatelessWidget {
                   fontSize: 14,
                 ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 12,
+                ),
               ),
               onChanged: onChanged,
             ),
@@ -794,17 +747,19 @@ class MaterialChip extends StatelessWidget {
       label: Text(
         label,
         style: TextStyle(
-          color: foregroundColor ?? (selected ? ColorValue.primaryBlue : ColorValue.neutral700),
+          color:
+              foregroundColor ??
+              (selected ? ColorValue.primaryBlue : ColorValue.neutral700),
           fontSize: 12,
         ),
       ),
       avatar: icon != null ? Icon(icon, size: 16) : null,
       deleteIcon: onDeleted != null ? const Icon(Icons.close, size: 16) : null,
       onDeleted: onDeleted,
-      backgroundColor: backgroundColor ?? (selected ? ColorValue.primaryLightBlue : ColorValue.neutral100),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      backgroundColor:
+          backgroundColor ??
+          (selected ? ColorValue.primaryLightBlue : ColorValue.neutral100),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     );
   }

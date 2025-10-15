@@ -48,7 +48,7 @@ abstract class TableBaseConfig {
         gridLineColor: Colors.grey.shade100,
         colorLineVertical: ColorValue.disabledText.withOpacity(0.3),
         gridLineWidth: 1,
-        
+
         showCheckboxes: isShowCheckboxes,
         showVerticalLines: true,
         showHorizontalLines: true,
@@ -82,7 +82,7 @@ abstract class TableBaseConfig {
           icon: Icons.visibility,
           tooltip: 'Xem',
           iconColor: Colors.blue,
-          backgroundColor: Colors.blue.shade50,
+          backgroundColor: Colors.green.shade50,
           onPressed: () => onView.call(item),
         ),
       if (onDelete != null)
@@ -132,7 +132,6 @@ abstract class TableBaseConfig {
     bool? searchable = false,
     bool? filterable = false,
   }) {
-
     return SgTableColumn<T>(
       title: title,
       cellBuilder: cellBuilder,

@@ -476,7 +476,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                 if (builder != null) return builder(item);
                                 return null;
                               },
-                              
+
                               onRowTap: (item) {
                                 widget.provider.onChangeDetail(context, item);
                                 setState(() {
@@ -491,7 +491,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                 CustomAction(
                                   tooltip: 'Xem',
                                   iconPath: 'assets/icons/eye.svg',
-                                  color: Colors.blue,
+                                  color: Colors.green,
                                   onPressed: (item) {
                                     onViewDocument(item);
                                   },

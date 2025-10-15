@@ -367,7 +367,7 @@ class _AssetTransferListByHandoverState
                       CustomAction(
                         tooltip: 'Xem',
                         iconPath: AppIconSvgPath.iconEye,
-                        color: Colors.blue,
+                        color: Colors.green,
                         onPressed: (item) {
                           onViewDocument(item);
                         },

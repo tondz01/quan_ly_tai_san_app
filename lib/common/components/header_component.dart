@@ -36,18 +36,13 @@ class HeaderComponent extends StatefulWidget {
   final String? subScreen;
   final Widget? child;
   final bool? isShowSearch;
-  final Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )?
+  final Function(String? fileName, String? filePath, Uint8List? fileBytes)?
   onFileSelected;
   final Function()? onExportData;
   final bool isShowInput;
   final bool isShownew;
   @override
-  State<HeaderComponent> createState() =>
-      _HeaderComponentState();
+  State<HeaderComponent> createState() => _HeaderComponentState();
 }
 
 class _HeaderComponentState extends State<HeaderComponent> {
@@ -66,8 +61,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
       child: widget.child,
       context: context,
       onFileSelected:
-          widget.onFileSelected ??
-          (fileName, filePath, fileBytes) {},
+          widget.onFileSelected ?? (fileName, filePath, fileBytes) {},
       onExportData: widget.onExportData ?? () {},
       isShowInput: widget.isShowInput,
     );
@@ -87,17 +81,11 @@ Widget buildHeader(
   bool isShownew = true,
   Widget? child,
   required BuildContext context,
-  required Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )
+  required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
 }) {
-  final typeSize = TypeSizeScreenExtension.getSizeScreen(
-    width,
-  );
+  final typeSize = TypeSizeScreenExtension.getSizeScreen(width);
   return typeSize == TypeSizeScreen.extraSmall ||
           typeSize == TypeSizeScreen.small
       ? _buildHeaderScreenSmall(
@@ -147,11 +135,7 @@ Widget _buildHeaderScreenLarge(
   bool isShownew,
   Widget? child,
   BuildContext context, {
-  required Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )
+  required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
 }) {
@@ -174,13 +158,7 @@ Widget _buildHeaderScreenLarge(
       const SizedBox(width: 16),
       // if (subScreen == null || subScreen.isEmpty)
       if (isShowSearch == true)
-        Expanded(
-          child: _buildSearchField(
-            width,
-            controller,
-            onSearchChanged,
-          ),
-        ),
+        Expanded(child: _buildSearchField(width, controller, onSearchChanged)),
       if (child != null) child,
     ],
   );
@@ -199,11 +177,7 @@ Widget _buildHeaderScreenSmall(
   bool isShownew,
   Widget? child,
   BuildContext context, {
-  required Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )
+  required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
 }) {
@@ -226,11 +200,7 @@ Widget _buildHeaderScreenSmall(
       const SizedBox(height: 5),
       // if (subScreen == null || subScreen.isEmpty)
       if (isShowSearch == true)
-        _buildSearchField(
-          width,
-          controller,
-          onSearchChanged,
-        ),
+        _buildSearchField(width, controller, onSearchChanged),
       if (child != null) child,
     ],
   );
@@ -244,16 +214,11 @@ Widget _buildHeaderNameScreen(
   bool isShowInput,
   bool isShownew,
   BuildContext context, {
-  required Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )
+  required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
 }) {
-  bool isSubScreen =
-      subScreen != null && subScreen.isNotEmpty;
+  bool isSubScreen = subScreen != null && subScreen.isNotEmpty;
   // log()
   return Row(
     mainAxisSize: MainAxisSize.min,
@@ -262,14 +227,8 @@ Widget _buildHeaderNameScreen(
         MaterialTextButton(
           text: 'Mới',
           // icon: Icons.add,
-          backgroundColor:
-              isSubScreen
-                  ? Colors.white
-                  : ColorValue.primaryBlue,
-          foregroundColor:
-              isSubScreen
-                  ? ColorValue.primaryBlue
-                  : Colors.white,
+          backgroundColor: isSubScreen ? Colors.white : const Color(0xFF21A366),
+          foregroundColor: isSubScreen ? const Color(0xFF21A366) : Colors.white,
           onPressed: onNew,
         ),
       // SGButton(text: 'Mới'),
@@ -283,13 +242,8 @@ Widget _buildHeaderNameScreen(
               InkWell(
                 onTap: !isSubScreen ? null : onTap,
                 child: SGText(
-                  color:
-                      isSubScreen
-                          ? ColorValue.tealBlue
-                          : Colors.black,
-                  text:
-                      mainScreen ??
-                      "tas.info_tools_supplies".tr,
+                  color: isSubScreen ? ColorValue.tealBlue : Colors.black,
+                  text: mainScreen ?? "tas.info_tools_supplies".tr,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -310,20 +264,16 @@ Widget _buildHeaderNameScreen(
                   onTapDown: (TapDownDetails details) {
                     // 🟢 Lấy RenderBox của chính icon
                     final RenderBox iconBox =
-                        iconContext.findRenderObject()
-                            as RenderBox;
+                        iconContext.findRenderObject() as RenderBox;
                     final RenderBox overlay =
-                        Overlay.of(
-                              iconContext,
-                            ).context.findRenderObject()
+                        Overlay.of(iconContext).context.findRenderObject()
                             as RenderBox;
 
                     // 🟢 Tính vị trí icon tương đối với overlay (đã trừ offset scroll)
-                    final Offset position = iconBox
-                        .localToGlobal(
-                          Offset.zero,
-                          ancestor: overlay,
-                        );
+                    final Offset position = iconBox.localToGlobal(
+                      Offset.zero,
+                      ancestor: overlay,
+                    );
                     final Size size = iconBox.size;
                     // Gọi popup tại đúng vị trí icon
                     _showCustomMenu(
@@ -337,7 +287,7 @@ Widget _buildHeaderNameScreen(
                   child: Icon(
                     Icons.settings,
                     size: 20,
-                    color: ColorValue.primaryBlue,
+                    color: const Color(0xFF21A366),
                   ),
                 );
               },
@@ -358,8 +308,7 @@ Widget _buildSearchField(
   final isSmallScreen =
       TypeSizeScreenExtension.getSizeScreen(width) ==
           TypeSizeScreen.extraSmall ||
-      TypeSizeScreenExtension.getSizeScreen(width) ==
-          TypeSizeScreen.small;
+      TypeSizeScreenExtension.getSizeScreen(width) == TypeSizeScreen.small;
 
   return SGInputText(
     height: 35,
@@ -378,17 +327,12 @@ void _showCustomMenu(
   BuildContext context,
   Offset offset,
   Size size, {
-  required Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )
+  required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
 }) async {
   final RenderBox overlay =
-      Overlay.of(context).context.findRenderObject()
-          as RenderBox;
+      Overlay.of(context).context.findRenderObject() as RenderBox;
 
   await showMenu(
     context: context,
@@ -406,11 +350,7 @@ void _showCustomMenu(
         value: 1,
         child: Row(
           children: const [
-            Icon(
-              Icons.download,
-              size: 20,
-              color: Colors.black87,
-            ),
+            Icon(Icons.download, size: 20, color: Colors.black87),
             SizedBox(width: 8),
             Text("Import dữ liệu"),
           ],
@@ -420,11 +360,7 @@ void _showCustomMenu(
         value: 2,
         child: Row(
           children: const [
-            Icon(
-              Icons.upload,
-              size: 20,
-              color: Colors.black87,
-            ),
+            Icon(Icons.upload, size: 20, color: Colors.black87),
             SizedBox(width: 8),
             Text("Xuất toàn bộ"),
           ],
@@ -433,18 +369,13 @@ void _showCustomMenu(
     ],
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8), // bo góc
-      side: const BorderSide(
-        color: Colors.black12,
-      ), // viền nhẹ
+      side: const BorderSide(color: Colors.black12), // viền nhẹ
     ),
     elevation: 8,
   ).then((value) {
     if (value != null) {
       if (value == 1) {
-        _selectDocument(
-          context: context,
-          onFileSelected: onFileSelected,
-        );
+        _selectDocument(context: context, onFileSelected: onFileSelected);
       } else if (value == 2) {
         onExportData?.call();
       }
@@ -454,26 +385,20 @@ void _showCustomMenu(
 
 Future<void> _selectDocument({
   required BuildContext context,
-  required Function(
-    String? fileName,
-    String? filePath,
-    Uint8List? fileBytes,
-  )
+  required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
 }) async {
   try {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv', 'xlsx', 'xls'],
-      withData:
-          true, // luôn lấy bytes (kể cả không phải Web)
+      withData: true, // luôn lấy bytes (kể cả không phải Web)
       withReadStream: false,
     );
 
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
-      final selectedPath =
-          file.path; // Trên Web có thể là null
+      final selectedPath = file.path; // Trên Web có thể là null
       final selectedBytes =
           file.bytes; // Khi kIsWeb && withData=true sẽ có bytes
 
@@ -487,14 +412,8 @@ Future<void> _selectDocument({
         return;
       }
 
-      onFileSelected(
-        file.name,
-        selectedPath,
-        selectedBytes,
-      );
-      log(
-        'Selected file: ${file.name}, Path: $selectedPath',
-      );
+      onFileSelected(file.name, selectedPath, selectedBytes);
+      log('Selected file: ${file.name}, Path: $selectedPath');
     }
   } on PlatformException catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -507,9 +426,7 @@ Future<void> _selectDocument({
     log('Error _selectDocument file: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          'Không thể chọn tệp: ${e.toString()}',
-        ),
+        content: Text('Không thể chọn tệp: ${e.toString()}'),
         backgroundColor: Colors.red.shade600,
       ),
     );

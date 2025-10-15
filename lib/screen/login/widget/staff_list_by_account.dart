@@ -330,7 +330,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                         onTap: _showColumnDisplayPopup,
                         child: Icon(
                           Icons.settings,
-                          color: ColorValue.link,
+                          color: const Color(0xFF21A366),
                           size: 18,
                         ),
                       ),
@@ -342,16 +342,18 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      body == null ? _buildSearchField(
-                        MediaQuery.of(context).size.width,
-                        TextEditingController(),
-                        (value) {
-                          setState(() {
-                            searchTerm = value;
-                            searchFilters();
-                          });
-                        },
-                      ) : SizedBox.shrink(),
+                      body == null
+                          ? _buildSearchField(
+                            MediaQuery.of(context).size.width,
+                            TextEditingController(),
+                            (value) {
+                              setState(() {
+                                searchTerm = value;
+                                searchFilters();
+                              });
+                            },
+                          )
+                          : SizedBox.shrink(),
                     ],
                   ),
                 ),

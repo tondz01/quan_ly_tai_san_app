@@ -403,7 +403,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
                                 } else {
                                   candidate = normalized;
                                 }
-                                
+
                                 final phonePattern = RegExp(r'^0\d{9,10}$');
                                 if (!phonePattern.hasMatch(candidate)) {
                                   return StaffConstants.errorPhoneFormat;
@@ -587,7 +587,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.upload_file, color: Colors.blue),
+              const Icon(Icons.upload_file, color: Colors.green),
               const SizedBox(width: 12),
               Expanded(
                 child: Builder(

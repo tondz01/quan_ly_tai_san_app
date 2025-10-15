@@ -325,7 +325,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue,
+                                  color: Colors.green,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(
@@ -342,7 +342,7 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(8.0),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue,
+                                  color: Colors.green,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Text(

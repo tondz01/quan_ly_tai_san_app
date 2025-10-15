@@ -317,7 +317,7 @@ class _AccountListState extends State<AccountList> {
                       onTap: _showColumnDisplayPopup,
                       child: Icon(
                         Icons.settings,
-                        color: ColorValue.link,
+                        color: const Color(0xFF21A366),
                         size: 18,
                       ),
                     ),
@@ -407,8 +407,8 @@ class _AccountListState extends State<AccountList> {
         icon: Icons.edit,
         tooltip: 'Sửa',
         iconColor: Colors.blue,
-        backgroundColor: Colors.blue.shade50,
-        borderColor: Colors.blue.shade200,
+        backgroundColor: Colors.green.shade50,
+        borderColor: Colors.green.shade200,
         onPressed: () {
           List<RoleDto> roles = AppUtility.listRoles;
           // showPermissionExample(context, item);

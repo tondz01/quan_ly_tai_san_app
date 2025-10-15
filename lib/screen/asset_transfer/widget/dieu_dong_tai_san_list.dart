@@ -261,7 +261,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     children: [
                       CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.blue.shade600,
+                          const Color(0xFF21A366),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -504,7 +504,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                     CustomAction(
                                       tooltip: 'Xem',
                                       iconPath: 'assets/icons/building.svg',
-                                      color: Colors.blue,
+                                      color: Colors.green,
                                       onPressed: (item) async {
                                         if (listAssetHandover.isEmpty) {
                                           AppUtility.showSnackBar(
@@ -528,7 +528,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                                     CustomAction(
                                       tooltip: 'Xem',
                                       iconPath: 'assets/icons/eye.svg',
-                                      color: Colors.blue,
+                                      color: Colors.green,
                                       onPressed: (item) async {
                                         await _loadPdfNetwork(item.tenFile!);
                                         if (!context.mounted) return;

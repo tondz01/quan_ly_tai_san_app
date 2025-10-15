@@ -90,7 +90,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                             children: [
                               Icon(
                                 Icons.description,
-                                color: Colors.blue.shade700,
+                                color: Colors.green.shade700,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
@@ -128,7 +128,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                         label: const Text('Chọn tệp'),
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          backgroundColor: Colors.blue.shade700,
+                          backgroundColor: Colors.green.shade700,
                           disabledBackgroundColor: Colors.grey.shade400,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -147,7 +147,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                                   : null,
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: Colors.green.shade600,
+                            backgroundColor: const Color(0xFF21A366),
                             disabledBackgroundColor: Colors.grey.shade400,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
@@ -248,7 +248,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
         ),
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: Colors.blue.shade700,
+          backgroundColor: Colors.green.shade700,
           disabledBackgroundColor: Colors.grey.shade400,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         ),

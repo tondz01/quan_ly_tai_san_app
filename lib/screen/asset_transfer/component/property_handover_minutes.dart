@@ -63,7 +63,7 @@ class PropertyHandoverMinutes {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: Colors.green.shade50,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16),
           topRight: Radius.circular(16),
@@ -71,7 +71,7 @@ class PropertyHandoverMinutes {
       ),
       child: Row(
         children: [
-          Icon(Icons.description, color: Colors.blue.shade700, size: 24),
+          Icon(Icons.description, color: Colors.green.shade700, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: SGText(
@@ -79,13 +79,13 @@ class PropertyHandoverMinutes {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.blue.shade800,
+                color: Colors.green.shade800,
               ),
             ),
           ),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(Icons.close, color: Colors.blue.shade700),
+            icon: Icon(Icons.close, color: Colors.green.shade700),
           ),
         ],
       ),
@@ -234,7 +234,7 @@ class _PropertyHandoverMinutesContentState
                             onTap: _showColumnDisplayPopup,
                             child: Icon(
                               Icons.settings,
-                              color: ColorValue.link,
+                              color: const Color(0xFF21A366),
                               size: 18,
                             ),
                           ),

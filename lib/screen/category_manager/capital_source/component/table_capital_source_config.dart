@@ -101,7 +101,7 @@ class TableCapitalSourceConfig {
               decoration: BoxDecoration(
                 color:
                     (item.hieuLuc ?? false)
-                        ? Colors.blue.shade100
+                        ? Colors.green.shade100
                         : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -111,7 +111,7 @@ class TableCapitalSourceConfig {
                   fontSize: 12,
                   color:
                       (item.hieuLuc ?? false)
-                          ? Colors.blue.shade700
+                          ? Colors.green.shade700
                           : Colors.grey.shade700,
                   fontWeight: FontWeight.w500,
                 ),

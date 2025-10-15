@@ -110,7 +110,7 @@ class _ColumnDisplayPopupState extends State<ColumnDisplayPopup> {
                     children: [
                       Icon(
                         Icons.settings,
-                        color: ColorValue.primaryBlue,
+                        color: const Color(0xFF21A366),
                         size: 20,
                       ),
                       const SizedBox(width: 8),

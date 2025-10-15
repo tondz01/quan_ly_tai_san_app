@@ -673,7 +673,7 @@ class _CommonContractState extends State<CommonContract> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.description, color: Colors.blueAccent),
+                        const Icon(Icons.description, color: Colors.green),
                         const SizedBox(width: 8),
                         Text(
                           widget.showTitle ?? 'Soạn & Ký Tài Liệu',
@@ -696,7 +696,7 @@ class _CommonContractState extends State<CommonContract> {
                         IconButton(
                           tooltip: 'Đóng',
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close, color: Colors.blue),
+                          icon: const Icon(Icons.close, color: Colors.green),
                         ),
                       ],
                     ),

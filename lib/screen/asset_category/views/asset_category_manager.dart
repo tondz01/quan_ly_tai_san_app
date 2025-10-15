@@ -24,12 +24,10 @@ class AssetCategoryManager extends StatefulWidget {
   const AssetCategoryManager({super.key});
 
   @override
-  State<AssetCategoryManager> createState() =>
-      _AssetCategoryManagerState();
+  State<AssetCategoryManager> createState() => _AssetCategoryManagerState();
 }
 
-class _AssetCategoryManagerState
-    extends State<AssetCategoryManager>
+class _AssetCategoryManagerState extends State<AssetCategoryManager>
     with RouteAware {
   bool showForm = false;
   AssetCategoryDto? editingAssetCategory;
@@ -38,16 +36,12 @@ class _AssetCategoryManagerState
   late int totalPages = 0;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage =
-      AssetCategoryConstants.defaultRowsPerPage;
+  int rowsPerPage = AssetCategoryConstants.defaultRowsPerPage;
   int currentPage = 1;
 
-  final ScrollController horizontalController =
-      ScrollController();
-  final TextEditingController controller =
-      TextEditingController();
-  final TextEditingController searchController =
-      TextEditingController();
+  final ScrollController horizontalController = ScrollController();
+  final TextEditingController controller = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
   List<AssetCategoryDto> data = [];
   List<AssetCategoryDto> filteredData = [];
   List<AssetCategoryDto> dataPage = [];
@@ -106,10 +100,7 @@ class _AssetCategoryManagerState
       AssetCategoryConstants.maxPaginationPages,
     );
     startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(
-      0,
-      totalEntries,
-    );
+    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
 
     if (startIndex >= totalEntries && totalEntries > 0) {
       currentPage = 1;
@@ -120,29 +111,22 @@ class _AssetCategoryManagerState
         filteredData.isNotEmpty
             ? filteredData.sublist(
               startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries
-                  ? endIndex
-                  : totalEntries,
+              endIndex < totalEntries ? endIndex : totalEntries,
             )
             : [];
   }
 
-  void _importData(
-    List<AssetCategoryDto> assetCategories,
-  ) async {
+  void _importData(List<AssetCategoryDto> assetCategories) async {
     if (assetCategories.isNotEmpty) {
-      final result = await AssetCategoryRepository()
-          .saveAssetCategoryBatch(assetCategories);
+      final result = await AssetCategoryRepository().saveAssetCategoryBatch(
+        assetCategories,
+      );
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
-          AppUtility.showSnackBar(
-            context,
-            'Import dữ liệu thành công',
-          );
+          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
           searchController.clear();
           currentPage = 1;
-          rowsPerPage =
-              AssetCategoryConstants.defaultRowsPerPage;
+          rowsPerPage = AssetCategoryConstants.defaultRowsPerPage;
           filteredData = [];
           dataPage = [];
           context.read<AssetCategoryBloc>().add(
@@ -172,10 +156,7 @@ class _AssetCategoryManagerState
     }
   }
 
-  void _showDeleteDialog(
-    BuildContext context,
-    AssetCategoryDto assetCategory,
-  ) {
+  void _showDeleteDialog(BuildContext context, AssetCategoryDto assetCategory) {
     showDialog(
       context: context,
       builder:
@@ -192,10 +173,7 @@ class _AssetCategoryManagerState
               ElevatedButton(
                 onPressed: () {
                   context.read<AssetCategoryBloc>().add(
-                    DeleteAssetCategoryEvent(
-                      context,
-                      assetCategory.id ?? '',
-                    ),
+                    DeleteAssetCategoryEvent(context, assetCategory.id ?? ''),
                   );
                   Navigator.of(ctx).pop();
                 },
@@ -207,9 +185,7 @@ class _AssetCategoryManagerState
   }
 
   void _searchAssetCategory(String value) {
-    context.read<AssetCategoryBloc>().add(
-      SearchAssetCategoryEvent(value),
-    );
+    context.read<AssetCategoryBloc>().add(SearchAssetCategoryEvent(value));
   }
 
   void onPageChanged(int page) {
@@ -230,23 +206,18 @@ class _AssetCategoryManagerState
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<
-      AssetCategoryBloc,
-      AssetCategoryState
-    >(
+    return BlocListener<AssetCategoryBloc, AssetCategoryState>(
       listener: (context, state) {
         isShowInput = false;
         if (state is AddAssetCategorySuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
-                      ? AssetCategoryConstants
-                          .webSnackBarDuration
-                      : AssetCategoryConstants
-                          .mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -254,13 +225,11 @@ class _AssetCategoryManagerState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
-                      ? AssetCategoryConstants
-                          .webSnackBarDuration
-                      : AssetCategoryConstants
-                          .mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -268,13 +237,11 @@ class _AssetCategoryManagerState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
-                      ? AssetCategoryConstants
-                          .webSnackBarDuration
-                      : AssetCategoryConstants
-                          .mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
@@ -285,54 +252,39 @@ class _AssetCategoryManagerState
               backgroundColor: Colors.red.shade600,
               duration:
                   kIsWeb
-                      ? AssetCategoryConstants
-                          .webSnackBarDuration
-                      : AssetCategoryConstants
-                          .mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
         if (state is DeleteAssetCategoryBatchSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Xóa mô hình tài sản thành công',
-              ),
-              backgroundColor: Colors.green.shade600,
+              content: Text('Xóa mô hình tài sản thành công'),
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
-                      ? AssetCategoryConstants
-                          .webSnackBarDuration
-                      : AssetCategoryConstants
-                          .mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
-        } else if (state
-            is DeleteAssetCategoryBatchFailure) {
+        } else if (state is DeleteAssetCategoryBatchFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Xóa mô hình tài sản thất bại: ${state.message}',
-              ),
+              content: Text('Xóa mô hình tài sản thất bại: ${state.message}'),
               backgroundColor: Colors.red.shade600,
               duration:
                   kIsWeb
-                      ? AssetCategoryConstants
-                          .webSnackBarDuration
-                      : AssetCategoryConstants
-                          .mobileSnackBarDuration,
+                      ? AssetCategoryConstants.webSnackBarDuration
+                      : AssetCategoryConstants.mobileSnackBarDuration,
             ),
           );
         }
       },
-      child: BlocBuilder<
-        AssetCategoryBloc,
-        AssetCategoryState
-      >(
+      child: BlocBuilder<AssetCategoryBloc, AssetCategoryState>(
         builder: (context, state) {
           if (state is AssetCategoryLoaded) {
-            List<AssetCategoryDto> assetCategories =
-                state.assetCategories;
+            List<AssetCategoryDto> assetCategories = state.assetCategories;
             data = assetCategories;
             filteredData = data;
             _updatePagination();
@@ -356,34 +308,25 @@ class _AssetCategoryManagerState
                   },
                   mainScreen: 'Quản lý mô hình tài sản',
                   isShowSearch: false,
-                  onFileSelected: (
-                    fileName,
-                    filePath,
-                    fileBytes,
-                  ) async {
-                    final result =
-                        await convertExcelToAssetCategory(
-                          filePath!,
-                          fileBytes: fileBytes,
-                        );
+                  onFileSelected: (fileName, filePath, fileBytes) async {
+                    final result = await convertExcelToAssetCategory(
+                      filePath!,
+                      fileBytes: fileBytes,
+                    );
 
                     if (result['success']) {
-                      List<AssetCategoryDto>
-                      assetCategories = result['data'];
+                      List<AssetCategoryDto> assetCategories = result['data'];
                       _importData(assetCategories);
                     } else {
-                      List<dynamic> errors =
-                          result['errors'];
+                      List<dynamic> errors = result['errors'];
 
                       // Tạo danh sách lỗi dạng list
                       List<String> errorMessages = [];
                       for (var error in errors) {
-                        String rowNumber =
-                            error['row'].toString();
-                        List<String> rowErrors =
-                            List<String>.from(
-                              error['errors'],
-                            );
+                        String rowNumber = error['row'].toString();
+                        List<String> rowErrors = List<String>.from(
+                          error['errors'],
+                        );
                         String errorText =
                             'Dòng $rowNumber: ${rowErrors.join(', ')}';
                         errorMessages.add(errorText);
@@ -409,9 +352,7 @@ class _AssetCategoryManagerState
                     AppUtility.exportData(
                       context,
                       "mo_hinh_tai_san",
-                      assetCategories
-                          .map((e) => e.toExportJson())
-                          .toList(),
+                      assetCategories.map((e) => e.toExportJson()).toList(),
                     );
                   },
                 ),
@@ -419,16 +360,13 @@ class _AssetCategoryManagerState
               body: Column(
                 children: [
                   Expanded(
-                    child: NotificationListener<
-                      ScrollNotification
-                    >(
+                    child: NotificationListener<ScrollNotification>(
                       onNotification: (notification) {
                         return true; // Xử lý scroll event bình thường
                       },
                       child: SingleChildScrollView(
                         physics:
-                            _scrollController
-                                    .isParentScrolling
+                            _scrollController.isParentScrolling
                                 ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
                                 : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
                         scrollDirection: Axis.vertical,
@@ -437,32 +375,21 @@ class _AssetCategoryManagerState
                           childInput: AssetCategoryFormPage(
                             data: editingAssetCategory,
                             onSave: (assetCategory) {
-                              if (editingAssetCategory !=
-                                  null) {
-                                context
-                                    .read<
-                                      AssetCategoryBloc
-                                    >()
-                                    .add(
-                                      UpdateAssetCategoryEvent(
-                                        context,
-                                        assetCategory,
-                                        editingAssetCategory!
-                                                .id ??
-                                            '',
-                                      ),
-                                    );
+                              if (editingAssetCategory != null) {
+                                context.read<AssetCategoryBloc>().add(
+                                  UpdateAssetCategoryEvent(
+                                    context,
+                                    assetCategory,
+                                    editingAssetCategory!.id ?? '',
+                                  ),
+                                );
                               } else {
-                                context
-                                    .read<
-                                      AssetCategoryBloc
-                                    >()
-                                    .add(
-                                      CreateAssetCategoryEvent(
-                                        context,
-                                        assetCategory,
-                                      ),
-                                    );
+                                context.read<AssetCategoryBloc>().add(
+                                  CreateAssetCategoryEvent(
+                                    context,
+                                    assetCategory,
+                                  ),
+                                );
                               }
                             },
                             onCancel: () {
@@ -478,10 +405,7 @@ class _AssetCategoryManagerState
                               _showForm(item);
                             },
                             onDelete: (item) {
-                              _showDeleteDialog(
-                                context,
-                                item,
-                              );
+                              _showDeleteDialog(context, item);
                             },
                             onEdit: (item) {
                               _showForm(item);
@@ -501,9 +425,7 @@ class _AssetCategoryManagerState
           } else if (state is AssetCategoryError) {
             return Center(child: Text(state.message));
           }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );

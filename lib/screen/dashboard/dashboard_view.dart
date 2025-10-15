@@ -378,11 +378,11 @@ class _DashboardViewState extends State<DashboardView> {
     if (_isLoadingStatistics) {
       return Container(
         decoration: BoxDecoration(
-          color: Colors.green.shade50,
+          color: Colors.white38,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.1),
               spreadRadius: 0,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -402,7 +402,7 @@ class _DashboardViewState extends State<DashboardView> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.green.shade600,
+                    color: const Color(0xFF21A366),
                   ),
                 ),
               ],
@@ -413,7 +413,7 @@ class _DashboardViewState extends State<DashboardView> {
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.green.shade600,
+                      const Color(0xFF21A366),
                     ),
                     strokeWidth: 2,
                   ),
@@ -441,7 +441,7 @@ class _DashboardViewState extends State<DashboardView> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.white54.withOpacity(0.1),
               spreadRadius: 0,
               blurRadius: 4,
               offset: const Offset(0, 2),
@@ -504,7 +504,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color: Colors.white54,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -513,7 +513,7 @@ class _DashboardViewState extends State<DashboardView> {
             offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.white54.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -627,13 +627,13 @@ class _DashboardViewState extends State<DashboardView> {
                 text: "Phân bố tài sản theo loại",
                 style: AppTextStyle.textStyleSemiBold24.copyWith(
                   fontSize: 14,
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                 ),
               ),
               if (_assetGroupError != null)
                 IconButton(
                   onPressed: _loadAssetGroupData,
-                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
+                  icon: Icon(Icons.refresh, color: const Color(0xFF21A366)),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -874,13 +874,13 @@ class _DashboardViewState extends State<DashboardView> {
                 text: "Phân bố CCDC theo loại",
                 style: AppTextStyle.textStyleSemiBold24.copyWith(
                   fontSize: 14,
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                 ),
               ),
               if (_ccdcGroupError != null)
                 IconButton(
                   onPressed: _loadCcdcGroupData,
-                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
+                  icon: Icon(Icons.refresh, color: const Color(0xFF21A366)),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -1120,13 +1120,13 @@ class _DashboardViewState extends State<DashboardView> {
                 text: "Phân bố tài sản theo nhóm (%)",
                 style: AppTextStyle.textStyleSemiBold24.copyWith(
                   fontSize: 14,
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                 ),
               ),
               if (_assetGroupPercentageError != null)
                 IconButton(
                   onPressed: _loadAssetGroupPercentageData,
-                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
+                  icon: Icon(Icons.refresh, color: const Color(0xFF21A366)),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -1140,7 +1140,7 @@ class _DashboardViewState extends State<DashboardView> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(color: Colors.green.shade600),
+                      CircularProgressIndicator(color: const Color(0xFF21A366)),
                       const SizedBox(height: 16),
                       Text(
                         'Đang tải dữ liệu...',
@@ -1177,7 +1177,7 @@ class _DashboardViewState extends State<DashboardView> {
                         icon: Icon(Icons.refresh, size: 16),
                         label: Text('Thử lại'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade600,
+                          backgroundColor: const Color(0xFF21A366),
                           foregroundColor: Colors.white,
                         ),
                       ),
@@ -1198,8 +1198,8 @@ class _DashboardViewState extends State<DashboardView> {
                     categoryKey: 'label',
                     valueKey: 'value',
                     colors: [
-                      Colors.green.shade600,
-                      Colors.blue.shade600,
+                      const Color(0xFF21A366),
+                      const Color(0xFF21A366),
                       Colors.orange.shade600,
                       Colors.purple.shade600,
                       Colors.red.shade600,
@@ -1268,13 +1268,13 @@ class _DashboardViewState extends State<DashboardView> {
                 text: "Phân bố CCDC theo nhóm (%)",
                 style: AppTextStyle.textStyleSemiBold24.copyWith(
                   fontSize: 14,
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                 ),
               ),
               if (_ccdcGroupPercentageError != null)
                 IconButton(
                   onPressed: _loadCcdcGroupPercentageData,
-                  icon: Icon(Icons.refresh, color: Colors.green.shade600),
+                  icon: Icon(Icons.refresh, color: const Color(0xFF21A366)),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -1347,8 +1347,8 @@ class _DashboardViewState extends State<DashboardView> {
                     valueKey: 'value',
                     colors: [
                       Colors.amber.shade600,
-                      Colors.blue.shade600,
-                      Colors.green.shade600,
+                      const Color(0xFF21A366),
+                      const Color(0xFF21A366),
                       Colors.purple.shade600,
                       Colors.red.shade600,
                       Colors.teal.shade600,
@@ -1423,7 +1423,7 @@ class _DashboardViewState extends State<DashboardView> {
               SGText(
                 text: "Top 5 tài sản giá trị cao",
                 style: AppTextStyle.textStyleSemiBold12.copyWith(
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                 ),
               ),
               const Spacer(),
@@ -1633,7 +1633,7 @@ class _DashboardViewState extends State<DashboardView> {
                 title,
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1788,7 +1788,7 @@ class _DashboardViewState extends State<DashboardView> {
               SGText(
                 text: "Tài sản sắp hết hạn khấu hao",
                 style: AppTextStyle.textStyleSemiBold24.copyWith(
-                  color: Colors.green.shade600,
+                  color: const Color(0xFF21A366),
                 ),
               ),
               const Spacer(),
@@ -2096,7 +2096,7 @@ class _DashboardViewState extends State<DashboardView> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.blue.shade100,
+                                      color: Colors.green.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -2468,7 +2468,7 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   List<Color> get listColors => [
-    Colors.blue.shade400,
+    Colors.green.shade400,
     Colors.purple.shade400,
     Colors.green.shade400,
     Colors.orange.shade400,

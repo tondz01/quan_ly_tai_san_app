@@ -359,10 +359,7 @@ class _HomeState extends State<Home> {
                         ],
                       ),
                       border: const Border(
-                        top: BorderSide(
-                          color: Colors.white,
-                          width: 1,
-                        ),
+                        top: BorderSide(color: Colors.white, width: 1),
                       ),
                     ),
                     child: Row(
@@ -489,7 +486,7 @@ class _HomeState extends State<Home> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, size: 20),
+          Icon(icon, size: 20, color: const Color(0xFF21A366)),
           const SizedBox(width: 12),
           Text(title),
         ],

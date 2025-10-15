@@ -83,7 +83,7 @@ class _ToolAndSuppliesHandoverTransferListState
       dataAssetTransfer.where((item) => (item.loai) == 3).length;
 
   PdfDocument? _document;
-  
+
   // RiverpodTable configuration
   late List<ColumnDefinition> _definitions;
   late List<TableColumnData> _columns;
@@ -185,7 +185,9 @@ class _ToolAndSuppliesHandoverTransferListState
     final String key = _columns[adjustedIndex].key;
     switch (key) {
       case 'type':
-        return TableToolAndSuppliesHandoverTransferConfig.getName(item.loai ?? 0);
+        return TableToolAndSuppliesHandoverTransferConfig.getName(
+          item.loai ?? 0,
+        );
       case 'decision_date':
         return item.ngayKy;
       case 'effective_date':
@@ -204,11 +206,13 @@ class _ToolAndSuppliesHandoverTransferListState
   }
 
   onViewDocument(ToolAndMaterialTransferDto item) async {
-    NhanVien nhanVien = widget.provider.dataStaff?.firstWhere(
-      (element) => element.id == widget.provider.userInfo?.tenDangNhap,
-      orElse: () => NhanVien(),
-    ) ?? NhanVien();
-    
+    NhanVien nhanVien =
+        widget.provider.dataStaff?.firstWhere(
+          (element) => element.id == widget.provider.userInfo?.tenDangNhap,
+          orElse: () => NhanVien(),
+        ) ??
+        NhanVien();
+
     if (nhanVien.id == null) {
       AppUtility.showSnackBar(
         context,
@@ -284,7 +288,10 @@ class _ToolAndSuppliesHandoverTransferListState
                           width: (availableWidth * 0.35).toDouble(),
                           onSearch: (value) {
                             ref
-                                .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
+                                .read(
+                                  tableToolAndSuppliesHandoverTransferProvider
+                                      .notifier,
+                                )
                                 .searchTerm = value;
                           },
                         );
@@ -299,34 +306,47 @@ class _ToolAndSuppliesHandoverTransferListState
                               (s) => s.filterState.hasActiveFilters,
                             ),
                           );
-                          final tableState = ref.watch(tableToolAndSuppliesHandoverTransferProvider);
+                          final tableState = ref.watch(
+                            tableToolAndSuppliesHandoverTransferProvider,
+                          );
                           final selectedCount = tableState.selectedItems.length;
-                          selectedItems = tableState.selectedItems.cast<ToolAndMaterialTransferDto>();
+                          selectedItems =
+                              tableState.selectedItems
+                                  .cast<ToolAndMaterialTransferDto>();
                           final buttons = _buildButtonList(selectedCount);
-                          final processedButtons = buttons.map((button) {
-                            if (button.text == 'table.clear_filters'.tr) {
-                              return ResponsiveButtonData.fromButtonIcon(
-                                text: button.text,
-                                iconPath: button.iconPath!,
-                                backgroundColor: button.backgroundColor!,
-                                iconColor: button.iconColor!,
-                                textColor: button.textColor!,
-                                width: button.width,
-                                onPressed: () {
-                                  ref
-                                      .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
-                                      .clearAllFilters();
-                                },
-                              );
-                            }
-                            return button;
-                          }).toList();
+                          final processedButtons =
+                              buttons.map((button) {
+                                if (button.text == 'table.clear_filters'.tr) {
+                                  return ResponsiveButtonData.fromButtonIcon(
+                                    text: button.text,
+                                    iconPath: button.iconPath!,
+                                    backgroundColor: button.backgroundColor!,
+                                    iconColor: button.iconColor!,
+                                    textColor: button.textColor!,
+                                    width: button.width,
+                                    onPressed: () {
+                                      ref
+                                          .read(
+                                            tableToolAndSuppliesHandoverTransferProvider
+                                                .notifier,
+                                          )
+                                          .clearAllFilters();
+                                    },
+                                  );
+                                }
+                                return button;
+                              }).toList();
 
-                          final filteredButtons = hasFilters
-                              ? processedButtons
-                              : processedButtons
-                                  .where((button) => button.text != 'table.clear_filters'.tr)
-                                  .toList();
+                          final filteredButtons =
+                              hasFilters
+                                  ? processedButtons
+                                  : processedButtons
+                                      .where(
+                                        (button) =>
+                                            button.text !=
+                                            'table.clear_filters'.tr,
+                                      )
+                                      .toList();
 
                           return ResponsiveButtonBar(
                             buttons: filteredButtons,
@@ -360,7 +380,9 @@ class _ToolAndSuppliesHandoverTransferListState
                   final data = dataAssetTransferFilter;
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     ref
-                        .read(tableToolAndSuppliesHandoverTransferProvider.notifier)
+                        .read(
+                          tableToolAndSuppliesHandoverTransferProvider.notifier,
+                        )
                         .setData(data);
                   });
                   return RiverpodTable<ToolAndMaterialTransferDto>(
@@ -380,7 +402,7 @@ class _ToolAndSuppliesHandoverTransferListState
                       CustomAction(
                         tooltip: 'Xem',
                         iconPath: AppIconSvgPath.iconEye,
-                        color: Colors.blue,
+                        color: Colors.green,
                         onPressed: (item) {
                           onViewDocument(item);
                         },
@@ -393,7 +415,9 @@ class _ToolAndSuppliesHandoverTransferListState
                           widget.provider.onChangeDetail(
                             context,
                             ToolAndSuppliesHandoverDto(
-                              id: UUIDGenerator.generateWithFormat('BBCCDC-******'),
+                              id: UUIDGenerator.generateWithFormat(
+                                'BBCCDC-******',
+                              ),
                               banGiaoCCDCVatTu: '',
                               quyetDinhDieuDongSo: '',
                               lenhDieuDong: item.id,
@@ -466,7 +490,6 @@ class _ToolAndSuppliesHandoverTransferListState
       ],
     );
   }
-
 
   void setFilterStatus(FilterType status, bool? value) {
     _filterStatus[status] = value ?? false;

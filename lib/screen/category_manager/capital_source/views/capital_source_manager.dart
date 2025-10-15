@@ -225,7 +225,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? CapitalSourceConstants.webSnackBarDuration
@@ -237,7 +237,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? CapitalSourceConstants.webSnackBarDuration
@@ -249,7 +249,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? CapitalSourceConstants.webSnackBarDuration
@@ -273,7 +273,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Xóa nguồn vốn thành công'),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? CapitalSourceConstants.webSnackBarDuration

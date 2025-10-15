@@ -408,7 +408,7 @@ class _ToolAndMaterialTransferListState
                             CustomAction(
                               tooltip: 'Xem',
                               iconPath: AppIconSvgPath.iconEye,
-                              color: Colors.blue,
+                              color: Colors.green,
                               onPressed: (item) async {
                                 _loadPdfNetwork(item.tenFile!).then((_) {
                                   if (!context.mounted) return;

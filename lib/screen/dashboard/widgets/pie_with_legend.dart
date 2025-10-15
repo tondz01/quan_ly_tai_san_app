@@ -31,12 +31,12 @@ class PieDonutChartWithLegend extends StatelessWidget {
           Colors.green.shade300,
           Colors.green.shade400,
           Colors.green.shade500,
-          Colors.green.shade600,
+          const Color(0xFF21A366),
           Colors.green.shade700,
           Colors.green.shade300,
           Colors.green.shade400,
           Colors.green.shade500,
-          Colors.green.shade600,
+          const Color(0xFF21A366),
           Colors.green.shade700,
         ];
     final List<String> categories =
@@ -122,7 +122,7 @@ class PieDonutChartWithLegend extends StatelessWidget {
                                   categories[i],
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: Colors.green.shade600,
+                                    color: const Color(0xFF21A366),
                                     fontWeight: FontWeight.w400,
                                   ),
                                   overflow: TextOverflow.ellipsis,
