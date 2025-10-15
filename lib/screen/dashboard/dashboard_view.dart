@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_text_style.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/scrollable_bar_chart.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/widgets/pie_with_legend.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/repository/dashboard_reponsitory.dart';
@@ -363,19 +362,11 @@ class _DashboardViewState extends State<DashboardView> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _buildAssetGroupDistributionSection(data)),
-                  const SizedBox(width: 4),
-                  Expanded(child: _buildCcdcGroupDistributionSection(data)),
-
-                  const SizedBox(width: 4),
-                  Expanded(child: _buildTrendAnalysisSection(data)),
+                  Expanded(child: _buildTopAssetsSection(data)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildMaintenanceSection(data)),
                 ],
               ),
-              const SizedBox(width: 4),
-               _buildTopAssetsSection(data),
-              const SizedBox(height: 12),
-
-              _buildMaintenanceSection(data),
             ],
           ),
         ),
@@ -416,7 +407,7 @@ class _DashboardViewState extends State<DashboardView> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Center(
               child: Column(
                 children: [
@@ -475,7 +466,7 @@ class _DashboardViewState extends State<DashboardView> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Center(
               child: Column(
                 children: [
@@ -572,77 +563,35 @@ class _DashboardViewState extends State<DashboardView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                flex: 3,
+                flex: 1,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildCcdcGroupPercentageSection(),
+                    _buildCcdcGroupPercentageSection(data),
                     const SizedBox(height: 16),
-                    _buildAssetGroupPercentageSection(),
+                    Column(children: [_buildAssetGroupPercentageSection(data)]),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                flex: 7,
-                child: GridView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: _getCrossAxisCount(context),
-                    crossAxisSpacing: 24,
-                    mainAxisSpacing: 24,
-                    mainAxisExtent: 160,
-                  ),
+                flex: 2,
+                child: Column(
                   children: [
-                    _buildEnhancedStatisticsCard(
-                      'Tổng tài sản',
-                      (data['tongTaiSan'] ?? 0).toString(),
-                      Icons.inventory_2,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng nguyên giá',
-                      formatter.format(data['tongNguyenGia'] ?? 0),
-                      Icons.attach_money,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng CCDC',
-                      (data['tongCCDC'] ?? 0).toString(),
-                      Icons.build,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng giá trị CCDC',
-                      formatter.format(data['tongGiaTriCCDC'] ?? 0),
-                      Icons.monetization_on,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng nhân viên',
-                      (data['tongNhanVien'] ?? 0).toString(),
-                      Icons.people,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng phòng ban',
-                      (data['tongPhongBan'] ?? 0).toString(),
-                      Icons.business,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng dự án',
-                      (data['tongDuAn'] ?? 0).toString(),
-                      Icons.folder,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
-                    _buildEnhancedStatisticsCard(
-                      'Tổng công ty',
-                      (data['tongCongTy'] ?? 0).toString(),
-                      Icons.corporate_fare,
-                      [Colors.green.shade400, Colors.green.shade600],
-                    ),
+                    _buildAssetGroupDistributionSection(data),
+                    const SizedBox(height: 16),
+                    _buildCcdcGroupDistributionSection(data),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    _buildYearTrendChart(data),
+                    const SizedBox(height: 16),
+                    _buildMonthTrendChart(data),
                   ],
                 ),
               ),
@@ -655,7 +604,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildAssetGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
-      height: 400, // Fixed height
+      height: 300, // Fixed height
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -692,7 +641,7 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 24),
           if (_isLoadingAssetGroup)
             Container(
-              height: 300,
+              height: 200,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -713,7 +662,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else if (_assetGroupError != null)
             Container(
-              height: 300,
+              height: 200,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -786,7 +735,7 @@ class _DashboardViewState extends State<DashboardView> {
                   _buildGroupChart(_selectedGroup!)
                 else
                   Container(
-                    height: 300,
+                    height: 200,
                     child: Center(
                       child: Text(
                         'Vui lòng chọn nhóm tài sản',
@@ -802,7 +751,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else
             Container(
-              height: 300,
+              height: 200,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -902,7 +851,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildCcdcGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
-      height: 400, // Fixed height
+      height: 300, // Fixed height
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -939,7 +888,7 @@ class _DashboardViewState extends State<DashboardView> {
           const SizedBox(height: 24),
           if (_isLoadingCcdcGroup)
             Container(
-              height: 300,
+              height: 200,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -960,7 +909,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else if (_ccdcGroupError != null)
             Container(
-              height: 300,
+              height: 200,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1033,7 +982,7 @@ class _DashboardViewState extends State<DashboardView> {
                   _buildCcdcGroupChart(_selectedCcdcGroup!)
                 else
                   Container(
-                    height: 300,
+                    height: 200,
                     child: Center(
                       child: Text(
                         'Vui lòng chọn nhóm CCDC',
@@ -1049,7 +998,7 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else
             Container(
-              height: 300,
+              height: 200,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1147,9 +1096,9 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildAssetGroupPercentageSection() {
+  Widget _buildAssetGroupPercentageSection(Map<String, dynamic> data) {
     return Container(
-      height: 200, // Fixed height
+      height: 300, // Fixed height
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -1280,14 +1229,24 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             ),
           ),
+          _buildStatisticsRow(
+            'Tổng tài sản',
+            (data['tongTaiSan'] ?? 0).toString(),
+            Icons.inventory_2,
+          ),
+          _buildStatisticsRow(
+            'Tổng nguyên giá',
+            formatter.format(data['tongNguyenGia'] ?? 0),
+            Icons.attach_money,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCcdcGroupPercentageSection() {
+  Widget _buildCcdcGroupPercentageSection(Map<String, dynamic> data) {
     return Container(
-      height: 200, // Fixed height
+      height: 300, // Fixed height
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -1422,6 +1381,16 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             ),
           ),
+          _buildStatisticsRow(
+            'Tổng CCDC',
+            (data['tongCCDC'] ?? 0).toString(),
+            Icons.build,
+          ),
+          _buildStatisticsRow(
+            'Tổng giá trị CCDC',
+            formatter.format(data['tongGiaTriCCDC'] ?? 0),
+            Icons.monetization_on,
+          ),
         ],
       ),
     );
@@ -1491,6 +1460,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           const SizedBox(height: 24),
           Container(
+            padding: const EdgeInsets.only(left: 100),
             height: 300,
             decoration: BoxDecoration(
               color: Colors.green.shade50,
@@ -1662,7 +1632,7 @@ class _DashboardViewState extends State<DashboardView> {
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 8,
+                  fontSize: 10,
                   color: Colors.green.shade600,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1673,7 +1643,7 @@ class _DashboardViewState extends State<DashboardView> {
           Text(
             value,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 12,
               color: Colors.green.shade700,
               fontWeight: FontWeight.bold,
             ),
@@ -1684,212 +1654,12 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildTrendAnalysisSection(Map<String, dynamic> data) {
-    final yearData = (data['taiSanTheoNamTao'] as List<dynamic>?) ?? const [];
-    final monthData = (data['taiSanTheoThang'] as List<dynamic>?) ?? const [];
-
-    return Container(
-      height: 400,
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              SGText(
-                text: "Phân tích xu hướng",
-                style: AppTextStyle.textStyleSemiBold12.copyWith(
-                  color: Colors.green.shade600,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.indigo.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.trending_up,
-                      size: 16,
-                      color: Colors.indigo.shade700,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Thống kê',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.indigo.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.calendar_today,
-                              color: Colors.blue.shade700,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Tài sản theo năm tạo",
-                            style: TextStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      ScrollableBarChart(
-                        data:
-                            yearData
-                                .map(
-                                  (item) => <String, Object>{
-                                    'nam': item['nam'].toString(),
-                                    'soLuong': item['soLuong'] ?? 0,
-                                  },
-                                )
-                                .toList(),
-                        categoryKey: 'nam',
-                        valueKey: 'soLuong',
-                        barWidth: 16,
-                        spacing: 32,
-                        height: 200,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.timeline,
-                              color: Colors.green.shade700,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Tài sản theo tháng",
-                            style: TextStyle(
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      ScrollableBarChart(
-                        data:
-                            monthData
-                                .map(
-                                  (item) => <String, Object>{
-                                    'thang': item['thang'].toString(),
-                                    'soLuong': item['soLuong'] ?? 0,
-                                  },
-                                )
-                                .toList(),
-                        categoryKey: 'thang',
-                        valueKey: 'soLuong',
-                        barWidth: 16,
-                        spacing: 32,
-                        height: 200,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMaintenanceSection(Map<String, dynamic> data) {
     if (_isLoadingDepreciation) {
       return Container(
-        height: 400,
+        height: 500,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.green.shade50],
-          ),
+          color: Colors.green.shade50,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -1905,17 +1675,13 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (_depreciationError != null) {
       return Container(
-        height: 400,
+        height: 500,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.red.shade50],
-          ),
+          color: Colors.green.shade50,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.green.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -1958,13 +1724,9 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (_depreciationData.isEmpty) {
       return Container(
-        height: 400,
+        height: 500,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.green.shade50],
-          ),
+          color: Colors.green.shade50,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -2005,6 +1767,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
 
     return Container(
+      height: 500,
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -2543,56 +2306,163 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
-  Widget _buildEnhancedStatisticsCard(
-    String title,
-    String value,
-    IconData icon,
-    List<Color> gradientColors,
-  ) {
+  Widget _buildStatisticsRow(String title, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.green.shade700, size: 16),
+        const SizedBox(width: 8),
+        Text(
+          "$title : ",
+          style: TextStyle(
+            color: Colors.green.shade700,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: Colors.green.shade700,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildYearTrendChart(Map<String, dynamic> data) {
+    final yearData = (data['taiSanTheoNamTao'] as List<dynamic>?) ?? const [];
+
     return Container(
+      height: 300,
       decoration: BoxDecoration(
-        color: Colors.green.shade100,
+        color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.green.shade700, size: 24),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: AppTextStyle.textStyleRegular14.copyWith(
-                      color: Colors.green.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: AppTextStyle.textStyleSemiBold24.copyWith(
-                color: Colors.green.shade700,
-                fontSize: 20,
+                child: Icon(
+                  Icons.calendar_today,
+                  color: Colors.green.shade700,
+                  size: 16,
+                ),
               ),
+              const SizedBox(width: 8),
+              Text(
+                "Tài sản theo năm tạo",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ScrollableBarChart(
+              data:
+                  yearData
+                      .map(
+                        (item) => <String, Object>{
+                          'nam': item['nam'].toString(),
+                          'soLuong': item['soLuong'] ?? 0,
+                        },
+                      )
+                      .toList(),
+              categoryKey: 'nam',
+              valueKey: 'soLuong',
+              barWidth: 12,
+              spacing: 24,
+              height: 150,
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthTrendChart(Map<String, dynamic> data) {
+    final monthData = (data['taiSanTheoThang'] as List<dynamic>?) ?? const [];
+
+    return Container(
+      height: 300,
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.timeline,
+                  color: Colors.green.shade700,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Tài sản theo tháng",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ScrollableBarChart(
+              data:
+                  monthData
+                      .map(
+                        (item) => <String, Object>{
+                          'thang': item['thang'].toString(),
+                          'soLuong': item['soLuong'] ?? 0,
+                        },
+                      )
+                      .toList(),
+              categoryKey: 'thang',
+              valueKey: 'soLuong',
+              barWidth: 12,
+              spacing: 24,
+              height: 150,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2607,21 +2477,4 @@ class _DashboardViewState extends State<DashboardView> {
     Colors.indigo.shade400,
     Colors.amber.shade400,
   ];
-
-  int _getCrossAxisCount(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
-    final TypeSizeScreen size = TypeSizeScreenExtension.getSizeScreen(width);
-    switch (size) {
-      case TypeSizeScreen.extraSmall:
-        return 1;
-      case TypeSizeScreen.small:
-        return 2;
-      case TypeSizeScreen.medium:
-        return 2;
-      case TypeSizeScreen.large:
-        return 4;
-      case TypeSizeScreen.extraLarge:
-        return 4;
-    }
-  }
 }
