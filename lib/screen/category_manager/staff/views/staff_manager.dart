@@ -33,7 +33,8 @@ class StaffManager extends StatefulWidget {
   State<StaffManager> createState() => _StaffManagerState();
 }
 
-class _StaffManagerState extends State<StaffManager> with RouteAware {
+class _StaffManagerState extends State<StaffManager>
+    with RouteAware {
   bool showForm = false;
   NhanVien? editingStaff;
   late int totalEntries;
@@ -43,9 +44,12 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   int rowsPerPage = StaffConstants.defaultRowsPerPage;
   int currentPage = 1;
 
-  final ScrollController horizontalController = ScrollController();
-  final TextEditingController controller = TextEditingController();
-  final TextEditingController searchController = TextEditingController();
+  final ScrollController horizontalController =
+      ScrollController();
+  final TextEditingController controller =
+      TextEditingController();
+  final TextEditingController searchController =
+      TextEditingController();
 
   bool isFirstLoad = false;
   bool isShowInput = false;
@@ -114,12 +118,22 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   void _checkPermission() async {
     try {
       final repo = PermissionRepository();
-      final userId = AccountHelper.instance.getUserInfo()?.id ?? '';
+      final userId =
+          AccountHelper.instance.getUserInfo()?.id ?? '';
 
       final permissions = await Future.wait([
-        repo.checkCanCreatePermission(userId, RoleCode.NHANVIEN),
-        repo.checkCanUpdatePermission(userId, RoleCode.NHANVIEN),
-        repo.checkCanDeletePermission(userId, RoleCode.NHANVIEN),
+        repo.checkCanCreatePermission(
+          userId,
+          RoleCode.NHANVIEN,
+        ),
+        repo.checkCanUpdatePermission(
+          userId,
+          RoleCode.NHANVIEN,
+        ),
+        repo.checkCanDeletePermission(
+          userId,
+          RoleCode.NHANVIEN,
+        ),
       ]);
 
       if (mounted) {
@@ -135,7 +149,10 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         'isCanCreate: $isCanCreate -- isCanDelete: $isCanDelete -- isCanUpdate: $isCanUpdate',
       );
     } catch (e) {
-      SGLog.error("_checkPermission", 'Error checking permissions: $e');
+      SGLog.error(
+        "_checkPermission",
+        'Error checking permissions: $e',
+      );
       if (mounted) {
         setState(() {
           isCanCreate = false;
@@ -146,9 +163,14 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     }
   }
 
-  void importDataStaff(String? filePath, Uint8List? fileBytes) async {
-    List<ChucVu> chucVus = context.read<StaffBloc>().chucvus;
-    List<PhongBan> phongBans = context.read<StaffBloc>().department;
+  void importDataStaff(
+    String? filePath,
+    Uint8List? fileBytes,
+  ) async {
+    List<ChucVu> chucVus =
+        context.read<StaffBloc>().chucvus;
+    List<PhongBan> phongBans =
+        context.read<StaffBloc>().department;
 
     final result = await convertExcelToNhanVien(
       filePath!,
@@ -160,7 +182,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     if (result['success']) {
       List<NhanVien> nhanViens = result['data'];
 
-      final resultSave = await NhanVienProvider().saveNhanVienBatch(nhanViens);
+      final resultSave = await NhanVienProvider()
+          .saveNhanVienBatch(nhanViens);
       if (checkStatusCodeDone(resultSave)) {
         if (!mounted) return;
         AppUtility.showSnackBar(
@@ -189,8 +212,11 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
       List<String> errorMessages = [];
       for (var error in errors) {
         String rowNumber = error['row'].toString();
-        List<String> rowErrors = List<String>.from(error['errors']);
-        String errorText = 'Dòng $rowNumber: ${rowErrors.join(', ')}';
+        List<String> rowErrors = List<String>.from(
+          error['errors'],
+        );
+        String errorText =
+            'Dòng $rowNumber: ${rowErrors.join(', ')}';
         errorMessages.add(errorText);
       }
 
@@ -218,16 +244,22 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: Colors.green.shade600,
               ),
             );
-            context.read<StaffBloc>().add(const LoadStaffs());
+            context.read<StaffBloc>().add(
+              const LoadStaffs(),
+            );
           }
           if (state is UpdateStaffSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Cập nhật nhân viên thành công'),
+                content: Text(
+                  'Cập nhật nhân viên thành công',
+                ),
                 backgroundColor: Colors.green.shade600,
               ),
             );
-            context.read<StaffBloc>().add(const LoadStaffs());
+            context.read<StaffBloc>().add(
+              const LoadStaffs(),
+            );
           }
           if (state is StaffError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -244,11 +276,15 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: Colors.green.shade600,
               ),
             );
-            context.read<StaffBloc>().add(const LoadStaffs());
+            context.read<StaffBloc>().add(
+              const LoadStaffs(),
+            );
           } else if (state is DeleteStaffBatchFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Xóa nhân viên thất bại: ${state.message}'),
+                content: Text(
+                  'Xóa nhân viên thất bại: ${state.message}',
+                ),
                 backgroundColor: Colors.red.shade600,
               ),
             );
@@ -284,14 +320,21 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                       });
                     },
                     mainScreen: 'Quản lý nhân viên',
-                    onFileSelected: (fileName, filePath, fileBytes) {
+                    isShowSearch: false,
+                    onFileSelected: (
+                      fileName,
+                      filePath,
+                      fileBytes,
+                    ) {
                       importDataStaff(filePath, fileBytes);
                     },
                     onExportData: () {
                       AppUtility.exportData(
                         context,
                         "nhan_vien",
-                        staffs.map((e) => e.toExportJson()).toList(),
+                        staffs
+                            .map((e) => e.toExportJson())
+                            .toList(),
                       );
                     },
                   ),
@@ -299,13 +342,16 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 body: Column(
                   children: [
                     Expanded(
-                      child: NotificationListener<ScrollNotification>(
+                      child: NotificationListener<
+                        ScrollNotification
+                      >(
                         onNotification: (notification) {
                           return true; // Xử lý scroll event bình thường
                         },
                         child: SingleChildScrollView(
                           physics:
-                              _scrollController.isParentScrolling
+                              _scrollController
+                                      .isParentScrolling
                                   ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
                                   : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
                           scrollDirection: Axis.vertical,
@@ -343,9 +389,11 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                                     return;
                                   }
                                   isShowInput = false;
-                                  context.read<StaffBloc>().add(
-                                    DeleteStaff(item),
-                                  );
+                                  context
+                                      .read<StaffBloc>()
+                                      .add(
+                                        DeleteStaff(item),
+                                      );
                                 });
                               },
                               onEdit: (item) {
@@ -354,15 +402,21 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                               onDeleteBatch:
                                   (p0) => setState(() {
                                     isShowInput = false;
-                                    context.read<StaffBloc>().add(
-                                      DeleteStaffBatch(p0),
-                                    );
+                                    context
+                                        .read<StaffBloc>()
+                                        .add(
+                                          DeleteStaffBatch(
+                                            p0,
+                                          ),
+                                        );
                                   }),
                             ),
 
                             // Container(height: 200,color: Colors.limeAccent,),
                             isShowInput: isShowInput,
-                            onExpandedChanged: (isExpanded) {
+                            onExpandedChanged: (
+                              isExpanded,
+                            ) {
                               isShowInput = isExpanded;
                             },
                           ),
@@ -375,7 +429,9 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
             } else if (state is StaffError) {
               return Center(child: Text(state.message));
             }
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           },
         ),
       ),

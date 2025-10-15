@@ -27,11 +27,14 @@ class ToolsAndSuppliesView extends StatefulWidget {
   const ToolsAndSuppliesView({super.key});
 
   @override
-  State<ToolsAndSuppliesView> createState() => _ToolsAndSuppliesViewState();
+  State<ToolsAndSuppliesView> createState() =>
+      _ToolsAndSuppliesViewState();
 }
 
-class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
-  final TextEditingController _searchController = TextEditingController();
+class _ToolsAndSuppliesViewState
+    extends State<ToolsAndSuppliesView> {
+  final TextEditingController _searchController =
+      TextEditingController();
   String searchTerm = "";
   late HomeScrollController _scrollController;
   @override
@@ -65,19 +68,26 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
     super.dispose();
   }
 
-  void _importData(List<ToolsAndSuppliesDto> assetCategories) async {
+  void _importData(
+    List<ToolsAndSuppliesDto> assetCategories,
+  ) async {
     if (assetCategories.isNotEmpty) {
       final result = await ToolsAndSuppliesRepository()
           .saveToolsAndSuppliesBatch(assetCategories);
       List<DetailAssetDto> listDetailAsset =
-          assetCategories.expand((item) => item.chiTietTaiSanList).toList();
+          assetCategories
+              .expand((item) => item.chiTietTaiSanList)
+              .toList();
 
       if (listDetailAsset.isNotEmpty) {
-        log('listDetailAsset: ${jsonEncode(listDetailAsset)}');
+        log(
+          'listDetailAsset: ${jsonEncode(listDetailAsset)}',
+        );
         Map<String, dynamic> resultAssetDetail =
-            await AssetManagementDetailRepository().createAssetDetail(
-              jsonEncode(listDetailAsset),
-            );
+            await AssetManagementDetailRepository()
+                .createAssetDetail(
+                  jsonEncode(listDetailAsset),
+                );
         if (checkStatusCodeDone(resultAssetDetail)) {
         } else {
           if (!mounted) return;
@@ -92,7 +102,10 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
       if (checkStatusCodeDone(result)) {
         if (context.mounted) {
           if (!mounted) return;
-          AppUtility.showSnackBar(context, 'Import dữ liệu thành công');
+          AppUtility.showSnackBar(
+            context,
+            'Import dữ liệu thành công',
+          );
           _searchController.clear();
           context.read<ToolsAndSuppliesBloc>().add(
             GetListToolsAndSuppliesEvent(context, 'ct001'),
@@ -122,19 +135,29 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      child: BlocConsumer<ToolsAndSuppliesBloc, ToolsAndSuppliesState>(
+      child: BlocConsumer<
+        ToolsAndSuppliesBloc,
+        ToolsAndSuppliesState
+      >(
         builder: (context, state) {
-          return provider.Consumer<ToolsAndSuppliesProvider>(
-          builder: (context, provider, child) {
-            if (provider.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (provider.data == null) {
-              return const Center(child: Text('Không có dữ liệu'));
-            }
-            provider.controllerDropdownPage ??= TextEditingController(
-              text: provider.rowsPerPage.toString(),
-            );
+          return provider.Consumer<
+            ToolsAndSuppliesProvider
+          >(
+            builder: (context, provider, child) {
+              if (provider.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (provider.data == null) {
+                return const Center(
+                  child: Text('Không có dữ liệu'),
+                );
+              }
+              provider.controllerDropdownPage ??=
+                  TextEditingController(
+                    text: provider.rowsPerPage.toString(),
+                  );
 
             return Scaffold(
               appBar: AppBar(
@@ -156,250 +179,335 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                       fileBytes: fileBytes,
                       provider: provider,
                     );
+              return Scaffold(
+                appBar: AppBar(
+                  title: HeaderComponent(
+                    controller: _searchController,
+                    onSearchChanged: (value) {
+                      provider.onSearchToolsAndSupplies(
+                        value,
+                      );
+                    },
+                    onTap: () {},
+                    onNew: () {
+                      provider.onChangeDetail(
+                        context,
+                        null,
+                      );
+                    },
+                    mainScreen: 'Quản lý CCDC - Vật tư',
+                    subScreen: provider.subScreen,
+                    isShowSearch: false,
+                    onFileSelected: (
+                      fileName,
+                      filePath,
+                      fileBytes,
+                    ) async {
+                      final result =
+                          await convertExcelToCcdcVt(
+                            filePath!,
+                            fileBytes: fileBytes,
+                            provider: provider,
+                          );
 
-                    if (result['success']) {
-                      List<ToolsAndSuppliesDto> assetCategories =
-                          result['data'];
+                      if (result['success']) {
+                        List<ToolsAndSuppliesDto>
+                        assetCategories = result['data'];
 
-                      for (var item in assetCategories) {
-                        for (
-                          var i = 0;
-                          i < item.chiTietTaiSanList.length;
-                          i++
-                        ) {
-                          item.chiTietTaiSanList[i].id = '${item.id}-STT-$i';
+                        for (var item in assetCategories) {
+                          for (
+                            var i = 0;
+                            i <
+                                item
+                                    .chiTietTaiSanList
+                                    .length;
+                            i++
+                          ) {
+                            item.chiTietTaiSanList[i].id =
+                                '${item.id}-STT-$i';
+                          }
+
+                          item.soLuong = item
+                              .chiTietTaiSanList
+                              .fold<int>(
+                                0,
+                                (sum, e) =>
+                                    sum + (e.soLuong ?? 0),
+                              );
+                        }
+                        log(
+                          'assetCategories: ${jsonEncode(assetCategories)}',
+                        );
+                        _importData(assetCategories);
+                      } else {
+                        List<dynamic> errors =
+                            result['errors'];
+
+                        // Tạo danh sách lỗi dạng list
+                        List<String> errorMessages = [];
+                        for (var error in errors) {
+                          String rowNumber =
+                              error['row'].toString();
+                          List<String> rowErrors =
+                              List<String>.from(
+                                error['errors'],
+                              );
+                          String errorText =
+                              'Dòng $rowNumber: ${rowErrors.join(', ')}';
+                          errorMessages.add(errorText);
                         }
 
-                        item.soLuong = item.chiTietTaiSanList.fold<int>(
-                          0,
-                          (sum, e) => sum + (e.soLuong ?? 0),
+                        log(
+                          '[ToolsAndSuppliesView] errorMessages: $errorMessages',
+                        );
+                        if (!context.mounted) return;
+                        // Hiển thị thông báo tổng quan
+                        AppUtility.showSnackBar(
+                          context,
+                          'Import dữ liệu thất bại: \n $errorMessages',
+                          isError: true,
+                          timeDuration: 4,
                         );
                       }
-                      log('assetCategories: ${jsonEncode(assetCategories)}');
-                      _importData(assetCategories);
-                    } else {
-                      List<dynamic> errors = result['errors'];
-
-                      // Tạo danh sách lỗi dạng list
-                      List<String> errorMessages = [];
-                      for (var error in errors) {
-                        String rowNumber = error['row'].toString();
-                        List<String> rowErrors = List<String>.from(
-                          error['errors'],
-                        );
-                        String errorText =
-                            'Dòng $rowNumber: ${rowErrors.join(', ')}';
-                        errorMessages.add(errorText);
-                      }
-
-                      log(
-                        '[ToolsAndSuppliesView] errorMessages: $errorMessages',
-                      );
-                      if (!context.mounted) return;
-                      // Hiển thị thông báo tổng quan
-                      AppUtility.showSnackBar(
-                        context,
-                        'Import dữ liệu thất bại: \n $errorMessages',
-                        isError: true,
-                        timeDuration: 4,
-                      );
-                    }
-                  },
-                  onExportData: () {
-                    if (provider.data == null) return;
-                    List<dynamic> data = [];
-                    for (var item in provider.data) {
-                      if (item.chiTietTaiSanList.isNotEmpty) {
-                        for (var element in item.chiTietTaiSanList) {
+                    },
+                    onExportData: () {
+                      if (provider.data == null) return;
+                      List<dynamic> data = [];
+                      for (var item in provider.data) {
+                        if (item
+                            .chiTietTaiSanList
+                            .isNotEmpty) {
+                          for (var element
+                              in item.chiTietTaiSanList) {
+                            Map<String, dynamic>
+                            dataItem = {
+                              'Mã công cụ dụng cụ': item.id,
+                              'Mã đơn vị': item.idDonVi,
+                              'Tên công cụ dụng cụ':
+                                  item.ten,
+                              'Ngày nhập': item.ngayNhap,
+                              'Mã đơn vị tính':
+                                  item.donViTinh,
+                              'Mã nhóm CCDC':
+                                  item.idNhomCCDC,
+                              'Mã loại CCDC con':
+                                  item.idLoaiCCDCCon,
+                              'Giá trị': item.giaTri,
+                              'Ký hiệu': item.kyHieu,
+                              'Ghi chú': item.ghiChu,
+                              'Số ký hiệu':
+                                  element.soKyHieu ?? '',
+                              'Số lượng':
+                                  element.soLuong ?? '',
+                              'Công suất':
+                                  element.congSuat ?? '',
+                              'Nước sản xuất':
+                                  element.nuocSanXuat ?? '',
+                              'Năm sản xuất':
+                                  element.namSanXuat ?? '',
+                            };
+                            data.add(dataItem);
+                          }
+                        } else {
                           Map<String, dynamic> dataItem = {
                             'Mã công cụ dụng cụ': item.id,
                             'Mã đơn vị': item.idDonVi,
                             'Tên công cụ dụng cụ': item.ten,
                             'Ngày nhập': item.ngayNhap,
-                            'Mã đơn vị tính': item.donViTinh,
+                            'Mã đơn vị tính':
+                                item.donViTinh,
                             'Mã nhóm CCDC': item.idNhomCCDC,
-                            'Mã loại CCDC con': item.idLoaiCCDCCon,
+                            'Mã loại CCDC con':
+                                item.idLoaiCCDCCon,
                             'Giá trị': item.giaTri,
                             'Ký hiệu': item.kyHieu,
                             'Ghi chú': item.ghiChu,
-                            'Số ký hiệu': element.soKyHieu ?? '',
-                            'Số lượng': element.soLuong ?? '',
-                            'Công suất': element.congSuat ?? '',
-                            'Nước sản xuất': element.nuocSanXuat ?? '',
-                            'Năm sản xuất': element.namSanXuat ?? '',
+                            'Số ký hiệu': '',
+                            'Số lượng': '',
+                            'Công suất': '',
+                            'Nước sản xuất': '',
+                            'Năm sản xuất': '',
                           };
                           data.add(dataItem);
                         }
-                      } else {
-                        Map<String, dynamic> dataItem = {
-                          'Mã công cụ dụng cụ': item.id,
-                          'Mã đơn vị': item.idDonVi,
-                          'Tên công cụ dụng cụ': item.ten,
-                          'Ngày nhập': item.ngayNhap,
-                          'Mã đơn vị tính': item.donViTinh,
-                          'Mã nhóm CCDC': item.idNhomCCDC,
-                          'Mã loại CCDC con': item.idLoaiCCDCCon,
-                          'Giá trị': item.giaTri,
-                          'Ký hiệu': item.kyHieu,
-                          'Ghi chú': item.ghiChu,
-                          'Số ký hiệu': '',
-                          'Số lượng': '',
-                          'Công suất': '',
-                          'Nước sản xuất': '',
-                          'Năm sản xuất': '',
-                        };
-                        data.add(dataItem);
                       }
-                    }
-                    AppUtility.exportData(
-                      context,
-                      "Danh sách CCDC - Vật tư",
-                      data,
-                    );
-                  },
+                      AppUtility.exportData(
+                        context,
+                        "Danh sách CCDC - Vật tư",
+                        data,
+                      );
+                    },
+                  ),
                 ),
-              ),
-              // body: DepartmentTreeDemo(),
-              body: Column(
-                children: [
-                  Flexible(
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (notification) {
-                        return true; // Xử lý scroll event bình thường
-                      },
-                      child: SingleChildScrollView(
-                        physics:
-                            _scrollController.isParentScrolling
-                                ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                        scrollDirection: Axis.vertical,
-                        child: CommonPageView(
-                          childInput: ToolsAndSuppliesDetail(
-                            provider: provider,
+                // body: DepartmentTreeDemo(),
+                body: Column(
+                  children: [
+                    Flexible(
+                      child: NotificationListener<
+                        ScrollNotification
+                      >(
+                        onNotification: (notification) {
+                          return true; // Xử lý scroll event bình thường
+                        },
+                        child: SingleChildScrollView(
+                          physics:
+                              _scrollController
+                                      .isParentScrolling
+                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                          scrollDirection: Axis.vertical,
+                          child: CommonPageView(
+                            childInput:
+                                ToolsAndSuppliesDetail(
+                                  provider: provider,
+                                ),
+                            childTableView:
+                                ToolsAndSuppliesList(
+                                  provider: provider,
+                                ),
+                            isShowInput:
+                                provider.isShowInput,
+                            isShowCollapse:
+                                provider.isShowCollapse,
+                            onExpandedChanged: (
+                              isExpanded,
+                            ) {
+                              provider.onSetsShowCollapse(
+                                isExpanded,
+                              );
+                            },
+                            title: 'Chi tiết CCDC - Vật tư',
                           ),
-                          childTableView: ToolsAndSuppliesList(
-                            provider: provider,
-                          ),
-                          isShowInput: provider.isShowInput,
-                          isShowCollapse: provider.isShowCollapse,
-                          onExpandedChanged: (isExpanded) {
-                            provider.onSetsShowCollapse(isExpanded);
-                          },
-                          title: 'Chi tiết CCDC - Vật tư',
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              );
+            },
+          );
+        },
+        listener: (context, state) {
+          if (state is ToolsAndSuppliesInitialState) {}
+          if (state is ToolsAndSuppliesLoadingState) {}
+          if (state
+              is ToolsAndSuppliesLoadingDismissState) {}
+          if (state
+              is GetListToolsAndSuppliesSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .getListToolsAndSuppliesSuccess(
+                  context,
+                  state,
+                );
+          }
+          if (state is GetListPhongBanSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .getListPhongBanSuccess(context, state);
+          }
+          if (state is GetListTypeCcdcSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .getListTypeCcdcSuccess(context, state);
+          }
+          if (state
+              is GetListToolsAndSuppliesFailedState) {}
+          if (state is GetListUnitSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .getListUnitSuccess(context, state);
+          }
+          if (state is GetListUnitFailedState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
               ),
             );
-          },
-        );
-      },
-      listener: (context, state) {
-        if (state is ToolsAndSuppliesInitialState) {}
-        if (state is ToolsAndSuppliesLoadingState) {}
-        if (state is ToolsAndSuppliesLoadingDismissState) {}
-        if (state is GetListToolsAndSuppliesSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .getListToolsAndSuppliesSuccess(context, state);
-        }
-        if (state is GetListPhongBanSuccessState) {
-          context.read<ToolsAndSuppliesProvider>().getListPhongBanSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListTypeCcdcSuccessState) {
-          context.read<ToolsAndSuppliesProvider>().getListTypeCcdcSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListToolsAndSuppliesFailedState) {}
-        if (state is GetListUnitSuccessState) {
-          context.read<ToolsAndSuppliesProvider>().getListUnitSuccess(
-            context,
-            state,
-          );
-        }
-        if (state is GetListUnitFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        if (state is GetListTypeCcdcFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        if (state is GetListPhongBanFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        if (state is CreateToolsAndSuppliesSuccessState) {
-          // Refresh list
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .createToolsAndSuppliesSuccess(context, state);
-        }
-        if (state is CreateToolsAndSuppliesFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        if (state is UpdateToolsAndSuppliesSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .updateToolsAndSuppliesSuccess(context, state);
-        }
-        if (state is DeleteToolsAndSuppliesSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .deleteToolsAndSuppliesSuccess(context, state);
-        }
-        if (state is PutPostDeleteFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-        if (state is DeleteToolsAndSuppliesBatchSuccessState) {
-          context
-              .read<ToolsAndSuppliesProvider>()
-              .deleteToolsAndSuppliesBatchSuccess(context, state);
-        }
-        if (state is DeleteToolsAndSuppliesBatchFailedState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      },
+          }
+          if (state is GetListTypeCcdcFailedState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          if (state is GetListPhongBanFailedState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          if (state is CreateToolsAndSuppliesSuccessState) {
+            // Refresh list
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .createToolsAndSuppliesSuccess(
+                  context,
+                  state,
+                );
+          }
+          if (state is CreateToolsAndSuppliesFailedState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          if (state is UpdateToolsAndSuppliesSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .updateToolsAndSuppliesSuccess(
+                  context,
+                  state,
+                );
+          }
+          if (state is DeleteToolsAndSuppliesSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .deleteToolsAndSuppliesSuccess(
+                  context,
+                  state,
+                );
+          }
+          if (state is PutPostDeleteFailedState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+          if (state
+              is DeleteToolsAndSuppliesBatchSuccessState) {
+            context
+                .read<ToolsAndSuppliesProvider>()
+                .deleteToolsAndSuppliesBatchSuccess(
+                  context,
+                  state,
+                );
+          }
+          if (state
+              is DeleteToolsAndSuppliesBatchFailedState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
       ),
     );
   }

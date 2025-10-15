@@ -5,7 +5,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/src/extensions/export.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    as riverpod;
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
@@ -31,11 +32,13 @@ class AssetGroupList extends StatefulWidget {
   const AssetGroupList({super.key, required this.provider});
 
   @override
-  State<AssetGroupList> createState() => _AssetGroupListState();
+  State<AssetGroupList> createState() =>
+      _AssetGroupListState();
 }
 
 class _AssetGroupListState extends State<AssetGroupList> {
-  final ScrollController horizontalController = ScrollController();
+  final ScrollController horizontalController =
+      ScrollController();
   String searchTerm = "";
 
   List<AssetGroupDto> listSelected = [];
@@ -65,17 +68,25 @@ class _AssetGroupListState extends State<AssetGroupList> {
   void initState() {
     super.initState();
     _definitions = TableAssetGroupConfig.getColumns();
-    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _columns = _definitions
+        .map((d) => d.config)
+        .toList(growable: true);
     log('columns: $_columns');
     _allColumns = List<TableColumnData>.from(_columns);
-    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
+    _buildersByKey = {
+      for (final d in _definitions) d.config.key: d.builder,
+    };
   }
 
-  dynamic getValueForColumn(AssetGroupDto item, int columnIndex) {
+  dynamic getValueForColumn(
+    AssetGroupDto item,
+    int columnIndex,
+  ) {
     final int offset = showCheckboxColumn ? 1 : 0;
     final int adjustedIndex = columnIndex - offset;
 
-    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+    if (adjustedIndex < 0 ||
+        adjustedIndex >= _columns.length) {
       return null;
     }
 
@@ -116,7 +127,10 @@ class _AssetGroupListState extends State<AssetGroupList> {
         });
       }
     } catch (e) {
-      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
+      SGLog.error(
+        'ColumnConfigDialog',
+        'Error at _openColumnConfigDialog: $e',
+      );
     }
   }
 
@@ -127,7 +141,10 @@ class _AssetGroupListState extends State<AssetGroupList> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300, width: 1),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -136,179 +153,237 @@ class _AssetGroupListState extends State<AssetGroupList> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.table_chart,
+                        color: Colors.grey.shade600,
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Quản lý nhóm tài sản (${widget.provider.data?.length ?? 0})',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.table_chart,
-                      color: Colors.grey.shade600,
-                      size: 18,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Quản lý nhóm tài sản (${widget.provider.data?.length ?? 0})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final availableWidth = constraints.maxWidth;
-                return Row(
-                  children: [
-                    riverpod.Consumer(
-                      builder: (context, ref, _) {
-                        return BoxSearch(
-                          width: (availableWidth * 0.35).toDouble(),
-                          onSearch: (value) {
-                            ref
-                                .read(tableAssetGroupProvider.notifier)
-                                .searchTerm = value;
-                          },
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      width: (availableWidth * 0.65).toDouble(),
-                      child: riverpod.Consumer(
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth =
+                      constraints.maxWidth;
+                  return Row(
+                    children: [
+                      riverpod.Consumer(
                         builder: (context, ref, _) {
-                          final hasFilters = ref.watch(
-                            tableAssetGroupProvider.select(
-                              (s) => s.filterState.hasActiveFilters,
-                            ),
-                          );
-                          final tableState = ref.watch(tableAssetGroupProvider);
-                          final selectedCount = tableState.selectedItems.length;
-                          listSelected = tableState.selectedItems;
-                          final buttons = _buildButtonList(selectedCount);
-                          final processedButtons =
-                              buttons.map((button) {
-                                if (button.text == 'table.clear_filters'.tr) {
-                                  return ResponsiveButtonData.fromButtonIcon(
-                                    text: button.text,
-                                    iconPath: button.iconPath!,
-                                    backgroundColor: button.backgroundColor!,
-                                    iconColor: button.iconColor!,
-                                    textColor: button.textColor!,
-                                    width: button.width,
-                                    onPressed: () {
-                                      ref
-                                          .read(
-                                            tableAssetGroupProvider.notifier,
-                                          )
-                                          .clearAllFilters();
-                                    },
-                                  );
-                                }
-                                return button;
-                              }).toList();
-
-                          final filteredButtons =
-                              hasFilters
-                                  ? processedButtons
-                                  : processedButtons
-                                      .where(
-                                        (button) =>
-                                            button.text !=
-                                            'table.clear_filters'.tr,
-                                      )
-                                      .toList();
-
-                          return ResponsiveButtonBar(
-                            buttons: filteredButtons,
-                            spacing: 12,
-                            overflowSide: OverflowSide.start,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            popupPosition: PopupMenuPosition.under,
-                            popupOffset: const Offset(0, 8),
-                            popupShape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            popupElevation: 6,
-                            moreLabel: 'Khác',
+                          return BoxSearch(
+                            width:
+                                (availableWidth * 0.35)
+                                    .toDouble(),
+                            onSearch: (value) {
+                              ref
+                                  .read(
+                                    tableAssetGroupProvider
+                                        .notifier,
+                                  )
+                                  .searchTerm = value;
+                            },
                           );
                         },
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-          // bộ lọc
-          ClipRRect(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(8.0),
-              bottomRight: Radius.circular(8.0),
-            ),
-            child: riverpod.Consumer(
-              builder: (context, ref, child) {
-                final data = widget.provider.data ?? [];
-                ref.read(tableAssetGroupProvider.notifier).setData(data);
+                      SizedBox(
+                        width:
+                            (availableWidth * 0.65)
+                                .toDouble(),
+                        child: riverpod.Consumer(
+                          builder: (context, ref, _) {
+                            final hasFilters = ref.watch(
+                              tableAssetGroupProvider.select(
+                                (s) =>
+                                    s
+                                        .filterState
+                                        .hasActiveFilters,
+                              ),
+                            );
+                            final tableState = ref.watch(
+                              tableAssetGroupProvider,
+                            );
+                            final selectedCount =
+                                tableState
+                                    .selectedItems
+                                    .length;
+                            listSelected =
+                                tableState.selectedItems;
+                            final buttons =
+                                _buildButtonList(
+                                  selectedCount,
+                                );
+                            final processedButtons =
+                                buttons.map((button) {
+                                  if (button.text ==
+                                      'table.clear_filters'
+                                          .tr) {
+                                    return ResponsiveButtonData.fromButtonIcon(
+                                      text: button.text,
+                                      iconPath:
+                                          button.iconPath!,
+                                      backgroundColor:
+                                          button
+                                              .backgroundColor!,
+                                      iconColor:
+                                          button.iconColor!,
+                                      textColor:
+                                          button.textColor!,
+                                      width: button.width,
+                                      onPressed: () {
+                                        ref
+                                            .read(
+                                              tableAssetGroupProvider
+                                                  .notifier,
+                                            )
+                                            .clearAllFilters();
+                                      },
+                                    );
+                                  }
+                                  return button;
+                                }).toList();
 
-                return RiverpodTable<AssetGroupDto>(
-                  tableProvider: tableAssetGroupProvider,
-                  columns: _columns,
-                  showCheckboxColumn: showCheckboxColumn,
-                  enableRowSelection: true,
-                  enableRowHover: true,
-                  showAlternatingRowColors: true,
-                  valueGetter: getValueForColumn,
-                  cellsBuilder: (_) => [],
-                  cellBuilderByKey: (item, key) {
-                    final builder = _buildersByKey[key];
-                    if (builder != null) return builder(item);
-                    return null;
-                  },
-                  onRowTap: (item) {
-                    widget.provider.onChangeDetail(item);
-                  },
-                  onDelete: (item) {
-                    showConfirmDialog(
-                      context,
-                      type: ConfirmType.delete,
-                      title: 'Xóa nhóm tài sản',
-                      message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
-                      highlight: item.tenNhom ?? '',
-                      cancelText: 'Không',
-                      confirmText: 'Xóa',
-                      onConfirm: () {
-                        context.read<AssetGroupBloc>().add(
-                          DeleteAssetGroupEvent(context, item.id!),
-                        );
-                      },
-                    );
-                  },
-                  showActionsColumn: _showActionsColumn,
-                  actionsColumnWidth: 120,
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                );
-              },
+                            final filteredButtons =
+                                hasFilters
+                                    ? processedButtons
+                                    : processedButtons
+                                        .where(
+                                          (button) =>
+                                              button.text !=
+                                              'table.clear_filters'
+                                                  .tr,
+                                        )
+                                        .toList();
+
+                            return ResponsiveButtonBar(
+                              buttons: filteredButtons,
+                              spacing: 12,
+                              overflowSide:
+                                  OverflowSide.start,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.end,
+                              popupPosition:
+                                  PopupMenuPosition.under,
+                              popupOffset: const Offset(
+                                0,
+                                8,
+                              ),
+                              popupShape:
+                                  RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                          8,
+                                        ),
+                                  ),
+                              popupElevation: 6,
+                              moreLabel: 'Khác',
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+            // bộ lọc
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(8.0),
+                bottomRight: Radius.circular(8.0),
+              ),
+              child: riverpod.Consumer(
+                builder: (context, ref, child) {
+                  final data = widget.provider.data ?? [];
+                  ref
+                      .read(
+                        tableAssetGroupProvider.notifier,
+                      )
+                      .setData(data);
+
+                  return RiverpodTable<AssetGroupDto>(
+                    tableProvider: tableAssetGroupProvider,
+                    columns: _columns,
+                    showCheckboxColumn: showCheckboxColumn,
+                    enableRowSelection: true,
+                    enableRowHover: true,
+                    showAlternatingRowColors: true,
+                    valueGetter: getValueForColumn,
+                    cellsBuilder: (_) => [],
+                    cellBuilderByKey: (item, key) {
+                      final builder = _buildersByKey[key];
+                      if (builder != null)
+                        return builder(item);
+                      return null;
+                    },
+                    onRowTap: (item) {
+                      widget.provider.onChangeDetail(item);
+                    },
+                    onDelete: (item) {
+                      showConfirmDialog(
+                        context,
+                        type: ConfirmType.delete,
+                        title: 'Xóa nhóm tài sản',
+                        message:
+                            'Bạn có chắc muốn xóa ${item.tenNhom}',
+                        highlight: item.tenNhom ?? '',
+                        cancelText: 'Không',
+                        confirmText: 'Xóa',
+                        onConfirm: () {
+                          context
+                              .read<AssetGroupBloc>()
+                              .add(
+                                DeleteAssetGroupEvent(
+                                  context,
+                                  item.id!,
+                                ),
+                              );
+                        },
+                      );
+                    },
+                    showActionsColumn: _showActionsColumn,
+                    actionsColumnWidth: 120,
+                    maxHeight:
+                        MediaQuery.of(context).size.height *
+                        0.8,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -335,13 +410,17 @@ class _AssetGroupListState extends State<AssetGroupList> {
                 context,
                 type: ConfirmType.delete,
                 title: 'Xóa nhóm tài sản',
-                message: 'Bạn có chắc muốn xóa ${item.tenNhom}',
+                message:
+                    'Bạn có chắc muốn xóa ${item.tenNhom}',
                 highlight: item.tenNhom ?? '',
                 cancelText: 'Không',
                 confirmText: 'Xóa',
                 onConfirm: () {
                   context.read<AssetGroupBloc>().add(
-                    DeleteAssetGroupEvent(context, item.id!),
+                    DeleteAssetGroupEvent(
+                      context,
+                      item.id!,
+                    ),
                   );
                 },
               ),
@@ -350,7 +429,9 @@ class _AssetGroupListState extends State<AssetGroupList> {
     ]);
   }
 
-  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+  List<ResponsiveButtonData> _buildButtonList(
+    int itemCount,
+  ) {
     return [
       // Configure columns button
       ResponsiveButtonData.fromButtonIcon(
@@ -373,7 +454,8 @@ class _AssetGroupListState extends State<AssetGroupList> {
           textColor: AppColor.textWhite,
           width: 130,
           onPressed: () {
-            final ids = listSelected.map((e) => e.id!).toList();
+            final ids =
+                listSelected.map((e) => e.id!).toList();
             showConfirmDialog(
               context,
               type: ConfirmType.delete,
@@ -384,8 +466,11 @@ class _AssetGroupListState extends State<AssetGroupList> {
               cancelText: 'Không',
               confirmText: 'Xóa',
               onConfirm: () {
-                final assetGroupBloc = context.read<AssetGroupBloc>();
-                assetGroupBloc.add(DeleteAssetGroupBatchEvent(ids));
+                final assetGroupBloc =
+                    context.read<AssetGroupBloc>();
+                assetGroupBloc.add(
+                  DeleteAssetGroupBatchEvent(ids),
+                );
               },
             );
           },

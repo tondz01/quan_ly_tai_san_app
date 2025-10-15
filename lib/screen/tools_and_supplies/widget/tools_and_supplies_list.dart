@@ -19,18 +19,25 @@ import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
 import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    as riverpod;
 
 class ToolsAndSuppliesList extends StatefulWidget {
   final ToolsAndSuppliesProvider provider;
-  const ToolsAndSuppliesList({super.key, required this.provider});
+  const ToolsAndSuppliesList({
+    super.key,
+    required this.provider,
+  });
 
   @override
-  State<ToolsAndSuppliesList> createState() => _ToolsAndSuppliesListState();
+  State<ToolsAndSuppliesList> createState() =>
+      _ToolsAndSuppliesListState();
 }
 
-class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
-  final ScrollController horizontalController = ScrollController();
+class _ToolsAndSuppliesListState
+    extends State<ToolsAndSuppliesList> {
+  final ScrollController horizontalController =
+      ScrollController();
 
   ToolsAndSuppliesDto? selectedItem;
   List<ToolsAndSuppliesDto> listSelected = [];
@@ -53,9 +60,13 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
 
   void _initializeTableConfig() {
     _definitions = TableToolsAndSuppliesConfig.getColumns();
-    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _columns = _definitions
+        .map((d) => d.config)
+        .toList(growable: true);
     _allColumns = List<TableColumnData>.from(_columns);
-    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
+    _buildersByKey = {
+      for (final d in _definitions) d.config.key: d.builder,
+    };
     _hiddenKeys = <String>[];
   }
 
@@ -86,18 +97,25 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   String _fmtNum(double? value) {
     if (value == null) return '';
     try {
-      final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
+      final NumberFormat _vnNumber = NumberFormat(
+        '#,##0',
+        'vi_VN',
+      );
       return _vnNumber.format(value);
     } catch (e) {
       return value.toString();
     }
   }
 
-  dynamic getValueForColumn(ToolsAndSuppliesDto item, int columnIndex) {
+  dynamic getValueForColumn(
+    ToolsAndSuppliesDto item,
+    int columnIndex,
+  ) {
     final int offset = 1; // showCheckboxColumn
     final int adjustedIndex = columnIndex - offset;
 
-    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+    if (adjustedIndex < 0 ||
+        adjustedIndex >= _columns.length) {
       return null;
     }
 
@@ -136,7 +154,9 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
       case 'ngayTao':
         return _fmtDate(item.ngayTao);
       case 'isActive':
-        return item.isActive ? 'Hoạt động' : 'Không hoạt động';
+        return item.isActive
+            ? 'Hoạt động'
+            : 'Không hoạt động';
       default:
         return null;
     }
@@ -158,20 +178,27 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         });
       }
     } catch (e) {
-      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
+      SGLog.error(
+        'ColumnConfigDialog',
+        'Error at _openColumnConfigDialog: $e',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.provider.data ?? <ToolsAndSuppliesDto>[];
+    final data =
+        widget.provider.data ?? <ToolsAndSuppliesDto>[];
 
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300, width: 1),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -186,7 +213,10 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.only(
@@ -195,7 +225,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                     ),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
@@ -222,17 +253,21 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                   padding: const EdgeInsets.all(16),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final availableWidth = constraints.maxWidth;
+                      final availableWidth =
+                          constraints.maxWidth;
                       return Row(
                         children: [
                           riverpod.Consumer(
                             builder: (context, ref, _) {
                               return BoxSearch(
-                                width: (availableWidth * 0.30).toDouble(),
+                                width:
+                                    (availableWidth * 0.30)
+                                        .toDouble(),
                                 onSearch: (value) {
                                   ref
                                       .read(
-                                        tableToolsAndSuppliesProvider.notifier,
+                                        tableToolsAndSuppliesProvider
+                                            .notifier,
                                       )
                                       .searchTerm = value;
                                 },
@@ -240,33 +275,53 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                             },
                           ),
                           SizedBox(width: 16),
-                          SizedBox(
-                            width: (availableWidth * 0.65).toDouble(),
+                          Expanded(
+                            // width: (availableWidth * 0.65).toDouble(),
                             child: riverpod.Consumer(
                               builder: (context, ref, _) {
                                 final hasFilters = ref.watch(
-                                  tableToolsAndSuppliesProvider.select(
-                                    (s) => s.filterState.hasActiveFilters,
-                                  ),
+                                  tableToolsAndSuppliesProvider
+                                      .select(
+                                        (s) =>
+                                            s
+                                                .filterState
+                                                .hasActiveFilters,
+                                      ),
                                 );
                                 final tableState = ref.watch(
                                   tableToolsAndSuppliesProvider,
                                 );
                                 final selectedCount =
-                                    tableState.selectedItems.length;
-                                listSelected = tableState.selectedItems;
-                                final buttons = _buildButtonList(selectedCount);
+                                    tableState
+                                        .selectedItems
+                                        .length;
+                                listSelected =
+                                    tableState
+                                        .selectedItems;
+                                final buttons =
+                                    _buildButtonList(
+                                      selectedCount,
+                                    );
                                 final processedButtons =
                                     buttons.map((button) {
-                                      if (button.text == 'Xóa bộ lọc') {
+                                      if (button.text ==
+                                          'Xóa bộ lọc') {
                                         return ResponsiveButtonData.fromButtonIcon(
                                           text: button.text,
-                                          iconPath: button.iconPath!,
+                                          iconPath:
+                                              button
+                                                  .iconPath!,
                                           backgroundColor:
-                                              button.backgroundColor!,
-                                          iconColor: button.iconColor!,
-                                          textColor: button.textColor!,
-                                          width: button.width,
+                                              button
+                                                  .backgroundColor!,
+                                          iconColor:
+                                              button
+                                                  .iconColor!,
+                                          textColor:
+                                              button
+                                                  .textColor!,
+                                          width:
+                                              button.width,
                                           onPressed: () {
                                             ref
                                                 .read(
@@ -286,20 +341,33 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                                         : processedButtons
                                             .where(
                                               (button) =>
-                                                  button.text != 'Xóa bộ lọc',
+                                                  button
+                                                      .text !=
+                                                  'Xóa bộ lọc',
                                             )
                                             .toList();
 
                                 return ResponsiveButtonBar(
                                   buttons: filteredButtons,
                                   spacing: 12,
-                                  overflowSide: OverflowSide.start,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  popupPosition: PopupMenuPosition.under,
-                                  popupOffset: const Offset(0, 8),
-                                  popupShape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                  overflowSide:
+                                      OverflowSide.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.end,
+                                  popupPosition:
+                                      PopupMenuPosition
+                                          .under,
+                                  popupOffset: const Offset(
+                                    0,
+                                    8,
                                   ),
+                                  popupShape:
+                                      RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(
+                                              8,
+                                            ),
+                                      ),
                                   popupElevation: 6,
                                   moreLabel: 'Khác',
                                 );
@@ -315,15 +383,23 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                   child: riverpod.Consumer(
                     builder: (context, ref, child) {
                       ref
-                          .read(tableToolsAndSuppliesProvider.notifier)
+                          .read(
+                            tableToolsAndSuppliesProvider
+                                .notifier,
+                          )
                           .setData(data);
 
                       return data.isEmpty
                           ? const Center(
-                            child: Text('Không có dữ liệu để hiển thị'),
+                            child: Text(
+                              'Không có dữ liệu để hiển thị',
+                            ),
                           )
-                          : RiverpodTable<ToolsAndSuppliesDto>(
-                            tableProvider: tableToolsAndSuppliesProvider,
+                          : RiverpodTable<
+                            ToolsAndSuppliesDto
+                          >(
+                            tableProvider:
+                                tableToolsAndSuppliesProvider,
                             columns: _columns,
                             showCheckboxColumn: true,
                             enableRowSelection: true,
@@ -332,18 +408,30 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                             valueGetter: getValueForColumn,
                             cellsBuilder: (_) => [],
                             cellBuilderByKey: (item, key) {
-                              final builder = _buildersByKey[key];
-                              if (builder != null) return builder(item);
+                              final builder =
+                                  _buildersByKey[key];
+                              if (builder != null)
+                                return builder(item);
                               return null;
                             },
                             onRowTap: (item) {
-                              widget.provider.onChangeDetail(context, item);
+                              widget.provider
+                                  .onChangeDetail(
+                                    context,
+                                    item,
+                                  );
                               setState(() {
-                                _showDetailDepartmentTree(item);
+                                _showDetailDepartmentTree(
+                                  item,
+                                );
                               });
                             },
                             showActionsColumn: false,
-                            maxHeight: MediaQuery.of(context).size.height * 0.6,
+                            maxHeight:
+                                MediaQuery.of(
+                                  context,
+                                ).size.height *
+                                0.6,
                           );
                     },
                   ),
@@ -356,8 +444,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
           Visibility(
             visible: isShowDetailDepartmentTree,
             child: OwnershipUnitDetails(
-              title: 'Chi tiết đơn vị sở hữu "${selectedItem?.ten}"',
-              item: selectedItem ?? ToolsAndSuppliesDto.empty(),
+              title:
+                  'Chi tiết đơn vị sở hữu "${selectedItem?.ten}"',
+              item:
+                  selectedItem ??
+                  ToolsAndSuppliesDto.empty(),
               provider: widget.provider,
               onHiden: () {
                 setState(() {
@@ -371,7 +462,9 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
     );
   }
 
-  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+  List<ResponsiveButtonData> _buildButtonList(
+    int itemCount,
+  ) {
     return [
       // Configure columns button
       ResponsiveButtonData.fromButtonIcon(
@@ -394,17 +487,21 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
           textColor: AppColor.textWhite,
           width: 130,
           onPressed: () {
+            final ids =
+                listSelected.map((e) => e.id!).toList();
             final ids = listSelected.map((e) => e.id).toList();
             showConfirmDialog(
               context,
               type: ConfirmType.delete,
               title: 'Xóa loại CCDC',
-              message: 'Bạn có chắc muốn xóa ${listSelected.length} loại CCDC',
+              message:
+                  'Bạn có chắc muốn xóa ${listSelected.length} loại CCDC',
               highlight: listSelected.length.toString(),
               cancelText: 'Không',
               confirmText: 'Xóa',
               onConfirm: () {
-                final bloc = context.read<ToolsAndSuppliesBloc>();
+                final bloc =
+                    context.read<ToolsAndSuppliesBloc>();
                 bloc.add(DeleteAssetBatchEvent(ids));
               },
             );
