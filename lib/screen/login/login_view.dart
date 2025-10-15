@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/gradient_header.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_state.dart';
@@ -79,33 +81,47 @@ class _LoginViewState extends State<LoginView> {
                                 .cover, // cover, contain, fill, fitWidth, fitHeight
                       ),
                     ),
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: Container(
-                          width: 400,
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                // ignore: deprecated_member_use
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 16,
-                                offset: const Offset(0, 8),
+                    child: Column(
+                      children: [
+                        GradientHeader(
+                          logoPath: AppImage.imageLogo,
+                          title: 'PHẦN MỀM QUẢN LÝ TÀI SẢN',
+                          onLogoTap: () {
+                            // Handle logo tap if needed
+                          },
+                        ),
+                        SizedBox(height: 150),
+                        Center(
+                          child: SingleChildScrollView(
+                            child: Container(
+                              width: 400,
+                              padding: const EdgeInsets.all(32),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    // ignore: deprecated_member_use
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: LoginInputView(
-                            data: provider.authRequest,
-                            errorText: provider.error,
-                            onLogin: (data) {
-                              log('message LoginInputView');
-                              provider.onPressLogin(context, data);
-                            },
+                              child: LoginInputView(
+                                data: provider.authRequest,
+                                errorText: provider.error,
+                                onLogin: (data) {
+                                  log('message LoginInputView');
+                                  provider.onPressLogin(context, data);
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+
+                        // Body - chỉ cuộn khi header đã cuộn hết
+                      ],
                     ),
                   ),
                 );
