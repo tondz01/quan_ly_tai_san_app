@@ -694,9 +694,12 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else if (_availableGroups.isNotEmpty)
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Group selector
                 Container(
+                  width: 200,
+                  height: 30,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
@@ -717,7 +720,7 @@ class _DashboardViewState extends State<DashboardView> {
                             value: group,
                             child: Text(
                               group,
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 10),
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
@@ -784,7 +787,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (groupData.isEmpty) {
       return Container(
-        height: 300,
+        height: 120,
         child: Center(
           child: Text(
             'Nhóm "$groupName" không có dữ liệu',
@@ -798,33 +801,10 @@ class _DashboardViewState extends State<DashboardView> {
       );
     }
 
-    return Container(
-      height: 450,
+    return SizedBox(
+      height: 120,
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.purple.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.purple.shade200),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.bar_chart, color: Colors.purple.shade600),
-                const SizedBox(width: 8),
-                Text(
-                  'Phân bố tài sản theo loại trong nhóm "$groupName"',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.purple.shade700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           Expanded(
             child: ScrollableBarChart(
               data:
@@ -851,7 +831,7 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildCcdcGroupDistributionSection(Map<String, dynamic> data) {
     return Container(
-      height: 300, // Fixed height
+      height: 300, // Giữ nguyên chiều cao
       decoration: BoxDecoration(
         color: Colors.green.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -880,7 +860,7 @@ class _DashboardViewState extends State<DashboardView> {
               if (_ccdcGroupError != null)
                 IconButton(
                   onPressed: _loadCcdcGroupData,
-                  icon: Icon(Icons.refresh, color: const Color(0xFF21A366)),
+                  icon: const Icon(Icons.refresh, color: Color(0xFF21A366)),
                   tooltip: 'Tải lại dữ liệu',
                 ),
             ],
@@ -928,8 +908,8 @@ class _DashboardViewState extends State<DashboardView> {
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: _loadCcdcGroupData,
-                      icon: Icon(Icons.refresh, size: 16),
-                      label: Text('Thử lại'),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('Thử lại'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange.shade600,
                         foregroundColor: Colors.white,
@@ -941,9 +921,11 @@ class _DashboardViewState extends State<DashboardView> {
             )
           else if (_availableCcdcGroups.isNotEmpty)
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Group selector
                 Container(
+                  height: 30,
+                  width: 200,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 8,
@@ -964,7 +946,7 @@ class _DashboardViewState extends State<DashboardView> {
                             value: group,
                             child: Text(
                               group,
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 10),
                               overflow: TextOverflow.ellipsis,
                             ),
                           );
@@ -977,7 +959,6 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Chart
                 if (_selectedCcdcGroup != null)
                   _buildCcdcGroupChart(_selectedCcdcGroup!)
                 else
@@ -1031,7 +1012,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     if (groupData.isEmpty) {
       return Container(
-        height: 300,
+        height: 120,
         child: Center(
           child: Text(
             'Nhóm "$groupName" không có dữ liệu',
@@ -1045,33 +1026,10 @@ class _DashboardViewState extends State<DashboardView> {
       );
     }
 
-    return Container(
-      height: 450,
+    return SizedBox(
+      height: 123,
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.orange.shade50,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade200),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.bar_chart, color: Colors.orange.shade600),
-                const SizedBox(width: 8),
-                Text(
-                  'Phân bố CCDC theo loại trong nhóm "$groupName"',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.orange.shade700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
           Expanded(
             child: ScrollableBarChart(
               data:
@@ -1087,7 +1045,7 @@ class _DashboardViewState extends State<DashboardView> {
               valueKey: 'value',
               barWidth: 40,
               spacing: 80,
-              height: 300,
+              height: 350,
               barColor: Colors.orange.shade600,
             ),
           ),
