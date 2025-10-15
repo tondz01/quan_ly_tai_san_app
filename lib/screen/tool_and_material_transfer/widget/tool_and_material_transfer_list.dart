@@ -105,7 +105,7 @@ class _ToolAndMaterialTransferListState
     final String key = _columns[adjustedIndex].key;
     switch (key) {
       case 'type':
-        return TableToolAndMaterialTransferConfig.getName(item.loai ?? 0);
+        return item.tenPhieu;
       case 'effective_date':
         return item.tggnTuNgay;
       case 'approver':

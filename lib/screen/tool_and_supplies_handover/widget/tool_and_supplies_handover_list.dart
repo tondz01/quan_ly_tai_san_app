@@ -147,7 +147,10 @@ class _ToolAndSuppliesHandoverListState
             item.tenDonViNhan ??
             '';
       case 'nguoi_lap_phieu':
-        return item.nguoiTao;
+        return AccountHelper.instance
+                .getNhanVienById(item.nguoiTao ?? '')
+                ?.hoTen ??
+            '';
       case 'trang_thai_ky':
         int status = TableToolAndSuppliesHandoverConfig.getPermissionSigning(
           item,

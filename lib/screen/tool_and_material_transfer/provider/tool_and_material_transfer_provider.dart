@@ -316,6 +316,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               .toList();
     _filteredData = List.from(_data!);
     log('Auto-reloaded data: ${_filteredData.length} items');
+    if (_data != null) {
+      refreshCountSign(_data!);
+    }
     _applyFilters();
     notifyListeners();
   }
@@ -434,9 +437,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _filteredData = [];
       _dataPage = [];
     } else {
-      AccountHelper.instance.clearToolAndMaterialTransfer();
-      AccountHelper.instance.setToolAndMaterialTransfer(state.data);
-      AccountHelper.refreshAllCounts();
+      refreshCountSign(state.data);
       _data =
           state.data
               .where((element) => element.loai == typeToolAndMaterialTransfer)
@@ -465,7 +466,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _filteredData = List.from(_data!);
       _applyFilters();
     }
-    _updatePagination();
+    notifyListeners();
+  }
+
+  refreshCountSign(List<ToolAndMaterialTransferDto> data) {
+    AccountHelper.instance.clearToolAndMaterialTransfer();
+    AccountHelper.instance.setToolAndMaterialTransfer(data);
+    AccountHelper.refreshAllCounts();
     notifyListeners();
   }
 

@@ -110,7 +110,7 @@ class TableAssetHandoverConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.nguoiTao ?? ''));
+          return TableCellData(widget: Text(AccountHelper.instance.getNhanVienById(item.nguoiTao ?? '')?.hoTen?? ''));
         },
       ),
       ColumnDefinition(

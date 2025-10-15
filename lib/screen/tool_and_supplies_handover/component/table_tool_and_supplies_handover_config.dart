@@ -98,7 +98,7 @@ class TableToolAndSuppliesHandoverConfig {
           width: 150,
           flex: 1,
         ),
-        builder: (item) => TableCellData(widget: Text(item.nguoiTao ?? '')),
+        builder: (item) => TableCellData(widget: Text(AccountHelper.instance.getNhanVienById(item.nguoiTao ?? '')?.hoTen?? '')),
       ),
       ColumnDefinition(
         config: TableColumnData.select(

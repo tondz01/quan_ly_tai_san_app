@@ -57,7 +57,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   get columns => _columns;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   bool get isUpdateDetail => _isUpdateDetail;
-  bool get isReloadData => _isReloadData;
 
   // Truy cập trạng thái filter
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -87,11 +86,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  set isReloadData(bool value) {
-    _isReloadData = value;
-    notifyListeners();
-  }
-
   // Thuộc tính cho tìm kiếm
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
@@ -105,7 +99,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   bool _hasUnsavedChanges = false;
   bool _isFindNew = false;
   bool _isFindNewItem = false;
-  bool _isReloadData = false;  
 
   String? get error => _error;
   String? get subScreen => _subScreen;
@@ -307,14 +300,16 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     Map<String, dynamic> result =
         await ToolAndSuppliesHandoverRepository()
             .getListToolAndSuppliesHandover();
-    
+
     _data = result['data'];
     _data =
         _data?.where((item) {
-            return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
-          }).toList();
+          return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
+        }).toList();
     _filteredData = List.from(_data!);
-    _isReloadData = true;
+    if (_data != null) {
+      refreshCountSign(_data!);
+    }
     _applyFilters();
     notifyListeners();
   }
@@ -392,9 +387,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
       _filteredData = [];
       _item = null;
     } else {
-      AccountHelper.instance.clearToolAndSuppliesHandover();
-      AccountHelper.instance.setToolAndMaterialHandover(state.data);
-      AccountHelper.refreshAllCounts();
+      refreshCountSign(state.data);
       _data =
           state.data.where((item) {
             return item.share == true || item.nguoiTao == userInfo?.tenDangNhap;
@@ -404,6 +397,13 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     }
     _applyFilters();
     _isLoading = false;
+    notifyListeners();
+  }
+
+  refreshCountSign(List<ToolAndSuppliesHandoverDto> data) {
+    AccountHelper.instance.clearToolAndSuppliesHandover();
+    AccountHelper.instance.setToolAndMaterialHandover(data);
+    AccountHelper.refreshAllCounts();
     notifyListeners();
   }
 

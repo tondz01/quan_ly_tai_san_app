@@ -102,10 +102,19 @@ class _LoginInputViewState extends State<LoginInputView> {
                 fit: BoxFit.cover,
               ), // kích thước avatar
             ),
+            const SizedBox(height: 18),
+             const SGText(
+              text: "PHẦN MỀM QUẢN LÝ TÀI SẢN",
+              size: 25,
+              fontWeight: FontWeight.bold,
+              color: SGAppColors.primary600,
+              textAlign: TextAlign.center,
+            ),
+            
             const SizedBox(height: 16),
             const SGText(
               text: "Đăng nhập",
-              size: 28,
+              size: 22,
               fontWeight: FontWeight.bold,
               textAlign: TextAlign.center,
             ),

@@ -314,7 +314,9 @@ class AssetHandoverProvider with ChangeNotifier {
             )
             .toList();
     _filteredData = List.from(_data!);
-    log('message test: onReloadDataAssetHandover');
+    if (_data != null) {
+      refreshCountSign(_data!);
+    }
     _applyFilters();
     notifyListeners();
   }
@@ -430,9 +432,7 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {
       _filteredData.clear();
       _data?.clear();
-      AccountHelper.instance.clearAssetHandover();
-      AccountHelper.instance.setAssetHandover(state.data);
-      AccountHelper.refreshAllCounts();
+      refreshCountSign(state.data);
       _data =
           state.data
               .where(
@@ -446,6 +446,13 @@ class AssetHandoverProvider with ChangeNotifier {
       _updatePagination();
     }
     _isLoading = false;
+    notifyListeners();
+  }
+
+  refreshCountSign(List<AssetHandoverDto> data) {
+    AccountHelper.instance.clearAssetHandover();
+    AccountHelper.instance.setAssetHandover(data);
+    AccountHelper.refreshAllCounts();
     notifyListeners();
   }
 

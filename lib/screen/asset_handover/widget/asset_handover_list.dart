@@ -119,7 +119,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             item.tenDonViNhan ??
             '';
       case 'nguoi_lap_phieu':
-        return item.nguoiTao;
+        return AccountHelper.instance.getNhanVienById(item.nguoiTao ?? '')?.hoTen ?? '';
       case 'trang_thai_ky':
         return 'Trạng thái ký'; // Sẽ được xử lý bởi cellBuilder
       case 'trang_thai_phieu':
