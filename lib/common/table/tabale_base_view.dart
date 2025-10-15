@@ -61,7 +61,7 @@ class TableBaseView<T> extends StatefulWidget {
 
   final DateTime? startDate;
   final DateTime? endDate;
-  
+
   /// Số lượng dòng hiển thị mặc định trong bảng
   final double showQuantityColumn;
   @override
@@ -321,7 +321,7 @@ class _TableBaseViewState<T> extends State<TableBaseView<T>> {
                             height: 32,
                             padding: const EdgeInsets.only(left: 12, right: 8),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              color: Colors.green.shade50,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(

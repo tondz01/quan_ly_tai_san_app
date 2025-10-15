@@ -502,7 +502,7 @@ class _ToolAndSuppliesHandoverListState
                                 CustomAction(
                                   tooltip: 'Xem',
                                   iconPath: 'assets/icons/eye.svg',
-                                  color: Colors.blue,
+                                  color: Colors.green,
                                   onPressed: (item) async {
                                     onViewDocument(item);
                                   },

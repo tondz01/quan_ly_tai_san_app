@@ -25,7 +25,7 @@ class ChartWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.bar_chart, color: Colors.green.shade600, size: 16),
+              Icon(Icons.bar_chart, color: const Color(0xFF21A366), size: 16),
               const SizedBox(width: 6),
               Text(
                 'Thống kê tài sản',
@@ -134,7 +134,7 @@ class ChartWidget extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 10,
-              color: Colors.green.shade600,
+              color: const Color(0xFF21A366),
               fontWeight: FontWeight.w400,
             ),
           ),

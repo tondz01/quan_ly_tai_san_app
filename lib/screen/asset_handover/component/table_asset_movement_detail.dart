@@ -112,7 +112,7 @@ class _TableAssetMovementDetailState extends State<TableAssetMovementDetail> {
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 14,
-                    color: isExpanded ? Colors.grey[600] : Colors.blue,
+                    color: isExpanded ? Colors.grey[600] : Colors.green,
                   ),
                 ),
               ),

@@ -198,7 +198,7 @@ class _LoginInputViewState extends State<LoginInputView> {
               borderRadius: 8,
               // height: 48,
               // textSize: 16,
-              defaultBGColor: Colors.blue,
+              defaultBGColor: Colors.green,
               fontWeight: FontWeight.bold,
               // colorHover: Colors.blue,
               // activeColor: SGAppColors.primary600,

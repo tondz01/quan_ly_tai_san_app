@@ -52,7 +52,7 @@ class DashboardCard extends StatelessWidget {
                       color: Colors.green.shade50,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Icon(icon, color: Colors.green.shade600, size: 16),
+                    child: Icon(icon, color: const Color(0xFF21A366), size: 16),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -72,7 +72,7 @@ class DashboardCard extends StatelessWidget {
                           subtitle,
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.green.shade600,
+                            color: const Color(0xFF21A366),
                             fontWeight: FontWeight.w400,
                           ),
                         ),

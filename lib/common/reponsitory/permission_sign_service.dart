@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'dart:developer';
-import 'package:http/http.dart' as http;
 import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_handover_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/repository/tool_and_supplies_handover_repository.dart';
-import 'dart:convert';
 
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -18,10 +13,6 @@ class PermissionSignService {
   Stream<Map<String, dynamic>> get stream => _controller.stream;
 
   void startCheckingPermission() {
-    Map<String, dynamic> data = {
-      'dataDieuDong': [],
-      'DataBanGiao': [],
-    };
     // Poll mỗi 30 giây (hoặc bao lâu tùy bạn)
     _timer = Timer.periodic(const Duration(seconds: 15), (_) async {
       // String tenDangNhap = AccountHelper.instance.getUserInfo()?.tenDangNhap ?? '';

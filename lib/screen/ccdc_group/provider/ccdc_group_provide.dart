@@ -287,7 +287,7 @@ class CcdcGroupProvider with ChangeNotifier {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Import dữ liệu thành công'),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
             ),
           );
           getListCcdcGroup(context);

@@ -209,7 +209,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? DepartmentConstants.webSnackBarDuration
@@ -221,7 +221,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? DepartmentConstants.webSnackBarDuration
@@ -233,7 +233,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? DepartmentConstants.webSnackBarDuration
@@ -257,7 +257,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Xóa phòng ban thành công'),
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: const Color(0xFF21A366),
               duration:
                   kIsWeb
                       ? DepartmentConstants.webSnackBarDuration

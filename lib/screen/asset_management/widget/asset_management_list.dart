@@ -158,7 +158,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: ColorValue.accentCyan.withOpacity(0.3),
+              color: const Color(0xFF21A366),
               borderRadius: BorderRadius.circular(8),
               // border: Border.all(color: Colors.grey[300]!),
             ),
@@ -170,6 +170,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   text: 'Danh sách nhóm tài sản',
                   size: 16,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
                 Visibility(visible: groups.isNotEmpty, child: Divider()),
                 Visibility(

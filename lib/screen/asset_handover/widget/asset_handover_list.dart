@@ -563,7 +563,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
                                 CustomAction(
                                   tooltip: 'Xem',
                                   iconPath: 'assets/icons/eye.svg',
-                                  color: Colors.blue,
+                                  color: Colors.green,
                                   onPressed: (item) {
                                     onViewDocument(item);
                                   },

@@ -35,7 +35,7 @@ class StatisticsCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: 11,
-              color: Colors.green.shade600,
+              color: const Color(0xFF21A366),
               fontWeight: FontWeight.w400,
             ),
           ),

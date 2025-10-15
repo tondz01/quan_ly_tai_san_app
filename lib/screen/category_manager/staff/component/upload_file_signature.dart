@@ -36,7 +36,7 @@ Future<Map<String, dynamic>?> uploadFileSignature(
         // ScaffoldMessenger.of(context).showSnackBar(
         //   SnackBar(
         //     content: Text('Tệp "$fileName" đã được tải lên thành công'),
-        //     backgroundColor: Colors.green.shade600,
+        //     backgroundColor: const Color(0xFF21A366),
         //   ),
         // );
       }
