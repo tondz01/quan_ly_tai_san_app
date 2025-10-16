@@ -37,10 +37,10 @@ dependencies:
       ref: dev/refacter_table
     # path: "E:/New folder/SeGayComponent"
   table_base:
-    # git:
-    #   url: https://github.com/chienpntb/table_base.git
-    #   ref: main
-    path: "D:/Project Flutter/table_base"
+    git:
+      url: https://github.com/chienpntb/table_base.git
+      ref: main
+    # path: "D:/Project Flutter/table_base"
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -107,7 +107,7 @@ flutter:
     - assets/images/
     - assets/svgs/
     - assets/icons/
-    - .env
+    # - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

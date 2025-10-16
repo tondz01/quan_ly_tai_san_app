@@ -339,7 +339,6 @@ class AppMenuData extends ChangeNotifier {
       valueListenable: _countTrigger,
       builder: (context, value, child) {
         final count = countGetter();
-        log('message test: count ${count}');
         return _buildShowCountInSubMenu(count);
       },
     );

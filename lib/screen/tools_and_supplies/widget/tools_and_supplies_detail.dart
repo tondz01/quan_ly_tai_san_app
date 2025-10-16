@@ -77,8 +77,6 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
     // Khởi tạo controller với callbacks
     _controller = ToolsAndSuppliesController(
       onStateChanged: () {
-        log('message test: onStateChanged11');
-
         setState(() {});
       },
     );

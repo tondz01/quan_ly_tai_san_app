@@ -225,8 +225,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     } else {
       _filteredData = statusFiltered;
     }
-
-    _updatePagination();
   }
 
   final Map<FilterStatus, bool> _filterStatus = {
@@ -340,32 +338,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = _filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
-
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-
-    // Đảm bảo startIndex và endIndex không vượt quá giới hạn
-    if (startIndex < 0) startIndex = 0;
-    if (endIndex > totalEntries) endIndex = totalEntries;
-
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-  }
-
+  
   void onPageChanged(int page) {
     currentPage = page;
     // _updatePagination();
@@ -389,14 +362,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onRowsPerPageChanged(int? value) {
-    if (value == null) return;
-    rowsPerPage = value;
-    currentPage = 1;
-    _updatePagination();
-    // _applyFilters();
-    notifyListeners();
-  }
 
   void updateItem(DieuDongTaiSanDto updatedItem) {
     if (_data == null) return;
@@ -692,9 +657,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       case 1:
         return 'Cấp phát tài sản';
       case 2:
-        return 'Thu hồi tài sản';
-      case 3:
         return 'Điều chuyển tài sản';
+      case 3:
+        return 'Thu hồi tài sản';
       default:
         return 'Quản lý tài sản';
     }

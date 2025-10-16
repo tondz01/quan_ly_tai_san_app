@@ -379,7 +379,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                             onUpdateDetail: () {
                               setState(() {
                                 isUpdateDetail = false;
-                                log('message test: onUpdateDetail');
                               });
                             },
                           ),

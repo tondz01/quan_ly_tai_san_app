@@ -333,7 +333,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _isShowInput = true;
       _isShowCollapse = true;
       _isUpdateDetail = true;
-      log('message test: _showUnsavedChangesDialog: $isUpdateDetail');
       hasUnsavedChanges = false;
       Navigator.of(context).pop();
     });
@@ -351,7 +350,6 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _isShowInput = true;
       _isShowCollapse = true;
       _isUpdateDetail = true;
-      log('message test: _showUnsavedChangesDialog: $isUpdateDetail');
     }
     return true;
   }

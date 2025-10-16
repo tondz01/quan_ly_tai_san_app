@@ -47,7 +47,6 @@ class AssetTransferRepository extends ApiBase {
             response.data,
             DieuDongTaiSanDto.fromJson,
           );
-      log('message test: ${dieuDongTaiSans.length}');
       AccountHelper.instance.clearAssetTransfer();
       AccountHelper.instance.setAssetTransfer(dieuDongTaiSans);
       AccountHelper.refreshAllCounts();

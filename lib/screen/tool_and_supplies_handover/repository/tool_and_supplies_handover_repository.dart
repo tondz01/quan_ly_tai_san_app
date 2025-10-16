@@ -48,8 +48,6 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
       AccountHelper.instance.clearToolAndSuppliesHandover();
       AccountHelper.instance.setToolAndMaterialHandover(handoverList);
       AccountHelper.refreshAllCounts();
-      log('message test: getListToolAndSuppliesHandover: ${handoverList.length}');
-
       // Tối ưu: Gọi song song cả signatory và detail supplies trong cùng một Future.wait
       await Future.wait(
         handoverList.map((item) async {

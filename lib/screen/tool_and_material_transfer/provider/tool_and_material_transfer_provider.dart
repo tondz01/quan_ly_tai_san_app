@@ -711,9 +711,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       case 1:
         return 'Cấp phát CCDC - Vật tư';
       case 2:
-        return 'Thu hồi CCDC - Vật tư';
-      case 3:
         return 'Điều chuyển CCDC - Vật tư';
+      case 3:
+        return 'Thu hồi CCDC - Vật tư';
       default:
         return 'Quản lý CCDC - Vật tư';
     }

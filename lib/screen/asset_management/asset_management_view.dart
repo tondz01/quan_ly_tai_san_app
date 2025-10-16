@@ -48,7 +48,6 @@ class _AssetManagementViewState extends State<AssetManagementView> {
         listen: false,
       ).onInit(context);
     });
-    log('message test: initState');
   }
 
   void _onScrollStateChanged() {

@@ -298,16 +298,13 @@ class AssetManagementProvider with ChangeNotifier {
     if (_dataUnit != null) {
       AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
       _dataUnit = AccountHelper.instance.getAllUnit();
-      log('message test: _dataUnit2: ${_dataUnit!.length}');
     }
-    log('message test: _dataUnit1: ${_dataUnit!.length}');
     _itemsUnit = [
       ..._dataUnit!.map(
         (e) =>
             DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
       ),
     ];
-    log('message test: _dataUnit: ${_itemsUnit!.length}');
     _dataGroup = AccountHelper.instance.getAssetGroup();
     _itemsAssetGroup = [
       for (var element in _dataGroup!)

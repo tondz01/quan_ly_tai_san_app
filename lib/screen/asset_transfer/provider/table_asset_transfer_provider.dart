@@ -25,6 +25,7 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
         filteredData: result,
       );
     });
+    refreshData();
     loadData();
   }
 

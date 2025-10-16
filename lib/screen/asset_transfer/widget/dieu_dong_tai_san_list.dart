@@ -1,12 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/theme/app_icon_svg_path.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -82,7 +83,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   final List<AssetHandoverDto> listAssetHandover = [];
   PdfDocument? _document;
   // Column display options
-  late List<ColumnDisplayOption> columnOptions;
 
   List<Map<String, DateTime Function(DieuDongTaiSanDto)>> getters = [];
   @override
@@ -200,15 +200,17 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
       case 'to_date':
         return item.tggnDenNgay;
       case 'don_vi_giao':
-        return AccountHelper.instance
+        String tenPhongBan = AccountHelper.instance
                 .getDepartmentById(item.idDonViGiao ?? '')
                 ?.tenPhongBan ??
             '';
+        return tenPhongBan;
       case 'don_vi_nhan':
-        return AccountHelper.instance
+        String tenPhongBan = AccountHelper.instance
                 .getDepartmentById(item.idDonViNhan ?? '')
                 ?.tenPhongBan ??
             '';
+        return tenPhongBan;
       case 'status':
         return TabelAssetTransferConfig.getStatus(item.trangThai ?? 0);
       case 'permission_signing':
@@ -415,13 +417,18 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     ),
                     child: riverpod.Consumer(
                       builder: (context, ref, child) {
-                        final data = widget.provider.filteredData ?? [];
+                        List<DieuDongTaiSanDto> data = widget.provider.filteredData ?? [];
                         // Defer provider mutation until after the current frame
+                        if (!_areListsEqual(_previousFilteredData, data)) {
+                          final data = widget.provider.filteredData ?? [];
+                          _previousFilteredData = List.from(data);
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             ref
                                 .read(tableAssetTransferProvider.notifier)
                                 .setData(data);
                           });
+                          log('message test: isFirstLoad _areListsEqual');
+                        }
 
                         return RiverpodTable<DieuDongTaiSanDto>(
                           tableProvider: tableAssetTransferProvider,
@@ -447,37 +454,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             });
                           },
                           // onEdit: (item) {},
-                          onDelete: (item) {
-                            showConfirmDialog(
-                              context,
-                              type: ConfirmType.delete,
-                              title: 'Xóa nhóm tài sản',
-                              message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                              highlight: item.tenPhieu ?? '',
-                              cancelText: 'Không',
-                              confirmText: 'Xóa',
-                              onConfirm: () {
-                                if (item.trangThai == 0 ||
-                                    item.trangThai == 2) {
-                                  showConfirmDialog(
-                                    context,
-                                    type: ConfirmType.delete,
-                                    title: 'Xóa nhóm tài sản',
-                                    message:
-                                        'Bạn có chắc muốn xóa ${item.tenPhieu}',
-                                    highlight: item.tenPhieu!,
-                                    cancelText: 'Không',
-                                    confirmText: 'Xóa',
-                                    onConfirm: () {
-                                      context.read<DieuDongTaiSanBloc>().add(
-                                        DeleteDieuDongEvent(context, item.id!),
-                                      );
-                                    },
-                                  );
-                                }
-                              },
-                            );
-                          },
+                          onDelete: _onDelete,
                           showActionsColumn: _showActionsColumn,
                           customActions: [
                             CustomAction(

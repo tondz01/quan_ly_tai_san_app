@@ -229,7 +229,6 @@ class _ToolAndMaterialTransferDetailState
     item = widget.provider.item;
     // _callGetListAssetHandover(); // Không cần gọi lại API khi xem chi tiết
     isEditing = widget.isEditing;
-
     if (item != null && item!.trangThai == 0) {
       isEditing = true;
     }
@@ -1353,6 +1352,7 @@ class _ToolAndMaterialTransferDetailState
   }
 
   Future<void> _handleSave() async {
+    // return;
     if (!isEditing) return;
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1370,7 +1370,6 @@ class _ToolAndMaterialTransferDetailState
       final requestDetail = _createDieuDongRequestDetail();
       final requestSignatory = _createListSignatory();
       request.copyWith(ngayTao: userInfo.tenDangNhap);
-
       // bloc.add(CreateDieuDongEvent(context, request));
       widget.provider.saveAssetTransfer(
         context,

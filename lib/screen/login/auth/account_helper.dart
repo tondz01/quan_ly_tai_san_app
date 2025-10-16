@@ -875,10 +875,6 @@ class AccountHelper {
   setUnit(List<UnitDto> unit) {
     if (unit.isNotEmpty) {
       StorageService.write(StorageKey.UNIT, unit);
-      List<UnitDto> units = StorageService.read(StorageKey.UNIT);
-      List<UnitDto> units2 = getAllUnit();
-
-      log('message test: loadUnit setUnit: ${units.length} units2: ${units2.length}');
     }
   }
 

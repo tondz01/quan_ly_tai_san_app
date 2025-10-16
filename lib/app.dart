@@ -28,7 +28,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     // _loadDataIfNeeded(userInfo);
-    log('message test: initState');
     permissionSignService.startCheckingPermission();
 
     permissionSignService.stream.listen((data) {
@@ -39,7 +38,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
       // int countDieuChuyen = listData.where((element) => element['trangThai'] == 1).length;
       // int countThuHoi = listData.where((element) => element['trangThai'] == 2).length;
       // // AccountHelper.instance.setToolAndMaterialTransferCount(countCapPhat, countDieuChuyen, countThuHoi);
-      print('message test: Kết quả API:');
       // log('message test: countCapPhat: $countCapPhat');
       // log('message test: countDieuChuyen: $countDieuChuyen');
       // log('message test: countThuHoi: $countThuHoi');

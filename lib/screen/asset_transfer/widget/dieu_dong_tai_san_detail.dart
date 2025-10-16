@@ -964,6 +964,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
   }
 
   Future<void> _handleSave() async {
+    // return;
     if (!state.isEditing) return;
     if (!_validateForm()) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -978,6 +979,8 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
       final request = _createDieuDongRequest(widget.type, 0);
       final requestDetail = _createDieuDongRequestDetail();
       final listSignatory = _createListSignatory();
+    log('message test: onInit  _handleSave request ${jsonEncode(request)}');
+
       widget.provider.saveAssetTransfer(
         context,
         request,
