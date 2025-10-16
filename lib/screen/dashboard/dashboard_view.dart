@@ -29,6 +29,12 @@ class _DashboardViewState extends State<DashboardView> {
   bool _isLoadingCcdcStatus = false;
   String? _ccdcStatusError;
 
+  // Selected year for month trend chart
+  int? _selectedYearForMonthChart;
+
+  // Selected year for CCDC month trend chart
+  int? _selectedYearForCcdcMonthChart;
+
   // Asset group distribution data
   Map<String, dynamic> _assetGroupData = {};
   List<String> _availableGroups = [];
@@ -320,6 +326,9 @@ class _DashboardViewState extends State<DashboardView> {
           _statisticsData = result['data'] as Map<String, dynamic>? ?? {};
           print("Statistics Data Set - _statisticsData: $_statisticsData");
           _isLoadingStatistics = false;
+          // Reset selected year when new data is loaded
+          _selectedYearForMonthChart = null;
+          _selectedYearForCcdcMonthChart = null;
         });
       } else {
         setState(() {
@@ -589,12 +598,13 @@ class _DashboardViewState extends State<DashboardView> {
                 flex: 2,
                 child: Column(
                   children: [
-                    _buildYearTrendChart(data),
+                    _buildCcdcMonthTrendChart(data),
                     const SizedBox(height: 16),
                     _buildMonthTrendChart(data),
                   ],
                 ),
               ),
+              const SizedBox(width: 16),
             ],
           ),
         ],
@@ -2360,6 +2370,27 @@ class _DashboardViewState extends State<DashboardView> {
   Widget _buildMonthTrendChart(Map<String, dynamic> data) {
     final monthData = (data['taiSanTheoThang'] as List<dynamic>?) ?? const [];
 
+    // Lấy danh sách các năm có dữ liệu
+    final availableYears =
+        monthData
+            .map((item) => item['nam'] as int?)
+            .where((year) => year != null)
+            .cast<int>()
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a)); // Sắp xếp giảm dần
+
+    // Năm được chọn (mặc định là năm đầu tiên trong danh sách hoặc năm đã lưu trong state)
+    final selectedYear =
+        _selectedYearForMonthChart ??
+        (availableYears.isNotEmpty
+            ? availableYears.first
+            : DateTime.now().year);
+
+    // Lọc dữ liệu theo năm được chọn
+    final filteredMonthData =
+        monthData.where((item) => item['nam'] == selectedYear).toList();
+
     return Container(
       height: 300,
       decoration: BoxDecoration(
@@ -2392,33 +2423,220 @@ class _DashboardViewState extends State<DashboardView> {
               ),
               const SizedBox(width: 8),
               Text(
-                "Tài sản theo tháng",
+                "Tài sản tăng mới theo tháng",
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Colors.green.shade700,
                 ),
               ),
+              const Spacer(),
+              // Dropdown chọn năm
+              if (availableYears.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade300),
+                  ),
+                  child: DropdownButton<int>(
+                    value: selectedYear,
+                    underline: const SizedBox(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    items:
+                        availableYears.map((year) {
+                          return DropdownMenuItem<int>(
+                            value: year,
+                            child: Text(year.toString()),
+                          );
+                        }).toList(),
+                    onChanged: (newYear) {
+                      if (newYear != null &&
+                          newYear != _selectedYearForMonthChart) {
+                        setState(() {
+                          _selectedYearForMonthChart = newYear;
+                        });
+                      }
+                    },
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ScrollableBarChart(
-              data:
-                  monthData
-                      .map(
-                        (item) => <String, Object>{
-                          'thang': item['thang'].toString(),
-                          'soLuong': item['soLuong'] ?? 0,
-                        },
-                      )
-                      .toList(),
-              categoryKey: 'thang',
-              valueKey: 'soLuong',
-              barWidth: 12,
-              spacing: 24,
-              height: 150,
-            ),
+            child:
+                filteredMonthData.isEmpty
+                    ? Center(
+                      child: Text(
+                        'Không có dữ liệu cho năm $selectedYear',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                    : ScrollableBarChart(
+                      data:
+                          filteredMonthData
+                              .map(
+                                (item) => <String, Object>{
+                                  'thang': 'Tháng ${item['thang']}',
+                                  'soLuong': item['soLuong'] ?? 0,
+                                },
+                              )
+                              .toList(),
+                      categoryKey: 'thang',
+                      valueKey: 'soLuong',
+                      barWidth: 12,
+                      spacing: 24,
+                      height: 150,
+                    ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCcdcMonthTrendChart(Map<String, dynamic> data) {
+    final ccdcMonthData = (data['ccdcTheoThang'] as List<dynamic>?) ?? const [];
+
+    // Lấy danh sách các năm có dữ liệu
+    final availableYears =
+        ccdcMonthData
+            .map((item) => item['nam'] as int?)
+            .where((year) => year != null)
+            .cast<int>()
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a)); // Sắp xếp giảm dần
+
+    // Năm được chọn (mặc định là năm đầu tiên trong danh sách hoặc năm đã lưu trong state)
+    final selectedYear =
+        _selectedYearForCcdcMonthChart ??
+        (availableYears.isNotEmpty
+            ? availableYears.first
+            : DateTime.now().year);
+
+    // Lọc dữ liệu theo năm được chọn
+    final filteredCcdcMonthData =
+        ccdcMonthData.where((item) => item['nam'] == selectedYear).toList();
+
+    return Container(
+      height: 300,
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.build,
+                  color: Colors.green.shade700,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "CCDC tăng mới theo tháng",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+              const Spacer(),
+              // Dropdown chọn năm
+              if (availableYears.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade300),
+                  ),
+                  child: DropdownButton<int>(
+                    value: selectedYear,
+                    underline: const SizedBox(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    items:
+                        availableYears.map((year) {
+                          return DropdownMenuItem<int>(
+                            value: year,
+                            child: Text(year.toString()),
+                          );
+                        }).toList(),
+                    onChanged: (newYear) {
+                      if (newYear != null &&
+                          newYear != _selectedYearForCcdcMonthChart) {
+                        setState(() {
+                          _selectedYearForCcdcMonthChart = newYear;
+                        });
+                      }
+                    },
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child:
+                filteredCcdcMonthData.isEmpty
+                    ? Center(
+                      child: Text(
+                        'Không có dữ liệu cho năm $selectedYear',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    )
+                    : ScrollableBarChart(
+                      data:
+                          filteredCcdcMonthData
+                              .map(
+                                (item) => <String, Object>{
+                                  'thang': 'Tháng ${item['thang']}',
+                                  'soLuong': item['soLuong'] ?? 0,
+                                },
+                              )
+                              .toList(),
+                      categoryKey: 'thang',
+                      valueKey: 'soLuong',
+                      barWidth: 12,
+                      spacing: 24,
+                      height: 150,
+                    ),
           ),
         ],
       ),

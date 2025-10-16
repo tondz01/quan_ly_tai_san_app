@@ -42,7 +42,6 @@ void main() async {
     setPathUrlStrategy();
   }
 
-  await dotenv.load(fileName: '.env', isOptional: true);
   ApiConfig.setBaseURL(Config.baseUrl);
   await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
