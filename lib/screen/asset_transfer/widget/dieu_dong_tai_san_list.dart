@@ -279,6 +279,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               setState(() {
                 isLoading = false; // Dừng loading khi có lỗi
               });
+              // Hiển thị thông báo lỗi
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Lỗi khi tải dữ liệu: ${state.message}'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
             }
           },
         ),
@@ -417,7 +425,71 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     ),
                     child: riverpod.Consumer(
                       builder: (context, ref, child) {
+                        // Kiểm tra loading state trước khi hiển thị dữ liệu
+                        if (isLoading) {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.green.shade600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Đang tải dữ liệu...',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
                         List<DieuDongTaiSanDto> data = widget.provider.filteredData ?? [];
+                        
+                        // Kiểm tra nếu không có dữ liệu
+                        if (data.isEmpty) {
+                          return Container(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inbox_outlined,
+                                    size: 64,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Không có dữ liệu',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Chưa có phiếu điều động tài sản nào',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
                         // Defer provider mutation until after the current frame
                         if (!_areListsEqual(_previousFilteredData, data)) {
                           final data = widget.provider.filteredData ?? [];
@@ -639,11 +711,13 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              isLoading 
+                ? '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)}(Đang tải...)'
+                : '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
+                color: isLoading ? Colors.orange.shade600 : Colors.grey.shade700,
               ),
             ),
           ],
@@ -655,6 +729,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
 
   void _callGetListAssetHandover() {
     try {
+      // Đặt loading state trước khi gọi API
+      setState(() {
+        isLoading = true;
+      });
+      
       final assetHandoverBloc = BlocProvider.of<DieuDongTaiSanBloc>(context);
       assetHandoverBloc.add(
         GetListDieuDongTaiSanEvent(
@@ -664,6 +743,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         ),
       );
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Lỗi khi lấy danh sách: ${e.toString()}'),
