@@ -362,7 +362,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       children: [
         Expanded(
           child: Container(
-            height: MediaQuery.of(context).size.height,
+            height: MediaQuery.of(context).size.height + 250,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
@@ -793,52 +793,5 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
         isError: true,
       );
     }
-  }
-
-  int _getPermissionSigning(AssetHandoverDto item) {
-    final signatureFlow =
-        [
-              {
-                "id": item.idDaiDiendonviBanHanhQD,
-                "signed": item.daXacNhan == true,
-              },
-              {
-                "id": item.idDaiDienBenGiao,
-                "signed": item.daiDienBenGiaoXacNhan == true,
-              },
-              {
-                "id": item.idDaiDienBenNhan,
-                "signed": item.daiDienBenNhanXacNhan == true,
-              },
-              if (item.listSignatory?.isNotEmpty ?? false)
-                ...(item.listSignatory
-                        ?.map(
-                          (e) => {
-                            "id": e.idNguoiKy,
-                            "signed": e.trangThai == 1,
-                          },
-                        )
-                        .toList() ??
-                    []),
-            ]
-            .where(
-              (step) => step["id"] != null && (step["id"] as String).isNotEmpty,
-            )
-            .toList();
-    final currentIndex = signatureFlow.indexWhere(
-      (s) => s["id"] == userInfo?.tenDangNhap,
-    );
-    if (currentIndex == -1) return 2;
-    if (item.idDaiDiendonviBanHanhQD == userInfo?.tenDangNhap &&
-        signatureFlow[currentIndex]["signed"] != -1) {
-      return signatureFlow[currentIndex]["signed"] == true ? 4 : 5;
-    }
-    if (signatureFlow[currentIndex]["signed"] == true) return 3;
-    final previousNotSigned = signatureFlow
-        .take(currentIndex)
-        .firstWhere((s) => s["signed"] == false, orElse: () => {});
-
-    if (previousNotSigned.isNotEmpty) return 1;
-    return 0;
   }
 }

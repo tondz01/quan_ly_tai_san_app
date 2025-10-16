@@ -11,9 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_d
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/asset_handover_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/widget/tab_bar_table_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import 'bloc/asset_handover_bloc.dart';
@@ -288,19 +285,19 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
                         ),
                       ),
                     ),
-                    Visibility(
-                      visible: (provider.data?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
-                    ),
+                    // Visibility(
+                    //   visible: (provider.data?.length ?? 0) >= 5,
+                    //   child: SGPaginationControls(
+                    //     totalPages: provider.totalPages,
+                    //     currentPage: provider.currentPage,
+                    //     rowsPerPage: provider.rowsPerPage,
+                    //     controllerDropdownPage:
+                    //         provider.controllerDropdownPage!,
+                    //     items: provider.items,
+                    //     onPageChanged: provider.onPageChanged,
+                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    //   ),
+                    // ),
                   ],
                 ),
               );

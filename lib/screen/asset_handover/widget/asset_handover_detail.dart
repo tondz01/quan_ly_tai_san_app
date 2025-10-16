@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -485,7 +486,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
-
+      SGLog.error('tag check listSignatory', 'message: ${jsonEncode(listSignatory)}');
+      SGLog.error('tag check listDetailAssetHandover', 'message: ${jsonEncode(listDetailAssetHandover)}');
+      // return;
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(
           newRequest,

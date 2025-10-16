@@ -157,7 +157,7 @@ class AssetHandoverRepository extends ApiBase {
             statusSignatory == Numeral.STATUS_CODE_SUCCESS_NO_CONTENT;
         if (!isOkSignatory) {
           result['status_code'] =
-              statusSignatory ?? Numeral.STATUS_CODE_DEFAULT;
+              statusSignatory ?? Numeral.STATUS_CODE_SUCCESS;
           return result;
         }
       }

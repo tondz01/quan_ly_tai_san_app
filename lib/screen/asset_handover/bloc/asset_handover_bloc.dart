@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/provider
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 
 import 'asset_handover_event.dart';
 import 'asset_handover_state.dart';
@@ -90,7 +91,10 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
         );
 
     final int? statusCode = result['status_code'] as int?;
-    if (statusCode == Numeral.STATUS_CODE_SUCCESS) {
+    SGLog.error('tag statusCode', "message: $statusCode");
+    if (statusCode == Numeral.STATUS_CODE_SUCCESS ||
+        statusCode == Numeral.STATUS_CODE_SUCCESS_CREATE ||
+        statusCode == Numeral.STATUS_CODE_DEFAULT) {
       emit(
         CreateAssetHandoverSuccessState(
           data: (result['data'] ?? '').toString(),
