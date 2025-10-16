@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:quan_ly_tai_san_app/common/components/convert_pdf.dart';
 import 'package:quan_ly_tai_san_app/common/components/update_signer_data.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -164,6 +165,7 @@ class _ToolAndSuppliesHandoverDetailState
   }
 
   Future<void> _loadPdfNetwork(String nameFile) async {
+    log("nameFile: $nameFile");
     try {
       final document = await PdfDocument.openUri(
         Uri.parse("${Config.baseUrl}/api/upload/preview/$nameFile"),
@@ -800,6 +802,7 @@ class _ToolAndSuppliesHandoverDetailState
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
+                    log('IUGBASFELBFVUHLASDBFCI LSERBĐGIUVEWRBFIU');
                     if (fileName != null) {
                       // Ưu tiên load từ bytes nếu có (web), fallback sang path (mobile/desktop)
                       if (fileBytes != null) {
@@ -818,8 +821,15 @@ class _ToolAndSuppliesHandoverDetailState
                 isUploading: true,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
-                hintText: 'Định dạng hỗ trợ: .pdf',
-                allowedExtensions: ['pdf'],
+                hintText: 'Định dạng hỗ trợ: .pdf, .docx',
+                allowedExtensions: ['doc', 'docx', 'pdf'],
+                convertDocToPdf: (bytes, fileName) async {
+                  return await convertDocxBytesToPdf(
+                    fileName: fileName,
+                    fileBytes: bytes,
+                    jsessionId: 'F81793FE9E6699D567ACE0E80A441F9A',
+                  );
+                },
                 document: previewDocumentCcdcDecisionHandover(
                   context: context,
                   document: _document,

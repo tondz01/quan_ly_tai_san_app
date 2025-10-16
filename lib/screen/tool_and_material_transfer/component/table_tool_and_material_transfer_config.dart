@@ -172,7 +172,7 @@ class TableToolAndMaterialTransferConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Chia sẻ',
+          name: 'Trình duyệt',
           key: 'share',
           width: 150,
           flex: 1,
@@ -254,7 +254,7 @@ class TableToolAndMaterialTransferConfig {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,
-        'Không có phiếu nào để chia sẻ',
+        'Không có phiếu nào để trình duyệt',
         isError: true,
       );
       return;
@@ -262,10 +262,10 @@ class TableToolAndMaterialTransferConfig {
     showConfirmDialog(
       context,
       type: ConfirmType.delete,
-      title: 'Chia sẻ',
-      message: 'Bạn có chắc muốn chia sẻ với người ký?',
+      title: 'Trình duyệt',
+      message: 'Bạn có chắc muốn trình duyệt cho người ký?',
       cancelText: 'Không',
-      confirmText: 'Chia sẻ',
+      confirmText: 'Trình duyệt',
       onConfirm: () {
         final notShared = getNotSharedAndNotify(context, items);
         if (notShared.isEmpty) return;
@@ -283,7 +283,7 @@ class TableToolAndMaterialTransferConfig {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,
-        'Không có phiếu nào để chia sẻ',
+        'Không có phiếu nào để trình duyệt',
         isError: true,
       );
       return const [];
@@ -296,7 +296,7 @@ class TableToolAndMaterialTransferConfig {
     if (notShared.isEmpty) {
       AppUtility.showSnackBar(
         context,
-        'Các phiếu này đều đã được chia sẻ',
+        'Các phiếu này đều đã được trình duyệt',
         isError: true,
       );
       return const [];
@@ -314,13 +314,13 @@ class TableToolAndMaterialTransferConfig {
       if (names.isNotEmpty) {
         AppUtility.showSnackBar(
           context,
-          'Các phiếu đã được chia sẻ: $names',
+          'Các phiếu đã được trình duyệt: $names',
           isError: true,
         );
       } else {
         AppUtility.showSnackBar(
           context,
-          'Có phiếu đã được chia sẻ trong danh sách chọn',
+          'Có phiếu đã được trình duyệt trong danh sách chọn',
           isError: true,
         );
       }

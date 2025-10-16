@@ -97,7 +97,7 @@ class MyLocale implements Translations {
       "table.clear_filters": "Xóa bộ lọc",
       "table.delete_selected": "Xóa chọn",
       "table.signing": "Ký biên bản",
-      "table.send": "Chia sẻ với người ký",
+      "table.send": "Trình duyệt người ký",
     },
   };
   Map<String, Map<String, String>> en = {

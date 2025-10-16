@@ -51,7 +51,7 @@ abstract class ConfigViewAT {
           borderRadius: BorderRadius.circular(4),
         ),
         child: SGText(
-          text: isShare ? isMyCreated ? 'Đã chia sẻ': "Được chia sẻ" : 'Chưa chia sẻ',
+          text: isShare ? isMyCreated ? 'Đã gửi': "Được gửi" : 'Chưa gửi',
           size: 12,
           style: TextStyle(
             fontWeight: FontWeight.w500,

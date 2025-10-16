@@ -245,4 +245,49 @@ class TypeAssetRepository extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> getConvertedPdfPreview(
+    String previewFileNameOrPath, {
+    String? jsessionId,
+  }) async {
+    Map<String, dynamic> result = {
+      'data': Uint8List(0),
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      // Build endpoint. If caller passes full path like "/preview/example.pdf",
+      // keep it; otherwise append to upload preview base.
+      final String endpoint = previewFileNameOrPath.startsWith('/api')
+          ? previewFileNameOrPath
+          : '${EndPointAPI.UPLOAD_FILE}/preview/$previewFileNameOrPath';
+
+      final response = await get(
+        endpoint,
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {
+            'Accept': 'application/pdf',
+            if (jsessionId != null && jsessionId.isNotEmpty)
+              'Cookie': 'JSESSIONID=$jsessionId',
+          },
+        ),
+      );
+
+      result['status_code'] = response.statusCode;
+      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS &&
+          response.data is List<int>) {
+        result['data'] = Uint8List.fromList(response.data);
+      } else {
+        result['data'] = Uint8List(0);
+      }
+    } catch (e) {
+      SGLog.error(
+        "TypeAssetRepository",
+        "Error at getConvertedPdfPreview: $e",
+      );
+    }
+
+    return result;
+  }
 }

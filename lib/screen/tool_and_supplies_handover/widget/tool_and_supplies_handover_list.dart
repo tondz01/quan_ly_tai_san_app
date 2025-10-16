@@ -127,7 +127,7 @@ class _ToolAndSuppliesHandoverListState
     final String key = _columns[adjustedIndex].key;
     switch (key) {
       case 'quyet_dinh':
-        return item.quyetDinhDieuDongSo;
+        return item.id;
       case 'lenh_dieu_dong':
         return item.lenhDieuDong;
       case 'ngay_ban_giao':

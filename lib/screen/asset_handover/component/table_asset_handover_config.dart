@@ -27,7 +27,7 @@ class TableAssetHandoverConfig {
           isFixed: false,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.quyetDinhDieuDongSo ?? ''));
+          return TableCellData(widget: Text(item.id ?? ''));
         },
       ),
       ColumnDefinition(
@@ -176,7 +176,7 @@ class TableAssetHandoverConfig {
       ),
       ColumnDefinition(
         config: TableColumnData.select(
-          name: 'Chia sẻ',
+          name: 'Trình duyệt',
           key: 'share',
           width: 150,
           flex: 1,
@@ -308,7 +308,7 @@ class TableAssetHandoverConfig {
     if (items.isEmpty) {
       AppUtility.showSnackBar(
         context,
-        'Không có phiếu nào để chia sẻ',
+        'Không có phiếu nào cần trình duyệt',
         isError: true,
       );
       return;
@@ -317,10 +317,10 @@ class TableAssetHandoverConfig {
     showConfirmDialog(
       context,
       type: ConfirmType.delete,
-      title: 'Chia sẻ',
-      message: 'Bạn có chắc muốn chia sẻ với người ký?',
+      title: 'Trình duyệt',
+      message: 'Bạn có chắc muốn trình duyệt với người ký?',
       cancelText: 'Không',
-      confirmText: 'Chia sẻ',
+      confirmText: 'Trình duyệt',
       onConfirm: () {
         final notShared = getNotSharedAndNotify(items, context);
         if (notShared.isEmpty) return;

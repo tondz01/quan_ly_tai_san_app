@@ -838,9 +838,11 @@ packages:
   table_base:
     dependency: "direct main"
     description:
-      path: "D:\\Project Flutter\\table_base"
-      relative: false
-    source: path
+      path: "."
+      ref: main
+      resolved-ref: c5a6125255813d22a688cb6cb0b2b5e6a18b0b08
+      url: "https://github.com/chienpntb/table_base.git"
+    source: git
     version: "1.0.0+1"
   term_glyph:
     dependency: transitive

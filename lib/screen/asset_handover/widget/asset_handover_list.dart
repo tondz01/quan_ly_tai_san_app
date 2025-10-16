@@ -99,7 +99,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
     final String key = _columns[adjustedIndex].key;
     switch (key) {
       case 'quyet_dinh':
-        return item.quyetDinhDieuDongSo;
+        return item.id;
       case 'lenh_dieu_dong':
         return item.lenhDieuDong;
       case 'ngay_ban_giao':
@@ -119,7 +119,10 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             item.tenDonViNhan ??
             '';
       case 'nguoi_lap_phieu':
-        return AccountHelper.instance.getNhanVienById(item.nguoiTao ?? '')?.hoTen ?? '';
+        return AccountHelper.instance
+                .getNhanVienById(item.nguoiTao ?? '')
+                ?.hoTen ??
+            '';
       case 'trang_thai_ky':
         return 'Trạng thái ký'; // Sẽ được xử lý bởi cellBuilder
       case 'trang_thai_phieu':
@@ -318,7 +321,7 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
       ),
       if (selectedItems.isNotEmpty &&
           selectedItems.length < 2 &&
-          _getPermissionSigning(selectedItems.first) == 0)
+          isShowSignButton(selectedItems.first))
         ResponsiveButtonData.fromButtonIcon(
           text: 'table.signing'.tr,
           iconPath: AppIconSvgPath.iconPenLine,
@@ -345,6 +348,12 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
           },
         ),
     ];
+  }
+
+  bool isShowSignButton(AssetHandoverDto item) {
+    return TableAssetHandoverConfig.getPermissionSigning(item, userInfo!) ==
+            0 ||
+        TableAssetHandoverConfig.getPermissionSigning(item, userInfo!) == 5;
   }
 
   @override

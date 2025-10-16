@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:quan_ly_tai_san_app/common/components/convert_pdf.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
@@ -775,12 +776,19 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
                     }
                   });
                 },
+                convertDocToPdf: (bytes, fileName) async {
+                  return await convertDocxBytesToPdf(
+                    fileName: fileName,
+                    fileBytes: bytes,
+                    jsessionId: 'F81793FE9E6699D567ACE0E80A441F9A',
+                  );
+                },
                 // onUpload: _uploadWordDocument,
                 isUploading: true,
                 label: 'Tài liệu Quyết định',
                 errorMessage: 'Tài liệu quyết định là bắt buộc',
-                hintText: 'Định dạng hỗ trợ: .pdf',
-                allowedExtensions: ['pdf'],
+                hintText: 'Định dạng hỗ trợ: .pdf, .docx ',
+                allowedExtensions: ['pdf', 'docx'],
                 document: previewDocumentDecisionAssetHandover(
                   context: context,
                   document: _document,

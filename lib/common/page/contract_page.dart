@@ -73,7 +73,11 @@ class ContractPage {
       verticalAlignment: TableCellVerticalAlignment.top,
       child: Padding(
         padding: EdgeInsets.all(2.0 * scale),
-        child: Text(text, style: textStyle.copyWith(fontSize: 12 * scale)),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: textStyle.copyWith(fontSize: 12 * scale),
+        ),
       ),
     );
   }

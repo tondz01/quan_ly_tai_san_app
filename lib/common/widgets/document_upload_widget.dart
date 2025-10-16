@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,8 @@ class DocumentUploadWidget extends StatefulWidget {
   final List<String> allowedExtensions;
   final bool isInsertData;
   final Widget? document;
+  final Future<Uint8List?> Function(Uint8List bytes, String fileName)?
+  convertDocToPdf;
 
   const DocumentUploadWidget({
     super.key,
@@ -35,6 +38,7 @@ class DocumentUploadWidget extends StatefulWidget {
     this.allowedExtensions = const ['doc', 'docx', 'pdf'],
     this.isInsertData = false,
     this.document,
+    this.convertDocToPdf,
   });
 
   @override
@@ -213,6 +217,38 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
 
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
+        final fileName = file.name;
+        final lowerName = fileName.toLowerCase();
+        final isDoc = lowerName.endsWith('.doc') || lowerName.endsWith('.docx');
+
+        if (isDoc && file.bytes != null && widget.convertDocToPdf != null) {
+          try {
+            final pdfBytes = await widget.convertDocToPdf!(
+              file.bytes!,
+              fileName,
+            );
+            if (pdfBytes != null) {
+              final newName = fileName.replaceAll(
+                RegExp(r'\.docx?$', caseSensitive: false),
+                '.pdf',
+              );
+              widget.onFileSelected(newName, file.path, pdfBytes);
+              return;
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Không thể chuyển đổi sang PDF: ${e.toString()}',
+                  ),
+                  backgroundColor: Colors.red.shade600,
+                ),
+              );
+            }
+          }
+        }
+
         widget.onFileSelected(file.name, file.path, file.bytes);
       }
     } on PlatformException catch (e) {
