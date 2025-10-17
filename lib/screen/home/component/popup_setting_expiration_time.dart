@@ -185,7 +185,7 @@ class _PopupSettingExpirationTimeState
                       padding: const EdgeInsets.all(4),
                       child: Icon(
                         Icons.close,
-                        color: ColorValue.primaryDarkBlue,
+                        color: ColorValue.colorGreenDefault,
                         size: 20,
                       ),
                     ),
@@ -199,7 +199,7 @@ class _PopupSettingExpirationTimeState
               Text(
                 widget.title,
                 style: AppTextStyle.textStyleSemiBold24.copyWith(
-                  color: ColorValue.primaryDarkBlue,
+                  color: ColorValue.colorGreenDefault,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -234,7 +234,7 @@ class _PopupSettingExpirationTimeState
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: ColorValue.primaryDarkBlue,
+                          color: ColorValue.colorGreenDefault,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(12),
                             bottomLeft: Radius.circular(12),
@@ -275,7 +275,7 @@ class _PopupSettingExpirationTimeState
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: ColorValue.primaryDarkBlue,
+                          color: ColorValue.colorGreenDefault,
                           borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(12),
                             bottomRight: Radius.circular(12),
@@ -313,7 +313,7 @@ class _PopupSettingExpirationTimeState
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: ColorValue.primaryDarkBlue,
+                          color: ColorValue.colorGreenDefault,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(12),
                             bottomLeft: Radius.circular(12),
@@ -354,7 +354,7 @@ class _PopupSettingExpirationTimeState
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: ColorValue.primaryDarkBlue,
+                          color: ColorValue.colorGreenDefault,
                           borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(12),
                             bottomRight: Radius.circular(12),
@@ -376,7 +376,7 @@ class _PopupSettingExpirationTimeState
                 child: ElevatedButton(
                   onPressed: _confirm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorValue.primaryDarkBlue,
+                    backgroundColor: ColorValue.colorGreenDefault,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
