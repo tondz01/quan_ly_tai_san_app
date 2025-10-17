@@ -86,7 +86,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (provider.data == null) {
-                  return const Center(child: Text('Không có dữ liệu'));
+                  return const Center(child: Text('Đang tài dữ liệu ...'));
                 }
 
                 return Scaffold(

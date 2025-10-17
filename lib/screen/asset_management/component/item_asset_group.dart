@@ -36,92 +36,95 @@ class _ItemAssetGroupState extends State<ItemAssetGroup> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      width: (size.width * 0.2) <= 170 ? 170 : size.width * 0.2,
-      height: (size.width * 0.2) <= 100 ? 100 : (size.width * 0.2) * 0.5,
-      decoration: BoxDecoration(
-        color: widget.valueCheckBox ? ColorValue.neutral50 : Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color:
-                !widget.valueCheckBox
-                    ? ColorValue.neutral200.withOpacity(0.3)
-                    : Colors.black,
-            spreadRadius: 0,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color:
-                      widget.color?.withOpacity(0.1) ??
-                      ColorValue.accentLightCyan.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child:
-                    widget.icon != null
-                        ? Icon(
-                          widget.icon,
-                          color: widget.color ?? ColorValue.accentLightCyan,
-                          size: 24,
-                        )
-                        : SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Image.asset(
-                            widget.image ?? 'assets/images/asset_group.png',
-                            fit: BoxFit.cover,
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        width: (size.width * 0.2) <= 170 ? 170 : size.width * 0.2,
+        height: (size.width * 0.2) <= 100 ? 100 : (size.width * 0.2) * 0.5,
+        decoration: BoxDecoration(
+          color: widget.valueCheckBox ? ColorValue.neutral50 : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  !widget.valueCheckBox
+                      ? ColorValue.neutral200.withOpacity(0.3)
+                      : Colors.black,
+              spreadRadius: 0,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        widget.color?.withOpacity(0.1) ??
+                        ColorValue.accentLightCyan.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child:
+                      widget.icon != null
+                          ? Icon(
+                            widget.icon,
                             color: widget.color ?? ColorValue.accentLightCyan,
+                            size: 24,
+                          )
+                          : SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Image.asset(
+                              widget.image ?? 'assets/images/asset_group.png',
+                              fit: BoxFit.cover,
+                              color: widget.color ?? ColorValue.accentLightCyan,
+                            ),
                           ),
-                        ),
-              ),
-              // Image.asset('assets/images/asset_group.png'),
-              SizedBox(width: 10),
-              Expanded(
-                child: SGText(
-                  text: widget.titleName,
-                  size: 14,
-                  fontWeight: FontWeight.bold,
-                  lineHeight: 1.5,
                 ),
-              ),
-            ],
-          ),
-          // Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              SGText(
-                text: 'Số lượng tài sản: ',
-                size: 14,
-                color: ColorValue.cyan,
-                fontWeight: FontWeight.bold,
-              ),
-              SGText(
-                text: widget.numberAsset ?? '0',
-                size: 14,
-                color: ColorValue.neutral500,
-                fontWeight: FontWeight.bold,
-              ),
-              Spacer(),
-              SgCheckbox(
-                value: widget.valueCheckBox,
-                onChanged: (value) => widget.onChange?.call(value),
-              ),
-            ],
-          ),
-        ],
+                // Image.asset('assets/images/asset_group.png'),
+                SizedBox(width: 10),
+                Expanded(
+                  child: SGText(
+                    text: widget.titleName,
+                    size: 14,
+                    fontWeight: FontWeight.bold,
+                    lineHeight: 1.5,
+                  ),
+                ),
+              ],
+            ),
+            // Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SGText(
+                  text: 'Số lượng tài sản: ',
+                  size: 14,
+                  color: ColorValue.cyan,
+                  fontWeight: FontWeight.bold,
+                ),
+                SGText(
+                  text: widget.numberAsset ?? '0',
+                  size: 14,
+                  color: ColorValue.neutral500,
+                  fontWeight: FontWeight.bold,
+                ),
+                Spacer(),
+                SgCheckbox(
+                  value: widget.valueCheckBox,
+                  onChanged: (value) => widget.onChange?.call(value),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

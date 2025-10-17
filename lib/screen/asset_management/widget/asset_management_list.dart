@@ -197,27 +197,38 @@ class _AssetManagementListState extends State<AssetManagementList> {
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 13.0),
                         child: Row(
-                          spacing: 16,
+                          // spacing: 16,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ...groups.map(
-                              (item) => ItemAssetGroup(
-                                titleName: item.tenNhom,
-                                numberAsset: getCountAssetByAssetManagement(
-                                  data,
-                                  '${item.id}',
+                              (item) => Visibility(
+                                visible:
+                                    getCountAssetByAssetManagement(
+                                      data,
+                                      '${item.id}',
+                                    ) !=
+                                    0,
+                                child: ItemAssetGroup(
+                                  titleName: item.tenNhom,
+                                  numberAsset:
+                                      getCountAssetByAssetManagement(
+                                        data,
+                                        '${item.id}',
+                                      ).toString(),
+                                  image: "assets/images/assets.png",
+                                  onTap: () {
+                                    context.go(AppRoute.staffManager.path);
+                                  },
+                                  valueCheckBox: widget.provider
+                                      .getCheckBoxStatus(item.id),
+                                  onChange: (value) {
+                                    widget.provider.updateCheckBoxStatus(
+                                      item.id,
+                                      value,
+                                    );
+                                  },
                                 ),
-                                image: "assets/images/assets.png",
-                                onTap: () {
-                                  context.go(AppRoute.staffManager.path);
-                                },
-                                valueCheckBox: widget.provider
-                                    .getCheckBoxStatus(item.id),
-                                onChange: (value) {
-                                  widget.provider.updateCheckBoxStatus(
-                                    item.id,
-                                    value,
-                                  );
-                                },
                               ),
                             ),
                           ],
@@ -359,7 +370,9 @@ class _AssetManagementListState extends State<AssetManagementList> {
               builder: (context, ref, child) {
                 final dataFiltered = widget.provider.filteredData ?? [];
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  ref.read(tableAssetManagementProvider.notifier).setData(dataFiltered);
+                  ref
+                      .read(tableAssetManagementProvider.notifier)
+                      .setData(dataFiltered);
                 });
 
                 return RiverpodTable<AssetManagementDto>(
@@ -407,11 +420,11 @@ class _AssetManagementListState extends State<AssetManagementList> {
     );
   }
 
-  String getCountAssetByAssetManagement(
+  int getCountAssetByAssetManagement(
     List<AssetManagementDto> data,
     String idNhomTaiSan,
   ) {
-    return data.where((i) => i.idNhomTaiSan == idNhomTaiSan).length.toString();
+    return data.where((i) => i.idNhomTaiSan == idNhomTaiSan).length;
   }
 
   List<ResponsiveButtonData> _buildButtonList(int itemCount) {
