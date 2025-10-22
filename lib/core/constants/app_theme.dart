@@ -88,7 +88,7 @@ class AppTheme {
       labelStyle: TextStyle(color: Colors.grey.shade700),
       floatingLabelStyle: TextStyle(color: ColorValue.oceanBlue),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
@@ -142,7 +142,7 @@ class AppTheme {
       color: ColorValue.oceanBlue,
       size: 24,
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: ColorValue.oceanBlue,
       unselectedLabelColor: Colors.grey.shade700,
       indicatorColor: ColorValue.oceanBlue,
@@ -150,7 +150,7 @@ class AppTheme {
       labelStyle: const TextStyle(fontWeight: FontWeight.bold),
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: Colors.white,
       elevation: 4,
       shape: RoundedRectangleBorder(
