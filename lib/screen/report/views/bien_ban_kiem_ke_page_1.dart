@@ -4,12 +4,6 @@ import 'package:se_gay_components/common/sg_text.dart';
 
 import '../../../common/page/contract_page.dart' show SettingPage;
 
-void main() {
-  runApp(
-    const MaterialApp(debugShowCheckedModeBanner: false, home: KiemKePage()),
-  );
-}
-
 class AssetRow {
   int stt;
   String ten;
