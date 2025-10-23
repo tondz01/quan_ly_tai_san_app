@@ -285,6 +285,10 @@ class AppMenuData extends ChangeNotifier {
               label: 'Biên bản kiểm kê CCDC',
               route: AppRoute.bienBanKiemKeCcdc.path,
             ),
+            SubMenuItem(
+              label: 'Biên bản kiểm kê tài sản cố định',
+              route: AppRoute.bienBanKiemKeTaiSanCoDinh.path,
+            ),
           ],
         ),
     ];

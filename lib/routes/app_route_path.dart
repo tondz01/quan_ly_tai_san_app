@@ -51,7 +51,8 @@ enum AppRoute {
   loaiTaiSan(path: "/loai-tai-san", name: 'loai-tai-san'),
   unit(path: "/unit", name: 'unit'),
   toolAndSuppliesHandover(path: "/tool-and-supplies-handover", name: 'tool-and-supplies-handover'),
-  reasonIncrease(path: "/reason-increase", name: 'reason-increase');
+  reasonIncrease(path: "/reason-increase", name: 'reason-increase'),
+  bienBanKiemKeTaiSanCoDinh(path: "/kiem-ke-tscd", name: 'kiem-ke-tscd');
 
   final String path;
   final String? name;

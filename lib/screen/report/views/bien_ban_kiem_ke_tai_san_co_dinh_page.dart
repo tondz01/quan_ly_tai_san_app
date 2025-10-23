@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/page/contract_page.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/editable_text.dart';
-import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
-class BienBanKiemKePage extends StatelessWidget {
-  final List<InventoryMinutes> inventoryMinutes;
+class BienBanKiemKeTaiSanCoDinhPage extends StatelessWidget {
+  final List<TaiSanCoDinhDto> taiSanCoDinhList;
   final String denNgay;
   final String tenDonVi;
 
-  const BienBanKiemKePage({
+  const BienBanKiemKeTaiSanCoDinhPage({
     super.key,
-    required this.inventoryMinutes,
+    required this.taiSanCoDinhList,
     required this.denNgay,
     required this.tenDonVi,
   });
@@ -22,20 +22,46 @@ class BienBanKiemKePage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         HeaderBienBanKiemKe(tenDonVi: tenDonVi, denNgay: denNgay),
-        BodyBienBanKiemKe(inventoryMinutes: inventoryMinutes),
+        BodyBienBanKiemKe(taiSanCoDinhList: taiSanCoDinhList),
         FooterBienBanKiemKe(),
       ],
     );
   }
 }
 
+Widget buildRichHeader(String text) {
+  final regex = RegExp(r'^(.*?)(\s*\(.*\))?$');
+  final match = regex.firstMatch(text);
+
+  final main = match?.group(1)?.trim() ?? text;
+  final boldPart = match?.group(2);
+
+  return RichText(
+    textAlign: TextAlign.center,
+    text: TextSpan(
+      style: SettingPage.textStyle.copyWith(
+        fontSize: 8 * SettingPage.scale,
+        color: Colors.black,
+      ),
+      children: [
+        TextSpan(text: main),
+        if (boldPart != null)
+          TextSpan(
+            text: ' $boldPart',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+      ],
+    ),
+  );
+}
+
 class BodyBienBanKiemKe extends StatefulWidget {
   const BodyBienBanKiemKe({
     super.key,
-    required this.inventoryMinutes,
+    required this.taiSanCoDinhList,
     this.startIndex = 0,
   });
-  final List<InventoryMinutes> inventoryMinutes;
+  final List<TaiSanCoDinhDto> taiSanCoDinhList;
   final int startIndex;
 
   @override
@@ -58,7 +84,108 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
         _editedData[index] = {};
       }
       _editedData[index]![field] = value;
+
+      // Auto copy từ Kế toán sang Kiểm kê
+      _autoCopyKeToanToKiemKe(index, field, value);
+
+      // Auto tính chênh lệch
+      _autoCalculateChenhLech(index);
     });
+  }
+
+  // Method để tự động copy từ Kế toán sang Kiểm kê
+  void _autoCopyKeToanToKiemKe(int index, String field, String value) {
+    if (field == 'soLuongKeToan') {
+      _editedData[index]!['soLuongKiemKe'] = value;
+    } else if (field == 'nguyenGiaKeToan') {
+      _editedData[index]!['nguyenGiaKiemKe'] = value;
+    } else if (field == 'giaTriConLaiKeToan') {
+      _editedData[index]!['giaTriConLaiKiemKe'] = value;
+    }
+  }
+
+  // Method để tự động tính chênh lệch
+  void _autoCalculateChenhLech(int index) {
+    // Tính chênh lệch số lượng
+    final soLuongKeToan =
+        double.tryParse(
+          _getValue(
+            index,
+            'soLuongKeToan',
+            widget.taiSanCoDinhList[index].soLuong.toString(),
+          ),
+        ) ??
+        0;
+    final soLuongKiemKe =
+        double.tryParse(
+          _getValue(
+            index,
+            'soLuongKiemKe',
+            widget.taiSanCoDinhList[index].soLuong.toString(),
+          ),
+        ) ??
+        0;
+    final soLuongChenhLech = soLuongKiemKe - soLuongKeToan;
+    _editedData[index]!['soLuongChenhLech'] = soLuongChenhLech.toString();
+
+    // Tính chênh lệch nguyên giá
+    final nguyenGiaKeToan =
+        double.tryParse(
+          _getValue(
+            index,
+            'nguyenGiaKeToan',
+            _formatCurrency(widget.taiSanCoDinhList[index].nguyenGia),
+          ),
+        ) ??
+        0;
+    final nguyenGiaKiemKe =
+        double.tryParse(
+          _getValue(
+            index,
+            'nguyenGiaKiemKe',
+            _formatCurrency(widget.taiSanCoDinhList[index].nguyenGia),
+          ),
+        ) ??
+        0;
+    final nguyenGiaChenhLech = nguyenGiaKiemKe - nguyenGiaKeToan;
+    _editedData[index]!['nguyenGiaChenhLech'] = _formatCurrency(
+      nguyenGiaChenhLech,
+    );
+
+    // Tính chênh lệch giá trị còn lại
+    final giaTriConLaiKeToan =
+        double.tryParse(
+          _getValue(
+            index,
+            'giaTriConLaiKeToan',
+            _formatCurrency(widget.taiSanCoDinhList[index].giaTriKhauHaoBanDau),
+          ),
+        ) ??
+        0;
+    final giaTriConLaiKiemKe =
+        double.tryParse(
+          _getValue(
+            index,
+            'giaTriConLaiKiemKe',
+            _formatCurrency(widget.taiSanCoDinhList[index].giaTriKhauHaoBanDau),
+          ),
+        ) ??
+        0;
+    final giaTriConLaiChenhLech = giaTriConLaiKiemKe - giaTriConLaiKeToan;
+    _editedData[index]!['giaTriConLaiChenhLech'] = _formatCurrency(
+      giaTriConLaiChenhLech,
+    );
+  }
+
+  TableCell buildHeaderCell(String text) {
+    return TableCell(
+      verticalAlignment: TableCellVerticalAlignment.top,
+      child: Container(
+        height: 60,
+        padding: EdgeInsets.all(2.0 * SettingPage.scale),
+        child: Center(child: buildRichHeader(text)),
+      ),
+    );
   }
 
   // Method để tạo editable cell
@@ -77,7 +204,7 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
           placeholder: originalValue.isEmpty ? "" : originalValue,
           initialValue: _getValue(index, field, originalValue),
           style: SettingPage.textStyle.copyWith(
-            fontSize: 10 * SettingPage.scale,
+            fontSize: 8 * SettingPage.scale,
           ),
           width: width,
           maxLines: null, // Cho phép xuống dòng
@@ -97,201 +224,130 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
   // Method để lấy dữ liệu cuối cùng (đã chỉnh sửa hoặc gốc)
   List<Map<String, String>> getFinalData() {
     List<Map<String, String>> finalData = [];
-    for (int i = 0; i < widget.inventoryMinutes.length; i++) {
+    for (int i = 0; i < widget.taiSanCoDinhList.length; i++) {
       Map<String, String> itemData = {
         'tenTaiSan': _getValue(
           i,
           'tenTaiSan',
-          widget.inventoryMinutes[i].tenTaiSan ?? '',
+          widget.taiSanCoDinhList[i].tenTaiSan,
         ),
-        'donViTinh': _getValue(
+        'maSo': _getValue(i, 'maSo', widget.taiSanCoDinhList[i].id),
+        'noiSuDung': _getValue(
           i,
-          'donViTinh',
-          widget.inventoryMinutes[i].donViTinh,
+          'noiSuDung',
+          widget.taiSanCoDinhList[i].idDonViHienThoi,
         ),
-        'nuocSanXuat': _getValue(
+        'soLuongKeToan': _getValue(
           i,
-          'nuocSanXuat',
-          widget.inventoryMinutes[i].nuocSanXuat ?? '',
+          'soLuongKeToan',
+          widget.taiSanCoDinhList[i].soLuong.toString(),
         ),
-        'phuongThucKiemKe': _getValue(i, 'phuongThucKiemKe', ''),
-        'soLuongKiemKe': _getValue(i, 'soLuongKiemKe', ''),
-        'hienTrang': _getValue(
+        'nguyenGiaKeToan': _getValue(
           i,
-          'hienTrang',
-          widget.inventoryMinutes[i].hienTrang?.toString() ?? '',
+          'nguyenGiaKeToan',
+          _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
         ),
-        'ghiChu': _getValue(
+        'giaTriConLaiKeToan': _getValue(
           i,
-          'ghiChu',
-          widget.inventoryMinutes[i].ghiChu ?? '',
+          'giaTriConLaiKeToan',
+          _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
         ),
+        'soLuongKiemKe': _getValue(
+          i,
+          'soLuongKiemKe',
+          widget.taiSanCoDinhList[i].soLuong.toString(),
+        ),
+        'nguyenGiaKiemKe': _getValue(
+          i,
+          'nguyenGiaKiemKe',
+          _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+        ),
+        'giaTriConLaiKiemKe': _getValue(
+          i,
+          'giaTriConLaiKiemKe',
+          _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+        ),
+        'soLuongChenhLech': _getValue(i, 'soLuongChenhLech', '0'),
+        'nguyenGiaChenhLech': _getValue(i, 'nguyenGiaChenhLech', '0'),
+        'giaTriConLaiChenhLech': _getValue(i, 'giaTriConLaiChenhLech', '0'),
+        'ghiChu': _getValue(i, 'ghiChu', widget.taiSanCoDinhList[i].ghiChu),
       };
       finalData.add(itemData);
     }
     return finalData;
   }
 
+  // Method để format số tiền
+  String _formatCurrency(double value) {
+    if (value == 0) return '0';
+    return value.toStringAsFixed(0);
+  }
+
+  // Method để khởi tạo dữ liệu ban đầu
+  void _initializeData() {
+    for (int i = 0; i < widget.taiSanCoDinhList.length; i++) {
+      if (_editedData[i] == null) {
+        _editedData[i] = {};
+        // Copy dữ liệu từ Kế toán sang Kiểm kê
+        _editedData[i]!['soLuongKiemKe'] =
+            widget.taiSanCoDinhList[i].soLuong.toString();
+        _editedData[i]!['nguyenGiaKiemKe'] = _formatCurrency(
+          widget.taiSanCoDinhList[i].nguyenGia,
+        );
+        _editedData[i]!['giaTriConLaiKiemKe'] = _formatCurrency(
+          widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau,
+        );
+        // Tính chênh lệch ban đầu
+        _autoCalculateChenhLech(i);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Khởi tạo dữ liệu ban đầu
+    _initializeData();
+
     return Table(
       border: TableBorder.all(),
       defaultVerticalAlignment: TableCellVerticalAlignment.top,
       columnWidths: const {
         0: FixedColumnWidth(40),
-        1: FlexColumnWidth(3),
+        1: FlexColumnWidth(2),
         2: FlexColumnWidth(1),
         3: FlexColumnWidth(1),
         4: FlexColumnWidth(1),
         5: FlexColumnWidth(1),
-        6: FlexColumnWidth(1.5),
-        7: FlexColumnWidth(1.5),
-        8: FlexColumnWidth(1.5),
+        6: FlexColumnWidth(1),
+        7: FlexColumnWidth(1),
+        8: FlexColumnWidth(1),
+        9: FlexColumnWidth(1),
+        10: FlexColumnWidth(1),
+        11: FlexColumnWidth(1),
+        12: FlexColumnWidth(1),
       },
       children: [
         TableRow(
           children: [
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60, // Cùng chiều cao với data cells
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "STT",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Tên tài sản, công cụ dụng cụ ( ký mã hiệu )",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Đơn vị tính",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Nước sản xuất",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Phương thức kiểm kê",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Số lượng kiểm kê thực tế",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Hiện trạng",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            TableCell(
-              verticalAlignment: TableCellVerticalAlignment.top,
-              child: Container(
-                height: 60,
-                padding: EdgeInsets.all(2.0 * SettingPage.scale),
-                child: Center(
-                  child: Text(
-                    "Ghi chú",
-                    style: SettingPage.textStyle.copyWith(
-                      fontSize: 12 * SettingPage.scale,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
+            buildHeaderCell("STT"),
+            buildHeaderCell("Tên TSCĐ"),
+            buildHeaderCell("Mã số"),
+            buildHeaderCell("Nơi sử dụng"),
+            buildHeaderCell("Số lượng (Kế toán)"),
+            buildHeaderCell("Nguyên giá (Kế toán)"),
+            buildHeaderCell("Giá trị còn lại (Kế toán)"),
+            buildHeaderCell("Số lượng (Kiểm kê)"),
+            buildHeaderCell("Nguyên giá (Kiểm kê)"),
+            buildHeaderCell("Giá trị còn lại (Kiểm kê)"),
+            buildHeaderCell("Số lượng (Chênh lệch)"),
+            buildHeaderCell("Số lượng (Chênh lệch)"),
+            buildHeaderCell("Giá trị còn lại (Chênh lệch)"),
+            buildHeaderCell("Ghi chú"),
           ],
         ),
 
         // Dữ liệu chi tiết với khả năng chỉnh sửa
-        for (int i = 0; i < (widget.inventoryMinutes.length); i++)
+        for (int i = 0; i < (widget.taiSanCoDinhList.length); i++)
           TableRow(
             children: [
               // STT - không chỉnh sửa được
@@ -304,50 +360,96 @@ class _BodyBienBanKiemKeState extends State<BodyBienBanKiemKe> {
                     child: Text(
                       (widget.startIndex + i + 1).toString(),
                       style: SettingPage.textStyle.copyWith(
-                        fontSize: 12 * SettingPage.scale,
+                        fontSize: 8 * SettingPage.scale,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ),
                 ),
               ),
-              // Tên tài sản - có thể chỉnh sửa
+              // Tên TSCĐ - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'tenTaiSan',
-                widget.inventoryMinutes[i].tenTaiSan ?? '',
+                widget.taiSanCoDinhList[i].tenTaiSan,
                 200,
               ),
-              // Đơn vị tính - có thể chỉnh sửa
+              // Mã số - có thể chỉnh sửa
+              _buildEditableCell(i, 'maSo', widget.taiSanCoDinhList[i].id, 100),
+              // Nơi sử dụng - có thể chỉnh sửa
               _buildEditableCell(
                 i,
-                'donViTinh',
-                widget.inventoryMinutes[i].donViTinh,
+                'noiSuDung',
+                widget.taiSanCoDinhList[i].idDonViHienThoi,
                 100,
               ),
-              // Nước sản xuất - có thể chỉnh sửa
+              // Số lượng (Kế toán) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
-                'nuocSanXuat',
-                widget.inventoryMinutes[i].nuocSanXuat ?? '',
+                'soLuongKeToan',
+                widget.taiSanCoDinhList[i].soLuong.toString(),
                 100,
               ),
-              // Phương thức kiểm kê - có thể chỉnh sửa
-              _buildEditableCell(i, 'phuongThucKiemKe', '', 100),
-              // Số lượng kiểm kê thực tế - có thể chỉnh sửa
-              _buildEditableCell(i, 'soLuongKiemKe', '', 100),
-              // Hiện trạng - có thể chỉnh sửa
+              // Nguyên giá (Kế toán) - có thể chỉnh sửa
               _buildEditableCell(
                 i,
-                'hienTrang',
-                widget.inventoryMinutes[i].hienTrang?.toString() ?? '',
-                150,
+                'nguyenGiaKeToan',
+                _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+                100,
+              ),
+              // Giá trị còn lại (Kế toán) - có thể chỉnh sửa
+              _buildEditableCell(
+                i,
+                'giaTriConLaiKeToan',
+                _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+                100,
+              ),
+              // Số lượng (Kiểm kê) - có thể chỉnh sửa
+              _buildEditableCell(
+                i,
+                'soLuongKiemKe',
+                widget.taiSanCoDinhList[i].soLuong.toString(),
+                100,
+              ),
+              // Nguyên giá (Kiểm kê) - có thể chỉnh sửa
+              _buildEditableCell(
+                i,
+                'nguyenGiaKiemKe',
+                _formatCurrency(widget.taiSanCoDinhList[i].nguyenGia),
+                100,
+              ),
+              // Giá trị còn lại (Kiểm kê) - có thể chỉnh sửa
+              _buildEditableCell(
+                i,
+                'giaTriConLaiKiemKe',
+                _formatCurrency(widget.taiSanCoDinhList[i].giaTriKhauHaoBanDau),
+                100,
+              ),
+              // Số lượng (Chênh lệch) - tự động tính toán
+              _buildEditableCell(
+                i,
+                'soLuongChenhLech',
+                _getValue(i, 'soLuongChenhLech', '0'),
+                100,
+              ),
+              _buildEditableCell(
+                i,
+                'nguyenGiaChenhLech',
+                _getValue(i, 'nguyenGiaChenhLech', '0'),
+                100,
+              ),
+              // Giá trị còn lại (Chênh lệch) - tự động tính toán
+              _buildEditableCell(
+                i,
+                'giaTriConLaiChenhLech',
+                _getValue(i, 'giaTriConLaiChenhLech', '0'),
+                100,
               ),
               // Ghi chú - có thể chỉnh sửa
               _buildEditableCell(
                 i,
                 'ghiChu',
-                widget.inventoryMinutes[i].ghiChu ?? '',
+                widget.taiSanCoDinhList[i].ghiChu,
                 150,
               ),
             ],
@@ -407,14 +509,14 @@ class _FooterBienBanKiemKeState extends State<FooterBienBanKiemKe> {
         ),
         SGText(text: "", style: SettingPage.textStyle),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SGText(
-                    text: "   I. Tiểu ban kiểm kê",
+                    text: "  Giám đốc",
                     style: SettingPage.textStyle.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -423,33 +525,10 @@ class _FooterBienBanKiemKeState extends State<FooterBienBanKiemKe> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "   1. Phòng ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder: "..........",
-                            initialValue: _phong1,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _phong1 = value;
-                              });
-                            },
-                          ),
-                        ),
-                        TextSpan(text: ": ", style: SettingPage.textStyle),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: '',
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {});
-                            },
+                          text: "   (Ghi ý kiến giải quyết số chênh lệch)",
+                          style: SettingPage.textStyle.copyWith(
+                            fontWeight: FontWeight.w200,
+                            fontSize: 10 * SettingPage.scale,
                           ),
                         ),
                       ],
@@ -459,147 +538,10 @@ class _FooterBienBanKiemKeState extends State<FooterBienBanKiemKe> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "   2. Phòng ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder: "..........",
-                            initialValue: _phong2,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _phong2 = value;
-                              });
-                            },
-                          ),
-                        ),
-                        TextSpan(text: ": ", style: SettingPage.textStyle),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: '',
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   3. Phòng ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder: "..........",
-                            initialValue: _phong3,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _phong3 = value;
-                              });
-                            },
-                          ),
-                        ),
-                        TextSpan(text: ": ", style: SettingPage.textStyle),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: '',
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SGText(
-                    text: "   II. Đơn vị được kiểm kê",
-                    style: SettingPage.textStyle.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   1. Ông (bà): ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: _ongBa1,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _ongBa1 = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   2. Ông (bà): ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: _ongBa2,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _ongBa2 = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   3. Ông (bà): ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: _ongBa3,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _ongBa3 = value;
-                              });
-                            },
+                          text: "  (Ký, họ tên, đóng dấu)",
+                          style: SettingPage.textStyle.copyWith(
+                            fontWeight: FontWeight.w200,
+                            fontSize: 10 * SettingPage.scale,
                           ),
                         ),
                       ],
@@ -610,14 +552,30 @@ class _FooterBienBanKiemKeState extends State<FooterBienBanKiemKe> {
             ),
             SizedBox(width: 12 * SettingPage.scale),
             Expanded(
-              child: Center(
-                child: SGText(
-                  text: "TRƯỞNG TIỂU BAN KIỂM KÊ",
-                  style: SettingPage.textStyle.copyWith(
-                    fontSize: 12 * SettingPage.scale,
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SGText(
+                    text: "  Kế toán",
+                    style: SettingPage.textStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "  (Ký, họ tên,)",
+                          style: SettingPage.textStyle.copyWith(
+                            fontWeight: FontWeight.w200,
+                            fontSize: 10 * SettingPage.scale,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -716,7 +674,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
         SGText(text: "", style: SettingPage.textStyle),
         Center(
           child: SGText(
-            text: "BIÊN BẢN KIỂM KÊ TSCĐ, CCDC TẠI HIỆN TRƯỜNG",
+            text: "BIÊN BẢN KIỂM KÊ TÀI SẢN CỐ ĐỊNH",
             style: SettingPage.textStyle.copyWith(
               fontWeight: FontWeight.bold,
               fontSize: 14 * SettingPage.scale,
@@ -734,7 +692,10 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
           child: RichText(
             text: TextSpan(
               children: [
-                TextSpan(text: "Hôm nay, ngày ", style: SettingPage.textStyle),
+                TextSpan(
+                  text: "Thời điểm kiểm kê, ngày ",
+                  style: SettingPage.textStyle,
+                ),
                 WidgetSpan(
                   child: CustomEditableText(
                     placeholder: "....",
@@ -791,22 +752,14 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                   ),
                 ),
                 TextSpan(
-                  text: " Thành phần kiểm kê chúng tôi gồm:",
+                  text: " Ban kiểm kê gồm:",
                   style: SettingPage.textStyle,
                 ),
               ],
             ),
           ),
         ),
-        SGText(text: "", style: SettingPage.textStyle),
-        SGText(
-          text: "   A. THÀNH PHẦN",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
-        ),
-        SGText(
-          text: "   I. Tiểu ban kiểm kê",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
-        ),
+
         Row(
           children: [
             Expanded(
@@ -823,7 +776,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
+                                "...............................................",
                             initialValue: _ongBa1,
                             style: SettingPage.textStyle,
                             width: 300,
@@ -847,7 +800,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
+                                "...............................................",
                             initialValue: _ongBa2,
                             style: SettingPage.textStyle,
                             width: 300,
@@ -871,7 +824,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
+                                "...............................................",
                             initialValue: _ongBa3,
                             style: SettingPage.textStyle,
                             width: 300,
@@ -903,7 +856,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
+                                "...............................................",
                             initialValue: _chucVu1,
                             style: SettingPage.textStyle,
                             width: 300,
@@ -927,7 +880,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
+                                "...............................................",
                             initialValue: _chucVu2,
                             style: SettingPage.textStyle,
                             width: 300,
@@ -951,100 +904,13 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
+                                "...............................................",
                             initialValue: _chucVu3,
                             style: SettingPage.textStyle,
                             width: 300,
                             onChanged: (value) {
                               setState(() {
                                 _chucVu3 = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        SGText(
-          text: "   II. Đơn vị được kiểm kê",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   1. Ông (bà): ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: _donViOngBa1,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _donViOngBa1 = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   2. Ông (bà): ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: _donViOngBa2,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _donViOngBa2 = value;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: "   3. Ông (bà): ",
-                          style: SettingPage.textStyle,
-                        ),
-                        WidgetSpan(
-                          child: CustomEditableText(
-                            placeholder:
-                                "................................................................................................",
-                            initialValue: _donViOngBa3,
-                            style: SettingPage.textStyle,
-                            width: 300,
-                            onChanged: (value) {
-                              setState(() {
-                                _donViOngBa3 = value;
                               });
                             },
                           ),
@@ -1064,19 +930,19 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "Chức vụ: ",
+                          text: "Đại diện",
                           style: SettingPage.textStyle,
                         ),
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
-                            initialValue: _donViChucVu1,
+                                "...............................................",
+                            initialValue: _chucVu1,
                             style: SettingPage.textStyle,
                             width: 300,
                             onChanged: (value) {
                               setState(() {
-                                _donViChucVu1 = value;
+                                _chucVu1 = value;
                               });
                             },
                           ),
@@ -1088,19 +954,19 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "Chức vụ: ",
+                          text: "Đại diện",
                           style: SettingPage.textStyle,
                         ),
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
-                            initialValue: _donViChucVu2,
+                                "...............................................",
+                            initialValue: _chucVu2,
                             style: SettingPage.textStyle,
                             width: 300,
                             onChanged: (value) {
                               setState(() {
-                                _donViChucVu2 = value;
+                                _chucVu2 = value;
                               });
                             },
                           ),
@@ -1112,19 +978,20 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "Chức vụ: ",
+                          text: "Đại diện",
+
                           style: SettingPage.textStyle,
                         ),
                         WidgetSpan(
                           child: CustomEditableText(
                             placeholder:
-                                "................................................................................................",
-                            initialValue: _donViChucVu3,
+                                "...............................................",
+                            initialValue: _chucVu3,
                             style: SettingPage.textStyle,
                             width: 300,
                             onChanged: (value) {
                               setState(() {
-                                _donViChucVu3 = value;
+                                _chucVu3 = value;
                               });
                             },
                           ),
@@ -1137,13 +1004,9 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
             ),
           ],
         ),
+
         SGText(
-          text: "   B. NỘI DUNG",
-          style: SettingPage.textStyle.copyWith(fontWeight: FontWeight.bold),
-        ),
-        SGText(
-          text:
-              "      Tiến hành kiểm kê TSCĐ, CCDC hiện có tại đơn vị đến ngày ${widget.denNgay} cụ thể như sau:",
+          text: "      Đã kiểm kê TSCĐ, kết quả như sau",
           style: SettingPage.textStyle,
         ),
         SGText(text: "", style: SettingPage.textStyle),

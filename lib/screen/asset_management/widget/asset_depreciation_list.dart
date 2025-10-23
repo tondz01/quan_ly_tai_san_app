@@ -18,26 +18,19 @@ import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
 import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'
-    as riverpod;
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class AssetDepreciationList extends StatefulWidget {
-  const AssetDepreciationList({
-    super.key,
-    required this.provider,
-  });
+  const AssetDepreciationList({super.key, required this.provider});
   final AssetManagementProvider provider;
 
   @override
-  State<AssetDepreciationList> createState() =>
-      _AssetDepreciationListState();
+  State<AssetDepreciationList> createState() => _AssetDepreciationListState();
 }
 
-class _AssetDepreciationListState
-    extends State<AssetDepreciationList> {
+class _AssetDepreciationListState extends State<AssetDepreciationList> {
   List<AssetDepreciationDto> listSelected = [];
-  TextEditingController ctrlSelectDate =
-      TextEditingController();
+  TextEditingController ctrlSelectDate = TextEditingController();
 
   // Table configuration
   late List<ColumnDefinition> _definitions;
@@ -50,24 +43,16 @@ class _AssetDepreciationListState
   void initState() {
     super.initState();
     _initializeTableConfig();
-    ctrlSelectDate = TextEditingController(
-      text: _fmtDate(DateTime.now()),
-    );
+    ctrlSelectDate = TextEditingController(text: _fmtDate(DateTime.now()));
     // Lắng nghe thay đổi từ provider để cập nhật UI khi dữ liệu khấu hao thay đổi
     widget.provider.addListener(_onProviderChanged);
   }
 
   void _initializeTableConfig() {
-    _definitions = TableAssetDepreciationConfig.getColumns(
-      widget.provider,
-    );
-    _columns = _definitions
-        .map((d) => d.config)
-        .toList(growable: true);
+    _definitions = TableAssetDepreciationConfig.getColumns(widget.provider);
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
     _allColumns = List<TableColumnData>.from(_columns);
-    _buildersByKey = {
-      for (final d in _definitions) d.config.key: d.builder,
-    };
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
     _hiddenKeys = <String>[];
   }
 
@@ -82,10 +67,7 @@ class _AssetDepreciationListState
   String _fmtNum(double? v) {
     if (v == null) return '';
     try {
-      final NumberFormat _vnNumber = NumberFormat(
-        '#,##0',
-        'vi_VN',
-      );
+      final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
       return _vnNumber.format(v);
     } catch (_) {
       return v.toString();
@@ -93,9 +75,7 @@ class _AssetDepreciationListState
   }
 
   @override
-  void didUpdateWidget(
-    covariant AssetDepreciationList oldWidget,
-  ) {
+  void didUpdateWidget(covariant AssetDepreciationList oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Nếu instance provider thay đổi, gỡ listener cũ và đăng ký lại
     if (oldWidget.provider != widget.provider) {
@@ -126,15 +106,11 @@ class _AssetDepreciationListState
     super.dispose();
   }
 
-  dynamic getValueForColumn(
-    AssetDepreciationDto item,
-    int columnIndex,
-  ) {
+  dynamic getValueForColumn(AssetDepreciationDto item, int columnIndex) {
     final int offset = 1; // showCheckboxColumn
     final int adjustedIndex = columnIndex - offset;
 
-    if (adjustedIndex < 0 ||
-        adjustedIndex >= _columns.length) {
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
       return null;
     }
 
@@ -217,27 +193,19 @@ class _AssetDepreciationListState
         });
       }
     } catch (e) {
-      SGLog.error(
-        'ColumnConfigDialog',
-        'Error at _openColumnConfigDialog: $e',
-      );
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final data =
-        widget.provider.dataKhauHao ??
-        const <AssetDepreciationDto>[];
+    final data = widget.provider.dataKhauHao ?? const <AssetDepreciationDto>[];
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -249,10 +217,7 @@ class _AssetDepreciationListState
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
               borderRadius: BorderRadius.only(
@@ -261,8 +226,7 @@ class _AssetDepreciationListState
               ),
             ),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
@@ -295,15 +259,10 @@ class _AssetDepreciationListState
                     riverpod.Consumer(
                       builder: (context, ref, _) {
                         return BoxSearch(
-                          width:
-                              (availableWidth * 0.25)
-                                  .toDouble(),
+                          width: (availableWidth * 0.25).toDouble(),
                           onSearch: (value) {
                             ref
-                                .read(
-                                  tableAssetDepreciationProvider
-                                      .notifier,
-                                )
+                                .read(tableAssetDepreciationProvider.notifier)
                                 .searchTerm = value;
                           },
                         );
@@ -311,24 +270,20 @@ class _AssetDepreciationListState
                     ),
                     SizedBox(width: 16),
                     ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: 180,
-                      ),
+                      constraints: BoxConstraints(maxWidth: 180),
                       child: CmFormDate(
                         sizePadding: 0,
                         label: 'Chọn thời gian khấu hao',
                         controller: ctrlSelectDate,
                         isEditing: true,
                         onChanged: (value) {
-                          widget.provider
-                              .getDepreciationByDate(
-                                context,
-                                value ?? DateTime.now(),
-                              );
+                          widget.provider.getDepreciationByDate(
+                            context,
+                            value ?? DateTime.now(),
+                          );
                           setState(() {});
                         },
-                        dateTimeMode:
-                            SGDateTimeMode.monthYear,
+                        dateTimeMode: SGDateTimeMode.dayMonthYear,
                         showTimeSection: false,
                       ),
                     ),
@@ -337,41 +292,25 @@ class _AssetDepreciationListState
                       child: riverpod.Consumer(
                         builder: (context, ref, _) {
                           final hasFilters = ref.watch(
-                            tableAssetDepreciationProvider
-                                .select(
-                                  (s) =>
-                                      s
-                                          .filterState
-                                          .hasActiveFilters,
-                                ),
+                            tableAssetDepreciationProvider.select(
+                              (s) => s.filterState.hasActiveFilters,
+                            ),
                           );
                           final tableState = ref.watch(
                             tableAssetDepreciationProvider,
                           );
-                          final selectedCount =
-                              tableState
-                                  .selectedItems
-                                  .length;
-                          listSelected =
-                              tableState.selectedItems;
-                          final buttons = _buildButtonList(
-                            selectedCount,
-                          );
+                          final selectedCount = tableState.selectedItems.length;
+                          listSelected = tableState.selectedItems;
+                          final buttons = _buildButtonList(selectedCount);
                           final processedButtons =
                               buttons.map((button) {
-                                if (button.text ==
-                                    'Xóa bộ lọc') {
+                                if (button.text == 'Xóa bộ lọc') {
                                   return ResponsiveButtonData.fromButtonIcon(
                                     text: button.text,
-                                    iconPath:
-                                        button.iconPath!,
-                                    backgroundColor:
-                                        button
-                                            .backgroundColor!,
-                                    iconColor:
-                                        button.iconColor!,
-                                    textColor:
-                                        button.textColor!,
+                                    iconPath: button.iconPath!,
+                                    backgroundColor: button.backgroundColor!,
+                                    iconColor: button.iconColor!,
+                                    textColor: button.textColor!,
                                     width: button.width,
                                     onPressed: () {
                                       ref
@@ -391,29 +330,20 @@ class _AssetDepreciationListState
                                   ? processedButtons
                                   : processedButtons
                                       .where(
-                                        (button) =>
-                                            button.text !=
-                                            'Xóa bộ lọc',
+                                        (button) => button.text != 'Xóa bộ lọc',
                                       )
                                       .toList();
 
                           return ResponsiveButtonBar(
                             buttons: filteredButtons,
                             spacing: 12,
-                            overflowSide:
-                                OverflowSide.start,
-                            mainAxisAlignment:
-                                MainAxisAlignment.end,
-                            popupPosition:
-                                PopupMenuPosition.under,
+                            overflowSide: OverflowSide.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            popupPosition: PopupMenuPosition.under,
                             popupOffset: const Offset(0, 8),
-                            popupShape:
-                                RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                        8,
-                                      ),
-                                ),
+                            popupShape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             popupElevation: 6,
                             moreLabel: 'Khác',
                           );
@@ -433,24 +363,14 @@ class _AssetDepreciationListState
             ),
             child: riverpod.Consumer(
               builder: (context, ref, child) {
-                ref
-                    .read(
-                      tableAssetDepreciationProvider
-                          .notifier,
-                    )
-                    .setData(data);
+                ref.read(tableAssetDepreciationProvider.notifier).setData(data);
 
                 return widget.provider.isLoadingKhauHao
-                    ? Center(
-                      child: CircularProgressIndicator(),
-                    )
+                    ? Center(child: CircularProgressIndicator())
                     : data.isEmpty
-                    ? Center(
-                      child: Text('Không có dữ liệu'),
-                    )
+                    ? Center(child: Text('Không có dữ liệu'))
                     : RiverpodTable<AssetDepreciationDto>(
-                      tableProvider:
-                          tableAssetDepreciationProvider,
+                      tableProvider: tableAssetDepreciationProvider,
                       columns: _columns,
                       showCheckboxColumn: true,
                       enableRowSelection: true,
@@ -460,22 +380,14 @@ class _AssetDepreciationListState
                       cellsBuilder: (_) => [],
                       cellBuilderByKey: (item, key) {
                         final builder = _buildersByKey[key];
-                        if (builder != null)
-                          return builder(item);
+                        if (builder != null) return builder(item);
                         return null;
                       },
                       onRowTap: (item) {
-                        widget.provider
-                            .onChangeDepreciationDetail(
-                              item,
-                            );
+                        widget.provider.onChangeDepreciationDetail(item);
                       },
                       showActionsColumn: false,
-                      maxHeight:
-                          MediaQuery.of(
-                            context,
-                          ).size.height *
-                          0.6,
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
                     );
               },
             ),
@@ -485,9 +397,7 @@ class _AssetDepreciationListState
     );
   }
 
-  List<ResponsiveButtonData> _buildButtonList(
-    int itemCount,
-  ) {
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
     return [
       // Configure columns button
       ResponsiveButtonData.fromButtonIcon(

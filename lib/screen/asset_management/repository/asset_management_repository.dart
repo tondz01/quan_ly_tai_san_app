@@ -79,7 +79,10 @@ class AssetManagementRepository extends ApiBase {
   }
 
   //get list Khau Hao
-  Future<Map<String, dynamic>> getListKhauHao(String idCongTy, {DateTime? date}) async {
+  Future<Map<String, dynamic>> getListKhauHao(
+    String idCongTy, {
+    DateTime? date,
+  }) async {
     List<AssetDepreciationDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -89,7 +92,7 @@ class AssetManagementRepository extends ApiBase {
     try {
       DateTime now = date ?? DateTime.now();
       String url =
-          '${EndPointAPI.ASSET_MANAGEMENT}/khauhaotaisan?idcongty=$idCongTy&thang=${now.month}&nam=${now.year}';
+          '${EndPointAPI.ASSET_MANAGEMENT}/khauhaotaisan?idcongty=$idCongTy&thang=${now.month}&nam=${now.year}&ngay=${now.day}';
       final response = await get(url);
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
