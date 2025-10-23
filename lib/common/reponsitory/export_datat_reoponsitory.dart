@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -66,9 +65,7 @@ class ExportDataReponsitory extends ApiBase {
       'status_code': -1,
       'message': '',
     };
-    log('fileName check exportDataDetailCCDC: $fileName');
     try {
-      log('data check exportDataDetailCCDC: ${jsonEncode(data)}');
       final response = await post(
         EndPointAPI.EXPORT_DATA_DETAIL_CCDC,
         data: jsonEncode(data),

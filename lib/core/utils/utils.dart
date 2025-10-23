@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -276,17 +275,14 @@ abstract class AppUtility {
       data,
       fileName,
     );
-    log('result check exportDataDetailCCDC: ${jsonEncode(result)}');
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       if (context.mounted) {
         showSnackBar(context, result['message']);
       }
-      log('message exportData success: ${result['message']}');
     } else {
       if (context.mounted) {
         showSnackBar(context, result['message'], isError: true);
       }
-      log('message exportData error: ${result['message']}');
     }
   }
 

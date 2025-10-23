@@ -425,7 +425,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
 
       if (itemCount > 0)
         ResponsiveButtonData.fromButtonIcon(
-          text: 'Xuất Excel (Chi tiết)',
+          text: 'Xuất chi tiết CCDC phân bổ',
           iconPath: AppIconSvg.iconFileDown,
           backgroundColor: AppColor.white,
           iconColor: AppColor.textDark,
@@ -436,7 +436,6 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
             for (var item in listSelected) {
               dataExport.addAll(item.toJsonExportWithDetails());
             }
-            log('dataExport: ${jsonEncode(dataExport)}');
             AppUtility.exportDataDetailCCDC(
               context,
               "Danh sách chi tiết CCDC phân bổ",
