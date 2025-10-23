@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -249,6 +250,33 @@ abstract class AppUtility {
       data,
       fileName,
     );
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      if (context.mounted) {
+        showSnackBar(context, result['message']);
+      }
+      log('message exportData success: ${result['message']}');
+    } else {
+      if (context.mounted) {
+        showSnackBar(context, result['message'], isError: true);
+      }
+      log('message exportData error: ${result['message']}');
+    }
+  }
+
+  static Future exportDataDetailCCDC(
+    BuildContext context,
+    String fileName,
+    List<dynamic> data,
+  ) async {
+    if (data.isEmpty) {
+      showSnackBar(context, "Không có dữ liệu để xuất", isError: true);
+      return;
+    }
+    Map<String, dynamic> result = await ExportDataReponsitory().exportDataDetailCCDC(
+      data,
+      fileName,
+    );
+    log('result check exportDataDetailCCDC: ${jsonEncode(result)}');
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       if (context.mounted) {
         showSnackBar(context, result['message']);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -34,6 +35,55 @@ class ExportDataReponsitory extends ApiBase {
       // Lưu file ra máy (ví dụ Excel)
       final bytes = Uint8List.fromList(response.data);
       final savedPath = await saveExportFile(bytes, '$fileName.xlsx');
+
+      // Sửa logic kiểm tra lỗi
+      if (savedPath.startsWith("404/")) {
+        final error = savedPath.substring(4); // Bỏ "404/" prefix
+        result['message'] = "Lỗi khi xuất file dữ liệu: $error";
+        result['status_code'] = Numeral.NOTFOUND_EXCEPTION_CODE;
+        SGLog.error("ExportDataReponsitory", "Error at saveExportFile: $error");
+      } else if (savedPath == "download_triggered") {
+        result['message'] = "✅ File đã trigger download trên Web";
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      } else {
+        result['message'] = "✅ File đã lưu ở: $savedPath";
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      }
+    } catch (e) {
+      result['message'] = "Error at exportData: $e";
+      SGLog.error("ExportDataReponsitory", "Error at exportData: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> exportDataDetailCCDC(
+    List<dynamic> data,
+    String fileName,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': -1,
+      'message': '',
+    };
+    log('fileName check exportDataDetailCCDC: $fileName');
+    try {
+      log('data check exportDataDetailCCDC: ${jsonEncode(data)}');
+      final response = await post(
+        EndPointAPI.EXPORT_DATA_DETAIL_CCDC,
+        data: jsonEncode(data),
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': 'JSESSIONID=7C56D763BDCFEE752F7DEBE03639F4A9',
+          },
+          responseType: ResponseType.bytes,
+        ),
+      );
+
+      // Lưu file ra máy (ví dụ Excel)
+      final bytes = Uint8List.fromList(response.data);
+      final savedPath = await saveExportFile(bytes, '$fileName.docx');
 
       // Sửa logic kiểm tra lỗi
       if (savedPath.startsWith("404/")) {

@@ -437,9 +437,9 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
               dataExport.addAll(item.toJsonExportWithDetails());
             }
             log('dataExport: ${jsonEncode(dataExport)}');
-            AppUtility.exportData(
+            AppUtility.exportDataDetailCCDC(
               context,
-              "CCDC - Vật tư (Chi tiết đơn vị sở hữu)",
+              "Danh sách chi tiết CCDC phân bổ",
               dataExport,
             );
           },
