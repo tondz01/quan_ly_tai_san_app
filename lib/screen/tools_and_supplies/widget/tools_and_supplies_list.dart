@@ -1,12 +1,19 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/bloc/tools_and_supplies_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/ownership_unit_details.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/component/table_tools_and_supplies_config.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/table_tools_and_supplies_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
@@ -18,7 +25,7 @@ import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.d
 import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
 import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
-import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
+import 'package:table_base/widgets/table/widgets/expandable_riverpod_table.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class ToolsAndSuppliesList extends StatefulWidget {
@@ -86,8 +93,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
   String _fmtNum(double? value) {
     if (value == null) return '';
     try {
-      final NumberFormat _vnNumber = NumberFormat('#,##0', 'vi_VN');
-      return _vnNumber.format(value);
+      final NumberFormat vnNumber = NumberFormat('#,##0', 'vi_VN');
+      return vnNumber.format(value);
     } catch (e) {
       return value.toString();
     }
@@ -119,16 +126,6 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
         return item.soLuong.toString();
       case 'giaTri':
         return _fmtNum(item.giaTri);
-      case 'kyHieu':
-        return item.kyHieu;
-      case 'congSuat':
-        return item.congSuat;
-      case 'nuocSanXuat':
-        return item.nuocSanXuat;
-      case 'namSanXuat':
-        return item.namSanXuat.toString();
-      case 'soKyHieu':
-        return item.soKyHieu;
       case 'ghiChu':
         return item.ghiChu;
       case 'nguoiTao':
@@ -322,12 +319,16 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                           ? const Center(
                             child: Text('Không có dữ liệu để hiển thị'),
                           )
-                          : RiverpodTable<ToolsAndSuppliesDto>(
+                          : ExpandableRiverpodTable<
+                            ToolsAndSuppliesDto,
+                            OwnershipUnitDetailDto
+                          >(
                             tableProvider: tableToolsAndSuppliesProvider,
                             columns: _columns,
                             showCheckboxColumn: true,
                             enableRowSelection: true,
                             enableRowHover: true,
+                            childTableTitle: 'Chi tiết đơn vị sở hữu',
                             showAlternatingRowColors: true,
                             valueGetter: getValueForColumn,
                             cellsBuilder: (_) => [],
@@ -338,6 +339,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                               }
                               return null;
                             },
+                            childCellBuilder:
+                                TableToolsAndSuppliesConfig.buildChildCell,
                             onRowTap: (item) {
                               widget.provider.onChangeDetail(context, item);
                               setState(() {
@@ -346,6 +349,12 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                             },
                             showActionsColumn: false,
                             maxHeight: MediaQuery.of(context).size.height * 0.6,
+                            childTableBackgroundColor: Colors.yellow.shade50,
+                            childDataGetter: (parentData) {
+                              return parentData.detailOwnershipUnit;
+                            },
+                            childColumns:
+                                TableToolsAndSuppliesConfig.getChildColumns(),
                           );
                     },
                   ),
@@ -410,6 +419,28 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                 final bloc = context.read<ToolsAndSuppliesBloc>();
                 bloc.add(DeleteAssetBatchEvent(ids));
               },
+            );
+          },
+        ),
+
+      if (itemCount > 0)
+        ResponsiveButtonData.fromButtonIcon(
+          text: 'Xuất Excel (Chi tiết)',
+          iconPath: AppIconSvg.iconFileDown,
+          backgroundColor: AppColor.white,
+          iconColor: AppColor.textDark,
+          textColor: AppColor.textDark,
+          width: 200,
+          onPressed: () {
+            List<dynamic> dataExport = [];
+            for (var item in listSelected) {
+              dataExport.addAll(item.toJsonExportWithDetails());
+            }
+            log('dataExport: ${jsonEncode(dataExport)}');
+            AppUtility.exportData(
+              context,
+              "CCDC - Vật tư (Chi tiết đơn vị sở hữu)",
+              dataExport,
             );
           },
         ),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
 
@@ -38,7 +41,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.id));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.id),
+          );
         },
       ),
       ColumnDefinition(
@@ -49,18 +55,24 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.ten));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.ten),
+          );
         },
       ),
       ColumnDefinition(
         config: TableColumnData.select(
           name: 'Đơn vị nhập',
           key: 'tenDonVi',
-          width: 150,
+          width: 250,
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenDonVi));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.tenDonVi),
+          );
         },
       ),
       ColumnDefinition(
@@ -71,7 +83,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.tenNhomCCDC));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.tenNhomCCDC),
+          );
         },
       ),
       ColumnDefinition(
@@ -93,7 +108,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.donViTinh));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.donViTinh),
+          );
         },
       ),
       ColumnDefinition(
@@ -104,7 +122,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.soLuong.toString()));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.soLuong.toString()),
+          );
         },
       ),
       ColumnDefinition(
@@ -115,7 +136,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(_fmtNum(item.giaTri)));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(_fmtNum(item.giaTri)),
+          );
         },
       ),
       ColumnDefinition(
@@ -126,53 +150,13 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.kyHieu));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.kyHieu),
+          );
         },
       ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Công suất',
-          key: 'congSuat',
-          width: 120,
-          flex: 1,
-        ),
-        builder: (item) {
-          return TableCellData(widget: Text(item.congSuat));
-        },
-      ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Nước sản xuất',
-          key: 'nuocSanXuat',
-          width: 120,
-          flex: 1,
-        ),
-        builder: (item) {
-          return TableCellData(widget: Text(item.nuocSanXuat));
-        },
-      ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Năm sản xuất',
-          key: 'namSanXuat',
-          width: 120,
-          flex: 1,
-        ),
-        builder: (item) {
-          return TableCellData(widget: Text(item.namSanXuat.toString()));
-        },
-      ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Số ký hiệu',
-          key: 'soKyHieu',
-          width: 120,
-          flex: 1,
-        ),
-        builder: (item) {
-          return TableCellData(widget: Text(item.soKyHieu));
-        },
-      ),
+      
       ColumnDefinition(
         config: TableColumnData.select(
           name: 'Ghi chú',
@@ -181,7 +165,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.ghiChu));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.ghiChu),
+          );
         },
       ),
       ColumnDefinition(
@@ -192,7 +179,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(item.nguoiTao));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(item.nguoiTao),
+          );
         },
       ),
       ColumnDefinition(
@@ -203,7 +193,10 @@ class TableToolsAndSuppliesConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(_fmtDate(item.ngayTao)));
+          return TableCellData(
+            alignment: Alignment.center,
+            widget: Text(_fmtDate(item.ngayTao)),
+          );
         },
       ),
       ColumnDefinition(
@@ -215,6 +208,7 @@ class TableToolsAndSuppliesConfig {
         ),
         builder: (item) {
           return TableCellData(
+            alignment: Alignment.center,
             widget: Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -234,5 +228,46 @@ class TableToolsAndSuppliesConfig {
         },
       ),
     ];
+  }
+
+  static List<TableColumnData> getChildColumns() {
+    return [
+      TableColumnData(name: 'Mã chi tiết CCDC - Vật tư', key: 'id', width: 300),
+      TableColumnData(name: 'Đơn vị sở hữu', key: 'idDonViSoHuu', width: 300),
+      TableColumnData(name: 'Số lượng đang sở hữu', key: 'soLuong', width: 300),
+      TableColumnData(
+        name: 'Thời gian ban giao',
+        key: 'thoiGianBanGiao',
+        width: 300,
+      ),
+    ];
+  }
+
+  static TableCellData? buildChildCell(
+    OwnershipUnitDetailDto item,
+    String columnKey,
+  ) {
+    switch (columnKey) {
+      case 'id':
+        return TableCellData(
+          widget: Text(
+            item.idTsCon,
+            style: const TextStyle(color: ColorValue.accentLightCyan),
+          ),
+        );
+      case 'idDonViSoHuu':
+        String tenDonViSoHuu =
+            AccountHelper.instance
+                .getDepartmentById(item.idDonViSoHuu)
+                ?.tenPhongBan ??
+            '';
+        return TableCellData(widget: Text(tenDonViSoHuu));
+      case 'soLuong':
+        return TableCellData(widget: Text(item.soLuong.toString()));
+      case 'thoiGianBanGiao':
+        return TableCellData(widget: Text(item.thoiGianBanGiao));
+      default:
+        return null;
+    }
   }
 }

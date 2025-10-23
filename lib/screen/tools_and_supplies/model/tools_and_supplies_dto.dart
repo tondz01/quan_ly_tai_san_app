@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_unit_detail_dto.dart';
 
 class ToolsAndSuppliesDto {
@@ -148,6 +149,61 @@ class ToolsAndSuppliesDto {
       'Ký hiệu': kyHieu,
       'Ghi chú': ghiChu,
     };
+  }
+
+  /// Export với chi tiết đơn vị sở hữu, mỗi chi tiết sẽ là một hàng riêng thụt vào 1 ô
+  List<Map<String, dynamic>> toJsonExportWithDetails() {
+    List<Map<String, dynamic>> result = [];
+
+    // Thêm hàng chính của CCDC
+    result.add({
+      'Mã công cụ dụng cụ': id,
+      'Mã đơn vị': idDonVi,
+      'Tên công cụ dụng cụ': ten,
+      'Ngày nhập': ngayNhap,
+      'Mã đơn vị tính': donViTinh,
+      'Mã nhóm CCDC': idNhomCCDC,
+      'Mã loại CCDC con': idLoaiCCDCCon,
+      'Giá trị': giaTri,
+      'Ký hiệu': kyHieu,
+      'Ghi chú': ghiChu,
+    });
+    if (detailOwnershipUnit.isNotEmpty) {
+      result.add({
+        'Mã công cụ dụng cụ': '|', // Thụt vào bằng cách để trống cột đầu
+        'Mã đơn vị': 'Mã chi tiết CCDC - Vật tư:',
+        'Tên công cụ dụng cụ':
+            'Tên đơn vị sở hữu', // OwnershipUnitDetailDto không có tên đơn vị
+        'Ngày nhập': 'Số lượng',
+        'Mã đơn vị tính': 'Thời gian ban giao',
+        'Mã nhóm CCDC': '',
+        'Mã loại CCDC con': '',
+        'Giá trị': '',
+        'Ký hiệu': '',
+        'Ghi chú': '',
+      });
+    }
+    // Thêm các hàng chi tiết đơn vị sở hữu (thụt vào 1 ô)
+    for (var detail in detailOwnershipUnit) {
+      result.add({
+        'Mã công cụ dụng cụ': '', // Thụt vào bằng cách để trống cột đầu
+        'Mã đơn vị': detail.idTsCon,
+        'Tên công cụ dụng cụ':
+            AccountHelper.instance
+                .getDepartmentById(detail.idDonViSoHuu)
+                ?.tenPhongBan ??
+            '',
+        'Ngày nhập': detail.soLuong,
+        'Mã đơn vị tính': detail.thoiGianBanGiao,
+        'Mã nhóm CCDC': '',
+        'Mã loại CCDC con': '',
+        'Giá trị': '',
+        'Ký hiệu': '',
+        'Ghi chú': '',
+      });
+    }
+
+    return result;
   }
 
   factory ToolsAndSuppliesDto.empty() {
