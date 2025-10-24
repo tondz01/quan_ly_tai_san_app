@@ -145728,7 +145728,7 @@ return A.j(n.yN("/api/upload/table",B.L.bE(a,null),A.uK(null,A.w(["Content-Type"
 case 7:m=a0
 l=new Uint8Array(A.c7(m.a))
 s=8
-return A.j(A.cf3(l,b+".docx"),$async$H9)
+return A.j(A.cf3(l,b+".xlsx"),$async$H9)
 case 8:k=a0
 if(J.cmY(k,"404/")){j=J.cmZ(k,4)
 J.r(e,"message","L\u1ed7i khi xu\u1ea5t file d\u1eef li\u1ec7u: "+A.c(j))
