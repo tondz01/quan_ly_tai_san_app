@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_asse
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/table_asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:table_base/core/themes/app_color.dart';
@@ -87,16 +88,29 @@ class _AssetManagementListState extends State<AssetManagementList> {
       case 'usage_start_date':
         return item.ngaySuDung;
       case 'using_unit':
-        return item.tenNhom; // Đơn vị sử dụng
+        String donViSuDung =
+            AccountHelper.instance
+                .getDepartmentById(item.idDonViHienThoi ?? '')
+                ?.tenPhongBan ??
+            '';
+        return donViSuDung; // Đơn vị sử dụng
       case 'so_luong_ts_con':
         return widget.provider
             .getListChildAssetsByIdAsset(item.id ?? '')
             .length
             .toString(); // Số lượng
       case 'nhom_tai_san':
-        return item.tenNhom; // Nhóm tài sản
+        String tenNhomTaiSan =
+            AccountHelper.instance
+                .getAssetGroupById(item.idNhomTaiSan ?? '')
+                ?.tenNhom ??
+            '';
+        return tenNhomTaiSan; // Nhóm tài sản
       case 'loai_tai_san':
-        return item.tenNhom; // Loại tài sản
+        return AccountHelper.instance
+                .getTypeAssetById(item.idLoaiTaiSanCon ?? '')
+                ?.tenLoai ??
+            ''; // Loại tài sản
       case 'hien_trang':
         try {
           return widget.provider.getHienTrang(item.hienTrang ?? 0).name;
@@ -106,7 +120,12 @@ class _AssetManagementListState extends State<AssetManagementList> {
       case 'so_luong':
         return item.soLuong;
       case 'don_vi_tinh':
-        return item.donViTinh;
+        String donViTinh =
+            AccountHelper.instance
+                .getUnitById(item.donViTinh ?? '')
+                ?.tenDonVi ??
+            '';
+        return donViTinh;
       case 'ky_hieu':
         return item.kyHieu;
       case 'so_ky_hieu':
