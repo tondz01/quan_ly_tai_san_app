@@ -12,7 +12,6 @@ import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Config {
   static const String environment = "dev";
