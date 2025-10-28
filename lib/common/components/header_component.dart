@@ -27,6 +27,7 @@ class HeaderComponent extends StatefulWidget {
     this.onExportData,
     this.isShowInput = true,
     this.isShownew = true,
+    this.isBlockInput = false,
   });
   final TextEditingController controller;
   final Function(String) onSearchChanged;
@@ -41,6 +42,7 @@ class HeaderComponent extends StatefulWidget {
   final Function()? onExportData;
   final bool isShowInput;
   final bool isShownew;
+  final bool isBlockInput;
   @override
   State<HeaderComponent> createState() => _HeaderComponentState();
 }
@@ -64,6 +66,7 @@ class _HeaderComponentState extends State<HeaderComponent> {
           widget.onFileSelected ?? (fileName, filePath, fileBytes) {},
       onExportData: widget.onExportData ?? () {},
       isShowInput: widget.isShowInput,
+      isBlockInput: widget.isBlockInput,
     );
   }
 }
@@ -84,6 +87,7 @@ Widget buildHeader(
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
+  bool isBlockInput = false,
 }) {
   final typeSize = TypeSizeScreenExtension.getSizeScreen(width);
   return typeSize == TypeSizeScreen.extraSmall ||
@@ -103,6 +107,7 @@ Widget buildHeader(
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
+        isBlockInput: isBlockInput,
       )
       : _buildHeaderScreenLarge(
         width,
@@ -119,6 +124,7 @@ Widget buildHeader(
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
+        isBlockInput: isBlockInput,
       );
 }
 
@@ -138,6 +144,7 @@ Widget _buildHeaderScreenLarge(
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
+  bool isBlockInput = false,
 }) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -153,6 +160,7 @@ Widget _buildHeaderScreenLarge(
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
+        isBlockInput: isBlockInput,
       ),
       // if (subScreen != null && subScreen.isNotEmpty)
       const SizedBox(width: 16),
@@ -180,6 +188,7 @@ Widget _buildHeaderScreenSmall(
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
+  bool isBlockInput = false,
 }) {
   return Column(
     mainAxisSize: MainAxisSize.min,
@@ -195,6 +204,7 @@ Widget _buildHeaderScreenSmall(
         context,
         onFileSelected: onFileSelected,
         onExportData: onExportData,
+        isBlockInput: isBlockInput,
       ),
       // if (subScreen != null && subScreen.isNotEmpty)
       const SizedBox(height: 5),
@@ -217,6 +227,7 @@ Widget _buildHeaderNameScreen(
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
+  bool isBlockInput = false,
 }) {
   bool isSubScreen = subScreen != null && subScreen.isNotEmpty;
   // log()
@@ -275,6 +286,9 @@ Widget _buildHeaderNameScreen(
                       ancestor: overlay,
                     );
                     final Size size = iconBox.size;
+                    if (isBlockInput) {
+                      return;
+                    }
                     // Gọi popup tại đúng vị trí icon
                     _showCustomMenu(
                       iconContext,
@@ -282,6 +296,7 @@ Widget _buildHeaderNameScreen(
                       size,
                       onFileSelected: onFileSelected,
                       onExportData: onExportData,
+                      isBlockInput: isBlockInput,
                     );
                   },
                   child: Icon(
@@ -330,6 +345,7 @@ void _showCustomMenu(
   required Function(String? fileName, String? filePath, Uint8List? fileBytes)
   onFileSelected,
   Function()? onExportData,
+  bool isBlockInput = false,
 }) async {
   final RenderBox overlay =
       Overlay.of(context).context.findRenderObject() as RenderBox;

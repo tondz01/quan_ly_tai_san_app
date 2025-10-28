@@ -1,5 +1,4 @@
 import 'package:quan_ly_tai_san_app/screen/reason_increase/reason_increase_view.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_page_1.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_tscd_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/unit_view.dart';
@@ -190,12 +189,12 @@ class AppRouteConf {
                 ),
           ),
           GoRoute(
-            path: AppRoute.recoveryReport.path,
-            name: AppRoute.recoveryReport.name,
+            path: AppRoute.s22dnReport.path,
+            name: AppRoute.s22dnReport.name,
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: ReportScreen(idCongty: 'CT001', loai: 3),
+                  child: MauS22DnPage(),
                 ),
           ),
           GoRoute(

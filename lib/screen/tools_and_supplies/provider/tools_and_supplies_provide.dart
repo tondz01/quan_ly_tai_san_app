@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 class ToolsAndSuppliesProvider with ChangeNotifier {
   bool get isLoading => _data == null || _dataPhongBan == null;
   bool get isShowInput => _isShowInput;
+  bool get isLoadingImport => _isLoadingImport;
   bool get isShowCollapse => _isShowCollapse;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   get data => _data;
@@ -61,6 +62,11 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set isLoadingImport(bool value) {
+    _isLoadingImport = value;
+    notifyListeners();
+  }
+
   late int totalEntries;
   late int totalPages = 1;
   late int startIndex;
@@ -87,6 +93,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   bool _isShowInput = false;
   bool _isShowCollapse = true;
   bool _hasUnsavedChanges = false;
+  bool _isLoadingImport = false;
 
   List<ToolsAndSuppliesDto>? _data;
   List<ToolsAndSuppliesDto>? _dataPage;
@@ -242,6 +249,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
       _updatePagination();
     }
     _dataGroupCCDC = state.dataGroupCCDC;
+    _isLoadingImport = false;
     notifyListeners();
   }
 

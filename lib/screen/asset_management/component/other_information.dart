@@ -70,15 +70,10 @@ Widget buildOtherInformation(
   void calculateTotalCapital() {
     String cleanText(String text) {
       if (text.isEmpty) return '';
-
-      String cleaned = text.replaceAll(RegExp(r'[^\d.]'), '');
-
-      List<String> parts = cleaned.split('.');
-      if (parts.length > 2) {
-        String integerPart = parts.join('');
-        cleaned = integerPart;
-      }
-      return cleaned;
+      return text
+          .replaceAll('.', '')
+          .replaceAll(',', '.')
+          .replaceAll(RegExp(r'[^\d.]'), '');
     }
 
     final vonNSText = cleanText(ctrlVonNS.text);

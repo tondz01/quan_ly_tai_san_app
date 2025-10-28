@@ -1,3 +1,7 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:graphic/graphic.dart' as graphic;
 import 'package:intl/intl.dart';
@@ -20,14 +24,14 @@ class _DashboardViewState extends State<DashboardView> {
   final DashboardRepository _dashboardRepository = DashboardRepository();
 
   // Asset status data
-  List<dynamic> _assetStatusData = [];
-  bool _isLoadingAssetStatus = false;
-  String? _assetStatusError;
+  List<dynamic> assetStatusData = [];
+  bool isLoadingAssetStatus = false;
+  String? assetStatusError;
 
   // CCDC status data
-  List<dynamic> _ccdcStatusData = [];
-  bool _isLoadingCcdcStatus = false;
-  String? _ccdcStatusError;
+  List<dynamic> ccdcStatusData = [];
+  bool isLoadingCcdcStatus = false;
+  String? ccdcStatusError;
 
   // Selected year for month trend chart
   int? _selectedYearForMonthChart;
@@ -99,8 +103,8 @@ class _DashboardViewState extends State<DashboardView> {
 
   Future<void> _loadAssetStatusData() async {
     setState(() {
-      _isLoadingAssetStatus = true;
-      _assetStatusError = null;
+      isLoadingAssetStatus = true;
+      assetStatusError = null;
     });
 
     try {
@@ -108,27 +112,27 @@ class _DashboardViewState extends State<DashboardView> {
 
       if (result['status_code'] == 200) {
         setState(() {
-          _assetStatusData = result['data'] ?? [];
-          _isLoadingAssetStatus = false;
+          assetStatusData = result['data'] ?? [];
+          isLoadingAssetStatus = false;
         });
       } else {
         setState(() {
-          _assetStatusError = result['message'] ?? 'Có lỗi xảy ra';
-          _isLoadingAssetStatus = false;
+          assetStatusError = result['message'] ?? 'Có lỗi xảy ra';
+          isLoadingAssetStatus = false;
         });
       }
     } catch (e) {
       setState(() {
-        _assetStatusError = 'Lỗi khi tải dữ liệu: $e';
-        _isLoadingAssetStatus = false;
+        assetStatusError = 'Lỗi khi tải dữ liệu: $e';
+        isLoadingAssetStatus = false;
       });
     }
   }
 
   Future<void> _loadCcdcStatusData() async {
     setState(() {
-      _isLoadingCcdcStatus = true;
-      _ccdcStatusError = null;
+      isLoadingCcdcStatus = true;
+      ccdcStatusError = null;
     });
 
     try {
@@ -136,19 +140,19 @@ class _DashboardViewState extends State<DashboardView> {
 
       if (result['status_code'] == 200) {
         setState(() {
-          _ccdcStatusData = result['data'] ?? [];
-          _isLoadingCcdcStatus = false;
+          ccdcStatusData = result['data'] ?? [];
+          isLoadingCcdcStatus = false;
         });
       } else {
         setState(() {
-          _ccdcStatusError = result['message'] ?? 'Có lỗi xảy ra';
-          _isLoadingCcdcStatus = false;
+          ccdcStatusError = result['message'] ?? 'Có lỗi xảy ra';
+          isLoadingCcdcStatus = false;
         });
       }
     } catch (e) {
       setState(() {
-        _ccdcStatusError = 'Lỗi khi tải dữ liệu: $e';
-        _isLoadingCcdcStatus = false;
+        ccdcStatusError = 'Lỗi khi tải dữ liệu: $e';
+        isLoadingCcdcStatus = false;
       });
     }
   }
@@ -317,14 +321,14 @@ class _DashboardViewState extends State<DashboardView> {
 
     try {
       final result = await _dashboardRepository.getDashboardData();
-      print("Statistics API Result: $result");
+      log("Statistics API Result: $result");
 
       if (result['status_code'] == 200) {
         setState(() {
           // The API returns data directly in the 'data' field
-          print("Statistics API Success - result['data']: ${result['data']}");
+          log("Statistics API Success - result['data']: ${result['data']}");
           _statisticsData = result['data'] as Map<String, dynamic>? ?? {};
-          print("Statistics Data Set - _statisticsData: $_statisticsData");
+          log("Statistics Data Set - _statisticsData: $_statisticsData");
           _isLoadingStatistics = false;
           // Reset selected year when new data is loaded
           _selectedYearForMonthChart = null;
@@ -349,8 +353,8 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     final data = _statisticsData as Map<String, dynamic>? ?? {};
-    print("Build - Statistics Data: $data");
-    print("Build - Top Assets: ${data['top5TaiSanGiaTriCao']}");
+    log("Build - Statistics Data: $data");
+    log("Build - Top Assets: ${data['top5TaiSanGiaTriCao']}");
 
     return Container(
       decoration: BoxDecoration(color: Colors.white),
@@ -650,7 +654,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           const SizedBox(height: 24),
           if (_isLoadingAssetGroup)
-            Container(
+            SizedBox(
               height: 200,
               child: Center(
                 child: Column(
@@ -671,7 +675,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             )
           else if (_assetGroupError != null)
-            Container(
+            SizedBox(
               height: 200,
               child: Center(
                 child: Column(
@@ -747,7 +751,7 @@ class _DashboardViewState extends State<DashboardView> {
                 if (_selectedGroup != null)
                   _buildGroupChart(_selectedGroup!)
                 else
-                  Container(
+                  SizedBox(
                     height: 200,
                     child: Center(
                       child: Text(
@@ -763,7 +767,7 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             )
           else
-            Container(
+            SizedBox(
               height: 200,
               child: Center(
                 child: Column(
@@ -796,7 +800,7 @@ class _DashboardViewState extends State<DashboardView> {
     final groupData = _assetGroupData[groupName] as List<dynamic>? ?? [];
 
     if (groupData.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 120,
         child: Center(
           child: Text(
@@ -877,7 +881,7 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           const SizedBox(height: 24),
           if (_isLoadingCcdcGroup)
-            Container(
+            SizedBox(
               height: 200,
               child: Center(
                 child: Column(
@@ -898,7 +902,7 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             )
           else if (_ccdcGroupError != null)
-            Container(
+            SizedBox(
               height: 200,
               child: Center(
                 child: Column(
@@ -972,7 +976,7 @@ class _DashboardViewState extends State<DashboardView> {
                 if (_selectedCcdcGroup != null)
                   _buildCcdcGroupChart(_selectedCcdcGroup!)
                 else
-                  Container(
+                  SizedBox(
                     height: 200,
                     child: Center(
                       child: Text(
@@ -988,7 +992,7 @@ class _DashboardViewState extends State<DashboardView> {
               ],
             )
           else
-            Container(
+            SizedBox(
               height: 200,
               child: Center(
                 child: Column(
@@ -1021,7 +1025,7 @@ class _DashboardViewState extends State<DashboardView> {
     final groupData = _ccdcGroupData[groupName] as List<dynamic>? ?? [];
 
     if (groupData.isEmpty) {
-      return Container(
+      return SizedBox(
         height: 120,
         child: Center(
           child: Text(
@@ -1366,8 +1370,8 @@ class _DashboardViewState extends State<DashboardView> {
 
   Widget _buildTopAssetsSection(Map<String, dynamic> data) {
     final topAssets = (data['top5TaiSanGiaTriCao'] as List<dynamic>?) ?? [];
-    print("Top Assets Data: $topAssets");
-    print("Top Assets Count: ${topAssets.length}");
+    log("Top Assets Data: $topAssets");
+    log("Top Assets Count: ${topAssets.length}");
 
     return Container(
       height: 500,
@@ -2101,7 +2105,7 @@ class _DashboardViewState extends State<DashboardView> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      '${remainingDays} tháng',
+                                      '$remainingDays tháng',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.green.shade700,
@@ -2299,7 +2303,7 @@ class _DashboardViewState extends State<DashboardView> {
     );
   }
 
-  Widget _buildYearTrendChart(Map<String, dynamic> data) {
+  Widget buildYearTrendChart(Map<String, dynamic> data) {
     final yearData = (data['taiSanTheoNamTao'] as List<dynamic>?) ?? const [];
 
     return Container(

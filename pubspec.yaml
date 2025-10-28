@@ -34,7 +34,7 @@ dependencies:
   se_gay_components:
     git:
       url: https://github.com/congcuong207/SeGayComponent.git
-      ref: dev/refacter_table
+      ref: main
     # path: "E:/New folder/SeGayComponent"
   table_base:
     git:

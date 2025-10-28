@@ -36,6 +36,7 @@ class AssetManagementProvider with ChangeNotifier {
 
   get error => _error;
   bool get isLoading => _isLoading;
+  bool get isLoadingImport => _isLoadingImport;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   bool get isShowInputKhauHao => _isShowInputKhauHao;
@@ -99,7 +100,7 @@ class AssetManagementProvider with ChangeNotifier {
   bool _isShowInputKhauHao = false;
   bool _isShowCollapseKhauHao = false;
   bool _isLoadingKhauHao = false;
-
+  bool _isLoadingImport = false;
   bool _isCanCreate = false;
   bool _isCanUpdate = false;
   bool _isCanDelete = false;
@@ -336,6 +337,11 @@ class AssetManagementProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  onLoadingImport(bool value) {
+    _isLoadingImport = value;
+    notifyListeners();
+  }
+
   reset(BuildContext context) {
     _isLoading = true;
     onChangeBody(ShowBody.taiSan, context);
@@ -456,6 +462,8 @@ class AssetManagementProvider with ChangeNotifier {
       _filteredData = _data; // Khởi tạo filteredData
       _updatePagination();
     }
+    onLoadingImport(false);
+    notifyListeners();
     _completeOneLoad('getListAssetManagementSuccess');
   }
 
@@ -563,6 +571,7 @@ class AssetManagementProvider with ChangeNotifier {
     //   _data?.add(state.data!);
     //   _filteredData = List.from(_data!);
     // }
+    onLoadingImport(false);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     notifyListeners();
   }

@@ -73,6 +73,37 @@ class AssetHandoverRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> getAllAssetHandover() async {
+    List<AssetHandoverDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        "${EndPointAPI.ASSET_TRANSFER}/getbystatus?trangthai=3",
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      List<AssetHandoverDto> assetHandover =
+          ResponseParser.parseToList<AssetHandoverDto>(
+            response.data,
+            AssetHandoverDto.fromJson,
+          );
+
+      log('response.data: ${response.data}');
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      log('assetHandover: ${jsonEncode(assetHandover)}');
+      result['data'] = assetHandover;
+    } catch (e) {
+      log("Error at getAllAssetHandover - AssetHandoverRepository: $e");
+    }
+    return result;
+  }
+
   Future<Map<String, dynamic>> getListDetailAssetMobilization(String id) async {
     List<ChiTietDieuDongTaiSan> list = [];
     Map<String, dynamic> result = {

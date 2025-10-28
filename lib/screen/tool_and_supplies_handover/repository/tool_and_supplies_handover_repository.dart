@@ -73,6 +73,41 @@ class ToolAndSuppliesHandoverRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> getAllToolSupHandoverStatus({
+    int status = 3,
+  }) async {
+    List<ToolAndSuppliesHandoverDto> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        "${EndPointAPI.TOOL_AND_SUPPLIES_HANDOVER}/getbystatus?trangthai=$status",
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      List<ToolAndSuppliesHandoverDto> handoverList =
+          ResponseParser.parseToList<ToolAndSuppliesHandoverDto>(
+            response.data,
+            ToolAndSuppliesHandoverDto.fromJson,
+          );
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      result['data'] = handoverList;
+    } catch (e) {
+      SGLog.error(
+        "ToolAndSuppliesHandoverRepository",
+        "Error at getListToolAndSuppliesHandover - ToolAndSuppliesHandoverRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> getDetailSuppliesHandover(
     String idbangiaoccdcvattu,
   ) async {

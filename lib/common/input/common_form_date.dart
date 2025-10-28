@@ -24,7 +24,12 @@ class CmFormDate extends StatefulWidget {
     this.initialIncludeTime = false,
     this.isRequired = false,
     this.sizePadding = 10,
+    this.height = 40,
+    this.contentPadding,
     this.dateTimeMode = SGDateTimeMode.dayMonthYear,
+    this.showUnderlineBorderOnly = false,
+    this.showSuffixIcon = true,
+    this.textAlign = TextAlign.left,
   });
   final String label;
   final TextEditingController controller;
@@ -42,6 +47,11 @@ class CmFormDate extends StatefulWidget {
   final Map<String, bool>? validationErrors;
   final bool isRequired;
   final double sizePadding;
+  final double? height;
+  final EdgeInsets? contentPadding;
+  final bool showUnderlineBorderOnly;
+  final bool showSuffixIcon;
+  final TextAlign textAlign;
   final SGDateTimeMode dateTimeMode;
   @override
   State<CmFormDate> createState() => _CmFormDateState();
@@ -71,10 +81,10 @@ class _CmFormDateState extends State<CmFormDate> {
                 widget.onChanged?.call(dt);
               },
               width: double.infinity,
-              height: 40,
+              height: widget.height,
               initWithNow: widget.initWithNow,
               enable: widget.enable,
-              textAlign: TextAlign.left,
+              textAlign: widget.textAlign,
               sizeBorderCircular: 7,
               fontSize: 14,
               colorLabel: Colors.black.withOpacity(0.7),
@@ -84,6 +94,7 @@ class _CmFormDateState extends State<CmFormDate> {
               includeSeconds: widget.includeSeconds,
               initialIncludeTime: widget.initialIncludeTime,
               dateTimeMode: widget.dateTimeMode,
+              showUnderlineBorderOnly: widget.showUnderlineBorderOnly,
               colorBorder:
                   (widget.validationErrors != null &&
                           widget.fieldName != null &&
@@ -91,6 +102,8 @@ class _CmFormDateState extends State<CmFormDate> {
                       ? Colors.red
                       : SGAppColors.neutral400,
               colorBorderFocus: SGAppColors.info500,
+              contentPadding: widget.contentPadding,
+              showSuffixIcon: widget.showSuffixIcon,
               // showUnderlineBorderOnly: true,
             ),
           ),

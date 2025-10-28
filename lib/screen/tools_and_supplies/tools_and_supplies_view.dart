@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -34,6 +35,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late HomeScrollController _scrollController;
+  String loadingMessage = '';
   @override
   void initState() {
     super.initState();
@@ -136,81 +138,112 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                 text: provider.rowsPerPage.toString(),
               );
 
-              return Scaffold(
-                appBar: AppBar(
-                  title: HeaderComponent(
-                    controller: _searchController,
-                    onSearchChanged: (value) {
-                      provider.onSearchToolsAndSupplies(value);
-                    },
-                    isShowSearch: false,
-                    onTap: () {},
-                    onNew: () {
-                      provider.onChangeDetail(context, null);
-                    },
-                    mainScreen: 'Quản lý CCDC - Vật tư',
-                    subScreen: provider.subScreen,
-                    onFileSelected: (fileName, filePath, fileBytes) async {
-                      final result = await convertExcelToCcdcVt(
-                        filePath!,
-                        fileBytes: fileBytes,
-                        provider: provider,
-                      );
-
-                      if (result['success']) {
-                        List<ToolsAndSuppliesDto> assetCategories =
-                            result['data'];
-
-                        for (var item in assetCategories) {
-                          for (
-                            var i = 0;
-                            i < item.chiTietTaiSanList.length;
-                            i++
-                          ) {
-                            item.chiTietTaiSanList[i].id = '${item.id}-STT-$i';
+              return LoadingOverlay(
+                isLoading: provider.isLoadingImport,
+                message: loadingMessage,
+                child: Scaffold(
+                  appBar: AppBar(
+                    title: HeaderComponent(
+                      controller: _searchController,
+                      onSearchChanged: (value) {
+                        provider.onSearchToolsAndSupplies(value);
+                      },
+                      isShowSearch: false,
+                      onTap: () {},
+                      onNew: () {
+                        provider.onChangeDetail(context, null);
+                      },
+                      mainScreen: 'Quản lý CCDC - Vật tư',
+                      subScreen: provider.subScreen,
+                      onFileSelected: (fileName, filePath, fileBytes) async {
+                        loadingMessage = 'Đang import dữ liệu...';
+                        provider.isLoadingImport = true;
+                        log('loadingMessage: $loadingMessage');
+                        final result = await convertExcelToCcdcVt(
+                          filePath!,
+                          fileBytes: fileBytes,
+                          provider: provider,
+                        );
+                
+                        if (result['success']) {
+                          loadingMessage = 'Đang xử lý dữ liệu...';
+                          List<ToolsAndSuppliesDto> assetCategories =
+                              result['data'];
+                
+                          for (var item in assetCategories) {
+                            for (
+                              var i = 0;
+                              i < item.chiTietTaiSanList.length;
+                              i++
+                            ) {
+                              item.chiTietTaiSanList[i].id = '${item.id}-STT-$i';
+                            }
+                
+                            item.soLuong = item.chiTietTaiSanList.fold<int>(
+                              0,
+                              (sum, e) => sum + (e.soLuong ?? 0),
+                            );
                           }
-
-                          item.soLuong = item.chiTietTaiSanList.fold<int>(
-                            0,
-                            (sum, e) => sum + (e.soLuong ?? 0),
+                          log('assetCategories: ${jsonEncode(assetCategories)}');
+                          _importData(assetCategories);
+                        } else {
+                          loadingMessage = 'Đang xử lý dữ liệu...';
+                          List<dynamic> errors = result['errors'];
+                
+                          // Tạo danh sách lỗi dạng list
+                          List<String> errorMessages = [];
+                          for (var error in errors) {
+                            String rowNumber = error['row'].toString();
+                            List<String> rowErrors = List<String>.from(
+                              error['errors'],
+                            );
+                            String errorText =
+                                'Dòng $rowNumber: ${rowErrors.join(', ')}';
+                            errorMessages.add(errorText);
+                          }
+                
+                          log(
+                            '[ToolsAndSuppliesView] errorMessages: $errorMessages',
                           );
-                        }
-                        log('assetCategories: ${jsonEncode(assetCategories)}');
-                        _importData(assetCategories);
-                      } else {
-                        List<dynamic> errors = result['errors'];
-
-                        // Tạo danh sách lỗi dạng list
-                        List<String> errorMessages = [];
-                        for (var error in errors) {
-                          String rowNumber = error['row'].toString();
-                          List<String> rowErrors = List<String>.from(
-                            error['errors'],
+                          if (!context.mounted) return;
+                          // Hiển thị thông báo tổng quan
+                          AppUtility.showSnackBar(
+                            context,
+                            'Import dữ liệu thất bại: \n $errorMessages',
+                            isError: true,
+                            timeDuration: 4,
                           );
-                          String errorText =
-                              'Dòng $rowNumber: ${rowErrors.join(', ')}';
-                          errorMessages.add(errorText);
+                          provider.isLoadingImport = false;
                         }
-
-                        log(
-                          '[ToolsAndSuppliesView] errorMessages: $errorMessages',
-                        );
-                        if (!context.mounted) return;
-                        // Hiển thị thông báo tổng quan
-                        AppUtility.showSnackBar(
-                          context,
-                          'Import dữ liệu thất bại: \n $errorMessages',
-                          isError: true,
-                          timeDuration: 4,
-                        );
-                      }
-                    },
-                    onExportData: () {
-                      if (provider.data == null) return;
-                      List<dynamic> data = [];
-                      for (var item in provider.data) {
-                        if (item.chiTietTaiSanList.isNotEmpty) {
-                          for (var element in item.chiTietTaiSanList) {
+                      },
+                      onExportData: () {
+                        loadingMessage = 'Đang xuất dữ liệu...';
+                        if (provider.data == null) return;
+                        provider.isLoadingImport = true;
+                        List<dynamic> data = [];
+                        for (var item in provider.data) {
+                          if (item.chiTietTaiSanList.isNotEmpty) {
+                            for (var element in item.chiTietTaiSanList) {
+                              Map<String, dynamic> dataItem = {
+                                'Mã công cụ dụng cụ': item.id,
+                                'Mã đơn vị': item.idDonVi,
+                                'Tên công cụ dụng cụ': item.ten,
+                                'Ngày nhập': item.ngayNhap,
+                                'Mã đơn vị tính': item.donViTinh,
+                                'Mã nhóm CCDC': item.idNhomCCDC,
+                                'Mã loại CCDC con': item.idLoaiCCDCCon,
+                                'Giá trị': item.giaTri,
+                                'Ký hiệu': item.kyHieu,
+                                'Ghi chú': item.ghiChu,
+                                'Số ký hiệu': element.soKyHieu ?? '',
+                                'Số lượng': element.soLuong ?? '',
+                                'Công suất': element.congSuat ?? '',
+                                'Nước sản xuất': element.nuocSanXuat ?? '',
+                                'Năm sản xuất': element.namSanXuat ?? '',
+                              };
+                              data.add(dataItem);
+                            }
+                          } else {
                             Map<String, dynamic> dataItem = {
                               'Mã công cụ dụng cụ': item.id,
                               'Mã đơn vị': item.idDonVi,
@@ -222,75 +255,57 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                               'Giá trị': item.giaTri,
                               'Ký hiệu': item.kyHieu,
                               'Ghi chú': item.ghiChu,
-                              'Số ký hiệu': element.soKyHieu ?? '',
-                              'Số lượng': element.soLuong ?? '',
-                              'Công suất': element.congSuat ?? '',
-                              'Nước sản xuất': element.nuocSanXuat ?? '',
-                              'Năm sản xuất': element.namSanXuat ?? '',
+                              'Số ký hiệu': '',
+                              'Số lượng': '',
+                              'Công suất': '',
+                              'Nước sản xuất': '',
+                              'Năm sản xuất': '',
                             };
                             data.add(dataItem);
                           }
-                        } else {
-                          Map<String, dynamic> dataItem = {
-                            'Mã công cụ dụng cụ': item.id,
-                            'Mã đơn vị': item.idDonVi,
-                            'Tên công cụ dụng cụ': item.ten,
-                            'Ngày nhập': item.ngayNhap,
-                            'Mã đơn vị tính': item.donViTinh,
-                            'Mã nhóm CCDC': item.idNhomCCDC,
-                            'Mã loại CCDC con': item.idLoaiCCDCCon,
-                            'Giá trị': item.giaTri,
-                            'Ký hiệu': item.kyHieu,
-                            'Ghi chú': item.ghiChu,
-                            'Số ký hiệu': '',
-                            'Số lượng': '',
-                            'Công suất': '',
-                            'Nước sản xuất': '',
-                            'Năm sản xuất': '',
-                          };
-                          data.add(dataItem);
                         }
-                      }
-                      AppUtility.exportData(
-                        context,
-                        "Danh sách CCDC - Vật tư",
-                        data,
-                      );
-                    },
+                        AppUtility.exportData(
+                          context,
+                          "Danh sách CCDC - Vật tư",
+                          data,
+                        );
+                        provider.isLoadingImport = false;
+                      },
+                    ),
                   ),
-                ),
-                // body: DepartmentTreeDemo(),
-                body: Column(
-                  children: [
-                    Flexible(
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          return true; // Xử lý scroll event bình thường
-                        },
-                        child: SingleChildScrollView(
-                          physics:
-                              _scrollController.isParentScrolling
-                                  ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                  : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                          scrollDirection: Axis.vertical,
-                          child: CommonPageView(
-                            childInput: ToolsAndSuppliesDetail(
-                              provider: provider,
+                  // body: DepartmentTreeDemo(),
+                  body: Column(
+                    children: [
+                      Flexible(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            return true; // Xử lý scroll event bình thường
+                          },
+                          child: SingleChildScrollView(
+                            physics:
+                                _scrollController.isParentScrolling
+                                    ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                    : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                            scrollDirection: Axis.vertical,
+                            child: CommonPageView(
+                              childInput: ToolsAndSuppliesDetail(
+                                provider: provider,
+                              ),
+                              childTableView: ToolsAndSuppliesList(
+                                provider: provider,
+                              ),
+                              isShowInput: provider.isShowInput,
+                              isShowCollapse: provider.isShowCollapse,
+                              onExpandedChanged: (isExpanded) {
+                                provider.onSetsShowCollapse(isExpanded);
+                              },
+                              title: 'Chi tiết CCDC - Vật tư',
                             ),
-                            childTableView: ToolsAndSuppliesList(
-                              provider: provider,
-                            ),
-                            isShowInput: provider.isShowInput,
-                            isShowCollapse: provider.isShowCollapse,
-                            onExpandedChanged: (isExpanded) {
-                              provider.onSetsShowCollapse(isExpanded);
-                            },
-                            title: 'Chi tiết CCDC - Vật tư',
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },

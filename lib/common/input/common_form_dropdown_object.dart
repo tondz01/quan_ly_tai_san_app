@@ -6,7 +6,7 @@ import 'package:se_gay_components/common/sg_dropdown_input_button.dart';
 class CmFormDropdownObject<T> extends StatefulWidget {
   const CmFormDropdownObject({
     super.key,
-    required this.label,
+    this.label,
     required this.controller,
     required this.isEditing,
     required this.items,
@@ -17,8 +17,13 @@ class CmFormDropdownObject<T> extends StatefulWidget {
     this.value,
     this.defaultValue,
     this.isRequired = false,
+    this.showUnderlineBorderOnly = false,
+    this.hintText,
+    this.contentPadding = const EdgeInsets.only(left: 10, top: 10, bottom: 8),
+    this.fontSize = 14,
+    this.isShowSuffixIcon = true,
   });
-  final String label;
+  final String? label;
   final TextEditingController controller;
   final bool isEditing;
   final TextInputType? inputType;
@@ -29,6 +34,11 @@ class CmFormDropdownObject<T> extends StatefulWidget {
   final String? fieldName;
   final Map<String, bool>? validationErrors;
   final bool isRequired;
+  final bool showUnderlineBorderOnly;
+  final String? hintText;
+  final EdgeInsets contentPadding;
+  final double fontSize;
+  final bool isShowSuffixIcon;
   @override
   State<CmFormDropdownObject<T>> createState() => _CommonFormInputState<T>();
 }
@@ -65,7 +75,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
           _isInitialized
               ? SGDropdownInputButton<T>(
                   required: widget.isRequired,
-                  label: widget.label,
+                  // label: widget.label,
                   height: 45,
                   controller: widget.controller,
                   textOverflow: TextOverflow.ellipsis,
@@ -79,19 +89,19 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
                               widget.validationErrors![widget.fieldName] == true)
                           ? Colors.red
                           : SGAppColors.neutral400,
-                  // showUnderlineBorderOnly: true,
                   enableSearch: false,
                   isClearController: widget.isEditing,
-                  fontSize: 14,
+                  fontSize: widget.fontSize,
                   inputType: widget.inputType,
-                  isShowSuffixIcon: true,
-                  hintText: 'Chọn ${widget.label.toLowerCase()}',
+                  isShowSuffixIcon: widget.isShowSuffixIcon,
+                  hintText: 'Chọn ${widget.label?.toLowerCase()}',
                   textAlign: TextAlign.left,
                   textAlignItem: TextAlign.left,
                   sizeBorderCircular: 7,
                   sizeBorderCircularItem: 5,
                   colorLabel: Colors.black.withOpacity(0.7),
-                  contentPadding: const EdgeInsets.only(left: 10, top: 10, bottom: 8),
+                  contentPadding: widget.contentPadding,
+                  showUnderlineBorderOnly: widget.showUnderlineBorderOnly,
                   onChanged: (value) {
                     if (value != null) {
                       widget.onChanged?.call(value);
@@ -113,7 +123,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
                   ),
                   child: Center(
                     child: Text(
-                      'Chọn ${widget.label.toLowerCase()}',
+                      'Chọn ${widget.label?.toLowerCase() ?? ''}',
                       style: TextStyle(
                         color: Colors.grey,
                         fontSize: 14,
