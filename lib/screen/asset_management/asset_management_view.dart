@@ -99,7 +99,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     backgroundColor: ColorValue.neutral50,
                     appBar: AppBar(
                       title: HeaderComponent(
-                        isBlockInput: true,
+                        isBlockInput: provider.isLoadingImport,
                         controller:
                             provider.typeBody == ShowBody.taiSan
                                 ? _searchController
