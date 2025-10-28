@@ -128,6 +128,7 @@ class _ReasonIncreaseViewState extends State<ReasonIncreaseView> {
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: () {},
                     onNew: () {
                       provider.onChangeDetail(null);

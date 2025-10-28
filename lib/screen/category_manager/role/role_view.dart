@@ -71,6 +71,7 @@ class _RoleViewState extends State<RoleView> {
             return Scaffold(
               appBar: AppBar(
                 title: HeaderComponent(
+                  isShowSearch: false,
                   controller: _searchController,
                   onSearchChanged: (value) {
                     provider.onSearchRoles(value);

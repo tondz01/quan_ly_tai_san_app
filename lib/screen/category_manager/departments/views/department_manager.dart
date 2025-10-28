@@ -295,6 +295,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                       _searchDepartment(value);
                     });
                   },
+                  isShowSearch: false,
                   onNew: () {
                     setState(() {
                       _showForm(null);

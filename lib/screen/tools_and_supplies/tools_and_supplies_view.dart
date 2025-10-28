@@ -166,32 +166,35 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                           fileBytes: fileBytes,
                           provider: provider,
                         );
-                
+
                         if (result['success']) {
                           loadingMessage = 'Đang xử lý dữ liệu...';
                           List<ToolsAndSuppliesDto> assetCategories =
                               result['data'];
-                
+
                           for (var item in assetCategories) {
                             for (
                               var i = 0;
                               i < item.chiTietTaiSanList.length;
                               i++
                             ) {
-                              item.chiTietTaiSanList[i].id = '${item.id}-STT-$i';
+                              item.chiTietTaiSanList[i].id =
+                                  '${item.id}-STT-$i';
                             }
-                
+
                             item.soLuong = item.chiTietTaiSanList.fold<int>(
                               0,
                               (sum, e) => sum + (e.soLuong ?? 0),
                             );
                           }
-                          log('assetCategories: ${jsonEncode(assetCategories)}');
+                          log(
+                            'assetCategories: ${jsonEncode(assetCategories)}',
+                          );
                           _importData(assetCategories);
                         } else {
                           loadingMessage = 'Đang xử lý dữ liệu...';
                           List<dynamic> errors = result['errors'];
-                
+
                           // Tạo danh sách lỗi dạng list
                           List<String> errorMessages = [];
                           for (var error in errors) {
@@ -203,7 +206,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                                 'Dòng $rowNumber: ${rowErrors.join(', ')}';
                             errorMessages.add(errorText);
                           }
-                
+
                           log(
                             '[ToolsAndSuppliesView] errorMessages: $errorMessages',
                           );
@@ -279,37 +282,43 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                     ),
                   ),
                   // body: DepartmentTreeDemo(),
-                  body: Column(
-                    children: [
-                      Flexible(
-                        child: NotificationListener<ScrollNotification>(
-                          onNotification: (notification) {
-                            return true; // Xử lý scroll event bình thường
-                          },
-                          child: SingleChildScrollView(
-                            physics:
-                                _scrollController.isParentScrolling
-                                    ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                    : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                            scrollDirection: Axis.vertical,
-                            child: CommonPageView(
-                              childInput: ToolsAndSuppliesDetail(
-                                provider: provider,
+                  body: PageStorage(
+                    bucket: PageStorageBucket(),
+                    child: Column(
+                      children: [
+                        Flexible(
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              return true; // Xử lý scroll event bình thường
+                            },
+                            child: SingleChildScrollView(
+                              physics:
+                                  _scrollController.isParentScrolling
+                                      ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                      : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                              scrollDirection: Axis.vertical,
+                              child: CommonPageView(
+                                childInput: ToolsAndSuppliesDetail(
+                                  key: const PageStorageKey<String>(
+                                    'tools_and_supplies_detail_widget',
+                                  ),
+                                  provider: provider,
+                                ),
+                                childTableView: ToolsAndSuppliesList(
+                                  provider: provider,
+                                ),
+                                isShowInput: provider.isShowInput,
+                                isShowCollapse: provider.isShowCollapse,
+                                onExpandedChanged: (isExpanded) {
+                                  provider.onSetsShowCollapse(isExpanded);
+                                },
+                                title: 'Chi tiết CCDC - Vật tư',
                               ),
-                              childTableView: ToolsAndSuppliesList(
-                                provider: provider,
-                              ),
-                              isShowInput: provider.isShowInput,
-                              isShowCollapse: provider.isShowCollapse,
-                              onExpandedChanged: (isExpanded) {
-                                provider.onSetsShowCollapse(isExpanded);
-                              },
-                              title: 'Chi tiết CCDC - Vật tư',
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

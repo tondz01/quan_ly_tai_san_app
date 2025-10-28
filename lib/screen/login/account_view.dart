@@ -76,7 +76,7 @@ class _AccountViewState extends State<AccountView> {
                       Expanded(
                         child: HeaderComponent(
                           controller: TextEditingController(),
-                          isShowSearch: true,
+                          isShowSearch: false,
                           onSearchChanged: (value) {
                             // Cập nhật trạng thái tìm kiếm trong provider
                             // provider.searchTerm = value;

@@ -26,11 +26,13 @@ class CommonPageView extends StatefulWidget {
 
 class _CommonPageViewState extends State<CommonPageView> {
   bool _isExpanded = false;
+  Widget? _cachedChildInput; // Cache widget để tránh rebuild
 
   @override
   void initState() {
     super.initState();
     _isExpanded = widget.isShowCollapse;
+    _cachedChildInput = widget.childInput; // Cache ngay từ đầu
   }
 
   @override
@@ -40,6 +42,10 @@ class _CommonPageViewState extends State<CommonPageView> {
       setState(() {
         _isExpanded = widget.isShowCollapse;
       });
+    }
+    // Chỉ update cache khi childInput thực sự thay đổi (khác instance)
+    if (oldWidget.childInput != widget.childInput) {
+      _cachedChildInput = widget.childInput;
     }
   }
 
@@ -51,6 +57,8 @@ class _CommonPageViewState extends State<CommonPageView> {
 
   @override
   Widget build(BuildContext context) {
+    // Debug: In ra để xem có rebuild không
+    debugPrint('CommonPageView rebuild - isExpanded: $_isExpanded');
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -128,13 +136,17 @@ class _CommonPageViewState extends State<CommonPageView> {
                     ],
                   ),
                   AnimatedCrossFade(
-                    firstChild: SizedBox.shrink(),
-                    secondChild: widget.childInput,
+                    firstChild: const SizedBox.shrink(),
+                    secondChild: AutomaticKeepAlive(
+                      child:
+                          _cachedChildInput ??
+                          widget.childInput, // Dùng cached widget
+                    ),
                     crossFadeState:
                         _isExpanded
                             ? CrossFadeState.showSecond
                             : CrossFadeState.showFirst,
-                    duration: Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: 200),
                   ),
                 ],
               ),
