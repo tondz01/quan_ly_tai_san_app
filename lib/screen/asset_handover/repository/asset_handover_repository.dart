@@ -74,7 +74,6 @@ class AssetHandoverRepository extends ApiBase {
   }
 
   Future<Map<String, dynamic>> getAllAssetHandover() async {
-    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     List<AssetHandoverDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -82,7 +81,7 @@ class AssetHandoverRepository extends ApiBase {
     };
     try {
       final response = await get(
-        "${EndPointAPI.ASSET_TRANSFER}/getbyuseridstatus?userid=${userInfo.tenDangNhap}&trangthai=3",
+        "${EndPointAPI.ASSET_TRANSFER}/getbystatus?trangthai=3",
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

@@ -119,9 +119,9 @@ class ToolAndSuppliesHandoverDto {
               : null,
       byStep: json['byStep'],
       listDetailSubppliesHandover:
-          json['listDetailSubppliesHandover'] != null
+          json['chiTietBanGiaoCCDCVatTu'] != null
               ? List<DetailSubppliesHandoverDto>.from(
-                json['listDetailSubppliesHandover'].map(
+                json['chiTietBanGiaoCCDCVatTu'].map(
                   (x) => DetailSubppliesHandoverDto.fromJson(x),
                 ),
               )

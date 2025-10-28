@@ -1,4 +1,5 @@
-import 'dart:developer';
+ 
+ 
 
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
@@ -10,6 +11,10 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/d
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/data_map.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
@@ -29,6 +34,9 @@ class MauS22DnPage extends StatefulWidget {
 }
 
 class _MauS22DnPageState extends State<MauS22DnPage> {
+  List<DataMap> _assetData = [];
+  List<DataMap> _ccdcData = [];
+
   @override
   void dispose() {
     super.dispose();
@@ -36,7 +44,6 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
 
   @override
   Widget build(BuildContext context) {
-    final h = Theme.of(context).textTheme;
     return Scaffold(
       body: Scrollbar(
         child: SingleChildScrollView(
@@ -44,8 +51,37 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              HeaderBienBanKiemKe(),
-              AssetLedgerTable(),
+              HeaderBienBanKiemKe(
+                onAssetDataChanged: (data) => setState(() => _assetData = data),
+                onCcdcDataChanged: (data) => setState(() => _ccdcData = data),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SGText(
+                  text:
+                      'Bảng ghi tăng/giảm Tài sản cố định và công cụ, dụng cụ (Tài sản)',
+                  style: SettingPage.textStyle.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              AssetLedgerTable(data: _assetData),
+              if (_ccdcData.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SGText(
+                    text: 'Bảng ghi tăng/giảm Công cụ, dụng cụ (CCDC)',
+                    style: SettingPage.textStyle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                AssetLedgerTable(data: _ccdcData),
+              ],
               FoooterBienBanKiemKe(),
               DetailPageWidget(),
             ],
@@ -116,7 +152,14 @@ class _EditablePlaceholderState extends State<EditablePlaceholder> {
 }
 
 class HeaderBienBanKiemKe extends StatefulWidget {
-  const HeaderBienBanKiemKe({super.key});
+  final ValueChanged<List<DataMap>>? onAssetDataChanged;
+  final ValueChanged<List<DataMap>>? onCcdcDataChanged;
+
+  const HeaderBienBanKiemKe({
+    super.key,
+    this.onAssetDataChanged,
+    this.onCcdcDataChanged,
+  });
 
   @override
   State<HeaderBienBanKiemKe> createState() => _HeaderBienBanKiemKeState();
@@ -163,6 +206,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
   DateTime? selectedDate;
 
   List<AssetManagementDto> listAssetManagement = [];
+  List<ToolsAndSuppliesDto> listCCDC = [];
 
   List<PhongBan> listPhongBan = [];
 
@@ -173,11 +217,16 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
     super.initState();
     selectedDate = DateTime.now();
     getAsset();
+    getCCDC();
     listPhongBan = AccountHelper.instance.getDepartment() ?? [];
   }
 
   void getAsset() async {
     listAssetManagement = await ReportProvider().getListAsset();
+  }
+
+  void getCCDC() async {
+    listCCDC = await ReportProvider().getListCCDC('ct001');
   }
 
   AssetManagementDto? getInfoAsset(String idAsset) {
@@ -192,234 +241,318 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // left block
-              Flexible(
-                flex: 6,
-                fit: FlexFit.loose,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // left block
+            Flexible(
+              flex: 6,
+              fit: FlexFit.loose,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Đơn vị:........
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SGText(
+                        text: "Đơn vị: ",
+                        style: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 300),
+                        child: CmFormDropdownObject<PhongBan>(
+                          label: 'Chọn đơn vị',
+                          value: donVi,
+                          controller: donViController,
+                          isEditing: true,
+                          fontSize: 16,
+                          items: [
+                            ...listPhongBan.map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e.tenPhongBan ?? ''),
+                              ),
+                            ),
+                          ],
+                          contentPadding: const EdgeInsets.only(
+                            left: 10,
+                            top: 10,
+                            bottom: 12,
+                          ),
+
+                          showUnderlineBorderOnly: true,
+                          onChanged: (value) async {
+                            List<AssetHandoverDto> listIncrease = [];
+                            List<AssetHandoverDto> listReduce = [];
+                            List<ToolAndSuppliesHandoverDto> listCCDCIncrease = [];
+                            List<ToolAndSuppliesHandoverDto> listCCDCReduce = [];
+                            Map<String, dynamic> resultAsset =
+                                await ReportProvider().getReportAsset(
+                                  value.id ?? '',
+                                );
+                            Map<String, dynamic> resultCCDC =
+                                await ReportProvider().getReportCCDC(
+                                  value.id ?? '',
+                                );
+
+                            listReduce = resultAsset['data_reduce'];
+                            listIncrease = resultAsset['data_increase'];
+                            listCCDCReduce = resultCCDC['data_reduce'];
+                            listCCDCIncrease = resultCCDC['data_increase'];
+
+                            List<DetailAssetHandoverDto>
+                            listDetailAssetIncrease = [];
+                            List<DetailAssetHandoverDto> listDetailAssetReduce =
+                                [];
+                            List<DetailSubppliesHandoverDto>
+                            listDetailCCDCIncrease = [];
+                            List<DetailSubppliesHandoverDto>
+                            listDetailCCDCReduce = [];
+
+                            // Tài sản: gom chi tiết
+                            if (listIncrease.isNotEmpty) {
+                              for (var item in listIncrease) {
+                                listDetailAssetIncrease.addAll(
+                                  item.chiTietBanGiaoTaiSan ?? [],
+                                );
+                              }
+                            }
+                            if (listReduce.isNotEmpty) {
+                              for (var item in listReduce) {
+                                listDetailAssetReduce.addAll(
+                                  item.chiTietBanGiaoTaiSan ?? [],
+                                );
+                              }
+                            }
+
+                            // Map tài sản -> DataMap
+                            final listDataMapIncrease = ReportProvider().mapIncrease(
+                              listDetailAssetIncrease,
+                              listAssetManagement,
+                            );
+                            final listDataMapReduce = ReportProvider().mapReduce(
+                              listDetailAssetReduce,
+                              listAssetManagement,
+                            );
+                            final listDataMapAsset = [
+                              ...listDataMapIncrease,
+                              ...listDataMapReduce,
+                            ];
+
+                            // CCDC: gom chi tiết
+                            if (listCCDCIncrease.isNotEmpty) {
+                              for (var item in listCCDCIncrease) {
+                                listDetailCCDCIncrease.addAll(
+                                  item.listDetailSubppliesHandover ?? [],
+                                );
+                              }
+                            }
+                            if (listCCDCReduce.isNotEmpty) {
+                              for (var item in listCCDCReduce) {
+                                listDetailCCDCReduce.addAll(
+                                  item.listDetailSubppliesHandover ?? [],
+                                );
+                              }
+                            }
+
+                            // Chuyển DetailSubppliesHandoverDto -> DetailToolAndMaterialTransferDto
+                            DetailToolAndMaterialTransferDto mapHandoverDetail(
+                              DetailSubppliesHandoverDto d,
+                            ) {
+                              if (d.chiTietDieuDongCCDCVatTuDTO != null) {
+                                return d.chiTietDieuDongCCDCVatTuDTO!;
+                              }
+                              return DetailToolAndMaterialTransferDto.empty()
+                                  .copyWith(
+                                idCCDCVatTu: d.idCCDCVatTu,
+                                idChiTietCCDCVatTu: d.idChiTietCCDCVatTu,
+                                soLuong: d.soLuong,
+                                tenPhieu: d.tenPhieuBanGiao,
+                                tenCCDCVatTu: d.tenVatTu,
+                                donViTinh: d.donViTinh,
+                                soKyHieu: d.soKyHieu,
+                                kyHieu: d.kyHieu,
+                                ngayTao: d.ngayTao,
+                              );
+                            }
+
+                            final detailCcdcIncrease = listDetailCCDCIncrease
+                                .map(mapHandoverDetail)
+                                .toList();
+                            final detailCcdcReduce = listDetailCCDCReduce
+                                .map(mapHandoverDetail)
+                                .toList();
+
+                            // Ánh xạ CCDC -> DataMap
+                            final listDataMapCcdcIncrease = detailCcdcIncrease
+                                .map((dto) {
+                              final info = ReportProvider()
+                                  .getInfoCCDC(dto.idCCDCVatTu, listCCDC);
+                              return DataMap(
+                                tenTaiSan: dto.tenCCDCVatTu,
+                                soHieu: dto.soKyHieu,
+                                ngayThang: dto.ngayTao,
+                                donViTinh: dto.donViTinh,
+                                soLuong: dto.soLuong,
+                                donGia: info?.giaTri ?? 0,
+                                soTien: info?.giaTri ?? 0,
+                                type: DataMapType.INCREASE,
+                              );
+                            }).toList();
+
+                            final listDataMapCcdcReduce = detailCcdcReduce
+                                .map((dto) {
+                              final info = ReportProvider()
+                                  .getInfoCCDC(dto.idCCDCVatTu, listCCDC);
+                              return DataMap(
+                                tenTaiSan: dto.tenCCDCVatTu,
+                                soHieu: dto.soKyHieu,
+                                ngayThang: dto.ngayTao,
+                                donViTinh: dto.donViTinh,
+                                soLuong: dto.soLuong,
+                                donGia: info?.giaTri ?? 0,
+                                soTien: info?.giaTri ?? 0,
+                                type: DataMapType.REDUCE,
+                              );
+                            }).toList();
+
+                            final listDataMapCcdc = [
+                              ...listDataMapCcdcIncrease,
+                              ...listDataMapCcdcReduce,
+                            ];
+
+                            // bắn dữ liệu ra ngoài cho 2 bảng
+                            widget.onAssetDataChanged?.call(listDataMapAsset);
+                            widget.onCcdcDataChanged?.call(listDataMapCcdc);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Đơn vị:........
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SGText(
+                        text: "Địa chỉ: ",
+                        style: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      EditablePlaceholder(
+                        controller: diaChiController,
+                        placeholder: "...........",
+                        textStyle: SettingPage.textStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // right block
+            Flexible(
+              flex: 4,
+              fit: FlexFit.loose,
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Đơn vị:........
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SGText(
-                          text: "Đơn vị: ",
-                          style: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 300),
-                          child: CmFormDropdownObject<PhongBan>(
-                            label: 'Chọn đơn vị',
-                            value: donVi,
-                            controller: donViController,
-                            isEditing: true,
-                            fontSize: 16,
-                            items: [
-                              ...listPhongBan.map(
-                                (e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(e.tenPhongBan ?? ''),
-                                ),
-                              ),
-                            ],
-                            contentPadding: const EdgeInsets.only(
-                              left: 10,
-                              top: 10,
-                              bottom: 12,
-                            ),
+                    // small title on top
+                    SGText(
+                      text: "Mẫu số S22-DN",
+                      style: SettingPage.textStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
 
-                            showUnderlineBorderOnly: true,
-                            onChanged: (value) async {
-                              // ctrlNuocSanXuat.text = value.name;
-                              // onNuocSanXuatChanged?.call(value);
-                              List<AssetHandoverDto> listIncrease = [];
-                              List<AssetHandoverDto> listReduce = [];
-                              Map<String, dynamic> result =
-                                  await ReportProvider().getReportAsset(
-                                    value.id ?? '',
-                                  );
-                              listReduce = result['data_reduce'];
-                              listIncrease = result['data_increase'];
-
-                              List<DetailAssetHandoverDto>
-                              listDetailAssetIncrease = [];
-                              List<DetailAssetHandoverDto>
-                              listDetailAssetReduce = [];
-                              if (listIncrease.isNotEmpty) {
-                                for (var item in listIncrease) {
-                                  listDetailAssetIncrease.addAll(
-                                    item.chiTietBanGiaoTaiSan ?? [],
-                                  );
-                                }
-                              }
-                              if (listReduce.isNotEmpty) {
-                                for (var item in listReduce) {
-                                  listDetailAssetReduce.addAll(
-                                    item.chiTietBanGiaoTaiSan ?? [],
-                                  );
-                                }
-                              }
-                              
-                              if (listDetailAssetIncrease.isNotEmpty) {
-                                for (var item in listDetailAssetIncrease) {
-                                  AssetManagementDto? infoAsset = getInfoAsset(
-                                    item.idTaiSan ?? '',
-                                  );
-                                  if (infoAsset != null) {
-                                    listDataMap.add(
-                                      DataMap(
-                                        id: item.id,
-                                        soHieu1: infoAsset.kyHieu,
-                                      ),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                          ),
-                        ),
-                        // EditablePlaceholder(
-                        //   controller: donViController,
-                        //   placeholder: "...........",
-                        //   textStyle: SettingPage.textStyle.copyWith(
-                        //     fontWeight: FontWeight.bold,
-                        //   ),
-                        // ),
-                      ],
+                    SGText(
+                      text: "(Ban hành theo Thông tư số 200/2014/TT-BTC",
+                      style: SettingPage.textStyle,
+                      textAlign: TextAlign.center,
                     ),
 
-                    // Đơn vị:........
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SGText(
-                          text: "Địa chỉ: ",
-                          style: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        EditablePlaceholder(
-                          controller: diaChiController,
-                          placeholder: "...........",
-                          textStyle: SettingPage.textStyle.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    SGText(
+                      text: "Ngày 22/12/2014 của Bộ Tài chính)",
+                      style: SettingPage.textStyle,
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-
-              // right block
-              Flexible(
-                flex: 4,
-                fit: FlexFit.loose,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // small title on top
-                      SGText(
-                        text: "Mẫu số S22-DN",
-                        style: SettingPage.textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-
-                      SGText(
-                        text: "(Ban hành theo Thông tư số 200/2014/TT-BTC",
-                        style: SettingPage.textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-
-                      SGText(
-                        text: "Ngày 22/12/2014 của Bộ Tài chính)",
-                        style: SettingPage.textStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // BIÊN BẢN KIỂM KÊ TÀI SẢN CỐ ĐỊNH
-          Center(
-            child: SGText(
-              text:
-                  "sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
-              textAlign: TextAlign.center,
-              style: SettingPage.textStyle.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+            ),
+          ],
+        ),
+        // BIÊN BẢN KIỂM KÊ TÀI SẢN CỐ ĐỊNH
+        Center(
+          child: SGText(
+            text:
+                "sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
+            textAlign: TextAlign.center,
+            style: SettingPage.textStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
+        ),
 
-          // năm…….
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SGText(text: "Năm ", style: SettingPage.textStyle.copyWith()),
-              ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 80),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 15),
-                  child: CmFormDate(
-                    contentPadding: const EdgeInsets.only(bottom: 15),
-                    height: 35,
-                    showSuffixIcon: false,
-                    showUnderlineBorderOnly: true,
-                    value: selectedDate,
-                    sizePadding: 0,
-                    label: '',
-                    controller: ctrlSelectDate,
-                    isEditing: true,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedDate = value;
-                      });
-                    },
-                    textAlign: TextAlign.center,
-                    dateTimeMode: SGDateTimeMode.year,
-                    showTimeSection: false,
-                  ),
+        // năm…….
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SGText(text: "Năm ", style: SettingPage.textStyle.copyWith()),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 80),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: CmFormDate(
+                  contentPadding: const EdgeInsets.only(bottom: 15),
+                  height: 35,
+                  showSuffixIcon: false,
+                  showUnderlineBorderOnly: true,
+                  value: selectedDate,
+                  sizePadding: 0,
+                  label: '',
+                  controller: ctrlSelectDate,
+                  isEditing: true,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDate = value;
+                    });
+                  },
+                  textAlign: TextAlign.center,
+                  dateTimeMode: SGDateTimeMode.year,
+                  showTimeSection: false,
                 ),
               ),
-              // EditablePlaceholder(
-              //   controller: namKiemKeController,
-              //   placeholder: "......",
-              // ),
-            ],
-          ),
+            ),
+          ],
+        ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SGText(
-                text: "Tên đơn vị (phòng, ban hoặc người sử dụng) ",
-                style: SettingPage.textStyle.copyWith(),
-              ),
-              EditablePlaceholder(
-                controller: donViController,
-                placeholder: "......",
-              ),
-            ],
-          ),
-        ],
-      ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SGText(
+              text: "Tên đơn vị (phòng, ban hoặc người sử dụng) ",
+              style: SettingPage.textStyle.copyWith(),
+            ),
+            EditablePlaceholder(
+              controller: donViController,
+              placeholder: "......",
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -489,7 +622,9 @@ class AssetLedgerRowData {
 
 /// 3. Widget Bảng (Stateful)
 class AssetLedgerTable extends StatefulWidget {
-  const AssetLedgerTable({super.key});
+  final List<DataMap> data;
+
+  const AssetLedgerTable({super.key, required this.data});
 
   @override
   State<AssetLedgerTable> createState() => _AssetLedgerTableState();
@@ -530,9 +665,54 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   @override
   void initState() {
     super.initState();
-    // Thêm 2 hàng trống ban đầu khi widget được tạo
-    _dataRows.add(AssetLedgerRowData());
-    _dataRows.add(AssetLedgerRowData());
+    _rebuildRowsFromData(widget.data);
+  }
+
+  @override
+  void didUpdateWidget(covariant AssetLedgerTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.data, widget.data)) {
+      _rebuildRowsFromData(widget.data);
+      setState(() {});
+    }
+  }
+
+  void _rebuildRowsFromData(List<DataMap> data) {
+    // Dọn các controller cũ
+    for (var row in _dataRows) {
+      row.dispose();
+    }
+    _dataRows.clear();
+
+    if (data.isEmpty) {
+      // Hiển thị 2 hàng trống nếu chưa có dữ liệu
+      _dataRows.add(AssetLedgerRowData());
+      _dataRows.add(AssetLedgerRowData());
+      return;
+    }
+
+    for (final item in data) {
+      final isIncrease = item.type == DataMapType.INCREASE;
+      final isReduce = item.type == DataMapType.REDUCE;
+
+      _dataRows.add(
+        AssetLedgerRowData(
+          ctTangSoHieu: isIncrease ? (item.soHieu ?? '') : '',
+          ctTangNgayThang: isIncrease ? (item.ngayThang ?? '') : '',
+          tenTs: item.tenTaiSan ?? '',
+          dvt: item.donViTinh ?? '',
+          tangSl: isIncrease ? (item.soLuong?.toString() ?? '') : '',
+          tangDonGia: isIncrease ? (item.donGia?.toString() ?? '') : '',
+          tangSoTien: isIncrease ? (item.soTien?.toString() ?? '') : '',
+          ctGiamSoHieu: isReduce ? (item.soHieu ?? '') : '',
+          ctGiamNgayThang: isReduce ? (item.ngayThang ?? '') : '',
+          giamLyDo: isReduce ? (item.lyDo ?? '') : '',
+          giamSl: isReduce ? (item.soLuong?.toString() ?? '') : '',
+          giamSoTien: isReduce ? (item.soTien?.toString() ?? '') : '',
+          ghiChu: item.ghiChu ?? '',
+        ),
+      );
+    }
   }
 
   @override

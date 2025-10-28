@@ -1,67 +1,66 @@
+// ignore_for_file: constant_identifier_names
+
+enum DataMapType {
+  INCREASE,
+  REDUCE,
+}
+
 class DataMap {
   String? id;
-  String? soHieu1;
-  String? soHieu2;
-  String? ngayThang1;
-  String? ngayThang2;
+  String? tenTaiSan;
+  String? soHieu;
+  String? ngayThang;
   String? donViTinh;
-  String? soLuong;
-  String? soLuong2;
-  String? donGia;
-  String? soTien;
-  String? soTien2;
+  int? soLuong;
+  double? donGia;
+  double? soTien;
   String? lyDo;
   String? ghiChu;
+  DataMapType? type;
 
   DataMap({
     this.id,
-    this.soHieu1,
-    this.soHieu2,
-    this.ngayThang1,
-    this.ngayThang2,
+    this.tenTaiSan,
+    this.soHieu,
+    this.ngayThang,
     this.donViTinh,
     this.soLuong,
-    this.soLuong2,
     this.donGia,
     this.soTien,
-    this.soTien2,
     this.lyDo,
     this.ghiChu,
+    this.type,
   });
 
   factory DataMap.fromJson(Map<String, dynamic> json) {
     return DataMap(
       id: json['id'],
-      soHieu1: json['soHieu1'],
-      soHieu2: json['soHieu2'],
-      ngayThang1: json['ngayThang1'],
-      ngayThang2: json['ngayThang2'],
+      tenTaiSan: json['tenTaiSan'],
+      soHieu: json['soHieu1'],
+      ngayThang: json['ngayThang1'],
       donViTinh: json['donViTinh'],
       soLuong: json['soLuong'],
-      soLuong2: json['soLuong2'],
       donGia: json['donGia'],
       soTien: json['soTien'],
-      soTien2: json['soTien2'],
       lyDo: json['lyDo'],
       ghiChu: json['ghiChu'],
+      type: json['type'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'soHieu1': soHieu1,
-      'soHieu2': soHieu2,
-      'ngayThang1': ngayThang1,
-      'ngayThang2': ngayThang2,
+      'tenTaiSan': tenTaiSan,
+      'soHieu1': soHieu,
+      'ngayThang1': ngayThang,
       'donViTinh': donViTinh,
       'soLuong': soLuong,
-      'soLuong2': soLuong2,
       'donGia': donGia,
       'soTien': soTien,
-      'soTien2': soTien2,
       'lyDo': lyDo,
       'ghiChu': ghiChu,
+      'type': type?.index,
     };
   }
 }
