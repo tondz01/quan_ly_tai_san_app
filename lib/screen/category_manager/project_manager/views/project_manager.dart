@@ -120,6 +120,7 @@ class _ProjectManagerState extends State<ProjectManager> {
                   onSearchChanged: (value) {
                     provider.onSearchRoles(value);
                   },
+                  isShowSearch: false,
                   onNew: () {
                     setState(() {
                       _showForm(null);

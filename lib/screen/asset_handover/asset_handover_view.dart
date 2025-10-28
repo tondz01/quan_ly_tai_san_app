@@ -40,7 +40,6 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
     _initData();
   }
 
-
   // Future<void> _initWebSocket() async {
   //   final user = AccountHelper.instance.getUserInfo();
   //   final companyId = user?.idCongTy ?? '';
@@ -69,10 +68,10 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Store provider reference for safe access in dispose()
     _providerRef ??= Provider.of<AssetHandoverProvider>(context, listen: false);
-    
+
     final extra = GoRouterState.of(context).extra;
 
     if (extra is Map<String, dynamic>) {

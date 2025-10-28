@@ -94,6 +94,7 @@ class _TypeCcdcViewState extends State<TypeCcdcView> {
                     onSearchChanged: (value) {
                       provider.searchTerm = value;
                     },
+                    isShowSearch: false,
                     onTap: () {},
                     onNew: () {
                       provider.onChangeDetail(null);

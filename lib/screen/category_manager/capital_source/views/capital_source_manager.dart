@@ -311,6 +311,7 @@ class _CapitalSourceManagerState extends State<CapitalSourceManager>
                       _searchCapitalSource(value);
                     });
                   },
+                  isShowSearch: false,
                   onNew: () {
                     setState(() {
                       _showForm(null);
