@@ -35,9 +35,17 @@ class ToolsAndSuppliesDetail extends StatefulWidget {
   State<ToolsAndSuppliesDetail> createState() => _ToolsAndSuppliesDetailState();
 }
 
-class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
+class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail>
+    with AutomaticKeepAliveClientMixin {
   // Các controller để quản lý dữ liệu nhập liệu
   late TextEditingController controllerImportUnit = TextEditingController();
+
+  @override
+  bool get wantKeepAlive => true;
+
+  // Flag để track xem user có đang tương tác với form không
+  bool _isUserInteracting = false;
+
   late TextEditingController controllerGroupCCDC = TextEditingController();
   late TextEditingController controllerTypeCCDC = TextEditingController();
   late TextEditingController controllerName = TextEditingController();
@@ -80,14 +88,46 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
       },
     );
 
+    // Thêm listener cho các TextField để track user interaction
+    _addTextFieldListeners();
+
     initData();
     super.initState();
+  }
+
+  // Method để thêm listener cho tất cả TextEditingController
+  void _addTextFieldListeners() {
+    final controllers = [
+      controllerImportUnit,
+      controllerGroupCCDC,
+      controllerTypeCCDC,
+      controllerName,
+      controllerCode,
+      controllerImportDate,
+      controllerUnit,
+      controllerQuantity,
+      controllerValue,
+      controllerSymbol,
+      controllerNote,
+    ];
+
+    for (var controller in controllers) {
+      controller.addListener(() {
+        // Đánh dấu là đang tương tác khi có bất kỳ thay đổi nào
+        if (!_isUserInteracting) {
+          _isUserInteracting = true;
+        }
+      });
+    }
   }
 
   @override
   void didUpdateWidget(ToolsAndSuppliesDetail oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.provider.data != data && widget.provider.isUpdateDetail) {
+    // Chỉ initData khi KHÔNG đang tương tác và provider yêu cầu update
+    if (!_isUserInteracting &&
+        oldWidget.provider.data != data &&
+        widget.provider.isUpdateDetail) {
       widget.provider.isUpdateDetail = false;
       initData();
     }
@@ -173,9 +213,12 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Cần thiết cho AutomaticKeepAliveClientMixin
     return SingleChildScrollView(
+      key: const PageStorageKey<String>('tools_and_supplies_detail_scroll'),
       scrollDirection: Axis.vertical,
       child: Column(
+        key: const PageStorageKey<String>('tools_and_supplies_detail_form'),
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -396,6 +439,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
         'Có lỗi xảy ra khi lưu dữ liệu. Vui lòng thử lại.',
         isError: true,
       );
+    } finally {
+      // Reset flag sau khi save
+      setState(() {
+        _isUserInteracting = false;
+      });
     }
   }
 
@@ -541,6 +589,11 @@ class _ToolsAndSuppliesDetailState extends State<ToolsAndSuppliesDetail> {
 
   void _cancelEdit() {
     widget.provider.onCloseDetail(context);
+
+    // Reset flag khi cancel
+    setState(() {
+      _isUserInteracting = false;
+    });
 
     // Reset form về giá trị ban đầu
     if (data != null) {
