@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart' as provider;
+import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -34,6 +35,8 @@ class _AssetManagementViewState extends State<AssetManagementView> {
       TextEditingController();
   String searchTerm = "";
   bool isShowKhauHao = false;
+
+  String loadingMessage = 'Đang tải dữ liệu...';
 
   late HomeScrollController _scrollController;
 
@@ -89,127 +92,138 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                   return const Center(child: Text('Đang tải dữ liệu ...'));
                 }
 
-                return Scaffold(
-                  backgroundColor: ColorValue.neutral50,
-                  appBar: AppBar(
-                    title: HeaderComponent(
-                      controller:
-                          provider.typeBody == ShowBody.taiSan
-                              ? _searchController
-                              : _searchKhauHaoController,
-                      onSearchChanged: (value) {},
-                      isShowSearch: false,
-                      onTap: () {
-                        // provider.onChangeDetailAssetManagement(null);
-                        provider.onChangeBody(ShowBody.taiSan, context);
-                      },
-                      onNew: () {
-                        // provider.onChangeDetailAssetManagement(null);
-                        if (!provider.isCanCreate) {
-                          AppUtility.showSnackBar(
-                            context,
-                            'Bạn không có quyền tạo tài sản',
-                          );
-                          return;
-                        }
-                        if (provider.typeBody == ShowBody.taiSan) {
-                          provider.onChangeDetail(null, isNew: true);
-                        }
-                      },
-                      mainScreen: "Quản lý tài sản",
-                      subScreen: provider.subScreen,
-                      onFileSelected: (fileName, filePath, fileBytes) async {
-                        final assetBloc = context.read<AssetManagementBloc>();
-                        final ok = await checkValidateImportAsset(
-                          context,
-                          bytes: fileBytes,
-                          filePath: filePath,
-                        );
-                        if (!ok) return;
-                        final List<AssetManagementDto> assets =
-                            await convertExcelToAsset(
-                              bytes: fileBytes,
-                              filePath: filePath,
+                return LoadingOverlay(
+                  isLoading: provider.isLoadingImport,
+                  message: loadingMessage,
+                  child: Scaffold(
+                    backgroundColor: ColorValue.neutral50,
+                    appBar: AppBar(
+                      title: HeaderComponent(
+                        isBlockInput: true,
+                        controller:
+                            provider.typeBody == ShowBody.taiSan
+                                ? _searchController
+                                : _searchKhauHaoController,
+                        onSearchChanged: (value) {},
+                        isShowSearch: false,
+                        onTap: () {
+                          // provider.onChangeDetailAssetManagement(null);
+                          provider.onChangeBody(ShowBody.taiSan, context);
+                        },
+                        onNew: () {
+                          // provider.onChangeDetailAssetManagement(null);
+                          if (!provider.isCanCreate) {
+                            AppUtility.showSnackBar(
+                              context,
+                              'Bạn không có quyền tạo tài sản',
                             );
-                        provider.onLoading(true);
-                        assetBloc.add(CreateAssetBatchEvent(assets));
-                      },
-                      onExportData: () {
-                        AppUtility.exportData(
-                          context,
-                          "tai_san",
-                          provider.data
-                                  ?.map((e) => e.toExportJson())
-                                  .toList() ??
-                              [],
-                        );
-                      },
-                      isShowInput:
-                          provider.typeBody == ShowBody.taiSan ? true : false,
-                      isShownew:
-                          provider.typeBody == ShowBody.taiSan ? true : false,
+                            return;
+                          }
+                          if (provider.typeBody == ShowBody.taiSan) {
+                            provider.onChangeDetail(null, isNew: true);
+                          }
+                        },
+                        mainScreen: "Quản lý tài sản",
+                        subScreen: provider.subScreen,
+                        onFileSelected: (fileName, filePath, fileBytes) async {
+                          loadingMessage = 'Đang import dữ liệu...';
+                          provider.onLoadingImport(true);
+                          final assetBloc = context.read<AssetManagementBloc>();
+                          final ok = await checkValidateImportAsset(
+                            context,
+                            bytes: fileBytes,
+                            filePath: filePath,
+                          );
+                          if (!ok) return;
+                          final List<AssetManagementDto> assets =
+                              await convertExcelToAsset(
+                                bytes: fileBytes,
+                                filePath: filePath,
+                              );
+                          // provider.onLoading(true);
+                          assetBloc.add(CreateAssetBatchEvent(assets));
+                        },
+                        onExportData: () {
+                          loadingMessage = 'Đang xuất dữ liệu...';
+                          provider.onLoadingImport(true);
+                          AppUtility.exportData(
+                            context,
+                            "tai_san",
+                            provider.data
+                                    ?.map((e) => e.toExportJson())
+                                    .toList() ??
+                                [],
+                          );
+                          provider.onLoadingImport(false);
+                        },
+                        isShowInput:
+                            provider.typeBody == ShowBody.taiSan ? true : false,
+                        isShownew:
+                            provider.typeBody == ShowBody.taiSan ? true : false,
+                      ),
                     ),
-                  ),
-                  body: Column(
-                    children: [
-                      provider.typeBody == ShowBody.taiSan
-                          ? Flexible(
-                            child: NotificationListener<ScrollNotification>(
-                              onNotification: (notification) {
-                                return true; // Xử lý scroll event bình thường
-                              },
-                              child: SingleChildScrollView(
-                                // padding: const EdgeInsets.all(24),
-                                physics:
-                                    _scrollController.isParentScrolling
-                                        ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                        : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                                scrollDirection: Axis.vertical,
-                                child: CommonPageView(
-                                  childInput: AssetDetail(provider: provider),
-                                  childTableView: AssetManagementList(
-                                    provider: provider,
+                    body: Column(
+                      children: [
+                        provider.typeBody == ShowBody.taiSan
+                            ? Flexible(
+                              child: NotificationListener<ScrollNotification>(
+                                onNotification: (notification) {
+                                  return true; // Xử lý scroll event bình thường
+                                },
+                                child: SingleChildScrollView(
+                                  // padding: const EdgeInsets.all(24),
+                                  physics:
+                                      _scrollController.isParentScrolling
+                                          ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                          : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                                  scrollDirection: Axis.vertical,
+                                  child: CommonPageView(
+                                    childInput: AssetDetail(provider: provider),
+                                    childTableView: AssetManagementList(
+                                      provider: provider,
+                                    ),
+                                    title: "Tạo tài sản",
+                                    isShowInput: provider.isShowInput,
+                                    isShowCollapse: provider.isShowCollapse,
+                                    onExpandedChanged: (isExpanded) {
+                                      provider.isShowCollapse = isExpanded;
+                                    },
                                   ),
-                                  title: "Tạo tài sản",
-                                  isShowInput: provider.isShowInput,
-                                  isShowCollapse: provider.isShowCollapse,
-                                  onExpandedChanged: (isExpanded) {
-                                    provider.isShowCollapse = isExpanded;
-                                  },
+                                ),
+                              ),
+                            )
+                            : Flexible(
+                              child: NotificationListener<ScrollNotification>(
+                                onNotification: (notification) {
+                                  return true; // Xử lý scroll event bình thường
+                                },
+                                child: SingleChildScrollView(
+                                  physics:
+                                      _scrollController.isParentScrolling
+                                          ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                                          : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                                  scrollDirection: Axis.vertical,
+                                  child: CommonPageView(
+                                    childInput: AssetDepreciationDetail(
+                                      provider: provider,
+                                    ),
+                                    childTableView: AssetDepreciationList(
+                                      provider: provider,
+                                    ),
+                                    title: "Chi tiết khấu hao tài sản",
+                                    isShowInput: provider.isShowInputKhauHao,
+                                    isShowCollapse:
+                                        provider.isShowCollapseKhauHao,
+                                    onExpandedChanged: (isExpanded) {
+                                      provider.isShowCollapseKhauHao =
+                                          isExpanded;
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
-                          )
-                          : Flexible(
-                            child: NotificationListener<ScrollNotification>(
-                              onNotification: (notification) {
-                                return true; // Xử lý scroll event bình thường
-                              },
-                              child: SingleChildScrollView(
-                                physics:
-                                    _scrollController.isParentScrolling
-                                        ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                        : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                                scrollDirection: Axis.vertical,
-                                child: CommonPageView(
-                                  childInput: AssetDepreciationDetail(
-                                    provider: provider,
-                                  ),
-                                  childTableView: AssetDepreciationList(
-                                    provider: provider,
-                                  ),
-                                  title: "Chi tiết khấu hao tài sản",
-                                  isShowInput: provider.isShowInputKhauHao,
-                                  isShowCollapse:
-                                      provider.isShowCollapseKhauHao,
-                                  onExpandedChanged: (isExpanded) {
-                                    provider.isShowCollapseKhauHao = isExpanded;
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },

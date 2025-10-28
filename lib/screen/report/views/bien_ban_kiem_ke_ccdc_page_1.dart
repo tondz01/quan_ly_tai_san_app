@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -28,7 +27,7 @@ class _KiemKeCCDCPageState extends State<KiemKeCCDCPage> {
 
   @override
   Widget build(BuildContext context) {
-    final h = Theme.of(context).textTheme;
+    // final h = Theme.of(context).textTheme;
     return Scaffold(
       body: Scrollbar(
         child: SingleChildScrollView(
@@ -979,17 +978,17 @@ class _AssetInventoryTableState extends State<AssetInventoryTable> {
     );
   }
 
-  Widget _buildAddRowButton() {
-    return TextButton.icon(
-      icon: const Icon(Icons.add_circle_outline),
-      label: const Text('Thêm hàng mới'),
-      onPressed: () {
-        setState(() {
-          _dataRows.add(AssetRowData(stt: (_dataRows.length + 1).toString()));
-        });
-      },
-    );
-  }
+  // Widget _buildAddRowButton() {
+  //   return TextButton.icon(
+  //     icon: const Icon(Icons.add_circle_outline),
+  //     label: const Text('Thêm hàng mới'),
+  //     onPressed: () {
+  //       setState(() {
+  //         _dataRows.add(AssetRowData(stt: (_dataRows.length + 1).toString()));
+  //       });
+  //     },
+  //   );
+  // }
 
   /// Helper cho Ô Header
   Widget _buildHeaderCell(

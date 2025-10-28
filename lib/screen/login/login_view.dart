@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/gradient_header.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';

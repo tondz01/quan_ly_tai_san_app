@@ -1,9 +1,7 @@
- 
- 
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
@@ -19,6 +17,7 @@ import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/enum/sg_date_time_mode.dart';
 
 import '../../../common/page/contract_page.dart' show SettingPage;
+import '../../../common/components/loading_overlay.dart';
 
 void main() {
   runApp(
@@ -36,7 +35,8 @@ class MauS22DnPage extends StatefulWidget {
 class _MauS22DnPageState extends State<MauS22DnPage> {
   List<DataMap> _assetData = [];
   List<DataMap> _ccdcData = [];
-
+  bool _isExporting = false;
+  final GlobalKey _repaintKey = GlobalKey();
   @override
   void dispose() {
     super.dispose();
@@ -45,46 +45,100 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Scrollbar(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              HeaderBienBanKiemKe(
-                onAssetDataChanged: (data) => setState(() => _assetData = data),
-                onCcdcDataChanged: (data) => setState(() => _ccdcData = data),
-              ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.center,
-                child: SGText(
-                  text:
-                      'Bảng ghi tăng/giảm Tài sản cố định và công cụ, dụng cụ (Tài sản)',
-                  style: SettingPage.textStyle.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              AssetLedgerTable(data: _assetData),
-              if (_ccdcData.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Align(
-                  alignment: Alignment.center,
-                  child: SGText(
-                    text: 'Bảng ghi tăng/giảm Công cụ, dụng cụ (CCDC)',
-                    style: SettingPage.textStyle.copyWith(
-                      fontWeight: FontWeight.bold,
+      body: LoadingOverlay(
+        isLoading: _isExporting,
+        message: 'Đang xuất PDF...',
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        if (_isExporting) return;
+                        setState(() {
+                          _isExporting = true;
+                        });
+                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          await ReportProvider().exportToPdf(
+                            [_repaintKey],
+                            context,
+                            () {
+                              setState(() => _isExporting = false);
+                              AppUtility.showSnackBar(
+                                context,
+                                'Xuất PDF thành công!',
+                                isError: false,
+                              );
+                            },
+                          );
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Xuất PDF',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Divider(color: Colors.black, thickness: 1),
+                const SizedBox(height: 16),
+                RepaintBoundary(
+                  key: _repaintKey,
+                  child: Column(
+                    children: [
+                      HeaderBienBanKiemKe(
+                        onAssetDataChanged:
+                            (data) => setState(() => _assetData = data),
+                        onCcdcDataChanged:
+                            (data) => setState(() => _ccdcData = data),
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.center,
+                        child: SGText(
+                          text:
+                              'Bảng ghi tăng/giảm Tài sản cố định',
+                          style: SettingPage.textStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      AssetLedgerTable(data: _assetData, title: 'tài sản'),
+                      if (_ccdcData.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        Align(
+                          alignment: Alignment.center,
+                          child: SGText(
+                            text: 'Bảng ghi tăng/giảm Công cụ, dụng cụ cố định',
+                            style: SettingPage.textStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        AssetLedgerTable(data: _ccdcData, title: 'công cụ, dụng cụ'),
+                      ],
+                      FoooterBienBanKiemKe(),
+                      DetailPageWidget(),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                AssetLedgerTable(data: _ccdcData),
               ],
-              FoooterBienBanKiemKe(),
-              DetailPageWidget(),
-            ],
+            ),
           ),
         ),
       ),
@@ -286,20 +340,24 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                             top: 10,
                             bottom: 12,
                           ),
-
+                          isShowSuffixIcon: false,
                           showUnderlineBorderOnly: true,
                           onChanged: (value) async {
                             List<AssetHandoverDto> listIncrease = [];
                             List<AssetHandoverDto> listReduce = [];
-                            List<ToolAndSuppliesHandoverDto> listCCDCIncrease = [];
-                            List<ToolAndSuppliesHandoverDto> listCCDCReduce = [];
+                            List<ToolAndSuppliesHandoverDto> listCCDCIncrease =
+                                [];
+                            List<ToolAndSuppliesHandoverDto> listCCDCReduce =
+                                [];
                             Map<String, dynamic> resultAsset =
                                 await ReportProvider().getReportAsset(
                                   value.id ?? '',
+                                  selectedDate ?? DateTime.now(),
                                 );
                             Map<String, dynamic> resultCCDC =
                                 await ReportProvider().getReportCCDC(
                                   value.id ?? '',
+                                  selectedDate ?? DateTime.now(),
                                 );
 
                             listReduce = resultAsset['data_reduce'];
@@ -333,14 +391,16 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                             }
 
                             // Map tài sản -> DataMap
-                            final listDataMapIncrease = ReportProvider().mapIncrease(
-                              listDetailAssetIncrease,
-                              listAssetManagement,
-                            );
-                            final listDataMapReduce = ReportProvider().mapReduce(
-                              listDetailAssetReduce,
-                              listAssetManagement,
-                            );
+                            final listDataMapIncrease = ReportProvider()
+                                .mapIncrease(
+                                  listDetailAssetIncrease,
+                                  listAssetManagement,
+                                );
+                            final listDataMapReduce = ReportProvider()
+                                .mapReduce(
+                                  listDetailAssetReduce,
+                                  listAssetManagement,
+                                );
                             final listDataMapAsset = [
                               ...listDataMapIncrease,
                               ...listDataMapReduce,
@@ -371,57 +431,63 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                               }
                               return DetailToolAndMaterialTransferDto.empty()
                                   .copyWith(
-                                idCCDCVatTu: d.idCCDCVatTu,
-                                idChiTietCCDCVatTu: d.idChiTietCCDCVatTu,
-                                soLuong: d.soLuong,
-                                tenPhieu: d.tenPhieuBanGiao,
-                                tenCCDCVatTu: d.tenVatTu,
-                                donViTinh: d.donViTinh,
-                                soKyHieu: d.soKyHieu,
-                                kyHieu: d.kyHieu,
-                                ngayTao: d.ngayTao,
-                              );
+                                    idCCDCVatTu: d.idCCDCVatTu,
+                                    idChiTietCCDCVatTu: d.idChiTietCCDCVatTu,
+                                    soLuong: d.soLuong,
+                                    tenPhieu: d.tenPhieuBanGiao,
+                                    tenCCDCVatTu: d.tenVatTu,
+                                    donViTinh: d.donViTinh,
+                                    soKyHieu: d.soKyHieu,
+                                    kyHieu: d.kyHieu,
+                                    ngayTao: d.ngayTao,
+                                  );
                             }
 
-                            final detailCcdcIncrease = listDetailCCDCIncrease
-                                .map(mapHandoverDetail)
-                                .toList();
-                            final detailCcdcReduce = listDetailCCDCReduce
-                                .map(mapHandoverDetail)
-                                .toList();
+                            final detailCcdcIncrease =
+                                listDetailCCDCIncrease
+                                    .map(mapHandoverDetail)
+                                    .toList();
+                            final detailCcdcReduce =
+                                listDetailCCDCReduce
+                                    .map(mapHandoverDetail)
+                                    .toList();
 
                             // Ánh xạ CCDC -> DataMap
-                            final listDataMapCcdcIncrease = detailCcdcIncrease
-                                .map((dto) {
-                              final info = ReportProvider()
-                                  .getInfoCCDC(dto.idCCDCVatTu, listCCDC);
-                              return DataMap(
-                                tenTaiSan: dto.tenCCDCVatTu,
-                                soHieu: dto.soKyHieu,
-                                ngayThang: dto.ngayTao,
-                                donViTinh: dto.donViTinh,
-                                soLuong: dto.soLuong,
-                                donGia: info?.giaTri ?? 0,
-                                soTien: info?.giaTri ?? 0,
-                                type: DataMapType.INCREASE,
-                              );
-                            }).toList();
+                            final listDataMapCcdcIncrease =
+                                detailCcdcIncrease.map((dto) {
+                                  final info = ReportProvider().getInfoCCDC(
+                                    dto.idCCDCVatTu,
+                                    listCCDC,
+                                  );
+                                  return DataMap(
+                                    tenTaiSan: dto.tenCCDCVatTu,
+                                    soHieu: dto.soKyHieu,
+                                    ngayThang: dto.ngayTao,
+                                    donViTinh: dto.donViTinh,
+                                    soLuong: dto.soLuong,
+                                    donGia: info?.giaTri ?? 0,
+                                    soTien: info?.giaTri ?? 0,
+                                    type: DataMapType.INCREASE,
+                                  );
+                                }).toList();
 
-                            final listDataMapCcdcReduce = detailCcdcReduce
-                                .map((dto) {
-                              final info = ReportProvider()
-                                  .getInfoCCDC(dto.idCCDCVatTu, listCCDC);
-                              return DataMap(
-                                tenTaiSan: dto.tenCCDCVatTu,
-                                soHieu: dto.soKyHieu,
-                                ngayThang: dto.ngayTao,
-                                donViTinh: dto.donViTinh,
-                                soLuong: dto.soLuong,
-                                donGia: info?.giaTri ?? 0,
-                                soTien: info?.giaTri ?? 0,
-                                type: DataMapType.REDUCE,
-                              );
-                            }).toList();
+                            final listDataMapCcdcReduce =
+                                detailCcdcReduce.map((dto) {
+                                  final info = ReportProvider().getInfoCCDC(
+                                    dto.idCCDCVatTu,
+                                    listCCDC,
+                                  );
+                                  return DataMap(
+                                    tenTaiSan: dto.tenCCDCVatTu,
+                                    soHieu: dto.soKyHieu,
+                                    ngayThang: dto.ngayTao,
+                                    donViTinh: dto.donViTinh,
+                                    soLuong: dto.soLuong,
+                                    donGia: info?.giaTri ?? 0,
+                                    soTien: info?.giaTri ?? 0,
+                                    type: DataMapType.REDUCE,
+                                  );
+                                }).toList();
 
                             final listDataMapCcdc = [
                               ...listDataMapCcdcIncrease,
@@ -546,9 +612,11 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
               text: "Tên đơn vị (phòng, ban hoặc người sử dụng) ",
               style: SettingPage.textStyle.copyWith(),
             ),
-            EditablePlaceholder(
-              controller: donViController,
-              placeholder: "......",
+            Expanded(
+              child: EditablePlaceholder(
+                controller: donViController,
+                placeholder: "......",
+              ),
             ),
           ],
         ),
@@ -623,8 +691,9 @@ class AssetLedgerRowData {
 /// 3. Widget Bảng (Stateful)
 class AssetLedgerTable extends StatefulWidget {
   final List<DataMap> data;
+  final String title;
 
-  const AssetLedgerTable({super.key, required this.data});
+  const AssetLedgerTable({super.key, required this.data, required this.title});
 
   @override
   State<AssetLedgerTable> createState() => _AssetLedgerTableState();
@@ -725,11 +794,11 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
   }
 
   // Hàm để thêm hàng mới
-  void _addRow() {
-    setState(() {
-      _dataRows.add(AssetLedgerRowData());
-    });
-  }
+  // void _addRow() {
+  //   setState(() {
+  //     _dataRows.add(AssetLedgerRowData());
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -746,8 +815,8 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
           _buildHeaderRow2(),
           _buildHeaderRow3(),
           // Build các hàng dữ liệu từ list
-          ..._dataRows.map((rowData) => _buildDataRow(rowData)).toList(),
-          _buildAddRowButton(),
+          ..._dataRows.map((rowData) => _buildDataRow(rowData)),
+          // _buildAddRowButton(),
         ],
       ),
     );
@@ -762,7 +831,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
         children: [
           _buildHeaderCell(
             Text(
-              'Ghi tăng tài sản cố định và công cụ, dụng cụ',
+              'Ghi tăng ${widget.title} cố định',
               style: style,
               textAlign: TextAlign.center,
             ),
@@ -770,7 +839,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
           ),
           _buildHeaderCell(
             Text(
-              'Ghi giảm tài sản cố định và công cụ, dụng cụ',
+              'Ghi giảm ${widget.title} cố định',
               style: style,
               textAlign: TextAlign.center,
             ),
@@ -798,7 +867,7 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
           _buildHeaderCell(Text('Chứng từ', style: style), _flexCtTang),
           _buildHeaderCell(
             Text(
-              'Tên, nhãn hiệu, quy cách tài sản cố định và công cụ, dụng cụ',
+              'Tên, nhãn hiệu, quy cách ${widget.title} cố định',
               style: style,
               textAlign: TextAlign.center,
             ),
@@ -971,14 +1040,14 @@ class _AssetLedgerTableState extends State<AssetLedgerTable> {
     );
   }
 
-  /// Nút thêm hàng
-  Widget _buildAddRowButton() {
-    return TextButton.icon(
-      icon: const Icon(Icons.add_circle_outline),
-      label: const Text('Thêm hàng mới'),
-      onPressed: _addRow,
-    );
-  }
+  // /// Nút thêm hàng
+  // Widget _buildAddRowButton() {
+  //   return TextButton.icon(
+  //     icon: const Icon(Icons.add_circle_outline),
+  //     label: const Text('Thêm hàng mới'),
+  //     onPressed: _addRow,
+  //   );
+  // }
 
   //--- CÁC HÀM TRỢ GIÚP (HELPER) ---
 

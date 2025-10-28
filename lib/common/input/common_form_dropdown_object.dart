@@ -21,6 +21,7 @@ class CmFormDropdownObject<T> extends StatefulWidget {
     this.hintText,
     this.contentPadding = const EdgeInsets.only(left: 10, top: 10, bottom: 8),
     this.fontSize = 14,
+    this.isShowSuffixIcon = true,
   });
   final String? label;
   final TextEditingController controller;
@@ -37,6 +38,7 @@ class CmFormDropdownObject<T> extends StatefulWidget {
   final String? hintText;
   final EdgeInsets contentPadding;
   final double fontSize;
+  final bool isShowSuffixIcon;
   @override
   State<CmFormDropdownObject<T>> createState() => _CommonFormInputState<T>();
 }
@@ -87,12 +89,11 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
                               widget.validationErrors![widget.fieldName] == true)
                           ? Colors.red
                           : SGAppColors.neutral400,
-                  // showUnderlineBorderOnly: true,
                   enableSearch: false,
                   isClearController: widget.isEditing,
                   fontSize: widget.fontSize,
                   inputType: widget.inputType,
-                  isShowSuffixIcon: true,
+                  isShowSuffixIcon: widget.isShowSuffixIcon,
                   hintText: 'Chọn ${widget.label?.toLowerCase()}',
                   textAlign: TextAlign.left,
                   textAlignItem: TextAlign.left,
