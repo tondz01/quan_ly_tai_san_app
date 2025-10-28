@@ -62,8 +62,9 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  set isLoadingImport(bool value) {
+  onLoadingImport(bool value) {
     _isLoadingImport = value;
+    log('message onLoadingImport: $value');
     notifyListeners();
   }
 
@@ -178,7 +179,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
               kyHieu ||
               donViTinh;
         }).toList();
-    
+
     // Cập nhật phân trang sau khi search
     _updatePagination();
     notifyListeners();
@@ -275,10 +276,7 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  getListUnitSuccess(
-    BuildContext context,
-    GetListUnitSuccessState state,
-  ) {
+  getListUnitSuccess(BuildContext context, GetListUnitSuccessState state) {
     _error = null;
     _dataUnit = state.data;
     notifyListeners();

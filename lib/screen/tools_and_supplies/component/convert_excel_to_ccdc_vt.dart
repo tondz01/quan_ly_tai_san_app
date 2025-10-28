@@ -38,49 +38,12 @@ Map<String, dynamic> _validateRow(
 
   if (json['idDonVi'] == null || json['idDonVi'].toString().trim().isEmpty) {
     rowErrors.add('Đơn vị không được để trống');
-  } else {
-    try {
-      phongBans.firstWhere((phongBan) => phongBan.id == json['idDonVi']);
-    } catch (e) {
-      rowErrors.add('Đơn vị không tồn tại ${json['idDonVi']}');
-    }
-  }
+  } 
 
   if (json['ten'] == null || json['ten'].toString().trim().isEmpty) {
     rowErrors.add('Tên CCDC - Vật tư không được để trống');
   }
-
-  if (json['donViTinh'] == null ||
-      json['donViTinh'].toString().trim().isEmpty) {
-    rowErrors.add('Mã đơn vị tính không được để trống');
-  } else {
-    try {
-      units.firstWhere((unit) => unit.id == json['donViTinh']);
-    } catch (e) {
-      rowErrors.add('Đơn vị tính không tồn tại ${json['donViTinh']}');
-    }
-  }
-  if (json['idNhomCCDC'] == null ||
-      json['idNhomCCDC'].toString().trim().isEmpty) {
-    rowErrors.add('Nhóm CCDC không được để trống');
-  } else {
-    try {
-      ccdcGroups.firstWhere((ccdcGroup) => ccdcGroup.id == json['idNhomCCDC']);
-    } catch (e) {
-      rowErrors.add('Nhóm CCDC không tồn tại ${json['idNhomCCDC']}');
-    }
-  }
-  if (json['idLoaiCCDCCon'] == null ||
-      json['idLoaiCCDCCon'].toString().trim().isEmpty) {
-    rowErrors.add('Loại CCDC không được để trống');
-  } else {
-    try {
-      typeCcdcs.firstWhere((typeCcdc) => typeCcdc.id == json['idLoaiCCDCCon']);
-    } catch (e) {
-      rowErrors.add('Loại CCDC không tồn tại ${json['idLoaiCCDCCon']}');
-    }
-  }
-
+  
   if (json['giaTri'] == null || json['giaTri'].toString().trim().isEmpty) {
     rowErrors.add('Giá trị không được để trống');
   } else {
@@ -108,7 +71,6 @@ Map<String, dynamic> _validateRow(
       rowErrors.add('Số lượng không được để trống');
     } else {
       try {
-        int.tryParse(soLuong);
         if ((int.tryParse(soLuong) ?? 0) <= 0) {
           rowErrors.add('Số lượng phải lớn hơn 0');
         }
