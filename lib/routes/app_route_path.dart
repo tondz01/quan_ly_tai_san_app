@@ -40,6 +40,7 @@ enum AppRoute {
   login(path: "/login", name: "login"),
   allocationReport(path: "/allocation-report", name: "allocation-report"),
   recoveryReport(path: '/recovery-report', name: "recovery-report"),
+  s22dnReport(path: '/mau_s22_dn', name: "mau_s22_dn"),
   transferReport(path: '/transfer-report', name: "transfer-report"),
   account(path: "/account", name: "account"),
   bienBanKiemKe(path: "/kiem-ke", name: 'kiem-ke'),

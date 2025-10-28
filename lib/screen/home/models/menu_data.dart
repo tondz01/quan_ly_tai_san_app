@@ -274,8 +274,8 @@ class AppMenuData extends ChangeNotifier {
               route: AppRoute.transferReport.path,
             ),
             SubMenuItem(
-              label: "Báo cáo Thu hồi tài sản trong kỳ",
-              route: AppRoute.recoveryReport.path,
+              label: "Báo cáo S22-DN",
+              route: AppRoute.s22dnReport.path,
             ),
             SubMenuItem(
               label: 'Biên bản kiểm kê',

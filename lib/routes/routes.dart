@@ -28,3 +28,4 @@ export 'package:quan_ly_tai_san_app/screen/dashboard/dashboard_view.dart';
 export 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/tool_and_supplies_handover_view.dart';
 export 'package:quan_ly_tai_san_app/screen/type_asset/type_asset_view.dart';
 export 'package:quan_ly_tai_san_app/screen/type_ccdc/type_ccdc_view.dart';
+export 'package:quan_ly_tai_san_app/screen/report/views/mau_s22_dn.dart';

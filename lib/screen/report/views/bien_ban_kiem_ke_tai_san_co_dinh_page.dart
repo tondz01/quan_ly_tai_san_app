@@ -468,12 +468,12 @@ class FooterBienBanKiemKe extends StatefulWidget {
 
 class _FooterBienBanKiemKeState extends State<FooterBienBanKiemKe> {
   String _gio = '';
-  String _phong1 = '';
-  String _phong2 = '';
-  String _phong3 = '';
-  String _ongBa1 = '';
-  String _ongBa2 = '';
-  String _ongBa3 = '';
+  // String _phong1 = '';
+  // String _phong2 = '';
+  // String _phong3 = '';
+  // String _ongBa1 = '';
+  // String _ongBa2 = '';
+  // String _ongBa3 = '';
 
   @override
   Widget build(BuildContext context) {
@@ -610,12 +610,12 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
   String _chucVu1 = '';
   String _chucVu2 = '';
   String _chucVu3 = '';
-  String _donViOngBa1 = '';
-  String _donViOngBa2 = '';
-  String _donViOngBa3 = '';
-  String _donViChucVu1 = '';
-  String _donViChucVu2 = '';
-  String _donViChucVu3 = '';
+  // String _donViOngBa1 = '';
+  // String _donViOngBa2 = '';
+  // String _donViOngBa3 = '';
+  // String _donViChucVu1 = '';
+  // String _donViChucVu2 = '';
+  // String _donViChucVu3 = '';
 
   @override
   Widget build(BuildContext context) {
@@ -649,7 +649,7 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SGText(
-                    text: "Mẫu số 01a-TS",
+                    text: "Mẫu số 05 - TSCĐ",
                     style: SettingPage.textStyle.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
