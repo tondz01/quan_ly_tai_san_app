@@ -31,6 +31,12 @@ Future<bool> checkValidateImportAsset(
       return false;
     }
 
+    // Tối ưu: dừng sớm khi có quá nhiều lỗi để tránh đơ UI với file rất lớn
+    const int maxErrorsBeforeExit = 500;
+    // Tối ưu: chỉ validate tối đa N hàng đầu tiên (bỏ qua header) để tăng tốc
+    // Người dùng vẫn sẽ nhận được danh sách lỗi đại diện để sửa dữ liệu nguồn
+    const int maxRowsValidate = 5000;
+
     final List<_RequiredField> required = <_RequiredField>[
       _RequiredField(index: 0, displayName: 'Số thẻ tài sản'), // id
       _RequiredField(index: 1, displayName: 'Mã tài sản'), // soThe
@@ -51,60 +57,28 @@ Future<bool> checkValidateImportAsset(
     ];
 
     final List<String> errors = <String>[];
+    bool earlyStoppedByErrorLimit = false;
+    bool limitedByRowCap = false;
 
+    // Tối ưu: ưu tiên dùng SpreadsheetDecoder (nhanh, ít tốn bộ nhớ hơn) trước
     try {
-      final excelFile = excel.Excel.decodeBytes(fileBytes);
-      for (final table in excelFile.tables.keys) {
-        final sheet = excelFile.tables[table];
-        if (sheet == null) continue;
-        for (int rowIndex = 1; rowIndex < sheet.rows.length; rowIndex++) {
-          final row = sheet.rows[rowIndex];
-
-          // Validate required fields
-          for (final rf in required) {
-            final cell = rf.index < row.length ? row[rf.index] : null;
-            final raw = cell?.value;
-            final valueStr = AppUtility.s(raw);
-            final int displayRow = rowIndex;
-            final String columnLetter = _getColumnLetter(rf.index);
-            if (valueStr.trim().isEmpty) {
-              errors.add(
-                'Cột: $columnLetter - Hàng: $displayRow -- Lỗi: ${rf.displayName} đang bỏ trống',
-              );
-            }
-          }
-
-          // Validate capital fields (must be numeric)
-          for (final cf in capitalFields) {
-            final cell = cf.index < row.length ? row[cf.index] : null;
-            final raw = cell?.value;
-            final valueStr = AppUtility.s(raw);
-            final int displayRow = rowIndex;
-            final String columnLetter = _getColumnLetter(cf.index);
-
-            if (valueStr.trim().isNotEmpty) {
-              // Check if the value can be parsed as a number
-              final cleanedValue = valueStr.replaceAll(RegExp(r'[^\d.]'), '');
-              if (double.tryParse(cleanedValue) == null) {
-                errors.add(
-                  'Cột: $columnLetter - Hàng: $displayRow -- Lỗi: ${cf.displayName} phải là số, không được là text: "$valueStr"',
-                );
-              }
-            }
-          }
-        }
-      }
-    } catch (_) {
-      // Fallback: spreadsheet_decoder for problematic numFmtId
       final decoder = SpreadsheetDecoder.decodeBytes(fileBytes, update: false);
       for (final table in decoder.tables.keys) {
         final sheet = decoder.tables[table];
         if (sheet == null) continue;
-        for (int rowIndex = 1; rowIndex < sheet.maxRows; rowIndex++) {
+        final int lastRowToValidate = maxRowsValidate > 0
+            ? (1 + maxRowsValidate)
+            : sheet.maxRows; // row index is exclusive in loop below
+        final int endRowExclusive = lastRowToValidate.clamp(1, sheet.maxRows);
+        if (sheet.maxRows - 1 > maxRowsValidate) {
+          limitedByRowCap = true;
+        }
+
+        for (int rowIndex = 1; rowIndex < endRowExclusive; rowIndex++) {
           final row = sheet.rows[rowIndex];
           dynamic cellAt(int idx) => (idx < row.length) ? row[idx] : null;
 
-          // Validate required fields
+          // Required fields
           for (final rf in required) {
             final raw = cellAt(rf.index);
             final valueStr = AppUtility.s(raw);
@@ -114,31 +88,118 @@ Future<bool> checkValidateImportAsset(
               errors.add(
                 'Cột: $columnLetter - Hàng: $displayRow -- Lỗi: ${rf.displayName} đang bỏ trống',
               );
+              if (errors.length >= maxErrorsBeforeExit) {
+                earlyStoppedByErrorLimit = true;
+                break;
+              }
             }
           }
+          if (earlyStoppedByErrorLimit) break;
 
-          // Validate capital fields (must be numeric)
+          // Numeric fields
           for (final cf in capitalFields) {
             final raw = cellAt(cf.index);
             final valueStr = AppUtility.s(raw);
             final int displayRow = rowIndex;
             final String columnLetter = _getColumnLetter(cf.index);
-
             if (valueStr.trim().isNotEmpty) {
-              // Check if the value can be parsed as a number
               final cleanedValue = valueStr.replaceAll(RegExp(r'[^\d.]'), '');
               if (double.tryParse(cleanedValue) == null) {
                 errors.add(
                   'Cột: $columnLetter - Hàng: $displayRow -- Lỗi: ${cf.displayName} phải là số, không được là text: "$valueStr"',
                 );
+                if (errors.length >= maxErrorsBeforeExit) {
+                  earlyStoppedByErrorLimit = true;
+                  break;
+                }
               }
             }
           }
+          if (earlyStoppedByErrorLimit) break;
         }
+        if (earlyStoppedByErrorLimit) break;
+      }
+    } catch (e) {
+      // Fallback: dùng excel package nếu decoder gặp lỗi
+      try {
+        final excelFile = excel.Excel.decodeBytes(fileBytes);
+        for (final table in excelFile.tables.keys) {
+          final sheet = excelFile.tables[table];
+          if (sheet == null) continue;
+          final int totalRows = sheet.rows.length - 1; // exclude header
+          final int rowsToValidate = maxRowsValidate > 0
+              ? totalRows.clamp(0, maxRowsValidate)
+              : totalRows;
+          if (totalRows > rowsToValidate) {
+            limitedByRowCap = true;
+          }
+
+          for (int i = 0; i < rowsToValidate; i++) {
+            final int rowIndex = i + 1; // skip header
+            final row = sheet.rows[rowIndex];
+
+            // Required fields
+            for (final rf in required) {
+              final cell = rf.index < row.length ? row[rf.index] : null;
+              final raw = cell?.value;
+              final valueStr = AppUtility.s(raw);
+              final int displayRow = rowIndex;
+              final String columnLetter = _getColumnLetter(rf.index);
+              if (valueStr.trim().isEmpty) {
+                errors.add(
+                  'Cột: $columnLetter - Hàng: $displayRow -- Lỗi: ${rf.displayName} đang bỏ trống',
+                );
+                if (errors.length >= maxErrorsBeforeExit) {
+                  earlyStoppedByErrorLimit = true;
+                  break;
+                }
+              }
+            }
+            if (earlyStoppedByErrorLimit) break;
+
+            // Numeric fields
+            for (final cf in capitalFields) {
+              final cell = cf.index < row.length ? row[cf.index] : null;
+              final raw = cell?.value;
+              final valueStr = AppUtility.s(raw);
+              final int displayRow = rowIndex;
+              final String columnLetter = _getColumnLetter(cf.index);
+              if (valueStr.trim().isNotEmpty) {
+                final cleanedValue = valueStr.replaceAll(RegExp(r'[^\d.]'), '');
+                if (double.tryParse(cleanedValue) == null) {
+                  errors.add(
+                    'Cột: $columnLetter - Hàng: $displayRow -- Lỗi: ${cf.displayName} phải là số, không được là text: "$valueStr"',
+                  );
+                  if (errors.length >= maxErrorsBeforeExit) {
+                    earlyStoppedByErrorLimit = true;
+                    break;
+                  }
+                }
+              }
+            }
+            if (earlyStoppedByErrorLimit) break;
+          }
+          if (earlyStoppedByErrorLimit) break;
+        }
+      } catch (e2) {
+        // Cả 2 cách đều lỗi
+        log('message test: error $e2');
+        AppUtility.showSnackBar(
+          context,
+          'Không đọc được file import: $e2',
+          isError: true,
+        );
+        return false;
       }
     }
 
     if (errors.isNotEmpty) {
+      // Thêm thông tin chú thích nếu đã dừng sớm
+      if (earlyStoppedByErrorLimit) {
+        errors.add('... Đã dừng kiểm tra sớm do quá nhiều lỗi (>${maxErrorsBeforeExit}).');
+      } else if (limitedByRowCap) {
+        errors.add('... Chỉ kiểm tra ${maxRowsValidate} hàng đầu tiên để tăng tốc.');
+      }
       _showErrorDialog(context, errors);
       return false;
     }

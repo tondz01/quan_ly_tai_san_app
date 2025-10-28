@@ -571,6 +571,7 @@ class AssetManagementProvider with ChangeNotifier {
     //   _data?.add(state.data!);
     //   _filteredData = List.from(_data!);
     // }
+    getDataAll(context);
     onLoadingImport(false);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     notifyListeners();

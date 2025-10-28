@@ -7,13 +7,12 @@ import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/component/check_vaildate_import.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/component/convert_excel_to_asset.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/component/optimized_validation_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
@@ -99,7 +98,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                     backgroundColor: ColorValue.neutral50,
                     appBar: AppBar(
                       title: HeaderComponent(
-                        isBlockInput: true,
+                        isBlockInput: provider.isLoadingImport,
                         controller:
                             provider.typeBody == ShowBody.taiSan
                                 ? _searchController
@@ -128,20 +127,78 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                         onFileSelected: (fileName, filePath, fileBytes) async {
                           loadingMessage = 'Đang import dữ liệu...';
                           provider.onLoadingImport(true);
-                          final assetBloc = context.read<AssetManagementBloc>();
-                          final ok = await checkValidateImportAsset(
-                            context,
-                            bytes: fileBytes,
-                            filePath: filePath,
-                          );
-                          if (!ok) return;
-                          final List<AssetManagementDto> assets =
-                              await convertExcelToAsset(
-                                bytes: fileBytes,
-                                filePath: filePath,
-                              );
-                          // provider.onLoading(true);
-                          assetBloc.add(CreateAssetBatchEvent(assets));
+                          
+                          try {
+                            // Optimized single-pass import: validate and convert in one go
+                            final (success, assets, _) = await importAssetsOptimized(
+                              bytes: fileBytes,
+                              filePath: filePath,
+                              context: context,
+                              onProgress: (current, total) {
+                                // Update loading message with import progress
+                                setState(() {
+                                  loadingMessage = 'Đang import dữ liệu... ($current/$total)';
+                                });
+                              },
+                            );
+                            
+                            if (!success) {
+                              provider.onLoadingImport(false);
+                              return;
+                            }
+                            
+                            // Process assets in batches to avoid blocking UI
+                            final batchSize = 100; // Upload 100 assets per batch
+                            final totalBatches = (assets.length / batchSize).ceil();
+                            
+                            for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+                              final start = batchIndex * batchSize;
+                              final end = (start + batchSize).clamp(0, assets.length);
+                              final batch = assets.sublist(start, end);
+                              
+                              // Update progress message
+                              setState(() {
+                                loadingMessage = 'Đang lưu dữ liệu... Batch ${batchIndex + 1}/$totalBatches (${end}/${assets.length})';
+                              });
+                              
+                              // Upload batch via repository
+                              final repository = AssetManagementRepository();
+                              final result = await repository.createAssetBatch(batch);
+                              
+                              // Check if batch upload succeeded
+                              if (result['status_code'] != 200 && result['status_code'] != 201) {
+                                // If one batch fails, show error but continue
+                                AppUtility.showSnackBar(
+                                  context,
+                                  'Batch ${batchIndex + 1} thất bại: ${result['message'] ?? 'Lỗi không xác định'}',
+                                  isError: true,
+                                );
+                              }
+                              
+                              // Small delay between batches
+                              await Future.delayed(Duration(milliseconds: 100));
+                            }
+                            
+                            // Refresh data after successful import
+                            final assetBloc = context.read<AssetManagementBloc>();
+                            final idCongTy = 'ct001'; // Get from context/provider
+                            assetBloc.add(GetListAssetManagementEvent(context, idCongTy));
+                            
+                            AppUtility.showSnackBar(
+                              context,
+                              'Import thành công ${assets.length} tài sản',
+                              isError: false,
+                            );
+                            
+                          } catch (e) {
+                            AppUtility.showSnackBar(
+                              context,
+                              'Lỗi khi import dữ liệu: $e',
+                              isError: true,
+                            );
+                          } finally {
+                            provider.onLoadingImport(false);
+                          }
                         },
                         onExportData: () {
                           loadingMessage = 'Đang xuất dữ liệu...';

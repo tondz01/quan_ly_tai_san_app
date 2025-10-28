@@ -274,11 +274,11 @@ class AppMenuData extends ChangeNotifier {
               route: AppRoute.bienBanKiemKe.path,
             ),
             SubMenuItem(
-              label: 'Biên bản kiểm kê CCDC',
+              label: 'Báo cáo đối chiếu kiểm kê',
               route: AppRoute.bienBanKiemKeCcdc.path,
             ),
             SubMenuItem(
-              label: 'Biên bản kiểm kê tài sản cố định',
+              label: 'Báo cáo 05-TSCD-24-2017-TT-BTC',
               route: AppRoute.bienBanKiemKeTaiSanCoDinh.path,
             ),
           ],

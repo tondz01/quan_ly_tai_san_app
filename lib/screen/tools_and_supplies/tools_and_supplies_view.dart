@@ -35,6 +35,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late HomeScrollController _scrollController;
+  bool isLoadingImport = false;
   String loadingMessage = '';
   @override
   void initState() {
@@ -139,7 +140,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
               );
 
               return LoadingOverlay(
-                isLoading: provider.isLoadingImport,
+                isLoading: provider.isLoadingImport || isLoadingImport,
                 message: loadingMessage,
                 child: Scaffold(
                   appBar: AppBar(
@@ -157,8 +158,9 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                       subScreen: provider.subScreen,
                       onFileSelected: (fileName, filePath, fileBytes) async {
                         loadingMessage = 'Đang import dữ liệu...';
-                        provider.isLoadingImport = true;
-                        log('loadingMessage: $loadingMessage');
+                        provider.onLoadingImport(true);
+                        isLoadingImport = true;
+                        log('loadingMessage: $loadingMessage - ${provider.isLoadingImport}');
                         final result = await convertExcelToCcdcVt(
                           filePath!,
                           fileBytes: fileBytes,
@@ -213,13 +215,15 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                             isError: true,
                             timeDuration: 4,
                           );
-                          provider.isLoadingImport = false;
+                          provider.onLoadingImport(false);
+                          isLoadingImport = false;
                         }
                       },
                       onExportData: () {
                         loadingMessage = 'Đang xuất dữ liệu...';
                         if (provider.data == null) return;
-                        provider.isLoadingImport = true;
+                        provider.onLoadingImport(true);
+                        isLoadingImport = true;
                         List<dynamic> data = [];
                         for (var item in provider.data) {
                           if (item.chiTietTaiSanList.isNotEmpty) {
@@ -269,7 +273,8 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                           "Danh sách CCDC - Vật tư",
                           data,
                         );
-                        provider.isLoadingImport = false;
+                        provider.onLoadingImport(false);
+                        isLoadingImport = false;
                       },
                     ),
                   ),

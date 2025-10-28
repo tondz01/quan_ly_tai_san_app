@@ -86,7 +86,6 @@ Future<List<AssetManagementDto>> convertExcelToAsset({
           'isActive': true,
           'isTaiSanCon': false,
         };
-        log('asset json: ${jsonEncode(json)}');
         assetList.add(AssetManagementDto.fromJson(json));
       }
     }
@@ -149,7 +148,6 @@ Future<List<AssetManagementDto>> convertExcelToAsset({
           'isActive': true,
           'isTaiSanCon': false,
         };
-        log('asset json2: ${jsonEncode(json)}');
         assetList.add(AssetManagementDto.fromJson(json));
       }
     }
