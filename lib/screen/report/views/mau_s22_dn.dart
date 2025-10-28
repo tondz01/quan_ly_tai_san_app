@@ -57,7 +57,7 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
               ),
               const SizedBox(height: 16),
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.center,
                 child: SGText(
                   text:
                       'Bảng ghi tăng/giảm Tài sản cố định và công cụ, dụng cụ (Tài sản)',
@@ -71,7 +71,7 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
               if (_ccdcData.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.center,
                   child: SGText(
                     text: 'Bảng ghi tăng/giảm Công cụ, dụng cụ (CCDC)',
                     style: SettingPage.textStyle.copyWith(
