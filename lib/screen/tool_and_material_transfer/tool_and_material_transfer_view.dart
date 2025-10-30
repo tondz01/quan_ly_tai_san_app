@@ -230,14 +230,6 @@ class _ToolAndMaterialTransferViewState
         if (state is GetListAssetFailedState) {
           log('GetListAssetFailedState');
         }
-        if (state is GetDataDropdownSuccessState) {
-          context
-              .read<ToolAndMaterialTransferProvider>()
-              .getDataDropdownSuccess(context, state);
-        }
-        if (state is GetDataDropdownFailedState) {
-          log('GetDataDropdownFailedState');
-        }
         if (state is CreateDieuDongSuccessState) {
           log('CreateDieuDongSuccessState');
           context.read<ToolAndMaterialTransferProvider>().createDieuDongSuccess(

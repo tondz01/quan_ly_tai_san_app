@@ -4,6 +4,7 @@ import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/core/utils/menu_refresh_service.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -17,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/reason_increase/model/reason_increase
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/home/models/menu_data.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/type_asset/model/type_asset.dart';
 import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
@@ -892,7 +894,9 @@ class AccountHelper {
             .map((e) {
               if (e is UnitDto) return e;
               if (e is Map<String, dynamic>) return UnitDto.fromJson(e);
-              if (e is Map) return UnitDto.fromJson(Map<String, dynamic>.from(e));
+              if (e is Map) {
+                return UnitDto.fromJson(Map<String, dynamic>.from(e));
+              }
               return null;
             })
             .whereType<UnitDto>()
@@ -914,5 +918,55 @@ class AccountHelper {
     } catch (e) {
       return null;
     }
+  }
+
+  setListAsset(List<AssetManagementDto> assets) {
+    if (assets.isNotEmpty) {
+      StorageService.write(StorageKey.ASSETS, assets);
+    }
+  }
+
+  List<AssetManagementDto> getAllAssets() {
+    final raw = StorageService.read(StorageKey.ASSETS);
+    if (raw == null) return [];
+    if (raw is List<AssetManagementDto>) return raw;
+    if (raw is List) {
+      return raw
+          .map((e) {
+            if (e is AssetManagementDto) return e;
+            if (e is Map) {
+              return AssetManagementDto.fromJson(Map<String, dynamic>.from(e));
+            }
+            return null;
+          })
+          .whereType<AssetManagementDto>()
+          .toList();
+    }
+    return [];
+  }
+
+  setListCCDC(List<ToolsAndSuppliesDto> ccdc) {
+    if (ccdc.isNotEmpty) {
+      StorageService.write(StorageKey.CCDC_VT, ccdc);
+    }
+  }
+
+  List<ToolsAndSuppliesDto> getAllCCDC() {
+    final raw = StorageService.read(StorageKey.CCDC_VT);
+    if (raw == null) return [];
+    if (raw is List<ToolsAndSuppliesDto>) return raw;
+    if (raw is List) {
+      return raw
+          .map((e) {
+            if (e is ToolsAndSuppliesDto) return e;
+            if (e is Map) {
+              return ToolsAndSuppliesDto.fromJson(Map<String, dynamic>.from(e));
+            }
+            return null;
+          })
+          .whereType<ToolsAndSuppliesDto>()
+          .toList();
+    }
+    return [];
   }
 }

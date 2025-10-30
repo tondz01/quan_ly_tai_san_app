@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -42,6 +43,16 @@ class ToolsAndSuppliesRepository extends ApiBase {
         ToolsAndSuppliesDto.fromJson,
       );
       result['data'] = list;
+      try {
+        AccountHelper.instance.setListCCDC(list);
+        if (AccountHelper.instance.getAllCCDC().isEmpty) {
+          log("setCache [CDCD]: No CCDC cached in storage.");
+        }else {
+          log("setCache [CDCD]: CCDC data cached successfully.");
+        }
+      } catch (e) {
+        log("setCache [CDCD]: Error at setListCCDC - ToolsAndSuppliesRepository: $e");
+      }
     } catch (e) {
       log("Error at getListToolsAndSupplies - ToolsAndSuppliesRepository: $e");
       result['status_code'] = Numeral.STATUS_CODE_DEFAULT;

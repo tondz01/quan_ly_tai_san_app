@@ -277,6 +277,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void _initData(BuildContext context) {
     _userInfo = AccountHelper.instance.getUserInfo();
     onCloseDetail(context);
+    getDataDropdown();
 
     controllerDropdownPage = TextEditingController(text: '10');
 
@@ -352,7 +353,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         ),
       );
       bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
-      bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
+      // bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
@@ -476,6 +477,26 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   //   notifyListeners();
   // }
 
+  getDataDropdown() {
+    _dataPhongBan = AccountHelper.instance.getDepartment();
+    _itemsDDPhongBan = [
+      for (var element in _dataPhongBan!)
+        DropdownMenuItem<PhongBan>(
+          value: element,
+          child: Text(element.tenPhongBan ?? ''),
+        ),
+    ];
+    _dataNhanVien = AccountHelper.instance.getNhanVien();
+    _itemsDDNhanVien = [
+      for (var element in _dataNhanVien!)
+        DropdownMenuItem<NhanVien>(
+          value: element,
+          child: Text(element.hoTen ?? ''),
+        ),
+    ];
+    notifyListeners();
+  }
+
   getLisTaiSanSuccess(BuildContext context, GetListAssetSuccessState state) {
     _error = null;
     if (state.data.isEmpty) {
@@ -486,37 +507,37 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  getDataDropdownSuccess(
-    BuildContext context,
-    GetDataDropdownSuccessState state,
-  ) {
-    _error = null;
-    if (state.dataPb.isEmpty) {
-      _dataPhongBan = [];
-    } else {
-      _dataPhongBan = state.dataPb;
-      _itemsDDPhongBan = [
-        for (var element in _dataPhongBan!)
-          DropdownMenuItem<PhongBan>(
-            value: element,
-            child: Text(element.tenPhongBan ?? ''),
-          ),
-      ];
-    }
-    if (state.dataNv.isEmpty) {
-      _dataNhanVien = [];
-    } else {
-      _dataNhanVien = state.dataNv;
-      _itemsDDNhanVien = [
-        for (var element in _dataNhanVien!)
-          DropdownMenuItem<NhanVien>(
-            value: element,
-            child: Text(element.hoTen ?? ''),
-          ),
-      ];
-    }
-    notifyListeners();
-  }
+  // getDataDropdownSuccess(
+  //   BuildContext context,
+  //   GetDataDropdownSuccessState state,
+  // ) {
+  //   _error = null;
+  //   if (state.dataPb.isEmpty) {
+  //     _dataPhongBan = [];
+  //   } else {
+  //     _dataPhongBan = state.dataPb;
+  //     _itemsDDPhongBan = [
+  //       for (var element in _dataPhongBan!)
+  //         DropdownMenuItem<PhongBan>(
+  //           value: element,
+  //           child: Text(element.tenPhongBan ?? ''),
+  //         ),
+  //     ];
+  //   }
+  //   if (state.dataNv.isEmpty) {
+  //     _dataNhanVien = [];
+  //   } else {
+  //     _dataNhanVien = state.dataNv;
+  //     _itemsDDNhanVien = [
+  //       for (var element in _dataNhanVien!)
+  //         DropdownMenuItem<NhanVien>(
+  //           value: element,
+  //           child: Text(element.hoTen ?? ''),
+  //         ),
+  //     ];
+  //   }
+  //   notifyListeners();
+  // }
 
   void createDieuDongSuccess(
     BuildContext context,

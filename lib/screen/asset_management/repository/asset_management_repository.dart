@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_reques
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AssetManagementRepository extends ApiBase {
@@ -41,6 +42,18 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         AssetManagementDto.fromJson,
       );
+
+      try {
+        // Lưu trữ dữ liệu vào bộ nhớ đệm
+        AccountHelper.instance.setListAsset(result['data']);
+        if (AccountHelper.instance.getAllAssets().isEmpty) {
+          log("setCache [ASSET]: No assets cached in storage.");
+        } else {
+          log("setCache [ASSET]: Assets data cached successfully.");
+        }
+      } catch (e) {
+        log("setCache [ASSET]: Error saving asset data to storage: $e");
+      }
     } catch (e) {
       log("Error at getListAssetManagement - AssetManagementRepository: $e");
     }

@@ -59,4 +59,6 @@ class StorageKey {
   static const ASSET_CATEGORY = "ASSET_CATEGORY";
   static const UNIT = "UNIT";
   static const REASON_INCREASE = "REASON_INCREASE";
+  static const ASSETS = "ASSETS";
+  static const CCDC_VT = "CCDC_VT";
 }

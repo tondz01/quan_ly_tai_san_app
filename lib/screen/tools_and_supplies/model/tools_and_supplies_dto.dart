@@ -86,8 +86,9 @@ class ToolsAndSuppliesDto {
       ngayCapNhat: AppUtility.formatFromISOString(
         json['ngayCapNhat'].toString(),
       ),
-
       nguoiTao: json['nguoiTao'] ?? '',
+      
+      
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
       chiTietTaiSanList:
