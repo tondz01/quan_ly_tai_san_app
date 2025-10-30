@@ -540,6 +540,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   Future<Map<String, dynamic>> getDataWithPagination(
     int page,
     int size,
+    int type,
+    String search,
   ) async {
     Map<String, dynamic> result = {
       'data': '',
@@ -547,12 +549,11 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       'totalPages': 0,
       'currentPage': 0,
       'totalItems': 0,
-      'totalPages': 0,
     };
 
     try {
       final response = await get( // Đổi từ post thành get
-        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size',
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&type=$type&search=$search',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

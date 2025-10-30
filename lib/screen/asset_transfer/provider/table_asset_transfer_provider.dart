@@ -41,9 +41,11 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
       log('Error in generateData: $e');
       return [];
     }
+
   }
 
   Future<void> refreshData() async {
     await generateData();
   }
 }
+

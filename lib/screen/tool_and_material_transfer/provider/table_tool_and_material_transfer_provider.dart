@@ -20,6 +20,7 @@ class TableToolAndMaterialTransferProvider
   final ToolAndMaterialTransferRepository repository;
   int totalItems = 0;
   String _currentSearchTerm = '';
+  int _currentType = 1; // lưu type hiện tại
 
   TableToolAndMaterialTransferProvider(this.repository);
 
@@ -39,26 +40,29 @@ class TableToolAndMaterialTransferProvider
 
     // Bật API pagination
     enableApiPagination(true);
-    loadDataFromApi(0);
+    loadDataFromApi(0, _currentType); 
   }
 
   // Tìm kiếm với API
   set searchTerm(String value) {
     _currentSearchTerm = value;
-    loadDataFromApi(0); // Reset về trang đầu khi search
+    loadDataFromApi(0, _currentType); // Reset về trang đầu khi search
   }
 
   // Load dữ liệu từ API
-  Future<void> loadDataFromApi(int page) async {
+  Future<void> loadDataFromApi(int page, int type) async {
+    _currentType = type; // cập nhật type
     state = state.copyWith(isLoading: true, errorMessage: null);
-
+    setApiLoading();
+    log('loadDataFromApi: page=$page, type=$_currentType, search="$_currentSearchTerm"');
     try {
       // Gọi API của bạn
       final response = await repository.getDataWithPagination(
         page,
         state.paginationState.itemsPerPage,
+        _currentType,
+        _currentSearchTerm,
       );
-      log('response Page: ${response['totalPages']}');
       // Cập nhật data và pagination info
       setApiData(
         response['data'],
@@ -79,12 +83,15 @@ class TableToolAndMaterialTransferProvider
   @override
   void goToPage(int page) {
     super.goToPage(page);
-    loadDataFromApi(page);
+    loadDataFromApi(page, _currentType);
   }
 
   // Refresh dữ liệu
-  Future<void> refreshData() async {
-    await loadDataFromApi(state.paginationState.currentDisplayPage);
+  Future<void> refreshData(int type) async {
+    _currentType = type;
+    log('loadDataFromApi refreshData: type=$_currentType -- typeInsert=$type');
+
+    await loadDataFromApi(state.paginationState.currentDisplayPage, _currentType);
   }
 
   @override

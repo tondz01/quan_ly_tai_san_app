@@ -394,7 +394,8 @@ class _ToolAndMaterialTransferListState
                             (s) => s.paginationState.totalItems,
                           ),
                         );
-
+                        widget.provider.isLoading = false;
+                       
                         return RiverpodTable<ToolAndMaterialTransferDto>(
                           tableProvider: tableToolAndMaterialTransferProvider,
                           columns: _columns,
