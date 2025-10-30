@@ -97,7 +97,7 @@ class ToolsAndSuppliesDto {
                   .map((item) => DetailAssetDto.fromJson(item))
                   .toList()
               : [],
-      soLuongXuat: json['soLuongXuat'] ?? 0,
+      soLuongXuat:int.tryParse(json['soLuongXuat'].toString()) ?? 0,
       detailOwnershipUnit:
           json['chiTietDonViSoHuuList'] != null
               ? (json['chiTietDonViSoHuuList'] as List)

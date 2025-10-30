@@ -242,8 +242,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     } else {
       _filteredData = statusFiltered;
     }
-
-    _updatePagination();
   }
 
   final Map<FilterStatus, bool> _filterStatus = {
@@ -258,10 +256,11 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     typeToolAndMaterialTransfer = type;
     _initData(context);
     _autoReloadTimer?.cancel();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      onReloadDataToolAndMaterialTransfer();
-      print("reload data tool and material transfer");
-    });
+    _dataAsset = AccountHelper.instance.getAllCCDC();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   onReloadDataToolAndMaterialTransfer();
+    //   print("reload data tool and material transfer");
+    // });
   }
 
   void refreshData(BuildContext context, int type) {
@@ -281,7 +280,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
     controllerDropdownPage = TextEditingController(text: '10');
 
-    getDataAll(context);
+    // getDataAll(context);
   }
 
   void onReloadDataToolAndMaterialTransfer() async {
@@ -345,47 +344,20 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void getDataAll(BuildContext context) {
     try {
       final bloc = context.read<ToolAndMaterialTransferBloc>();
-      bloc.add(
-        GetListToolAndMaterialTransferEvent(
-          context,
-          typeToolAndMaterialTransfer,
-          _userInfo?.idCongTy ?? '',
-        ),
-      );
-      bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
+      // bloc.add(
+      //   GetListToolAndMaterialTransferEvent(
+      //     context,
+      //     typeToolAndMaterialTransfer,
+      //     _userInfo?.idCongTy ?? '',
+      //   ),
+      // );
+      // // bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
       // bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
     } catch (e) {
       log('Error adding AssetManagement events: $e');
     }
   }
 
-  void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = _filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
-
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-
-    dataPage =
-        _filteredData.isNotEmpty
-            ? _filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-  }
-
-  void onPageChanged(int page) {
-    currentPage = page;
-    _updatePagination();
-    notifyListeners();
-  }
 
   void onCloseDetail(BuildContext context) {
     _isShowCollapse = true;
@@ -407,26 +379,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onRowsPerPageChanged(int? value) {
-    if (value == null) return;
-    rowsPerPage = value;
-    currentPage = 1;
-    _updatePagination();
-    notifyListeners();
-  }
 
-  void updateItem(ToolAndMaterialTransferDto updatedItem) {
-    if (_data == null) return;
-
-    int index = _data!.indexWhere((item) => item.id == updatedItem.id);
-    if (index != -1) {
-      _data![index] = updatedItem;
-      _updatePagination();
-      notifyListeners();
-    } else {
-      log('Không tìm thấy item có ID: ${updatedItem.id}');
-    }
-  }
 
   getListToolAndMaterialTransferSuccess(
     BuildContext context,
@@ -721,8 +674,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       _data![index] = updatedItem;
 
       _filteredData = List.from(_data!);
-      _updatePagination();
-
       notifyListeners();
     }
   }

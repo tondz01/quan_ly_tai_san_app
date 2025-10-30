@@ -143,12 +143,12 @@ class _ToolAndMaterialTransferViewState
           value: context.read<ToolAndMaterialTransferProvider>(),
           child: Consumer<ToolAndMaterialTransferProvider>(
             builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (provider.data == null) {
-                return const Center(child: Text('Không có dữ liệu'));
-              }
+              // if (provider.isLoading) {
+              //   return const Center(child: CircularProgressIndicator());
+              // }
+              // if (provider.data == null) {
+              //   return const Center(child: Text('Không có dữ liệu'));
+              // }
 
               return Scaffold(
                 appBar: AppBar(

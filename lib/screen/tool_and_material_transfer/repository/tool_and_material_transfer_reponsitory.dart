@@ -535,4 +535,51 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     }
     return result;
   }
+
+  //Update trạng thái biên bản
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+      'totalPages': 0,
+    };
+
+    try {
+      final response = await get( // Đổi từ post thành get
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<ToolAndMaterialTransferDto>(
+          itemsData,
+          ToolAndMaterialTransferDto.fromJson,
+        );
+      } else {
+        log('ToolsAndMaterialTransferRepository: itemsData is not a List');
+        result['data'] = <ToolAndMaterialTransferDto>[];
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
 }

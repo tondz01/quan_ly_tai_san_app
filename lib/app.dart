@@ -29,12 +29,12 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // _loadDataIfNeeded(userInfo);
-    permissionSignService.startCheckingPermission();
+    // // _loadDataIfNeeded(userInfo);
+    // permissionSignService.startCheckingPermission();
 
-    permissionSignService.stream.listen((data) {
-      AccountHelper.refreshAllCounts();
-    });
+    // permissionSignService.stream.listen((data) {
+    //   AccountHelper.refreshAllCounts();
+    // });
     getDataAssetAndCCDC();
   }
 
