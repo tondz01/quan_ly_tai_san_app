@@ -39,7 +39,7 @@ class DetailAssetDto {
       ngayVaoSo: formatDateIfNotNull(json['ngayVaoSo']),
       ngaySuDung: formatDateIfNotNull(json['ngaySuDung']),
       soKyHieu: json['soKyHieu'] as String?,
-      congSuat: json['congSuat'] as String?,
+      congSuat: json['congSuat'],
       soLuong: json['soLuong'] as int?,
       namSanXuat: json['namSanXuat'] as int?,
       nuocSanXuat: json['nuocSanXuat'] as String?,

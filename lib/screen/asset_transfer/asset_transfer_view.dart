@@ -95,11 +95,13 @@ class _AssetTransferViewState extends State<AssetTransferView> {
   }
 
   void _initData() {
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<DieuDongTaiSanProvider>(
+      final provider = Provider.of<DieuDongTaiSanProvider>(
         context,
         listen: false,
-      ).onInit(context, currentType);
+      );
+      provider.onInit(context, currentType);
     });
     _isInitialized = true;
   }
@@ -121,13 +123,12 @@ class _AssetTransferViewState extends State<AssetTransferView> {
           value: context.read<DieuDongTaiSanProvider>(),
           child: Consumer<DieuDongTaiSanProvider>(
             builder: (context, provider, child) {
-              if (provider.isLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (provider.data == null) {
-                return const Center(child: Text('Không có dữ liệu'));
-              }
-
+              // if (provider.isLoading) {
+              //   return const Center(child: CircularProgressIndicator());
+              // }
+              // if (provider.data == null) {
+              //   return const Center(child: Text('Không có dữ liệu'));
+              // }
               return Scaffold(
                 appBar: AppBar(
                   title: HeaderComponent(
@@ -230,12 +231,12 @@ class _AssetTransferViewState extends State<AssetTransferView> {
             isError: true,
           );
         }
-        if (state is GetDataDropdownSuccessState) {
-          context.read<DieuDongTaiSanProvider>().getDataDropdownSuccess(
-            context,
-            state,
-          );
-        }
+        // if (state is GetDataDropdownSuccessState) {
+        //   context.read<DieuDongTaiSanProvider>().getDataDropdownSuccess(
+        //     context,
+        //     state,
+        //   );
+        // }
         if (state is GetDataDropdownFailedState) {
           AppUtility.showSnackBar(
             context,
@@ -273,7 +274,7 @@ class _AssetTransferViewState extends State<AssetTransferView> {
         if (state is CancelDieuDongTaiSanSuccessState) {
           context.read<DieuDongTaiSanProvider>().onCloseDetail(context);
           AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
-          context.read<DieuDongTaiSanProvider>().getDataAll(context);
+          // context.read<DieuDongTaiSanProvider>().getDataAll(context);
         }
         if (state is UpdateSigningStatusFailedState) {
           AppUtility.showSnackBar(context, state.message, isError: true);

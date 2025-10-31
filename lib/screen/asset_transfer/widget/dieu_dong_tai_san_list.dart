@@ -39,6 +39,7 @@ import 'package:table_base/widgets/table/models/table_model.dart';
 import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:table_base/widgets/table/widgets/table_actions_widget.dart';
+import 'package:provider/provider.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
@@ -61,15 +62,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isShowDetailDepartmentTree = false;
   bool isLoading = true; // Thêm state loading
 
+  int totalItems = 0;
+
   String nameBenBan = "";
 
   List<DieuDongTaiSanDto> selectedItems = [];
   DieuDongTaiSanDto? selected;
   List<ThreadNode> listSignatoryDetail = [];
   UserInfoDTO? userInfo;
-
-  // Track previous filtered data for comparison
-  List<DieuDongTaiSanDto> _previousFilteredData = [];
 
   late final List<TableColumnData> _allColumns;
   List<String> _hiddenKeys = [];
@@ -293,7 +293,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 setState(() {
                   isLoading = false; // Đánh dấu đã load xong dữ liệu
                 });
+                // Future.delayed(const Duration(seconds: 1), () {
+                //   if (mounted) widget.provider.isLoading = false;
+                // });
               }
+              log('DieuDongTaiSanList - build - No data received');
             } else if (state is DieuDongTaiSanLoadingState) {
               // Chỉ setState nếu trạng thái loading thay đổi
               if (!isLoading) {
@@ -444,234 +448,90 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                       bottomLeft: Radius.circular(8.0),
                       bottomRight: Radius.circular(8.0),
                     ),
-                    child:
-                        isLoading
-                            ? Container(
-                              height: MediaQuery.of(context).size.height * 0.8,
-                              child: Column(
-                                children: [
-                                  // Header skeleton
-                                  Container(
-                                    height: 50,
-                                    margin: EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  Colors.blue,
-                                                ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            'Đang tải dữ liệu...',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.grey.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  // Table skeleton
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: 8, // Số dòng skeleton
-                                      itemBuilder: (context, index) {
-                                        return Container(
-                                          height: 60,
-                                          margin: EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade100,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              // Checkbox skeleton
-                                              Container(
-                                                width: 20,
-                                                height: 20,
-                                                margin: EdgeInsets.only(
-                                                  left: 16,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey.shade300,
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                ),
-                                              ),
-                                              SizedBox(width: 16),
-                                              // Content skeleton
-                                              Expanded(
-                                                child: Row(
-                                                  children: List.generate(6, (
-                                                    colIndex,
-                                                  ) {
-                                                    return Expanded(
-                                                      child: Container(
-                                                        height: 16,
-                                                        margin:
-                                                            EdgeInsets.symmetric(
-                                                              horizontal: 8,
-                                                            ),
-                                                        decoration: BoxDecoration(
-                                                          color:
-                                                              Colors
-                                                                  .grey
-                                                                  .shade300,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                4,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }),
-                                                ),
-                                              ),
-                                              // Actions skeleton
-                                              Container(
-                                                width: 120,
-                                                height: 20,
-                                                margin: EdgeInsets.only(
-                                                  right: 16,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey.shade300,
-                                                  borderRadius:
-                                                      BorderRadius.circular(4),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                            : riverpod.Consumer(
-                              builder: (context, ref, child) {
-                                List<DieuDongTaiSanDto> data =
-                                    widget.provider.filteredData ?? [];
-                                // Defer provider mutation until after the current frame
-                                if (!_areListsEqual(
-                                  _previousFilteredData,
-                                  data,
-                                )) {
-                                  final data =
-                                      widget.provider.filteredData ?? [];
-                                  _previousFilteredData = List.from(data);
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    ref
-                                        .read(
-                                          tableAssetTransferProvider.notifier,
-                                        )
-                                        .setData(data);
-                                  });
-                                  log(
-                                    'message test: isFirstLoad _areListsEqual',
-                                  );
-                                }
+                    child: riverpod.Consumer(
+                      builder: (context, ref, child) {
+                        totalItems = ref.watch(
+                          tableAssetTransferProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
 
-                                return RiverpodTable<DieuDongTaiSanDto>(
-                                  tableProvider: tableAssetTransferProvider,
-                                  columns: _columns,
-                                  showCheckboxColumn: _showCheckboxColumn,
-                                  enableRowSelection: true,
-                                  enableRowHover: true,
-                                  showAlternatingRowColors: true,
-                                  valueGetter: getValueForColumn,
-                                  cellsBuilder: (_) => [],
-                                  cellBuilderByKey: (item, key) {
-                                    final builder = _buildersByKey[key];
-                                    if (builder != null) return builder(item);
-                                    return null;
-                                  },
-                                  onRowTap: (item) {
-                                    widget.provider
-                                        .onChangeDetailDieuDongTaiSan(item);
-                                    // Chỉ setState nếu có thay đổi thực sự
-                                    String newNameBenBan =
-                                        'Trạng thái ký " Biên bản ${item.id} "';
-                                    if (selected?.id != item.id ||
-                                        nameBenBan != newNameBenBan ||
-                                        !isShowDetailDepartmentTree) {
-                                      setState(() {
-                                        nameBenBan = newNameBenBan;
-                                        isShowDetailDepartmentTree = true;
-                                        _buildDetailDepartmentTree(item);
-                                      });
-                                    }
-                                  },
-                                  // onEdit: (item) {},
-                                  onDelete: _onDelete,
-                                  showActionsColumn: _showActionsColumn,
-                                  customActions: [
-                                    CustomAction(
-                                      tooltip: 'Xem',
-                                      iconPath: 'assets/icons/building.svg',
-                                      color: Colors.blue,
-                                      onPressed: (item) async {
-                                        if (listAssetHandover.isEmpty) {
-                                          AppUtility.showSnackBar(
-                                            context,
-                                            'Không có biên bản bàn giao tài sản nào cho phiếu này',
-                                            isError: true,
-                                          );
-                                          return;
-                                        }
-                                        PropertyHandoverMinutes.showPopup(
-                                          context,
-                                          listAssetHandover
-                                              .where(
-                                                (itemAH) =>
-                                                    itemAH.id == item.id,
-                                              )
-                                              .toList(),
-                                        );
-                                      },
-                                    ),
-                                    CustomAction(
-                                      tooltip: 'Xem',
-                                      iconPath: 'assets/icons/eye.svg',
-                                      color: Colors.blue,
-                                      onPressed: (item) async {
-                                        await _loadPdfNetwork(item.tenFile!);
-                                        if (!context.mounted) return;
-                                        previewDocument(
-                                          context: context,
-                                          item: item,
-                                          provider: widget.provider,
-                                          isShowKy: false,
-                                          document: _document,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                  actionsColumnWidth: 120,
-                                  maxHeight:
-                                      MediaQuery.of(context).size.height * 0.8,
+                        return RiverpodTable<DieuDongTaiSanDto>(
+                          tableProvider: tableAssetTransferProvider,
+                          columns: _columns,
+                          showCheckboxColumn: _showCheckboxColumn,
+                          enableRowSelection: true,
+                          enableRowHover: true,
+                          showAlternatingRowColors: true,
+                          valueGetter: getValueForColumn,
+                          cellsBuilder: (_) => [],
+                          cellBuilderByKey: (item, key) {
+                            final builder = _buildersByKey[key];
+                            if (builder != null) return builder(item);
+                            return null;
+                          },
+                          onRowTap: (item) {
+                            widget.provider.onChangeDetailDieuDongTaiSan(item);
+                            // Chỉ setState nếu có thay đổi thực sự
+                            String newNameBenBan =
+                                'Trạng thái ký " Biên bản ${item.id} "';
+                            if (selected?.id != item.id ||
+                                nameBenBan != newNameBenBan ||
+                                !isShowDetailDepartmentTree) {
+                              setState(() {
+                                nameBenBan = newNameBenBan;
+                                isShowDetailDepartmentTree = true;
+                                _buildDetailDepartmentTree(item);
+                              });
+                            }
+                          },
+                          // onEdit: (item) {},
+                          onDelete: _onDelete,
+                          showActionsColumn: _showActionsColumn,
+                          customActions: [
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: 'assets/icons/building.svg',
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                if (listAssetHandover.isEmpty) {
+                                  AppUtility.showSnackBar(
+                                    context,
+                                    'Không có biên bản bàn giao tài sản nào cho phiếu này',
+                                    isError: true,
+                                  );
+                                  return;
+                                }
+                                PropertyHandoverMinutes.showPopup(
+                                  context,
+                                  listAssetHandover
+                                      .where((itemAH) => itemAH.id == item.id)
+                                      .toList(),
                                 );
                               },
                             ),
+                            CustomAction(
+                              tooltip: 'Xem',
+                              iconPath: 'assets/icons/eye.svg',
+                              color: Colors.blue,
+                              onPressed: (item) async {
+                                await _loadPdfNetwork(item.tenFile!);
+                                if (!context.mounted) return;
+                                previewDocument(
+                                  context: context,
+                                  item: item,
+                                  provider: widget.provider,
+                                  isShowKy: false,
+                                  document: _document,
+                                );
+                              },
+                            ),
+                          ],
+                          actionsColumnWidth: 120,
+                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -758,6 +618,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               .toString(),
         ),
       ),
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
       ThreadNode(
         header: 'Trình duyệt ban giám đốc:',
         depth: 1,
@@ -769,15 +637,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               .toString(),
         ),
       ),
-
-      if (item.listSignatory != null)
-        ...item.listSignatory!.map(
-          (e) => ThreadNode(
-            header: "Người đại diện",
-            depth: 1,
-            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
-          ),
-        ),
     ];
   }
 
@@ -805,6 +664,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   }
 
   Widget headerList() {
+    final ref = riverpod.ProviderScope.containerOf(context);
+    final notifier = ref.read(tableAssetTransferProvider.notifier);
+    final totals = notifier.getTotals();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -814,7 +676,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)} (${totals['totalAll']})',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -823,7 +685,16 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             ),
           ],
         ),
-        Expanded(child: RowFindByStatus(provider: widget.provider)),
+        Expanded(
+          child: RowFindByStatus(
+            provider: widget.provider,
+            totalAll: totals['totalAll'] ?? 0,
+            totalDraft: totals['totalDraft'] ?? 0,
+            totalApprove: totals['totalApprove'] ?? 0,
+            totalCancel: totals['totalCancel'] ?? 0,
+            totalComplete: totals['totalComplete'] ?? 0,
+          ),
+        ),
       ],
     );
   }
@@ -1011,7 +882,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           type: ConfirmType.delete,
           title: 'Xóa biên bản bàn giao',
           message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-          highlight: item.tenPhieu!,
+          highlight: item.tenPhieu ?? 'Phiếu điều động tài sản',
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
@@ -1027,7 +898,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           type: ConfirmType.delete,
           title: 'Xóa biên bản bàn giao',
           message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-          highlight: item.tenPhieu!,
+          highlight: item.tenPhieu ?? 'Phiếu điều động tài sản',
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {

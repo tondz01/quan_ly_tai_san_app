@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/request/asset_reques
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 
 class AssetManagementRepository extends ApiBase {
@@ -41,6 +42,18 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         AssetManagementDto.fromJson,
       );
+
+      try {
+        // Lưu trữ dữ liệu vào bộ nhớ đệm
+        AccountHelper.instance.setListAsset(result['data']);
+        if (AccountHelper.instance.getAllAssets().isEmpty) {
+          log("setCache [ASSET]: No assets cached in storage.");
+        } else {
+          log("setCache [ASSET]: Assets data cached successfully.");
+        }
+      } catch (e) {
+        log("setCache [ASSET]: Error saving asset data to storage: $e");
+      }
     } catch (e) {
       log("Error at getListAssetManagement - AssetManagementRepository: $e");
     }
@@ -167,6 +180,12 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         DuAn.fromJson,
       );
+      AccountHelper.instance.setProject(result['data']);
+      if (AccountHelper.instance.getAllProject().isEmpty) {
+        log("setCache [PROJECT]: No project cached in storage.");
+      } else {
+        log("setCache [PROJECT]: Project data cached successfully.");
+      }
     } catch (e) {
       log("Error at getListAssetGroup - AssetManagementRepository: $e");
     }
@@ -194,6 +213,12 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         NguonKinhPhi.fromJson,
       );
+      AccountHelper.instance.setCapitalSource(result['data']);
+      if (AccountHelper.instance.getAllCapitalSource().isEmpty) {
+        log("setCache [CAPITAL_SOURCE]: No capital source cached in storage.");
+      } else {
+        log("setCache [CAPITAL_SOURCE]: Capital source data cached successfully.");
+      }
     } catch (e) {
       log("Error at getListCapitalSource - AssetManagementRepository: $e");
     }
@@ -526,6 +551,54 @@ class AssetManagementRepository extends ApiBase {
         "Error at deleteListCapitalSourceByAsset - AssetManagementRepository: $e",
       );
     }
+    return result;
+  }
+
+  //get data with pagination
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+    String? idNhomTaiSan
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <AssetManagementDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+      'groupCounts':{}
+    };
+
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.ASSET_MANAGEMENT}/paged?idcongty=ct001&page=$page&size=$size&search=$search&idNhomTaiSan=$idNhomTaiSan',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+          itemsData,
+          AssetManagementDto.fromJson,
+        );
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+      result['groupCounts'] = response.data['groupCounts'];
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
     return result;
   }
 }

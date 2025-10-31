@@ -34,15 +34,15 @@ class GetListAssetEvent extends ToolAndMaterialTransferEvent {
   List<Object?> get props => [context, idCongTy];
 }
 
-class GetDataDropdownEvent extends ToolAndMaterialTransferEvent {
-  final BuildContext context;
-  final String idCongTy;
+// class GetDataDropdownEvent extends ToolAndMaterialTransferEvent {
+//   final BuildContext context;
+//   final String idCongTy;
 
-  const GetDataDropdownEvent(this.context, this.idCongTy);
+//   const GetDataDropdownEvent(this.context, this.idCongTy);
 
-  @override
-  List<Object?> get props => [context, idCongTy];
-}
+//   @override
+//   List<Object?> get props => [context, idCongTy];
+// }
 
 //TẠO BẢN ĐIỀU ĐỘNG
 class CreateToolAndMaterialTransferEvent extends ToolAndMaterialTransferEvent {

@@ -56,6 +56,7 @@ class ToolAndMaterialTransferList extends StatefulWidget {
 class _ToolAndMaterialTransferListState
     extends State<ToolAndMaterialTransferList> {
   bool isUploading = false;
+  int totalItems = 0;
 
   UserInfoDTO? userInfo;
 
@@ -64,9 +65,6 @@ class _ToolAndMaterialTransferListState
   PdfDocument? _document;
   List<ThreadNode> listSignatoryDetail = [];
   ToolAndMaterialTransferDto? selected;
-
-  // Track previous filtered data for comparison
-  List<ToolAndMaterialTransferDto> _previousFilteredData = [];
 
   bool isShowDetailDepartmentTree = false;
   String nameBenBan = "";
@@ -388,19 +386,12 @@ class _ToolAndMaterialTransferListState
                     ),
                     child: riverpod.Consumer(
                       builder: (context, ref, child) {
-                        final data = widget.provider.filteredData ?? [];
-                        
-                        if (!_areListsEqual(_previousFilteredData, data)) {
-                          _previousFilteredData = List.from(data);
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            ref
-                                .read(
-                                  tableToolAndMaterialTransferProvider.notifier,
-                                )
-                                .setData(data);
-                          });
-                        }
-
+                        totalItems = ref.watch(
+                          tableToolAndMaterialTransferProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
+                        widget.provider.isLoading = false;
                         return RiverpodTable<ToolAndMaterialTransferDto>(
                           tableProvider: tableToolAndMaterialTransferProvider,
                           columns: _columns,
@@ -495,7 +486,7 @@ class _ToolAndMaterialTransferListState
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${TableToolAndMaterialTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              '${TableToolAndMaterialTransferConfig.getName(widget.typeAssetTransfer)} ($totalItems)',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

@@ -86,8 +86,9 @@ class ToolsAndSuppliesDto {
       ngayCapNhat: AppUtility.formatFromISOString(
         json['ngayCapNhat'].toString(),
       ),
-
       nguoiTao: json['nguoiTao'] ?? '',
+      
+      
       nguoiCapNhat: json['nguoiCapNhat'] ?? '',
       isActive: json['isActive'] ?? true,
       chiTietTaiSanList:
@@ -96,7 +97,7 @@ class ToolsAndSuppliesDto {
                   .map((item) => DetailAssetDto.fromJson(item))
                   .toList()
               : [],
-      soLuongXuat: json['soLuongXuat'] ?? 0,
+      soLuongXuat:int.tryParse(json['soLuongXuat'].toString()) ?? 0,
       detailOwnershipUnit:
           json['chiTietDonViSoHuuList'] != null
               ? (json['chiTietDonViSoHuuList'] as List)

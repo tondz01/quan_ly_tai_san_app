@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:table_base/widgets/table/providers/table_notifier.dart';
 import 'package:table_base/widgets/table/providers/table_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,41 +10,132 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final tableAssetTransferProvider = StateNotifierProvider.autoDispose<
   TableAssetTransferProvider,
   GenericTableState<DieuDongTaiSanDto>
->((ref) => TableAssetTransferProvider());
+>((ref) {
+  final repository = AssetTransferRepository();
+  return TableAssetTransferProvider(repository);
+});
+
+/// Helper class để lấy các giá trị total
+/// Sử dụng: ref.read(tableAssetTransferProvider.notifier).getTotals()
+extension TableAssetTransferTotals on TableAssetTransferProvider {
+  /// Lấy tất cả các totals dưới dạng Map
+  Map<String, int> getTotals() {
+    return {
+      'totalAll': totalAll,
+      'totalDraft': totalDraft,
+      'totalApprove': totalApprove,
+      'totalCancel': totalCancel,
+      'totalComplete': totalComplete,
+    };
+  }
+}
 
 class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
-  List<DieuDongTaiSanDto> _data = [];
+  final AssetTransferRepository repository;
+  int totalItems = 0;
+  String _currentSearchTerm = '';
+  int _currentType = 1; // lưu type hiện tại
+  int _currentTrangThai = -1; // lưu trạng thái hiện tại
+  int totalAll = 0;
+  int totalDraft = 0;
+  int totalApprove = 0;
+  int totalCancel = 0;
+  int totalComplete = 0;
+  TableAssetTransferProvider(this.repository);
+  // FIXED: Signature đúng với named parameters
+  @override
+  void initialize({
+    required Map<String, double> columnWidths,
+    required dynamic Function(DieuDongTaiSanDto item, int columnIndex)
+    valueGetter,
+    int itemsPerPage = 20,
+  }) {
+    super.initialize(
+      columnWidths: columnWidths,
+      valueGetter: valueGetter,
+      itemsPerPage: itemsPerPage,
+    );
 
-  /// Set data từ widget level
-  void setData(List<DieuDongTaiSanDto> data) {
-    _data = data;
-    // updateData(data);
-    // Force refresh by calling generateData directly
-    generateData().then((result) {
-      state = state.copyWith(
-        allData: result,
-        filteredData: result,
-      );
-    });
-    refreshData();
-    loadData();
+    // Bật API pagination
+    enableApiPagination(true);
+    loadDataFromApi(0, _currentType, _currentTrangThai);
   }
 
+  // Tìm kiếm với API
   set searchTerm(String value) {
-    search(value);
+    _currentSearchTerm = value;
+    loadDataFromApi(
+      0,
+      _currentType,
+      _currentTrangThai,
+    ); // Reset về trang đầu khi search
+  }
+
+  // Load dữ liệu từ API
+  Future<void> loadDataFromApi(
+    int page,
+    int type,
+    int trangThai, [
+    bool isRefresh = true,
+  ]) async {
+    log('loadDataFromApi: page=$page -- type=$type -- trangThai=$trangThai -- isRefresh=$isRefresh');
+    _currentType = type; // cập nhật type
+    _currentTrangThai = trangThai; // cập nhật trạng thái
+    // Chuẩn bị: clear data nhưng chỉ bật loading khi isRefresh = true
+    // setApiPreparing(clearData: true, showLoading: isRefresh);
+
+    try {
+      final response = await repository.getDataWithPagination(
+        page,
+        state.paginationState.itemsPerPage,
+        _currentType,
+        _currentSearchTerm,
+        _currentTrangThai,
+      );
+
+      setApiData(
+        response['data'],
+        totalPages: response['totalPages'],
+        currentPage: response['currentPage'],
+        totalItems: response['totalItems'],
+      );
+      totalAll = response['totalItems'];
+      totalDraft = response['totalDraft'];
+      totalApprove = response['totalApprove'];
+      totalCancel = response['totalCancel'];
+      totalComplete = response['totalComplete'];
+    } catch (error) {
+      log('Error loading data: $error');
+      setApiError('Lỗi tải dữ liệu: $error');
+    }
+  }
+
+  // Tự động gọi API khi chuyển trang
+  @override
+  void goToPage(int page) {
+    super.goToPage(page);
+    loadDataFromApi(page, _currentType, _currentTrangThai);
+  }
+
+  // Refresh dữ liệu
+  Future<void> refreshData(int type, [bool isRefresh = true]) async {
+    _currentType = type;
+    await loadDataFromApi(
+      state.paginationState.currentDisplayPage,
+      _currentType,
+      _currentTrangThai,
+      isRefresh,
+    );
+  }
+
+  Future<void> fillterByStatus(int status) async {
+    _currentTrangThai = status;
+    await loadDataFromApi(0, _currentType, _currentTrangThai);
   }
 
   @override
   Future<List<DieuDongTaiSanDto>> generateData() async {
-    try {
-      return _data;
-    } catch (e) {
-      log('Error in generateData: $e');
-      return [];
-    }
-  }
-
-  Future<void> refreshData() async {
-    await generateData();
+    // Không dùng trong API pagination mode
+    return [];
   }
 }

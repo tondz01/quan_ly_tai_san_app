@@ -1,39 +1,126 @@
 import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:table_base/widgets/table/providers/table_notifier.dart';
 import 'package:table_base/widgets/table/providers/table_state.dart';
 
+// FIXED: Provider nhận repository từ ref
 final tableToolAndMaterialTransferProvider = StateNotifierProvider.autoDispose<
   TableToolAndMaterialTransferProvider,
   GenericTableState<ToolAndMaterialTransferDto>
->((ref) => TableToolAndMaterialTransferProvider());
+>((ref) {
+  // Inject repository vào đây
+  final repository = ToolAndMaterialTransferRepository();
+  return TableToolAndMaterialTransferProvider(repository);
+});
 
 class TableToolAndMaterialTransferProvider
     extends TableNotifier<ToolAndMaterialTransferDto> {
-  List<ToolAndMaterialTransferDto> _data = [];
+  final ToolAndMaterialTransferRepository repository;
+  int totalItems = 0;
+  String _currentSearchTerm = '';
+  int _currentType = 1; // lưu type hiện tại
+  int _currentTrangThai = -1; // lưu trạng thái hiện tại
+  int totalAll = 0;
+  int totalDraft = 0;
+  int totalApprove = 0;
+  int totalCancel = 0;
+  int totalComplete = 0;
 
-  void setData(List<ToolAndMaterialTransferDto> data) {
-    _data = data;
-    refreshData();
-    loadData();
+  TableToolAndMaterialTransferProvider(this.repository);
+
+  // FIXED: Signature đúng với named parameters
+  @override
+  void initialize({
+    required Map<String, double> columnWidths,
+    required dynamic Function(ToolAndMaterialTransferDto item, int columnIndex)
+    valueGetter,
+    int itemsPerPage = 20,
+  }) {
+    super.initialize(
+      columnWidths: columnWidths,
+      valueGetter: valueGetter,
+      itemsPerPage: itemsPerPage,
+    );
+
+    // Bật API pagination
+    enableApiPagination(true);
+    loadDataFromApi(0, _currentType, _currentTrangThai);
   }
 
+  // Tìm kiếm với API
   set searchTerm(String value) {
-    search(value);
+    _currentSearchTerm = value;
+    loadDataFromApi(0, _currentType, _currentTrangThai); // Reset về trang đầu khi search
+  }
+
+  // Load dữ liệu từ API
+  Future<void> loadDataFromApi(
+    int page,
+    int type,
+    int trangThai, [
+    bool isLoading = true,
+  ]) async {
+    _currentType = type; // cập nhật type
+    _currentTrangThai = trangThai; // cập nhật trạng thái
+  
+    try {
+      // Gọi API của bạn
+      final response = await repository.getDataWithPagination(
+        page,
+        state.paginationState.itemsPerPage,
+        _currentType,
+        _currentSearchTerm,
+        _currentTrangThai,
+      );
+      // Cập nhật data và pagination info
+      setApiData(
+        response['data'],
+        totalPages: response['totalPages'],
+        currentPage: response['currentPage'],
+        totalItems: response['totalItems'],
+      );
+
+      totalAll = response['totalItems'];
+      totalDraft = response['totalDraft'];
+      totalApprove = response['totalApprove'];
+      totalCancel = response['totalCancel'];
+      totalComplete = response['totalComplete'];
+    } catch (error) {
+      log('Error loading data: $error');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Lỗi tải dữ liệu: $error',
+      );
+    }
+  }
+  Future<void> fillterByStatus(int status) async {
+    _currentTrangThai = status;
+    await loadDataFromApi(0, _currentType, _currentTrangThai);
+  }
+
+  // Tự động gọi API khi chuyển trang
+  @override
+  void goToPage(int page) {
+    super.goToPage(page);
+    loadDataFromApi(page, _currentType, _currentTrangThai);
+  }
+
+  // Refresh dữ liệu
+  Future<void> refreshData(int type, int trangThai, [bool isLoading = true]) async {
+    _currentType = type;
+    await loadDataFromApi(
+      state.paginationState.currentDisplayPage,
+      _currentType,
+      _currentTrangThai,
+      isLoading,
+    );
   }
 
   @override
   Future<List<ToolAndMaterialTransferDto>> generateData() async {
-    try {
-      return _data;
-    } catch (e) {
-      log('Error in generateData: $e');
-      return [];
-    }
-  }
-
-  Future<void> refreshData() async {
-    await generateData();
+    // Không dùng trong API pagination mode
+    return [];
   }
 }

@@ -14,6 +14,8 @@ import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/ownership_un
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/table_tools_and_supplies_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
+import 'package:provider/provider.dart' as provider;
+import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
@@ -158,9 +160,11 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.provider.data ?? <ToolsAndSuppliesDto>[];
-
-    return Container(
+    return provider.Consumer<ToolsAndSuppliesProvider>(
+      builder: (context, provider, child) {
+        final data = provider.data ?? <ToolsAndSuppliesDto>[];
+        
+        return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -200,7 +204,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                           ),
                           SizedBox(width: 8),
                           Text(
-                            'Quản lý CCDC - Vật tư (${data.length})',
+                            'Quản lý CCDC - Vật tư (${provider.totalEntries})',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -308,9 +312,10 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                 Expanded(
                   child: riverpod.Consumer(
                     builder: (context, ref, child) {
-                      ref
-                          .read(tableToolsAndSuppliesProvider.notifier)
-                          .setData(data);
+                      // Update table data when provider data changes
+                      // Use ref.read to get notifier and update data
+                      final tableNotifier = ref.read(tableToolsAndSuppliesProvider.notifier);
+                      tableNotifier.setData(data);
 
                       return data.isEmpty
                           ? const Center(
@@ -320,6 +325,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                             ToolsAndSuppliesDto,
                             OwnershipUnitDetailDto
                           >(
+                            key: ValueKey('tools_supplies_table_${data.length}_${data.isNotEmpty ? data.first.id : ''}'),
                             tableProvider: tableToolsAndSuppliesProvider,
                             columns: _columns,
                             showCheckboxColumn: true,
@@ -339,7 +345,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                             childCellBuilder:
                                 TableToolsAndSuppliesConfig.buildChildCell,
                             onRowTap: (item) {
-                              widget.provider.onChangeDetail(context, item);
+                              provider.onChangeDetail(context, item);
                               setState(() {
                                 _showDetailDepartmentTree(item);
                               });
@@ -356,6 +362,25 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
                     },
                   ),
                 ),
+                // Pagination Controls
+                if (provider.totalEntries > 0)
+                  Builder(
+                    builder: (ctx) => SGPaginationControls(
+                      totalPages: provider.totalPages,
+                      currentPage: provider.currentPage + 1, // Convert 0-based to 1-based for UI
+                      rowsPerPage: provider.rowsPerPage,
+                      controllerDropdownPage:
+                          provider.controllerDropdownPage ?? 
+                          TextEditingController(text: provider.rowsPerPage.toString()),
+                      items: provider.items,
+                      onPageChanged: (page) {
+                        provider.onPageChanged(ctx, page);
+                      },
+                      onRowsPerPageChanged: (value) {
+                        provider.onRowsPerPageChanged(ctx, value);
+                      },
+                    ),
+                  ),
               ],
             ),
           ),
@@ -366,7 +391,7 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
             child: OwnershipUnitDetails(
               title: 'Chi tiết đơn vị sở hữu "${selectedItem?.ten}"',
               item: selectedItem ?? ToolsAndSuppliesDto.empty(),
-              provider: widget.provider,
+              provider: provider,
               onHiden: () {
                 setState(() {
                   isShowDetailDepartmentTree = false;
@@ -376,6 +401,8 @@ class _ToolsAndSuppliesListState extends State<ToolsAndSuppliesList> {
           ),
         ],
       ),
+    );
+      },
     );
   }
 

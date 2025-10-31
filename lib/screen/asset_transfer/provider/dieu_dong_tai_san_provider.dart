@@ -4,9 +4,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
@@ -35,7 +37,6 @@ enum FilterStatus {
 }
 
 class DieuDongTaiSanProvider with ChangeNotifier {
-  bool get isLoading => _data == null || _dataAsset == null;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
   get userInfo => _userInfo;
@@ -150,19 +151,52 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterStatus(FilterStatus status, bool? value) {
-    _filterStatus[status] = value ?? false;
-    if (status == FilterStatus.all && value == true) {
+  // void setFilterStatus(FilterStatus status, bool? value) {
+  //   _filterStatus[status] = value ?? false;
+  //   if (status == FilterStatus.all && value == true) {
+  //     for (var key in _filterStatus.keys) {
+  //       if (key != FilterStatus.all) {
+  //         _filterStatus[key] = false;
+  //       }
+  //     }
+  //   } else if (status != FilterStatus.all && value == true) {
+  //     _filterStatus[FilterStatus.all] = false;
+  //   }
+
+  //   _applyFilters();
+  //   notifyListeners();
+  // }
+  void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
+    // Nếu đang bỏ chọn (value == false), chỉ cần bỏ chọn checkbox đó
+    if (value == false) {
+      _filterStatus[status] = false;
+    } else {
+      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
+      // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
+        _filterStatus[key] = false;
       }
-    } else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
+      _filterStatus[status] = true;
     }
 
-    _applyFilters();
+    switch (status) {
+      case FilterStatus.draft:
+        onFillterByStatus(context, 0);
+        break;
+      case FilterStatus.approve:
+        onFillterByStatus(context, 1);
+        break;
+
+      case FilterStatus.cancel:
+        onFillterByStatus(context, 2);
+        break;
+      case FilterStatus.complete:
+        onFillterByStatus(context, 3);
+        break;
+      case FilterStatus.all:
+        onFillterByStatus(context, -1);
+        break;
+    }
     notifyListeners();
   }
 
@@ -238,7 +272,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   void onInit(BuildContext context, int typeDieuDongTaiSan) {
     // Không gọi onDispose() ở đây để tránh mất dữ liệu
     // onDispose();
-
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
     _userInfo = AccountHelper.instance.getUserInfo();
 
@@ -249,14 +282,15 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     endIndex = 0;
     currentPage = 1;
     controllerDropdownPage = TextEditingController(text: '10');
-
-    getDataAll(context);
+    getDataDropdown();
+    _dataAsset = AccountHelper.instance.getAllAssets();
+    // getDataAll(context);
 
     // Start auto reload every 20 seconds
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      onReloadDataAssetTransfer();
-      print("reload data asset transfer");
+      // onReloadDataAssetTransfer();
+      onReloadDataPage(context, false);
     });
   }
 
@@ -286,59 +320,19 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _autoReloadTimer = null;
   }
 
-  void getDataAll(BuildContext context) {
-    try {
-      onCloseDetail(context);
-      final bloc = context.read<DieuDongTaiSanBloc>();
-      bloc.add(
-        GetListDieuDongTaiSanEvent(
-          context,
-          typeDieuDongTaiSan,
-          _userInfo?.idCongTy ?? '',
-        ),
-      );
-      bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
-      bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
-    } catch (e) {
-      log('Error adding AssetManagement events: $e');
-    }
+  onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableAssetTransferProvider.notifier)
+        .refreshData(typeDieuDongTaiSan, isRefresh);
   }
 
-  void onReloadDataAssetTransfer() async {
-    Map<String, dynamic> dieuDongTaiSans = await AssetTransferRepository()
-        .getListDieuDongTaiSan(type: typeDieuDongTaiSan);
-    _data = dieuDongTaiSans['data'];
-    _data =
-        _data
-            ?.where((element) => element.loai == typeDieuDongTaiSan)
-            .where((item) {
-              return item.share == true ||
-                  item.nguoiTao == userInfo?.tenDangNhap;
-            })
-            .where((item) {
-              final idSignatureGroup =
-                  [
-                    item.nguoiTao,
-                    item.idNguoiKyNhay,
-                    item.idTrinhDuyetCapPhong,
-                    item.idTrinhDuyetGiamDoc,
-                    if (item.listSignatory != null)
-                      ...item.listSignatory!.map((e) => e.idNguoiKy),
-                  ].whereType<String>().toList();
-
-              final inGroup = idSignatureGroup
-                  .map((e) => e.toLowerCase())
-                  .contains(userInfo.tenDangNhap.toLowerCase());
-              return inGroup;
-            })
-            .toList();
-    _filteredData = List.from(_data!);
-    log('message test: onReloadDataAssetTransfer');
-    _applyFilters();
-    notifyListeners();
+  onFillterByStatus(BuildContext context, int status) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableAssetTransferProvider.notifier).fillterByStatus(status);
+    onReloadDataPage(context);
   }
 
-  
   void onPageChanged(int page) {
     currentPage = page;
     // _updatePagination();
@@ -361,7 +355,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     isShowCollapse = true;
     notifyListeners();
   }
-
 
   void updateItem(DieuDongTaiSanDto updatedItem) {
     if (_data == null) return;
@@ -435,37 +428,58 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  getDataDropdownSuccess(
-    BuildContext context,
-    GetDataDropdownSuccessState state,
-  ) {
-    _error = null;
-    if (state.dataPb.isEmpty) {
-      _dataPhongBan = [];
-    } else {
-      _dataPhongBan = state.dataPb;
-      _itemsDDPhongBan = [
-        for (var element in _dataPhongBan!)
-          DropdownMenuItem<PhongBan>(
-            value: element,
-            child: Text(element.tenPhongBan ?? ''),
-          ),
-      ];
-    }
-    if (state.dataNv.isEmpty) {
-      _dataNhanVien = [];
-    } else {
-      _dataNhanVien = state.dataNv;
-      _itemsDDNhanVien = [
-        for (var element in _dataNhanVien!)
-          DropdownMenuItem<NhanVien>(
-            value: element,
-            child: Text(element.hoTen ?? ''),
-          ),
-      ];
-    }
+  getDataDropdown() {
+    _dataPhongBan = AccountHelper.instance.getDepartment();
+    _itemsDDPhongBan = [
+      for (var element in _dataPhongBan!)
+        DropdownMenuItem<PhongBan>(
+          value: element,
+          child: Text(element.tenPhongBan ?? ''),
+        ),
+    ];
+
+    _dataNhanVien = AccountHelper.instance.getNhanVien();
+    _itemsDDNhanVien = [
+      for (var element in _dataNhanVien!)
+        DropdownMenuItem<NhanVien>(
+          value: element,
+          child: Text(element.hoTen ?? ''),
+        ),
+    ];
     notifyListeners();
   }
+
+  // getDataDropdownSuccess(
+  //   BuildContext context,
+  //   GetDataDropdownSuccessState state,
+  // ) {
+  //   _error = null;
+  //   if (state.dataPb.isEmpty) {
+  //     _dataPhongBan = [];
+  //   } else {
+  //     _dataPhongBan = state.dataPb;
+  //     _itemsDDPhongBan = [
+  //       for (var element in _dataPhongBan!)
+  //         DropdownMenuItem<PhongBan>(
+  //           value: element,
+  //           child: Text(element.tenPhongBan ?? ''),
+  //         ),
+  //     ];
+  //   }
+  //   if (state.dataNv.isEmpty) {
+  //     _dataNhanVien = [];
+  //   } else {
+  //     _dataNhanVien = state.dataNv;
+  //     _itemsDDNhanVien = [
+  //       for (var element in _dataNhanVien!)
+  //         DropdownMenuItem<NhanVien>(
+  //           value: element,
+  //           child: Text(element.hoTen ?? ''),
+  //         ),
+  //     ];
+  //   }
+  //   notifyListeners();
+  // }
 
   void createDieuDongSuccess(
     BuildContext context,
@@ -473,7 +487,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Tạo mới thành công!');
-    getDataAll(context);
+    // getDataAll(context);
     // AccountHelper.refreshAllCounts();
     notifyListeners();
   }
@@ -506,7 +520,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadDataPage(context);
     notifyListeners();
   }
 
@@ -516,7 +531,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành công!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadDataPage(context);
     notifyListeners();
   }
 
@@ -526,7 +542,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadDataPage(context);
     notifyListeners();
   }
 
@@ -735,6 +752,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _userInfo = AccountHelper.instance.getUserInfo();
     onCloseDetail(context);
     controllerDropdownPage = TextEditingController(text: '10');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadDataPage(context);
   }
 }

@@ -9,11 +9,32 @@ abstract class ToolsAndSuppliesEvent extends Equatable {
 class GetListToolsAndSuppliesEvent extends ToolsAndSuppliesEvent {
   final BuildContext context;
   final String idCongTy;
+  final int page;
+  final int size;
+  final String? sortBy;
+  final String? sortDir;
+  final String? search;
 
-  const GetListToolsAndSuppliesEvent(this.context, this.idCongTy);
+  const GetListToolsAndSuppliesEvent(
+    this.context,
+    this.idCongTy, {
+    this.page = 0,
+    this.size = 20,
+    this.sortBy,
+    this.sortDir,
+    this.search,
+  });
 
   @override
-  List<Object?> get props => [context, idCongTy];
+  List<Object?> get props => [
+    context,
+    idCongTy,
+    page,
+    size,
+    sortBy,
+    sortDir,
+    search,
+  ];
 }
 
 //GET LIST PHONG BAN

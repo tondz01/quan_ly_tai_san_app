@@ -2,6 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
@@ -14,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/table_asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
@@ -295,25 +298,8 @@ class AssetManagementProvider with ChangeNotifier {
   onInit(BuildContext context) async {
     reset(context);
     _userInfo = AccountHelper.instance.getUserInfo();
-    _dataUnit = AccountHelper.instance.getAllUnit();
-    if (_dataUnit != null) {
-      AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
-      _dataUnit = AccountHelper.instance.getAllUnit();
-    }
-    _itemsUnit = [
-      ..._dataUnit!.map(
-        (e) =>
-            DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
-      ),
-    ];
-    _dataGroup = AccountHelper.instance.getAssetGroup();
-    _itemsAssetGroup = [
-      for (var element in _dataGroup!)
-        DropdownMenuItem<AssetGroupDto>(
-          value: element,
-          child: Text(element.tenNhom ?? ''),
-        ),
-    ];
+    onLoadDataFrom();
+
     checkPermission();
     controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
@@ -322,7 +308,6 @@ class AssetManagementProvider with ChangeNotifier {
     isShowInputKhauHao = false;
     isShowCollapseKhauHao = false;
     // ignore: use_build_context_synchronously
-    getDataAll(context);
     notifyListeners();
   }
 
@@ -348,30 +333,99 @@ class AssetManagementProvider with ChangeNotifier {
     clearFilter();
   }
 
-  Future<void> getDataAll(BuildContext context) async {
-    try {
-      // 7 parallel loads below
-      _beginBatchLoad(5);
-      final bloc = context.read<AssetManagementBloc>();
-      String idCongTy = _userInfo?.idCongTy ?? '';
-      // DateTime date = DateTime.now();
-      // Gọi song song, không cần delay
-      bloc.add(GetListAssetManagementEvent(context, idCongTy));
-      bloc.add(GetListProjectEvent(context, idCongTy));
-      bloc.add(GetListCapitalSourceEvent(context, idCongTy));
-      bloc.add(GetListDepartmentEvent(context, idCongTy));
-      // bloc.add(GetListKhauHaoEvent(context, idCongTy, date));
-      bloc.add(GetAllChildAssetsEvent(context, idCongTy));
-    } catch (e) {
-      SGLog.error(
-        "AssetManagementProvider",
-        "Error adding AssetManagement events: $e",
-      );
-      // On error starting batch, ensure loading state is reset
-      _isLoading = false;
-      _pendingLoadCount = 0;
-      notifyListeners();
+  // Future<void> getDataAll(BuildContext context) async {
+  //   try {
+  //     // 7 parallel loads below
+  //     _beginBatchLoad(5);
+  //     final bloc = context.read<AssetManagementBloc>();
+  //     String idCongTy = _userInfo?.idCongTy ?? '';
+  //     // DateTime date = DateTime.now();
+  //     // Gọi song song, không cần delay
+  //     // bloc.add(GetListAssetManagementEvent(context, idCongTy));
+  //     // bloc.add(GetListProjectEvent(context, idCongTy));
+  //     // bloc.add(GetListCapitalSourceEvent(context, idCongTy));
+  //     // bloc.add(GetListDepartmentEvent(context, idCongTy));
+  //     // bloc.add(GetListKhauHaoEvent(context, idCongTy, date));
+  //     // bloc.add(GetAllChildAssetsEvent(context, idCongTy));
+  //   } catch (e) {
+  //     SGLog.error(
+  //       "AssetManagementProvider",
+  //       "Error adding AssetManagement events: $e",
+  //     );
+  //     // On error starting batch, ensure loading state is reset
+  //     _isLoading = false;
+  //     _pendingLoadCount = 0;
+  //     notifyListeners();
+  //   }
+  // }
+
+  onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableAssetManagementProvider.notifier)
+        .refreshData(isRefresh);
+  }
+
+  void onLoadDataFrom() {
+    _dataUnit = AccountHelper.instance.getAllUnit();
+    if (_dataUnit != null) {
+      AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
+      _dataUnit = AccountHelper.instance.getAllUnit();
     }
+    _itemsUnit = [
+      ..._dataUnit!.map(
+        (e) =>
+            DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
+      ),
+    ];
+    _dataDepartment = AccountHelper.instance.getDepartment();
+    _itemsPhongBan = [
+      for (var element in _dataDepartment!)
+        DropdownMenuItem<PhongBan>(
+          value: element,
+          child: Text(element.tenPhongBan ?? ''),
+        ),
+    ];
+    _dataCapitalSource = AccountHelper.instance.getAllCapitalSource();
+    _itemsNguonKinhPhi = [
+      for (var element in _dataCapitalSource!)
+        DropdownMenuItem<NguonKinhPhi>(
+          value: element,
+          child: Text(element.tenNguonKinhPhi ?? ''),
+        ),
+    ];
+    _dataProject = AccountHelper.instance.getAllProject();
+    _itemsDuAn = [
+      for (var element in _dataProject!)
+        DropdownMenuItem<DuAn>(
+          value: element,
+          child: Text(element.tenDuAn ?? ''),
+        ),
+    ];
+
+    _dataGroup = AccountHelper.instance.getAssetGroup();
+    log('dataGroup: ${_dataGroup?.length}');
+    _itemsAssetGroup = [
+      for (var element in _dataGroup!)
+        DropdownMenuItem<AssetGroupDto>(
+          value: element,
+          child: Text(element.tenNhom ?? ''),
+        ),
+    ];
+    // _itemsNguonKinhPhi = [
+    //   for (var element in _dataCapitalSource!)
+    //     DropdownMenuItem<NguonKinhPhi>(
+    //       value: element,
+    //       child: Text(element.tenNguonKinhPhi ?? ''),
+    //     ),
+    // ];
+    // _itemsDuAn = [
+    //   for (var element in _dataProject!)
+    //     DropdownMenuItem<DuAn>(
+    //       value: element,
+    //       child: Text(element.tenDuAn ?? ''),
+    //     ),
+    // ];
   }
 
   void onChangeBody(ShowBody type, BuildContext context) {
@@ -571,7 +625,7 @@ class AssetManagementProvider with ChangeNotifier {
     //   _data?.add(state.data!);
     //   _filteredData = List.from(_data!);
     // }
-    getDataAll(context);
+    onReloadDataPage(context);
     onLoadingImport(false);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     notifyListeners();
@@ -591,13 +645,13 @@ class AssetManagementProvider with ChangeNotifier {
 
   void updateAssetSuccess(BuildContext context, UpdateAssetSuccessState state) {
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
-    getDataAll(context);
+    onReloadDataPage(context);
     notifyListeners();
   }
 
   deleteAssetSuccess(BuildContext context, DeleteAssetSuccessState state) {
     _error = null;
-    getDataAll(context);
+    onReloadDataPage(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
     notifyListeners();
   }
@@ -627,6 +681,39 @@ class AssetManagementProvider with ChangeNotifier {
 
     notifyListeners();
   }
+  // void updateCheckBoxStatus(BuildContext context, String id, bool value) {
+  //   // Nếu đang bỏ chọn (value == false), chỉ cần bỏ chọn checkbox đó
+  //   if (value == false) {
+  //     for (int i = 0; i < checkBoxAssetGroup.length; i++) {
+  //       if (checkBoxAssetGroup[i]?.containsKey(id) == true) {
+  //         checkBoxAssetGroup[i]![id] = false;
+  //         break;
+  //       }
+  //     }
+  //   } else {
+  //     // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
+  //     // Sau đó mới chọn checkbox được chọn
+  //     for (int i = 0; i < checkBoxAssetGroup.length; i++) {
+  //       checkBoxAssetGroup[i]?.forEach((key, checkboxValue) {
+  //         // Bỏ chọn tất cả checkbox
+  //         checkBoxAssetGroup[i]![key] = false;
+  //       });
+  //     }
+  //     // Chọn checkbox với id được truyền vào
+  //     for (int i = 0; i < checkBoxAssetGroup.length; i++) {
+  //       if (checkBoxAssetGroup[i]?.containsKey(id) == true) {
+  //         checkBoxAssetGroup[i]![id] = true;
+  //         break;
+  //       }
+  //     }
+  //   }
+    
+  //   findDataByIdAssetGroup();
+  //   // final ref = riverpod.ProviderScope.containerOf(context);
+  //   // final notifier = ref.read(tableAssetManagementProvider.notifier);
+  //   // notifier.searchByGroup(id);
+  //   notifyListeners();
+  // }
 
   // Lấy trạng thái checkbox theo id
   bool getCheckBoxStatus(String id) {

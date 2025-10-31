@@ -27,6 +27,15 @@ class GetListDieuDongTaiSanSuccessState extends DieuDongTaiSanState {
   List<Object> get props => [data];
 }
 
+class GetLoadPageSuccessState extends DieuDongTaiSanState {
+  final List<DieuDongTaiSanDto> data;
+
+  const GetLoadPageSuccessState({required this.data});
+
+  @override
+  List<Object> get props => [data];
+}
+
 class GetListDieuDongTaiSanFailedState extends DieuDongTaiSanState {
   final String title;
   final int? code;

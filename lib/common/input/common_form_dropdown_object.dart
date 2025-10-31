@@ -75,7 +75,7 @@ class _CommonFormInputState<T> extends State<CmFormDropdownObject<T>> {
           _isInitialized
               ? SGDropdownInputButton<T>(
                   required: widget.isRequired,
-                  // label: widget.label,
+                  label: widget.label ?? '',
                   height: 45,
                   controller: widget.controller,
                   textOverflow: TextOverflow.ellipsis,

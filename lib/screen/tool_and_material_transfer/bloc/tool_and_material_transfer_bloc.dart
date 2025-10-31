@@ -8,7 +8,6 @@ import 'tool_and_material_transfer_event.dart'
         CancelToolAndMaterialTransferEvent,
         CreateToolAndMaterialTransferEvent,
         DeleteToolAndMaterialTransferEvent,
-        GetDataDropdownEvent,
         GetListAssetEvent,
         GetListToolAndMaterialTransferEvent,
         SendToSignerTAMTEvent,
@@ -22,7 +21,7 @@ class ToolAndMaterialTransferBloc
   ToolAndMaterialTransferBloc() : super(ToolAndMaterialTransferInitialState()) {
     on<GetListToolAndMaterialTransferEvent>(_getListToolAndMaterialTransfer);
     on<GetListAssetEvent>(_getListAsset);
-    on<GetDataDropdownEvent>(_getDataDropdown);
+    // on<GetDataDropdownEvent>(_getDataDropdown);
     on<CreateToolAndMaterialTransferEvent>(_createLenhDieuDong);
     on<UpdateToolAndMaterialTransferEvent>(_updateToolAndMaterialTransfer);
     on<DeleteToolAndMaterialTransferEvent>(_deleteToolAndMaterialTransfer);
@@ -69,33 +68,33 @@ class ToolAndMaterialTransferBloc
     }
   }
 
-  Future<void> _getDataDropdown(
-    GetDataDropdownEvent event,
-    Emitter emit,
-  ) async {
-    emit(ToolAndMaterialTransferInitialState());
-    emit(ToolAndMaterialTransferLoadingState());
-    Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
-        .getDataDropdown(event.idCongTy);
-    emit(ToolAndMaterialTransferLoadingDismissState());
-    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-      emit(
-        GetDataDropdownSuccessState(
-          dataPb: result['data_pb'],
-          dataNv: result['data_nv'],
-        ),
-      );
-    } else {
-      String msg = "Lỗi khi lấy dữ liệu";
-      emit(
-        GetListAssetFailedState(
-          title: "notice",
-          code: result['status_code'],
-          message: msg,
-        ),
-      );
-    }
-  }
+  // Future<void> _getDataDropdown(
+  //   GetDataDropdownEvent event,
+  //   Emitter emit,
+  // ) async {
+  //   emit(ToolAndMaterialTransferInitialState());
+  //   emit(ToolAndMaterialTransferLoadingState());
+  //   Map<String, dynamic> result = await ToolAndMaterialTransferRepository()
+  //       .getDataDropdown(event.idCongTy);
+  //   emit(ToolAndMaterialTransferLoadingDismissState());
+  //   if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+  //     emit(
+  //       GetDataDropdownSuccessState(
+  //         dataPb: result['data_pb'],
+  //         dataNv: result['data_nv'],
+  //       ),
+  //     );
+  //   } else {
+  //     String msg = "Lỗi khi lấy dữ liệu";
+  //     emit(
+  //       GetListAssetFailedState(
+  //         title: "notice",
+  //         code: result['status_code'],
+  //         message: msg,
+  //       ),
+  //     );
+  //   }
+  // }
 
   ///CREATE
   Future<void> _createLenhDieuDong(
