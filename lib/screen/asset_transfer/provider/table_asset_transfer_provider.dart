@@ -21,7 +21,6 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
   String _currentSearchTerm = '';
   int _currentType = 1; // lưu type hiện tại
   TableAssetTransferProvider(this.repository);
-
   // FIXED: Signature đúng với named parameters
   @override
   void initialize({
@@ -48,19 +47,24 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
   }
 
   // Load dữ liệu từ API
-  Future<void> loadDataFromApi(int page, int type, [bool isRefresh = true]) async {
+  Future<void> loadDataFromApi(
+    int page,
+    int type, [
+    bool isRefresh = true,
+  ]) async {
     _currentType = type; // cập nhật type
-    state = state.copyWith(isLoading: isRefresh, errorMessage: null);
-    setApiLoading();
+
+    // Chuẩn bị: clear data nhưng chỉ bật loading khi isRefresh = true
+    // setApiPreparing(clearData: true, showLoading: isRefresh);
+
     try {
-      // Gọi API của bạn
       final response = await repository.getDataWithPagination(
         page,
         state.paginationState.itemsPerPage,
         _currentType,
         _currentSearchTerm,
       );
-      // Cập nhật data và pagination info
+
       setApiData(
         response['data'],
         totalPages: response['totalPages'],
@@ -69,10 +73,7 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
       );
     } catch (error) {
       log('Error loading data: $error');
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Lỗi tải dữ liệu: $error',
-      );
+      setApiError('Lỗi tải dữ liệu: $error');
     }
   }
 
@@ -84,13 +85,14 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
   }
 
   // Refresh dữ liệu
-  Future<void> refreshData(int type) async {
+  Future<void> refreshData(int type, [bool isRefresh = true]) async {
     _currentType = type;
-    log('loadDataFromApi refreshData: type=$_currentType -- typeInsert=$type');
+    log('loadDataFromApi refreshData: type=$_currentType -- typeInsert=$type -- isRefresh=$isRefresh');
 
     await loadDataFromApi(
       state.paginationState.currentDisplayPage,
       _currentType,
+      isRefresh,
     );
   }
 

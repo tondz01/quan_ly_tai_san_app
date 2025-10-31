@@ -257,7 +257,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       // onReloadDataAssetTransfer();
-      // onReloadDataPage(context, false);
+      onReloadDataPage(context, false);
       print("reload data asset transfer");
     });
   }
@@ -292,7 +292,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     final container = ProviderScope.containerOf(context);
     container
         .read(tableAssetTransferProvider.notifier)
-        .loadDataFromApi(0, typeDieuDongTaiSan, isRefresh);
+        .refreshData(typeDieuDongTaiSan, isRefresh);
   }
 
   // void getDataAll(BuildContext context) {

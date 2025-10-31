@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -427,7 +428,7 @@ class AssetTransferRepository extends ApiBase {
     return result;
   }
 
-   //get data with pagination
+  //get data with pagination
   Future<Map<String, dynamic>> getDataWithPagination(
     int page,
     int size,
@@ -441,10 +442,14 @@ class AssetTransferRepository extends ApiBase {
       'currentPage': 0,
       'totalItems': 0,
     };
+    final userInfo = AccountHelper.instance.getUserInfo();
 
     try {
-      final response = await get( // Đổi từ post thành get
-        '${EndPointAPI.ASSET_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&type=$type&search=$search',
+      String userid =
+          userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search&userid=$userid',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -455,6 +460,7 @@ class AssetTransferRepository extends ApiBase {
 
       // Parse response data using the correct key 'items', chỉ parse nếu là List
       final itemsData = response.data['items'];
+      log('itemsData: ${jsonEncode(itemsData)}');
       if (itemsData is List) {
         result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
           itemsData,
@@ -468,6 +474,8 @@ class AssetTransferRepository extends ApiBase {
       result['currentPage'] = response.data['currentPage'];
       result['totalItems'] = response.data['totalItems'];
       result['totalPages'] = response.data['totalPages'];
+
+      log('result data: ${jsonEncode(result)}');
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }

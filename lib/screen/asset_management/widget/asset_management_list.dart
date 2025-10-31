@@ -45,6 +45,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
   late Map<String, TableCellBuilder> _buildersByKey;
   late List<String> _hiddenKeys;
 
+  int totalItems = 0;
+
   ScrollController horizontalController = ScrollController();
 
   @override
@@ -158,6 +160,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
   @override
   Widget build(BuildContext context) {
     final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
+    SGLog.info('AssetManagementList', 'groups: ${groups.length}');
     final data = widget.provider.data ?? const <AssetManagementDto>[];
     return Container(
       decoration: BoxDecoration(
@@ -221,33 +224,25 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ...groups.map(
-                              (item) => Visibility(
-                                visible:
+                              (item) => ItemAssetGroup(
+                                titleName: item.tenNhom,
+                                numberAsset:
                                     getCountAssetByAssetManagement(
                                       data,
                                       '${item.id}',
-                                    ) !=
-                                    0,
-                                child: ItemAssetGroup(
-                                  titleName: item.tenNhom,
-                                  numberAsset:
-                                      getCountAssetByAssetManagement(
-                                        data,
-                                        '${item.id}',
-                                      ).toString(),
-                                  image: "assets/images/assets.png",
-                                  onTap: () {
-                                    context.go(AppRoute.staffManager.path);
-                                  },
-                                  valueCheckBox: widget.provider
-                                      .getCheckBoxStatus(item.id),
-                                  onChange: (value) {
-                                    widget.provider.updateCheckBoxStatus(
-                                      item.id,
-                                      value,
-                                    );
-                                  },
-                                ),
+                                    ).toString(),
+                                image: "assets/images/assets.png",
+                                onTap: () {
+                                  context.go(AppRoute.staffManager.path);
+                                },
+                                valueCheckBox: widget.provider
+                                    .getCheckBoxStatus(item.id),
+                                onChange: (value) {
+                                  widget.provider.updateCheckBoxStatus(
+                                    item.id,
+                                    value,
+                                  );
+                                },
                               ),
                             ),
                           ],
@@ -387,13 +382,16 @@ class _AssetManagementListState extends State<AssetManagementList> {
             ),
             child: riverpod.Consumer(
               builder: (context, ref, child) {
-                final dataFiltered = widget.provider.filteredData ?? [];
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  ref
-                      .read(tableAssetManagementProvider.notifier)
-                      .setData(dataFiltered);
-                });
-
+                // WidgetsBinding.instance.addPostFrameCallback((_) {
+                //   ref
+                //       .read(tableAssetManagementProvider.notifier)
+                //       .loadDataFromApi(0, 1);
+                // });
+                totalItems = ref.watch(
+                  tableAssetManagementProvider.select(
+                    (s) => s.paginationState.totalItems,
+                  ),
+                );
                 return RiverpodTable<AssetManagementDto>(
                   tableProvider: tableAssetManagementProvider,
                   columns: _columns,

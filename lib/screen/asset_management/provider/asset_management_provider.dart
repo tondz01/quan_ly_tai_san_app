@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
@@ -14,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_depreciation_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/child_assets_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/provider/table_asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
@@ -295,25 +297,8 @@ class AssetManagementProvider with ChangeNotifier {
   onInit(BuildContext context) async {
     reset(context);
     _userInfo = AccountHelper.instance.getUserInfo();
-    _dataUnit = AccountHelper.instance.getAllUnit();
-    if (_dataUnit != null) {
-      AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
-      _dataUnit = AccountHelper.instance.getAllUnit();
-    }
-    _itemsUnit = [
-      ..._dataUnit!.map(
-        (e) =>
-            DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
-      ),
-    ];
-    _dataGroup = AccountHelper.instance.getAssetGroup();
-    _itemsAssetGroup = [
-      for (var element in _dataGroup!)
-        DropdownMenuItem<AssetGroupDto>(
-          value: element,
-          child: Text(element.tenNhom ?? ''),
-        ),
-    ];
+    onLoadDataFrom();
+
     checkPermission();
     controllerDropdownPage = TextEditingController(text: '10');
     onLoadItemDropdown();
@@ -356,12 +341,12 @@ class AssetManagementProvider with ChangeNotifier {
       String idCongTy = _userInfo?.idCongTy ?? '';
       // DateTime date = DateTime.now();
       // Gọi song song, không cần delay
-      bloc.add(GetListAssetManagementEvent(context, idCongTy));
-      bloc.add(GetListProjectEvent(context, idCongTy));
-      bloc.add(GetListCapitalSourceEvent(context, idCongTy));
-      bloc.add(GetListDepartmentEvent(context, idCongTy));
+      // bloc.add(GetListAssetManagementEvent(context, idCongTy));
+      // bloc.add(GetListProjectEvent(context, idCongTy));
+      // bloc.add(GetListCapitalSourceEvent(context, idCongTy));
+      // bloc.add(GetListDepartmentEvent(context, idCongTy));
       // bloc.add(GetListKhauHaoEvent(context, idCongTy, date));
-      bloc.add(GetAllChildAssetsEvent(context, idCongTy));
+      // bloc.add(GetAllChildAssetsEvent(context, idCongTy));
     } catch (e) {
       SGLog.error(
         "AssetManagementProvider",
@@ -372,6 +357,75 @@ class AssetManagementProvider with ChangeNotifier {
       _pendingLoadCount = 0;
       notifyListeners();
     }
+  }
+
+  onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableAssetManagementProvider.notifier)
+        .refreshData(isRefresh);
+  }
+
+  void onLoadDataFrom() {
+    _dataUnit = AccountHelper.instance.getAllUnit();
+    if (_dataUnit != null) {
+      AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
+      _dataUnit = AccountHelper.instance.getAllUnit();
+    }
+    _itemsUnit = [
+      ..._dataUnit!.map(
+        (e) =>
+            DropdownMenuItem<UnitDto>(value: e, child: Text(e.tenDonVi ?? '')),
+      ),
+    ];
+    _dataDepartment = AccountHelper.instance.getDepartment();
+    _itemsPhongBan = [
+      for (var element in _dataDepartment!)
+        DropdownMenuItem<PhongBan>(
+          value: element,
+          child: Text(element.tenPhongBan ?? ''),
+        ),
+    ];
+    _dataCapitalSource = AccountHelper.instance.getAllCapitalSource();
+    _itemsNguonKinhPhi = [
+      for (var element in _dataCapitalSource!)
+        DropdownMenuItem<NguonKinhPhi>(
+          value: element,
+          child: Text(element.tenNguonKinhPhi ?? ''),
+        ),
+    ];
+    _dataProject = AccountHelper.instance.getAllProject();
+    _itemsDuAn = [
+      for (var element in _dataProject!)
+        DropdownMenuItem<DuAn>(
+          value: element,
+          child: Text(element.tenDuAn ?? ''),
+        ),
+    ];
+
+    _dataGroup = AccountHelper.instance.getAssetGroup();
+    log('dataGroup: ${_dataGroup?.length}');
+    _itemsAssetGroup = [
+      for (var element in _dataGroup!)
+        DropdownMenuItem<AssetGroupDto>(
+          value: element,
+          child: Text(element.tenNhom ?? ''),
+        ),
+    ];
+    // _itemsNguonKinhPhi = [
+    //   for (var element in _dataCapitalSource!)
+    //     DropdownMenuItem<NguonKinhPhi>(
+    //       value: element,
+    //       child: Text(element.tenNguonKinhPhi ?? ''),
+    //     ),
+    // ];
+    // _itemsDuAn = [
+    //   for (var element in _dataProject!)
+    //     DropdownMenuItem<DuAn>(
+    //       value: element,
+    //       child: Text(element.tenDuAn ?? ''),
+    //     ),
+    // ];
   }
 
   void onChangeBody(ShowBody type, BuildContext context) {
