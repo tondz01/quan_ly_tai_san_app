@@ -72,9 +72,12 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   late int totalPages = 1;
   late int startIndex;
   late int endIndex;
-  int rowsPerPage = 10;
-  int currentPage = 1;
+  int rowsPerPage = 20;
+  int currentPage = 0; // Changed to 0-based for API
   TextEditingController? controllerDropdownPage;
+  String? _currentSearch;
+  String? _currentSortBy;
+  String? _currentSortDir;
 
   String? _selectedFileName;
   String? _selectedFilePath;
@@ -106,10 +109,19 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   List<UnitDto>? _dataUnit;
 
   void onInit(BuildContext context) {
-    controllerDropdownPage = TextEditingController(text: '10');
+    controllerDropdownPage = TextEditingController(text: '20');
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
+    currentPage = 0;
+    rowsPerPage = 20;
+    totalEntries = 0;
+    totalPages = 1;
+    startIndex = 0;
+    endIndex = 0;
+    _currentSearch = null;
+    _currentSortBy = null;
+    _currentSortDir = null;
     getListToolsAndSupplies(context);
   }
 
@@ -125,8 +137,30 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
 
   void getListToolsAndSupplies(BuildContext context) {
     try {
+      // Clean up search/sort values - remove null or empty strings
+      final cleanSortBy = _currentSortBy != null && _currentSortBy!.trim().isNotEmpty 
+          ? _currentSortBy!.trim() 
+          : null;
+      final cleanSortDir = _currentSortDir != null && _currentSortDir!.trim().isNotEmpty 
+          ? _currentSortDir!.trim() 
+          : null;
+      final cleanSearch = _currentSearch != null && _currentSearch!.trim().isNotEmpty 
+          ? _currentSearch!.trim() 
+          : null;
+
+      log('getListToolsAndSupplies - page: $currentPage, size: $rowsPerPage, '
+          'sortBy: $cleanSortBy, sortDir: $cleanSortDir, search: $cleanSearch');
+
       final bloc = context.read<ToolsAndSuppliesBloc>();
-      bloc.add(GetListToolsAndSuppliesEvent(context, 'CT001'));
+      bloc.add(GetListToolsAndSuppliesEvent(
+        context,
+        'CT001',
+        page: currentPage,
+        size: rowsPerPage,
+        sortBy: cleanSortBy,
+        sortDir: cleanSortDir,
+        search: cleanSearch,
+      ));
       bloc.add(GetListPhongBanEvent(context, 'CT001'));
       bloc.add(GetListTypeCcdcEvent(context));
       bloc.add(GetListUnitEvent(context));
@@ -136,77 +170,24 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
   }
 
   void onSearchToolsAndSupplies(String value) {
-    if (value.isEmpty) {
-      _filteredData = data;
-      return;
-    }
     log('message onSearchToolsAndSupplies: $value');
-
-    String searchLower = value.toLowerCase().trim();
-    _filteredData =
-        data.where((item) {
-          bool ten = AppUtility.fuzzySearch(
-            item.ten.toLowerCase(),
-            searchLower,
-          );
-          bool idDonVi = AppUtility.fuzzySearch(
-            item.idDonVi.toLowerCase(),
-            searchLower,
-          );
-          bool idNhomCCDC = AppUtility.fuzzySearch(
-            item.idNhomCCDC.toLowerCase(),
-            searchLower,
-          );
-          bool idLoaiCCDCCon = AppUtility.fuzzySearch(
-            item.idLoaiCCDCCon.toLowerCase(),
-            searchLower,
-          );
-          bool id = AppUtility.fuzzySearch(item.id.toLowerCase(), searchLower);
-          bool kyHieu = AppUtility.fuzzySearch(
-            item.kyHieu.toLowerCase(),
-            searchLower,
-          );
-          bool donViTinh = AppUtility.fuzzySearch(
-            item.donViTinh.toLowerCase(),
-            searchLower,
-          );
-
-          return ten ||
-              idDonVi ||
-              idNhomCCDC ||
-              idLoaiCCDCCon ||
-              id ||
-              kyHieu ||
-              donViTinh;
-        }).toList();
-
-    // Cập nhật phân trang sau khi search
-    _updatePagination();
+    _currentSearch = value.isEmpty ? null : value.trim();
+    currentPage = 0; // Reset to first page when searching
+    // Trigger API call from view
     notifyListeners();
   }
 
   void _updatePagination() {
-    // Sử dụng filteredData thay vì data để phân trang đúng khi có search
-    List<ToolsAndSuppliesDto> dataToPaginate = filteredData ?? data ?? [];
-    totalEntries = dataToPaginate.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(1, 9999);
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
+    // Use API pagination data if available
+    List<ToolsAndSuppliesDto> dataToPaginate = data ?? [];
+    totalEntries = totalEntries > 0 ? totalEntries : dataToPaginate.length;
+    
+    // Calculate display indices (1-based for UI)
+    startIndex = currentPage * rowsPerPage;
+    endIndex = (startIndex + dataToPaginate.length).clamp(0, totalEntries);
 
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-
-    _dataPage =
-        dataToPaginate.isNotEmpty
-            ? dataToPaginate.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-    log('message pageProducts: ${dataPage!.length}');
+    _dataPage = dataToPaginate;
+    log('message pageProducts: ${dataPage!.length}, total: $totalEntries, page: ${currentPage + 1}');
   }
 
   void onCloseDetail(BuildContext context) {
@@ -215,10 +196,18 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onPageChanged(int page) {
-    currentPage = page;
-    _updatePagination();
-    notifyListeners();
+  void onPageChanged(BuildContext context, int page) {
+    log('onPageChanged called with page: $page (1-based), converting to 0-based');
+    // Convert 1-based UI page to 0-based API page
+    final newPage = page - 1;
+    if (currentPage != newPage) {
+      currentPage = newPage;
+      log('Calling API with page: $currentPage, size: $rowsPerPage, search: $_currentSearch');
+      notifyListeners(); // Update UI immediately
+      getListToolsAndSupplies(context);
+    } else {
+      log('Page unchanged, skipping API call');
+    }
   }
 
   void onSetsShowCollapse(bool value) {
@@ -226,13 +215,20 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onRowsPerPageChanged(int? value) {
-    log('message onRowsPerPageChanged: $value');
+  void onRowsPerPageChanged(BuildContext context, int? value) {
+    log('onRowsPerPageChanged called with value: $value');
     if (value == null) return;
-    rowsPerPage = value;
-    currentPage = 1;
-    _updatePagination();
-    notifyListeners();
+    
+    if (rowsPerPage != value) {
+      rowsPerPage = value;
+      controllerDropdownPage?.text = value.toString();
+      currentPage = 0; // Reset to first page when size changes
+      log('Size changed to $rowsPerPage, resetting to page 0');
+      notifyListeners(); // Update UI immediately
+      getListToolsAndSupplies(context);
+    } else {
+      log('Size unchanged, skipping API call');
+    }
   }
 
   getListToolsAndSuppliesSuccess(
@@ -240,18 +236,31 @@ class ToolsAndSuppliesProvider with ChangeNotifier {
     GetListToolsAndSuppliesSuccessState state,
   ) {
     _error = null;
+    log('getListToolsAndSuppliesSuccess - Received ${state.data.length} items');
+    
     if (state.data.isEmpty) {
       _data = [];
       _filteredData = [];
-      _updatePagination();
+      log('Data is empty, setting to empty list');
     } else {
       _data = state.data;
       _filteredData = state.data;
-      _updatePagination();
+      log('Data updated: ${state.data.length} items');
     }
+    
+    // Update pagination info from API response
+    totalEntries = state.totalElements;
+    totalPages = state.totalPages;
+    currentPage = state.currentPage;
+    log('Pagination updated: totalEntries=$totalEntries, totalPages=$totalPages, currentPage=$currentPage');
+    
+    _updatePagination();
     _dataGroupCCDC = state.dataGroupCCDC;
     _isLoadingImport = false;
+    
+    log('Calling notifyListeners() to update UI');
     notifyListeners();
+    log('notifyListeners() completed');
   }
 
   getListPhongBanSuccess(

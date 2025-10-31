@@ -13,8 +13,27 @@ class TableToolsAndSuppliesProvider extends TableNotifier<ToolsAndSuppliesDto> {
   List<ToolsAndSuppliesDto> _data = [];
 
   void setData(List<ToolsAndSuppliesDto> data) {
-    _data = data;
-    refreshData();
+    // Check if data actually changed
+    if (_data.length != data.length || 
+        _data.isEmpty != data.isEmpty ||
+        (_data.isNotEmpty && data.isNotEmpty && _data.first.id != data.first.id)) {
+      log('TableToolsAndSuppliesProvider.setData - Updating data from ${_data.length} to ${data.length} items');
+      _data = List.from(data); // Create new list instance
+      
+      // Force refresh by calling generateData and updating state directly
+      generateData().then((result) {
+        state = state.copyWith(
+          allData: result,
+          filteredData: result,
+        );
+        log('TableToolsAndSuppliesProvider.setData - State updated with ${result.length} items');
+      });
+      
+      // Also call loadData to ensure table rebuilds
+      loadData();
+    } else {
+      log('TableToolsAndSuppliesProvider.setData - Data unchanged, skipping update');
+    }
   }
 
   set searchTerm(String value) {
@@ -24,7 +43,8 @@ class TableToolsAndSuppliesProvider extends TableNotifier<ToolsAndSuppliesDto> {
   @override
   Future<List<ToolsAndSuppliesDto>> generateData() async {
     try {
-      return _data;
+      log('TableToolsAndSuppliesProvider.generateData - Returning ${_data.length} items');
+      return List.from(_data); // Return a copy to ensure changes are detected
     } catch (e) {
       log('Error in generateData: $e');
       return [];
@@ -32,6 +52,10 @@ class TableToolsAndSuppliesProvider extends TableNotifier<ToolsAndSuppliesDto> {
   }
 
   Future<void> refreshData() async {
-    await generateData();
+    log('TableToolsAndSuppliesProvider.refreshData - Refreshing data');
+    // Force data reload by calling loadData or similar method from parent
+    // The parent TableNotifier should handle state updates when generateData is called
+    await loadData();
+    log('TableToolsAndSuppliesProvider.refreshData - Data reloaded');
   }
 }

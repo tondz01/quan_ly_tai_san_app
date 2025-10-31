@@ -21,14 +21,20 @@ class ToolsAndSuppliesLoadingDismissState extends ToolsAndSuppliesState {}
 class GetListToolsAndSuppliesSuccessState extends ToolsAndSuppliesState {
   final List<ToolsAndSuppliesDto> data;
   final List<CcdcGroup> dataGroupCCDC;
+  final int totalElements;
+  final int totalPages;
+  final int currentPage;
 
   const GetListToolsAndSuppliesSuccessState({
     required this.data,
     required this.dataGroupCCDC,
+    this.totalElements = 0,
+    this.totalPages = 1,
+    this.currentPage = 0,
   });
 
   @override
-  List<Object> get props => [data];
+  List<Object> get props => [data, totalElements, totalPages, currentPage];
 }
 
 class GetListToolsAndSuppliesFailedState extends ToolsAndSuppliesState {
