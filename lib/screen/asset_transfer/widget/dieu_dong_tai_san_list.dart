@@ -39,6 +39,7 @@ import 'package:table_base/widgets/table/models/table_model.dart';
 import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:table_base/widgets/table/widgets/table_actions_widget.dart';
+import 'package:provider/provider.dart';
 
 class DieuDongTaiSanList extends StatefulWidget {
   final DieuDongTaiSanProvider provider;
@@ -61,15 +62,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   bool isShowDetailDepartmentTree = false;
   bool isLoading = true; // Thêm state loading
 
+  int totalItems = 0;
+
   String nameBenBan = "";
 
   List<DieuDongTaiSanDto> selectedItems = [];
   DieuDongTaiSanDto? selected;
   List<ThreadNode> listSignatoryDetail = [];
   UserInfoDTO? userInfo;
-
-  // Track previous filtered data for comparison
-  List<DieuDongTaiSanDto> _previousFilteredData = [];
 
   late final List<TableColumnData> _allColumns;
   List<String> _hiddenKeys = [];
@@ -293,7 +293,11 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                 setState(() {
                   isLoading = false; // Đánh dấu đã load xong dữ liệu
                 });
+                // Future.delayed(const Duration(seconds: 1), () {
+                //   if (mounted) widget.provider.isLoading = false;
+                // });
               }
+              log('DieuDongTaiSanList - build - No data received');
             } else if (state is DieuDongTaiSanLoadingState) {
               // Chỉ setState nếu trạng thái loading thay đổi
               if (!isLoading) {
@@ -446,7 +450,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                     ),
                     child:
                         isLoading
-                            ? Container(
+                            ? SizedBox(
                               height: MediaQuery.of(context).size.height * 0.8,
                               child: Column(
                                 children: [
@@ -567,30 +571,12 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             )
                             : riverpod.Consumer(
                               builder: (context, ref, child) {
-                                List<DieuDongTaiSanDto> data =
-                                    widget.provider.filteredData ?? [];
-                                // Defer provider mutation until after the current frame
-                                if (!_areListsEqual(
-                                  _previousFilteredData,
-                                  data,
-                                )) {
-                                  final data =
-                                      widget.provider.filteredData ?? [];
-                                  _previousFilteredData = List.from(data);
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    ref
-                                        .read(
-                                          tableAssetTransferProvider.notifier,
-                                        )
-                                        .setData(data);
-                                  });
-                                  log(
-                                    'message test: isFirstLoad _areListsEqual',
-                                  );
-                                }
-
+                                totalItems = ref.watch(
+                                  tableAssetTransferProvider.select(
+                                    (s) => s.paginationState.totalItems,
+                                  ),
+                                );
+                              
                                 return RiverpodTable<DieuDongTaiSanDto>(
                                   tableProvider: tableAssetTransferProvider,
                                   columns: _columns,
@@ -814,7 +800,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)}(${widget.provider.data.length})',
+              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)} ($totalItems)',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,

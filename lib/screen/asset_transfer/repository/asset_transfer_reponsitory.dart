@@ -194,7 +194,7 @@ class AssetTransferRepository extends ApiBase {
   //Cập nhập trạng thái phiếu ký nội sinh
   Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
     Map<String, dynamic> result = {
-      'data': '',
+      'data': <DieuDongTaiSanDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -224,7 +224,7 @@ class AssetTransferRepository extends ApiBase {
   //Hủy phiếu ký nội sinh
   Future<Map<String, dynamic>> cancelDieuDongTaiSan(String id) async {
     Map<String, dynamic> result = {
-      'data': '',
+      'data': <DieuDongTaiSanDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -422,6 +422,54 @@ class AssetTransferRepository extends ApiBase {
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
     } catch (e) {
       log("Error at getDataDropdown - DropdownItemReponsitory: $e");
+    }
+
+    return result;
+  }
+
+   //get data with pagination
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    int type,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <DieuDongTaiSanDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+
+    try {
+      final response = await get( // Đổi từ post thành get
+        '${EndPointAPI.ASSET_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&type=$type&search=$search',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
+          itemsData,
+          DieuDongTaiSanDto.fromJson,
+        );
+      } else {
+        log('ToolsAndMaterialTransferRepository: itemsData is not a List');
+        result['data'] = <DieuDongTaiSanDto>[];
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }
 
     return result;

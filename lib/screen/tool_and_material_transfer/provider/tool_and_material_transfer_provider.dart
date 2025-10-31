@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -63,7 +62,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
-
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
   bool get isShowApprove => _filterStatus[FilterStatus.approve] ?? false;
@@ -87,6 +85,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _applyFilters();
     notifyListeners();
   }
+
   set isLoading(bool value) {
     _isLoading = value;
     log('loadDataFromApi isLoading: $value');
@@ -271,14 +270,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void onInit(BuildContext context, int type) {
     type = type;
     _initData(context);
-    log('loadDataFromApi onInit: $type');
     _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
-    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-    //   onReloadDataToolAndMaterialTransfer();
-    //onReloadData(context);
-    //   print("reload data tool and material transfer");
-    // });
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      // onReloadDataToolAndMaterialTransfer();
+      onReloadData(context);
+      print("reload data tool and material transfer");
+    });
   }
 
   void refreshData(BuildContext context, int type) {
@@ -303,7 +301,9 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   void onReloadData(BuildContext context) {
     final container = ProviderScope.containerOf(context);
-    container.read(tableToolAndMaterialTransferProvider.notifier).refreshData(type);
+    container
+        .read(tableToolAndMaterialTransferProvider.notifier)
+        .refreshData(type, false);
   }
 
   void onReloadDataToolAndMaterialTransfer() async {
@@ -338,7 +338,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
     _filteredData = List.from(_data!);
-    log('Auto-reloaded data: ${_filteredData.length} items');
     // if (_data != null) {
     //   // refreshCountSign(_data!);
     // }

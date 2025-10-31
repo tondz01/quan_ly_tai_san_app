@@ -34,6 +34,17 @@ class GetListAssetEvent extends DieuDongTaiSanEvent {
   List<Object?> get props => [context, idCongTy];
 }
 
+class GetPageAssetEvent extends DieuDongTaiSanEvent {
+  final int page;
+  final int limit;
+  final int type;
+
+  const GetPageAssetEvent(this.page, this.limit, this.type);
+
+  @override
+  List<Object?> get props => [page, limit, type];
+}
+
 class GetDataDropdownEvent extends DieuDongTaiSanEvent {
   final BuildContext context;
   final String idCongTy;
@@ -51,7 +62,12 @@ class CreateDieuDongEvent extends DieuDongTaiSanEvent {
   final List<ChiTietDieuDongRequest> requestDetail;
   final List<SignatoryDto> listSignatory;
 
-  const CreateDieuDongEvent(this.context, this.request, this.requestDetail, this.listSignatory);
+  const CreateDieuDongEvent(
+    this.context,
+    this.request,
+    this.requestDetail,
+    this.listSignatory,
+  );
 
   @override
   List<Object> get props => [context, request, requestDetail, listSignatory];

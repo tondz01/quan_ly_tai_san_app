@@ -66,9 +66,6 @@ class _ToolAndMaterialTransferListState
   List<ThreadNode> listSignatoryDetail = [];
   ToolAndMaterialTransferDto? selected;
 
-  // Track previous filtered data for comparison
-  List<ToolAndMaterialTransferDto> _previousFilteredData = [];
-
   bool isShowDetailDepartmentTree = false;
   String nameBenBan = "";
 
@@ -395,7 +392,6 @@ class _ToolAndMaterialTransferListState
                           ),
                         );
                         widget.provider.isLoading = false;
-                       
                         return RiverpodTable<ToolAndMaterialTransferDto>(
                           tableProvider: tableToolAndMaterialTransferProvider,
                           columns: _columns,

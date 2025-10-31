@@ -108,7 +108,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   //Update trạng thái biên bản
   Future<Map<String, dynamic>> updateState(String id, String idNhanVien) async {
     Map<String, dynamic> result = {
-      'data': '',
+      'data': <ToolAndMaterialTransferDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -138,7 +138,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
   //Hủy phiếu ký nội sinh
   Future<Map<String, dynamic>> cancelToolAndMaterialTransfer(String id) async {
     Map<String, dynamic> result = {
-      'data': '',
+      'data': <ToolAndMaterialTransferDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -536,7 +536,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     return result;
   }
 
-  //Update trạng thái biên bản
+  //get data with pagination
   Future<Map<String, dynamic>> getDataWithPagination(
     int page,
     int size,
@@ -544,7 +544,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     String search,
   ) async {
     Map<String, dynamic> result = {
-      'data': '',
+      'data': <ToolAndMaterialTransferDto>[],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
       'totalPages': 0,
       'currentPage': 0,

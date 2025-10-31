@@ -40,7 +40,7 @@ class TableToolAndMaterialTransferProvider
 
     // Bật API pagination
     enableApiPagination(true);
-    loadDataFromApi(0, _currentType); 
+    loadDataFromApi(0, _currentType);
   }
 
   // Tìm kiếm với API
@@ -50,11 +50,17 @@ class TableToolAndMaterialTransferProvider
   }
 
   // Load dữ liệu từ API
-  Future<void> loadDataFromApi(int page, int type) async {
+  Future<void> loadDataFromApi(
+    int page,
+    int type, [
+    bool isLoading = true,
+  ]) async {
     _currentType = type; // cập nhật type
-    state = state.copyWith(isLoading: true, errorMessage: null);
-    setApiLoading();
-    log('loadDataFromApi: page=$page, type=$_currentType, search="$_currentSearchTerm"');
+    log('loadDataFromApi: type=$_currentType -- isLoading=$isLoading');
+    state = state.copyWith(isLoading: isLoading, errorMessage: null);
+    if (isLoading) {
+      setApiLoading();
+    }
     try {
       // Gọi API của bạn
       final response = await repository.getDataWithPagination(
@@ -87,11 +93,15 @@ class TableToolAndMaterialTransferProvider
   }
 
   // Refresh dữ liệu
-  Future<void> refreshData(int type) async {
+  Future<void> refreshData(int type, [bool isLoading = true]) async {
     _currentType = type;
     log('loadDataFromApi refreshData: type=$_currentType -- typeInsert=$type');
 
-    await loadDataFromApi(state.paginationState.currentDisplayPage, _currentType);
+    await loadDataFromApi(
+      state.paginationState.currentDisplayPage,
+      _currentType,
+      isLoading,
+    );
   }
 
   @override
