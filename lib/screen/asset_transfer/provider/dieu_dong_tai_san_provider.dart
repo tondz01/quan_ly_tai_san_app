@@ -151,19 +151,52 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterStatus(FilterStatus status, bool? value) {
-    _filterStatus[status] = value ?? false;
-    if (status == FilterStatus.all && value == true) {
+  // void setFilterStatus(FilterStatus status, bool? value) {
+  //   _filterStatus[status] = value ?? false;
+  //   if (status == FilterStatus.all && value == true) {
+  //     for (var key in _filterStatus.keys) {
+  //       if (key != FilterStatus.all) {
+  //         _filterStatus[key] = false;
+  //       }
+  //     }
+  //   } else if (status != FilterStatus.all && value == true) {
+  //     _filterStatus[FilterStatus.all] = false;
+  //   }
+
+  //   _applyFilters();
+  //   notifyListeners();
+  // }
+  void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
+    // Nếu đang bỏ chọn (value == false), chỉ cần bỏ chọn checkbox đó
+    if (value == false) {
+      _filterStatus[status] = false;
+    } else {
+      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
+      // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
+        _filterStatus[key] = false;
       }
-    } else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
+      _filterStatus[status] = true;
     }
 
-    _applyFilters();
+    switch (status) {
+      case FilterStatus.draft:
+        onFillterByStatus(context, 0);
+        break;
+      case FilterStatus.approve:
+        onFillterByStatus(context, 1);
+        break;
+
+      case FilterStatus.cancel:
+        onFillterByStatus(context, 2);
+        break;
+      case FilterStatus.complete:
+        onFillterByStatus(context, 3);
+        break;
+      case FilterStatus.all:
+        onFillterByStatus(context, -1);
+        break;
+    }
     notifyListeners();
   }
 
@@ -258,7 +291,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       // onReloadDataAssetTransfer();
       onReloadDataPage(context, false);
-      print("reload data asset transfer");
     });
   }
 
@@ -295,57 +327,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         .refreshData(typeDieuDongTaiSan, isRefresh);
   }
 
-  // void getDataAll(BuildContext context) {
-  //   try {
-  //     onCloseDetail(context);
-  //     final bloc = context.read<DieuDongTaiSanBloc>();
-  //     bloc.add(
-  //       GetListDieuDongTaiSanEvent(
-  //         context,
-  //         typeDieuDongTaiSan,
-  //         _userInfo?.idCongTy ?? '',
-  //       ),
-  //     );
-  //     bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
-  //     bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
-  //   } catch (e) {
-  //     log('Error adding AssetManagement events: $e');
-  //   }
-  // }
-
-  // void onReloadDataAssetTransfer() async {
-  //   Map<String, dynamic> dieuDongTaiSans = await AssetTransferRepository()
-  //       .getListDieuDongTaiSan(type: typeDieuDongTaiSan);
-  //   _data = dieuDongTaiSans['data'];
-  //   _data =
-  //       _data
-  //           ?.where((element) => element.loai == typeDieuDongTaiSan)
-  //           .where((item) {
-  //             return item.share == true ||
-  //                 item.nguoiTao == userInfo?.tenDangNhap;
-  //           })
-  //           .where((item) {
-  //             final idSignatureGroup =
-  //                 [
-  //                   item.nguoiTao,
-  //                   item.idNguoiKyNhay,
-  //                   item.idTrinhDuyetCapPhong,
-  //                   item.idTrinhDuyetGiamDoc,
-  //                   if (item.listSignatory != null)
-  //                     ...item.listSignatory!.map((e) => e.idNguoiKy),
-  //                 ].whereType<String>().toList();
-
-  //             final inGroup = idSignatureGroup
-  //                 .map((e) => e.toLowerCase())
-  //                 .contains(userInfo.tenDangNhap.toLowerCase());
-  //             return inGroup;
-  //           })
-  //           .toList();
-  //   _filteredData = List.from(_data!);
-  //   log('message test: onReloadDataAssetTransfer');
-  //   _applyFilters();
-  //   notifyListeners();
-  // }
+  onFillterByStatus(BuildContext context, int status) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableAssetTransferProvider.notifier).fillterByStatus(status);
+    onReloadDataPage(context);
+  }
 
   void onPageChanged(int page) {
     currentPage = page;

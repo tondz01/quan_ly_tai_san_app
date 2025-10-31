@@ -76,7 +76,7 @@ class _FilterCheckboxes extends StatelessWidget {
         }
         
         if (status != null) {
-          provider.setFilterStatus(status, value);
+          provider.setFilterStatus(context, status, value);
         }
       },
     );

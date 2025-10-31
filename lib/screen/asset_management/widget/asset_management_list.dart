@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/utils.dart';
@@ -45,6 +47,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
   late Map<String, TableCellBuilder> _buildersByKey;
   late List<String> _hiddenKeys;
 
+  String? idNhomTaiSan;
   int totalItems = 0;
 
   ScrollController horizontalController = ScrollController();
@@ -162,6 +165,8 @@ class _AssetManagementListState extends State<AssetManagementList> {
     final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
     SGLog.info('AssetManagementList', 'groups: ${groups.length}');
     final data = widget.provider.data ?? const <AssetManagementDto>[];
+    final ref = riverpod.ProviderScope.containerOf(context);
+    final notifier = ref.read(tableAssetManagementProvider.notifier);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -226,22 +231,19 @@ class _AssetManagementListState extends State<AssetManagementList> {
                             ...groups.map(
                               (item) => ItemAssetGroup(
                                 titleName: item.tenNhom,
-                                numberAsset:
-                                    getCountAssetByAssetManagement(
-                                      data,
-                                      '${item.id}',
-                                    ).toString(),
+                                numberAsset: notifier.getGroupCounts(
+                                  '${item.id}',
+                                )?.toString(),
                                 image: "assets/images/assets.png",
                                 onTap: () {
                                   context.go(AppRoute.staffManager.path);
                                 },
-                                valueCheckBox: widget.provider
-                                    .getCheckBoxStatus(item.id),
+                                valueCheckBox: idNhomTaiSan == item.id,
                                 onChange: (value) {
-                                  widget.provider.updateCheckBoxStatus(
-                                    item.id,
-                                    value,
-                                  );
+                                  setState(() {
+                                    idNhomTaiSan = item.id;
+                                  });
+                                  notifier.searchByGroup(item.id ?? '');
                                 },
                               ),
                             ),

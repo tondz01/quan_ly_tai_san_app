@@ -542,6 +542,7 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     int size,
     int type,
     String search,
+    int trangThai,
   ) async {
     Map<String, dynamic> result = {
       'data': <ToolAndMaterialTransferDto>[],
@@ -549,11 +550,16 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       'totalPages': 0,
       'currentPage': 0,
       'totalItems': 0,
+      'totalAll': 0,
+      'totalDraft': 0,
+      'totalApprove': 0,
+      'totalCancel': 0,
+      'totalComplete': 0,
     };
-
+    final userInfo = AccountHelper.instance.getUserInfo();
     try {
       final response = await get( // Đổi từ post thành get
-        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search',
+        '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search&trangThai=${trangThai == -1 ? '' : trangThai}&userid=${userInfo?.tenDangNhap ?? ''}',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -573,10 +579,35 @@ class ToolAndMaterialTransferRepository extends ApiBase {
         log('ToolsAndMaterialTransferRepository: itemsData is not a List');
         result['data'] = <ToolAndMaterialTransferDto>[];
       }
-      result['totalPages'] = response.data['totalPages'];
-      result['currentPage'] = response.data['currentPage'];
-      result['totalItems'] = response.data['totalItems'];
-      result['totalPages'] = response.data['totalPages'];
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
+
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['groupCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalDraft'] = parseGroupCount('0', 'draft');
+        result['totalApprove'] = parseGroupCount('1', 'approve');
+        result['totalCancel'] = parseGroupCount('2', 'cancel');
+        result['totalComplete'] = parseGroupCount('3', 'complete');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalDraft'] = 0;
+        result['totalApprove'] = 0;
+        result['totalCancel'] = 0;
+        result['totalComplete'] = 0;
+      }
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }

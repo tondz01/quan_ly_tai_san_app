@@ -88,7 +88,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   set isLoading(bool value) {
     _isLoading = value;
-    log('loadDataFromApi isLoading: $value');
     notifyListeners();
   }
 
@@ -102,7 +101,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   set type(int value) {
     _type = value;
-    log('loadDataFromApi type: $value');
     notifyListeners();
   }
 
@@ -177,19 +175,36 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterStatus(FilterStatus status, bool? value) {
-    _filterStatus[status] = value ?? false;
-    if (status == FilterStatus.all && value == true) {
+  void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
+    if (value == false) {
+      _filterStatus[status] = false;
+    } else {
+      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
+      // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
+        _filterStatus[key] = false;
       }
-    } else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
+      _filterStatus[status] = true;
     }
 
-    _applyFilters();
+    switch (status) {
+      case FilterStatus.draft:
+        onFillterByStatus(context, 0);
+        break;
+      case FilterStatus.approve:
+        onFillterByStatus(context, 1);
+        break;
+
+      case FilterStatus.cancel:
+        onFillterByStatus(context, 2);
+        break;
+      case FilterStatus.complete:
+        onFillterByStatus(context, 3);
+        break;
+      case FilterStatus.all:
+        onFillterByStatus(context, -1);
+        break;
+    }
     notifyListeners();
   }
 
@@ -303,7 +318,16 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     final container = ProviderScope.containerOf(context);
     container
         .read(tableToolAndMaterialTransferProvider.notifier)
-        .refreshData(type, false);
+        .refreshData(type, -1, false);
+  }
+
+  void onFillterByStatus(BuildContext context, int status) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableToolAndMaterialTransferProvider.notifier)
+        .fillterByStatus(status);
+    onReloadData(context);
+    notifyListeners();
   }
 
   void onReloadDataToolAndMaterialTransfer() async {

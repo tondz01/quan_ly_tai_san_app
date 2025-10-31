@@ -85,9 +85,7 @@ class _ToolAndMaterialTransferViewState
       _initData();
     } else if (newType != currentType) {
       currentType = newType;
-      log('loadDataFromApi didChangeDependencies: _reloadData $currentType');
       _providerRef?.type = currentType;
-      log('loadDataFromApi didChangeDependencies: ${_providerRef?.type}');
       // Defer reload to avoid calling notifyListeners during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -115,8 +113,6 @@ class _ToolAndMaterialTransferViewState
     );
 
     provider.isLoading = true;
-    log('loadDataFromApi _reloadData: true');
-
     // Chỉ tải lại dữ liệu nếu đã khởi tạo trước đó
     if (_isInitialized) {
       // Defer provider refresh to avoid calling notifyListeners during build

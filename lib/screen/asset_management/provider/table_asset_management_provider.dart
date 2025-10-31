@@ -17,6 +17,8 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   final AssetManagementRepository repository;
   int totalItems = 0;
   String _currentSearchTerm = '';
+  String? _currentIdNhomTaiSan = '';
+  Map<String, dynamic> _groupCounts = {};
   TableAssetManagementProvider(this.repository);
   // FIXED: Signature đúng với named parameters
   @override
@@ -34,18 +36,19 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
 
     // Bật API pagination
     enableApiPagination(true);
-    loadDataFromApi(0);
+    loadDataFromApi(0, _currentIdNhomTaiSan);
   }
 
   // Tìm kiếm với API
   set searchTerm(String value) {
     _currentSearchTerm = value;
-    loadDataFromApi(0); // Reset về trang đầu khi search
+    loadDataFromApi(0, _currentIdNhomTaiSan); // Reset về trang đầu khi search
   }
 
   // Load dữ liệu từ API
   Future<void> loadDataFromApi(
-    int page, [
+    int page,
+    String? idNhomTaiSan, [
     bool isRefresh = true,
   ]) async {
     state = state.copyWith(isLoading: isRefresh, errorMessage: null);
@@ -56,6 +59,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
         page,
         state.paginationState.itemsPerPage,
         _currentSearchTerm,
+        idNhomTaiSan,
       );
       // Cập nhật data và pagination info
       setApiData(
@@ -64,6 +68,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
         currentPage: response['currentPage'],
         totalItems: response['totalItems'],
       );
+      _groupCounts = response['groupCounts'];
     } catch (error) {
       log('Error loading data: $error');
       state = state.copyWith(
@@ -73,16 +78,28 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
     }
   }
 
+  getGroupCounts(String status) {
+    return _groupCounts[status];
+  }
+  searchByGroup(String idNhomTaiSan) {
+    _currentIdNhomTaiSan = idNhomTaiSan;
+    loadDataFromApi(0, _currentIdNhomTaiSan);
+  }
+
   // Tự động gọi API khi chuyển trang
   @override
   void goToPage(int page) {
     super.goToPage(page);
-    loadDataFromApi(page);
+    loadDataFromApi(page, _currentIdNhomTaiSan);
   }
 
   // Refresh dữ liệu
   Future<void> refreshData([bool isRefresh = true]) async {
-    await loadDataFromApi(state.paginationState.currentDisplayPage, isRefresh);
+    await loadDataFromApi(
+      state.paginationState.currentDisplayPage,
+      _currentIdNhomTaiSan,
+      isRefresh,
+    );
   }
 
   @override

@@ -559,6 +559,7 @@ class AssetManagementRepository extends ApiBase {
     int page,
     int size,
     String search,
+    String? idNhomTaiSan
   ) async {
     Map<String, dynamic> result = {
       'data': <AssetManagementDto>[],
@@ -566,12 +567,13 @@ class AssetManagementRepository extends ApiBase {
       'totalPages': 0,
       'currentPage': 0,
       'totalItems': 0,
+      'groupCounts':{}
     };
 
     try {
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.ASSET_MANAGEMENT}/paged?idcongty=ct001&page=$page&size=$size&search=$search',
+        '${EndPointAPI.ASSET_MANAGEMENT}/paged?idcongty=ct001&page=$page&size=$size&search=$search&idNhomTaiSan=$idNhomTaiSan',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -592,6 +594,7 @@ class AssetManagementRepository extends ApiBase {
       result['currentPage'] = response.data['currentPage'];
       result['totalItems'] = response.data['totalItems'];
       result['totalPages'] = response.data['totalPages'];
+      result['groupCounts'] = response.data['groupCounts'];
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }

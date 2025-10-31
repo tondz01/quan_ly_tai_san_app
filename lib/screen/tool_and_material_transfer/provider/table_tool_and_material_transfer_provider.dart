@@ -21,6 +21,12 @@ class TableToolAndMaterialTransferProvider
   int totalItems = 0;
   String _currentSearchTerm = '';
   int _currentType = 1; // lưu type hiện tại
+  int _currentTrangThai = -1; // lưu trạng thái hiện tại
+  int totalAll = 0;
+  int totalDraft = 0;
+  int totalApprove = 0;
+  int totalCancel = 0;
+  int totalComplete = 0;
 
   TableToolAndMaterialTransferProvider(this.repository);
 
@@ -40,27 +46,25 @@ class TableToolAndMaterialTransferProvider
 
     // Bật API pagination
     enableApiPagination(true);
-    loadDataFromApi(0, _currentType);
+    loadDataFromApi(0, _currentType, _currentTrangThai);
   }
 
   // Tìm kiếm với API
   set searchTerm(String value) {
     _currentSearchTerm = value;
-    loadDataFromApi(0, _currentType); // Reset về trang đầu khi search
+    loadDataFromApi(0, _currentType, _currentTrangThai); // Reset về trang đầu khi search
   }
 
   // Load dữ liệu từ API
   Future<void> loadDataFromApi(
     int page,
-    int type, [
+    int type,
+    int trangThai, [
     bool isLoading = true,
   ]) async {
     _currentType = type; // cập nhật type
-    log('loadDataFromApi: type=$_currentType -- isLoading=$isLoading');
-    state = state.copyWith(isLoading: isLoading, errorMessage: null);
-    if (isLoading) {
-      setApiLoading();
-    }
+    _currentTrangThai = trangThai; // cập nhật trạng thái
+  
     try {
       // Gọi API của bạn
       final response = await repository.getDataWithPagination(
@@ -68,6 +72,7 @@ class TableToolAndMaterialTransferProvider
         state.paginationState.itemsPerPage,
         _currentType,
         _currentSearchTerm,
+        _currentTrangThai,
       );
       // Cập nhật data và pagination info
       setApiData(
@@ -76,6 +81,12 @@ class TableToolAndMaterialTransferProvider
         currentPage: response['currentPage'],
         totalItems: response['totalItems'],
       );
+
+      totalAll = response['totalItems'];
+      totalDraft = response['totalDraft'];
+      totalApprove = response['totalApprove'];
+      totalCancel = response['totalCancel'];
+      totalComplete = response['totalComplete'];
     } catch (error) {
       log('Error loading data: $error');
       state = state.copyWith(
@@ -84,22 +95,25 @@ class TableToolAndMaterialTransferProvider
       );
     }
   }
+  Future<void> fillterByStatus(int status) async {
+    _currentTrangThai = status;
+    await loadDataFromApi(0, _currentType, _currentTrangThai);
+  }
 
   // Tự động gọi API khi chuyển trang
   @override
   void goToPage(int page) {
     super.goToPage(page);
-    loadDataFromApi(page, _currentType);
+    loadDataFromApi(page, _currentType, _currentTrangThai);
   }
 
   // Refresh dữ liệu
-  Future<void> refreshData(int type, [bool isLoading = true]) async {
+  Future<void> refreshData(int type, int trangThai, [bool isLoading = true]) async {
     _currentType = type;
-    log('loadDataFromApi refreshData: type=$_currentType -- typeInsert=$type');
-
     await loadDataFromApi(
       state.paginationState.currentDisplayPage,
       _currentType,
+      _currentTrangThai,
       isLoading,
     );
   }

@@ -40,21 +40,17 @@ class ToolAndSuppliesHandoverBloc
     List<ToolAndSuppliesHandoverDto> dataToolAndSuppliesHandoverDto = [];
     List<ToolAndMaterialTransferDto> dataDieuDongTaiSanDto = [];
     List<ToolsAndSuppliesDto> dataCcdc = [];
-    UserInfoDTO userInfo = AccountHelper.instance.getUserInfo()!;
     Map<String, dynamic> result =
         await ToolAndSuppliesHandoverRepository()
             .getListToolAndSuppliesHandover();
 
-    dataDieuDongTaiSanDto =
-        await ToolAndMaterialTransferRepository()
-            .getAllToolAndMeterialTransferByCT();
-    Map<String, dynamic> resultCcdc = await ToolsAndSuppliesRepository()
-        .getListToolsAndSupplies(userInfo.idCongTy);
+    // Map<String, dynamic> resultCcdc = await ToolsAndSuppliesRepository()
+    //     .getListToolsAndSupplies(userInfo.idCongTy);
 
-    dataDepartment = await DepartmentsProvider().fetchDepartments();
-    dataStaff = await NhanVienProvider().fetchNhanViens();
+    dataDepartment = AccountHelper.instance.getDepartment() ?? [];
+    dataStaff = AccountHelper.instance.getNhanVien() ?? [];
     dataToolAndSuppliesHandoverDto = result['data'];
-    dataCcdc = resultCcdc['data'];
+    dataCcdc = AccountHelper.instance.getAllCCDC();
 
     emit(ToolAndSuppliesHandoverLoadingDismissState());
 

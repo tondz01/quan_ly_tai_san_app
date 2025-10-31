@@ -618,6 +618,14 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               .toString(),
         ),
       ),
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
       ThreadNode(
         header: 'Trình duyệt ban giám đốc:',
         depth: 1,
@@ -629,15 +637,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
               .toString(),
         ),
       ),
-
-      if (item.listSignatory != null)
-        ...item.listSignatory!.map(
-          (e) => ThreadNode(
-            header: "Người đại diện",
-            depth: 1,
-            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
-          ),
-        ),
     ];
   }
 
@@ -665,6 +664,9 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
   }
 
   Widget headerList() {
+    final ref = riverpod.ProviderScope.containerOf(context);
+    final notifier = ref.read(tableAssetTransferProvider.notifier);
+    final totals = notifier.getTotals();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -674,7 +676,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             Icon(Icons.table_chart, color: Colors.grey.shade600, size: 18),
             SizedBox(width: 8),
             Text(
-              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)} ($totalItems)',
+              '${TabelAssetTransferConfig.getName(widget.typeAssetTransfer)} (${totals['totalAll']})',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -683,7 +685,16 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
             ),
           ],
         ),
-        Expanded(child: RowFindByStatus(provider: widget.provider)),
+        Expanded(
+          child: RowFindByStatus(
+            provider: widget.provider,
+            totalAll: totals['totalAll'] ?? 0,
+            totalDraft: totals['totalDraft'] ?? 0,
+            totalApprove: totals['totalApprove'] ?? 0,
+            totalCancel: totals['totalCancel'] ?? 0,
+            totalComplete: totals['totalComplete'] ?? 0,
+          ),
+        ),
       ],
     );
   }
@@ -871,7 +882,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           type: ConfirmType.delete,
           title: 'Xóa biên bản bàn giao',
           message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-          highlight: item.tenPhieu?? 'Phiếu điều động tài sản',
+          highlight: item.tenPhieu ?? 'Phiếu điều động tài sản',
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {
@@ -887,7 +898,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
           type: ConfirmType.delete,
           title: 'Xóa biên bản bàn giao',
           message: 'Bạn có chắc muốn xóa ${item.tenPhieu}',
-          highlight: item.tenPhieu?? 'Phiếu điều động tài sản',
+          highlight: item.tenPhieu ?? 'Phiếu điều động tài sản',
           cancelText: 'Không',
           confirmText: 'Xóa',
           onConfirm: () {

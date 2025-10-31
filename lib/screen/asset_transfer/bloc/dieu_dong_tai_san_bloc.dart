@@ -70,7 +70,7 @@ class DieuDongTaiSanBloc
     emit(DieuDongTaiSanInitialState());
     emit(DieuDongTaiSanLoadingState());
     Map<String, dynamic> result = await AssetTransferRepository()
-        .getDataWithPagination(event.page, event.limit, event.type, '');
+        .getDataWithPagination(event.page, event.limit, event.type, '', -1);
     emit(DieuDongTaiSanLoadingDismissState());
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       emit(GetLoadPageSuccessState(data: result['data']));

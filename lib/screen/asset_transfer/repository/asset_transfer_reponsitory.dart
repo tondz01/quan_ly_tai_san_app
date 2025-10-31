@@ -434,6 +434,7 @@ class AssetTransferRepository extends ApiBase {
     int size,
     int type,
     String search,
+    int trangThai,
   ) async {
     Map<String, dynamic> result = {
       'data': <DieuDongTaiSanDto>[],
@@ -441,6 +442,11 @@ class AssetTransferRepository extends ApiBase {
       'totalPages': 0,
       'currentPage': 0,
       'totalItems': 0,
+      'totalAll': 0,
+      'totalDraft': 0,
+      'totalApprove': 0,
+      'totalCancel': 0,
+      'totalComplete': 0,
     };
     final userInfo = AccountHelper.instance.getUserInfo();
 
@@ -449,7 +455,7 @@ class AssetTransferRepository extends ApiBase {
           userInfo?.tenDangNhap == 'admin' ? '' : userInfo?.tenDangNhap ?? '';
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search&userid=$userid',
+        '${EndPointAPI.DIEU_DONG_TAI_SAN}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search&userid=$userid&trangThai=${trangThai == -1 ? '' : trangThai}',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -460,22 +466,43 @@ class AssetTransferRepository extends ApiBase {
 
       // Parse response data using the correct key 'items', chỉ parse nếu là List
       final itemsData = response.data['items'];
-      log('itemsData: ${jsonEncode(itemsData)}');
       if (itemsData is List) {
         result['data'] = ResponseParser.parseToList<DieuDongTaiSanDto>(
           itemsData,
           DieuDongTaiSanDto.fromJson,
         );
       } else {
-        log('ToolsAndMaterialTransferRepository: itemsData is not a List');
         result['data'] = <DieuDongTaiSanDto>[];
       }
-      result['totalPages'] = response.data['totalPages'];
-      result['currentPage'] = response.data['currentPage'];
-      result['totalItems'] = response.data['totalItems'];
-      result['totalPages'] = response.data['totalPages'];
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
 
-      log('result data: ${jsonEncode(result)}');
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['groupCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalDraft'] = parseGroupCount('0', 'draft');
+        result['totalApprove'] = parseGroupCount('1', 'approve');
+        result['totalCancel'] = parseGroupCount('2', 'cancel');
+        result['totalComplete'] = parseGroupCount('3', 'complete');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalDraft'] = 0;
+        result['totalApprove'] = 0;
+        result['totalCancel'] = 0;
+        result['totalComplete'] = 0;
+      }
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }
