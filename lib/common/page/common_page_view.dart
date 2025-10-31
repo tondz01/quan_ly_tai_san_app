@@ -57,8 +57,6 @@ class _CommonPageViewState extends State<CommonPageView> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: In ra để xem có rebuild không
-    debugPrint('CommonPageView rebuild - isExpanded: $_isExpanded');
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -137,16 +135,13 @@ class _CommonPageViewState extends State<CommonPageView> {
                   ),
                   AnimatedCrossFade(
                     firstChild: const SizedBox.shrink(),
-                    secondChild: AutomaticKeepAlive(
-                      child:
-                          _cachedChildInput ??
-                          widget.childInput, // Dùng cached widget
-                    ),
+                    secondChild: _cachedChildInput ?? widget.childInput,
                     crossFadeState:
                         _isExpanded
                             ? CrossFadeState.showSecond
                             : CrossFadeState.showFirst,
                     duration: const Duration(milliseconds: 200),
+                    sizeCurve: Curves.easeInOut,
                   ),
                 ],
               ),
