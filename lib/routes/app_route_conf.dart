@@ -1,6 +1,7 @@
 import 'package:quan_ly_tai_san_app/screen/reason_increase/reason_increase_view.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_tscd_screen.dart';
+import 'package:quan_ly_tai_san_app/screen/report/widget/mau_so_01_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/unit_view.dart';
 
 import 'routes.dart';
@@ -192,10 +193,8 @@ class AppRouteConf {
             path: AppRoute.s22dnReport.path,
             name: AppRoute.s22dnReport.name,
             pageBuilder:
-                (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: MauS22DnPage(),
-                ),
+                (context, state) =>
+                    NoTransitionPage(key: state.pageKey, child: MauS22DnPage()),
           ),
           GoRoute(
             path: AppRoute.bienBanKiemKe.path,
@@ -279,6 +278,15 @@ class AppRouteConf {
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
                   child: BienBanKiemKeTaiSanCoDinhScreen(),
+                ),
+          ),
+          GoRoute(
+            path: AppRoute.mauSo01.path,
+            name: AppRoute.mauSo01.name,
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  child: MauSo01Screen(),
+                  key: state.pageKey,
                 ),
           ),
         ],

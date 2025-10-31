@@ -1,6 +1,26 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:pdf/pdf.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
+import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_repository.dart';
+import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter_mau01.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_page.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/mau_so_01.page.dart';
+import 'package:se_gay_components/common/sg_text.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:flutter/rendering.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -13,26 +33,25 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_tai_san_co_dinh_page.dart';
-import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter.dart';
+import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
-class BienBanKiemKeTaiSanCoDinhScreen extends StatefulWidget {
-  const BienBanKiemKeTaiSanCoDinhScreen({super.key});
+class MauSo01Screen extends StatefulWidget {
+  const MauSo01Screen({super.key});
 
   @override
-  State<BienBanKiemKeTaiSanCoDinhScreen> createState() =>
-      _BienBanKiemKeTaiSanCoDinhScreenState();
+  State<MauSo01Screen> createState() => _MauSo01ScreenState();
 }
 
-class _BienBanKiemKeTaiSanCoDinhScreenState
-    extends State<BienBanKiemKeTaiSanCoDinhScreen> {
-  List<InventoryMinutes> _list = [];
-  List<List<InventoryMinutes>> _listPages = [];
+class _MauSo01ScreenState extends State<MauSo01Screen> {
+  List<CCDCInventoryReport> _listCcdc = [];
+  List<InventoryMinutes> _listTaiSan = [];
+
+  List<AssetRowData> _allAssetRows = [];
+  List<List<AssetRowData>> _listPages = [];
   final ReportRepository _repo = ReportRepository();
   final List<GlobalKey> _pageKeys = [];
 
@@ -43,14 +62,9 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
   PhongBan? donVi;
   bool _isLoading = false;
   bool _isExporting = false;
-  int numberPageStart = 5;
-  int numberPage = 17;
+  int numberPageStart = 6;
+  int numberPage = 18;
   late HomeScrollController _scrollController;
-
-  // Giới hạn số lượng items để tránh lag khi có quá nhiều dữ liệu
-  static const int _maxItemsToDisplay = 500; // Giới hạn 500 items đầu tiên
-  bool _hasMoreData = false; // Có dữ liệu bị cắt bớt không
-  int _totalAssetCount = 0; // Tổng số tài sản thực tế
 
   void _onScrollStateChanged() {
     setState(() {});
@@ -58,16 +72,15 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
 
   @override
   void initState() {
-    _scrollController = HomeScrollController();
-    _scrollController.addListener((_onScrollStateChanged));
     super.initState();
     _loadData();
+    _scrollController = HomeScrollController();
+    _scrollController.addListener((_onScrollStateChanged));
   }
 
   @override
   void dispose() {
     _scrollController.removeListener(_onScrollStateChanged);
-
     controllerImportDate.dispose();
     controllerDonVi.dispose();
     super.dispose();
@@ -137,7 +150,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
       await Printing.sharePdf(
         bytes: await pdf.save(),
         filename:
-            'bien_ban_kiem_ke_${DateTime.now().millisecondsSinceEpoch}.pdf',
+            'bien_ban_kiem_ke_ccdc_${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
     } catch (e) {
       SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
@@ -156,124 +169,9 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
   }
 
   Future<void> _loadData() async {
-    listPhongBan = AccountHelper.instance.getDepartmentWithOptionAllCompany() ?? [];
+    listPhongBan =
+        AccountHelper.instance.getDepartmentWithOptionAllCompany() ?? [];
     setState(() {});
-  }
-
-  /// Load và map dữ liệu assets theo batch với tối ưu cho Web
-  Future<void> _loadAllAssetsInBatches() async {
-    final allAssets = AccountHelper.instance.getAllAssets();
-    _totalAssetCount = allAssets.length;
-
-    if (allAssets.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _hasMoreData = false;
-      });
-      if (mounted) {
-        AppUtility.showSnackBar(context, 'Không có dữ liệu!');
-      }
-      return;
-    }
-
-    // Giới hạn số lượng items để tránh treo web
-    final assetsToProcess = allAssets.length > _maxItemsToDisplay
-        ? allAssets.sublist(0, _maxItemsToDisplay)
-        : allAssets;
-
-    _hasMoreData = allAssets.length > _maxItemsToDisplay;
-
-    if (_hasMoreData) {
-      SGLog.info(
-        'Loading',
-        'Giới hạn hiển thị $_maxItemsToDisplay/$_totalAssetCount tài sản để tránh lag',
-      );
-    }
-
-    SGLog.info('Loading', 'Bắt đầu xử lý ${assetsToProcess.length} tài sản...');
-
-    // Giảm batch size xuống để tránh block UI
-    const int batchSize = 50;
-    final List<InventoryMinutes> result = [];
-    int processedCount = 0;
-
-    try {
-      // Xử lý từng batch
-      for (int i = 0; i < assetsToProcess.length; i += batchSize) {
-        if (!mounted) return; // Dừng nếu widget bị dispose
-
-        final int end = (i + batchSize < assetsToProcess.length)
-            ? i + batchSize
-            : assetsToProcess.length;
-
-        final batch = assetsToProcess.sublist(i, end);
-
-        // Map batch hiện tại - inline để nhanh hơn
-        for (final asset in batch) {
-          result.add(
-            InventoryMinutes(
-              tenTaiSan: asset.tenTaiSan,
-              donViTinh: asset.donViTinh ?? '',
-              nuocSanXuat: asset.nuocSanXuat,
-              hienTrang: asset.hienTrang,
-              ghiChu: asset.ghiChu,
-            ),
-          );
-        }
-
-        processedCount += batch.length;
-
-        // Yield control về event loop sau mỗi batch
-        await Future.value();
-
-        // Log progress mỗi 200 items
-        if (processedCount % 200 == 0 || processedCount == assetsToProcess.length) {
-          SGLog.info(
-            'Loading',
-            'Đã xử lý $processedCount / ${assetsToProcess.length} items (${(processedCount / assetsToProcess.length * 100).toStringAsFixed(1)}%)',
-          );
-        }
-      }
-
-      if (!mounted) return;
-
-      SGLog.info('Loading', 'Bắt đầu chia trang...');
-
-      // Chia trang
-      final listPages = _chunkInventoryMinutes(result);
-
-      if (!mounted) return;
-
-      setState(() {
-        _list = result;
-        _listPages = listPages;
-        final int totalPages = _listPages.isEmpty ? 1 : _listPages.length + 1;
-        _pageKeys
-          ..clear()
-          ..addAll(List.generate(totalPages, (_) => GlobalKey()));
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        String message = 'Lấy dữ liệu thành công! (${result.length} tài sản, ${listPages.length} trang)';
-        if (_hasMoreData) {
-          message = 'Hiển thị ${result.length}/$_totalAssetCount tài sản (giới hạn để tránh lag)';
-        }
-        AppUtility.showSnackBar(context, message);
-      }
-    } catch (e) {
-      SGLog.error('Loading', 'Lỗi khi xử lý dữ liệu: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        AppUtility.showSnackBar(
-          context,
-          'Lỗi khi xử lý dữ liệu: $e',
-          isError: true,
-        );
-      }
-    }
   }
 
   Future<void> onloadViewPage() async {
@@ -289,26 +187,30 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     // Format date to YYYY-MM-DD format
     String formattedDate = formatToYyyyMmDd(controllerImportDate.text.trim());
 
-    // với loại tất cả công ty sẽ query theo all Assets
-    if (donVi!.id! == 'all') {
-      await _loadAllAssetsInBatches();
-      return;
-    }
+    final result = await _repo.getInventoryReportToolsSupplies(
+      donVi!.id!,
+      formattedDate,
+    );
+    final resultTaiSan = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
 
-    final result = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
     if (!mounted) return;
     if (checkStatusCodeDone(result)) {
       setState(() {
-        _list = [];
-        _list = (result['data'] as List).cast<InventoryMinutes>();
-        _listPages = _chunkInventoryMinutes(_list);
+        _listCcdc = [];
+        _listTaiSan = [];
+        _listCcdc = (result['data'] as List).cast<CCDCInventoryReport>();
+        _listTaiSan = (resultTaiSan['data'] as List).cast<InventoryMinutes>();
+
+        _parseDataToAssetRows();
+
+        _listPages = _chunkAssetRowData(_allAssetRows);
         final int totalPages =
             _listPages.isEmpty ? 1 : _listPages.length + 1; // +1 trang footer
         _pageKeys
           ..clear()
           ..addAll(List.generate(totalPages, (_) => GlobalKey()));
         _isLoading = false;
-        if (_list.isEmpty) {
+        if (_listCcdc.isEmpty) {
           AppUtility.showSnackBar(context, 'Không có dữ liệu!');
         } else {
           AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công!');
@@ -347,12 +249,12 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
     return trimmed;
   }
 
-  List<List<InventoryMinutes>> _chunkInventoryMinutes(
-    List<InventoryMinutes> source,
+  List<List<AssetRowData>> _chunkAssetRowData(
+    List<AssetRowData> source,
   ) {
     if (source.isEmpty) return [];
 
-    final List<List<InventoryMinutes>> pages = [];
+    final List<List<AssetRowData>> pages = [];
 
     // First page: up to 20 items
     final int firstPageCount =
@@ -406,7 +308,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                     child: Column(
                       children: [
                         SGText(
-                          text: 'Biên bản kiểm kê tài sản cố định',
+                          text: 'Biên bản kiểm kê CCDC',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -513,15 +415,9 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                           scale: 1.2,
                                           maxWidth: 800,
                                           maxHeight: 800 * (297 / 210),
-                                          child: BienBanKiemKeTaiSanCoDinhPage(
-                                            taiSanCoDinhList:
-                                                DataConverter.convertInventoryMinutesToTaiSanCoDinh(
-                                                  _list,
-                                                ),
-                                            denNgay: formatToYyyyMmDd(
-                                              controllerImportDate.text,
-                                            ),
-                                            tenDonVi: donVi?.tenPhongBan ?? '',
+                                          child: MauSo01Page(
+                                            listCcdc: _listCcdc,
+                                            listTaiSan: [],
                                           ),
                                         ),
                                         NumberPageView(index: 0),
@@ -541,15 +437,9 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                           scale: 1.2,
                                           maxWidth: 800,
                                           maxHeight: 800 * (297 / 210),
-                                          child: BienBanKiemKeTaiSanCoDinhPage(
-                                            taiSanCoDinhList:
-                                                DataConverter.convertInventoryMinutesToTaiSanCoDinh(
-                                                  _list,
-                                                ),
-                                            denNgay: formatToYyyyMmDd(
-                                              controllerImportDate.text,
-                                            ),
-                                            tenDonVi: donVi?.tenPhongBan ?? '',
+                                          child: MauSo01Page(
+                                            listCcdc: _listCcdc,
+                                            listTaiSan: [],
                                           ),
                                         ),
                                         NumberPageView(index: 0),
@@ -574,24 +464,9 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                                 maxHeight: 800 * (297 / 210),
                                                 child: Column(
                                                   children: [
-                                                    HeaderBienBanKiemKe(
-                                                      tenDonVi:
-                                                          donVi?.tenPhongBan ??
-                                                          '',
-                                                      denNgay: formatToYyyyMmDd(
-                                                        controllerImportDate
-                                                            .text,
-                                                      ),
-                                                    ),
-                                                    BodyBienBanKiemKe(
-                                                      taiSanCoDinhList:
-                                                          DataConverter.convertInventoryMinutesToTaiSanCoDinh(
-                                                            _listPages[index],
-                                                          ),
-                                                      startIndex:
-                                                          _pageStartIndex(
-                                                            index,
-                                                          ),
+                                                    HeaderMauSo01(),
+                                                    BodyMauSo01(
+                                                      assetRows: _listPages[index],
                                                     ),
                                                   ],
                                                 ),
@@ -621,15 +496,16 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                                     maxWidth: 800,
                                                     maxHeight:
                                                         800 * (297 / 210),
-                                                    child: BodyBienBanKiemKe(
-                                                      taiSanCoDinhList:
-                                                          DataConverter.convertInventoryMinutesToTaiSanCoDinh(
-                                                            _listPages[index],
-                                                          ),
-                                                      startIndex:
-                                                          _pageStartIndex(
-                                                            index,
-                                                          ),
+                                                    // child: BodyBankiemKeCCDC(
+                                                    //   ccdcInventory:
+                                                    //       _listPages[index],
+                                                    //   startIndex:
+                                                    //       _pageStartIndex(
+                                                    //         index,
+                                                    //       ),
+                                                    // ),
+                                                    child: BodyMauSo01(
+                                                        assetRows: _listPages[index],
                                                     ),
                                                   ),
                                                   NumberPageView(index: index),
@@ -653,8 +529,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                                     maxWidth: 800,
                                                     maxHeight:
                                                         800 * (297 / 210),
-                                                    child:
-                                                        FooterBienBanKiemKe(),
+                                                    child: FoooterMauSo01(),
                                                   ),
                                                   NumberPageView(index: index),
                                                 ],
@@ -677,15 +552,7 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
                                               scale: 1.2,
                                               maxWidth: 800,
                                               maxHeight: 800 * (297 / 210),
-                                              child: BodyBienBanKiemKe(
-                                                taiSanCoDinhList:
-                                                    DataConverter.convertInventoryMinutesToTaiSanCoDinh(
-                                                      _listPages[index],
-                                                    ),
-                                                startIndex: _pageStartIndex(
-                                                  index,
-                                                ),
-                                              ),
+                                              child: BodyMauSo01(assetRows: _listPages[index]),
                                             ),
                                             NumberPageView(index: index),
                                           ],
@@ -729,6 +596,76 @@ class _BienBanKiemKeTaiSanCoDinhScreenState
       ],
     );
   }
+
+  /// Parse InventoryMinutes và CCDCInventoryReport sang AssetRowData
+  void _parseDataToAssetRows() {
+    final List<AssetRowData> result = [];
+
+    // 1. Thêm header "A - Tài sản cố định"
+    result.add(AssetRowData(
+      stt: 'A',
+      tenNhanHieu: 'Tài sản cố định',
+    ));
+
+    // 2. Convert InventoryMinutes → DataMap → AssetRowData
+    final assetDataMaps = DataConverterMau01.convertInventoryMinutesToDataMap(
+      _listTaiSan,
+    );
+
+    int assetIndex = 1;
+    for (final asset in assetDataMaps) {
+      result.add(AssetRowData(
+        stt: assetIndex.toString(),
+        tenNhanHieu: asset.tenTaiSan ?? '',
+        dvt: asset.donViTinh ?? '',
+        nuocSx: '',
+        soDuDauKy: asset.soLuong?.toString() ?? '',
+        tangSoLuong: '',
+        tangLyDo: asset.lyDo ?? '',
+        giamSoLuong: '',
+        giamLyDo: '',
+        soDuCuoiKy: '',
+        tinhTrang: '',
+        ghiChu: asset.ghiChu ?? '',
+      ));
+      assetIndex++;
+    }
+
+    // 3. Thêm header "B - Công cụ dụng cụ"
+    result.add(AssetRowData(
+      stt: 'B',
+      tenNhanHieu: 'Công cụ dụng cụ',
+    ));
+
+    // 4. Convert CCDCInventoryReport → DataMap → AssetRowData
+    final ccdcDataMaps = DataConverterMau01.convertCCDCInventoryReportToDataMap(
+      _listCcdc
+    );
+
+    int ccdcIndex = 1;
+    for (final ccdc in ccdcDataMaps) {
+      result.add(AssetRowData(
+        stt: ccdcIndex.toString(),
+        tenNhanHieu: ccdc.tenTaiSan ?? '',
+        dvt: ccdc.donViTinh ?? '',
+        nuocSx: '',
+        soDuDauKy: ccdc.soLuong?.toString() ?? '',
+        tangSoLuong: '',
+        tangLyDo: ccdc.lyDo ?? '',
+        giamSoLuong: '',
+        giamLyDo: '',
+        soDuCuoiKy: '',
+        tinhTrang: '',
+        ghiChu: ccdc.ghiChu ?? '',
+      ));
+      ccdcIndex++;
+    }
+
+    setState(() {
+      _allAssetRows = result;
+    });
+  }
+
 }
 
 class NumberPageView extends StatelessWidget {
@@ -748,32 +685,4 @@ class NumberPageView extends StatelessWidget {
       ),
     );
   }
-}
-
-String formatteDate(String formattedDate) {
-  if (formattedDate.isNotEmpty) {
-    // Strip time part if exists (e.g., '01/10/2025 21:56:05' -> '01/10/2025')
-    final String dateOnly = formattedDate.split(' ').first;
-    try {
-      // Try ISO first (e.g., 2025-10-01 or 2025-10-01T12:00:00)
-      final DateTime parsedDate = DateTime.parse(dateOnly);
-      formattedDate =
-          "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
-    } catch (e) {
-      try {
-        // Try DD/MM/YYYY
-        final parts = dateOnly.split('/');
-        if (parts.length == 3) {
-          final int day = int.parse(parts[0]);
-          final int month = int.parse(parts[1]);
-          final int year = int.parse(parts[2]);
-          formattedDate =
-              "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-        }
-      } catch (e) {
-        SGLog.info('formattedDate', 'DD/MM/YYYY parse error: $e');
-      }
-    }
-  }
-  return formattedDate;
 }
