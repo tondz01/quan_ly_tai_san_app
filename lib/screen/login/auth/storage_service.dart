@@ -84,4 +84,6 @@ class StorageKey {
   static const REASON_INCREASE = "REASON_INCREASE";
   static const ASSETS = "ASSETS";
   static const CCDC_VT = "CCDC_VT";
+  static const NGUON_KINH_PHI = "NGUON_KINH_PHI";
+  static const DU_AN = "DU_AN";
 }

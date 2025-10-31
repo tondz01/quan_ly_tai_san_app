@@ -180,6 +180,12 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         DuAn.fromJson,
       );
+      AccountHelper.instance.setProject(result['data']);
+      if (AccountHelper.instance.getAllProject().isEmpty) {
+        log("setCache [PROJECT]: No project cached in storage.");
+      } else {
+        log("setCache [PROJECT]: Project data cached successfully.");
+      }
     } catch (e) {
       log("Error at getListAssetGroup - AssetManagementRepository: $e");
     }
@@ -207,6 +213,12 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         NguonKinhPhi.fromJson,
       );
+      AccountHelper.instance.setCapitalSource(result['data']);
+      if (AccountHelper.instance.getAllCapitalSource().isEmpty) {
+        log("setCache [CAPITAL_SOURCE]: No capital source cached in storage.");
+      } else {
+        log("setCache [CAPITAL_SOURCE]: Capital source data cached successfully.");
+      }
     } catch (e) {
       log("Error at getListCapitalSource - AssetManagementRepository: $e");
     }
@@ -539,6 +551,51 @@ class AssetManagementRepository extends ApiBase {
         "Error at deleteListCapitalSourceByAsset - AssetManagementRepository: $e",
       );
     }
+    return result;
+  }
+
+  //get data with pagination
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <AssetManagementDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.ASSET_MANAGEMENT}/paged?idcongty=ct001&page=$page&size=$size&search=$search',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+          itemsData,
+          AssetManagementDto.fromJson,
+        );
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
     return result;
   }
 }

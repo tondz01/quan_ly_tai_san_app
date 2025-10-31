@@ -6,7 +6,9 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
@@ -968,5 +970,47 @@ class AccountHelper {
           .toList();
     }
     return [];
+  }
+
+  void clearListCCDC() {
+    StorageService.remove(StorageKey.CCDC_VT);
+  }
+
+  void clearListAsset() {
+    StorageService.remove(StorageKey.ASSETS);
+  }
+
+  void setCapitalSource(List<NguonKinhPhi> capitalSource) {
+    if (capitalSource.isNotEmpty) {
+      StorageService.write(StorageKey.NGUON_KINH_PHI, capitalSource);
+    }
+  }
+
+  List<NguonKinhPhi> getAllCapitalSource() {
+    final raw = StorageService.read(StorageKey.NGUON_KINH_PHI);
+    if (raw == null) return [];
+    if (raw is List<NguonKinhPhi>) return raw;
+    return [];
+  }
+
+  void clearCapitalSource() {
+    StorageService.remove(StorageKey.NGUON_KINH_PHI);
+  }
+
+  void setProject(List<DuAn> project) {
+    if (project.isNotEmpty) {
+      StorageService.write(StorageKey.DU_AN, project);
+    }
+  }
+
+  List<DuAn> getAllProject() {
+    final raw = StorageService.read(StorageKey.DU_AN);
+    if (raw == null) return [];
+    if (raw is List<DuAn>) return raw;
+    return [];
+  }
+
+  void clearProject() {
+    StorageService.remove(StorageKey.DU_AN);
   }
 }
