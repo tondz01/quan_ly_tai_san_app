@@ -28,7 +28,7 @@ class Config {
   static String get baseUrl {
     switch (environment) {
       case 'dev':
-        return 'https://ecotel-odoo.id.vn:8386';
+        return 'http://42.119.110.246:8386';
       default:
         return 'http://42.119.110.246:8386';
     }

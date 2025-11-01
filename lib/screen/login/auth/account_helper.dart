@@ -117,6 +117,52 @@ class AccountHelper {
     }
   }
 
+  List<PhongBan>? getDepartmentWithOptionAllCompany() {
+    final allCompany = PhongBan(
+      id: 'all',
+      idNhomDonVi: '',
+      tenPhongBan: 'Toàn công ty',
+      idQuanLy: '',
+      idCongTy: 'ct001',
+      phongCapTren: '',
+      mauSac: '',
+      nguoiTao: 'admin',
+      nguoiCapNhat: 'admin',
+      ngayTao: null,
+      ngayCapNhat: null,
+      isActive: null,
+    );
+    final raw = StorageService.read(StorageKey.DEPARTMENT);
+    if (raw == null) return [allCompany];
+
+    try {
+      List<PhongBan> departments = [];
+
+      if (raw is List<PhongBan>) {
+        departments = List<PhongBan>.from(raw);
+      } else if (raw is List) {
+        departments = raw
+            .map((e) {
+              if (e is PhongBan) return e;
+              if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
+              if (e is Map) {
+                return PhongBan.fromJson(Map<String, dynamic>.from(e));
+              }
+              return null;
+            })
+            .whereType<PhongBan>()
+            .toList();
+      }
+
+      // Thêm "Toàn công ty" vào đầu danh sách
+      departments.insert(0, allCompany);
+      return departments;
+    } catch (e) {
+      print('Error parsing department data: $e');
+      return [allCompany];
+    }
+  }
+
   PhongBan? getDepartmentById(String id) {
     final departments = getDepartment();
     if (departments == null) return null;

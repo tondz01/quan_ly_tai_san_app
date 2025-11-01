@@ -559,7 +559,6 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
             ),
           ],
         ),
-        // BIÊN BẢN KIỂM KÊ TÀI SẢN CỐ ĐỊNH
         Center(
           child: SGText(
             text:

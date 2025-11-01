@@ -232,7 +232,6 @@ class _HeaderBienBanKiemKeState extends State<HeaderBienBanKiemKe> {
               ),
             ],
           ),
-          // BIÊN BẢN KIỂM KÊ TÀI SẢN CỐ ĐỊNH
           Center(
             child: SGText(
               text: "sổ Theo dõi tài sản cố định và công cụ, dụng cụ tại nơi sử dụng",
