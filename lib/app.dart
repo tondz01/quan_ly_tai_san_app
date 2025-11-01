@@ -9,10 +9,8 @@ import 'package:quan_ly_tai_san_app/core/utils/providers.dart';
 import 'package:quan_ly_tai_san_app/injection.dart';
 import 'package:quan_ly_tai_san_app/locale/locale_controller.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_conf.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/repository/tools_and_supplies_repository.dart';
 import 'package:se_gay_components/common/sg_popup_controller.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -29,12 +27,12 @@ class _AppState extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // // _loadDataIfNeeded(userInfo);
-    // permissionSignService.startCheckingPermission();
+    // _loadDataIfNeeded(userInfo);
+    permissionSignService.startCheckingPermission();
 
-    // permissionSignService.stream.listen((data) {
-    //   AccountHelper.refreshAllCounts();
-    // });
+    permissionSignService.stream.listen((data) {
+      AccountHelper.refreshAllCounts();
+    });
     getDataAssetAndCCDC();
   }
 

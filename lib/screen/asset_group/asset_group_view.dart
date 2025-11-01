@@ -15,7 +15,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_detail
 import 'package:quan_ly_tai_san_app/screen/asset_group/widget/asset_group_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AssetGroupView extends StatefulWidget {
   const AssetGroupView({super.key});

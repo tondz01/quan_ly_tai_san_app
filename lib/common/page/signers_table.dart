@@ -36,14 +36,14 @@ class SignersTable extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Wrap(
+                    spacing: gapAfterValue * scale, // Khoảng cách giữa các phần tử
+                    runSpacing: 4.0 * scale, // Khoảng cách khi xuống dòng
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      _buildLine(label: "Ông (bà):", value: signers[i].hoTen),
-                      SizedBox(height: 2.0 * scale),
-                      _buildLine(label: "Chức vụ:", value: signers[i].chucVu),
-                      SizedBox(height: 2.0 * scale),
-                      _buildLine(label: "Đại diện:", value: signers[i].donVi),
+                      _buildInlineItem(label: "Ông (bà):", value: signers[i].hoTen),
+                      _buildInlineItem(label: "Chức vụ:", value: signers[i].chucVu),
+                      _buildInlineItem(label: "Đại diện:", value: signers[i].donVi),
                     ],
                   ),
                 ),
@@ -54,23 +54,20 @@ class SignersTable extends StatelessWidget {
     );
   }
 
-  Widget _buildLine({required String label, required String value}) {
+  Widget _buildInlineItem({required String label, required String value}) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: EdgeInsets.only(right: 6.0 * scale),
-          child: Text(
-            label,
-            style: textStyle,
-          ),
+        Text(
+          label,
+          style: textStyle,
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: textStyle,
-            softWrap: true,
-          ),
+        SizedBox(width: 4.0 * scale),
+        Text(
+          value,
+          style: textStyle,
+          softWrap: true,
         ),
       ],
     );

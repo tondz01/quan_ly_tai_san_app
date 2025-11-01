@@ -69,6 +69,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
         totalItems: response['totalItems'],
       );
       _groupCounts = response['groupCounts'];
+      totalItems = response['totalItems'];
     } catch (error) {
       log('Error loading data: $error');
       state = state.copyWith(
