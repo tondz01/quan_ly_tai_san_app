@@ -229,22 +229,27 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ...groups.map(
-                              (item) => ItemAssetGroup(
-                                titleName: item.tenNhom,
-                                numberAsset: notifier.getGroupCounts(
-                                  '${item.id}',
-                                )?.toString(),
-                                image: "assets/images/assets.png",
-                                onTap: () {
-                                  context.go(AppRoute.staffManager.path);
-                                },
-                                valueCheckBox: idNhomTaiSan == item.id,
-                                onChange: (value) {
-                                  setState(() {
-                                    idNhomTaiSan = item.id;
-                                  });
-                                  notifier.searchByGroup(item.id ?? '');
-                                },
+                              (item) => Visibility(
+                                visible:
+                                    notifier.getGroupCounts('${item.id}') != 0,
+                                child: ItemAssetGroup(
+                                  titleName: item.tenNhom,
+                                  numberAsset:
+                                      notifier
+                                          .getGroupCounts('${item.id}')
+                                          ?.toString(),
+                                  image: "assets/images/assets.png",
+                                  onTap: () {
+                                    context.go(AppRoute.staffManager.path);
+                                  },
+                                  valueCheckBox: idNhomTaiSan == item.id,
+                                  onChange: (value) {
+                                    setState(() {
+                                      idNhomTaiSan = item.id;
+                                    });
+                                    notifier.searchByGroup(item.id ?? '');
+                                  },
+                                ),
                               ),
                             ),
                           ],
@@ -277,7 +282,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'Quản lý tài sản (${widget.provider.data?.length ?? 0})',
+                      'Quản lý tài sản ($totalItems)',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -322,6 +327,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           );
                           final selectedCount = tableState.selectedItems.length;
                           listSelected = tableState.selectedItems;
+                          log('message totalItems: $selectedCount');
                           final buttons = _buildButtonList(selectedCount);
                           final processedButtons =
                               buttons.map((button) {
