@@ -97,5 +97,13 @@ class _AppState extends State<App> with WidgetsBindingObserver {
     if (AccountHelper.instance.getAllCCDC().isEmpty) {
       ToolsAndSuppliesRepository().getListToolsAndSupplies('ct001');
     }
+
+    if (AccountHelper.instance.getAllCapitalSource().isEmpty) {
+      AssetManagementRepository().getListCapitalSource('ct001');
+    }
+
+    if (AccountHelper.instance.getAllProject().isEmpty) {
+      AssetManagementRepository().getListDuAn('ct001');
+    }
   }
 }

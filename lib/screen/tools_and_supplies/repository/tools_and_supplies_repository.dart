@@ -11,23 +11,56 @@ import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/paged_response.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/request/tools_and_suppliest_request.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class ToolsAndSuppliesRepository extends ApiBase {
-  Future<Map<String, dynamic>> getListToolsAndSupplies(String idCongTy) async {
+  Future<Map<String, dynamic>> getListToolsAndSupplies(
+    String idCongTy, {
+    int page = 0,
+    int size = 20,
+    String? sortBy,
+    String? sortDir,
+    String? search,
+  }) async {
     List<ToolsAndSuppliesDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
       'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalElements': 0,
+      'totalPages': 1,
+      'currentPage': 0,
     };
 
     try {
-      // API call đầu tiên - lấy danh sách tools and supplies
+      // Build query parameters
+      final queryParams = <String, dynamic>{
+        'idcongty': idCongTy,
+        'page': page,
+        'size': size,
+      };
+
+      // Only add optional parameters if they have valid values
+      if (sortBy != null && sortBy.trim().isNotEmpty) {
+        queryParams['sortBy'] = sortBy.trim();
+      }
+      if (sortDir != null && sortDir.trim().isNotEmpty) {
+        queryParams['sortDir'] = sortDir.trim();
+      }
+      if (search != null && search.trim().isNotEmpty) {
+        queryParams['search'] = search.trim();
+      }
+
+      // Log API call parameters for debugging
+      log('Calling API: ${EndPointAPI.TOOLS_AND_SUPPLIES_PAGED}');
+      log('Query params: $queryParams');
+
+      // API call với pagination
       final response = await get(
-        EndPointAPI.TOOLS_AND_SUPPLIES,
-        queryParameters: {'idcongty': idCongTy},
+        EndPointAPI.TOOLS_AND_SUPPLIES_PAGED,
+        queryParameters: queryParams,
       );
 
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
@@ -37,21 +70,34 @@ class ToolsAndSuppliesRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      // Parse response data
-      list = ResponseParser.parseToList<ToolsAndSuppliesDto>(
-        response.data,
+      // Parse paginated response
+      // API returns: { items: [...], totalItems: 0, page: 0, size: 0, totalPages: 0, ... }
+      final responseData =
+          response.data is Map
+              ? response.data as Map<String, dynamic>
+              : <String, dynamic>{};
+
+      final pagedResponse = PagedResponse<ToolsAndSuppliesDto>.fromJson(
+        responseData,
         ToolsAndSuppliesDto.fromJson,
       );
+
+      list = pagedResponse.data;
       result['data'] = list;
+      result['totalElements'] = pagedResponse.totalElements;
+      result['totalPages'] = pagedResponse.totalPages;
+      result['currentPage'] = pagedResponse.currentPage;
       try {
         AccountHelper.instance.setListCCDC(list);
         if (AccountHelper.instance.getAllCCDC().isEmpty) {
           log("setCache [CDCD]: No CCDC cached in storage.");
-        }else {
+        } else {
           log("setCache [CDCD]: CCDC data cached successfully.");
         }
       } catch (e) {
-        log("setCache [CDCD]: Error at setListCCDC - ToolsAndSuppliesRepository: $e");
+        log(
+          "setCache [CDCD]: Error at setListCCDC - ToolsAndSuppliesRepository: $e",
+        );
       }
     } catch (e) {
       log("Error at getListToolsAndSupplies - ToolsAndSuppliesRepository: $e");

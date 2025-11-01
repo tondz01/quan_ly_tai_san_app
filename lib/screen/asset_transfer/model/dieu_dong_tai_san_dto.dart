@@ -182,26 +182,36 @@ class DieuDongTaiSanDto {
       trinhDuyetCapPhongXacNhan: json['trinhDuyetCapPhongXacNhan'],
       trinhDuyetGiamDocXacNhan: json['trinhDuyetGiamDocXacNhan'],
       trangThaiKyNhay: json['trangThaiKyNhay'],
-      tggnTuNgay: AppUtility.formatFromISOString(json['tggnTuNgay']),
-      tggnDenNgay: AppUtility.formatFromISOString(json['tggnDenNgay']),
+      tggnTuNgay: AppUtility.formatFromISOString(json['tggnTuNgay'] ?? ''),
+      tggnDenNgay: AppUtility.formatFromISOString(json['tggnDenNgay'] ?? ''),
       diaDiemGiaoNhan: json['diaDiemGiaoNhan'],
       noiNhan: json['noiNhan'],
       trichYeu: json['trichYeu'],
       duongDanFile: json['duongDanFile'],
       tenFile: json['tenFile'],
-      ngayKy: AppUtility.formatFromISOString(json['ngayKy']),
+      ngayKy: AppUtility.formatFromISOString(json['ngayKy'] ?? ''),
       trangThai: json['trangThai'],
       idCongTy: json['idCongTy'],
-      ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
-      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
+      ngayTao: AppUtility.formatFromISOString(json['ngayTao'] ?? ''),
+      ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat'] ?? ''),
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       coHieuLuc: json['coHieuLuc'],
       loai: json['loai'],
       isActive: json['isActive'],
       share: json['share'],
-      chiTietDieuDongTaiSans: json['chiTietDieuDongTaiSans'],
-      listSignatory: json['listSignatory'],
+      chiTietDieuDongTaiSans: (json['chiTietDieuDongTaiSanDTOS'] is List)
+          ? (json['chiTietDieuDongTaiSanDTOS'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
+              .toList()
+          : null,
+      listSignatory: (json['chuKyList'] is List)
+          ? (json['chuKyList'] as List)
+              .whereType<Map<String, dynamic>>()
+              .map((e) => SignatoryDto.fromJson(e))
+              .toList()
+          : null,
       daBanGiao: json['daBanGiao'],
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],
@@ -261,8 +271,10 @@ class DieuDongTaiSanDto {
       "loai": loai,
       "isActive": isActive,
       "share": share,
-      "chiTietDieuDongTaiSans": chiTietDieuDongTaiSans,
-      "listSignatory": listSignatory,
+      "chiTietDieuDongTaiSanDTOS": chiTietDieuDongTaiSans
+          ?.map((e) => e.toJson())
+          .toList(),
+      "chuKyList": listSignatory?.map((e) => e.toJson()).toList(),
       "daBanGiao": daBanGiao,
       "byStep": byStep,
       "trangThaiPhieu": trangThaiPhieu,

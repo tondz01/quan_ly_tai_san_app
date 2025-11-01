@@ -5,23 +5,55 @@ import 'package:quan_ly_tai_san_app/common/widgets/common_filter_checkbox.dart';
 import '../provider/dieu_dong_tai_san_provider.dart';
 
 class RowFindByStatus extends StatelessWidget {
-  const RowFindByStatus({super.key, required this.provider});
+  const RowFindByStatus({
+    super.key,
+    required this.provider,
+    required this.totalAll,
+    required this.totalDraft,
+    required this.totalApprove,
+    required this.totalCancel,
+    required this.totalComplete,
+  });
   final DieuDongTaiSanProvider provider;
+  final int totalAll;
+  final int totalDraft;
+  final int totalApprove;
+  final int totalCancel;
+  final int totalComplete;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: provider,
-      child: _FilterCheckboxes(),
+      child: _FilterCheckboxes(
+        totalAll: totalAll,
+        totalDraft: totalDraft,
+        totalApprove: totalApprove,
+        totalCancel: totalCancel,
+        totalComplete: totalComplete,
+      ),
     );
   }
 }
 
 class _FilterCheckboxes extends StatelessWidget {
+  const _FilterCheckboxes({
+    required this.totalAll,
+    required this.totalDraft,
+    required this.totalApprove,
+    required this.totalCancel,
+    required this.totalComplete,
+  });
+  final int totalAll;
+  final int totalDraft;
+  final int totalApprove;
+  final int totalCancel;
+  final int totalComplete;
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<DieuDongTaiSanProvider>(context);
-    
+
     // Tạo map filter states từ provider
     final filterStates = {
       'all': provider.isShowAll,
@@ -33,11 +65,11 @@ class _FilterCheckboxes extends StatelessWidget {
 
     // Tạo map filter counts từ provider
     final filterCounts = {
-      'all': provider.allCount,
-      'draft': provider.draftCount,
-      'approve': provider.approveCount,
-      'cancel': provider.cancelCount,
-      'complete': provider.completeCount,
+      'all': totalAll,
+      'draft': totalDraft,
+      'approve': totalApprove,
+      'cancel': totalCancel,
+      'complete': totalComplete,
     };
 
     // Tạo map filter colors từ FilterStatus enum
@@ -74,9 +106,9 @@ class _FilterCheckboxes extends StatelessWidget {
             status = FilterStatus.complete;
             break;
         }
-        
+
         if (status != null) {
-          provider.setFilterStatus(status, value);
+          provider.setFilterStatus(context, status, value);
         }
       },
     );

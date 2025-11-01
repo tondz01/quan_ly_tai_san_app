@@ -30,7 +30,14 @@ class ToolsAndSuppliesBloc
     emit(ToolsAndSuppliesLoadingState());
 
     Map<String, dynamic> result = await ToolsAndSuppliesRepository()
-        .getListToolsAndSupplies(event.idCongTy);
+        .getListToolsAndSupplies(
+      event.idCongTy,
+      page: event.page,
+      size: event.size,
+      sortBy: event.sortBy,
+      sortDir: event.sortDir,
+      search: event.search,
+    );
 
     Map<String, dynamic> resultGroupCCDC = await CcdcGroupRepository()
         .getListCcdcGroupRepository(event.idCongTy);
@@ -42,6 +49,9 @@ class ToolsAndSuppliesBloc
         GetListToolsAndSuppliesSuccessState(
           data: result['data'],
           dataGroupCCDC: resultGroupCCDC['data'],
+          totalElements: result['totalElements'] ?? 0,
+          totalPages: result['totalPages'] ?? 1,
+          currentPage: result['currentPage'] ?? 0,
         ),
       );
     } else {

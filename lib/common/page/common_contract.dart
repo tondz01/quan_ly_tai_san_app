@@ -187,11 +187,17 @@ class _CommonContractState extends State<CommonContract> {
 
   Future<void> _fillSignatures() async {
     if (widget.signatureList.isEmpty) return;
+    
+    // Log toàn bộ dữ liệu API để debug
+    SGLog.info('Load signatures', 'API data: ${signatures.map((e) => e.toString()).join('\n')}');
+    
     for (var sig in signatures) {
       final double x = sig["x"]?.toDouble() ?? 0;
       final double y = sig["y"]?.toDouble() ?? 0;
       final int loaiKy = sig["loaiKy"] ?? 1;
       final String? idNguoiKy = sig["idNguoiKy"]?.toString();
+      final String? tenNguoiKy = sig["tenNguoiKy"]?.toString();
+      final String? ngayKy = sig["ngayKy"]?.toString();
       String signatureUrl = "";
       if (loaiKy == 1) {
         signatureUrl = sig["chuKyNhay"].toString();
@@ -202,7 +208,19 @@ class _CommonContractState extends State<CommonContract> {
         setState(() {
           _isDigital = true;
         });
-        Uint8List? imgBytes = await _captureWidget(); // hàm này trả Uint8List
+        // Lấy ngày ký từ API, format nếu có
+        String? formattedDate;
+        if (ngayKy != null && ngayKy.isNotEmpty) {
+          try {
+            final dateTime = DateTime.parse(ngayKy);
+            formattedDate = DateFormat('dd/MM/yyyy').format(dateTime);
+          } catch (e) {
+            formattedDate = ngayKy; // Nếu không parse được, dùng giá trị gốc
+          }
+        }
+        // Sử dụng tên người ký từ API, nếu không có thì fallback về widget.tenNguoiKy
+        final tenKyDung = tenNguoiKy ?? widget.tenNguoiKy;
+        Uint8List? imgBytes = await _captureWidget(tenKyDung, formattedDate);
         if (imgBytes != null) {
           _addSignature(imgBytes, loaiKy, y, x, false);
         }
@@ -211,7 +229,8 @@ class _CommonContractState extends State<CommonContract> {
         String? urlToUse = signatureUrl;
 
         // Nếu không có signatureUrl từ API, fallback về signatureList
-        if (urlToUse.isEmpty) {
+        if (urlToUse.isEmpty || urlToUse == 'null') {
+          SGLog.warning('Load signature', 'No signature URL from API for user $idNguoiKy ($tenNguoiKy), falling back to signatureList');
           if (widget.signatureList.isNotEmpty) {
             // Tìm URL tương ứng với người ký trong signatureList
             if (idNguoiKy != null && widget.signatureList.length > 1) {
@@ -227,6 +246,9 @@ class _CommonContractState extends State<CommonContract> {
             }
           }
         }
+        
+        // Log để debug
+        SGLog.info('Load signature', 'Loading signature for user $idNguoiKy ($tenNguoiKy), loaiKy: $loaiKy, url: $urlToUse');
 
         if (urlToUse.isNotEmpty) {
           try {
@@ -234,6 +256,7 @@ class _CommonContractState extends State<CommonContract> {
                 '${ApiConfig.getBaseURL()}/api/upload/download/$urlToUse';
             final response = await http.get(Uri.parse(urlToUse));
             if (response.statusCode == 200) {
+              // Với ký nháy/ký thường: chỉ hiển thị ảnh chữ ký
               _addSignature(response.bodyBytes, loaiKy, y, x, false);
             } else {
               SGLog.error(
@@ -533,9 +556,22 @@ class _CommonContractState extends State<CommonContract> {
 
   final GlobalKey _captureKey = GlobalKey();
   Uint8List? capturedImage;
+  
+  // Lưu thông tin cho chữ ký số đang được capture
+  String? _currentSignatureName;
+  String? _currentSignatureDate;
 
-  Future<Uint8List?> _captureWidget() async {
+  Future<Uint8List?> _captureWidget(String? tenNguoiKy, String? ngayKy) async {
     try {
+      // Lưu thông tin người ký tạm thời để widget có thể hiển thị đúng
+      setState(() {
+        _currentSignatureName = tenNguoiKy;
+        _currentSignatureDate = ngayKy ?? DateFormat('dd/MM/yyyy').format(DateTime.now());
+      });
+      
+      // Đợi một frame để widget được rebuild với thông tin mới
+      await Future.delayed(const Duration(milliseconds: 50));
+      
       RenderRepaintBoundary boundary =
           _captureKey.currentContext!.findRenderObject()
               as RenderRepaintBoundary;
@@ -547,6 +583,13 @@ class _CommonContractState extends State<CommonContract> {
       return null;
     }
   }
+  
+  Future<Uint8List?> _captureWidgetForSigning() async {
+    // Dùng cho ký mới (dùng widget.tenNguoiKy)
+    return _captureWidget(widget.tenNguoiKy, DateFormat('dd/MM/yyyy').format(DateTime.now()));
+  }
+  
+  // (Không dùng) Hàm tạo ảnh chữ ký kèm thông tin. Giữ lại nếu cần tái sử dụng về sau.
 
   // ===== Ký hash =====
   Future<void> signing(
@@ -575,7 +618,7 @@ class _CommonContractState extends State<CommonContract> {
 
     try {
       // 2️⃣ Capture widget trước khi call API
-      Uint8List? imgBytes = await _captureWidget(); // hàm này trả Uint8List
+      Uint8List? imgBytes = await _captureWidgetForSigning(); // hàm này trả Uint8List
       if (imgBytes == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -717,8 +760,8 @@ class _CommonContractState extends State<CommonContract> {
                               child: RepaintBoundary(
                                 key: _captureKey,
                                 child: buildSignatureValidContainer(
-                                  widget.tenNguoiKy,
-                                  DateFormat(
+                                  _currentSignatureName ?? widget.tenNguoiKy,
+                                  _currentSignatureDate ?? DateFormat(
                                     'dd/MM/yyyy',
                                   ).format(DateTime.now()),
                                 ),

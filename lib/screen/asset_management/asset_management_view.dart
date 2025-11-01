@@ -84,12 +84,12 @@ class _AssetManagementViewState extends State<AssetManagementView> {
             value: context.read<AssetManagementProvider>(),
             child: provider.Consumer<AssetManagementProvider>(
               builder: (context, provider, child) {
-                if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (provider.data == null) {
-                  return const Center(child: Text('Đang tải dữ liệu ...'));
-                }
+                // if (provider.isLoading) {
+                //   return const Center(child: CircularProgressIndicator());
+                // }
+                // if (provider.data == null) {
+                //   return const Center(child: Text('Đang tải dữ liệu ...'));
+                // }
 
                 return LoadingOverlay(
                   isLoading: provider.isLoadingImport,

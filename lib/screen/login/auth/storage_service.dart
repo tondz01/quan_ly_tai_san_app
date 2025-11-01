@@ -1,6 +1,8 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:get_storage/get_storage.dart';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 
 class StorageService {
@@ -19,7 +21,28 @@ class StorageService {
   }
 
   static Future<void> write(String key, dynamic value) async {
-    await storage.write(key, value);
+    try {
+      if (kIsWeb) {
+        // Guard against exceeding localStorage quota (~5MB on many browsers)
+        try {
+          final encoded = jsonEncode(value);
+          // Leave some headroom under the typical 5MB limit
+          const maxBytes = 4 * 1024 * 1024; // 4MB
+          if (encoded.length > maxBytes) {
+            // Skip caching oversized payloads on web to avoid quota errors
+            // Consider server-side pagination or lighter caches for these keys
+            return;
+          }
+        } catch (_) {
+          // If value isn't JSON encodable, proceed and let storage handle it
+        }
+      }
+      await storage.write(key, value);
+    } catch (e) {
+      // Best-effort fallback: ignore quota errors to keep app running
+      // Optionally, you can erase specific heavy keys before retrying
+      // For stability, just swallow here
+    }
   }
 
   static Future<void> remove(String key) async {
@@ -61,4 +84,6 @@ class StorageKey {
   static const REASON_INCREASE = "REASON_INCREASE";
   static const ASSETS = "ASSETS";
   static const CCDC_VT = "CCDC_VT";
+  static const NGUON_KINH_PHI = "NGUON_KINH_PHI";
+  static const DU_AN = "DU_AN";
 }

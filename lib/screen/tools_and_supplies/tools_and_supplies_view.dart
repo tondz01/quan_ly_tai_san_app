@@ -148,6 +148,7 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                       controller: _searchController,
                       onSearchChanged: (value) {
                         provider.onSearchToolsAndSupplies(value);
+                        provider.getListToolsAndSupplies(context);
                       },
                       isShowSearch: false,
                       onTap: () {},
@@ -160,7 +161,9 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                         loadingMessage = 'Đang import dữ liệu...';
                         provider.onLoadingImport(true);
                         isLoadingImport = true;
-                        log('loadingMessage: $loadingMessage - ${provider.isLoadingImport}');
+                        log(
+                          'loadingMessage: $loadingMessage - ${provider.isLoadingImport}',
+                        );
                         final result = await convertExcelToCcdcVt(
                           filePath!,
                           fileBytes: fileBytes,

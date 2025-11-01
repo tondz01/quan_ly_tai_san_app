@@ -187,16 +187,16 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   }
 
   void setFilterStatus(FilterStatus status, bool? value) {
-    _filterStatus[status] = value ?? false;
-
-    if (status == FilterStatus.all && value == true) {
+    // Nếu đang bỏ chọn (value == false), chỉ cần bỏ chọn checkbox đó
+    if (value == false) {
+      _filterStatus[status] = false;
+    } else {
+      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
+      // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
+        _filterStatus[key] = false;
       }
-    } else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
+      _filterStatus[status] = true;
     }
 
     _applyFilters();
@@ -283,12 +283,15 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
   // Nội dung tìm kiếm
 
-  void onInit(BuildContext context) {
+  void onInit(BuildContext context) async {
     _userInfo = AccountHelper.instance.getUserInfo();
     onDispose();
 
     _body = Container();
     getListToolAndSuppliesHandover(context);
+    _dataAssetTransfer =
+        await ToolAndMaterialTransferRepository()
+            .getAllToolAndMeterialTransferByCT();
     _autoReloadTimer?.cancel();
     _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       onReloadDataToolAndMaterialHandover();
@@ -376,7 +379,6 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
 
     _dataDepartment = state.dataDepartment;
     _dataStaff = state.dataStaff;
-    _dataAssetTransfer = state.dataCcdcransfer;
     _dataCcdc = state.dataCcdc;
     _filteredData.clear();
     _data?.clear();

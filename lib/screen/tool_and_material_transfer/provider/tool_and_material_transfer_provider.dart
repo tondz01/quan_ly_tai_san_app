@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -17,6 +17,7 @@ import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/provider/table_tool_and_material_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
@@ -43,9 +44,10 @@ enum FilterStatus {
 }
 
 class ToolAndMaterialTransferProvider with ChangeNotifier {
-  bool get isLoading => _data == null || _dataAsset == null;
+  bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  int get type => _type;
   get userInfo => _userInfo;
   List<ToolAndMaterialTransferDto>? get dataPage => _dataPage;
   ToolAndMaterialTransferDto? get item => _item;
@@ -59,7 +61,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDDNhanVien => _itemsDDNhanVien;
-  // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
   bool get isShowDraft => _filterStatus[FilterStatus.draft] ?? false;
@@ -85,13 +86,23 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  set isLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   String? get error => _error;
   String? get subScreen => _subScreen;
 
   // Nội dung tìm kiếm
   String _searchTerm = '';
 
-  int typeToolAndMaterialTransfer = 1;
+  int _type = 1;
+
+  set type(int value) {
+    _type = value;
+    notifyListeners();
+  }
 
   late int totalEntries;
   late int totalPages;
@@ -137,6 +148,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   Timer? _autoReloadTimer;
 
+  bool _isLoading = false;
+
   set subScreen(String? value) {
     _subScreen = value;
     notifyListeners();
@@ -162,19 +175,36 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterStatus(FilterStatus status, bool? value) {
-    _filterStatus[status] = value ?? false;
-    if (status == FilterStatus.all && value == true) {
+  void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
+    if (value == false) {
+      _filterStatus[status] = false;
+    } else {
+      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
+      // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
-        if (key != FilterStatus.all) {
-          _filterStatus[key] = false;
-        }
+        _filterStatus[key] = false;
       }
-    } else if (status != FilterStatus.all && value == true) {
-      _filterStatus[FilterStatus.all] = false;
+      _filterStatus[status] = true;
     }
 
-    _applyFilters();
+    switch (status) {
+      case FilterStatus.draft:
+        onFillterByStatus(context, 0);
+        break;
+      case FilterStatus.approve:
+        onFillterByStatus(context, 1);
+        break;
+
+      case FilterStatus.cancel:
+        onFillterByStatus(context, 2);
+        break;
+      case FilterStatus.complete:
+        onFillterByStatus(context, 3);
+        break;
+      case FilterStatus.all:
+        onFillterByStatus(context, -1);
+        break;
+    }
     notifyListeners();
   }
 
@@ -253,18 +283,19 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   };
 
   void onInit(BuildContext context, int type) {
-    typeToolAndMaterialTransfer = type;
+    type = type;
     _initData(context);
     _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
-    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-    //   onReloadDataToolAndMaterialTransfer();
-    //   print("reload data tool and material transfer");
-    // });
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      // onReloadDataToolAndMaterialTransfer();
+      onReloadData(context);
+      print("reload data tool and material transfer");
+    });
   }
 
   void refreshData(BuildContext context, int type) {
-    typeToolAndMaterialTransfer = type;
+    type = type;
     _data = null;
     _dataPage = null;
     _item = null;
@@ -279,19 +310,35 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     getDataDropdown();
 
     controllerDropdownPage = TextEditingController(text: '10');
-
+    onReloadData(context);
     // getDataAll(context);
+  }
+
+  void onReloadData(BuildContext context) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableToolAndMaterialTransferProvider.notifier)
+        .refreshData(type, -1, false);
+  }
+
+  void onFillterByStatus(BuildContext context, int status) {
+    final container = ProviderScope.containerOf(context);
+    container
+        .read(tableToolAndMaterialTransferProvider.notifier)
+        .fillterByStatus(status);
+    onReloadData(context);
+    notifyListeners();
   }
 
   void onReloadDataToolAndMaterialTransfer() async {
     List<ToolAndMaterialTransferDto> toolAndMaterialTransfers =
         await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(
-          typeToolAndMaterialTransfer,
+          type,
         );
     _data = toolAndMaterialTransfers;
     _data =
         _data
-          ?..where((element) => element.loai == typeToolAndMaterialTransfer)
+          ?..where((element) => element.loai == type)
               .where(
                 (item) =>
                     item.share == true ||
@@ -315,7 +362,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
               })
               .toList();
     _filteredData = List.from(_data!);
-    log('Auto-reloaded data: ${_filteredData.length} items');
     // if (_data != null) {
     //   // refreshCountSign(_data!);
     // }
@@ -341,23 +387,22 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     _autoReloadTimer = null;
   }
 
-  void getDataAll(BuildContext context) {
-    try {
-      final bloc = context.read<ToolAndMaterialTransferBloc>();
-      // bloc.add(
-      //   GetListToolAndMaterialTransferEvent(
-      //     context,
-      //     typeToolAndMaterialTransfer,
-      //     _userInfo?.idCongTy ?? '',
-      //   ),
-      // );
-      // // bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
-      // bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
-    } catch (e) {
-      log('Error adding AssetManagement events: $e');
-    }
-  }
-
+  // void getDataAll(BuildContext context) {
+  //   try {
+  //     final bloc = context.read<ToolAndMaterialTransferBloc>();
+  //     // bloc.add(
+  //     //   GetListToolAndMaterialTransferEvent(
+  //     //     context,
+  //     //     typeToolAndMaterialTransfer,
+  //     //     _userInfo?.idCongTy ?? '',
+  //     //   ),
+  //     // );
+  //     // // bloc.add(GetListAssetEvent(context, _userInfo?.idCongTy ?? ''));
+  //     // bloc.add(GetDataDropdownEvent(context, _userInfo?.idCongTy ?? ''));
+  //   } catch (e) {
+  //     log('Error adding AssetManagement events: $e');
+  //   }
+  // }
 
   void onCloseDetail(BuildContext context) {
     _isShowCollapse = true;
@@ -379,8 +424,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     notifyListeners();
   }
 
-
-
   getListToolAndMaterialTransferSuccess(
     BuildContext context,
     GetListToolAndMaterialTransferSuccessState state,
@@ -394,7 +437,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       // refreshCountSign(state.data);
       _data =
           state.data
-              .where((element) => element.loai == typeToolAndMaterialTransfer)
+              .where((element) => element.loai == type)
               .where(
                 (item) =>
                     item.share == true ||
@@ -498,7 +541,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadData(context);
     notifyListeners();
   }
 
@@ -530,7 +574,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadData(context);
     notifyListeners();
   }
 
@@ -540,7 +585,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadData(context);
     notifyListeners();
   }
 
@@ -550,7 +596,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   ) {
     onCloseDetail(context);
     AppUtility.showSnackBar(context, 'Cập nhập trạng thái thành cồng!');
-    getDataAll(context);
+    // getDataAll(context);
+    onReloadData(context);
     notifyListeners();
   }
 
@@ -559,6 +606,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     PutPostDeleteFailedState state,
   ) {
     AppUtility.showSnackBar(context, state.message);
+    onReloadData(context);
     notifyListeners();
   }
 
@@ -598,7 +646,6 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
         requestSignatory,
       ),
     );
-
     notifyListeners();
   }
 
@@ -679,7 +726,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   }
 
   String getScreenTitle() {
-    switch (typeToolAndMaterialTransfer) {
+    switch (type) {
       case 1:
         return 'Cấp phát CCDC - Vật tư';
       case 2:
@@ -771,16 +818,11 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
     if (id.isEmpty) return [];
     Map<String, dynamic> result = await ToolAndSuppliesHandoverRepository()
         .getListDetailAssetByTransfer(id);
-    log("check result: ${jsonEncode(result)}");
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       final List<dynamic> rawData = result['data'];
-      log("check result rawData: ${jsonEncode(rawData)}");
       // The repository already returns parsed DTOs, so we can cast directly
       final list = rawData.cast<DetailSubppliesHandoverDto>();
       _listDetailTransferCCDC = list;
-      log(
-        "check result _listDetailTransferCCDC: ${jsonEncode(_listDetailTransferCCDC)}",
-      );
       notifyListeners();
       return list;
     } else {
