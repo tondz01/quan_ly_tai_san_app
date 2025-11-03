@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.d
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
 
 class BienBanKiemKeScreen extends StatefulWidget {
   const BienBanKiemKeScreen({super.key});
@@ -344,6 +345,30 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                                 ),
                                 child: const Text(
                                   'Xuất PDF',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                // Xuất PDF rồi mở hộp thoại in trên web
+                                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                  await ReportProvider().exportToPdfAndPrint(
+                                    _pageKeys,
+                                    context,
+                                    () {},
+                                  );
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'In',
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),

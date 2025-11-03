@@ -357,4 +357,80 @@ class ReportProvider {
       onExportSuccess.call();
     }
   }
+
+  Future<void> exportToPdfAndPrint(
+    List<GlobalKey> pageKeys,
+    BuildContext context,
+    VoidCallback onPrintDone,
+  ) async {
+    try {
+      final pdf = pw.Document();
+      await WidgetsBinding.instance.endOfFrame;
+      if (pageKeys.isEmpty) {
+        if (context.mounted) {
+          AppUtility.showSnackBar(
+            context,
+            'Không có trang để in.',
+            isError: true,
+          );
+        }
+        return;
+      }
+
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      for (final key in pageKeys) {
+        final boundary =
+            key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+        if (boundary == null) continue;
+
+        final image = await boundary.toImage(pixelRatio: 1.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        final pngBytes = byteData!.buffer.asUint8List();
+
+        final imageWidth = image.width.toDouble();
+        final imageHeight = image.height.toDouble();
+        if (imageWidth.isNaN ||
+            imageHeight.isNaN ||
+            imageWidth <= 0 ||
+            imageHeight <= 0) {
+          continue;
+        }
+
+        final imageProvider = pw.MemoryImage(pngBytes);
+        final aspectRatio = imageWidth / imageHeight;
+        final a4AspectRatio = PdfPageFormat.a4.width / PdfPageFormat.a4.height;
+
+        pdf.addPage(
+          pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            margin: const pw.EdgeInsets.all(20),
+            build: (context) {
+              if (aspectRatio > a4AspectRatio) {
+                return pw.Center(
+                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitWidth),
+                );
+              } else {
+                return pw.Center(
+                  child: pw.Image(imageProvider, fit: pw.BoxFit.fitHeight),
+                );
+              }
+            },
+          ),
+        );
+      }
+
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => await pdf.save(),
+      );
+    } catch (e) {
+      SGLog.error('Lỗi in PDF', 'Lỗi in PDF: $e');
+      if (context.mounted) {
+        AppUtility.showSnackBar(context, 'Lỗi in PDF: $e', isError: true);
+      }
+      return;
+    } finally {
+      onPrintDone.call();
+    }
+  }
 }

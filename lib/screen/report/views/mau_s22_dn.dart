@@ -90,6 +90,35 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        if (_isExporting) return;
+                        setState(() {
+                          _isExporting = true;
+                        });
+                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          await ReportProvider().exportToPdfAndPrint(
+                            [_repaintKey],
+                            context,
+                            () {
+                              setState(() => _isExporting = false);
+                            },
+                          );
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'In',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -109,8 +138,7 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
                       Align(
                         alignment: Alignment.center,
                         child: SGText(
-                          text:
-                              'Bảng ghi tăng/giảm Tài sản cố định',
+                          text: 'Bảng ghi tăng/giảm Tài sản cố định',
                           style: SettingPage.textStyle.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -130,7 +158,10 @@ class _MauS22DnPageState extends State<MauS22DnPage> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        AssetLedgerTable(data: _ccdcData, title: 'công cụ, dụng cụ'),
+                        AssetLedgerTable(
+                          data: _ccdcData,
+                          title: 'công cụ, dụng cụ',
+                        ),
                       ],
                       FoooterBienBanKiemKe(),
                       DetailPageWidget(),
