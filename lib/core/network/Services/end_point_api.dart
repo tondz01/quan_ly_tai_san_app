@@ -58,4 +58,5 @@ class EndPointAPI {
   static String TYPE_CCDC = "/api/loaiccdccon";
   static String UNIT = "/api/donvitinh";
   static String REASON_INCREASE = "/api/lydotang";
+  static String KHAU_HAO_TAI_SAN_BY_NHOM = "/api/taisan/khauhaotaisanbynhom";
 }

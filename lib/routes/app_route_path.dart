@@ -54,7 +54,8 @@ enum AppRoute {
   toolAndSuppliesHandover(path: "/tool-and-supplies-handover", name: 'tool-and-supplies-handover'),
   reasonIncrease(path: "/reason-increase", name: 'reason-increase'),
   bienBanKiemKeTaiSanCoDinh(path: "/kiem-ke-tscd", name: 'kiem-ke-tscd'),
-  mauSo01(path: '/mau-so-01', name: 'mau-so-01')
+  mauSo01(path: '/mau-so-01', name: 'mau-so-01'),
+  mauSo21(path: '/mau-so-21', name: 'mau-so-21'),
   ;
 
   final String path;

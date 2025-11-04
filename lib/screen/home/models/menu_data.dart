@@ -282,6 +282,7 @@ class AppMenuData extends ChangeNotifier {
               route: AppRoute.bienBanKiemKeTaiSanCoDinh.path,
             ),
             SubMenuItem(label: 'Mẫu số-01', route: AppRoute.mauSo01.path),
+            SubMenuItem(label: 'Mẫu số-21', route: AppRoute.mauSo21.path),
           ],
         ),
     ];

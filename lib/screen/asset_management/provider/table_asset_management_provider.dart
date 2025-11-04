@@ -52,7 +52,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
     bool isRefresh = true,
   ]) async {
     state = state.copyWith(isLoading: isRefresh, errorMessage: null);
-    setApiLoading();
+    // setApiLoading();
     try {
       // Gọi API của bạn
       final response = await repository.getDataWithPagination(
