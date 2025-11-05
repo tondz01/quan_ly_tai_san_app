@@ -53002,7 +53002,7 @@ if(J.h(r.h(a,s),200)||J.h(r.h(a,s),201)||J.h(r.h(a,s),204))return!0
 return!1},
 h_(a){if(a!==200&&a!==201&&a!==204)return!0
 return!1},
-jI(){switch("dev"){case"dev":return"https://ecotel-odoo.id.vn:8386"
+jI(){switch("prod"){case"dev":return"https://ecotel-odoo.id.vn:8386"
 default:return"http://42.119.110.246:8386"}},
 T6(){var s=0,r=A.o(t.H),q,p,o,n,m,l,k
 var $async$T6=A.k(function(a,b){if(a===1)return A.l(b,r)
@@ -170295,7 +170295,7 @@ r=A.ar(n,150,n)
 q=A.a9(16)
 p=A.a([new A.bu(0,B.O,A.aS(13,B.q.u()>>>16&255,B.q.u()>>>8&255,B.q.u()&255),B.bO,16)],t.V)
 o=t.p
-return A.hW(n,B.CY,new A.cf(B.af,n,B.ac,B.t,A.a([A.Q(n,A.S(A.a([new A.aja("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bk(A.cD(A.Q(n,new A.ZH(new A.bQy(b,this.a),b.x,n),B.k,n,n,new A.a5(B.j,n,n,q,p,n,B.n),n,n,n,n,B.a9J,n,n,400),n,B.C,n,n,n,B.Y),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a5(n,s,n,n,n,n,B.n),n,n,n,n,n,n,n,n),A.h9(20,A.am(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: dev_0.0.9_5/11/2025_1",B.r),n,n,20,n,n,n)],o),n),n)},
+return A.hW(n,B.CY,new A.cf(B.af,n,B.ac,B.t,A.a([A.Q(n,A.S(A.a([new A.aja("PH\u1ea6N M\u1ec0M QU\u1ea2N L\xdd T\xc0I S\u1ea2N",n),r,A.bk(A.cD(A.Q(n,new A.ZH(new A.bQy(b,this.a),b.x,n),B.k,n,n,new A.a5(B.j,n,n,q,p,n,B.n),n,n,n,n,B.a9J,n,n,400),n,B.C,n,n,n,B.Y),n,n)],o),B.i,n,B.h,B.f,0),B.k,n,n,new A.a5(n,s,n,n,n,n,B.n),n,n,n,n,n,n,n,n),A.h9(20,A.am(B.j,B.J,n,n,n,14,n,"quanlytaisan - Version: prod_0.0.8_5/11/2025_1",B.r),n,n,20,n,n,n)],o),n),n)},
 $C:"$3",
 $R:3,
 $S:1213}
