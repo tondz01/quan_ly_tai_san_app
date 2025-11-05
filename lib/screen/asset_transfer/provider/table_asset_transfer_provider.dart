@@ -106,7 +106,7 @@ class TableAssetTransferProvider extends TableNotifier<DieuDongTaiSanDto> {
       totalComplete = response['totalComplete'];
     } catch (error) {
       log('Error loading data: $error');
-      setApiError('Lỗi tải dữ liệu: $error');
+      // setApiError('Lỗi tải dữ liệu: $error');
     }
   }
 
