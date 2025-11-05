@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
@@ -285,7 +287,8 @@ class _DepartmentListState extends State<DepartmentList> {
                     widget.onChangeDetail?.call(item);
                   },
                   onDelete: (item) {
-                    if (item.id == "P21") {
+                    log('Attempting to delete department: ${item.id}');
+                    if (item.id == "GD") {
                       AppUtility.showSnackBar(
                         context,
                         'Không thể xóa đơn vị/phòng ban đã chọn "Ban giám đốc"',
