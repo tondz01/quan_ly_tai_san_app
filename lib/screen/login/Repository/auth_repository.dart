@@ -139,7 +139,7 @@ class AuthRepository extends ApiBase {
   Future<void> loadData(String idCongTy) async {
     await _loadUserDepartments(idCongTy);
     await _loadUserEmployee(idCongTy);
-    await _loadAssetGroup(idCongTy);
+    await loadAssetGroup(idCongTy);
     await _loadCCDCGroup(idCongTy);
     await loadReasonIncrease();
     await _loadChucVu(idCongTy);
@@ -194,20 +194,9 @@ class AuthRepository extends ApiBase {
   }
 
   /// Load thông tin nhóm tài sản của user và lưu vào AccountHelper
-  Future<void> _loadAssetGroup(String idCongTy) async {
+  Future<void> loadAssetGroup(String idCongTy) async {
     try {
-      final response = await AssetGroupRepository().getListAssetGroup();
-      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-        final rawAssetGroup = response['data'];
-
-        // API trả về mảng JSON luôn
-        final assetGroupList =
-            (rawAssetGroup as List<dynamic>)
-                .map((e) => AssetGroupDto.fromJson(e as Map<String, dynamic>))
-                .toList();
-
-        AccountHelper.instance.setAssetGroup(assetGroupList);
-      }
+      await AssetGroupRepository().getListAssetGroup();
       SGLog.info('_loadData', 'loadAssetGroup');
     } catch (e) {
       log('Error calling API ASSET_GROUP: $e');

@@ -1,15 +1,15 @@
-import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:get/get.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/permission_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
@@ -159,11 +159,6 @@ class AssetManagementProvider with ChangeNotifier {
 
   // Track batch loading of multiple parallel requests
   int _pendingLoadCount = 0;
-  void _beginBatchLoad(int total) {
-    _pendingLoadCount = total;
-    _isLoading = true;
-    notifyListeners();
-  }
 
   void _completeOneLoad(String message) {
     if (_pendingLoadCount > 0) {
@@ -366,7 +361,7 @@ class AssetManagementProvider with ChangeNotifier {
         .refreshData(isRefresh);
   }
 
-  void onLoadDataFrom() {
+  Future<void> onLoadDataFrom() async {
     _dataUnit = AccountHelper.instance.getAllUnit();
     if (_dataUnit != null) {
       AuthRepository().loadUnit(_userInfo?.idCongTy ?? '');
@@ -403,8 +398,23 @@ class AssetManagementProvider with ChangeNotifier {
         ),
     ];
 
-    _dataGroup = AccountHelper.instance.getAssetGroup();
-    log('dataGroup: ${_dataGroup?.length}');
+    if (AccountHelper.instance.getAssetGroup()?.isEmpty ?? true) {
+      try {
+        await AssetGroupRepository().getListAssetGroup();
+        _dataGroup = AccountHelper.instance.getAssetGroup();
+      } catch (e) {
+        SGLog.error(
+          "AssetManagementProvider",
+          "Error at onLoadDataFrom - getAssetGroup: $e",
+        );
+      }
+    } else {
+      _dataGroup = AccountHelper.instance.getAssetGroup();
+      SGLog.error(
+          "AssetManagementProvider",
+          "Success at onLoadDataFrom - getAssetGroup: $e",
+        );
+    }
     _itemsAssetGroup = [
       for (var element in _dataGroup!)
         DropdownMenuItem<AssetGroupDto>(
@@ -441,7 +451,6 @@ class AssetManagementProvider with ChangeNotifier {
         _isShowCollapseKhauHao = false;
         isShowInputKhauHao = false;
         getDepreciationByDate(context, DateTime.now());
-        log('onChangeBody: khauHao');
         typeBody = ShowBody.khauHao;
         break;
     }
@@ -707,7 +716,7 @@ class AssetManagementProvider with ChangeNotifier {
   //       }
   //     }
   //   }
-    
+
   //   findDataByIdAssetGroup();
   //   // final ref = riverpod.ProviderScope.containerOf(context);
   //   // final notifier = ref.read(tableAssetManagementProvider.notifier);
