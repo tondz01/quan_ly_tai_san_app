@@ -110,7 +110,14 @@ class TableAssetHandoverConfig {
           flex: 1,
         ),
         builder: (item) {
-          return TableCellData(widget: Text(AccountHelper.instance.getNhanVienById(item.nguoiTao ?? '')?.hoTen?? ''));
+          return TableCellData(
+            widget: Text(
+              AccountHelper.instance
+                      .getNhanVienById(item.nguoiTao ?? '')
+                      ?.hoTen ??
+                  '',
+            ),
+          );
         },
       ),
       ColumnDefinition(
@@ -408,6 +415,7 @@ class TableAssetHandoverConfig {
                         )
                         .toList() ??
                     []),
+              {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
             ]
             .where(
               (step) => step["id"] != null && (step["id"] as String).isNotEmpty,

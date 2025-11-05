@@ -167,6 +167,13 @@ previewDocumentHandover({
       chucVu: getChucVu(item.idDaiDienBenNhan ?? ''),
       donVi: getDonVi(item.idDaiDienBenNhan ?? ''),
     ),
+    SigneInfo(
+      idNhanVien: item.idGiamDoc ?? '',
+      title: 'Giám đốc ký duyệt',
+      hoTen: item.tenGiamDoc ?? '',
+      chucVu: getChucVu(item.idGiamDoc ?? ''),
+      donVi: getDonVi(item.idGiamDoc ?? ''),
+    ),
 
     // SigneInfo(
   ];

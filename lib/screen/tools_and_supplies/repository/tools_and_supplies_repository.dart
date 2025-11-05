@@ -53,10 +53,6 @@ class ToolsAndSuppliesRepository extends ApiBase {
         queryParams['search'] = search.trim();
       }
 
-      // Log API call parameters for debugging
-      log('Calling API: ${EndPointAPI.TOOLS_AND_SUPPLIES_PAGED}');
-      log('Query params: $queryParams');
-
       // API call với pagination
       final response = await get(
         EndPointAPI.TOOLS_AND_SUPPLIES_PAGED,

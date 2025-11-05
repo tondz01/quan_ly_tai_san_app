@@ -28,6 +28,9 @@ class AssetHandoverDto {
   final String? tenDaiDienBenNhan;
   final bool? daiDienBenNhanXacNhan;
   final String? donViDaiDienXacNhan;
+  final String? idGiamDoc;
+  final String? tenGiamDoc;
+  final bool? giamDocKy;
   final int? trangThai;
   final String? note;
   final String? ngayTao;
@@ -69,6 +72,9 @@ class AssetHandoverDto {
     this.tenDaiDienBenNhan,
     this.daiDienBenNhanXacNhan,
     this.donViDaiDienXacNhan,
+    this.idGiamDoc,
+    this.tenGiamDoc,
+    this.giamDocKy,
     this.trangThai,
     this.note,
     this.ngayTao,
@@ -115,6 +121,9 @@ class AssetHandoverDto {
       daiDienBenNhanXacNhan: json['daiDienBenNhanXacNhan'],
       donViDaiDienXacNhan: json['donViDaiDienXacNhan'],
       trangThai: json['trangThai'],
+      idGiamDoc: json['idGiamDoc'],
+      tenGiamDoc: json['tenGiamDoc'],
+      giamDocKy: json['giamDocKy'],
       note: json['note'],
       ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
       ngayCapNhat: AppUtility.formatFromISOString(json['ngayCapNhat']),
@@ -170,6 +179,9 @@ class AssetHandoverDto {
       'tenDaiDienBenNhan': tenDaiDienBenNhan,
       'daiDienBenNhanXacNhan': daiDienBenNhanXacNhan,
       'donViDaiDienXacNhan': donViDaiDienXacNhan,
+      'idGiamDoc': idGiamDoc,
+      'tenGiamDoc': tenGiamDoc,
+      'giamDocKy': giamDocKy,
       'trangThai': trangThai,
       'note': note,
       'ngayTao': AppUtility.formatFromISOString(ngayTao ?? ''),
@@ -214,6 +226,9 @@ class AssetHandoverDto {
     String? tenDaiDienBenNhan,
     bool? daiDienBenNhanXacNhan,
     String? donViDaiDienXacNhan,
+    String? idGiamDoc,
+    String? tenGiamDoc,
+    bool? giamDocKy,
     int? trangThai,
     String? note,
     String? ngayTao,
@@ -258,6 +273,9 @@ class AssetHandoverDto {
       daiDienBenNhanXacNhan:
           daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
       donViDaiDienXacNhan: donViDaiDienXacNhan ?? this.donViDaiDienXacNhan,
+      idGiamDoc: idGiamDoc ?? this.idGiamDoc,
+      tenGiamDoc: tenGiamDoc ?? this.tenGiamDoc,
+      giamDocKy: giamDocKy ?? this.giamDocKy,
       trangThai: trangThai ?? this.trangThai,
       note: note ?? this.note,
       ngayTao: ngayTao ?? this.ngayTao,

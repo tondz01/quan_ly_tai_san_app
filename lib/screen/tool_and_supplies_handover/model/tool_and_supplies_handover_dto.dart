@@ -24,6 +24,9 @@ class ToolAndSuppliesHandoverDto {
   final String? idDaiDienBenNhan;
   final String? tenDaiDienBenNhan;
   final bool? daiDienBenNhanXacNhan;
+  final String? idGiamDoc;
+  final String? tenGiamDoc;
+  final bool? giamDocKy;
   final int? trangThai;
   final String? note;
   final String? ngayTao;
@@ -60,6 +63,9 @@ class ToolAndSuppliesHandoverDto {
     this.idDaiDienBenNhan,
     this.tenDaiDienBenNhan,
     this.daiDienBenNhanXacNhan,
+    this.idGiamDoc,
+    this.tenGiamDoc,
+    this.giamDocKy,
     this.trangThai,
     this.note,
     this.ngayTao,
@@ -101,6 +107,9 @@ class ToolAndSuppliesHandoverDto {
       idDaiDienBenNhan: json['idDaiDienBenNhan'],
       tenDaiDienBenNhan: json['tenDaiDienBenNhan'],
       daiDienBenNhanXacNhan: json['daiDienBenNhanXacNhan'],
+      idGiamDoc: json['idGiamDoc'],
+      tenGiamDoc: json['tenGiamDoc'],
+      giamDocKy: json['giamDocKy'],
       trangThai: json['trangThai'],
       note: json['note'],
       ngayTao: AppUtility.formatFromISOString(json['ngayTao']),
@@ -192,6 +201,9 @@ class ToolAndSuppliesHandoverDto {
     String? idDaiDienBenNhan,
     String? tenDaiDienBenNhan,
     bool? daiDienBenNhanXacNhan,
+    String? idGiamDoc,
+    String? tenGiamDoc,
+    bool? giamDocKy,
     int? trangThai,
     String? note,
     String? ngayTao,
@@ -236,6 +248,9 @@ class ToolAndSuppliesHandoverDto {
       tenDaiDienBenNhan: tenDaiDienBenNhan ?? this.tenDaiDienBenNhan,
       daiDienBenNhanXacNhan:
           daiDienBenNhanXacNhan ?? this.daiDienBenNhanXacNhan,
+      idGiamDoc: idGiamDoc ?? this.idGiamDoc,
+      tenGiamDoc: tenGiamDoc ?? this.tenGiamDoc,
+      giamDocKy: giamDocKy ?? this.giamDocKy,
       trangThai: trangThai ?? this.trangThai,
       note: note ?? this.note,
       ngayTao: AppUtility.formatFromISOString(ngayTao ?? this.ngayTao ?? ''),

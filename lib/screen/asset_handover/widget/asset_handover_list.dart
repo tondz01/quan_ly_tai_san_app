@@ -260,6 +260,17 @@ class _AssetHandoverListState extends State<AssetHandoverList> {
             child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
           ),
         ),
+      ThreadNode(
+        header: 'Giám đốc ký duyệt:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.giamDocKy ?? false,
+          widget.provider
+              .getNhanVienByID(item.idGiamDoc ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
     ];
   }
 

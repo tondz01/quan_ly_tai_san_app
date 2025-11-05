@@ -732,6 +732,13 @@ class ContractPage {
                     ),
                   ),
                   SGText(
+                    text: "(${e.donVi})",
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 12 * SettingPage.scale,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SGText(
                     text: "(Ký, họ tên)",
                     style: SettingPage.textStyle.copyWith(
                       fontSize: 11 * SettingPage.scale,
@@ -934,6 +941,13 @@ class ContractPage {
                 children: [
                   SGText(
                     text: e.title,
+                    style: SettingPage.textStyle.copyWith(
+                      fontSize: 12 * SettingPage.scale,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SGText(
+                    text: "(${e.donVi})",
                     style: SettingPage.textStyle.copyWith(
                       fontSize: 12 * SettingPage.scale,
                       fontWeight: FontWeight.bold,
