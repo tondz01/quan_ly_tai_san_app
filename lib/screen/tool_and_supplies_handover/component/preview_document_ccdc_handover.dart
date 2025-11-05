@@ -164,6 +164,13 @@ prevDocumentCcdcHandover({
       chucVu: getChucVu(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
       donVi: getDonVi(dieuDongCcdc?.idDaiDienBenNhan ?? ''),
     ),
+    SigneInfo(
+      idNhanVien: dieuDongCcdc?.idGiamDoc ?? '',
+      title: 'Đại diện đơn vị bên nhận',
+      hoTen: dieuDongCcdc?.tenGiamDoc ?? '',
+      chucVu: getChucVu(dieuDongCcdc?.idGiamDoc ?? ''),
+      donVi: getDonVi(dieuDongCcdc?.idGiamDoc ?? ''),
+    ),
 
     // SigneInfo(
   ];

@@ -71,6 +71,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       TextEditingController();
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
+  late TextEditingController controllerGiamDocKy = TextEditingController();
   // late TextEditingController controllerRepresentativeUnit =
   //     TextEditingController();
 
@@ -82,6 +83,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   bool isDelivererConfirm = false;
   bool isReceiverConfirm = false;
   bool isRepresentativeUnitConfirm = false;
+  bool isGiamDocConfirm = false;
   bool isExpanded = false;
   bool isByStep = false;
   bool isDetail = false;
@@ -113,6 +115,7 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
   NhanVien? nguoiDaiDienBenGiao;
   NhanVien? nguoiDaiDienBenNhan;
   NhanVien? nguoiDaiDienDonViDaiDien;
+  NhanVien? nguoiKyGiamDoc;
   DieuDongTaiSanDto? dieuDongTaiSan;
 
   PdfDocument? _document;
@@ -241,9 +244,13 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
         listDetailAssetHandover = item?.chiTietBanGiaoTaiSan ?? [];
       }
       isByStep = item?.byStep ?? false;
+      nguoiKyGiamDoc = AccountHelper.instance.getNhanVienById(
+        item?.idGiamDoc ?? '',
+      );
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+      isGiamDocConfirm = item?.giamDocKy ?? false;
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
 
@@ -454,6 +461,9 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       ),
       "ngayTao": AppUtility.formatDateString(DateTime.now()),
       "ngayCapNhat": AppUtility.formatDateString(DateTime.now()),
+      "idGiamDoc": nguoiKyGiamDoc?.id ?? '',
+      "giamDocXacNhan": isGiamDocConfirm,
+      "tenGiamDoc": nguoiKyGiamDoc?.hoTen ?? '',
       "trangThai": 0,
       "note": "",
       "nguoiTao": currentUser?.tenDangNhap ?? '',
@@ -486,8 +496,14 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
       final newRequest = request;
       newRequest['duongDanFile'] = result!['filePath'] ?? '';
       newRequest['tenFile'] = result['fileName'] ?? '';
-      SGLog.error('tag check listSignatory', 'message: ${jsonEncode(listSignatory)}');
-      SGLog.error('tag check listDetailAssetHandover', 'message: ${jsonEncode(listDetailAssetHandover)}');
+      SGLog.error(
+        'tag check listSignatory',
+        'message: ${jsonEncode(listSignatory)}',
+      );
+      SGLog.error(
+        'tag check listDetailAssetHandover',
+        'message: ${jsonEncode(listDetailAssetHandover)}',
+      );
       // return;
       assetHandoverBloc.add(
         CreateAssetHandoverEvent(
@@ -1139,6 +1155,43 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
           },
         ),
         const SizedBox(height: 10),
+        CmFormDropdownObject<NhanVien>(
+          label: 'Giám đốc ký xác nhận',
+          controller: controllerGiamDocKy,
+          isEditing: isEditing,
+          value: nguoiKyGiamDoc,
+          defaultValue:
+              item?.idGiamDoc != null
+                  ? widget.provider.getNhanVien(idNhanVien: item!.idGiamDoc!)
+                  : null,
+          fieldName: 'giamDocXacNhan',
+          items: [
+            ...listNhanVienDonViNhan
+                .where((e) => e.phongBanId == 'GD')
+                .map(
+                  (e) => DropdownMenuItem<NhanVien>(
+                    value: e,
+                    child: Text(e.hoTen ?? ''),
+                  ),
+                ),
+          ],
+          onChanged: (value) {
+            nguoiKyGiamDoc = value;
+          },
+          validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CommonCheckboxInput(
+          label: 'Giám đốc xác nhận',
+          value: isGiamDocConfirm,
+          isEditing: isEditing,
+          isDisabled: true,
+          onChanged: (newValue) {
+            setState(() {
+              isGiamDocConfirm = newValue;
+            });
+          },
+        ),
         // CommonCheckboxInput(
         //   label: 'Ký theo lượt',
         //   value: isByStep,

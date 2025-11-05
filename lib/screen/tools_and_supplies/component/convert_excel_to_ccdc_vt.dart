@@ -3,14 +3,10 @@ import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/provider/tools_and_supplies_provide.dart';
-import 'package:quan_ly_tai_san_app/screen/type_ccdc/model/type_ccdc.dart';
-import 'package:quan_ly_tai_san_app/screen/unit/model/unit_dto.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
 Map<String, dynamic> _validateRow(
@@ -26,10 +22,10 @@ Map<String, dynamic> _validateRow(
 }) {
   List<String> rowErrors = [];
 
-  List<PhongBan> phongBans = provider?.dataPhongBan ?? [];
-  List<CcdcGroup> ccdcGroups = provider?.dataGroupCCDC ?? [];
-  List<TypeCcdc> typeCcdcs = provider?.dataTypeCCDC ?? [];
-  List<UnitDto> units = provider?.dataUnit ?? [];
+  // List<PhongBan> phongBans = provider?.dataPhongBan ?? [];
+  // List<CcdcGroup> ccdcGroups = provider?.dataGroupCCDC ?? [];
+  // List<TypeCcdc> typeCcdcs = provider?.dataTypeCCDC ?? [];
+  // List<UnitDto> units = provider?.dataUnit ?? [];
 
   // Validate required fields
   if (json['id'] == null || json['id'].toString().trim().isEmpty) {

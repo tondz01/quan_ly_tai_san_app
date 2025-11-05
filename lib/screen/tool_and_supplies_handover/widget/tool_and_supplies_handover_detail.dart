@@ -72,6 +72,7 @@ class _ToolAndSuppliesHandoverDetailState
       TextEditingController();
   late TextEditingController controllerDelivererRepresentative =
       TextEditingController();
+  late TextEditingController controllerGiamDocKy = TextEditingController();
   late TextEditingController controllerReceiverRepresentative =
       TextEditingController();
 
@@ -82,6 +83,7 @@ class _ToolAndSuppliesHandoverDetailState
   bool isDelivererConfirm = false;
   bool isReceiverConfirm = false;
   bool isRepresentativeUnitConfirm = false;
+  bool isGiamDocConfirm = false;
   bool isExpanded = false;
   bool isByStep = false;
 
@@ -115,6 +117,7 @@ class _ToolAndSuppliesHandoverDetailState
   NhanVien? nguoiDaiDienBenGiao;
   NhanVien? nguoiDaiDienBenNhan;
   NhanVien? nguoiDaiDienDonViDaiDien;
+  NhanVien? nguoiKyGiamDoc;
   ToolAndMaterialTransferDto? dieuDongCcdc;
 
   PdfDocument? _document;
@@ -282,6 +285,9 @@ class _ToolAndSuppliesHandoverDetailState
         listPhongBan: listPhongBan,
         idPhongBan: dieuDongCcdc?.idDonViNhan ?? '',
       );
+      nguoiKyGiamDoc = AccountHelper.instance.getNhanVienById(
+        item?.idGiamDoc ?? '',
+      );
       if (widget.isFindNew) {
         isEditing = widget.isFindNew;
         final idDonViGiao = donViGiao?.id ?? item?.idDonViGiao ?? '';
@@ -292,6 +298,7 @@ class _ToolAndSuppliesHandoverDetailState
       isUnitConfirm = item?.daXacNhan ?? false;
       isDelivererConfirm = item?.daiDienBenGiaoXacNhan ?? false;
       isReceiverConfirm = item?.daiDienBenNhanXacNhan ?? false;
+      isGiamDocConfirm = item?.giamDocKy ?? false;
       isByStep = item?.byStep ?? false;
       _selectedFileName = item?.tenFile ?? '';
       _selectedFilePath = item?.duongDanFile ?? '';
@@ -484,6 +491,9 @@ class _ToolAndSuppliesHandoverDetailState
       "daiDienBenGiaoXacNhan": isDelivererConfirm,
       "idDaiDienBenNhan": nguoiDaiDienBenNhan?.id ?? '',
       "daiDienBenNhanXacNhan": isReceiverConfirm,
+      "idGiamDoc": nguoiKyGiamDoc?.id ?? '',
+      "tenGiamDoc": nguoiKyGiamDoc?.hoTen ?? '',
+      "giamDocKy": isGiamDocConfirm,
       "trangThai": 0,
       "note": "",
       "nguoiTao": currentUser?.tenDangNhap ?? '',
@@ -802,7 +812,6 @@ class _ToolAndSuppliesHandoverDetailState
                     _selectedFileName = fileName;
                     _selectedFilePath = filePath;
                     _selectedFileBytes = fileBytes;
-                    log('IUGBASFELBFVUHLASDBFCI LSERBĐGIUVEWRBFIU');
                     if (fileName != null) {
                       // Ưu tiên load từ bytes nếu có (web), fallback sang path (mobile/desktop)
                       if (fileBytes != null) {
@@ -1195,6 +1204,43 @@ class _ToolAndSuppliesHandoverDetailState
           },
         ),
         const SizedBox(height: 10),
+        CmFormDropdownObject<NhanVien>(
+          label: 'Giám đốc ký xác nhận',
+          controller: controllerGiamDocKy,
+          isEditing: isEditing,
+          value: nguoiKyGiamDoc,
+          defaultValue:
+              item?.idGiamDoc != null
+                  ? widget.provider.getNhanVien(
+                    idNhanVien: item!.idGiamDoc!,
+                  )
+                  : null,
+          fieldName: 'giamDocXacNhan',
+          items: [
+            ...listNhanVienDonViNhan.where((e) => e.phongBanId == 'GD').map(
+              (e) => DropdownMenuItem<NhanVien>(
+                value: e,
+                child: Text(e.hoTen ?? ''),
+              ),
+            ),
+          ],
+          onChanged: (value) {
+            nguoiKyGiamDoc = value;
+          },
+          validationErrors: _validationErrors,
+          isRequired: true,
+        ),
+        CommonCheckboxInput(
+          label: 'Giám đốc xác nhận',
+          value: isGiamDocConfirm,
+          isEditing: isEditing,
+          isDisabled: true,
+          onChanged: (newValue) {
+            setState(() {
+              isGiamDocConfirm = newValue;
+            });
+          },
+        ),
         // CommonCheckboxInput(
         //   label: 'Ký theo lượt',
         //   value: isByStep,

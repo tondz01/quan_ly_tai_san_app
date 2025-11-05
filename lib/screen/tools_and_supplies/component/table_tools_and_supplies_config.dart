@@ -51,13 +51,13 @@ class TableToolsAndSuppliesConfig {
         config: TableColumnData.select(
           name: 'Tên CCDC',
           key: 'ten',
-          width: 200,
+          width: 250,
           flex: 1,
         ),
         builder: (item) {
           return TableCellData(
             alignment: Alignment.center,
-            widget: Text(item.ten),
+            widget: Text(item.ten, style: TextStyle(fontSize: 12)),
           );
         },
       ),
@@ -79,7 +79,7 @@ class TableToolsAndSuppliesConfig {
         config: TableColumnData.select(
           name: 'Nhóm CCDC',
           key: 'tenNhomCCDC',
-          width: 150,
+          width: 200,
           flex: 1,
         ),
         builder: (item) {

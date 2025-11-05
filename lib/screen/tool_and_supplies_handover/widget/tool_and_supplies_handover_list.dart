@@ -808,6 +808,17 @@ class _ToolAndSuppliesHandoverListState
             child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
           ),
         ),
+        ThreadNode(
+        header: 'Giám đốc ký xác nhận:',
+        depth: 1,
+        child: viewSignatoryStatus(
+          item.giamDocKy ?? false,
+          widget.provider
+              .getNhanVienByID(item.idGiamDoc ?? '')
+              .hoTen
+              .toString(),
+        ),
+      ),
     ];
   }
 
@@ -856,6 +867,7 @@ class _ToolAndSuppliesHandoverListState
                     )
                     .toList() ??
                 []),
+          {"id": item.idGiamDoc, "signed": item.giamDocKy == true},
         ].where((s) => (s["id"] as String?)?.isNotEmpty == true).toList();
     final current = flow.indexWhere((s) => s["id"] == userInfo?.tenDangNhap);
     if (current == -1) return 2;
