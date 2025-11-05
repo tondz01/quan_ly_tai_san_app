@@ -245,7 +245,6 @@ class _ToolAndSuppliesHandoverDetailState
                 )
                 .toList()
             : <DropdownMenuItem<NhanVien>>[];
-
     itemsPhongBan =
         listPhongBan.isNotEmpty
             ? listPhongBan
@@ -1211,18 +1210,18 @@ class _ToolAndSuppliesHandoverDetailState
           value: nguoiKyGiamDoc,
           defaultValue:
               item?.idGiamDoc != null
-                  ? widget.provider.getNhanVien(
-                    idNhanVien: item!.idGiamDoc!,
-                  )
+                  ? widget.provider.getNhanVien(idNhanVien: item!.idGiamDoc!)
                   : null,
           fieldName: 'giamDocXacNhan',
           items: [
-            ...listNhanVienDonViNhan.where((e) => e.phongBanId == 'GD').map(
-              (e) => DropdownMenuItem<NhanVien>(
-                value: e,
-                child: Text(e.hoTen ?? ''),
-              ),
-            ),
+            ...listNhanVien
+                .where((e) => e.phongBanId == 'GD' || e.boPhan == 'GD')
+                .map(
+                  (e) => DropdownMenuItem<NhanVien>(
+                    value: e,
+                    child: Text(e.hoTen ?? ''),
+                  ),
+                ),
           ],
           onChanged: (value) {
             nguoiKyGiamDoc = value;

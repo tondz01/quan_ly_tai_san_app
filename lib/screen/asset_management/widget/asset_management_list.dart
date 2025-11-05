@@ -167,6 +167,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
     // final data = widget.provider.data ?? const <AssetManagementDto>[];
     final ref = riverpod.ProviderScope.containerOf(context);
     final notifier = ref.read(tableAssetManagementProvider.notifier);
+    log('notifier totalItems: ${notifier.totalItems}');
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -277,13 +278,22 @@ class _AssetManagementListState extends State<AssetManagementList> {
                       size: 18,
                     ),
                     SizedBox(width: 8),
-                    Text(
-                      'Quản lý tài sản ($totalItems)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        final totalItems = ref.watch(
+                          tableAssetManagementProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
+                        return Text(
+                          'Quản lý tài sản ($totalItems)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -323,7 +333,6 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           );
                           final selectedCount = tableState.selectedItems.length;
                           listSelected = tableState.selectedItems;
-                          log('message totalItems: $selectedCount');
                           final buttons = _buildButtonList(selectedCount);
                           final processedButtons =
                               buttons.map((button) {
@@ -396,6 +405,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
                     (s) => s.paginationState.totalItems,
                   ),
                 );
+                // setState(() {
+                //   totalItems = totalItems;
+                // });
+                log('message totalItems: $totalItems');
                 return RiverpodTable<AssetManagementDto>(
                   tableProvider: tableAssetManagementProvider,
                   columns: _columns,
