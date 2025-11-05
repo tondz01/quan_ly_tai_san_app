@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
+import 'package:quan_ly_tai_san_app/common/reponsitory/save_export_file_io.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
@@ -13,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 
 class NhanVienProvider extends ApiBase {
   UserInfoDTO? userInfo = AccountHelper.instance.getUserInfo();
@@ -102,7 +106,7 @@ class NhanVienProvider extends ApiBase {
       '${EndPointAPI.NHAN_VIEN}/${nhanVien.id}',
       data: nhanVien.toJson(),
     );
-    
+
     if (checkStatusCodeFailed(response.statusCode ?? 0)) {
       result['status_code'] = response.statusCode;
       result['message'] = response.data['message'];
@@ -252,5 +256,117 @@ class NhanVienProvider extends ApiBase {
     }
 
     return result;
+  }
+
+  Future<Map<String, dynamic>> importFile(
+    String fileName,
+    Uint8List fileBytes,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(fileBytes, filename: fileName),
+      });
+      final response = await post(
+        '${EndPointAPI.NHAN_VIEN}/upload-from-excel',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      result['status_code'] = response.statusCode;
+      result['data'] = response.data;
+    } catch (e) {
+      SGLog.error(
+        "AssetTransferRepository",
+        "Error at uploadFileBytes - AssetTransferRepository: $e",
+      );
+    }
+    return result;
+  }
+
+  /// ===============================
+  /// Export Excel có ảnh từ API (Cookie JSESSIONID)
+  /// ===============================
+  Future<void> exportNhanVienExcel(
+    List<Map<String, dynamic>> dataList, {
+    required String fileName,
+    required String sessionId,
+  }) async {
+    if (dataList.isEmpty) throw Exception('Danh sách dữ liệu trống');
+
+    // Tạo workbook
+    final workbook = xlsio.Workbook();
+    final sheet = workbook.worksheets[0];
+    sheet.name = 'Danh sách nhân viên';
+
+    // ==== Tạo header ====
+    final headers = dataList.first.keys.toList();
+    for (int i = 0; i < headers.length; i++) {
+      final cell = sheet.getRangeByIndex(1, i + 1);
+      cell.setText(headers[i]);
+      cell.cellStyle.bold = true;
+    }
+
+    // ==== Ghi dữ liệu ====
+    for (int row = 0; row < dataList.length; row++) {
+      final data = dataList[row];
+      final excelRow = row + 2;
+
+      for (int col = 0; col < headers.length; col++) {
+        final key = headers[col];
+        final value = data[key];
+
+        // Nếu là cột ảnh
+        if (key == 'Chữ ký nháy' || key == 'Chữ ký thường') {
+          if (value != null && value.toString().isNotEmpty) {
+            try {
+              // Gọi API tải ảnh (có Cookie JSESSIONID)
+              final res = await http.get(
+                Uri.parse(value.toString()),
+                headers: {'Cookie': 'JSESSIONID=$sessionId'},
+              );
+
+              if (res.statusCode == 200) {
+                final picture = sheet.pictures.addStream(
+                  excelRow,
+                  col + 1,
+                  res.bodyBytes,
+                );
+                picture.height = 60;
+                picture.width = 150;
+              } else {
+                sheet.getRangeByIndex(excelRow, col + 1).setText('Lỗi ảnh');
+              }
+            } catch (e) {
+              sheet
+                  .getRangeByIndex(excelRow, col + 1)
+                  .setText('Không tải được ảnh');
+            }
+          } else {
+            sheet.getRangeByIndex(excelRow, col + 1).setText('Không có ảnh');
+          }
+        } else {
+          // Dữ liệu text thông thường
+          sheet
+              .getRangeByIndex(excelRow, col + 1)
+              .setText(value?.toString() ?? '');
+        }
+      }
+    }
+
+    // Căn chỉnh độ rộng cột tự động
+    for (int i = 1; i <= headers.length; i++) {
+      sheet.autoFitColumn(i);
+    }
+
+    // Xuất file ra bytes
+    final bytes = Uint8List.fromList(workbook.saveAsStream());
+    workbook.dispose();
+
+    // Lưu file về máy bằng hàm bạn có sẵn
+    final savedPath = await saveExportFile(bytes, '$fileName.xlsx');
+    print('✅ File Excel đã được lưu: $savedPath');
   }
 }

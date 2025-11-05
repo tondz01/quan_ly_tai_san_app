@@ -240,6 +240,8 @@ class NhanVien extends Equatable {
       'Tên nhân viên': _nullIfEmpty(hoTen),
       'Số điện thoại': _nullIfEmpty(diDong),
       'Email': _nullIfEmpty(emailCongViec),
+      'Chữ ký nháy': _nullIfEmpty(chuKyNhay?.split("/").last),
+      'Chữ ký thường': _nullIfEmpty(chuKyThuong?.split("/").last),
       'Agreement UUId': _nullIfEmpty(agreementUUId),
       'Mã Pin': _nullIfEmpty(pin),
       'Phòng ban (Mã phòng ban)': _nullIfEmpty(phongBanId),
