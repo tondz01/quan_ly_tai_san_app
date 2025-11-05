@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dar
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/khau_hao_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/so_tai_san_co_dinh_s21_page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -82,7 +83,8 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
       await Future.delayed(const Duration(milliseconds: 50));
 
       final boundary =
-          _repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+          _repaintKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary == null) return;
 
       final image = await boundary.toImage(pixelRatio: 2.0);
@@ -128,9 +130,9 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
     } catch (e) {
       SGLog.error('Lỗi xuất PDF', 'Lỗi xuất PDF: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi xuất PDF: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi xuất PDF: $e')));
       }
     } finally {
       if (mounted) {
@@ -148,7 +150,11 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
 
   Future<void> onloadViewPage() async {
     if (loaiTaiSan == null) {
-      AppUtility.showSnackBar(context, 'Vui lòng chọn loại tài sản!', isError: true);
+      AppUtility.showSnackBar(
+        context,
+        'Vui lòng chọn loại tài sản!',
+        isError: true,
+      );
       return;
     }
 
@@ -160,7 +166,11 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
     // Get company ID
     final userInfo = AccountHelper.instance.getUserInfo();
     if (userInfo?.idCongTy == null) {
-      AppUtility.showSnackBar(context, 'Không tìm thấy thông tin công ty!', isError: true);
+      AppUtility.showSnackBar(
+        context,
+        'Không tìm thấy thông tin công ty!',
+        isError: true,
+      );
       return;
     }
 
@@ -195,7 +205,10 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
           listKhauHaoTaiSan = result['data'] as List<KhauHaoTaiSanDto>;
           _isLoading = false;
         });
-        AppUtility.showSnackBar(context, 'Lấy dữ liệu thành công! (${listKhauHaoTaiSan.length} bản ghi)');
+        AppUtility.showSnackBar(
+          context,
+          'Lấy dữ liệu thành công! (${listKhauHaoTaiSan.length} bản ghi)',
+        );
       } else {
         setState(() {
           _isLoading = false;
@@ -208,7 +221,11 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
       }
     } catch (e) {
       SGLog.error('onloadViewPage', 'Lỗi: $e');
-      AppUtility.showSnackBar(context, 'Lỗi khi xử lý dữ liệu: $e', isError: true);
+      AppUtility.showSnackBar(
+        context,
+        'Lỗi khi xử lý dữ liệu: $e',
+        isError: true,
+      );
       setState(() {
         _isLoading = false;
       });
@@ -284,8 +301,7 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                     controller: controllerImportDate,
                                     isEditing: true,
                                     fieldName: 'year',
-                                    onChanged: (date) {
-                                    },
+                                    onChanged: (date) {},
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -333,7 +349,10 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                 const SizedBox(width: 16),
                                 ElevatedButton.icon(
                                   onPressed: _exportToPdf,
-                                  icon: const Icon(Icons.picture_as_pdf, size: 20),
+                                  icon: const Icon(
+                                    Icons.picture_as_pdf,
+                                    size: 20,
+                                  ),
                                   label: const Text('Xuất PDF'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue,
@@ -341,6 +360,39 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 24,
                                       vertical: 12,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                GestureDetector(
+                                  onTap: () {
+                                    if (_isExporting) return;
+                                    setState(() {
+                                      _isExporting = true;
+                                    });
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) async {
+                                          await ReportProvider()
+                                              .exportToPdfAndPrint(
+                                                [_repaintKey],
+                                                context,
+                                                () {
+                                                  setState(
+                                                    () => _isExporting = false,
+                                                  );
+                                                },
+                                              );
+                                        });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: const Text(
+                                      'In',
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ),
                                 ),
@@ -369,9 +421,10 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                         child: Stack(
                           children: [
                             SingleChildScrollView(
-                              physics: _scrollController.isParentScrolling
-                                  ? const NeverScrollableScrollPhysics()
-                                  : const BouncingScrollPhysics(),
+                              physics:
+                                  _scrollController.isParentScrolling
+                                      ? const NeverScrollableScrollPhysics()
+                                      : const BouncingScrollPhysics(),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: RepaintBoundary(
