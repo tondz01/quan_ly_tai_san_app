@@ -12,6 +12,7 @@ class AssetGroupDto {
   final String? nguoiTao;
   final String? nguoiCapNhat;
   final bool? isActive;
+  final int? soLuongTaiSan;
 
   AssetGroupDto({
     this.id,
@@ -23,6 +24,7 @@ class AssetGroupDto {
     this.nguoiTao,
     this.nguoiCapNhat,
     this.isActive,
+    this.soLuongTaiSan,
   });
 
   factory AssetGroupDto.fromJson(Map<String, dynamic> json) {
@@ -32,7 +34,9 @@ class AssetGroupDto {
       hieuLuc: json['hieuLuc'],
       idCongTy: json['idCongTy'],
       ngayTao:
-          json['ngayTao'] != null ? AppUtility.formatFromISOString(json['ngayTao']) : null,
+          json['ngayTao'] != null
+              ? AppUtility.formatFromISOString(json['ngayTao'])
+              : null,
       ngayCapNhat:
           json['ngayCapNhat'] != null
               ? AppUtility.formatFromISOString(json['ngayCapNhat'])
@@ -40,6 +44,7 @@ class AssetGroupDto {
       nguoiTao: json['nguoiTao'],
       nguoiCapNhat: json['nguoiCapNhat'],
       isActive: json['isActive'],
+      soLuongTaiSan: json['soLuongTaiSan']
     );
   }
 
@@ -54,6 +59,7 @@ class AssetGroupDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'soLuongTaiSan': soLuongTaiSan,
     };
   }
 
@@ -67,6 +73,7 @@ class AssetGroupDto {
       'nguoiTao': nguoiTao,
       'nguoiCapNhat': nguoiCapNhat,
       'isActive': isActive,
+      'soLuongTaiSan': soLuongTaiSan,
     };
   }
 
@@ -100,7 +107,9 @@ class AssetGroupDto {
       'Tên nhóm': _nullIfEmpty(tenNhom),
       'Hiệu lực': hieuLuc ?? true,
       'Ngày tạo': _nullIfEmpty(AppUtility.formatFromISOString(ngayTao ?? '')),
-      'Ngày cập nhật': _nullIfEmpty(AppUtility.formatFromISOString(ngayCapNhat ?? '')),
+      'Ngày cập nhật': _nullIfEmpty(
+        AppUtility.formatFromISOString(ngayCapNhat ?? ''),
+      ),
     };
   }
 

@@ -164,7 +164,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
   Widget build(BuildContext context) {
     final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
     SGLog.info('AssetManagementList', 'groups: ${groups.length}');
-    final data = widget.provider.data ?? const <AssetManagementDto>[];
+    // final data = widget.provider.data ?? const <AssetManagementDto>[];
     final ref = riverpod.ProviderScope.containerOf(context);
     final notifier = ref.read(tableAssetManagementProvider.notifier);
     return Container(
@@ -230,14 +230,10 @@ class _AssetManagementListState extends State<AssetManagementList> {
                           children: [
                             ...groups.map(
                               (item) => Visibility(
-                                visible:
-                                    notifier.getGroupCounts('${item.id}') != 0,
+                                visible: item.soLuongTaiSan != 0,
                                 child: ItemAssetGroup(
                                   titleName: item.tenNhom,
-                                  numberAsset:
-                                      notifier
-                                          .getGroupCounts('${item.id}')
-                                          ?.toString(),
+                                  numberAsset: item.soLuongTaiSan.toString(),
                                   image: "assets/images/assets.png",
                                   onTap: () {
                                     context.go(AppRoute.staffManager.path);

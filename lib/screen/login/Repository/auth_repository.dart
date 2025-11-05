@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -195,12 +196,9 @@ class AuthRepository extends ApiBase {
   /// Load thông tin nhóm tài sản của user và lưu vào AccountHelper
   Future<void> _loadAssetGroup(String idCongTy) async {
     try {
-      final response = await get(
-        EndPointAPI.ASSET_GROUP,
-        queryParameters: {'idcongty': idCongTy},
-      );
-      if (response.statusCode == Numeral.STATUS_CODE_SUCCESS) {
-        final rawAssetGroup = response.data;
+      final response = await AssetGroupRepository().getListAssetGroup();
+      if (response['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        final rawAssetGroup = response['data'];
 
         // API trả về mảng JSON luôn
         final assetGroupList =
