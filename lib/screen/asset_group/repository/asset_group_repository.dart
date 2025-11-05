@@ -8,6 +8,7 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -38,6 +39,8 @@ class AssetGroupRepository extends ApiBase {
         response.data,
         AssetGroupDto.fromJson,
       );
+
+      AccountHelper.instance.setAssetGroup(result['data']);
     } catch (e) {
       SGLog.error("AssetGroupRepository", "Error at getListAssetGroup: $e");
       result['status_code'] = 500;
@@ -234,7 +237,9 @@ class AssetGroupRepository extends ApiBase {
       unawaited(
         post(
           '${EndPointAPI.ASSET_GROUP_V2}/batch',
-          data: jsonEncode(assetGroups.map((e) => e.toLoaiTaisanJson()).toList()),
+          data: jsonEncode(
+            assetGroups.map((e) => e.toLoaiTaisanJson()).toList(),
+          ),
           options: Options(
             headers: {
               'Content-Type': 'application/json',
