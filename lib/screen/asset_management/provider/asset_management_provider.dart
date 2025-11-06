@@ -361,6 +361,12 @@ class AssetManagementProvider with ChangeNotifier {
         .refreshData(isRefresh);
   }
 
+  onRefreshDataAssetGroup() {
+    AssetGroupRepository().getListAssetGroup();
+    _dataGroup = AccountHelper.instance.getAssetGroup();
+    notifyListeners();
+  }
+
   Future<void> onLoadDataFrom() async {
     _dataUnit = AccountHelper.instance.getAllUnit();
     if (_dataUnit != null) {
@@ -411,9 +417,9 @@ class AssetManagementProvider with ChangeNotifier {
     } else {
       _dataGroup = AccountHelper.instance.getAssetGroup();
       SGLog.error(
-          "AssetManagementProvider",
-          "Success at onLoadDataFrom - getAssetGroup: $e",
-        );
+        "AssetManagementProvider",
+        "Success at onLoadDataFrom - getAssetGroup: $e",
+      );
     }
     _itemsAssetGroup = [
       for (var element in _dataGroup!)
@@ -655,6 +661,7 @@ class AssetManagementProvider with ChangeNotifier {
   void updateAssetSuccess(BuildContext context, UpdateAssetSuccessState state) {
     AppUtility.showSnackBar(context, 'Cập nhật thành công!');
     onReloadDataPage(context);
+    onRefreshDataAssetGroup();
     notifyListeners();
   }
 
@@ -662,6 +669,7 @@ class AssetManagementProvider with ChangeNotifier {
     _error = null;
     onReloadDataPage(context);
     AppUtility.showSnackBar(context, 'Xóa thành công!');
+    onRefreshDataAssetGroup();
     notifyListeners();
   }
 
