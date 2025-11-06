@@ -40,6 +40,7 @@ class AssetGroupRepository extends ApiBase {
         AssetGroupDto.fromJson,
       );
 
+      AccountHelper.instance.clearAssetGroup();
       AccountHelper.instance.setAssetGroup(result['data']);
     } catch (e) {
       SGLog.error("AssetGroupRepository", "Error at getListAssetGroup: $e");

@@ -22,6 +22,7 @@ class AssetManagementRepository extends ApiBase {
     List<AssetManagementDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
+      'message': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -32,6 +33,7 @@ class AssetManagementRepository extends ApiBase {
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'Lấy danh sách tài sản thất bại';
         return result;
       }
 
@@ -43,19 +45,18 @@ class AssetManagementRepository extends ApiBase {
         AssetManagementDto.fromJson,
       );
 
-      try {
-        // Lưu trữ dữ liệu vào bộ nhớ đệm
-        AccountHelper.instance.setListAsset(result['data']);
-        if (AccountHelper.instance.getAllAssets().isEmpty) {
-          log("setCache [ASSET]: No assets cached in storage.");
-        } else {
-          log("setCache [ASSET]: Assets data cached successfully.");
-        }
-      } catch (e) {
-        log("setCache [ASSET]: Error saving asset data to storage: $e");
+      // Lưu trữ dữ liệu vào bộ nhớ đệm
+      AccountHelper.instance.setListAsset(result['data']);
+      if (AccountHelper.instance.getAllAssets().isEmpty) {
+        log("setCache [ASSET]: No assets cached in storage.");
+        result['message'] = "Không có dữ liệu tài sản trong bộ nhớ đệm";
+      } else {
+        log("setCache [ASSET]: Assets data cached successfully.");
+        result['message'] = "Dữ liệu tài sản đã được lưu vào bộ nhớ đệm";
       }
     } catch (e) {
       log("Error at getListAssetManagement - AssetManagementRepository: $e");
+      result['message'] = "Lỗi khi lấy danh sách tài sản: $e";
     }
 
     return result;
@@ -217,7 +218,9 @@ class AssetManagementRepository extends ApiBase {
       if (AccountHelper.instance.getAllCapitalSource().isEmpty) {
         log("setCache [CAPITAL_SOURCE]: No capital source cached in storage.");
       } else {
-        log("setCache [CAPITAL_SOURCE]: Capital source data cached successfully.");
+        log(
+          "setCache [CAPITAL_SOURCE]: Capital source data cached successfully.",
+        );
       }
     } catch (e) {
       log("Error at getListCapitalSource - AssetManagementRepository: $e");
@@ -559,7 +562,7 @@ class AssetManagementRepository extends ApiBase {
     int page,
     int size,
     String search,
-    String? idNhomTaiSan
+    String? idNhomTaiSan,
   ) async {
     Map<String, dynamic> result = {
       'data': <AssetManagementDto>[],
@@ -567,7 +570,7 @@ class AssetManagementRepository extends ApiBase {
       'totalPages': 0,
       'currentPage': 0,
       'totalItems': 0,
-      'groupCounts':{}
+      'groupCounts': {},
     };
 
     try {

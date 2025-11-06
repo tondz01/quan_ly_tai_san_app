@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -6,11 +9,13 @@ import 'package:quan_ly_tai_san_app/common/components/commom_loading.dart';
 import 'package:quan_ly_tai_san_app/common/model/config_dto.dart';
 import 'package:quan_ly_tai_san_app/common/reponsitory/config_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/gradient_header.dart';
+import 'package:quan_ly_tai_san_app/common/widgets/refresh_button.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_image.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/home/component/popup_setting_expiration_time.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/calculate_popup_width.dart';
 import 'package:quan_ly_tai_san_app/screen/home/utils/menu_prefs.dart';
@@ -46,6 +51,7 @@ class _HomeState extends State<Home> {
   bool _isPopupOpen = false;
 
   bool isItemOne = false;
+  String messageRefreshData = "Làm mới dữ liệu 'Tài sản' và 'CCDC'";
 
   void _updateSelectedIndex(int index, int subIndex) {
     if (_selectedIndex != index || _selectedSubIndex != subIndex) {
@@ -383,9 +389,8 @@ class _HomeState extends State<Home> {
                       ],
                     ),
                   ),
+
                   // Body - chỉ cuộn khi header đã cuộn hết
-               
-               
                   Container(
                     height: MediaQuery.of(context).size.height - 64,
                     decoration: BoxDecoration(color: ColorValue.neutral50),
@@ -424,6 +429,36 @@ class _HomeState extends State<Home> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        Tooltip(
+          message: messageRefreshData,
+          child: RefreshButton(
+            onRefresh: () async {
+              log("Refreshing...");
+              setState(() {
+                messageRefreshData = "Đang làm mới dữ liệu ...";
+              });
+              Map<String, dynamic> result = await AssetManagementRepository()
+                  .getListAssetManagement('ct001');
+              if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+                AppUtility.showSnackBar(
+                  context,
+                  'Làm mới dữ liệu tài sản và CCDC thành công',
+                );
+              } else {
+                AppUtility.showSnackBar(
+                  context,
+                  result['message'],
+                  isError: true,
+                );
+              }
+              log("Done!");
+              setState(() {
+                messageRefreshData =
+                    "Làm mới dữ liệu 'Tài sản' và 'CCDC' thành công";
+              });
+            },
+          ),
+        ),
         // Settings button
         PopupMenuButton<String>(
           tooltip: 'Quản lý hệ thống',
@@ -549,7 +584,6 @@ class _HomeState extends State<Home> {
             'ngayBaoHetHan': valueNotifiDealing,
           };
           await showLoadingPopup(context);
-          // ignore: use_build_context_synchronously
           fetchConfigTimeExpire(context, body);
         }
       },

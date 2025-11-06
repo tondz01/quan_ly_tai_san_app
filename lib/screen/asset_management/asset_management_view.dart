@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -5,7 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
@@ -127,46 +131,64 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                         onFileSelected: (fileName, filePath, fileBytes) async {
                           loadingMessage = 'Đang import dữ liệu...';
                           provider.onLoadingImport(true);
-                          
+
                           try {
                             // Optimized single-pass import: validate and convert in one go
-                            final (success, assets, _) = await importAssetsOptimized(
+                            final (
+                              success,
+                              assets,
+                              _,
+                            ) = await importAssetsOptimized(
                               bytes: fileBytes,
                               filePath: filePath,
                               context: context,
                               onProgress: (current, total) {
                                 // Update loading message with import progress
                                 setState(() {
-                                  loadingMessage = 'Đang import dữ liệu... ($current/$total)';
+                                  loadingMessage =
+                                      'Đang import dữ liệu... ($current/$total)';
                                 });
                               },
                             );
-                            
+
                             if (!success) {
                               provider.onLoadingImport(false);
                               return;
                             }
-                            
+
                             // Process assets in batches to avoid blocking UI
-                            final batchSize = 100; // Upload 100 assets per batch
-                            final totalBatches = (assets.length / batchSize).ceil();
-                            
-                            for (int batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+                            final batchSize =
+                                100; // Upload 100 assets per batch
+                            final totalBatches =
+                                (assets.length / batchSize).ceil();
+
+                            for (
+                              int batchIndex = 0;
+                              batchIndex < totalBatches;
+                              batchIndex++
+                            ) {
                               final start = batchIndex * batchSize;
-                              final end = (start + batchSize).clamp(0, assets.length);
+                              final end = (start + batchSize).clamp(
+                                0,
+                                assets.length,
+                              );
                               final batch = assets.sublist(start, end);
-                              
+
                               // Update progress message
                               setState(() {
-                                loadingMessage = 'Đang lưu dữ liệu... Batch ${batchIndex + 1}/$totalBatches (${end}/${assets.length})';
+                                loadingMessage =
+                                    'Đang lưu dữ liệu... Batch ${batchIndex + 1}/$totalBatches (${end}/${assets.length})';
                               });
-                              
+
                               // Upload batch via repository
                               final repository = AssetManagementRepository();
-                              final result = await repository.createAssetBatch(batch);
-                              
+                              final result = await repository.createAssetBatch(
+                                batch,
+                              );
+
                               // Check if batch upload succeeded
-                              if (result['status_code'] != 200 && result['status_code'] != 201) {
+                              if (result['status_code'] != 200 &&
+                                  result['status_code'] != 201) {
                                 // If one batch fails, show error but continue
                                 AppUtility.showSnackBar(
                                   context,
@@ -174,22 +196,25 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                                   isError: true,
                                 );
                               }
-                              
+
                               // Small delay between batches
                               await Future.delayed(Duration(milliseconds: 100));
                             }
-                            
+
                             // Refresh data after successful import
-                            final assetBloc = context.read<AssetManagementBloc>();
-                            final idCongTy = 'ct001'; // Get from context/provider
-                            assetBloc.add(GetListAssetManagementEvent(context, idCongTy));
-                            
+                            final assetBloc =
+                                context.read<AssetManagementBloc>();
+                            final idCongTy =
+                                'ct001'; // Get from context/provider
+                            assetBloc.add(
+                              GetListAssetManagementEvent(context, idCongTy),
+                            );
+
                             AppUtility.showSnackBar(
                               context,
                               'Import thành công ${assets.length} tài sản',
                               isError: false,
                             );
-                            
                           } catch (e) {
                             AppUtility.showSnackBar(
                               context,
@@ -197,20 +222,35 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                               isError: true,
                             );
                           } finally {
+                            provider.onRefreshDataAssetGroup();
                             provider.onLoadingImport(false);
                           }
                         },
-                        onExportData: () {
+                        onExportData: () async {
                           loadingMessage = 'Đang xuất dữ liệu...';
                           provider.onLoadingImport(true);
-                          AppUtility.exportData(
-                            context,
-                            "tai_san",
-                            provider.data
-                                    ?.map((e) => e.toExportJson())
-                                    .toList() ??
-                                [],
-                          );
+                          Map<String, dynamic> result =
+                              await ExportDataReponsitory()
+                                  .exportDataAssetManagement('ct001');
+                          if (result['status_code'] ==
+                              Numeral.STATUS_CODE_SUCCESS) {
+                            if (context.mounted) {
+                              AppUtility.showSnackBar(
+                                context,
+                                result['message'],
+                              );
+                            }
+                            provider.onLoadingImport(false);
+                          } else {
+                            if (context.mounted) {
+                              AppUtility.showSnackBar(
+                                context,
+                                result['message'],
+                                isError: true,
+                              );
+                            }
+                            provider.onLoadingImport(false);
+                          }
                           provider.onLoadingImport(false);
                         },
                         isShowInput:
