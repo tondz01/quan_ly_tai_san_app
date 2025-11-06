@@ -642,6 +642,7 @@ class AssetManagementProvider with ChangeNotifier {
     // }
     onReloadDataPage(context);
     onLoadingImport(false);
+    onRefreshDataAssetGroup();
     AppUtility.showSnackBar(context, 'Thêm mới thành công!');
     notifyListeners();
   }

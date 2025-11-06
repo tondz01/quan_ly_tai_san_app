@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
@@ -49,6 +51,7 @@ class _HomeState extends State<Home> {
   bool _isPopupOpen = false;
 
   bool isItemOne = false;
+  String messageRefreshData = "Làm mới dữ liệu 'Tài sản' và 'CCDC'";
 
   void _updateSelectedIndex(int index, int subIndex) {
     if (_selectedIndex != index || _selectedSubIndex != subIndex) {
@@ -427,17 +430,32 @@ class _HomeState extends State<Home> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Tooltip(
-          message: 'Làm mới dữ liệu Tài sản và CCDC',
+          message: messageRefreshData,
           child: RefreshButton(
             onRefresh: () async {
               log("Refreshing...");
-              await AssetManagementRepository().getListAssetManagement('ct001');
+              setState(() {
+                messageRefreshData = "Đang làm mới dữ liệu ...";
+              });
+              Map<String, dynamic> result = await AssetManagementRepository()
+                  .getListAssetManagement('ct001');
+              if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+                AppUtility.showSnackBar(
+                  context,
+                  'Làm mới dữ liệu tài sản và CCDC thành công',
+                );
+              } else {
+                AppUtility.showSnackBar(
+                  context,
+                  result['message'],
+                  isError: true,
+                );
+              }
               log("Done!");
-              AppUtility.showSnackBar(
-                // ignore: use_build_context_synchronously
-                context,
-                'Làm mới dữ liệu tài sản và CCDC thành công',
-              );
+              setState(() {
+                messageRefreshData =
+                    "Làm mới dữ liệu 'Tài sản' và 'CCDC' thành công";
+              });
             },
           ),
         ),
@@ -566,7 +584,6 @@ class _HomeState extends State<Home> {
             'ngayBaoHetHan': valueNotifiDealing,
           };
           await showLoadingPopup(context);
-          // ignore: use_build_context_synchronously
           fetchConfigTimeExpire(context, body);
         }
       },

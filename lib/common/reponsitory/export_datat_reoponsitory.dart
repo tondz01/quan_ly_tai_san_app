@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
@@ -34,6 +35,92 @@ class ExportDataReponsitory extends ApiBase {
       // Lưu file ra máy (ví dụ Excel)
       final bytes = Uint8List.fromList(response.data);
       final savedPath = await saveExportFile(bytes, '$fileName.xlsx');
+
+      // Sửa logic kiểm tra lỗi
+      if (savedPath.startsWith("404/")) {
+        final error = savedPath.substring(4); // Bỏ "404/" prefix
+        result['message'] = "Lỗi khi xuất file dữ liệu: $error";
+        result['status_code'] = Numeral.NOTFOUND_EXCEPTION_CODE;
+        SGLog.error("ExportDataReponsitory", "Error at saveExportFile: $error");
+      } else if (savedPath == "download_triggered") {
+        result['message'] = "✅ File đã trigger download trên Web";
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      } else {
+        result['message'] = "✅ File đã lưu ở: $savedPath";
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      }
+    } catch (e) {
+      result['message'] = "Error at exportData: $e";
+      SGLog.error("ExportDataReponsitory", "Error at exportData: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> exportDataAssetManagement(
+    String idCongTy,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': -1,
+      'message': '',
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.ASSET_MANAGEMENT}/export/excel',
+        queryParameters: {'idcongty': idCongTy},
+        options: Options(
+          responseType: ResponseType.bytes, // nhận binary data
+        ),
+      );
+
+      // Lưu file ra máy (ví dụ Excel)
+      final bytes = Uint8List.fromList(response.data);
+      String timeExport = DateFormat('yyyyMMddHHmmss').format(DateTime.now());
+      final savedPath = await saveExportFile(bytes, 'tai_san_$timeExport.xlsx');
+
+      // Sửa logic kiểm tra lỗi
+      if (savedPath.startsWith("404/")) {
+        final error = savedPath.substring(4); // Bỏ "404/" prefix
+        result['message'] = "Lỗi khi xuất file dữ liệu: $error";
+        result['status_code'] = Numeral.NOTFOUND_EXCEPTION_CODE;
+        SGLog.error("ExportDataReponsitory", "Error at saveExportFile: $error");
+      } else if (savedPath == "download_triggered") {
+        result['message'] = "✅ File đã trigger download trên Web";
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      } else {
+        result['message'] = "✅ File đã lưu ở: $savedPath";
+        result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      }
+    } catch (e) {
+      result['message'] = "Error at exportData: $e";
+      SGLog.error("ExportDataReponsitory", "Error at exportData: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> exportDataCCDC(String idCongTy) async {
+    Map<String, dynamic> result = {
+      'data': '',
+      'status_code': -1,
+      'message': '',
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.TOOLS_AND_SUPPLIES}/export/excel',
+        queryParameters: {'idcongty': idCongTy},
+        options: Options(
+          responseType: ResponseType.bytes, // nhận binary data
+        ),
+      );
+
+      // Lưu file ra máy (ví dụ Excel)
+      final bytes = Uint8List.fromList(response.data);
+      String timeExport = DateFormat('yyyyMMddHHmmss').format(DateTime.now());
+      final savedPath = await saveExportFile(bytes, 'ccdc_vt_$timeExport.xlsx');
 
       // Sửa logic kiểm tra lỗi
       if (savedPath.startsWith("404/")) {

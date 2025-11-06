@@ -7,13 +7,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/optimized_validation_asset.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
@@ -23,7 +24,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_managem
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 class AssetManagementView extends StatefulWidget {
   const AssetManagementView({super.key});
@@ -226,32 +226,31 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                             provider.onLoadingImport(false);
                           }
                         },
-                        onExportData: () {
+                        onExportData: () async {
                           loadingMessage = 'Đang xuất dữ liệu...';
                           provider.onLoadingImport(true);
-                          AssetManagementRepository().getListAssetManagement(
-                            'ct001',
-                          );
-                          List<AssetManagementDto> allAssets = [];
-                          log('AccountHelper.instance.getAllAssets().length: ${AccountHelper.instance.getAllAssets().length}'
-                              '${AccountHelper.instance.getAllAssets().length}');
-                          if (AccountHelper.instance
-                              .getAllAssets()
-                              .isNotEmpty) {
-                            allAssets = AccountHelper.instance.getAllAssets();
-                            AppUtility.exportData(
-                              context,
-                              "tai_san",
-                              allAssets.map((e) => e.toExportJson()).toList(),
-                            );
+                          Map<String, dynamic> result =
+                              await ExportDataReponsitory()
+                                  .exportDataAssetManagement('ct001');
+                          if (result['status_code'] ==
+                              Numeral.STATUS_CODE_SUCCESS) {
+                            if (context.mounted) {
+                              AppUtility.showSnackBar(
+                                context,
+                                result['message'],
+                              );
+                            }
+                            provider.onLoadingImport(false);
                           } else {
-                            AppUtility.showSnackBar(
-                              context,
-                              'Không có dữ liệu để xuất. Vui lòng tải lại dữ liệu tài sản trước khi xuất',
-                              isError: true,
-                            );
+                            if (context.mounted) {
+                              AppUtility.showSnackBar(
+                                context,
+                                result['message'],
+                                isError: true,
+                              );
+                            }
+                            provider.onLoadingImport(false);
                           }
-
                           provider.onLoadingImport(false);
                         },
                         isShowInput:

@@ -7,6 +7,8 @@ import 'package:provider/provider.dart' as provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/export_datat_reoponsitory.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/detail_assets_dto.dart';
@@ -225,60 +227,80 @@ class _ToolsAndSuppliesViewState extends State<ToolsAndSuppliesView> {
                           isLoadingImport = false;
                         }
                       },
-                      onExportData: () {
+                      onExportData: () async {
                         loadingMessage = 'Đang xuất dữ liệu...';
                         if (provider.data == null) return;
                         provider.onLoadingImport(true);
                         isLoadingImport = true;
-                        List<dynamic> data = [];
-                        for (var item in provider.data) {
-                          if (item.chiTietTaiSanList.isNotEmpty) {
-                            for (var element in item.chiTietTaiSanList) {
-                              Map<String, dynamic> dataItem = {
-                                'Mã công cụ dụng cụ': item.id,
-                                'Mã đơn vị': item.idDonVi,
-                                'Tên công cụ dụng cụ': item.ten,
-                                'Ngày nhập': item.ngayNhap,
-                                'Mã đơn vị tính': item.donViTinh,
-                                'Mã nhóm CCDC': item.idNhomCCDC,
-                                'Mã loại CCDC con': item.idLoaiCCDCCon,
-                                'Giá trị': item.giaTri,
-                                'Ký hiệu': item.kyHieu,
-                                'Ghi chú': item.ghiChu,
-                                'Số ký hiệu': element.soKyHieu ?? '',
-                                'Số lượng': element.soLuong ?? '',
-                                'Công suất': element.congSuat ?? '',
-                                'Nước sản xuất': element.nuocSanXuat ?? '',
-                                'Năm sản xuất': element.namSanXuat ?? '',
-                              };
-                              data.add(dataItem);
-                            }
-                          } else {
-                            Map<String, dynamic> dataItem = {
-                              'Mã công cụ dụng cụ': item.id,
-                              'Mã đơn vị': item.idDonVi,
-                              'Tên công cụ dụng cụ': item.ten,
-                              'Ngày nhập': item.ngayNhap,
-                              'Mã đơn vị tính': item.donViTinh,
-                              'Mã nhóm CCDC': item.idNhomCCDC,
-                              'Mã loại CCDC con': item.idLoaiCCDCCon,
-                              'Giá trị': item.giaTri,
-                              'Ký hiệu': item.kyHieu,
-                              'Ghi chú': item.ghiChu,
-                              'Số ký hiệu': '',
-                              'Số lượng': '',
-                              'Công suất': '',
-                              'Nước sản xuất': '',
-                              'Năm sản xuất': '',
-                            };
-                            data.add(dataItem);
+                        // List<dynamic> data = [];
+                        // for (var item in provider.data) {
+                        //   if (item.chiTietTaiSanList.isNotEmpty) {
+                        //     for (var element in item.chiTietTaiSanList) {
+                        //       Map<String, dynamic> dataItem = {
+                        //         'Mã công cụ dụng cụ': item.id,
+                        //         'Mã đơn vị': item.idDonVi,
+                        //         'Tên công cụ dụng cụ': item.ten,
+                        //         'Ngày nhập': item.ngayNhap,
+                        //         'Mã đơn vị tính': item.donViTinh,
+                        //         'Mã nhóm CCDC': item.idNhomCCDC,
+                        //         'Mã loại CCDC con': item.idLoaiCCDCCon,
+                        //         'Giá trị': item.giaTri,
+                        //         'Ký hiệu': item.kyHieu,
+                        //         'Ghi chú': item.ghiChu,
+                        //         'Số ký hiệu': element.soKyHieu ?? '',
+                        //         'Số lượng': element.soLuong ?? '',
+                        //         'Công suất': element.congSuat ?? '',
+                        //         'Nước sản xuất': element.nuocSanXuat ?? '',
+                        //         'Năm sản xuất': element.namSanXuat ?? '',
+                        //       };
+                        //       data.add(dataItem);
+                        //     }
+                        //   } else {
+                        //     Map<String, dynamic> dataItem = {
+                        //       'Mã công cụ dụng cụ': item.id,
+                        //       'Mã đơn vị': item.idDonVi,
+                        //       'Tên công cụ dụng cụ': item.ten,
+                        //       'Ngày nhập': item.ngayNhap,
+                        //       'Mã đơn vị tính': item.donViTinh,
+                        //       'Mã nhóm CCDC': item.idNhomCCDC,
+                        //       'Mã loại CCDC con': item.idLoaiCCDCCon,
+                        //       'Giá trị': item.giaTri,
+                        //       'Ký hiệu': item.kyHieu,
+                        //       'Ghi chú': item.ghiChu,
+                        //       'Số ký hiệu': '',
+                        //       'Số lượng': '',
+                        //       'Công suất': '',
+                        //       'Nước sản xuất': '',
+                        //       'Năm sản xuất': '',
+                        //     };
+                        //     data.add(dataItem);
+                        //   }
+                        // }
+                        // AppUtility.exportData(
+                        //   context,
+                        //   "Danh sách CCDC - Vật tư",
+                        //   data,
+                        // );
+                        Map<String, dynamic> result =
+                            await ExportDataReponsitory().exportDataCCDC(
+                              'ct001',
+                            );
+                        if (result['status_code'] ==
+                            Numeral.STATUS_CODE_SUCCESS) {
+                          if (context.mounted) {
+                            AppUtility.showSnackBar(context, result['message']);
                           }
+                          provider.onLoadingImport(false);
+                        } else {
+                          if (context.mounted) {
+                            AppUtility.showSnackBar(
+                              context,
+                              result['message'],
+                              isError: true,
+                            );
+                          }
+                          provider.onLoadingImport(false);
                         }
-                        AppUtility.exportData(
-                          context,
-                          "Danh sách CCDC - Vật tư",
-                          data,
-                        );
                         provider.onLoadingImport(false);
                         isLoadingImport = false;
                       },

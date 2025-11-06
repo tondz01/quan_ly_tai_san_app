@@ -22,6 +22,7 @@ class AssetManagementRepository extends ApiBase {
     List<AssetManagementDto> list = [];
     Map<String, dynamic> result = {
       'data': list,
+      'message': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
@@ -32,6 +33,7 @@ class AssetManagementRepository extends ApiBase {
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
+        result['message'] = response.data['message'] ?? 'Lấy danh sách tài sản thất bại';
         return result;
       }
 
@@ -47,11 +49,14 @@ class AssetManagementRepository extends ApiBase {
       AccountHelper.instance.setListAsset(result['data']);
       if (AccountHelper.instance.getAllAssets().isEmpty) {
         log("setCache [ASSET]: No assets cached in storage.");
+        result['message'] = "Không có dữ liệu tài sản trong bộ nhớ đệm";
       } else {
         log("setCache [ASSET]: Assets data cached successfully.");
+        result['message'] = "Dữ liệu tài sản đã được lưu vào bộ nhớ đệm";
       }
     } catch (e) {
       log("Error at getListAssetManagement - AssetManagementRepository: $e");
+      result['message'] = "Lỗi khi lấy danh sách tài sản: $e";
     }
 
     return result;
