@@ -43,16 +43,12 @@ class AssetManagementRepository extends ApiBase {
         AssetManagementDto.fromJson,
       );
 
-      try {
-        // Lưu trữ dữ liệu vào bộ nhớ đệm
-        AccountHelper.instance.setListAsset(result['data']);
-        if (AccountHelper.instance.getAllAssets().isEmpty) {
-          log("setCache [ASSET]: No assets cached in storage.");
-        } else {
-          log("setCache [ASSET]: Assets data cached successfully.");
-        }
-      } catch (e) {
-        log("setCache [ASSET]: Error saving asset data to storage: $e");
+      // Lưu trữ dữ liệu vào bộ nhớ đệm
+      AccountHelper.instance.setListAsset(result['data']);
+      if (AccountHelper.instance.getAllAssets().isEmpty) {
+        log("setCache [ASSET]: No assets cached in storage.");
+      } else {
+        log("setCache [ASSET]: Assets data cached successfully.");
       }
     } catch (e) {
       log("Error at getListAssetManagement - AssetManagementRepository: $e");
@@ -217,7 +213,9 @@ class AssetManagementRepository extends ApiBase {
       if (AccountHelper.instance.getAllCapitalSource().isEmpty) {
         log("setCache [CAPITAL_SOURCE]: No capital source cached in storage.");
       } else {
-        log("setCache [CAPITAL_SOURCE]: Capital source data cached successfully.");
+        log(
+          "setCache [CAPITAL_SOURCE]: Capital source data cached successfully.",
+        );
       }
     } catch (e) {
       log("Error at getListCapitalSource - AssetManagementRepository: $e");
@@ -559,7 +557,7 @@ class AssetManagementRepository extends ApiBase {
     int page,
     int size,
     String search,
-    String? idNhomTaiSan
+    String? idNhomTaiSan,
   ) async {
     Map<String, dynamic> result = {
       'data': <AssetManagementDto>[],
@@ -567,7 +565,7 @@ class AssetManagementRepository extends ApiBase {
       'totalPages': 0,
       'currentPage': 0,
       'totalItems': 0,
-      'groupCounts':{}
+      'groupCounts': {},
     };
 
     try {

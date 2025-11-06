@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_managemen
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/optimized_validation_asset.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
@@ -22,6 +23,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_managem
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 class AssetManagementView extends StatefulWidget {
   const AssetManagementView({super.key});
@@ -227,14 +229,29 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                         onExportData: () {
                           loadingMessage = 'Đang xuất dữ liệu...';
                           provider.onLoadingImport(true);
-                          AppUtility.exportData(
-                            context,
-                            "tai_san",
-                            provider.data
-                                    ?.map((e) => e.toExportJson())
-                                    .toList() ??
-                                [],
+                          AssetManagementRepository().getListAssetManagement(
+                            'ct001',
                           );
+                          List<AssetManagementDto> allAssets = [];
+                          log('AccountHelper.instance.getAllAssets().length: ${AccountHelper.instance.getAllAssets().length}'
+                              '${AccountHelper.instance.getAllAssets().length}');
+                          if (AccountHelper.instance
+                              .getAllAssets()
+                              .isNotEmpty) {
+                            allAssets = AccountHelper.instance.getAllAssets();
+                            AppUtility.exportData(
+                              context,
+                              "tai_san",
+                              allAssets.map((e) => e.toExportJson()).toList(),
+                            );
+                          } else {
+                            AppUtility.showSnackBar(
+                              context,
+                              'Không có dữ liệu để xuất. Vui lòng tải lại dữ liệu tài sản trước khi xuất',
+                              isError: true,
+                            );
+                          }
+
                           provider.onLoadingImport(false);
                         },
                         isShowInput:
