@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dar
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:se_gay_components/common/sg_input_text.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
 class AccountDetail extends StatefulWidget {
@@ -36,6 +37,7 @@ class _AccountDetailState extends State<AccountDetail> {
   List<DropdownMenuItem<RoleDto>> roleItems = [];
   List<RoleDto> role = [];
   RoleDto? roleSelected;
+  bool _obscurePassword = true;
 
   TextEditingController ctrlIdAccount = TextEditingController();
   TextEditingController ctrlTenTk = TextEditingController();
@@ -127,12 +129,34 @@ class _AccountDetailState extends State<AccountDetail> {
                         // _checkForChanges();
                       },
                     ),
-                    CommonFormInput(
-                      label: 'Mật khẩu',
+                    SGInputText(
                       controller: ctrlMatKhau,
-                      isEditing: true,
-                      textContent: ctrlMatKhau.text,
+                      label: "Mật khẩu",
+                      hintText: "Nhập mật khẩu",
+                      obscureText: _obscurePassword,
+                      isPassword: true,
+                      // borderRadius: 8,
+                      // isTextRequire: true,
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      keyboardInputType: TextInputType.visiblePassword,
+                      suffixIcon: IconButton(
+                        alignment: Alignment.center,
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                            log('message _obscurePassword: $_obscurePassword');
+                          });
+                        },
+                      ),
+                      // focusNode: _passwordFocusNode,
+                      textInputAction: TextInputAction.next,
                     ),
+
                     // CmFormDropdownObject<RoleDto>(
                     //   label: 'Vai trò',
                     //   controller: ctrlRole,

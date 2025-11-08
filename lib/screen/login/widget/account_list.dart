@@ -1,24 +1,35 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/login/bloc/login_event.dart';
+import 'package:quan_ly_tai_san_app/screen/login/component/account_table_config.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/provider/account_table_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_edit_popup.dart';
 import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:table_base/core/themes/app_color.dart';
+import 'package:table_base/core/themes/app_icon_svg.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/responsive_button_bar/responsive_button_bar.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class AccountList extends StatefulWidget {
   final LoginProvider provider;
@@ -29,245 +40,130 @@ class AccountList extends StatefulWidget {
 }
 
 class _AccountListState extends State<AccountList> {
-  final ScrollController horizontalController = ScrollController();
-  String searchTerm = "";
+  List<UserInfoDTO> listSelected = [];
 
-  List<UserInfoDTO> selectedItems = [];
+  // Table configuration
+  late List<ColumnDefinition> _definitions;
+  late List<TableColumnData> _columns;
+  late List<TableColumnData> _allColumns;
+  late Map<String, TableCellBuilder> _buildersByKey;
+  late List<String> _hiddenKeys;
 
-  // Column display options
-  late List<ColumnDisplayOption> columnOptions;
+  int totalItems = 0;
+  bool _isProviderInitialized = false;
 
-  List<String> visibleColumnIds = [
-    'tenDangNhap',
-    'hoTen',
-    'email',
-    'soDienThoai',
-    'ngayTao',
-    'ngayCapNhat',
-    'nguoiTao',
-    'nguoiCapNhat',
-    'idCongTy',
-    'rule',
-    'actions',
-    // 'created_at',
-    // 'updated_at',
-    // 'created_by',
-    // 'updated_by',
-  ];
+  ScrollController horizontalController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _initializeColumnOptions();
+    _initializeTableConfig();
   }
 
-  void _initializeColumnOptions() {
-    columnOptions = [
-      ColumnDisplayOption(
-        id: 'tenDangNhap',
-        label: 'Tên đăng nhập',
-        isChecked: visibleColumnIds.contains('tenDangNhap'),
-      ),
-      ColumnDisplayOption(
-        id: 'hoTen',
-        label: 'Họ tên',
-        isChecked: visibleColumnIds.contains('hoTen'),
-      ),
-      ColumnDisplayOption(
-        id: 'email',
-        label: 'Email',
-        isChecked: visibleColumnIds.contains('email'),
-      ),
-      ColumnDisplayOption(
-        id: 'soDienThoai',
-        label: 'Số điện thoại',
-        isChecked: visibleColumnIds.contains('soDienThoai'),
-      ),
-      ColumnDisplayOption(
-        id: 'ngayTao',
-        label: 'Ngày tạo',
-        isChecked: visibleColumnIds.contains('ngayTao'),
-      ),
-      ColumnDisplayOption(
-        id: 'ngayCapNhat',
-        label: 'Ngày cập nhật',
-        isChecked: visibleColumnIds.contains('ngayCapNhat'),
-      ),
-      ColumnDisplayOption(
-        id: 'nguoiTao',
-        label: 'Người tạo',
-        isChecked: visibleColumnIds.contains('nguoiTao'),
-      ),
-      ColumnDisplayOption(
-        id: 'nguoiCapNhat',
-        label: 'Người cập nhật',
-        isChecked: visibleColumnIds.contains('nguoiCapNhat'),
-      ),
-      ColumnDisplayOption(
-        id: 'idCongTy',
-        label: 'ID công ty',
-        isChecked: visibleColumnIds.contains('idCongTy'),
-      ),
-      ColumnDisplayOption(
-        id: 'rule',
-        label: 'Quyền',
-        isChecked: visibleColumnIds.contains('rule'),
-      ),
-      ColumnDisplayOption(
-        id: 'actions',
-        label: 'Thao tác',
-        isChecked: visibleColumnIds.contains('actions'),
-      ),
-    ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Khởi tạo table provider một lần sau khi dependencies thay đổi
+    if (!_isProviderInitialized && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_isProviderInitialized && mounted) {
+          final ref = riverpod.ProviderScope.containerOf(context);
+          final notifier = ref.read(accountTableProvider.notifier);
+          final columnWidths = {for (final col in _columns) col.key: col.width};
+          try {
+            notifier.initialize(
+              columnWidths: columnWidths,
+              valueGetter: getValueForColumn,
+              itemsPerPage: 20,
+            );
+            _isProviderInitialized = true;
+          } catch (e) {
+            // Provider đã được khởi tạo, bỏ qua
+            _isProviderInitialized = true;
+          }
+        }
+      });
+    }
   }
 
-  List<SgTableColumn<UserInfoDTO>> _buildColumns() {
-    final List<SgTableColumn<UserInfoDTO>> columns = [];
+  void _initializeTableConfig() {
+    final currentUser = AccountHelper.instance.getUserInfo();
+    final userInfo =
+        currentUser ??
+        UserInfoDTO(
+          id: '',
+          tenDangNhap: '',
+          matKhau: '',
+          hoTen: '',
+          nguoiTao: '',
+          idCongTy: '',
+          rule: 0,
+          isActive: false,
+        );
+    _definitions = AccountTableConfig.getColumnsWithActions(
+      userInfo,
+      (item) => TableCellData(widget: viewAction(item)),
+    );
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
+    _hiddenKeys = <String>[];
+  }
 
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'tenDangNhap':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Tên đăng nhập',
-              getValue: (item) => item.username ?? '',
-              width: 170,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'hoTen':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Họ tên',
-              getValue: (item) => item.hoTen,
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'email':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Email',
-              getValue: (item) => item.email ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'soDienThoai':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Số điện thoại',
-              width: 100,
-              getValue: (item) => item.soDienThoai ?? '',
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'ngayTao':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Ngày tạo',
-              getValue: (item) => item.ngayTao.toString(),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'ngayCapNhat':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Ngày cập nhật',
-              getValue: (item) => item.ngayCapNhat.toString(),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'nguoiTao':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Người tạo',
-              getValue: (item) => widget.provider.getNameUser(item.nguoiTao),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'nguoiCapNhat':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Người cập nhật',
-              getValue: (item) => item.nguoiCapNhat.toString(),
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'idCongTy':
-          columns.add(
-            TableBaseConfig.columnTable<UserInfoDTO>(
-              title: 'Công ty',
-              getValue: (item) => item.idCongTy.toString(),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<UserInfoDTO>(
-              title: 'Thao tác',
-              cellBuilder: (item) => viewAction(item),
-              width: 180,
-              searchable: true,
-            ),
-          );
-          break;
-      }
+  dynamic getValueForColumn(UserInfoDTO item, int columnIndex) {
+    final int offset = 1; // showCheckboxColumn
+    final int adjustedIndex = columnIndex - offset;
+
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
     }
 
-    return columns;
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+        case 'tenDangNhap':
+        return item.username ?? '';
+        case 'hoTen':
+        return item.hoTen;
+        case 'email':
+        return item.email ?? '';
+      case 'document': // Số điện thoại trong config
+        return item.soDienThoai ?? '';
+        case 'ngayTao':
+        return item.ngayTao ?? '';
+        case 'ngayCapNhat':
+        return item.ngayCapNhat ?? '';
+        case 'nguoiTao':
+        return widget.provider.getNameUser(item.tenDangNhap);
+        case 'nguoiCapNhat':
+        return item.nguoiCapNhat;
+      default:
+        return null;
+    }
   }
 
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
+  Future<void> _openColumnConfigDialog() async {
+    try {
+      final apply = await showColumnConfigAndApply(
       context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
+        allColumns: _allColumns,
+        currentColumns: _columns,
+        initialHiddenKeys: _hiddenKeys,
+        title: 'table.config_column'.tr,
+      );
+      if (apply != null) {
         setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
+          _hiddenKeys = apply.hiddenKeys;
+          _columns = apply.updatedColumns;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
-    );
-  }
-
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
+      }
+    } catch (e) {
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<UserInfoDTO>> columns = _buildColumns();
-
     return Container(
-      height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -295,44 +191,42 @@ class _AccountListState extends State<AccountList> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  spacing: 8,
                   children: [
                     Icon(
                       Icons.table_chart,
                       color: Colors.grey.shade600,
                       size: 18,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 2.5),
-                      child: Text(
-                        'Danh sách account hiện có (${widget.provider.users?.length})',
+                    SizedBox(width: 8),
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        final totalItems = ref.watch(
+                          accountTableProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
+                        return Text(
+                          'Danh sách account ($totalItems)',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey.shade700,
                         ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _showColumnDisplayPopup,
-                      child: Icon(
-                        Icons.settings,
-                        color: const Color(0xFF21A366),
-                        size: 18,
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),
                 Visibility(
                   visible:
-                      selectedItems.isNotEmpty &&
+                      listSelected.isNotEmpty &&
                       AccountHelper.instance.getUserInfo()?.tenDangNhap ==
                           "admin",
                   child: Row(
                     children: [
                       SGText(
                         text:
-                            'Danh sách tài khoản đã chọn: ${selectedItems.length}',
+                            'Danh sách tài khoản đã chọn: ${listSelected.length}',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -340,32 +234,28 @@ class _AccountListState extends State<AccountList> {
                         ),
                       ),
                       SizedBox(width: 16),
-
                       MaterialTextButton(
                         text: 'Xóa đã chọn',
                         icon: Icons.delete,
                         backgroundColor: ColorValue.error,
                         foregroundColor: Colors.white,
                         onPressed: () {
-                          setState(() {
-                            List<String> data =
-                                selectedItems.map((e) => e.id).toList();
+                          final ids = listSelected.map((e) => e.id).toList();
                             showConfirmDialog(
                               context,
                               type: ConfirmType.delete,
                               title: 'Xóa tài khoản',
                               message:
-                                  'Bạn có chắc muốn xóa ${selectedItems.length} tài khoản',
-                              highlight: selectedItems.length.toString(),
+                                'Bạn có chắc muốn xóa ${listSelected.length} tài khoản',
+                            highlight: listSelected.length.toString(),
                               cancelText: 'Không',
                               confirmText: 'Xóa',
                               onConfirm: () {
                                 context.read<LoginBloc>().add(
-                                  DeleteUserBatchEvent(data),
+                                DeleteUserBatchEvent(ids),
                                 );
                               },
                             );
-                          });
                         },
                       ),
                     ],
@@ -374,20 +264,136 @@ class _AccountListState extends State<AccountList> {
               ],
             ),
           ),
-          Expanded(
-            child: TableBaseView<UserInfoDTO>(
-              searchTerm: '',
-              columns: columns,
-              data: widget.provider.filteredData ?? [],
-              horizontalController: ScrollController(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final availableWidth = constraints.maxWidth;
+                return Row(
+                  children: [
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        return BoxSearch(
+                          width: (availableWidth * 0.35).toDouble(),
+                          onSearch: (value) {
+                            ref.read(accountTableProvider.notifier).searchTerm =
+                                value;
+                          },
+                        );
+                      },
+                    ),
+                    SizedBox(
+                      width: (availableWidth * 0.65).toDouble(),
+                      child: riverpod.Consumer(
+                        builder: (context, ref, _) {
+                          final hasFilters = ref.watch(
+                            accountTableProvider.select(
+                              (s) => s.filterState.hasActiveFilters,
+                            ),
+                          );
+                          final tableState = ref.watch(accountTableProvider);
+                          final selectedCount = tableState.selectedItems.length;
+                          listSelected = tableState.selectedItems;
+                          final buttons = _buildButtonList(selectedCount);
+                          final processedButtons =
+                              buttons.map((button) {
+                                if (button.text == 'Xóa bộ lọc') {
+                                  return ResponsiveButtonData.fromButtonIcon(
+                                    text: button.text,
+                                    iconPath: button.iconPath!,
+                                    backgroundColor: button.backgroundColor!,
+                                    iconColor: button.iconColor!,
+                                    textColor: button.textColor!,
+                                    width: button.width,
+                                    onPressed: () {
+                                      ref
+                                          .read(accountTableProvider.notifier)
+                                          .clearAllFilters();
+                                    },
+                                  );
+                                }
+                                return button;
+                              }).toList();
+
+                          final filteredButtons =
+                              hasFilters
+                                  ? processedButtons
+                                  : processedButtons
+                                      .where(
+                                        (button) => button.text != 'Xóa bộ lọc',
+                                      )
+                                      .toList();
+
+                          return ResponsiveButtonBar(
+                            buttons: filteredButtons,
+                            spacing: 12,
+                            overflowSide: OverflowSide.start,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            popupPosition: PopupMenuPosition.under,
+                            popupOffset: const Offset(0, 8),
+                            popupShape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            popupElevation: 6,
+                            moreLabel: 'Khác',
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          // Table
+          ClipRRect(
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(8.0),
+              bottomRight: Radius.circular(8.0),
+            ),
+            child: riverpod.Consumer(
+              builder: (context, ref, child) {
+                totalItems = ref.watch(
+                  accountTableProvider.select(
+                    (s) => s.paginationState.totalItems,
+                  ),
+                );
+                log('message totalItems: $totalItems');
+                return RiverpodTable<UserInfoDTO>(
+                  tableProvider: accountTableProvider,
+                  columns: _columns,
+                  showCheckboxColumn: true,
+                  enableRowSelection: true,
+                  enableRowHover: true,
+                  showAlternatingRowColors: true,
+                  valueGetter: getValueForColumn,
+                  cellsBuilder: (_) => [],
+                  cellBuilderByKey: (item, key) {
+                    final builder = _buildersByKey[key];
+                    if (builder != null) return builder(item);
+                    return null;
+                  },
               onRowTap: (item) {
                 // widget.provider.onChangeDetail(item);
-                // showPermissionExample(context, item);
-              },
-              onSelectionChanged: (items) {
-                setState(() {
-                  selectedItems = items;
-                });
+                  },
+                  onDelete: (item) {
+                    showConfirmDialog(
+                      context,
+                      type: ConfirmType.delete,
+                      title: 'Xóa account',
+                      message:
+                          'Bạn có chắc muốn xóa tài khoản ${item.tenDangNhap}',
+                      highlight: item.tenDangNhap,
+                      cancelText: 'Không',
+                      confirmText: 'Xóa',
+                      onConfirm: () {
+                        context.read<LoginBloc>().add(DeleteUserEvent(item.id));
+                      },
+                    );
+                  },
+                  showActionsColumn: false, // Sử dụng actions column từ config
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                );
               },
             ),
           ),
@@ -396,8 +402,45 @@ class _AccountListState extends State<AccountList> {
     );
   }
 
-  Widget showCheckBoxActive(bool isActive) {
-    return SgCheckbox(value: isActive);
+  List<ResponsiveButtonData> _buildButtonList(int itemCount) {
+    return [
+      // Configure columns button
+      ResponsiveButtonData.fromButtonIcon(
+        text: 'table.config_column'.tr,
+        iconPath: AppIconSvg.iconSetting,
+        backgroundColor: AppColor.white,
+        iconColor: AppColor.textDark,
+        textColor: AppColor.textDark,
+        width: 130,
+        onPressed: () {
+          _openColumnConfigDialog();
+        },
+      ),
+      if (itemCount > 0)
+        ResponsiveButtonData.fromButtonIcon(
+          text: '$itemCount ${'table.delete_selected'.tr}',
+          iconPath: AppIconSvg.iconTrash2,
+          backgroundColor: Colors.redAccent,
+          iconColor: AppColor.textWhite,
+          textColor: AppColor.textWhite,
+          width: 130,
+          onPressed: () {
+            final ids = listSelected.map((e) => e.id).toList();
+            showConfirmDialog(
+              context,
+              type: ConfirmType.delete,
+              title: 'Xóa tài khoản',
+              message: 'Bạn có chắc muốn xóa ${listSelected.length} tài khoản',
+              highlight: listSelected.length.toString(),
+              cancelText: 'Không',
+              confirmText: 'Xóa',
+              onConfirm: () {
+                context.read<LoginBloc>().add(DeleteUserBatchEvent(ids));
+              },
+            );
+          },
+        ),
+    ];
   }
 
   Widget viewAction(UserInfoDTO item) {
@@ -411,7 +454,6 @@ class _AccountListState extends State<AccountList> {
         borderColor: Colors.green.shade200,
         onPressed: () {
           List<RoleDto> roles = AppUtility.listRoles;
-          // showPermissionExample(context, item);
           if (currentUser?.tenDangNhap == "admin" ||
               currentUser?.tenDangNhap == item.tenDangNhap) {
             showAccountEditPopup(
