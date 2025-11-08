@@ -11,7 +11,6 @@ import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_list.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/staff_list_by_account.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class AccountView extends StatefulWidget {
   const AccountView({super.key});
@@ -140,19 +139,19 @@ class _AccountViewState extends State<AccountView> {
                         ),
                       ),
                     ),
-                    Visibility(
-                      visible: (provider.users?.length ?? 0) >= 5,
-                      child: SGPaginationControls(
-                        totalPages: provider.totalPages,
-                        currentPage: provider.currentPage,
-                        rowsPerPage: provider.rowsPerPage,
-                        controllerDropdownPage:
-                            provider.controllerDropdownPage!,
-                        items: provider.items,
-                        onPageChanged: provider.onPageChanged,
-                        onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                      ),
-                    ),
+                    // Visibility(
+                    //   visible: (provider.users?.length ?? 0) >= 5,
+                    //   child: SGPaginationControls(
+                    //     totalPages: provider.totalPages,
+                    //     currentPage: provider.currentPage,
+                    //     rowsPerPage: provider.rowsPerPage,
+                    //     controllerDropdownPage:
+                    //         provider.controllerDropdownPage!,
+                    //     items: provider.items,
+                    //     onPageChanged: provider.onPageChanged,
+                    //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                    //   ),
+                    // ),
                   ],
                 ),
               );

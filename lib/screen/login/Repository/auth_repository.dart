@@ -11,7 +11,6 @@ import 'package:quan_ly_tai_san_app/core/utils/permission_service.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
@@ -603,5 +602,151 @@ class AuthRepository extends ApiBase {
             )
             .toList();
     await PermissionRepository().setPermissionBatch(userPermissions);
+  }
+
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <UserInfoDTO>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.ACCOUNT}/paged?page=$page&size=$size&search=$search',
+        // '${EndPointAPI.ACCOUNT}/paged?page=$page&size=$size&search=$search&userid=$userid',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<UserInfoDTO>(
+          itemsData,
+          UserInfoDTO.fromJson,
+        );
+      } else {
+        result['data'] = <UserInfoDTO>[];
+      }
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['currentPage'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
+
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['groupCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalDraft'] = parseGroupCount('0', 'draft');
+        result['totalApprove'] = parseGroupCount('1', 'approve');
+        result['totalCancel'] = parseGroupCount('2', 'cancel');
+        result['totalComplete'] = parseGroupCount('3', 'complete');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalDraft'] = 0;
+        result['totalApprove'] = 0;
+        result['totalCancel'] = 0;
+        result['totalComplete'] = 0;
+      }
+    } catch (e) {
+      log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getDataStaffWithPagination(
+    int page,
+    int size,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <NhanVien>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+    try {
+      final queryParams = <String, dynamic>{'page': page, 'size': size};
+      if (search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.NHAN_VIEN}/paged?idcongty=ct001&page=$page&size=$size&search=$search',
+        // '${EndPointAPI.ACCOUNT}/paged?page=$page&size=$size&search=$search&userid=$userid',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<NhanVien>(
+          itemsData,
+          NhanVien.fromJson,
+        );
+      } else {
+        result['data'] = <NhanVien>[];
+      }
+      result['totalPages'] = response.data['totalPages'] ?? 0;
+      result['currentPage'] = response.data['page'] ?? 0;
+      result['totalItems'] = response.data['totalItems'] ?? 0;
+
+      // Xử lý groupCounts với null-safety
+      final groupCounts = response.data['groupCounts'];
+      if (groupCounts is Map<String, dynamic>) {
+        // Helper function để parse giá trị từ groupCounts
+        int parseGroupCount(String key, [String? altKey]) {
+          final value = groupCounts[key] ?? groupCounts[altKey];
+          if (value is int) return value;
+          if (value is num) return value.toInt();
+          if (value == null) return 0;
+          return int.tryParse(value.toString()) ?? 0;
+        }
+
+        result['totalAll'] = parseGroupCount('-1', 'all');
+        result['totalDraft'] = parseGroupCount('0', 'draft');
+        result['totalApprove'] = parseGroupCount('1', 'approve');
+        result['totalCancel'] = parseGroupCount('2', 'cancel');
+        result['totalComplete'] = parseGroupCount('3', 'complete');
+      } else {
+        // Nếu groupCounts không tồn tại hoặc không phải Map, set về 0
+        result['totalAll'] = 0;
+        result['totalDraft'] = 0;
+        result['totalApprove'] = 0;
+        result['totalCancel'] = 0;
+        result['totalComplete'] = 0;
+      }
+    } catch (e) {
+      log("Error at getDataStaffWithPagination - AuthRepository: $e");
+    }
+
+    return result;
   }
 }

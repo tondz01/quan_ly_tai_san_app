@@ -408,7 +408,6 @@ class _AssetManagementListState extends State<AssetManagementList> {
                 // setState(() {
                 //   totalItems = totalItems;
                 // });
-                log('message totalItems: $totalItems');
                 return RiverpodTable<AssetManagementDto>(
                   tableProvider: tableAssetManagementProvider,
                   columns: _columns,

@@ -1,21 +1,23 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/button/action_button_config.dart';
-import 'package:quan_ly_tai_san_app/common/table/tabale_base_view.dart';
-import 'package:quan_ly_tai_san_app/common/table/table_base_config.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/core/enum/type_size_screen.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/component/staff_table_config.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/provider/login_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/provider/staff_table_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/widget/account_detail.dart';
-import 'package:se_gay_components/common/sg_input_text.dart';
-import 'package:se_gay_components/common/switch/sg_checkbox.dart';
-import 'package:se_gay_components/common/table/sg_table_component.dart';
+import 'package:se_gay_components/core/utils/sg_log.dart';
+import 'package:table_base/widgets/box_search.dart';
+import 'package:table_base/widgets/table/models/column_definition.dart';
+import 'package:table_base/widgets/table/models/table_model.dart';
+import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
+import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class StaffListByAccount extends StatefulWidget {
   final LoginProvider provider;
@@ -31,251 +33,98 @@ class StaffListByAccount extends StatefulWidget {
 }
 
 class _StaffListByAccountState extends State<StaffListByAccount> {
-  final ScrollController horizontalController = ScrollController();
-  String searchTerm = "";
+  // Table configuration
+  late List<ColumnDefinition> _definitions;
+  late List<TableColumnData> _columns;
+  late List<TableColumnData> _allColumns;
+  late Map<String, TableCellBuilder> _buildersByKey;
+  late List<String> _hiddenKeys;
+
   String lableTitle = '';
-  List<NhanVien> filteredData = [];
-
-  bool isShowSearch = false;
-
-  // Column display options
-  late List<ColumnDisplayOption> columnOptions;
-
   Widget? body;
 
-  List<String> visibleColumnIds = [
-    'actions',
-    'id',
-    'hoTen',
-    'emailCongViec',
-    'diDong',
-    'chucVu',
-    'tenPhongBan',
-    'trangThaiTaiKhoan',
-    'nguoiTao',
-  ];
+  ScrollController horizontalController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    searchFilters();
-    _initializeColumnOptions();
-    lableTitle =
-        'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
-    // body = _buildTableStaff(_buildColumns());
+    _initializeTableConfig();
   }
 
-  void searchFilters() {
-    List<NhanVien> data = widget.provider.nhanViens ?? [];
-    if (widget.provider.nhanViens == null) return;
-
-    // Lọc theo trạng thái
-
-    // Lọc tiếp theo nội dung tìm kiếm
-    if (searchTerm.isNotEmpty) {
-      String searchLower = searchTerm.toLowerCase();
-      filteredData =
-          data.where((item) {
-            return (item.hoTen?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.emailCongViec?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.id?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.idCongTy?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.diDong?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.boPhan?.toLowerCase().contains(searchLower) ?? false) ||
-                (AccountHelper.instance
-                        .getChucVuById(item.chucVu ?? item.chucVuId ?? '')
-                        ?.tenChucVu
-                        .toLowerCase()
-                        .contains(searchLower) ??
-                    false) ||
-                (item.tenQuanLy?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenPhongBan?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false);
-          }).toList();
-    } else {
-      filteredData = data;
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
-  void _initializeColumnOptions() {
-    columnOptions = [
-      ColumnDisplayOption(
-        id: 'actions',
-        label: 'Thao tác',
-        isChecked: visibleColumnIds.contains('actions'),
+  void _initializeTableConfig() {
+    _definitions = StaffTableConfig.getColumnsWithActions(
+      (item) => TableCellData(widget: viewAction(item)),
+      (item) => TableCellData(
+        widget: Text(
+          _getTrangThaiTaiKhoan(item),
+          textAlign: TextAlign.center,
+        ),
       ),
-      ColumnDisplayOption(
-        id: 'id',
-        label: 'Mã nhân viên',
-        isChecked: visibleColumnIds.contains('id'),
-      ),
-      ColumnDisplayOption(
-        id: 'hoTen',
-        label: 'Họ tên',
-        isChecked: visibleColumnIds.contains('hoTen'),
-      ),
-      ColumnDisplayOption(
-        id: 'emailCongViec',
-        label: 'Email công việc',
-        isChecked: visibleColumnIds.contains('emailCongViec'),
-      ),
-      ColumnDisplayOption(
-        id: 'diDong',
-        label: 'Số điện thoại',
-        isChecked: visibleColumnIds.contains('diDong'),
-      ),
-
-      ColumnDisplayOption(
-        id: 'chucVu',
-        label: 'Chức vụ',
-        isChecked: visibleColumnIds.contains('chucVu'),
-      ),
-      ColumnDisplayOption(
-        id: 'tenQuanLy',
-        label: 'Người quản lý',
-        isChecked: visibleColumnIds.contains('tenQuanLy'),
-      ),
-      ColumnDisplayOption(
-        id: 'trangThaiTaiKhoan',
-        label: 'Trạng thái tài khoản',
-        isChecked: visibleColumnIds.contains('trangThaiTaiKhoan'),
-      ),
-      ColumnDisplayOption(
-        id: 'nguoiTao',
-        label: 'Người tạo',
-        isChecked: visibleColumnIds.contains('nguoiTao'),
-      ),
-    ];
-  }
-
-  List<SgTableColumn<NhanVien>> _buildColumns() {
-    final List<SgTableColumn<NhanVien>> columns = [];
-
-    // Thêm cột dựa trên visibleColumnIds
-    for (String columnId in visibleColumnIds) {
-      switch (columnId) {
-        case 'actions':
-          columns.add(
-            TableBaseConfig.columnWidgetBase<NhanVien>(
-              title: '',
-              cellBuilder: (item) => viewAction(item),
-              width: 120,
-              searchable: true,
-            ),
-          );
-          break;
-        case 'id':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Mã nhân viên',
-              getValue: (item) => item.id ?? '',
-              width: 170,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'hoTen':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Họ tên',
-              getValue: (item) => item.hoTen ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'emailCongViec':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Email',
-              getValue: (item) => item.emailCongViec ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'diDong':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Số điện thoại',
-              width: 100,
-              getValue: (item) => item.diDong ?? '',
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'chucVu':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Chức vụ',
-              getValue: (item) => item.tenChucVu ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'tenPhongBan':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Phòng ban',
-              getValue: (item) => item.tenPhongBan ?? '',
-              width: 120,
-              titleAlignment: TextAlign.left,
-            ),
-          );
-          break;
-        case 'trangThaiTaiKhoan':
-          columns.add(
-            TableBaseConfig.columnTable<NhanVien>(
-              title: 'Trạng thái tài khoản',
-              getValue: (item) => _getTrangThaiTaiKhoan(item),
-              width: 150,
-              titleAlignment: TextAlign.center,
-            ),
-          );
-          break;
-      }
-    }
-
-    return columns;
-  }
-
-  void _showColumnDisplayPopup() async {
-    await showColumnDisplayPopup(
-      context: context,
-      columns: columnOptions,
-      onSave: (selectedColumns) {
-        setState(() {
-          visibleColumnIds = selectedColumns;
-          _updateColumnOptions();
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã cập nhật hiển thị cột'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-      onCancel: () {
-        // Reset về trạng thái ban đầu
-        _updateColumnOptions();
-      },
     );
+    _columns = _definitions.map((d) => d.config).toList(growable: true);
+    _allColumns = List<TableColumnData>.from(_columns);
+    _buildersByKey = {for (final d in _definitions) d.config.key: d.builder};
+    _hiddenKeys = <String>[];
   }
 
-  void _updateColumnOptions() {
-    for (var option in columnOptions) {
-      option.isChecked = visibleColumnIds.contains(option.id);
+  dynamic getValueForColumn(NhanVien item, int columnIndex) {
+    final int offset = 0; // Không có checkbox column
+    final int adjustedIndex = columnIndex - offset;
+
+    if (adjustedIndex < 0 || adjustedIndex >= _columns.length) {
+      return null;
+    }
+
+    final String key = _columns[adjustedIndex].key;
+    switch (key) {
+      case 'id':
+        return item.id ?? '';
+      case 'hoTen':
+        return item.hoTen ?? '';
+      case 'emailCongViec':
+        return item.emailCongViec ?? '';
+      case 'diDong':
+        return item.diDong ?? '';
+      case 'chucVu':
+        return item.tenChucVu ?? '';
+      case 'tenPhongBan':
+        return item.tenPhongBan ?? '';
+      case 'trangThaiTaiKhoan':
+        return _getTrangThaiTaiKhoan(item);
+      case 'nguoiTao':
+        return item.nguoiTao ?? '';
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _openColumnConfigDialog() async {
+    try {
+      final apply = await showColumnConfigAndApply(
+        context: context,
+        allColumns: _allColumns,
+        currentColumns: _columns,
+        initialHiddenKeys: _hiddenKeys,
+        title: 'table.config_column'.tr,
+      );
+      if (apply != null) {
+        setState(() {
+          _hiddenKeys = apply.hiddenKeys;
+          _columns = apply.updatedColumns;
+        });
+      }
+    } catch (e) {
+      SGLog.error('ColumnConfigDialog', 'Error at _openColumnConfigDialog: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<SgTableColumn<NhanVien>> columns = _buildColumns();
-
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
@@ -315,19 +164,30 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 2.5),
-                      child: Text(
-                        lableTitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
-                        ),
+                      child: riverpod.Consumer(
+                        builder: (context, ref, _) {
+                          final totalItems = ref.watch(
+                            staffTableProvider.select(
+                              (s) => s.paginationState.totalItems,
+                            ),
+                          );
+                          return Text(
+                            body == null
+                                ? 'Danh sách nhân viên ($totalItems)'
+                                : lableTitle,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade700,
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Tooltip(
                       message: 'Hiển thị cột',
                       child: GestureDetector(
-                        onTap: _showColumnDisplayPopup,
+                        onTap: _openColumnConfigDialog,
                         child: Icon(
                           Icons.settings,
                           color: const Color(0xFF21A366),
@@ -343,16 +203,18 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       body == null
-                          ? _buildSearchField(
-                            MediaQuery.of(context).size.width,
-                            TextEditingController(),
-                            (value) {
-                              setState(() {
-                                searchTerm = value;
-                                searchFilters();
-                              });
-                            },
-                          )
+                          ? riverpod.Consumer(
+                              builder: (context, ref, _) {
+                                return BoxSearch(
+                                  width: MediaQuery.of(context).size.width * 0.4,
+                                  onSearch: (value) {
+                                    ref
+                                        .read(staffTableProvider.notifier)
+                                        .searchTerm = value;
+                                  },
+                                );
+                              },
+                            )
                           : SizedBox.shrink(),
                     ],
                   ),
@@ -371,29 +233,43 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
               ],
             ),
           ),
-          body ?? _buildTableStaff(columns),
+          body ??
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(8.0),
+                    bottomRight: Radius.circular(8.0),
+                  ),
+                  child: riverpod.Consumer(
+                    builder: (context, ref, child) {
+                      
+                      return RiverpodTable<NhanVien>(
+                        tableProvider: staffTableProvider,
+                        columns: _columns,
+                        showCheckboxColumn: false,
+                        enableRowSelection: false,
+                        enableRowHover: true,
+                        showAlternatingRowColors: true,
+                        valueGetter: getValueForColumn,
+                        cellsBuilder: (_) => [],
+                        cellBuilderByKey: (item, key) {
+                          final builder = _buildersByKey[key];
+                          if (builder != null) return builder(item);
+                          return null;
+                        },
+                        onRowTap: (item) {
+                          // widget.provider.onChangeDetail(item);
+                        },
+                        showActionsColumn: false,
+                        maxHeight: MediaQuery.of(context).size.height * 0.65,
+                      );
+                    },
+                  ),
+                ),
+              ),
         ],
       ),
     );
-  }
-
-  Expanded _buildTableStaff(List<SgTableColumn<NhanVien>> columns) {
-    return Expanded(
-      child: TableBaseView<NhanVien>(
-        searchTerm: '',
-        isShowCheckboxes: false,
-        columns: columns,
-        data: filteredData,
-        horizontalController: ScrollController(),
-        onRowTap: (item) {
-          // widget.provider.onChangeDetail(item);
-        },
-      ),
-    );
-  }
-
-  Widget showCheckBoxActive(bool isActive) {
-    return SgCheckbox(value: isActive);
   }
 
   /// Hàm lấy thời gian hiện tại theo định dạng ISO 8601
@@ -451,20 +327,6 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
           );
           setState(() {
             lableTitle = 'Tạo account cho nhân viên ${item.hoTen}';
-            // showDialog(
-            //   context: context,
-            //   builder:
-            //       (context) => AccountDetail(
-            //         userInfo: userInfo,
-            //         onPressedCancel: () {
-            //           setState(() {
-            //             body = null;
-            //             lableTitle =
-            //                 'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
-            //           });
-            //         },
-            //       ),
-            // );
             body = Expanded(
               child: AccountDetail(
                 userInfo: userInfo,
@@ -472,7 +334,7 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
                   setState(() {
                     body = null;
                     lableTitle =
-                        'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length})';
+                        'Danh sách nhân viên hiện có (${widget.provider.nhanViens?.length ?? 0})';
                   });
                 },
               ),
@@ -520,29 +382,5 @@ class _StaffListByAccountState extends State<StaffListByAccount> {
       return Colors.grey.shade400; // Màu xám khi đã có tài khoản
     }
     return Colors.red.shade700; // Màu đỏ khi chưa có tài khoản
-  }
-
-  Widget _buildSearchField(
-    double width,
-    TextEditingController controller,
-    Function(String) onSearchChanged,
-  ) {
-    final isSmallScreen =
-        TypeSizeScreenExtension.getSizeScreen(width) ==
-            TypeSizeScreen.extraSmall ||
-        TypeSizeScreenExtension.getSizeScreen(width) == TypeSizeScreen.small;
-
-    return SGInputText(
-      height: 35,
-      prefixIcon: const Icon(Icons.search),
-      controller: controller,
-      width: isSmallScreen ? width : width * 0.5,
-      borderRadius: 10,
-      enabledBorderColor: ColorValue.neutral800,
-      padding: const EdgeInsets.all(1),
-      fontSize: 14,
-      hintText: 'Tìm kiếm',
-      onChanged: onSearchChanged,
-    );
   }
 }
