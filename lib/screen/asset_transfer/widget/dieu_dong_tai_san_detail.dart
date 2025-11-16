@@ -462,6 +462,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             setState(() {
+                              log(
+                                'message value: ${widget.provider.dataAsset}',
+                              );
                               state.donViGiao = value;
                               state.listStaffByDepartment =
                                   widget.provider.dataNhanVien
@@ -471,11 +474,15 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                             state.donViGiao!.id,
                                       )
                                       .toList();
-                              assetByDepartment =
-                                  widget.provider.dataAsset.where((element) {
-                                    return element.idDonViHienThoi ==
-                                        state.donViGiao!.id;
-                                  }).toList();
+                              Future.microtask(() async {
+                                await widget.provider.onReloadDataAssetByCurrentUnit(
+                                  state.donViGiao!.id ?? '',
+                                );
+                                if (widget.provider.dataAsset != null) {
+                                  assetByDepartment =
+                                      widget.provider.dataAsset ?? [];
+                                }
+                              });
                             });
                           },
                         ),
