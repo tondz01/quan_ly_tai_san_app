@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
@@ -38,6 +39,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   PhongBan? _parentDepartment;
 
   bool isEditing = false;
+  bool isKho = false;
 
   @override
   void initState() {
@@ -57,6 +59,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   void _initData() {
     if (widget.department != null) {
       isEditing = false;
+      isKho = widget.department?.isKho ?? false;
     } else {
       isEditing = true;
     }
@@ -103,6 +106,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         tenPhongBan: _departmentNameController.text.trim(),
         idQuanLy: '',
         phongCapTren: _parentDepartment?.id ?? '',
+        isKho: isKho,
       );
       if (widget.department == null) {
         context.read<DepartmentBloc>().add(AddDepartment(department));
@@ -200,6 +204,21 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                         isEdit
                             ? null
                             : (v) => setState(() => _parentDepartment = v),
+                  ),
+                  const SizedBox(height: 24),
+                  CommonCheckboxInput(
+                    label: 'Là kho',
+                    value: isKho,
+                    onChanged:
+                        isEdit
+                            ? null
+                            : (v) {
+                              setState(() {
+                                isKho = v;
+                              });
+                            },
+                    isEditing: isEdit,
+                    isDisabled: !isEdit,
                   ),
                 ],
               ),
