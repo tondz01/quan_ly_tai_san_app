@@ -184,28 +184,28 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  DropdownButtonFormField<PhongBan>(
-                    value: _parentDepartment,
-                    decoration: inputDecoration('Phòng/Ban cấp trên'),
-                    isExpanded: true,
-                    isDense: false,
-                    items:
-                        context
-                            .read<DepartmentBloc>()
-                            .departments
-                            .map(
-                              (p) => DropdownMenuItem(
-                                value: p,
-                                child: Text(p.tenPhongBan ?? ''),
-                              ),
-                            )
-                            .toList(),
-                    onChanged:
-                        isEdit
-                            ? null
-                            : (v) => setState(() => _parentDepartment = v),
-                  ),
-                  const SizedBox(height: 24),
+                  // DropdownButtonFormField<PhongBan>(
+                  //   value: _parentDepartment,
+                  //   decoration: inputDecoration('Phòng/Ban cấp trên'),
+                  //   isExpanded: true,
+                  //   isDense: false,
+                  //   items:
+                  //       context
+                  //           .read<DepartmentBloc>()
+                  //           .departments
+                  //           .map(
+                  //             (p) => DropdownMenuItem(
+                  //               value: p,
+                  //               child: Text(p.tenPhongBan ?? ''),
+                  //             ),
+                  //           )
+                  //           .toList(),
+                  //   onChanged:
+                  //       isEdit
+                  //           ? null
+                  //           : (v) => setState(() => _parentDepartment = v),
+                  // ),
+                  // const SizedBox(height: 24),
                   CommonCheckboxInput(
                     label: 'Là kho',
                     value: isKho,
@@ -218,7 +218,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                               });
                             },
                     isEditing: isEdit,
-                    isDisabled: !isEdit,
+                    isDisabled: isEdit,
                   ),
                 ],
               ),

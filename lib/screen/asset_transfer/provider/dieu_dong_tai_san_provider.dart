@@ -52,6 +52,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   get dataNhanVien => _dataNhanVien;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
+  get itemsDVGiao => _itemsDVGiao;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
   get loadingMessage => _loadingMessage;
@@ -106,7 +107,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
-
+  List<DropdownMenuItem<PhongBan>> _itemsDVGiao = [];
   // List status
   // late List<ListStatus> _listStatus;
 
@@ -437,10 +438,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
-    if (typeDieuDongTaiSan == 1) {
-      _dataPhongBan =
-          _dataPhongBan?.where((element) => element.isKho == true).toList();
-    }
     _itemsDDPhongBan = [
       for (var element in _dataPhongBan!)
         DropdownMenuItem<PhongBan>(
@@ -448,6 +445,23 @@ class DieuDongTaiSanProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
+
+    if (typeDieuDongTaiSan == 1) {
+      List<PhongBan> dataDVGiao =
+          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
+          [];
+      _itemsDVGiao =
+          dataDVGiao
+              .map(
+                (element) => DropdownMenuItem<PhongBan>(
+                  value: element,
+                  child: Text(element.tenPhongBan ?? ''),
+                ),
+              )
+              .toList();
+    } else {
+      _itemsDVGiao = _itemsDDPhongBan;
+    }
 
     _dataNhanVien = AccountHelper.instance.getNhanVien();
     _itemsDDNhanVien = [
@@ -768,13 +782,14 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
-    log("message _dataAsset111: ${_dataAsset?.length}");
     _isLoading = true;
     _loadingMessage = 'Đang tải dữ liệu tài sản...';
-    final result = await AssetTransferRepository().getAssetByCurrentUnit(
-      idDonViHienthoi,
-    );
-    log("message result: ${result}");
+    Map<String, dynamic> result;
+    if (typeDieuDongTaiSan == 1) {
+      result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+    } else {
+      result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+    }
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       _dataAsset = result['data'];
       _isLoading = false;

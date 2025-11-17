@@ -546,4 +546,41 @@ class AssetTransferRepository extends ApiBase {
 
     return result;
   }
+  
+  Future<Map<String, dynamic>> getAssetByUnit(
+    String idDonViBandau
+  ) async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-bandau/paged?idcongty=ct001&iddonvihienthoi=$idDonViBandau&page=0&size=9999',
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+          itemsData,
+          AssetManagementDto.fromJson,
+        );
+      } else {
+        result['data'] = <AssetManagementDto>[];
+      }
+      log( "message result: ${result['data']}");
+    } catch (e) {
+      log("Error at getAssetByCurrentUnit - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
 }

@@ -18,6 +18,7 @@ import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/detail_tool_and_material_transfer_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/detail_tool_and_material_transfer_request.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/request/tool_and_material_transfer_request.dart';
+import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -558,7 +559,8 @@ class ToolAndMaterialTransferRepository extends ApiBase {
     };
     final userInfo = AccountHelper.instance.getUserInfo();
     try {
-      final response = await get( // Đổi từ post thành get
+      final response = await get(
+        // Đổi từ post thành get
         '${EndPointAPI.TOOL_AND_MATERIAL_TRANSFER}/paged?idcongty=ct001&page=$page&size=$size&loai=$type&search=$search&trangThai=${trangThai == -1 ? '' : trangThai}&userid=${userInfo?.tenDangNhap ?? ''}',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -610,6 +612,80 @@ class ToolAndMaterialTransferRepository extends ApiBase {
       }
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getCcdcHasHandover(String iddonvisoHuu) async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        '${EndPointAPI.CCDC_DA_BG}?idcongty=ct001&iddonvisoHuu=$iddonvisoHuu&page=0&size=9999999',
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+          itemsData,
+          ToolsAndSuppliesDto.fromJson,
+        );
+      } else {
+        result['data'] = <ToolsAndSuppliesDto>[];
+      }
+      log("message result: ${result['data']}");
+    } catch (e) {
+      log("Error at getCcdcByUnit - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getCcdcNotYetHandover(
+    String iddonvisoHuu,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        '${EndPointAPI.CCDC_CHUA_BG}?idcongty=ct001&iddonvisoHuu=$iddonvisoHuu&page=0&size=9999999',
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<ToolsAndSuppliesDto>(
+          itemsData,
+          ToolsAndSuppliesDto.fromJson,
+        );
+      } else {
+        result['data'] = <ToolsAndSuppliesDto>[];
+      }
+      log("message result: ${result['data']}");
+    } catch (e) {
+      log(
+        "Error at getCcdcNotYetHandover - ToolAndMaterialTransferRepository: $e",
+      );
     }
 
     return result;

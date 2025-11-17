@@ -447,7 +447,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           controller: controllers.controllerDeliveringUnit,
                           isEditing: state.isEditing,
                           value: state.donViGiao,
-                          items: widget.provider.itemsDDPhongBan,
+                          items: widget.provider.itemsDVGiao,
                           isRequired: true,
                           defaultValue:
                               controllers
@@ -475,9 +475,10 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                       )
                                       .toList();
                               Future.microtask(() async {
-                                await widget.provider.onReloadDataAssetByCurrentUnit(
-                                  state.donViGiao!.id ?? '',
-                                );
+                                await widget.provider
+                                    .onReloadDataAssetByCurrentUnit(
+                                      state.donViGiao!.id ?? '',
+                                    );
                                 if (widget.provider.dataAsset != null) {
                                   assetByDepartment =
                                       widget.provider.dataAsset ?? [];

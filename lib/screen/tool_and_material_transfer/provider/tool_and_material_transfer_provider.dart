@@ -57,6 +57,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get dataNhanVien => _dataNhanVien;
   get listOwnershipUnit => _listOwnershipUnit;
   get listDetailTransferCCDC => _listDetailTransferCCDC;
+  get loadingMessage => _loadingMessage;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
   get itemsDDNhanVien => _itemsDDNhanVien;
@@ -127,6 +128,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   String? _error;
   String? _subScreen;
   String mainScreen = '';
+  String _loadingMessage = '';
 
   bool _isShowInput = false;
   bool _isShowCollapse = true;
@@ -910,4 +912,28 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       ),
     );
   }
+
+  // Future<void> onReloadDataCcdc(String idDonViHienthoi) async {
+  //   _isLoading = true;
+  //   _loadingMessage = 'Đang tải dữ liệu tài sản...';
+  //   Map<String, dynamic> result;
+  //   if (type == 1) {
+  //     result = await ToolAndMaterialTransferRepository().getCcdcHasHandover(idDonViHienthoi);
+  //   } else {
+  //     result = await ToolAndMaterialTransferRepository().getCcdcNotYetHandover(idDonViHienthoi);
+  //   }
+  //   if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+  //     _dataCcdc = result['data'];
+  //     _isLoading = false;
+  //     _loadingMessage = 'Đang tải dữ liệu...';
+  //   } else {
+  //     SGLog.debug(
+  //       "AssetTransferProvider",
+  //       "Error at onReloadDataAssetByCurrentUnit: ${result['message']}",
+  //     );
+  //     _isLoading = false;
+  //     _loadingMessage = 'Đang tải dữ liệu...';
+  //   }
+  //   notifyListeners();
+  // }
 }
