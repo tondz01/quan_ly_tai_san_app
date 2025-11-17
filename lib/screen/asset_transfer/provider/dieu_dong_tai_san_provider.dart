@@ -437,6 +437,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
+    if (typeDieuDongTaiSan == 1) {
+      _dataPhongBan =
+          _dataPhongBan?.where((element) => element.isKho == true).toList();
+    }
     _itemsDDPhongBan = [
       for (var element in _dataPhongBan!)
         DropdownMenuItem<PhongBan>(
