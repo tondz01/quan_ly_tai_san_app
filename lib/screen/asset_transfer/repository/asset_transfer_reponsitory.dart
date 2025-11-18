@@ -7,6 +7,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
@@ -504,6 +505,80 @@ class AssetTransferRepository extends ApiBase {
       }
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getAssetByCurrentUnit(
+    String idDonViHienthoi,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-hienthoi/paged?idcongty=ct001&iddonvihienthoi=$idDonViHienthoi&page=0&size=9999',
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+          itemsData,
+          AssetManagementDto.fromJson,
+        );
+      } else {
+        result['data'] = <AssetManagementDto>[];
+      }
+      log( "message result: ${result['data']}");
+    } catch (e) {
+      log("Error at getAssetByCurrentUnit - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+  
+  Future<Map<String, dynamic>> getAssetByUnit(
+    String idDonViBandau
+  ) async {
+    Map<String, dynamic> result = {
+      'data': [],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+    try {
+      final response = await get(
+        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-bandau/paged?idcongty=ct001&iddonvihienthoi=$idDonViBandau&page=0&size=9999',
+      );
+
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<AssetManagementDto>(
+          itemsData,
+          AssetManagementDto.fromJson,
+        );
+      } else {
+        result['data'] = <AssetManagementDto>[];
+      }
+      log( "message result: ${result['data']}");
+    } catch (e) {
+      log("Error at getAssetByCurrentUnit - AssetTransferRepository: $e");
     }
 
     return result;

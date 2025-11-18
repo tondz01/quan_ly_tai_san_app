@@ -25,13 +25,11 @@ import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 
 class DepartmentList extends StatefulWidget {
-  final List<PhongBan> data;
   final void Function(PhongBan)? onChangeDetail;
   final void Function(PhongBan)? onEdit;
   final void Function(PhongBan)? onDelete;
   const DepartmentList({
     super.key,
-    required this.data,
     this.onChangeDetail,
     this.onEdit,
     this.onDelete,
@@ -94,8 +92,8 @@ class _DepartmentListState extends State<DepartmentList> {
                 .where((e) => e.phongBanId == item.id)
                 .length)
             .toString();
-      case 'parent_department':
-        return item.phongCapTren;
+      // case 'parent_department':
+      //   return item.phongCapTren;
       case 'status':
         return (item.isActive ?? true) ? 'Hoạt động' : 'Không hoạt động';
       default:
@@ -161,13 +159,22 @@ class _DepartmentListState extends State<DepartmentList> {
                       size: 18,
                     ),
                     SizedBox(width: 8),
-                    Text(
-                      'Quản lý đơn vị/phòng ban (${widget.data.length})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        final totalItems = ref.watch(
+                          tableDepartmentProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
+                        return Text(
+                          'Quản lý đơn vị/phòng ban ($totalItems)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -264,56 +271,49 @@ class _DepartmentListState extends State<DepartmentList> {
               bottomLeft: Radius.circular(8.0),
               bottomRight: Radius.circular(8.0),
             ),
-            child: riverpod.Consumer(
-              builder: (context, ref, child) {
-                final data = widget.data;
-                ref.read(tableDepartmentProvider.notifier).setData(data);
-
-                return RiverpodTable<PhongBan>(
-                  tableProvider: tableDepartmentProvider,
-                  columns: _columns,
-                  showCheckboxColumn: showCheckboxColumn,
-                  enableRowSelection: true,
-                  enableRowHover: true,
-                  showAlternatingRowColors: true,
-                  valueGetter: getValueForColumn,
-                  cellsBuilder: (_) => [],
-                  cellBuilderByKey: (item, key) {
-                    final builder = _buildersByKey[key];
-                    if (builder != null) return builder(item);
-                    return null;
+            child: RiverpodTable<PhongBan>(
+              tableProvider: tableDepartmentProvider,
+              columns: _columns,
+              showCheckboxColumn: showCheckboxColumn,
+              enableRowSelection: true,
+              enableRowHover: true,
+              showAlternatingRowColors: true,
+              valueGetter: getValueForColumn,
+              cellsBuilder: (_) => [],
+              cellBuilderByKey: (item, key) {
+                final builder = _buildersByKey[key];
+                if (builder != null) return builder(item);
+                return null;
+              },
+              onRowTap: (item) {
+                widget.onChangeDetail?.call(item);
+              },
+              onDelete: (item) {
+                log('Attempting to delete department: ${item.id}');
+                if (item.id == "GD") {
+                  AppUtility.showSnackBar(
+                    context,
+                    'Không thể xóa đơn vị/phòng ban đã chọn "Ban giám đốc"',
+                    isError: true,
+                  );
+                  return;
+                }
+                showConfirmDialog(
+                  context,
+                  type: ConfirmType.delete,
+                  title: 'Xóa đơn vị/phòng ban',
+                  message: 'Bạn có chắc muốn xóa ${item.tenPhongBan}',
+                  highlight: item.tenPhongBan ?? '',
+                  cancelText: 'Không',
+                  confirmText: 'Xóa',
+                  onConfirm: () {
+                    widget.onDelete?.call(item);
                   },
-                  onRowTap: (item) {
-                    widget.onChangeDetail?.call(item);
-                  },
-                  onDelete: (item) {
-                    log('Attempting to delete department: ${item.id}');
-                    if (item.id == "GD") {
-                      AppUtility.showSnackBar(
-                        context,
-                        'Không thể xóa đơn vị/phòng ban đã chọn "Ban giám đốc"',
-                        isError: true,
-                      );
-                      return;
-                    }
-                    showConfirmDialog(
-                      context,
-                      type: ConfirmType.delete,
-                      title: 'Xóa đơn vị/phòng ban',
-                      message: 'Bạn có chắc muốn xóa ${item.tenPhongBan}',
-                      highlight: item.tenPhongBan ?? '',
-                      cancelText: 'Không',
-                      confirmText: 'Xóa',
-                      onConfirm: () {
-                        widget.onDelete?.call(item);
-                      },
-                    );
-                  },
-                  showActionsColumn: _showActionsColumn,
-                  actionsColumnWidth: 120,
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
                 );
               },
+              showActionsColumn: _showActionsColumn,
+              actionsColumnWidth: 120,
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
           ),
         ],

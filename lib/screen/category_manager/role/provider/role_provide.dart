@@ -2,12 +2,14 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/constants/role_constants.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/role/providers/table_role_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -77,11 +79,13 @@ class RoleProvider with ChangeNotifier {
 
   void onInit(BuildContext context) {
     _userInfo = AccountHelper.instance.getUserInfo();
-    controllerDropdownPage = TextEditingController(text: RoleConstants.defaultRowsPerPage.toString());
+    controllerDropdownPage = TextEditingController(
+      text: RoleConstants.defaultRowsPerPage.toString(),
+    );
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
-    getListRoles(context);
+    // getListRoles(context);
   }
 
   void onDispose() {
@@ -95,18 +99,12 @@ class RoleProvider with ChangeNotifier {
   }
 
   void getListRoles(BuildContext context) {
-    try {
-      _isLoading = true;
-      final bloc = context.read<RoleBloc>();
-      bloc.add(GetListRoleEvent(context, userInfo?.idCongTy ?? ''));
-    } catch (e) {
-      log('Error adding Role events: $e');
-    }
+    onReloadData(context);
   }
 
   void onSearchRoles(String value) {
     currentPage = 1;
-    
+
     if (value.isEmpty) {
       _filteredData = data;
       _updatePagination();
@@ -125,8 +123,9 @@ class RoleProvider with ChangeNotifier {
           bool idMatch = item.id?.toLowerCase().contains(searchLower) ?? false;
 
           return name || idMatch;
-        }).toList() ?? [];
-    
+        }).toList() ??
+        [];
+
     _updatePagination();
     notifyListeners();
   }
@@ -225,13 +224,18 @@ class RoleProvider with ChangeNotifier {
     getListRoles(context);
 
     // Close input panel if open
+    onReloadData(context);
     AppUtility.showSnackBar(context, RoleConstants.successDeleteRole);
   }
 
-  void deleteRoleBatchSuccess(BuildContext context, DeleteRoleBatchSuccess state) {
+  void deleteRoleBatchSuccess(
+    BuildContext context,
+    DeleteRoleBatchSuccess state,
+  ) {
     _isLoading = false;
-     onCloseDetail(context);
-    getListRoles(context);
+    onCloseDetail(context);
+    // getListRoles(context);
+    onReloadData(context);
     AppUtility.showSnackBar(context, RoleConstants.successDeleteRoleBatch);
   }
 
@@ -250,5 +254,10 @@ class RoleProvider with ChangeNotifier {
       onCloseDetail(context);
     }
     AppUtility.showSnackBar(context, message, isError: true);
+  }
+
+  onReloadData(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableRoleProvider.notifier).refreshData(isRefresh);
   }
 }

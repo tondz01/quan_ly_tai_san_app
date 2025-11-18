@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
+import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
@@ -38,6 +39,7 @@ enum FilterStatus {
 class DieuDongTaiSanProvider with ChangeNotifier {
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
+  bool get isLoading => _isLoading;
   get userInfo => _userInfo;
   List<DieuDongTaiSanDto>? get dataPage => _dataPage;
   DieuDongTaiSanDto? get item => _item;
@@ -49,7 +51,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   get dataNhanVien => _dataNhanVien;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
+  get itemsDVGiao => _itemsDVGiao;
   get itemsDDNhanVien => _itemsDDNhanVien;
+
+  get loadingMessage => _loadingMessage;
   // get listStatus => _listStatus;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -101,16 +106,18 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
-
+  List<DropdownMenuItem<PhongBan>> _itemsDVGiao = [];
   // List status
   // late List<ListStatus> _listStatus;
 
   String? _error;
   String? _subScreen;
   String mainScreen = '';
+  String _loadingMessage = 'Đang tải dữ liệu...';
 
   bool _isShowInput = false;
   bool _isShowCollapse = true;
+  bool _isLoading = false;
   List<DieuDongTaiSanDto>? _data;
   List<AssetManagementDto>? _dataAsset;
   List<PhongBan>? _dataPhongBan;
@@ -437,6 +444,23 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         ),
     ];
 
+    if (typeDieuDongTaiSan == 1) {
+      List<PhongBan> dataDVGiao =
+          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
+          [];
+      _itemsDVGiao =
+          dataDVGiao
+              .map(
+                (element) => DropdownMenuItem<PhongBan>(
+                  value: element,
+                  child: Text(element.tenPhongBan ?? ''),
+                ),
+              )
+              .toList();
+    } else {
+      _itemsDVGiao = _itemsDDPhongBan;
+    }
+
     _dataNhanVien = AccountHelper.instance.getNhanVien();
     _itemsDDNhanVien = [
       for (var element in _dataNhanVien!)
@@ -753,5 +777,29 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     controllerDropdownPage = TextEditingController(text: '10');
     // getDataAll(context);
     onReloadDataPage(context);
+  }
+
+  Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
+    _isLoading = true;
+    _loadingMessage = 'Đang tải dữ liệu tài sản...';
+    Map<String, dynamic> result;
+    if (typeDieuDongTaiSan == 1) {
+      result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+    } else {
+      result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+    }
+    if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      _dataAsset = result['data'];
+      _isLoading = false;
+      _loadingMessage = 'Đang tải dữ liệu...';
+    } else {
+      SGLog.debug(
+        "AssetTransferProvider",
+        "Error at onReloadDataAssetByCurrentUnit: ${result['message']}",
+      );
+      _isLoading = false;
+      _loadingMessage = 'Đang tải dữ liệu...';
+    }
+    notifyListeners();
   }
 }

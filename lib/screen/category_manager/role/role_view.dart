@@ -14,7 +14,6 @@ import 'package:flutter/foundation.dart';
 
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 import 'bloc/role_state.dart';
 import 'provider/role_provide.dart';
 
@@ -154,20 +153,20 @@ class _RoleViewState extends State<RoleView> {
                       ),
                     ),
                   ),
-                  Visibility(
-                    visible:
-                        (provider.data?.length ?? 0) >=
-                        RoleConstants.minPaginationThreshold,
-                    child: SGPaginationControls(
-                      totalPages: provider.totalPages,
-                      currentPage: provider.currentPage,
-                      rowsPerPage: provider.rowsPerPage,
-                      controllerDropdownPage: provider.controllerDropdownPage!,
-                      items: provider.items,
-                      onPageChanged: provider.onPageChanged,
-                      onRowsPerPageChanged: provider.onRowsPerPageChanged,
-                    ),
-                  ),
+                  // Visibility(
+                  //   visible:
+                  //       (provider.data?.length ?? 0) >=
+                  //       RoleConstants.minPaginationThreshold,
+                  //   child: SGPaginationControls(
+                  //     totalPages: provider.totalPages,
+                  //     currentPage: provider.currentPage,
+                  //     rowsPerPage: provider.rowsPerPage,
+                  //     controllerDropdownPage: provider.controllerDropdownPage!,
+                  //     items: provider.items,
+                  //     onPageChanged: provider.onPageChanged,
+                  //     onRowsPerPageChanged: provider.onRowsPerPageChanged,
+                  //   ),
+                  // ),
                 ],
               ),
             );

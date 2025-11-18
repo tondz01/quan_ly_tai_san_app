@@ -823,7 +823,7 @@ class _ToolAndMaterialTransferDetailState
                           controller: controllerDeliveringUnit,
                           isEditing: isEditing,
                           value: donViGiao,
-                          items: widget.provider.itemsDDPhongBan,
+                          items: widget.provider.itemsDDPhongBanKho,
                           defaultValue:
                               controllerDeliveringUnit.text.isNotEmpty
                                   ? widget.provider.getPhongBanByID(

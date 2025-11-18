@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
+import 'package:flutter/foundation.dart';
+import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/convert_excel_to_department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/convert_excel_to_department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/department_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
-import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/table_department_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:se_gay_components/common/pagination/sg_pagination_controls.dart';
 
 class DepartmentManager extends StatefulWidget {
   const DepartmentManager({super.key});
@@ -29,23 +30,22 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
   bool showForm = false;
   PhongBan? editingDepartment;
 
-  late int totalEntries;
-  late int totalPages = 0;
-  late int startIndex;
-  late int endIndex;
-  int rowsPerPage = DepartmentConstants.defaultRowsPerPage;
-  int currentPage = 1;
-
-  final ScrollController horizontalController = ScrollController();
-  final TextEditingController controller = TextEditingController();
   final TextEditingController searchController = TextEditingController();
   List<PhongBan> data = [];
-  List<PhongBan> filteredData = [];
-  List<PhongBan> dataPage = [];
-  bool isFirstLoad = false;
   bool isShowInput = false;
   bool isUpdateDetail = false;
   late HomeScrollController _scrollController;
+  bool _isRefreshingTable = false;
+  void _refreshTableProvider() {
+    if (_isRefreshingTable) return;
+    _isRefreshingTable = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final container = riverpod.ProviderScope.containerOf(context);
+      container.read(tableDepartmentProvider.notifier).refreshData();
+      _isRefreshingTable = false;
+    });
+  }
   @override
   void initState() {
     super.initState();
@@ -87,30 +87,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
     });
   }
 
-  void _updatePagination() {
-    // Sử dụng _filteredData thay vì _data
-    totalEntries = filteredData.length;
-    totalPages = (totalEntries / rowsPerPage).ceil().clamp(
-      1,
-      DepartmentConstants.maxPaginationPages,
-    );
-    startIndex = (currentPage - 1) * rowsPerPage;
-    endIndex = (startIndex + rowsPerPage).clamp(0, totalEntries);
-
-    if (startIndex >= totalEntries && totalEntries > 0) {
-      currentPage = 1;
-      startIndex = 0;
-      endIndex = rowsPerPage.clamp(0, totalEntries);
-    }
-    dataPage =
-        filteredData.isNotEmpty
-            ? filteredData.sublist(
-              startIndex < totalEntries ? startIndex : 0,
-              endIndex < totalEntries ? endIndex : totalEntries,
-            )
-            : [];
-  }
-
   void _importData(List<PhongBan> departments) async {
     if (departments.isNotEmpty) {
       final result = await DepartmentsProvider().saveDepartmentBatch(
@@ -123,11 +99,8 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             'Import dữ liệu thành công ${departments.length} nhân viên',
           );
           searchController.clear();
-          currentPage = 1;
-          rowsPerPage = DepartmentConstants.defaultRowsPerPage;
-          filteredData = [];
-          dataPage = [];
           context.read<DepartmentBloc>().add(const LoadDepartments());
+          _refreshTableProvider();
           setState(() {
             isShowInput = false;
           });
@@ -178,26 +151,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
     );
   }
 
-  void _searchDepartment(String value) {
-    context.read<DepartmentBloc>().add(SearchDepartment(value));
-  }
-
-  void onPageChanged(int page) {
-    setState(() {
-      currentPage = page;
-      _updatePagination();
-    });
-  }
-
-  void onRowsPerPageChanged(int? value) {
-    setState(() {
-      if (value == null) return;
-      rowsPerPage = value;
-      currentPage = 1;
-      _updatePagination();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<DepartmentBloc, DepartmentState>(
@@ -214,6 +167,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                       : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
+          _refreshTableProvider();
         }
         if (state is UpdateDepartmentSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -226,6 +180,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                       : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
+          _refreshTableProvider();
         }
         if (state is DeleteDepartmentSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -238,6 +193,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                       : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
+          _refreshTableProvider();
         }
         if (state is DepartmentError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -262,6 +218,7 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                       : DepartmentConstants.mobileSnackBarDuration,
             ),
           );
+          _refreshTableProvider();
         } else if (state is DeleteDepartmentBatchFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -282,8 +239,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
             data = departments;
             AccountHelper.instance.clearDepartment();
             AccountHelper.instance.setDepartment(departments);
-            filteredData = data;
-            _updatePagination();
 
             return Scaffold(
               backgroundColor: Colors.transparent,
@@ -291,9 +246,9 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                 title: HeaderComponent(
                   controller: searchController,
                   onSearchChanged: (value) {
-                    setState(() {
-                      _searchDepartment(value);
-                    });
+                    final container = riverpod.ProviderScope.containerOf(context);
+                    container.read(tableDepartmentProvider.notifier).searchTerm =
+                        value;
                   },
                   isShowSearch: false,
                   onNew: () {
@@ -382,7 +337,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                             },
                           ),
                           childTableView: DepartmentList(
-                            data: dataPage,
                             onChangeDetail: (item) {
                               _showForm(item);
                             },
@@ -400,28 +354,6 @@ class _DepartmentManagerState extends State<DepartmentManager> with RouteAware {
                           },
                         ),
                       ),
-                    ),
-                  ),
-                  Visibility(
-                    visible:
-                        departments.length >=
-                        DepartmentConstants.minPaginationThreshold,
-                    child: SGPaginationControls(
-                      totalPages: totalPages,
-                      currentPage: currentPage,
-                      rowsPerPage: rowsPerPage,
-                      controllerDropdownPage: controller,
-                      items:
-                          (DepartmentConstants.mobilePaginationOptions)
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value.toString()),
-                                ),
-                              )
-                              .toList(),
-                      onPageChanged: onPageChanged,
-                      onRowsPerPageChanged: onRowsPerPageChanged,
                     ),
                   ),
                 ],

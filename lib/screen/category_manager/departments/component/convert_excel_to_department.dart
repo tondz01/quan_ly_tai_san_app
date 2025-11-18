@@ -74,11 +74,13 @@ Future<Map<String, dynamic>> convertExcelToPhongBan(
           "idQuanLy": "",
           "idCongTy": "ct001",
           "phongCapTren": AppUtility.s(row[2]?.value),
+          // ignore: unrelated_type_equality_checks
+          "isKho": row[3]?.value == true || row[3]?.value == 'TRUE',
           "ngayTao": AppUtility.formatFromISOString(
-            row[3]?.value?.toString() ?? DateTime.now().toIso8601String(),
+            row[4]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "ngayCapNhat": AppUtility.formatFromISOString(
-            row[4]?.value?.toString() ?? DateTime.now().toIso8601String(),
+            row[5]?.value?.toString() ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,
@@ -112,11 +114,12 @@ Future<Map<String, dynamic>> convertExcelToPhongBan(
           "idQuanLy": '',
           "idCongTy": "ct001",
           "phongCapTren": cell(row, 2),
+          "isKho": cell(row, 3) == true || cell(row, 3) == 'TRUE',
           "ngayTao": AppUtility.formatFromISOString(
-            cell(row, 3) ?? DateTime.now().toIso8601String(),
+            cell(row, 4) ?? DateTime.now().toIso8601String(),
           ),
           "ngayCapNhat": AppUtility.formatFromISOString(
-            cell(row, 4) ?? DateTime.now().toIso8601String(),
+            cell(row, 5) ?? DateTime.now().toIso8601String(),
           ),
           "nguoiTao": AccountHelper.instance.getUserInfo()?.tenDangNhap,
           "nguoiCapNhat": AccountHelper.instance.getUserInfo()?.tenDangNhap,

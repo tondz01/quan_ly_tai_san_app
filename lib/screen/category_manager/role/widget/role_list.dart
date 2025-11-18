@@ -220,7 +220,7 @@ class _RoleListState extends State<RoleList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height,
+      // height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -255,13 +255,22 @@ class _RoleListState extends State<RoleList> {
                       size: 18,
                     ),
                     SizedBox(width: 8),
-                    Text(
-                      'Quản lý chức vụ (${widget.provider.filteredData?.length ?? 0})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        final totalItems = ref.watch(
+                          tableRoleProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
+                        return Text(
+                          'Quản lý chức vụ ($totalItems)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -357,9 +366,6 @@ class _RoleListState extends State<RoleList> {
             ),
             child: riverpod.Consumer(
               builder: (context, ref, child) {
-                final data = widget.provider.dataPage;
-                ref.read(tableRoleProvider.notifier).setData(data);
-
                 return RiverpodTable<ChucVu>(
                   tableProvider: tableRoleProvider,
                   columns: _columns,
@@ -393,7 +399,7 @@ class _RoleListState extends State<RoleList> {
                   },
                   showActionsColumn: _showActionsColumn,
                   actionsColumnWidth: 120,
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                  maxHeight: MediaQuery.of(context).size.height,
                 );
               },
             ),

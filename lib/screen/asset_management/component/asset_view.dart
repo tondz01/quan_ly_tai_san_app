@@ -10,7 +10,7 @@ Widget assetView({required AssetManagementProvider provider}) {
       scrollDirection: Axis.vertical,
       child: CommonPageView(
         childInput: AssetDetail(provider: provider),
-        childTableView: AssetManagementList(provider: provider),
+        childTableView: AssetManagementList(provider: provider, typeTab: 0,),
         title: "Tạo tài sản",
         isShowInput: provider.isShowInput,
         isShowCollapse: provider.isShowCollapse,

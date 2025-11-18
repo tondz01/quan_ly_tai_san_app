@@ -447,7 +447,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           controller: controllers.controllerDeliveringUnit,
                           isEditing: state.isEditing,
                           value: state.donViGiao,
-                          items: widget.provider.itemsDDPhongBan,
+                          items: widget.provider.itemsDVGiao,
                           isRequired: true,
                           defaultValue:
                               controllers
@@ -462,6 +462,9 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           validationErrors: validation.validationErrors,
                           onChanged: (value) {
                             setState(() {
+                              log(
+                                'message value: ${widget.provider.dataAsset}',
+                              );
                               state.donViGiao = value;
                               state.listStaffByDepartment =
                                   widget.provider.dataNhanVien
@@ -471,11 +474,16 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                             state.donViGiao!.id,
                                       )
                                       .toList();
-                              assetByDepartment =
-                                  widget.provider.dataAsset.where((element) {
-                                    return element.idDonViHienThoi ==
-                                        state.donViGiao!.id;
-                                  }).toList();
+                              Future.microtask(() async {
+                                await widget.provider
+                                    .onReloadDataAssetByCurrentUnit(
+                                      state.donViGiao!.id ?? '',
+                                    );
+                                if (widget.provider.dataAsset != null) {
+                                  assetByDepartment =
+                                      widget.provider.dataAsset ?? [];
+                                }
+                              });
                             });
                           },
                         ),

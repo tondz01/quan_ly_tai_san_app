@@ -563,6 +563,7 @@ class AssetManagementRepository extends ApiBase {
     int size,
     String search,
     String? idNhomTaiSan,
+    int typeAsset,
   ) async {
     Map<String, dynamic> result = {
       'data': <AssetManagementDto>[],
@@ -574,9 +575,16 @@ class AssetManagementRepository extends ApiBase {
     };
 
     try {
+      String url = '';
+      if (typeAsset == 0) {
+        url = 'paged';
+      } else if (typeAsset == 1) {
+        url = 'paged-ban-giao';
+      }
+      log('API URL: $url -- tab: $typeAsset');
       final response = await get(
         // Đổi từ post thành get
-        '${EndPointAPI.ASSET_MANAGEMENT}/paged?idcongty=ct001&page=$page&size=$size&search=$search&idNhomTaiSan=$idNhomTaiSan',
+        '${EndPointAPI.ASSET_MANAGEMENT}/$url?idcongty=ct001&page=$page&size=$size&search=$search&idNhomTaiSan=$idNhomTaiSan',
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

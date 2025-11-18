@@ -7,17 +7,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/utils.dart';
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/bloc/asset_management_event.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/table_asset_management_config.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/table_asset_management_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
-import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:table_base/core/themes/app_color.dart';
 import 'package:table_base/core/themes/app_icon_svg.dart';
@@ -30,8 +27,13 @@ import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class AssetManagementList extends StatefulWidget {
-  const AssetManagementList({super.key, required this.provider});
+  const AssetManagementList({
+    super.key,
+    required this.provider,
+    required this.typeTab,
+  });
   final AssetManagementProvider provider;
+  final int typeTab;
 
   @override
   State<AssetManagementList> createState() => _AssetManagementListState();
@@ -52,10 +54,25 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   ScrollController horizontalController = ScrollController();
 
+  riverpod.ProviderContainer? _providerContainer;
+  int? _currentTypeTab;
+
   @override
   void initState() {
     super.initState();
     _initializeTableConfig();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final container = riverpod.ProviderScope.containerOf(context);
+    if (_providerContainer != container || _currentTypeTab != widget.typeTab) {
+      _providerContainer = container;
+      _currentTypeTab = widget.typeTab;
+      container.read(tableAssetManagementProvider.notifier).typeTab =
+          widget.typeTab;
+    }
   }
 
   void _initializeTableConfig() {
@@ -183,80 +200,80 @@ class _AssetManagementListState extends State<AssetManagementList> {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF21A366),
-              borderRadius: BorderRadius.circular(8),
-              // border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 8,
-              children: [
-                SGText(
-                  text: 'Danh sách nhóm tài sản',
-                  size: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                Visibility(visible: groups.isNotEmpty, child: Divider()),
-                Visibility(
-                  visible: groups.isEmpty,
-                  child: Center(
-                    child: SGText(
-                      text: 'Không có loại tài sản nào',
-                      color: ColorValue.link,
-                      size: 14,
-                    ),
-                  ),
-                ),
-                if (groups.isNotEmpty)
-                  Scrollbar(
-                    controller: horizontalController,
-                    thumbVisibility: true,
-                    thickness: 4,
-                    notificationPredicate:
-                        (notification) =>
-                            notification.metrics.axis == Axis.horizontal,
-                    child: SingleChildScrollView(
-                      controller: horizontalController,
-                      scrollDirection: Axis.horizontal,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 13.0),
-                        child: Row(
-                          // spacing: 16,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ...groups.map(
-                              (item) => Visibility(
-                                visible: item.soLuongTaiSan != 0,
-                                child: ItemAssetGroup(
-                                  titleName: item.tenNhom,
-                                  numberAsset: item.soLuongTaiSan.toString(),
-                                  image: "assets/images/assets.png",
-                                  onTap: () {
-                                    context.go(AppRoute.staffManager.path);
-                                  },
-                                  valueCheckBox: idNhomTaiSan == item.id,
-                                  onChange: (value) {
-                                    setState(() {
-                                      idNhomTaiSan = item.id;
-                                    });
-                                    notifier.searchByGroup(item.id ?? '');
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          //   decoration: BoxDecoration(
+          //     color: const Color(0xFF21A366),
+          //     borderRadius: BorderRadius.circular(8),
+          //     // border: Border.all(color: Colors.grey[300]!),
+          //   ),
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     spacing: 8,
+          //     children: [
+          //       SGText(
+          //         text: 'Danh sách nhóm tài sản',
+          //         size: 16,
+          //         fontWeight: FontWeight.bold,
+          //         color: Colors.white,
+          //       ),
+          //       Visibility(visible: groups.isNotEmpty, child: Divider()),
+          //       Visibility(
+          //         visible: groups.isEmpty,
+          //         child: Center(
+          //           child: SGText(
+          //             text: 'Không có loại tài sản nào',
+          //             color: ColorValue.link,
+          //             size: 14,
+          //           ),
+          //         ),
+          //       ),
+          //       if (groups.isNotEmpty)
+          //         Scrollbar(
+          //           controller: horizontalController,
+          //           thumbVisibility: true,
+          //           thickness: 4,
+          //           notificationPredicate:
+          //               (notification) =>
+          //                   notification.metrics.axis == Axis.horizontal,
+          //           child: SingleChildScrollView(
+          //             controller: horizontalController,
+          //             scrollDirection: Axis.horizontal,
+          //             child: Padding(
+          //               padding: const EdgeInsets.only(bottom: 13.0),
+          //               child: Row(
+          //                 // spacing: 16,
+          //                 mainAxisAlignment: MainAxisAlignment.start,
+          //                 crossAxisAlignment: CrossAxisAlignment.start,
+          //                 children: [
+          //                   ...groups.map(
+          //                     (item) => Visibility(
+          //                       visible: item.soLuongTaiSan != 0,
+          //                       child: ItemAssetGroup(
+          //                         titleName: item.tenNhom,
+          //                         numberAsset: item.soLuongTaiSan.toString(),
+          //                         image: "assets/images/assets.png",
+          //                         onTap: () {
+          //                           context.go(AppRoute.staffManager.path);
+          //                         },
+          //                         valueCheckBox: idNhomTaiSan == item.id,
+          //                         onChange: (value) {
+          //                           setState(() {
+          //                             idNhomTaiSan = item.id;
+          //                           });
+          //                           notifier.searchByGroup(item.id ?? '');
+          //                         },
+          //                       ),
+          //                     ),
+          //                   ),
+          //                 ],
+          //               ),
+          //             ),
+          //           ),
+          //         ),
+          //     ],
+          //   ),
+          // ),
           SizedBox(height: 16),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
