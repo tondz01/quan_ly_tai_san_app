@@ -81,7 +81,7 @@ class RoleProvider with ChangeNotifier {
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
-    getListRoles(context);
+    // getListRoles(context);
   }
 
   void onDispose() {

@@ -197,7 +197,8 @@ class RoleRepository extends ApiBase {
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
-        result['message'] = response.data['message'] ?? 'Lưu danh sách chức vụ thất bại';
+        result['message'] =
+            response.data['message'] ?? 'Lưu danh sách chức vụ thất bại';
         return result;
       }
 
@@ -215,16 +216,17 @@ class RoleRepository extends ApiBase {
     return result;
   }
 
-  Future<Map<String, dynamic>> deleteRoleBatch(
-    List<String> data,
-  ) async {
+  Future<Map<String, dynamic>> deleteRoleBatch(List<String> data) async {
     Map<String, dynamic> result = {
       'data': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
 
     try {
-      final response = await delete('${EndPointAPI.CHUC_VU}/batch', data: jsonEncode(data));
+      final response = await delete(
+        '${EndPointAPI.CHUC_VU}/batch',
+        data: jsonEncode(data),
+      );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
@@ -240,6 +242,50 @@ class RoleRepository extends ApiBase {
       );
     } catch (e) {
       SGLog.error("RoleRepository", "Error at deleteRoleBatch: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <ChucVu>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.CHUC_VU}/congty/ct001/paged?page=$page&size=$size&search=$search',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<ChucVu>(
+          itemsData,
+          ChucVu.fromJson,
+        );
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+    } catch (e) {
+      log("Error at getDataWithPagination - RoleRepository: $e");
     }
 
     return result;

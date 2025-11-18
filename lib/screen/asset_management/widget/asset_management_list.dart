@@ -54,13 +54,25 @@ class _AssetManagementListState extends State<AssetManagementList> {
 
   ScrollController horizontalController = ScrollController();
 
+  riverpod.ProviderContainer? _providerContainer;
+  int? _currentTypeTab;
+
   @override
   void initState() {
     super.initState();
-    final container = riverpod.ProviderScope.containerOf(context);
-    container.read(tableAssetManagementProvider.notifier).typeTab =
-        widget.typeTab;
     _initializeTableConfig();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final container = riverpod.ProviderScope.containerOf(context);
+    if (_providerContainer != container || _currentTypeTab != widget.typeTab) {
+      _providerContainer = container;
+      _currentTypeTab = widget.typeTab;
+      container.read(tableAssetManagementProvider.notifier).typeTab =
+          widget.typeTab;
+    }
   }
 
   void _initializeTableConfig() {

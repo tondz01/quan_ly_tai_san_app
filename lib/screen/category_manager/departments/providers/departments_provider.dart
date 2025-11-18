@@ -3,12 +3,15 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/nhom_don_vi.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/table_department_provider.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -127,7 +130,10 @@ class DepartmentsProvider extends ApiBase {
     };
 
     try {
-      final response = await post(EndPointAPI.PHONG_BAN, data: department.toJson());
+      final response = await post(
+        EndPointAPI.PHONG_BAN,
+        data: department.toJson(),
+      );
       if (checkStatusCodeFailed(response.statusCode ?? 0)) {
         result['status_code'] = response.statusCode;
         result['message'] = response.data['message'];
@@ -268,4 +274,53 @@ class DepartmentsProvider extends ApiBase {
 
     return result;
   }
+
+  Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <PhongBan>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+
+    try {
+      final response = await get(
+        // Đổi từ post thành get
+        '${EndPointAPI.PHONG_BAN}/paged?idcongty=ct001&page=$page&size=$size&search=$search',
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<PhongBan>(
+          itemsData,
+          PhongBan.fromJson,
+        );
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+    } catch (e) {
+      log("Error at getDataWithPagination - DepartmentsProvider: $e");
+    }
+
+    return result;
+  }
+
+  // onReloadData(BuildContext context, [bool isRefresh = true]) {
+  //   final container = ProviderScope.containerOf(context);
+  //   container.read(tableDepartmentProvider.notifier).refreshData(isRefresh);
+  // }
 }

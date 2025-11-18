@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/routes/app_route_path.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/item_asset_group.dart';
@@ -52,7 +51,9 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
     final groups = widget.provider.dataGroup ?? const <AssetGroupDto>[];
     final ref = riverpod.ProviderScope.containerOf(context);
     final notifier = ref.read(tableAssetManagementProvider.notifier);
-    return Container(
+    return DefaultTabController(
+      length: 2,
+      child: Container(
       height: MediaQuery.of(context).size.height + 250,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -105,7 +106,6 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
           ),
           Expanded(
             child: TabBarView(
-              // controller: _tabController,
               physics: NeverScrollableScrollPhysics(),
               children: [
                 // Tab 1: Bàn giao tài sản
@@ -116,6 +116,7 @@ class _TabBarTableAssetManageState extends State<TabBarTableAssetManage>
           ),
         ],
       ),
+    ),
     );
   }
 

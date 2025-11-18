@@ -166,10 +166,12 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
           context,
           'Import thất bại: ${resultSave['message'] ?? 'Lỗi không xác định'}',
         );
+        log('resultSave: ${resultSave['message']}');
       }
     } catch (e) {
       isImporting = false;
       AppUtility.showSnackBar(context, 'Import thất bại: $e');
+      log('Import thất bại: $e');
     }
   }
 
