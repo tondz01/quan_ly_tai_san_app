@@ -92,8 +92,8 @@ class _DepartmentListState extends State<DepartmentList> {
                 .where((e) => e.phongBanId == item.id)
                 .length)
             .toString();
-      case 'parent_department':
-        return item.phongCapTren;
+      // case 'parent_department':
+      //   return item.phongCapTren;
       case 'status':
         return (item.isActive ?? true) ? 'Hoạt động' : 'Không hoạt động';
       default:

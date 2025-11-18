@@ -47,18 +47,18 @@ class TableDepartmentConfig {
           return TableCellData(widget: Text(count.toString()));
         },
       ),
-      ColumnDefinition(
-        config: TableColumnData.select(
-          name: 'Phòng/Ban cấp trên',
-          key: 'parent_department',
-          width: 180,
-          flex: 1,
-          isFixed: false,
-        ),
-        builder: (item) {
-          return TableCellData(widget: Text(item.phongCapTren ?? ''));
-        },
-      ),
+      // ColumnDefinition(
+      //   config: TableColumnData.select(
+      //     name: 'Phòng/Ban cấp trên',
+      //     key: 'parent_department',
+      //     width: 180,
+      //     flex: 1,
+      //     isFixed: false,
+      //   ),
+      //   builder: (item) {
+      //     return TableCellData(widget: Text(item.phongCapTren ?? ''));
+      //   },
+      // ),
       ColumnDefinition(
         config: TableColumnData.select(
           name: 'Trạng thái',
