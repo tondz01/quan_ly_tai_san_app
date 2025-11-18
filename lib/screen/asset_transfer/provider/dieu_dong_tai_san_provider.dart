@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -291,7 +290,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     controllerDropdownPage = TextEditingController(text: '10');
     getDataDropdown();
     _dataAsset = AccountHelper.instance.getAllAssets();
-    print('message dataAsset: ${_dataAsset}');
     // getDataAll(context);
 
     // Start auto reload every 20 seconds

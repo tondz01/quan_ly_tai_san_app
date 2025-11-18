@@ -361,6 +361,11 @@ class AssetManagementProvider with ChangeNotifier {
         .refreshData(isRefresh);
   }
 
+  onReloadTab(BuildContext context, int typeTab) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableAssetManagementProvider.notifier).refreshTab(typeTab);
+  }
+
   onRefreshDataAssetGroup() {
     AssetGroupRepository().getListAssetGroup();
     _dataGroup = AccountHelper.instance.getAssetGroup();
