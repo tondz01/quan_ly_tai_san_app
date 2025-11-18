@@ -581,6 +581,7 @@ class AssetManagementRepository extends ApiBase {
       } else if (typeAsset == 1) {
         url = 'paged-ban-giao';
       }
+      log('API URL: $url -- tab: $typeAsset');
       final response = await get(
         // Đổi từ post thành get
         '${EndPointAPI.ASSET_MANAGEMENT}/$url?idcongty=ct001&page=$page&size=$size&search=$search&idNhomTaiSan=$idNhomTaiSan',

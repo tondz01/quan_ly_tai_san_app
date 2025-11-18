@@ -20,8 +20,8 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_man
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_detail.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_depreciation_list.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_detail.dart';
-import 'package:quan_ly_tai_san_app/screen/asset_management/widget/asset_management_list.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/widget/tab_bar_table_asset_magage.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -276,7 +276,7 @@ class _AssetManagementViewState extends State<AssetManagementView> {
                                   scrollDirection: Axis.vertical,
                                   child: CommonPageView(
                                     childInput: AssetDetail(provider: provider),
-                                    childTableView: AssetManagementList(
+                                    childTableView: TabBarTableAssetManage(
                                       provider: provider,
                                     ),
                                     title: "Tạo tài sản",

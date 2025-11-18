@@ -16,7 +16,7 @@ final tableAssetManagementProvider = StateNotifierProvider.autoDispose<
 class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   final AssetManagementRepository repository;
   int totalItems = 0;
-  int _typeTab = 0;
+  int typeTab = 0;
   String _currentSearchTerm = '';
   String? _currentIdNhomTaiSan = '';
   Map<String, dynamic> _groupCounts = {};
@@ -35,6 +35,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
       itemsPerPage: itemsPerPage,
     );
 
+    log("API URL initialize Tab: $typeTab");
     // Bật API pagination
     enableApiPagination(true);
     loadDataFromApi(0, _currentIdNhomTaiSan);
@@ -57,15 +58,13 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
     try {
       Map<String, dynamic> response = {};
       // Gọi API của bạn
-      if (_typeTab == 0) {
-        response = await repository.getDataWithPagination(
-          page,
-          state.paginationState.itemsPerPage,
-          _currentSearchTerm,
-          idNhomTaiSan,
-          _typeTab,
-        );
-      }
+      response = await repository.getDataWithPagination(
+        page,
+        state.paginationState.itemsPerPage,
+        _currentSearchTerm,
+        idNhomTaiSan,
+        typeTab,
+      );
 
       // Cập nhật data và pagination info
       setApiData(
@@ -77,7 +76,7 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
       _groupCounts = response['groupCounts'];
       totalItems = response['totalItems'];
     } catch (error) {
-      log('Error loading data: $error');
+      log('Error loading data AssetManagement: $error');
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Lỗi tải dữ liệu: $error',
@@ -111,7 +110,8 @@ class TableAssetManagementProvider extends TableNotifier<AssetManagementDto> {
   }
 
   Future<void> refreshTab(int typeTab, [bool isRefresh = true]) async {
-    _typeTab = typeTab;
+    this.typeTab = typeTab;
+    log('API URL Tab: $typeTab');
     await loadDataFromApi(
       state.paginationState.currentDisplayPage,
       _currentIdNhomTaiSan,
