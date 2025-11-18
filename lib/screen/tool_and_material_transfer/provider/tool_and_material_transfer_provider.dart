@@ -60,6 +60,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   get loadingMessage => _loadingMessage;
 
   get itemsDDPhongBan => _itemsDDPhongBan;
+  get itemsDDPhongBanKho => _itemsDDPhongBanKho;
   get itemsDDNhanVien => _itemsDDNhanVien;
 
   bool get isShowAll => _filterStatus[FilterStatus.all] ?? false;
@@ -120,6 +121,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   ];
 
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBan = [];
+  List<DropdownMenuItem<PhongBan>> _itemsDDPhongBanKho = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
 
   // List status
@@ -476,6 +478,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
+
     _itemsDDPhongBan = [
       for (var element in _dataPhongBan!)
         DropdownMenuItem<PhongBan>(
@@ -483,6 +486,19 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
           child: Text(element.tenPhongBan ?? ''),
         ),
     ];
+    if (type == 1) {
+      _dataPhongBan =
+          _dataPhongBan?.where((element) => element.isKho == true).toList();
+      _itemsDDPhongBanKho = [
+        for (var element in _dataPhongBan!)
+          DropdownMenuItem<PhongBan>(
+            value: element,
+            child: Text(element.tenPhongBan ?? ''),
+          ),
+      ];
+    }else{
+      _itemsDDPhongBanKho = _itemsDDPhongBan;
+    }
     _dataNhanVien = AccountHelper.instance.getNhanVien();
     _itemsDDNhanVien = [
       for (var element in _dataNhanVien!)

@@ -1,40 +1,79 @@
 import 'dart:developer';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
 import 'package:table_base/widgets/table/providers/table_notifier.dart';
 import 'package:table_base/widgets/table/providers/table_state.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provider cho TableDepartmentProvider với tối ưu performance
 final tableDepartmentProvider = StateNotifierProvider.autoDispose<
-  TableDepartmentProvider,
-  GenericTableState<PhongBan>
->((ref) => TableDepartmentProvider());
+    TableDepartmentProvider,
+    GenericTableState<PhongBan>>((ref) {
+  final repository = DepartmentsProvider();
+  return TableDepartmentProvider(repository);
+});
 
 class TableDepartmentProvider extends TableNotifier<PhongBan> {
-  List<PhongBan> _data = [];
+  final DepartmentsProvider repository;
+  int totalItems = 0;
+  String _currentSearchTerm = '';
 
-  /// Set data từ widget level
-  void setData(List<PhongBan> data) {
-    _data = data;
-  }
+  TableDepartmentProvider(this.repository);
 
+  // Tìm kiếm với API
   set searchTerm(String value) {
-    search(value);
+    _currentSearchTerm = value;
+    loadDataFromApi(0); // Reset về trang đầu khi search
   }
 
   @override
-  Future<List<PhongBan>> generateData() async {
+  void initialize({
+    required Map<String, double> columnWidths,
+    required dynamic Function(PhongBan item, int columnIndex) valueGetter,
+    int itemsPerPage = 20,
+  }) {
+    super.initialize(
+      columnWidths: columnWidths,
+      valueGetter: valueGetter,
+      itemsPerPage: itemsPerPage,
+    );
+    enableApiPagination(true);
+    loadDataFromApi(0);
+  }
+
+  Future<void> loadDataFromApi(int page, [bool isRefresh = true]) async {
+    state = state.copyWith(isLoading: isRefresh, errorMessage: null);
     try {
-      log('generateData called with ${_data.length} items');
-      return _data;
-    } catch (e) {
-      log('Error in generateData: $e');
-      return [];
+      final response = await repository.getDataWithPagination(
+        page,
+        state.paginationState.itemsPerPage,
+        _currentSearchTerm,
+      );
+
+      setApiData(
+        response['data'],
+        totalPages: response['totalPages'],
+        currentPage: response['currentPage'],
+        totalItems: response['totalItems'],
+      );
+      totalItems = response['totalItems'];
+    } catch (error) {
+      log('Error loading data Departments: $error');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Lỗi tải dữ liệu: $error',
+      );
     }
   }
 
-  Future<void> refreshData() async {
-    await generateData();
+  Future<void> refreshData([bool isRefresh = true]) async {
+    await loadDataFromApi(state.paginationState.currentDisplayPage, isRefresh);
+  }
+
+  @override
+  void goToPage(int page) {
+    super.goToPage(page);
+    loadDataFromApi(page);
   }
 }
