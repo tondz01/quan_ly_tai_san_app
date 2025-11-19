@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter_mau01.dart';

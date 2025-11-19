@@ -12,7 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/repository/asset_category_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/repository/asset_group_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/ccdc_group/model/ccdc_group.dart';
@@ -136,7 +136,7 @@ class AuthRepository extends ApiBase {
 
   //------LOAD DATA------------------------------------------------------------------------------------///
   Future<void> loadData(String idCongTy) async {
-    await _loadUserDepartments(idCongTy);
+    await loadUserDepartments(idCongTy);
     await _loadUserEmployee(idCongTy);
     await loadAssetGroup(idCongTy);
     await _loadCCDCGroup(idCongTy);
@@ -149,7 +149,7 @@ class AuthRepository extends ApiBase {
   }
 
   /// Load danh sách phòng ban của user và lưu vào AccountHelper
-  Future<void> _loadUserDepartments(String idCongTy) async {
+  Future<void> loadUserDepartments(String idCongTy) async {
     try {
       final response = await get(
         EndPointAPI.PHONG_BAN,

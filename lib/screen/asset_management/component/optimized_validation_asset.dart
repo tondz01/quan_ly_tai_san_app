@@ -179,7 +179,7 @@ Future<(bool, List<AssetManagementDto>, List<String>)> importAssetsOptimized({
         if (earlyStoppedByErrorLimit) break;
         
         if (limitedByRowCap && totalRows > rowsToProcess) {
-          errors.add('Đã giới hạn xử lý ${rowsToProcess} hàng đầu tiên để tăng tốc.');
+          errors.add('Đã giới hạn xử lý $rowsToProcess hàng đầu tiên để tăng tốc.');
         }
       }
     } catch (e) {
@@ -287,7 +287,7 @@ Future<(bool, List<AssetManagementDto>, List<String>)> importAssetsOptimized({
               'soLuong': 1,
               'donViTinh': AppUtility.s(row[27]?.value),
               'ghiChu': AppUtility.s(row[28]?.value),
-              'idDonViBanDau': AppUtility.s(row[29]?.value),
+              'idDonViBanDau': row[29]?.value ?? "K30",
               'idDonViHienThoi': AppUtility.s(row[30]?.value),
               'moTa': AppUtility.s(row[31]?.value),
               'idCongTy': 'ct001',
@@ -303,7 +303,7 @@ Future<(bool, List<AssetManagementDto>, List<String>)> importAssetsOptimized({
           }
           
           if (limitedByRowCap && totalRows > rowsToProcess) {
-            errors.add('Đã giới hạn xử lý ${rowsToProcess} hàng đầu tiên để tăng tốc.');
+            errors.add('Đã giới hạn xử lý $rowsToProcess hàng đầu tiên để tăng tốc.');
           }
         }
       } catch (e2) {
@@ -324,7 +324,7 @@ Future<(bool, List<AssetManagementDto>, List<String>)> importAssetsOptimized({
     // Check if we have errors
     if (errors.isNotEmpty) {
       if (earlyStoppedByErrorLimit) {
-        errors.add('... Đã dừng kiểm tra sớm do quá nhiều lỗi (>${maxErrorsBeforeExit}).');
+        errors.add('... Đã dừng kiểm tra sớm do quá nhiều lỗi (>$maxErrorsBeforeExit).');
       }
       
       if (context != null) {

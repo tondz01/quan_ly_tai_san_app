@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -6,39 +5,22 @@ import 'package:flutter/rendering.dart';
 import 'package:pdf/pdf.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
-import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
-import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter_mau01.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_page.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/mau_so_01.page.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:quan_ly_tai_san_app/screen/report/component/report_provider.dart';
-import 'package:flutter/rendering.dart';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:quan_ly_tai_san_app/common/input/common_form_date.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
-import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
-import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
-import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
-import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_page.dart';
-import 'package:se_gay_components/common/sg_text.dart';
-import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class MauSo01Screen extends StatefulWidget {
   const MauSo01Screen({super.key});

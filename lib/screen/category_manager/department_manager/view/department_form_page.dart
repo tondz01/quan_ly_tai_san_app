@@ -4,28 +4,16 @@ import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/input_decoration_custom.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/nhom_don_vi.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/component/department_constants.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/nhom_don_vi.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/provider/department_provide.dart';
 
 class DepartmentFormPage extends StatefulWidget {
-  final PhongBan? department;
-  final int? index;
-  final VoidCallback? onCancel;
-  final VoidCallback? onSaved;
-  final bool isUpdateDetail;
-  final VoidCallback? onUpdateDetail;
-  const DepartmentFormPage({
-    super.key,
-    this.department,
-    this.index,
-    this.onCancel,
-    this.onSaved,
-    this.isUpdateDetail = false,
-    this.onUpdateDetail,
-  });
+  final DepartmentProvider provider;
+  const DepartmentFormPage({super.key, required this.provider});
 
   @override
   State<DepartmentFormPage> createState() => _DepartmentFormPageState();
@@ -37,6 +25,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   late TextEditingController _departmentNameController;
   NhomDonVi? _group;
   PhongBan? _parentDepartment;
+  PhongBan? _data;
 
   bool isEditing = false;
   bool isKho = false;
@@ -50,45 +39,43 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
   @override
   void didUpdateWidget(DepartmentFormPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.department != widget.department && widget.isUpdateDetail) {
-      widget.onUpdateDetail?.call();
+    if (oldWidget.provider.dataDetail != _data) {
       _initData();
     }
   }
 
   void _initData() {
-    if (widget.department != null) {
+    _data = widget.provider.dataDetail;
+    if (_data != null) {
       isEditing = false;
-      isKho = widget.department?.isKho ?? false;
+      isKho = _data?.isKho ?? false;
     } else {
       isEditing = true;
     }
-    _departmentIdController = TextEditingController(
-      text: widget.department?.id ?? '',
-    );
+    _departmentIdController = TextEditingController(text: _data?.id ?? '');
 
     _departmentNameController = TextEditingController(
-      text: widget.department?.tenPhongBan ?? '',
+      text: _data?.tenPhongBan ?? '',
     );
 
-    try {
-      _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
-        (group) => group.id == widget.department?.idNhomDonVi,
-      );
-    } catch (e) {
-      _group = null;
-    }
+    // try {
+    //   _group = context.read<DepartmentBloc>().departmentGroups.firstWhere(
+    //     (group) => group.id == _data?.idNhomDonVi,
+    //   );
+    // } catch (e) {
+    //   _group = null;
+    // }
 
     _parentDepartment = null;
 
-    try {
-      _parentDepartment = context.read<DepartmentBloc>().departments.firstWhere(
-        (parentDepartment) =>
-            parentDepartment.id == widget.department?.phongCapTren,
-      );
-    } catch (e) {
-      _parentDepartment = null;
-    }
+    // try {
+    //   _parentDepartment = context.read<DepartmentBloc>().departments.firstWhere(
+    //     (parentDepartment) =>
+    //         parentDepartment.id == widget.department?.phongCapTren,
+    //   );
+    // } catch (e) {
+    //   _parentDepartment = null;
+    // }
   }
 
   @override
@@ -108,14 +95,12 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
         phongCapTren: _parentDepartment?.id ?? '',
         isKho: isKho,
       );
-      if (widget.department == null) {
-        context.read<DepartmentBloc>().add(AddDepartment(department));
+      if (_data == null) {
+        context.read<DepartmentBloc>().add(CreateDepartmentEvent(department));
       } else {
-        context.read<DepartmentBloc>().add(UpdateDepartment(department));
+        context.read<DepartmentBloc>().add(UpdateDepartmentEvent(department));
       }
-      if (widget.onSaved != null) {
-        widget.onSaved!();
-      }
+      widget.provider.onCloseDetail(context);
     }
   }
 
@@ -153,7 +138,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
                             required: true,
                           ),
                           enabled:
-                              widget.department?.id != null
+                              _data?.id != null
                                   ? false
                                   : !isEdit, // Read-only khi update
                           validator:
@@ -250,9 +235,7 @@ class _DepartmentFormPageState extends State<DepartmentFormPage> {
               backgroundColor: ColorValue.error,
               foregroundColor: Colors.white,
               onPressed: () {
-                if (widget.onCancel != null) {
-                  widget.onCancel!();
-                }
+                widget.provider.onCloseDetail(context);
               },
             ),
           ],

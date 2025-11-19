@@ -9,7 +9,7 @@ import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/utils/model_country.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_category/models/asset_category_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/provider/asset_management_provider.dart';
@@ -278,7 +278,7 @@ Widget buildOtherInformation(
 
       if (valueKhoiTaoDonVi)
         CmFormDropdownObject<PhongBan>(
-          label: 'Đơn vị sử dụng ban đầu',
+          label: 'Kho',
           controller: ctrlDonViBanDau,
           value: phongBanBanDau,
           isEditing: isEditing,

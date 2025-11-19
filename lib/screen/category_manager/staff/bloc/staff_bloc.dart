@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_state.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
@@ -18,14 +18,20 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
   List<PhongBan> _allDepartments = [];
   List<ChucVu> _allChucvus = [];
   final NhanVienProvider _provider = NhanVienProvider();
-  final provider = DepartmentsProvider();
+  final provider = DepartmentRepository();
 
   StaffBloc() : super(StaffInitialState()) {
     on<LoadStaffs>((event, emit) async {
       emit(StaffLoadingState());
       _allStaffs = await _provider.fetchNhanViens();
       _allChucvus = await _provider.fetchChucVus();
-      _allDepartments = await provider.fetchDepartments();
+      _allDepartments = await provider.getListDepartment("ct001").then((value) {
+        if (value['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+          return value['data'] as List<PhongBan>;
+        } else {
+          return <PhongBan>[];
+        }
+      });
 
       emit(StaffLoaded(_allStaffs));
     });

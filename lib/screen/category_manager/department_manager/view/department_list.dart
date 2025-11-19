@@ -8,11 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:quan_ly_tai_san_app/common/popup/popup_confirm.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/column_display_popup.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/component/table_department_config.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/table_department_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_bloc.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_event.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/component/table_department_config.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/provider/department_provide.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/provider/table_department_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:table_base/core/themes/app_color.dart';
@@ -25,15 +26,8 @@ import 'package:table_base/widgets/table/widgets/column_config_dialog.dart';
 import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 
 class DepartmentList extends StatefulWidget {
-  final void Function(PhongBan)? onChangeDetail;
-  final void Function(PhongBan)? onEdit;
-  final void Function(PhongBan)? onDelete;
-  const DepartmentList({
-    super.key,
-    this.onChangeDetail,
-    this.onEdit,
-    this.onDelete,
-  });
+  final DepartmentProvider provider;
+  const DepartmentList({super.key, required this.provider});
 
   @override
   State<DepartmentList> createState() => _DepartmentListState();
@@ -124,7 +118,7 @@ class _DepartmentListState extends State<DepartmentList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height,
+      // height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -286,7 +280,7 @@ class _DepartmentListState extends State<DepartmentList> {
                 return null;
               },
               onRowTap: (item) {
-                widget.onChangeDetail?.call(item);
+                widget.provider.onChangeDetail(context, item);
               },
               onDelete: (item) {
                 log('Attempting to delete department: ${item.id}');
@@ -307,7 +301,11 @@ class _DepartmentListState extends State<DepartmentList> {
                   cancelText: 'Không',
                   confirmText: 'Xóa',
                   onConfirm: () {
-                    widget.onDelete?.call(item);
+                    if (item.id != null) {
+                      context.read<DepartmentBloc>().add(
+                        DeleteDepartmentEvent(item.id!),
+                      );
+                    }
                   },
                 );
               },
@@ -356,7 +354,7 @@ class _DepartmentListState extends State<DepartmentList> {
               confirmText: 'Xóa',
               onConfirm: () {
                 final departmentBloc = context.read<DepartmentBloc>();
-                departmentBloc.add(DeleteDepartmentBatch(ids));
+                departmentBloc.add(DeleteDepartmentBatchEvent(ids));
               },
             );
           },

@@ -29,7 +29,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.da
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/controllers/asset_transfer_controllers.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/state/asset_transfer_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/validation/asset_transfer_validation.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/component/asset_transfer_movement_table.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
@@ -665,10 +665,12 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           },
                         ),
                         AdditionalSignersSelector(
-                          addButtonText: "Thêm đơn bị đại diện",
+                          addButtonText: "Thêm người ký",
                           labelDepartment: "Đơn vị đại diện",
                           labelSigned: 'Người đại diện',
                           isEditing: state.isEditing,
+                          defaultDepartment: state.donViDeNghi,
+                          isEditDepartment: false,
                           itemsNhanVien: [
                             ...state.listNhanVien.map(
                               (e) => DropdownMenuItem(

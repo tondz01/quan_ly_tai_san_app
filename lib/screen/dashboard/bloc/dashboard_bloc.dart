@@ -2,8 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_management_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
@@ -19,7 +19,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   List<DuAn> _allProject = [];
   DashboardReport? _data;
   final NhanVienProvider nhanVienProvider = NhanVienProvider();
-  final DepartmentsProvider departmentsProvider = DepartmentsProvider();
+  final DepartmentRepository departmentsProvider = DepartmentRepository();
   DashboardBloc() : super(DashboardInitial()) {
     on<LoadDashboard>((event, emit) async {
       Map<String, dynamic> result = await AssetManagementRepository()
@@ -37,14 +37,19 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       Map<String, dynamic> resultData =
           await DashboardRepository().getDashboardData();
 
-       if (resultData['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+      if (resultData['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         // Add safety check to ensure _data is a Map before assignment
         var responseData = resultData['data'];
         _data = responseData;
       }
 
       _allStaffs = await nhanVienProvider.fetchNhanViens();
-      _allDepartments = await departmentsProvider.fetchDepartments();
+
+      Map<String, dynamic> resultDepartment = await departmentsProvider
+          .getListDepartment("ct001");
+      if (resultDepartment['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        _allDepartments = resultDepartment['data'];
+      }
 
       emit(
         DashboardLoaded(

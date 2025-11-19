@@ -6,8 +6,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_category/bloc/asset_category_bl
 import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/bloc/capital_source_event.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_bloc.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/bloc/department_event.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/bloc/project_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/bloc/role_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
@@ -24,6 +22,7 @@ import 'package:quan_ly_tai_san_app/screen/type_ccdc/bloc/type_ccdc_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/unit/bloc/unit_bloc.dart';
 
 import '../../screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
+import '../../screen/category_manager/department_manager/bloc/department_bloc.dart';
 
 List<SingleChildWidget> get blocProvider {
   return [
@@ -37,15 +36,21 @@ List<SingleChildWidget> get blocProvider {
     BlocProvider<DieuDongTaiSanBloc>(create: (_) => DieuDongTaiSanBloc()),
     BlocProvider<StaffBloc>(create: (_) => StaffBloc()..add(LoadStaffs())),
     BlocProvider<ProjectBloc>(create: (_) => ProjectBloc()),
-    BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()..add(LoadDepartments())),
-    BlocProvider<CapitalSourceBloc>(create: (_) => CapitalSourceBloc()..add(LoadCapitalSources())),
-    BlocProvider<ToolAndMaterialTransferBloc>(create: (_) => ToolAndMaterialTransferBloc()),
+    BlocProvider<DepartmentBloc>(create: (_) => DepartmentBloc()),
+    BlocProvider<CapitalSourceBloc>(
+      create: (_) => CapitalSourceBloc()..add(LoadCapitalSources()),
+    ),
+    BlocProvider<ToolAndMaterialTransferBloc>(
+      create: (_) => ToolAndMaterialTransferBloc(),
+    ),
     BlocProvider<AssetGroupBloc>(create: (_) => AssetGroupBloc()),
     BlocProvider<CcdcGroupBloc>(create: (_) => CcdcGroupBloc()),
     BlocProvider<AssetManagementBloc>(create: (_) => AssetManagementBloc()),
     BlocProvider<AssetCategoryBloc>(create: (_) => AssetCategoryBloc()),
     BlocProvider<AssetHandoverBloc>(create: (_) => AssetHandoverBloc()),
-    BlocProvider<ToolAndSuppliesHandoverBloc>(create: (_) => ToolAndSuppliesHandoverBloc()),
+    BlocProvider<ToolAndSuppliesHandoverBloc>(
+      create: (_) => ToolAndSuppliesHandoverBloc(),
+    ),
     BlocProvider<LoginBloc>(create: (_) => LoginBloc()),
     BlocProvider<RoleBloc>(create: (_) => RoleBloc()),
     BlocProvider<DashboardBloc>(create: (_) => DashboardBloc()),

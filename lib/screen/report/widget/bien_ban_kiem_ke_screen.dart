@@ -10,8 +10,8 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dar
 import 'package:quan_ly_tai_san_app/common/widgets/a4_canvas.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
@@ -148,7 +148,10 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
   }
 
   Future<void> _loadData() async {
-    listPhongBan = await DepartmentsProvider().fetchDepartments();
+    final result = await DepartmentRepository().getListDepartment("ct001");
+    if (checkStatusCodeDone(result)) {
+      listPhongBan = (result['data'] as List).cast<PhongBan>();
+    }
     setState(() {});
   }
 
@@ -353,7 +356,9 @@ class _BienBanKiemKeScreenState extends State<BienBanKiemKeScreen> {
                             GestureDetector(
                               onTap: () {
                                 // Xuất PDF rồi mở hộp thoại in trên web
-                                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) async {
                                   await ReportProvider().exportToPdfAndPrint(
                                     _pageKeys,
                                     context,

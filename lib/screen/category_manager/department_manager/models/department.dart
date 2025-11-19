@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/constants/department_constants.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/component/department_constants.dart';
 
 class PhongBan extends Equatable {
   final String? id;

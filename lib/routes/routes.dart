@@ -8,7 +8,6 @@ export 'package:quan_ly_tai_san_app/screen/asset_category/asset_category_view.da
 export 'package:quan_ly_tai_san_app/screen/asset_group/asset_group_view.dart';
 export 'package:quan_ly_tai_san_app/screen/asset_transfer/asset_transfer_view.dart';
 export 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/views/capital_source_manager.dart';
-export 'package:quan_ly_tai_san_app/screen/category_manager/departments/views/department_manager.dart';
 export 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/views/project_manager.dart';
 export 'package:quan_ly_tai_san_app/screen/category_manager/role/role_view.dart';
 export 'package:quan_ly_tai_san_app/screen/category_manager/staff/views/staff_manager.dart';

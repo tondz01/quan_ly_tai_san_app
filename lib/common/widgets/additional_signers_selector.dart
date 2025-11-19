@@ -3,7 +3,7 @@ import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dar
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_checkbox_input.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 
 class AdditionalSignerData {
@@ -41,12 +41,15 @@ class AdditionalSignersSelector extends StatefulWidget {
   final List<DropdownMenuItem<NhanVien>> itemsNhanVien;
   final List<NhanVien?> initialSigners;
   final ValueChanged<List<NhanVien?>> onChanged;
+  final PhongBan? defaultDepartment;
   // Optional enhanced props
   final List<PhongBan>? phongBan;
   final List<NhanVien>? listNhanVien;
   final ValueChanged<List<AdditionalSignerData>>? onChangedDetailed;
   // Thêm prop mới để truyền vào danh sách AdditionalSignerData ban đầu
   final List<AdditionalSignerData>? initialSignerData;
+
+  final bool isEditDepartment;
 
   const AdditionalSignersSelector({
     super.key,
@@ -61,6 +64,8 @@ class AdditionalSignersSelector extends StatefulWidget {
     this.listNhanVien,
     this.onChangedDetailed,
     this.initialSignerData, // Thêm parameter mới
+    this.defaultDepartment,
+    this.isEditDepartment = true,
   });
 
   @override
@@ -285,11 +290,18 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                                   child: CmFormDropdownObject<PhongBan>(
                                     label: widget.labelDepartment,
                                     controller: _deptControllers[index],
-                                    isEditing: widget.isEditing,
-                                    value: _signersData[index].department,
+                                    isEditing:
+                                        widget.isEditDepartment == true
+                                            ? widget.isEditing
+                                            : false,
+                                    value:
+                                        widget.defaultDepartment ??
+                                        _signersData[index].department,
                                     defaultValue:
+                                        widget.defaultDepartment ??
                                         _signersData[index].department,
                                     fieldName: 'additionalSigner_dept_$index',
+
                                     items: [
                                       ...widget.phongBan!.map(
                                         (e) => DropdownMenuItem(

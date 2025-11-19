@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_base/widgets/table/models/column_definition.dart';
 import 'package:table_base/widgets/table/models/table_model.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart'; // ignore: unused_import
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 class TableDepartmentConfig {

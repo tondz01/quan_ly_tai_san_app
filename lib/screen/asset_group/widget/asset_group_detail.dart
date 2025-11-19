@@ -10,7 +10,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_group/bloc/asset_group_event.da
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/provider/asset_group_provide.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/request/asset_group_request.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/pages/department_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/view/department_form_page.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 

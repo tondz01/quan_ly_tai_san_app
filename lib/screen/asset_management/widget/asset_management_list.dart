@@ -460,7 +460,7 @@ class _AssetManagementListState extends State<AssetManagementList> {
                   },
                   showActionsColumn: true,
                   actionsColumnWidth: 120,
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                  maxHeight: MediaQuery.of(context).size.height * 0.65,
                 );
               },
             ),

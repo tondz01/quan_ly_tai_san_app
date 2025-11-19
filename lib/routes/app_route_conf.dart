@@ -1,3 +1,4 @@
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/department_view.dart';
 import 'package:quan_ly_tai_san_app/screen/reason_increase/reason_increase_view.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_screen.dart';
 import 'package:quan_ly_tai_san_app/screen/report/widget/bien_ban_kiem_ke_tscd_screen.dart';
@@ -91,7 +92,7 @@ class AppRouteConf {
             pageBuilder:
                 (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: DepartmentManager(),
+                  child: DepartmentView(),
                 ),
           ),
           GoRoute(

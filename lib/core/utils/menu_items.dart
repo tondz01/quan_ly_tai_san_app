@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/views/capital_source_manager.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/views/department_manager.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/department_view.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/views/project_manager.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/views/staff_manager.dart';
 import 'package:se_gay_components/web_base/sg_sidebar/sg_sidebar.dart';
@@ -51,6 +51,6 @@ final Map<String, Widget> pages = {
 final Map<String, Widget> subPages = {
   'project': ProjectManager(),
   'staff': StaffManager(),
-  'department': DepartmentManager(),
+  'department': DepartmentView(),
   'capital_source': CapitalSourceManager(),
 };

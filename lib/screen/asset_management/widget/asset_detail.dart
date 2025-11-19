@@ -12,7 +12,7 @@ import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_group/model/asset_group_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/model/capital_source_by_asset_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/capital_source/models/capital_source.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/project_manager/models/duan.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/original_asset_information.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_management/component/other_information.dart';
@@ -507,6 +507,12 @@ class _AssetDetailState extends State<AssetDetail> {
                 (element) => element.id == data!.idMoHinhTaiSan,
               )
               : null;
+      phongBanBanDau = AccountHelper.instance.getDepartmentById(
+        data!.idDonViBanDau ?? '',
+      );
+      phongBanHienThoi = AccountHelper.instance.getDepartmentById(
+        data!.idDonViHienThoi ?? '',
+      );
       ctrlTenMoHinh.text = moHinh?.tenMoHinh ?? '';
       idAssetCategory = data!.idMoHinhTaiSan;
       ctrlPhuongPhapKhauHao.text = data!.giaTriKhauHaoBanDau?.toString() ?? '';
@@ -526,8 +532,8 @@ class _AssetDetailState extends State<AssetDetail> {
       ctrlSoLuong.text = data!.soLuong?.toString() ?? '';
 
       ctrlGhiChu.text = data!.ghiChu ?? '';
-      ctrlDonViBanDau.text = data!.idDonViBanDau ?? '';
-      ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
+      // ctrlDonViBanDau.text = data!.idDonViBanDau ?? '';
+      // ctrlDonViHienThoi.text = data!.idDonViHienThoi ?? '';
       valueKhoiTaoDonVi = data!.idDonViBanDau != null;
       ctrlTenTaiSan.text = data!.tenTaiSan ?? '';
 

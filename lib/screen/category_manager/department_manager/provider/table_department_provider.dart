@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/departments/providers/departments_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:table_base/widgets/table/providers/table_notifier.dart';
 import 'package:table_base/widgets/table/providers/table_state.dart';
 
@@ -10,12 +10,12 @@ import 'package:table_base/widgets/table/providers/table_state.dart';
 final tableDepartmentProvider = StateNotifierProvider.autoDispose<
     TableDepartmentProvider,
     GenericTableState<PhongBan>>((ref) {
-  final repository = DepartmentsProvider();
+  final repository = DepartmentRepository();
   return TableDepartmentProvider(repository);
 });
 
 class TableDepartmentProvider extends TableNotifier<PhongBan> {
-  final DepartmentsProvider repository;
+  final DepartmentRepository repository;
   int totalItems = 0;
   String _currentSearchTerm = '';
 
