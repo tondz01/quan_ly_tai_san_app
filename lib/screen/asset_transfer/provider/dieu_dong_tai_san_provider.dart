@@ -786,7 +786,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (typeDieuDongTaiSan == 1) {
       result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
     } else {
-      result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
+      result =
+          await AssetTransferRepository().getAssetByCurrentUnit(idDonViHienthoi);
     }
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       _dataAsset = result['data'];

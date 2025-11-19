@@ -518,8 +518,25 @@ class AssetTransferRepository extends ApiBase {
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
     try {
+      if (idDonViHienthoi.isEmpty) {
+        result['message'] = 'Thiếu id đơn vị hiện thời.';
+        return result;
+      }
+      final userInfo = AccountHelper.instance.getUserInfo();
+      final idCongTy = userInfo?.idCongTy;
+      if (idCongTy == null || idCongTy.isEmpty) {
+        result['message'] = 'Không tìm thấy thông tin công ty.';
+        return result;
+      }
+
       final response = await get(
-        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-hienthoi/paged?idcongty=ct001&iddonvihienthoi=$idDonViHienthoi&page=0&size=9999',
+        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-hienthoi/paged',
+        queryParameters: {
+          'idcongty': idCongTy,
+          'iddonvihienthoi': idDonViHienthoi,
+          'page': 0,
+          'size': 9999,
+        },
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -539,7 +556,7 @@ class AssetTransferRepository extends ApiBase {
       } else {
         result['data'] = <AssetManagementDto>[];
       }
-      log( "message result: ${result['data']}");
+      log("message result: ${result['data']}");
     } catch (e) {
       log("Error at getAssetByCurrentUnit - AssetTransferRepository: $e");
     }
@@ -548,15 +565,32 @@ class AssetTransferRepository extends ApiBase {
   }
   
   Future<Map<String, dynamic>> getAssetByUnit(
-    String idDonViBandau
+    String idDonViBandau,
   ) async {
     Map<String, dynamic> result = {
       'data': [],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
     try {
+      if (idDonViBandau.isEmpty) {
+        result['message'] = 'Thiếu id đơn vị ban đầu.';
+        return result;
+      }
+      final userInfo = AccountHelper.instance.getUserInfo();
+      final idCongTy = userInfo?.idCongTy;
+      if (idCongTy == null || idCongTy.isEmpty) {
+        result['message'] = 'Không tìm thấy thông tin công ty.';
+        return result;
+      }
+
       final response = await get(
-        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-bandau/paged?idcongty=ct001&iddonvihienthoi=$idDonViBandau&page=0&size=9999',
+        '${EndPointAPI.ASSET_MANAGEMENT}/by-donvi-bandau/paged',
+        queryParameters: {
+          'idcongty': idCongTy,
+          'iddonvibandau': idDonViBandau,
+          'page': 0,
+          'size': 9999,
+        },
       );
 
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
@@ -576,9 +610,9 @@ class AssetTransferRepository extends ApiBase {
       } else {
         result['data'] = <AssetManagementDto>[];
       }
-      log( "message result: ${result['data']}");
+      log("message result: ${result['data']}");
     } catch (e) {
-      log("Error at getAssetByCurrentUnit - AssetTransferRepository: $e");
+      log("Error at getAssetByUnit - AssetTransferRepository: $e");
     }
 
     return result;
