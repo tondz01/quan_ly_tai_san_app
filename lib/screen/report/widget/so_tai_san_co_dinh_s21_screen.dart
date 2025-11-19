@@ -149,14 +149,6 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
   }
 
   Future<void> onloadViewPage() async {
-    if (loaiTaiSan == null) {
-      AppUtility.showSnackBar(
-        context,
-        'Vui lòng chọn loại tài sản!',
-        isError: true,
-      );
-      return;
-    }
 
     if (controllerImportDate.text.trim().isEmpty) {
       AppUtility.showSnackBar(context, 'Vui lòng chọn năm!', isError: true);
@@ -193,7 +185,6 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
         ngay: day,
         thang: month,
         nam: year,
-        idNhomTaiSan: loaiTaiSan!.id!,
       );
 
       debugPrint("huynd result: ${result}");
@@ -305,28 +296,6 @@ class _MauSo21ScreenState extends State<MauSo21Screen> {
                                   ),
                                 ),
                                 const SizedBox(width: 16),
-                                Expanded(
-                                  child: CmFormDropdownObject<AssetGroupDto>(
-                                    label: 'Loại tài sản',
-                                    controller: controllerLoaiTaiSan,
-                                    isEditing: true,
-                                    items: [
-                                      ...listAssetGroup.map(
-                                        (e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e.tenNhom ?? ''),
-                                        ),
-                                      ),
-                                    ],
-                                    fieldName: 'loaiTaiSan',
-                                    value: loaiTaiSan,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        loaiTaiSan = value;
-                                      });
-                                    },
-                                  ),
-                                ),
                               ],
                             ),
                             const SizedBox(height: 16),

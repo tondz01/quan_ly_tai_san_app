@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/departments/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes_v2.dart';
 import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter_mau01.dart';
 import 'package:se_gay_components/common/sg_text.dart';
 
@@ -9,9 +10,14 @@ import '../../../common/components/loading_overlay.dart';
 import '../../../common/page/contract_page.dart' show SettingPage;
 
 class MauSo01Page extends StatefulWidget {
-  final List<CCDCInventoryReport> listCcdc;
-  final List<InventoryMinutes> listTaiSan;
-  const MauSo01Page({super.key, required this.listCcdc, required this.listTaiSan});
+  // final List<CCDCInventoryReport> listCcdc;
+  // final List<InventoryMinutesV2> listTaiSan;
+  // const MauSo01Page({super.key, required this.listCcdc, required this.listTaiSan});
+
+  // final List<CCDCInventoryReport> listCcdc;
+  // final List<InventoryMinutesV2> listTaiSan;
+  final List<AssetRowData> listData;
+  const MauSo01Page({super.key, required this.listData});
 
   @override
   State<MauSo01Page> createState() => _MauSo01PageState();
@@ -28,82 +34,10 @@ class _MauSo01PageState extends State<MauSo01Page> {
     _parseDataToAssetRows();
   }
 
-  @override
-  void didUpdateWidget(MauSo01Page oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Reload khi data thay đổi
-    if (oldWidget.listTaiSan != widget.listTaiSan ||
-        oldWidget.listCcdc != widget.listCcdc) {
-      _parseDataToAssetRows();
-    }
-  }
-
   /// Parse InventoryMinutes và CCDCInventoryReport sang AssetRowData
   void _parseDataToAssetRows() {
-    final List<AssetRowData> result = [];
-
-    // 1. Thêm header "A - Tài sản cố định"
-    result.add(AssetRowData(
-      stt: 'A',
-      tenNhanHieu: 'Tài sản cố định',
-    ));
-
-    // 2. Convert InventoryMinutes → DataMap → AssetRowData
-    final assetDataMaps = DataConverterMau01.convertInventoryMinutesToDataMap(
-      widget.listTaiSan,
-    );
-
-    int assetIndex = 1;
-    for (final asset in assetDataMaps) {
-      result.add(AssetRowData(
-        stt: assetIndex.toString(),
-        tenNhanHieu: asset.tenTaiSan ?? '',
-        dvt: asset.donViTinh ?? '',
-        nuocSx: '',
-        soDuDauKy: asset.soLuong?.toString() ?? '',
-        tangSoLuong: '',
-        tangLyDo: asset.lyDo ?? '',
-        giamSoLuong: '',
-        giamLyDo: '',
-        soDuCuoiKy: '',
-        tinhTrang: '',
-        ghiChu: asset.ghiChu ?? '',
-      ));
-      assetIndex++;
-    }
-
-    // 3. Thêm header "B - Công cụ dụng cụ"
-    result.add(AssetRowData(
-      stt: 'B',
-      tenNhanHieu: 'Công cụ dụng cụ',
-    ));
-
-    // 4. Convert CCDCInventoryReport → DataMap → AssetRowData
-    final ccdcDataMaps = DataConverterMau01.convertCCDCInventoryReportToDataMap(
-      widget.listCcdc,
-    );
-
-    int ccdcIndex = 1;
-    for (final ccdc in ccdcDataMaps) {
-      result.add(AssetRowData(
-        stt: ccdcIndex.toString(),
-        tenNhanHieu: ccdc.tenTaiSan ?? '',
-        dvt: ccdc.donViTinh ?? '',
-        nuocSx: '',
-        soDuDauKy: ccdc.soLuong?.toString() ?? '',
-        tangSoLuong: '',
-        tangLyDo: ccdc.lyDo ?? '',
-        giamSoLuong: '',
-        giamLyDo: '',
-        soDuCuoiKy: '',
-        tinhTrang: '',
-        ghiChu: ccdc.ghiChu ?? '',
-      ));
-      ccdcIndex++;
-    }
-
     setState(() {
-      _allAssetRows = result;
+        _allAssetRows = widget.listData;      
     });
   }
 
@@ -506,7 +440,7 @@ class _BodyMauSo01State extends State<BodyMauSo01> {
   // Không cần list riêng nữa, sẽ dùng trực tiếp widget.assetRows
 
   // Định nghĩa flex cho các cột
-  final int _flexStt = 1; // A
+  final int _flexStt = 2; // A
   final int _flexTen = 5; // B
   final int _flexDvt = 2; // C
   final int _flexNuocSx = 2; // 1

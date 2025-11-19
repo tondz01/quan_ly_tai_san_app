@@ -3,6 +3,7 @@ import 'package:quan_ly_tai_san_app/screen/asset_management/model/asset_manageme
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/data_map.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes_v2.dart';
 import 'package:quan_ly_tai_san_app/screen/tools_and_supplies/model/tools_and_supplies_dto.dart';
 
 /// Converter để chuyển đổi AssetManagement, CCDC, InventoryMinutes sang DataMap
@@ -96,7 +97,7 @@ class DataConverterMau01 {
 
   /// Chuyển đổi InventoryMinutes sang DataMap
   static List<DataMap> convertInventoryMinutesToDataMap(
-    List<InventoryMinutes> inventoryList,
+    List<InventoryMinutesV2> inventoryList,
   ) {
     return inventoryList.map((item) {
       return DataMap(

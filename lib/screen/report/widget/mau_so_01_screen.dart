@@ -14,6 +14,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/departments/provider
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes_v2.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/tai_san_co_dinh_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/tai_san_co_dinh_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/utils/data_converter_mau01.dart';
@@ -48,8 +49,11 @@ class MauSo01Screen extends StatefulWidget {
 }
 
 class _MauSo01ScreenState extends State<MauSo01Screen> {
+
+  int MAX_ITEM_DISPLAY = 20;
+
   List<CCDCInventoryReport> _listCcdc = [];
-  List<InventoryMinutes> _listTaiSan = [];
+  List<InventoryMinutesV2> _listTaiSan = [];
 
   List<AssetRowData> _allAssetRows = [];
   List<List<AssetRowData>> _listPages = [];
@@ -188,19 +192,21 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
     // Format date to YYYY-MM-DD format
     String formattedDate = formatToYyyyMmDd(controllerImportDate.text.trim());
 
-    final result = await _repo.getInventoryReportToolsSupplies(
+    final resultCcdc = await _repo.getInventoryReportToolsSupplies(
       donVi!.id!,
       formattedDate,
     );
-    final resultTaiSan = await _repo.getInventoryMinutes(donVi!.id!, formattedDate);
+    final resultTaiSan = await _repo.getInventoryMinutesV2(donVi!.id!, formattedDate);
 
     if (!mounted) return;
-    if (checkStatusCodeDone(result)) {
+    if (checkStatusCodeDone(resultCcdc)) {
       setState(() {
         _listCcdc = [];
         _listTaiSan = [];
-        _listCcdc = (result['data'] as List).cast<CCDCInventoryReport>();
-        _listTaiSan = (resultTaiSan['data'] as List).cast<InventoryMinutes>();
+        _listCcdc = (resultCcdc['data'] as List).cast<CCDCInventoryReport>();
+        _listTaiSan = (resultTaiSan['data'] as List).toList().cast<InventoryMinutesV2>();
+        // _listTaiSan = (resultTaiSan['data'] as List).getRange(0, min(MAX_ITEM_DISPLAY, (resultTaiSan['data'] as List).length)).toList().cast<InventoryMinutesV2>();
+        // _listCcdc = (resultCcdc['data'] as List).getRange(0, min(MAX_ITEM_DISPLAY, (resultCcdc['data'] as List).length)).toList().cast<CCDCInventoryReport>();
 
         _parseDataToAssetRows();
 
@@ -309,7 +315,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                     child: Column(
                       children: [
                         SGText(
-                          text: 'Biên bản kiểm kê CCDC',
+                          text: 'SỔ THEO DÕI: TÀI SẢN CỐ ĐỊNH VÀ CÔNG CỤ DỤNG CỤ TẠI NƠI SỬ DỤNG',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -440,8 +446,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                           maxWidth: 800,
                                           maxHeight: 800 * (297 / 210),
                                           child: MauSo01Page(
-                                            listCcdc: _listCcdc,
-                                            listTaiSan: [],
+                                            listData: _allAssetRows,
                                           ),
                                         ),
                                         NumberPageView(index: 0),
@@ -462,8 +467,7 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
                                           maxWidth: 800,
                                           maxHeight: 800 * (297 / 210),
                                           child: MauSo01Page(
-                                            listCcdc: _listCcdc,
-                                            listTaiSan: [],
+                                            listData: _allAssetRows,
                                           ),
                                         ),
                                         NumberPageView(index: 0),
@@ -636,9 +640,19 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
       _listTaiSan,
     );
 
+    // Debug: Kiểm tra data trước khi convert
+    if (_listTaiSan.isNotEmpty) {
+      debugPrint('huynd BEFORE convert: _listTaiSan[0].donViTinh="${_listTaiSan[0].donViTinh}", ghiChu="${_listTaiSan[0].ghiChu}"');
+    }
+
+    // Debug: Kiểm tra data sau khi convert sang DataMap
+    if (assetDataMaps.isNotEmpty) {
+      debugPrint('huynd AFTER convert to DataMap: assetDataMaps[0].donViTinh="${assetDataMaps[0].donViTinh}", ghiChu="${assetDataMaps[0].ghiChu}"');
+    }
+
     int assetIndex = 1;
     for (final asset in assetDataMaps) {
-      result.add(AssetRowData(
+      final assetRow = AssetRowData(
         stt: assetIndex.toString(),
         tenNhanHieu: asset.tenTaiSan ?? '',
         dvt: asset.donViTinh ?? '',
@@ -651,7 +665,14 @@ class _MauSo01ScreenState extends State<MauSo01Screen> {
         soDuCuoiKy: '',
         tinhTrang: '',
         ghiChu: asset.ghiChu ?? '',
-      ));
+      );
+
+      // Debug: Kiểm tra AssetRowData sau khi tạo
+      if (assetIndex == 1) {
+        debugPrint('huynd AFTER create AssetRowData: dvt.text="${assetRow.dvt.text}", ghiChu.text="${assetRow.ghiChu.text}"');
+      }
+
+      result.add(assetRow);
       assetIndex++;
     }
 

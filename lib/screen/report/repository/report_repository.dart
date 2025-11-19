@@ -1,6 +1,8 @@
+import 'package:flutter/widgets.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
+import 'package:quan_ly_tai_san_app/screen/report/model/inventory_minutes_v2.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -77,6 +79,40 @@ class ReportRepository extends ApiBase {
     return result;
   }
 
+  Future<Map<String, dynamic>> getInventoryMinutesV2(String idDonVi, String ngayBanGiao) async {
+    List<InventoryMinutesV2> list = [];
+    Map<String, dynamic> result = {
+      'data': list,
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await get(
+        '${EndPointAPI.BAO_CAO}/baocaokiemketaisan',
+        queryParameters: {'iddonvi': idDonVi, 'ngayBanGiao': ngayBanGiao},
+      );
+      
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      result['data'] = ResponseParser.parseToList<InventoryMinutesV2>(
+        response.data,
+        InventoryMinutesV2.fromJson,
+      );
+    } catch (e) {
+      SGLog.error(
+        "AssetHandoverRepository",
+        "Error at getListAssetHandover - AssetHandoverRepository: $e",
+      );
+    }
+
+    return result;
+  }
+
   Future<Map<String, dynamic>> getInventoryReportToolsSupplies(String idDonVi, String ngayBanGiao) async {
     List<CCDCInventoryReport> list = [];
     Map<String, dynamic> result = {
@@ -95,11 +131,11 @@ class ReportRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
-
       result['data'] = ResponseParser.parseToList<CCDCInventoryReport>(
         response.data,
         CCDCInventoryReport.fromJson,
       );
+      debugPrint("huynd: ${response.data}");
     } catch (e) {
       SGLog.error(
         "AssetHandoverRepository",

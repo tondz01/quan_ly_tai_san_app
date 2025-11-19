@@ -46,7 +46,6 @@ class TaiSanCoDinhRepository extends ApiBase {
     required String ngay,
     required String thang,
     required String nam,
-    required String idNhomTaiSan,
   }) async {
     List<KhauHaoTaiSanDto> list = [];
     Map<String, dynamic> result = {
@@ -56,13 +55,12 @@ class TaiSanCoDinhRepository extends ApiBase {
 
     try {
       final response = await get(
-        EndPointAPI.KHAU_HAO_TAI_SAN_BY_NHOM,
+        EndPointAPI.KHAU_HAO_TAI_SAN,
         queryParameters: {
           'idconty': idCongTy,
           'ngay': ngay,
           'thang': thang,
-          'nam': nam,
-          'idNhomTaiSan': idNhomTaiSan,
+          'nam': nam
         },
       );
       log('getKhauHaoTaiSan response: ${response.data}');
