@@ -11,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_event.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/bloc/dashboard_state.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/model/dashboard_report.dart';
 import 'package:quan_ly_tai_san_app/screen/dashboard/repository/dashboard_reponsitory.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   List<NhanVien> _allStaffs = [];
@@ -45,8 +46,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       _allStaffs = await nhanVienProvider.fetchNhanViens();
 
-      Map<String, dynamic> resultDepartment = await departmentsProvider
-          .getListDepartment("ct001");
+      final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
+      Map<String, dynamic> resultDepartment =
+          await departmentsProvider.getListDepartment(idCongTy);
       if (resultDepartment['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _allDepartments = resultDepartment['data'];
       }

@@ -12,6 +12,7 @@ import 'package:quan_ly_tai_san_app/core/enum/role_code.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/pages/staff_form_page.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/provider/table_staff_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/widget/staff_list.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_bloc.dart';
@@ -175,6 +176,15 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
     }
   }
 
+  onReloadData(BuildContext context, [bool isRefresh = true]) {
+    final container = ProviderScope.containerOf(context);
+    container.read(tableStaffProvider.notifier).refreshData(isRefresh);
+    setState(() {
+      isShowInput = false;
+      isImporting = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
@@ -187,7 +197,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: const Color(0xFF21A366),
               ),
             );
-            context.read<StaffBloc>().add(const LoadStaffs());
+            log('Staff AddStaffSuccessState: ');
+            onReloadData(context);
           }
           if (state is UpdateStaffSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -196,7 +207,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: const Color(0xFF21A366),
               ),
             );
-            context.read<StaffBloc>().add(const LoadStaffs());
+            log('Staff UpdateStaffSuccessState: ');
+            onReloadData(context);
           }
           if (state is StaffError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -205,6 +217,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: Colors.red.shade600,
               ),
             );
+            log('Staff StaffError: ${state.message}');
+            isImporting = false;
           }
           if (state is DeleteStaffBatchSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +227,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: const Color(0xFF21A366),
               ),
             );
-            context.read<StaffBloc>().add(const LoadStaffs());
+            log('Staff DeleteStaffBatchSuccess: ');
+            onReloadData(context);
           } else if (state is DeleteStaffBatchFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -221,149 +236,158 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
                 backgroundColor: Colors.red.shade600,
               ),
             );
+            log('Staff DeleteStaffBatchFailure: ${state.message}');
+            isImporting = false;
           }
         },
-        child: BlocBuilder<StaffBloc, StaffState>(
-          builder: (context, state) {
-            if (state is StaffLoaded) {
-              List<NhanVien> staffs = state.staffs;
-              AccountHelper.instance.clearNhanVien();
-              AccountHelper.instance.setNhanVien(staffs);
-              return LoadingOverlay(
-                isLoading: isImporting,
-                message: 'Đang nhập dữ liệu nhân viên...',
-                child: Scaffold(
-                  backgroundColor: Colors.transparent,
-                  appBar: AppBar(
-                    title: HeaderComponent(
-                      controller: searchController,
-                      onSearchChanged: (value) {
-                        setState(() {
-                          _searchStaff(value);
-                        });
-                      },
-                      onNew: () {
-                        if (!isCanCreate) {
-                          AppUtility.showSnackBar(
-                            context,
-                            'Bạn không có quyền tạo nhân viên',
-                          );
-                          return;
-                        }
-                        setState(() {
-                          _showForm(null);
-                          isShowInput = true;
-                        });
-                      },
-                      mainScreen: 'Quản lý nhân viên',
-                      isShowSearch: false,
-                      onFileSelected: (fileName, filePath, fileBytes) {
-                        messageLoading = 'Đang nhập dữ liệu nhân viên...';
-                        isImporting = true;
-                        importDataStaff(
-                          filePath ?? '',
-                          fileBytes ?? Uint8List(0),
-                        );
-                      },
-                      onExportData: () {
-                        // isImporting = true;
-                        // messageLoading = 'Đang xuất dữ liệu nhân viên...';
-                        AppUtility.exportData(
-                          context,
-                          "nhan_vien",
-                          staffs.map((e) => e.toExportJson()).toList(),
-                        );
-                        // final sessionId = '4A6E8943A475C7861752EF7BD0A6E19B';
-                        // NhanVienProvider().exportNhanVienExcel(
-                        //   staffs.map((e) => e.toExportJson()).toList(),
-                        //   fileName: "Nhan_Vien",
-                        //   sessionId: sessionId,
-                        // );
-                      },
+        child: LoadingOverlay(
+          isLoading: isImporting,
+          message: 'Đang nhập dữ liệu nhân viên...',
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: HeaderComponent(
+                controller: searchController,
+                onSearchChanged: (value) {
+                  setState(() {
+                    _searchStaff(value);
+                  });
+                },
+                onNew: () {
+                  if (!isCanCreate) {
+                    AppUtility.showSnackBar(
+                      context,
+                      'Bạn không có quyền tạo nhân viên',
+                    );
+                    return;
+                  }
+                  setState(() {
+                    _showForm(null);
+                    isShowInput = true;
+                  });
+                },
+                mainScreen: 'Quản lý nhân viên',
+                isShowSearch: false,
+                onFileSelected: (fileName, filePath, fileBytes) {
+                  messageLoading = 'Đang nhập dữ liệu nhân viên...';
+                  isImporting = true;
+                  importDataStaff(filePath ?? '', fileBytes ?? Uint8List(0));
+                },
+                onExportData: () async {
+                  // isImporting = true;
+                  // messageLoading = 'Đang xuất dữ liệu nhân viên...';
+                  final staffs = await NhanVienProvider().fetchNhanViens();
+                  AppUtility.exportData(
+                    context,
+                    "nhan_vien",
+                    staffs.map((e) => e.toExportJson()).toList(),
+                  );
+                  // final sessionId = '4A6E8943A475C7861752EF7BD0A6E19B';
+                  // NhanVienProvider().exportNhanVienExcel(
+                  //   staffs.map((e) => e.toExportJson()).toList(),
+                  //   fileName: "Nhan_Vien",
+                  //   sessionId: sessionId,
+                  // );
+                },
+              ),
+            ),
+            body: Column(
+              children: [
+                Expanded(
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (notification) {
+                      return true; // Xử lý scroll event bình thường
+                    },
+                    child: SingleChildScrollView(
+                      physics:
+                          _scrollController.isParentScrolling
+                              ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
+                              : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
+                      scrollDirection: Axis.vertical,
+                      child: CommonPageView(
+                        title: 'Chi tiết nhân viên',
+                        childInput: StaffFormPage(
+                          staff: editingStaff,
+                          // staffs: staffs,
+                          isNew: isNew,
+                          isCanUpdate: isCanUpdate,
+                          onCancel: () {
+                            setState(() {
+                              isShowInput = false;
+                            });
+                          },
+                          onSaved:
+                              () => setState(() {
+                                isShowInput = false;
+                              }),
+                          onSetLoading: () {
+                            setState(() {
+                              // isShowInput = true;
+                              log(
+                                'Staff _onSetLoading isShowInput: $isShowInput',
+                              );
+                              messageLoading = 'Đang tải lại dữ liệu...';
+                              isImporting = true;
+                            });
+                          },
+                          onSetCloseLoading: () {
+                            setState(() {
+                              log(
+                                'Staff _onSetCloseLoading isShowInput: $isShowInput',
+                              );
+                              isImporting = false;
+                            });
+                          },
+                        ),
+                        childTableView: StaffList(
+                          // data: staffs,
+                          isCanDelete: isCanDelete,
+                          onChangeDetail: (item) {
+                            _showForm(item);
+                            isShowInput = true;
+                          },
+                          onDelete: (item) {
+                            setState(() {
+                              if (!isCanDelete) {
+                                AppUtility.showSnackBar(
+                                  context,
+                                  'Bạn không có quyền xóa nhân viên',
+                                );
+                                return;
+                              }
+                              isShowInput = false;
+                              messageLoading = 'Đang xóa dữ liệu nhân viên...';
+                              isImporting = true;
+                              context.read<StaffBloc>().add(DeleteStaff(item));
+                            });
+                          },
+                          onEdit: (item) {
+                            _showForm(item);
+                          },
+                          onDeleteBatch:
+                              (p0) => setState(() {
+                                isShowInput = false;
+                                messageLoading =
+                                    'Đang xóa dữ liệu nhân viên...';
+                                isImporting = true;
+                                context.read<StaffBloc>().add(
+                                  DeleteStaffBatch(p0),
+                                );
+                              }),
+                        ),
+
+                        // Container(height: 200,color: Colors.limeAccent,),
+                        isShowInput: isShowInput,
+                        onExpandedChanged: (isExpanded) {
+                          isShowInput = isExpanded;
+                        },
+                      ),
                     ),
                   ),
-                  body: Column(
-                    children: [
-                      Expanded(
-                        child: NotificationListener<ScrollNotification>(
-                          onNotification: (notification) {
-                            return true; // Xử lý scroll event bình thường
-                          },
-                          child: SingleChildScrollView(
-                            physics:
-                                _scrollController.isParentScrolling
-                                    ? const NeverScrollableScrollPhysics() // Parent đang cuộn => ngăn child cuộn
-                                    : const BouncingScrollPhysics(), // Parent đã cuộn hết => cho phép child cuộn
-                            scrollDirection: Axis.vertical,
-                            child: CommonPageView(
-                              title: 'Chi tiết nhân viên',
-                              childInput: StaffFormPage(
-                                staff: editingStaff,
-                                staffs: staffs,
-                                isNew: isNew,
-                                isCanUpdate: isCanUpdate,
-                                onCancel: () {
-                                  setState(() {
-                                    isShowInput = false;
-                                  });
-                                },
-                                onSaved:
-                                    () => setState(() {
-                                      isShowInput = false;
-                                    }),
-                              ),
-                              childTableView: StaffList(
-                                data: staffs,
-                                isCanDelete: isCanDelete,
-                                onChangeDetail: (item) {
-                                  _showForm(item);
-                                  isShowInput = true;
-                                },
-                                onDelete: (item) {
-                                  setState(() {
-                                    if (!isCanDelete) {
-                                      AppUtility.showSnackBar(
-                                        context,
-                                        'Bạn không có quyền xóa nhân viên',
-                                      );
-                                      return;
-                                    }
-                                    isShowInput = false;
-                                    context.read<StaffBloc>().add(
-                                      DeleteStaff(item),
-                                    );
-                                  });
-                                },
-                                onEdit: (item) {
-                                  _showForm(item);
-                                },
-                                onDeleteBatch:
-                                    (p0) => setState(() {
-                                      isShowInput = false;
-                                      context.read<StaffBloc>().add(
-                                        DeleteStaffBatch(p0),
-                                      );
-                                    }),
-                              ),
-
-                              // Container(height: 200,color: Colors.limeAccent,),
-                              isShowInput: isShowInput,
-                              onExpandedChanged: (isExpanded) {
-                                isShowInput = isExpanded;
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              );
-            } else if (state is StaffError) {
-              return Center(child: Text(state.message));
-            }
-            return const Center(child: CircularProgressIndicator());
-          },
+              ],
+            ),
+          ),
         ),
       ),
     );

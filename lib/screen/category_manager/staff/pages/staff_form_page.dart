@@ -25,19 +25,23 @@ import 'package:se_gay_components/common/switch/sg_checkbox.dart';
 
 class StaffFormPage extends StatefulWidget {
   final NhanVien? staff;
-  final List<NhanVien>? staffs;
+  // final List<NhanVien>? staffs;
   final int? index;
   final VoidCallback? onCancel;
   final VoidCallback? onSaved;
+  final VoidCallback? onSetLoading;
+  final VoidCallback? onSetCloseLoading;
   final bool isCanUpdate;
   final bool isNew;
   const StaffFormPage({
     super.key,
     this.staff,
-    this.staffs,
+    // this.staffs,
     this.index,
     this.onCancel,
     this.onSaved,
+    this.onSetLoading,
+    this.onSetCloseLoading,
     this.isCanUpdate = false,
     this.isNew = false,
   });
@@ -121,9 +125,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   void _initData() {
-    log(
-      '_checkPermission: ${widget.isCanUpdate}, isNew: ${widget.isNew} , data: ${widget.staff != null}',
-    );
     if (widget.staff != null) {
       isEditing = false;
     } else {
@@ -137,7 +138,6 @@ class _StaffFormPageState extends State<StaffFormPage> {
     _emailController = TextEditingController(
       text: widget.staff?.emailCongViec ?? '',
     );
-    log('savePin: ${widget.staff?.savePin}');
     _isActive = widget.staff?.active ?? false;
     _savePin = widget.staff?.savePin ?? false;
     _activityController = TextEditingController(
@@ -207,7 +207,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
   }
 
   NhanVien? getStaffById(String id) {
-    return widget.staffs?.firstWhere((staff) => staff.id == id);
+    return AccountHelper.instance.getNhanVienById(id);
   }
 
   @override
@@ -234,7 +234,7 @@ class _StaffFormPageState extends State<StaffFormPage> {
     if (validateChuKyNhay() || validateChuKyThuong()) {
       return;
     }
-    log('savePin: $_savePin');
+    // widget.onSetLoading?.call();
     final bool ok = await StaffSaveService.save(
       context: context,
       existingStaff: widget.staff,

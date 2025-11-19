@@ -18,7 +18,7 @@ import 'package:table_base/widgets/table/widgets/riverpod_table.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 class StaffList extends StatefulWidget {
-  final List<NhanVien> data;
+  // final List<NhanVien> data;
   final void Function(NhanVien)? onChangeDetail;
   final void Function(NhanVien)? onEdit;
   final void Function(NhanVien)? onDelete;
@@ -26,7 +26,7 @@ class StaffList extends StatefulWidget {
   final bool isCanDelete;
   const StaffList({
     super.key,
-    required this.data,
+    // required this.data,
     this.onChangeDetail,
     this.onEdit,
     this.onDelete,
@@ -148,13 +148,22 @@ class _StaffListState extends State<StaffList> {
                       size: 18,
                     ),
                     SizedBox(width: 8),
-                    Text(
-                      'Quản lý nhân viên (${widget.data.length})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
+                    riverpod.Consumer(
+                      builder: (context, ref, _) {
+                        final totalItems = ref.watch(
+                          tableStaffProvider.select(
+                            (s) => s.paginationState.totalItems,
+                          ),
+                        );
+                        return Text(
+                          'Quản lý nhân viên ($totalItems)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -250,7 +259,7 @@ class _StaffListState extends State<StaffList> {
             ),
             child: riverpod.Consumer(
               builder: (context, ref, child) {
-                ref.read(tableStaffProvider.notifier).setData(widget.data);
+                // ref.read(tableStaffProvider.notifier).setData(widget.data);
 
                 return RiverpodTable<NhanVien>(
                   tableProvider: tableStaffProvider,

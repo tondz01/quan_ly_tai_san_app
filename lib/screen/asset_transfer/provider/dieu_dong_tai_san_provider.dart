@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -782,6 +783,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   Future<void> onReloadDataAssetByCurrentUnit(String idDonViHienthoi) async {
     _isLoading = true;
     _loadingMessage = 'Đang tải dữ liệu tài sản...';
+    log('onReloadDataAssetByCurrentUnit: $idDonViHienthoi');
     Map<String, dynamic> result;
     if (typeDieuDongTaiSan == 1) {
       result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);

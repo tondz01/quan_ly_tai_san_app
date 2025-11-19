@@ -65,6 +65,7 @@ class DepartmentProvider with ChangeNotifier {
     _isShowInput = false;
     _isShowCollapse = true;
     _hasUnsavedChanges = false;
+    onReloadDataDepartments();
     // getListDepartments(context);
   }
 

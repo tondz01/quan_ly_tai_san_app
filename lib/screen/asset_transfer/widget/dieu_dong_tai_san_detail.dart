@@ -1103,6 +1103,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
         );
+        Future.microtask(() async {
+          await widget.provider.onReloadDataAssetByCurrentUnit(
+            state.donViGiao!.id ?? '',
+          );
+          if (widget.provider.dataAsset != null) {
+            assetByDepartment = widget.provider.dataAsset ?? [];
+          }
+        });
         state.donViDeNghi = widget.provider.getPhongBanByID(
           state.item?.idDonViDeNghi ?? '',
         );

@@ -10,6 +10,7 @@ import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/base_api/sg_api_base.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -18,7 +19,7 @@ class DepartmentRepository extends ApiBase {
   // static const String _mockDataPath =
   //     'lib/screen/tools_and_supplies/model/tools_and_supplies_data.json';
 
-  Future<Map<String, dynamic>> getListDepartment(String idCongTy) async {
+  Future<Map<String, dynamic>> getListDepartment([String? idCongTy]) async {
     List<PhongBan> list = [];
     Map<String, dynamic> result = {
       'data': list,
@@ -26,7 +27,17 @@ class DepartmentRepository extends ApiBase {
     };
 
     try {
-      final response = await get('${EndPointAPI.PHONG_BAN}/congty/$idCongTy');
+      final String targetIdCongTy = (idCongTy?.isNotEmpty ?? false)
+          ? idCongTy!
+          : (AccountHelper.instance.getUserInfo()?.idCongTy ?? '');
+      if (targetIdCongTy.isEmpty) {
+        result['message'] = 'Thiếu thông tin công ty';
+        return result;
+      }
+      final response = await get(
+        EndPointAPI.PHONG_BAN,
+        queryParameters: {'idcongty': targetIdCongTy},
+      );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;
         return result;
@@ -34,10 +45,17 @@ class DepartmentRepository extends ApiBase {
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
 
-      // Lấy phần data từ response
-      final List<dynamic> dataList = response.data['data'] ?? [];
+      final dynamic rawData = response.data;
+      List<dynamic> dataList = const [];
+      if (rawData is List) {
+        dataList = rawData;
+      } else if (rawData is Map<String, dynamic>) {
+        final dynamic nested = rawData['data'];
+        if (nested is List) {
+          dataList = nested;
+        }
+      }
 
-      // Parse từng item trong data list
       result['data'] = dataList.map((item) => PhongBan.fromJson(item)).toList();
     } catch (e) {
       SGLog.error("DepartmentRepository", "Error at getListDepartment: $e");
@@ -263,9 +281,16 @@ class DepartmentRepository extends ApiBase {
     };
 
     try {
+      final idCongTy =
+          AccountHelper.instance.getUserInfo()?.idCongTy ?? 'ct001';
       final response = await get(
-        // Đổi từ post thành get
-        '${EndPointAPI.PHONG_BAN}/paged?idcongty=ct001&page=$page&size=$size&search=$search',
+        '${EndPointAPI.PHONG_BAN}/paged',
+        queryParameters: {
+          'idcongty': idCongTy,
+          'page': page,
+          'size': size,
+          'search': search,
+        },
       );
       if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
         result['status_code'] = response.statusCode;

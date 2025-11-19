@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/report/model/ccdc_inventory_report.dart';
 import 'package:quan_ly_tai_san_app/screen/report/repository/report_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/report/views/bien_ban_kiem_ke_ccdc_page.dart';
@@ -148,7 +149,8 @@ class _BienBanKiemKeCcdcScreenState extends State<BienBanKiemKeCcdcScreen> {
   }
 
   Future<void> _loadData() async {
-    final result = await DepartmentRepository().getListDepartment("ct001");
+    final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
+    final result = await DepartmentRepository().getListDepartment(idCongTy);
     if (checkStatusCodeDone(result)) {
       listPhongBan = (result['data'] as List).cast<PhongBan>();
     }

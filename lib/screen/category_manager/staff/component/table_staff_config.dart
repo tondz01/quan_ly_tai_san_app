@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/common/sg_text.dart';
@@ -97,7 +95,6 @@ class TableStaffConfig {
 
   static Widget showSigningStatus(NhanVien item) {
     if (item.kyNhay == false && item.kyThuong == false && item.kySo == false) {
-      log('Không ký');
       return showStatusDocument(0, 'Không ký');
     }
     return Wrap(

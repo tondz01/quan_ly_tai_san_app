@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 import 'dart:io';
 
@@ -15,6 +16,7 @@ import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 
 class StaffSaveService {
   static Future<bool> save({
+    VoidCallback? onSetCloseLoading,
     required BuildContext context,
     required NhanVien? existingStaff,
     // controllers/values
@@ -42,6 +44,7 @@ class StaffSaveService {
     required bool savePin,
   }) async {
     final userInfoDTO = AccountHelper.instance.getUserInfo();
+    log('StaffSaveService: Starting save operation');
 
     String s(String? v) => (v ?? '').trim();
     bool b(bool? v) => v ?? false;
@@ -53,6 +56,9 @@ class StaffSaveService {
     final bool isNewThuongSelected =
         selectedFileChuKyThuong != null &&
         s(selectedFileChuKyThuong.path) != s(existingStaff?.chuKyThuong);
+
+    log('StaffSaveService: isNewNhaySelected: $isNewNhaySelected (selected: ${selectedFileChuKyNhay?.path}, existing: ${existingStaff?.chuKyNhay})');
+    log('StaffSaveService: isNewThuongSelected: $isNewThuongSelected (selected: ${selectedFileChuKyThuong?.path}, existing: ${existingStaff?.chuKyThuong})');
 
     bool hasStaffChanged(NhanVien oldV, NhanVien newV) {
       // So sánh các trường nghiệp vụ; bỏ qua các trường hệ thống (ngày tạo/cập nhật, người tạo/cập nhật)
@@ -77,7 +83,10 @@ class StaffSaveService {
 
     bool hasUploadChanged(NhanVien? oldV, NhanVien newV) {
       // Có chọn file mới (khác path cũ) => cần upload
-      if (isNewNhaySelected || isNewThuongSelected) return true;
+      if (isNewNhaySelected || isNewThuongSelected) {
+        log('StaffSaveService: hasUploadChanged = true (new file selected)');
+        return true;
+      }
 
       final bool oldNhay = oldV?.kyNhay ?? false;
       final bool oldThuong = oldV?.kyThuong ?? false;
@@ -88,10 +97,17 @@ class StaffSaveService {
       final bool oldThuongEmpty = s(oldV?.chuKyThuong).isEmpty;
 
       // Bật mới kiểu ký và trước đó chưa có file => cần upload
-      if (newNhay && !oldNhay && oldNhayEmpty) return true;
-      if (newThuong && !oldThuong && oldThuongEmpty) return true;
+      if (newNhay && !oldNhay && oldNhayEmpty) {
+        log('StaffSaveService: hasUploadChanged = true (newNhay enabled)');
+        return true;
+      }
+      if (newThuong && !oldThuong && oldThuongEmpty) {
+        log('StaffSaveService: hasUploadChanged = true (newThuong enabled)');
+        return true;
+      }
 
       // Còn lại: không cần upload
+      log('StaffSaveService: hasUploadChanged = false');
       return false;
     }
 
@@ -143,15 +159,20 @@ class StaffSaveService {
     }
 
     Future<NhanVien?> uploadNhayIfNeeded(NhanVien staff) async {
+      log('StaffSaveService: Checking uploadNhayIfNeeded');
       final bool shouldUpload =
           existingStaff == null ? kyNhay : (kyNhay && isNewNhaySelected);
+      log('StaffSaveService: shouldUpload Nhay: $shouldUpload');
       if (!shouldUpload) return staff;
+
+      log('StaffSaveService: Starting uploadNhay');
       final Map<String, dynamic>? result = await uploadFileSignature(
         context,
         fileNameChuKyNhay ?? '',
         selectedFileChuKyNhay?.path ?? '',
         chuKyNhayData ?? Uint8List(0),
       );
+      log('StaffSaveService: uploadNhay result: $result');
       if (result == null) {
         if (!context.mounted) return null;
         AppUtility.showSnackBar(
@@ -165,15 +186,20 @@ class StaffSaveService {
     }
 
     Future<NhanVien?> uploadThuongIfNeeded(NhanVien staff) async {
+      log('StaffSaveService: Checking uploadThuongIfNeeded');
       final bool shouldUpload =
           existingStaff == null ? kyThuong : (kyThuong && isNewThuongSelected);
+      log('StaffSaveService: shouldUpload Thuong: $shouldUpload');
       if (!shouldUpload) return staff;
+
+      log('StaffSaveService: Starting uploadThuong');
       final Map<String, dynamic>? result = await uploadFileSignature(
         context,
         fileNameChuKyThuong ?? '',
         selectedFileChuKyThuong?.path ?? '',
         chuKyThuongData ?? Uint8List(0),
       );
+      log('StaffSaveService: uploadThuong result: $result');
       if (result == null) {
         if (!context.mounted) return null;
         AppUtility.showSnackBar(
@@ -189,6 +215,7 @@ class StaffSaveService {
     NhanVien staff = buildStaff(existingStaff);
 
     if (existingStaff == null) {
+      log('StaffSaveService: Case Create New');
       if (kySo && (staff.pin?.isEmpty ?? true)) {
         AppUtility.showSnackBar(
           context,
@@ -198,19 +225,35 @@ class StaffSaveService {
       }
 
       NhanVien? candidate = staff;
+      log('StaffSaveService: Calling uploadNhayIfNeeded for Create');
       candidate = await uploadNhayIfNeeded(candidate);
-      if (candidate == null) return false;
+      if (candidate == null) {
+        log('StaffSaveService: uploadNhayIfNeeded returned null');
+        onSetCloseLoading?.call();
+        return false;
+      }
+      log('StaffSaveService: Calling uploadThuongIfNeeded for Create');
       candidate = await uploadThuongIfNeeded(candidate);
-      if (candidate == null) return false;
+      if (candidate == null) {
+        log('StaffSaveService: uploadThuongIfNeeded returned null');
+        onSetCloseLoading?.call();
+        return false;
+      }
+
       if (!context.mounted) return false;
+      onSetCloseLoading?.call();
+      log('StaffSaveService: Dispatching AddStaff');
       context.read<StaffBloc>().add(AddStaff(candidate));
       return true;
     } else {
+      log('StaffSaveService: Case Update');
       // Chỉ update khi có thay đổi dữ liệu hoặc có thay đổi liên quan đến upload chữ ký
       final bool uploadChanged = hasUploadChanged(existingStaff, staff);
       final bool changed =
           hasStaffChanged(existingStaff, staff) || uploadChanged;
       if (!changed) {
+        log('StaffSaveService: No changes detected');
+        onSetCloseLoading?.call();
         return true; // Không có thay đổi, bỏ qua update
       }
 
@@ -225,6 +268,7 @@ class StaffSaveService {
       NhanVien? candidate = staff;
 
       if (uploadChanged) {
+        log('StaffSaveService: Upload changed detected');
         // Nếu bật ký nháy nhưng chưa có file cũ và cũng không chọn file mới -> báo lỗi
         if (kyNhay && (s(candidate.chuKyNhay).isEmpty) && !isNewNhaySelected) {
           AppUtility.showSnackBar(
@@ -232,6 +276,7 @@ class StaffSaveService {
             StaffConstants.errorSelectSignatureFile,
             isError: true,
           );
+          onSetCloseLoading?.call();
           return false;
         }
         // Nếu bật ký thường nhưng chưa có file cũ và cũng không chọn file mới -> báo lỗi
@@ -243,16 +288,29 @@ class StaffSaveService {
             StaffConstants.errorSelectSignatureFile,
             isError: true,
           );
+          onSetCloseLoading?.call();
           return false;
         }
 
+        log('StaffSaveService: Calling uploadNhayIfNeeded for Update');
         candidate = await uploadNhayIfNeeded(candidate);
-        if (candidate == null) return false;
+        if (candidate == null) {
+          log('StaffSaveService: uploadNhayIfNeeded returned null');
+          onSetCloseLoading?.call();
+          return false;
+        }
+        log('StaffSaveService: Calling uploadThuongIfNeeded for Update');
         candidate = await uploadThuongIfNeeded(candidate);
-        if (candidate == null) return false;
+        if (candidate == null) {
+          log('StaffSaveService: uploadThuongIfNeeded returned null');
+          onSetCloseLoading?.call();
+          return false;
+        }
       }
 
       if (!context.mounted) return false;
+      onSetCloseLoading?.call();
+      log('StaffSaveService: Dispatching UpdateStaff');
       context.read<StaffBloc>().add(UpdateStaff(candidate));
       return true;
     }

@@ -101,6 +101,7 @@ class NhanVienProvider extends ApiBase {
       'message': '',
       'status_code': Numeral.STATUS_CODE_DEFAULT,
     };
+    SGLog.info("Staff", "Updating NhanVien with ID: ${nhanVien.id}");
 
     final response = await put(
       '${EndPointAPI.NHAN_VIEN}/${nhanVien.id}',
@@ -368,5 +369,56 @@ class NhanVienProvider extends ApiBase {
     // Lưu file về máy bằng hàm bạn có sẵn
     final savedPath = await saveExportFile(bytes, '$fileName.xlsx');
     print('✅ File Excel đã được lưu: $savedPath');
+  }
+
+   Future<Map<String, dynamic>> getDataWithPagination(
+    int page,
+    int size,
+    String search,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <NhanVien>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+      'totalPages': 0,
+      'currentPage': 0,
+      'totalItems': 0,
+    };
+
+    try {
+      final idCongTy =
+          AccountHelper.instance.getUserInfo()?.idCongTy ?? 'ct001';
+      final response = await get(
+        '${EndPointAPI.NHAN_VIEN}/paged',
+        queryParameters: {
+          'idcongty': idCongTy,
+          'page': page,
+          'size': size,
+          'search': search,
+        },
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the correct key 'items', chỉ parse nếu là List
+      final itemsData = response.data['items'];
+      if (itemsData is List) {
+        result['data'] = ResponseParser.parseToList<NhanVien>(
+          itemsData,
+          NhanVien.fromJson,
+        );
+      }
+      result['totalPages'] = response.data['totalPages'];
+      result['currentPage'] = response.data['currentPage'];
+      result['totalItems'] = response.data['totalItems'];
+      result['totalPages'] = response.data['totalPages'];
+    } catch (e) {
+      log("Error at getDataWithPagination - DepartmentRepository: $e");
+    }
+
+    return result;
   }
 }

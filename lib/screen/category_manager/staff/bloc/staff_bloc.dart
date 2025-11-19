@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
@@ -10,6 +11,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_sta
 import 'package:quan_ly_tai_san_app/screen/category_manager/role/model/chuc_vu.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'staff_event.dart';
 
@@ -23,15 +25,23 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
   StaffBloc() : super(StaffInitialState()) {
     on<LoadStaffs>((event, emit) async {
       emit(StaffLoadingState());
-      _allStaffs = await _provider.fetchNhanViens();
+      // try {
+      //   // _allStaffs = await _provider.fetchNhanViens();
+      // } catch (e) {
+      //   SGLog.error('StaffBloc', 'Fetch staffs failed: $e');
+      //   emit(StaffError('Không thể tải danh sách nhân viên'));
+      //   return;
+      // }
       _allChucvus = await _provider.fetchChucVus();
-      _allDepartments = await provider.getListDepartment("ct001").then((value) {
-        if (value['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
-          return value['data'] as List<PhongBan>;
-        } else {
-          return <PhongBan>[];
-        }
-      });
+      final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
+      Map<String, dynamic> result = await provider.getListDepartment(idCongTy);
+      
+      if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+        _allDepartments = result['data'];
+      } else {
+        _allDepartments = <PhongBan>[];
+      }
+      log('allDepartments: ${_allDepartments.length}');
 
       emit(StaffLoaded(_allStaffs));
     });
