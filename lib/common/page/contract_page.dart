@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_tai_san_app/common/model/signe_info.dart';
 import 'package:quan_ly_tai_san_app/common/page/signers_table.dart';
+import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/Repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/detail_subpplies_handover_dto.dart';
@@ -307,6 +309,9 @@ class ContractPage {
   }
 
   static Widget assetMovePage(DieuDongTaiSanDto dieuDongTaiSanDto) {
+    if (AccountHelper.instance.getAllUnit().isEmpty) {
+      AuthRepository().loadUnit('ct001');
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -340,17 +345,17 @@ class ContractPage {
                   SettingPage.textStyle,
                 ),
                 tableHeader(
-                  "Ký, mã hiệu quy cách",
-                  SettingPage.scale,
-                  SettingPage.textStyle,
-                ),
-                tableHeader(
                   "Đơn vị tính",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
                 tableHeader(
                   "Số lượng",
+                  SettingPage.scale,
+                  SettingPage.textStyle,
+                ),
+                tableHeader(
+                  "Tình trạng kỹ thuật",
                   SettingPage.scale,
                   SettingPage.textStyle,
                 ),
@@ -380,18 +385,27 @@ class ContractPage {
                       SettingPage.textStyle,
                     ),
                     tableCell(
-                      dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].idTaiSan,
-                      SettingPage.scale,
-                      SettingPage.textStyle,
-                    ),
-                    tableCell(
-                      dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].donViTinh,
+                      AccountHelper.instance
+                              .getUnitById(
+                                dieuDongTaiSanDto
+                                    .chiTietDieuDongTaiSans![i]
+                                    .donViTinh,
+                              )
+                              ?.tenDonVi ??
+                          '',
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),
                     tableCell(
                       dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].soLuong
                           .toString(),
+                      SettingPage.scale,
+                      SettingPage.textStyle,
+                    ),
+                    tableCell(
+                      AppUtility.getHienTrang(
+                        dieuDongTaiSanDto.chiTietDieuDongTaiSans![i].hienTrang,
+                      ).name,
                       SettingPage.scale,
                       SettingPage.textStyle,
                     ),

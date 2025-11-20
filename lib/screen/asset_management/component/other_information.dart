@@ -311,7 +311,7 @@ Widget buildOtherInformation(
         onChanged: onChangeCurrentUnit,
         fieldName: 'idDonViHienThoi',
         validationErrors: validationErrors,
-        isRequired: true,
+        isRequired: false,
       ),
     ],
   );

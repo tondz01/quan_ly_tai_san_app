@@ -79,6 +79,13 @@ abstract class AppUtility {
     return '$day/$month/$year';
   }
 
+  static HienTrang getHienTrangById(int id) {
+    return listHienTrang.firstWhere(
+      (element) => element.id == id,
+      orElse: () => HienTrang(id: 0, name: 'Không xác định'),
+    );
+  }
+
   // SEARCH
   static bool fuzzySearch(String text, String searchTerm) {
     if (searchTerm.isEmpty) return true;
@@ -271,10 +278,8 @@ abstract class AppUtility {
       showSnackBar(context, "Không có dữ liệu để xuất", isError: true);
       return;
     }
-    Map<String, dynamic> result = await ExportDataReponsitory().exportDataDetailCCDC(
-      data,
-      fileName,
-    );
+    Map<String, dynamic> result = await ExportDataReponsitory()
+        .exportDataDetailCCDC(data, fileName);
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       if (context.mounted) {
         showSnackBar(context, result['message']);

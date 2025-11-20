@@ -1103,21 +1103,13 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
         );
-        Future.microtask(() async {
-          await widget.provider.onReloadDataAssetByCurrentUnit(
-            state.donViGiao!.id ?? '',
-          );
-          if (widget.provider.dataAsset != null) {
-            assetByDepartment = widget.provider.dataAsset ?? [];
-          }
-        });
+        log('messge assetByDepartment donViGiao: ${state.donViGiao?.id} -- ${state.item?.idDonViGiao}');
+
         state.donViDeNghi = widget.provider.getPhongBanByID(
           state.item?.idDonViDeNghi ?? '',
         );
         assetByDepartment =
-            widget.provider.dataAsset.where((element) {
-              return element.idDonViHienThoi == state.donViGiao!.id;
-            }).toList();
+            widget.provider.dataAsset ?? [];
 
         //load list staff by department
         state.listStaffByDepartment =

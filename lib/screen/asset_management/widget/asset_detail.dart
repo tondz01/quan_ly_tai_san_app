@@ -641,9 +641,9 @@ class _AssetDetailState extends State<AssetDetail> {
     if (ctrlDonViTinh.text.isEmpty || unit == null) {
       newValidationErrors['donViTinh'] = true;
     }
-    if (ctrlDonViHienThoi.text.isEmpty) {
-      newValidationErrors['idDonViHienThoi'] = true;
-    }
+    // if (ctrlDonViHienThoi.text.isEmpty) {
+    //   newValidationErrors['idDonViHienThoi'] = true;
+    // }
 
     bool hasChanges = !mapEquals(validationErrors, newValidationErrors);
     if (hasChanges) {

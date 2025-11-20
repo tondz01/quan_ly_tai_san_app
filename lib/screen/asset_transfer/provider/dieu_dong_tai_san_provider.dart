@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_management/repository/asset_management_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/table_asset_transfer_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
@@ -294,11 +295,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // getDataAll(context);
 
     // Start auto reload every 20 seconds
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      // onReloadDataAssetTransfer();
-      onReloadDataPage(context, false);
-    });
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   // onReloadDataAssetTransfer();
+    //   onReloadDataPage(context, false);
+    // });
   }
 
   void onDispose() {
@@ -354,12 +355,26 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void onChangeDetailDieuDongTaiSan(DieuDongTaiSanDto? item) {
+  void onChangeDetailDieuDongTaiSan(DieuDongTaiSanDto? item) async {
     // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
+    _isLoading = true;
+    notifyListeners();
+    _loadingMessage = 'Đang tải dữ liệu...';
+    if (AccountHelper.instance.getAllAssets().isNotEmpty) {
+      _dataAsset = AccountHelper.instance.getAllAssets();
+    } else {
+      Map<String, dynamic> args = await AssetManagementRepository()
+          .getListAssetManagement('ct001');
+      if (args['data'] != null) {
+        _dataAsset = args['data'];
+      }
+    }
     _itemPreview = null;
     _item = item;
     isShowInput = true;
     isShowCollapse = true;
+    _isLoading = false;
+    _loadingMessage = '';
     notifyListeners();
   }
 
@@ -788,8 +803,9 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (typeDieuDongTaiSan == 1) {
       result = await AssetTransferRepository().getAssetByUnit(idDonViHienthoi);
     } else {
-      result =
-          await AssetTransferRepository().getAssetByCurrentUnit(idDonViHienthoi);
+      result = await AssetTransferRepository().getAssetByCurrentUnit(
+        idDonViHienthoi,
+      );
     }
     if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
       _dataAsset = result['data'];
