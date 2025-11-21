@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -85,16 +87,33 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
   @override
   void initState() {
     super.initState();
-    _hasDepartment = widget.phongBan != null && widget.listNhanVien != null;
+    _hasDepartment =
+        widget.phongBan != null &&
+        widget.listNhanVien != null &&
+        widget.listNhanVien!.isNotEmpty;
 
     // Khởi tạo từ initialSignerData nếu có, nếu không thì từ initialSigners
     if (widget.initialSignerData != null &&
         widget.initialSignerData!.isNotEmpty) {
       _signersData = List<AdditionalSignerData>.from(widget.initialSignerData!);
+      if (widget.defaultDepartment != null) {
+        for (int i = 0; i < _signersData.length; i++) {
+          if (_signersData[i].department == null) {
+            _signersData[i] = _signersData[i].copyWith(
+              department: widget.defaultDepartment,
+            );
+          }
+        }
+      }
     } else {
       _signersData =
           widget.initialSigners
-              .map((e) => AdditionalSignerData(employee: e))
+              .map(
+                (e) => AdditionalSignerData(
+                  employee: e,
+                  department: widget.defaultDepartment,
+                ),
+              )
               .toList();
     }
 
@@ -109,7 +128,22 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
   @override
   void didUpdateWidget(covariant AdditionalSignersSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _hasDepartment = widget.phongBan != null && widget.listNhanVien != null;
+    _hasDepartment =
+        widget.phongBan != null &&
+        widget.listNhanVien != null &&
+        widget.listNhanVien!.isNotEmpty;
+
+    if (oldWidget.defaultDepartment != widget.defaultDepartment &&
+        widget.defaultDepartment != null) {
+      for (int i = 0; i < _signersData.length; i++) {
+        _signersData[i] = AdditionalSignerData(
+          department: widget.defaultDepartment,
+          employee: null,
+          signed: _signersData[i].signed,
+        );
+      }
+      setState(() {});
+    }
 
     // Đồng bộ khi initialSignerData hoặc initialSigners thay đổi từ bên ngoài
     if (oldWidget.initialSignerData != widget.initialSignerData ||
@@ -119,11 +153,35 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
         _signersData = List<AdditionalSignerData>.from(
           widget.initialSignerData!,
         );
+        if (widget.defaultDepartment != null) {
+          for (int i = 0; i < _signersData.length; i++) {
+            if (_signersData[i].department == null) {
+              _signersData[i] = _signersData[i].copyWith(
+                department: widget.defaultDepartment,
+              );
+            }
+          }
+        }
       } else {
-        _signersData =
-            widget.initialSigners
-                .map((e) => AdditionalSignerData(employee: e))
-                .toList();
+        // Preserve department and signed state when syncing from initialSigners
+        _signersData = List.generate(widget.initialSigners.length, (index) {
+          final employee = widget.initialSigners[index];
+          PhongBan? dept;
+          bool signed = false;
+
+          if (index < _signersData.length) {
+            dept = _signersData[index].department;
+            signed = _signersData[index].signed;
+          }
+
+          dept ??= widget.defaultDepartment;
+
+          return AdditionalSignerData(
+            employee: employee,
+            department: dept,
+            signed: signed,
+          );
+        });
       }
 
       // Cập nhật controllers theo số lượng mới
@@ -180,7 +238,9 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
 
   void _addSigner() {
     setState(() {
-      _signersData.add(AdditionalSignerData());
+      _signersData.add(
+        AdditionalSignerData(department: widget.defaultDepartment),
+      );
       _controllers.add(TextEditingController());
       _deptControllers.add(TextEditingController());
     });
@@ -199,8 +259,14 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
   List<DropdownMenuItem<NhanVien>> _buildStaffItemsForDepartment(
     PhongBan? dept,
   ) {
-    if (!_hasDepartment) return widget.itemsNhanVien;
-    if (dept == null) return <DropdownMenuItem<NhanVien>>[];
+    if (!_hasDepartment) {
+      log('AdditionalSignersSelector: _hasDepartment=false. Using itemsNhanVien (len: ${widget.itemsNhanVien.length})');
+      return widget.itemsNhanVien;
+    }
+    if (dept == null) {
+      log('AdditionalSignersSelector: dept=null. Returning empty list.');
+      return <DropdownMenuItem<NhanVien>>[];
+    }
     final filtered =
         widget.listNhanVien!
             .where((e) => e.phongBanId == (dept.id ?? ''))
@@ -211,6 +277,23 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
               ),
             )
             .toList();
+    log('AdditionalSignersSelector: Filtered staff for dept ${dept.tenPhongBan} (id: ${dept.id}): ${filtered.length} items');
+
+    if (filtered.isEmpty) {
+      // Fallback 1: Default department match
+      if (widget.defaultDepartment != null &&
+          dept.id == widget.defaultDepartment!.id &&
+          widget.itemsNhanVien.isNotEmpty) {
+        log('AdditionalSignersSelector: Filtered list empty for default dept, using itemsNhanVien fallback');
+        return widget.itemsNhanVien;
+      }
+      // Fallback 2: If listNhanVien is empty (should be covered by _hasDepartment check but safe to keep)
+      if (widget.listNhanVien == null || widget.listNhanVien!.isEmpty) {
+        log('AdditionalSignersSelector: listNhanVien empty/null, using itemsNhanVien fallback');
+        return widget.itemsNhanVien;
+      }
+    }
+
     return filtered;
   }
 
@@ -260,11 +343,17 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
         ),
         Column(
           children: List.generate(_signersData.length, (index) {
-            final dept = _hasDepartment ? _signersData[index].department : null;
-            final staffItems =
+            final dept =
+                _hasDepartment
+                    ? (_signersData[index].department ??
+                        widget.defaultDepartment)
+                    : null;
+            log('message dept selected: $_hasDepartment');
+            var staffItems =
                 _hasDepartment
                     ? _buildStaffItemsForDepartment(dept)
                     : widget.itemsNhanVien;
+            log('AdditionalSignersSelector: staffItems length: ${staffItems.length}');
             NhanVien? nhanVien = _signersData[index].employee;
             TextEditingController controller = _controllers[index];
             controller.text = nhanVien?.hoTen ?? '';
@@ -279,7 +368,8 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                       Expanded(
                         child: Column(
                           children: [
-                            if (_hasDepartment) ...[
+                            if (_hasDepartment &&
+                                widget.defaultDepartment == null) ...[
                               Padding(
                                 padding: const EdgeInsets.only(
                                   top: 8.0,
@@ -295,13 +385,13 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                                             ? widget.isEditing
                                             : false,
                                     value:
-                                        widget.defaultDepartment ??
-                                        _signersData[index].department,
+                                        _signersData[index].department ??
+                                        widget.defaultDepartment,
                                     defaultValue:
-                                        widget.defaultDepartment ??
-                                        _signersData[index].department,
+                                        _signersData[index].department ??
+                                        widget.defaultDepartment,
                                     fieldName: 'additionalSigner_dept_$index',
-
+                                  
                                     items: [
                                       ...widget.phongBan!.map(
                                         (e) => DropdownMenuItem(
@@ -313,9 +403,10 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                                     onChanged: (value) {
                                       setState(() {
                                         _signersData[index] =
-                                            _signersData[index].copyWith(
+                                            AdditionalSignerData(
                                               department: value,
                                               employee: null,
+                                              signed: _signersData[index].signed,
                                             );
                                       });
                                       _emitChanges();

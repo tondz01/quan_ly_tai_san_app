@@ -202,7 +202,6 @@ class _AssetHandoverDetailState extends State<AssetHandoverDetail> {
     }
 
     listNhanVien = widget.provider.dataStaff ?? [];
-    log('listNhanVien: ${jsonEncode(listNhanVien)}');
     listPhongBan = widget.provider.dataDepartment ?? [];
     listAssetTransfer =
         widget.provider.dataAssetTransfer

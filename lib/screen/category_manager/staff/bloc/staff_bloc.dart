@@ -35,7 +35,7 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
       _allChucvus = await _provider.fetchChucVus();
       final idCongTy = AccountHelper.instance.getUserInfo()?.idCongTy ?? '';
       Map<String, dynamic> result = await provider.getListDepartment(idCongTy);
-      
+
       if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
         _allDepartments = result['data'];
       } else {
@@ -95,6 +95,7 @@ class StaffBloc extends Bloc<StaffEvent, StaffState> {
 
     on<UpdateStaff>((event, emit) async {
       final result = await _provider.updateNhanVien(event.staff);
+      log('UpdateStaff result: ${jsonEncode(result)}');
       if (checkStatusCodeDone(result)) {
         emit(UpdateStaffSuccessState('Cập nhật thành công'));
       } else {

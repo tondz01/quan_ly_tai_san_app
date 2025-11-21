@@ -1003,12 +1003,14 @@ class _ToolAndMaterialTransferDetailState
                           isRequired: true,
                         ),
                         AdditionalSignersSelector(
-                          addButtonText: "Thêm đơn bị đại diện",
+                          addButtonText: "Thêm người ký",
                           labelDepartment: "Đơn vị đại diện",
                           labelSigned: 'Người đại diện',
                           isEditing: isEditing,
+                          defaultDepartment: donViDeNghi,
+                          isEditDepartment: false,
                           itemsNhanVien: [
-                            ...listNhanVien.map(
+                            ...listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),

@@ -6,7 +6,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_trans
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/staff/staf_provider/nhan_vien_provider.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 

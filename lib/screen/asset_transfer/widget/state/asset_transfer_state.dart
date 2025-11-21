@@ -25,6 +25,7 @@ class AssetTransferState {
   List<ChiTietDieuDongTaiSan> _initialDetails = [];
   List<NhanVien> listStaffByDepartment = [];
   List<NhanVien> listNhanVien = [];
+  List<NhanVien> listNhanVienKyMoi = [];
 
   UserInfoDTO? nguoiLapPhieu;
   PhongBan? donViGiao;
@@ -90,6 +91,7 @@ class AssetTransferState {
     additionalSignersDetailed.clear();
     listNhanVienThamMuu.clear();
     listNhanVien.clear();
+    listNhanVienKyMoi.clear();
     item = null;
     itemPreview = null;
     _initialSignersDetailed.clear();

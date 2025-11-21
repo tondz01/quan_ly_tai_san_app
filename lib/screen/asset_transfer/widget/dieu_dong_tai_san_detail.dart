@@ -578,9 +578,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                                             state.donViDeNghi?.id,
                                       )
                                       .toList();
-                              log(
-                                'message listNhanVienThamMuu: $state.listNhanVienThamMuu',
-                              );
+                              // state.listNhanVienKyMoi =
+                              //     widget.provider.dataNhanVien
+                              //         .where(
+                              //           (e) =>
+                              //               e.phongBanId ==
+                              //               state.donViDeNghi?.id,
+                              //         )
+                              //         .toList();
                             });
                           },
                         ),
@@ -672,7 +677,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                           defaultDepartment: state.donViDeNghi,
                           isEditDepartment: false,
                           itemsNhanVien: [
-                            ...state.listNhanVien.map(
+                            ...state.listNhanVienThamMuu.map(
                               (e) => DropdownMenuItem(
                                 value: e,
                                 child: Text(e.hoTen ?? ''),
@@ -680,7 +685,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                             ),
                           ],
                           phongBan: widget.provider.dataPhongBan,
-                          listNhanVien: state.listNhanVien,
+                          listNhanVien: state.listNhanVienThamMuu,
                           initialSigners: state.additionalSigners,
                           onChanged: (list) {
                             setState(() {
@@ -1103,13 +1108,14 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
         );
-        log('messge assetByDepartment donViGiao: ${state.donViGiao?.id} -- ${state.item?.idDonViGiao}');
+        log(
+          'messge assetByDepartment donViGiao: ${state.donViGiao?.id} -- ${state.item?.idDonViGiao}',
+        );
 
         state.donViDeNghi = widget.provider.getPhongBanByID(
           state.item?.idDonViDeNghi ?? '',
         );
-        assetByDepartment =
-            widget.provider.dataAsset ?? [];
+        assetByDepartment = widget.provider.dataAsset ?? [];
 
         //load list staff by department
         state.listStaffByDepartment =
