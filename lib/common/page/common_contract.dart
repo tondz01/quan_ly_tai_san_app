@@ -101,35 +101,55 @@ class _CommonContractState extends State<CommonContract> {
     double left = 100,
   }) async {
     if (_isDigital) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Chỉ được ký chữ ký số')));
-      return;
+      if (!mounted) return;
+      Future.microtask(() {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Chỉ được ký chữ ký số')));
+        }
+      });
     }
+
     if (widget.signatureList.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Danh sách chữ ký rỗng')));
-      return;
+      if (!mounted) return;
+      Future.microtask(() {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Danh sách chữ ký rỗng')));
+        }
+      });
     }
     try {
-      final url =
-          loaiKy == 2 || loaiKy == 4
-              ? widget.signatureList[1]
-              : widget.signatureList.first;
-      log('Check link chữ ký: $url');
+      String url = "";
+      if (loaiKy == 2) {
+        url = widget.nhanVien?.chuKyThuong ?? "";
+        print('loai ky 2');
+      } else if (loaiKy == 1) {
+        url = widget.nhanVien?.chuKyNhay ?? "";
+        print('loai ky 1');
+      } else if (loaiKy == 4) {
+        url = widget.nhanVien?.chuKyThuong ?? "";
+      } else if (loaiKy == 5) {
+        url = widget.nhanVien?.chuKyNhay ?? "";
+      }
+      if (url.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Bạn chưa có chữ ký')));
+        }
+        return;
+      }
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         _addSignature(response.bodyBytes, loaiKy, top, left, true);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Không tải được ảnh: $url (HTTP ${response.statusCode})',
-              ),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Lỗi tải ảnh')));
         }
       }
     } catch (e) {
@@ -199,11 +219,10 @@ class _CommonContractState extends State<CommonContract> {
         signatureUrl = sig["chuKyThuong"].toString();
       } else if (loaiKy == 4) {
         signatureUrl = sig["chuKyThuong"].toString();
-        if (signatureUrl.isEmpty || signatureUrl == "null") {
-          signatureUrl = sig["chuKyNhay"].toString();
-        }
+      } else if (loaiKy == 5) {
+        signatureUrl = sig["chuKyNhay"].toString();
       }
-      if (loaiKy == 3 || loaiKy == 4) {
+      if (loaiKy == 3 || loaiKy == 4 || loaiKy == 5) {
         setState(() {
           _isDigital = true;
         });
@@ -453,7 +472,10 @@ class _CommonContractState extends State<CommonContract> {
           "x": state.left,
           "y": state.top,
           "idNguoiKy": widget.idNguoiKy,
-          "chuKySo": img.loaiKy == 3 || img.loaiKy == 4 ? signatureValue : null,
+          "chuKySo":
+              img.loaiKy == 3 || img.loaiKy == 4 || img.loaiKy == 5
+                  ? signatureValue
+                  : null,
           "ngayKy": DateTime.now().toIso8601String(),
           "stt": i + 1,
           // Có thể thêm "Scale": state.scale nếu DB cần
@@ -1024,7 +1046,7 @@ class _CommonContractState extends State<CommonContract> {
                   children: [
                     // Tab công cụ bên trái
                     Container(
-                      width: 250,
+                      width: 350,
                       color: Colors.white,
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -1062,30 +1084,74 @@ class _CommonContractState extends State<CommonContract> {
                                 });
                               },
                             ),
-                          if (widget.isKySo) ...[
-                            RadioListTile<int>(
-                              title: const Text("Ký số hình ảnh"),
-                              value: 4,
-                              groupValue: _selectedSigningType,
-                              contentPadding: EdgeInsets.zero,
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedSigningType = val!;
-                                });
-                              },
+                          if (widget.isKySo)
+                            Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      12,
+                                      8,
+                                      12,
+                                      0,
+                                    ),
+                                    child: Text(
+                                      "Chữ ký số",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey[800],
+                                      ),
+                                    ),
+                                  ),
+
+                                  RadioListTile<int>(
+                                    title: const Text("Hiển thị mặc định"),
+                                    value: 3,
+                                    groupValue: _selectedSigningType,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _selectedSigningType = val!;
+                                      });
+                                    },
+                                  ),
+                                  RadioListTile<int>(
+                                    title: const Text("Hiển thị chữ ký thường"),
+                                    value: 4,
+                                    groupValue: _selectedSigningType,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _selectedSigningType = val!;
+                                      });
+                                    },
+                                  ),
+                                  RadioListTile<int>(
+                                    title: const Text("Hiển thị chữ ký nháy"),
+                                    value: 5,
+                                    groupValue: _selectedSigningType,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _selectedSigningType = val!;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
-                            RadioListTile<int>(
-                              title: const Text("Ký số ký hiệu"),
-                              value: 3,
-                              groupValue: _selectedSigningType,
-                              contentPadding: EdgeInsets.zero,
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedSigningType = val!;
-                                });
-                              },
-                            ),
-                          ],
                           const SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
