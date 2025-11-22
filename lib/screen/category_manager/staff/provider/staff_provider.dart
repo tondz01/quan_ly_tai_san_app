@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/bloc/department_state.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/provider/table_department_provider.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/bloc/staff_state.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
+import 'package:quan_ly_tai_san_app/screen/category_manager/staff/provider/table_staff_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 
-class DepartmentProvider with ChangeNotifier {
+class StaffProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isShowInput => _isShowInput;
   bool get isShowCollapse => _isShowCollapse;
-  bool get hasUnsavedChanges => _hasUnsavedChanges;
   get data => _data;
   get userInfo => _userInfo;
   get dataDetail => _dataDetail;
-  get dataPage => _dataPage;
-  get filteredData => _filteredData;
 
   String? get error => _error;
   String? get subScreen => _subScreen;
@@ -34,11 +31,6 @@ class DepartmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  set hasUnsavedChanges(bool value) {
-    _hasUnsavedChanges = value;
-    notifyListeners();
-  }
-
   late int totalEntries;
   late int totalPages = 1;
   late int startIndex;
@@ -50,13 +42,10 @@ class DepartmentProvider with ChangeNotifier {
   Widget? _body;
   bool _isShowInput = false;
   bool _isShowCollapse = true;
-  bool _hasUnsavedChanges = false;
   bool _isLoading = false;
 
-  List<PhongBan>? _data;
-  List<PhongBan>? _dataPage;
-  PhongBan? _dataDetail;
-  List<PhongBan>? _filteredData;
+  List<NhanVien>? _data;
+  NhanVien? _dataDetail;
 
   UserInfoDTO? _userInfo;
 
@@ -64,8 +53,7 @@ class DepartmentProvider with ChangeNotifier {
     _userInfo = AccountHelper.instance.getUserInfo();
     _isShowInput = false;
     _isShowCollapse = true;
-    _hasUnsavedChanges = false;
-    onReloadDataDepartments();
+    onReloadDataStaff();
     // getListDepartments(context);
   }
 
@@ -90,49 +78,38 @@ class DepartmentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  onReloadDataDepartments() {
-    AuthRepository().loadAssetGroup(_userInfo?.idCongTy ?? '');
+  onReloadDataStaff() {
+    AuthRepository().loadUserEmployee('ct001');
   }
 
-  void createDepartmentsSuccess(
-    BuildContext context,
-    CreateDepartmentSuccessState state,
-  ) {
+  void createStaffSuccess(BuildContext context, AddStaffSuccessState state) {
     _isLoading = false;
     onCloseDetail(context);
-    getListDepartments(context);
+    onReloadDataStaff();
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Tạo mới phòng ban thành công!');
+    AppUtility.showSnackBar(context, 'Tạo mới nhân viên thành công!');
   }
 
-  void updateDepartmentsSuccess(
-    BuildContext context,
-    UpdateDepartmentSuccessState state,
-  ) {
+  void updateStaffSuccess(BuildContext context, UpdateStaffSuccessState state) {
     _isLoading = false;
     onCloseDetail(context);
-    getListDepartments(context);
-
+    onReloadDataStaff();
     // Close input panel if open
-    AppUtility.showSnackBar(context, 'Cập nhật phòng ban thành công!');
+    AppUtility.showSnackBar(context, 'Cập nhật nhân viên thành công!!!');
   }
 
-  void deleteDepartmentsSuccess(
-    BuildContext context,
-    DeleteDepartmentSuccessState state,
-  ) {
+  void deleteStaffSuccess(BuildContext context, DeleteStaffBatchSuccess state) {
     _isLoading = false;
     onCloseDetail(context);
-    getListDepartments(context);
-
+    onReloadDataStaff();
     // Close input panel if open
     onReloadData(context);
     AppUtility.showSnackBar(context, 'Xóa phòng ban thành công!');
   }
 
-  void deleteDepartmentBatchSuccess(
+  void deleteStaffBatchSuccess(
     BuildContext context,
-    DeleteDepartmentBatchSuccess state,
+    DeleteStaffBatchSuccess state,
   ) {
     _isLoading = false;
     onCloseDetail(context);
@@ -141,7 +118,7 @@ class DepartmentProvider with ChangeNotifier {
     AppUtility.showSnackBar(context, 'Xóa nhiều phòng ban thành công!');
   }
 
-  void onChangeDetail(BuildContext context, PhongBan? item) {
+  void onChangeDetail(BuildContext context, NhanVien? item) {
     _dataDetail = item;
     _isShowInput = true;
     _isShowCollapse = true;
@@ -160,6 +137,6 @@ class DepartmentProvider with ChangeNotifier {
 
   onReloadData(BuildContext context, [bool isRefresh = true]) {
     final container = ProviderScope.containerOf(context);
-    container.read(tableDepartmentProvider.notifier).refreshData(isRefresh);
+    container.read(tableStaffProvider.notifier).refreshData(isRefresh);
   }
 }

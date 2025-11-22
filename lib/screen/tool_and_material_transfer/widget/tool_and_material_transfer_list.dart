@@ -669,6 +669,15 @@ class _ToolAndMaterialTransferListState
               .toString(),
         ),
       ),
+
+      if (item.listSignatory != null)
+        ...item.listSignatory!.map(
+          (e) => ThreadNode(
+            header: "Người đại diện",
+            depth: 1,
+            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
+          ),
+        ),
       ThreadNode(
         header: 'Trình duyệt ban giám đốc:',
         depth: 1,
@@ -680,15 +689,6 @@ class _ToolAndMaterialTransferListState
               .toString(),
         ),
       ),
-
-      if (item.listSignatory != null)
-        ...item.listSignatory!.map(
-          (e) => ThreadNode(
-            header: "Người đại diện",
-            depth: 1,
-            child: viewSignatoryStatus(e.trangThai == 1, e.tenNguoiKy ?? ''),
-          ),
-        ),
       ThreadNode(header: 'Chi tiết bàn giao', depth: 0),
       if (widget.provider.listSignatoryDetail.isNotEmpty)
         ...widget.provider.listSignatoryDetail,

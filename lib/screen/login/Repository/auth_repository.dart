@@ -137,7 +137,7 @@ class AuthRepository extends ApiBase {
   //------LOAD DATA------------------------------------------------------------------------------------///
   Future<void> loadData(String idCongTy) async {
     await loadUserDepartments(idCongTy);
-    await _loadUserEmployee(idCongTy);
+    await loadUserEmployee(idCongTy);
     await loadAssetGroup(idCongTy);
     await _loadCCDCGroup(idCongTy);
     await loadReasonIncrease();
@@ -169,7 +169,7 @@ class AuthRepository extends ApiBase {
   }
 
   /// Load thông tin nhân viên của user và lưu vào AccountHelper
-  Future<void> _loadUserEmployee(String idCongTy) async {
+  Future<void> loadUserEmployee(String idCongTy) async {
     try {
       final response = await get(
         EndPointAPI.NHAN_VIEN,

@@ -24,6 +24,7 @@ import 'package:flutter/foundation.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -179,6 +180,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
   onReloadData(BuildContext context, [bool isRefresh = true]) {
     final container = ProviderScope.containerOf(context);
     container.read(tableStaffProvider.notifier).refreshData(isRefresh);
+    AuthRepository().loadUserEmployee('ct001');
     setState(() {
       isShowInput = false;
       isImporting = false;
@@ -187,60 +189,67 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: BlocListener<StaffBloc, StaffState>(
-        listener: (context, state) {
-          if (state is AddStaffSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Thêm nhân viên thành công'),
-                backgroundColor: const Color(0xFF21A366),
-              ),
-            );
-            log('Staff AddStaffSuccessState: ');
-            onReloadData(context);
-          }
-          if (state is UpdateStaffSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Cập nhật nhân viên thành công'),
-                backgroundColor: const Color(0xFF21A366),
-              ),
-            );
-            log('Staff UpdateStaffSuccessState: ');
-            onReloadData(context);
-          }
-          if (state is StaffError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lỗi: ${state.message}'),
-                backgroundColor: Colors.red.shade600,
-              ),
-            );
-            log('Staff StaffError: ${state.message}');
-            isImporting = false;
-          }
-          if (state is DeleteStaffBatchSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Xóa nhân viên thành công'),
-                backgroundColor: const Color(0xFF21A366),
-              ),
-            );
-            log('Staff DeleteStaffBatchSuccess: ');
-            onReloadData(context);
-          } else if (state is DeleteStaffBatchFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Xóa nhân viên thất bại: ${state.message}'),
-                backgroundColor: Colors.red.shade600,
-              ),
-            );
-            log('Staff DeleteStaffBatchFailure: ${state.message}');
-            isImporting = false;
-          }
-        },
-        child: LoadingOverlay(
+    return BlocConsumer<StaffBloc, StaffState>(
+      listener: (context, state) {
+        if (state is StaffLoadingState) {
+          log('Staff AddStaffSuccessState: ');
+          onReloadData(context);
+        }
+        if (state is StaffLoadingDismissState) {}
+        if (state is AddStaffSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Thêm nhân viên thành công'),
+              backgroundColor: const Color(0xFF21A366),
+            ),
+          );
+          log('Staff AddStaffSuccessState: ');
+          onReloadData(context);
+        }
+        if (state is UpdateStaffSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Cập nhật nhân viên thành công!'),
+              backgroundColor: const Color(0xFF21A366),
+            ),
+          );
+          log('Staff UpdateStaffSuccessState: ');
+          onReloadData(context);
+          // context.read<StaffProvider>().updateStaffSuccess(context, state);
+        }
+        if (state is StaffError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+          log('Staff StaffError: ${state.message}');
+          isImporting = false;
+        }
+        if (state is DeleteStaffBatchSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa nhân viên thành công'),
+              backgroundColor: const Color(0xFF21A366),
+            ),
+          );
+          log('Staff DeleteStaffBatchSuccess: ');
+          onReloadData(context);
+        } else if (state is DeleteStaffBatchFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Xóa nhân viên thất bại: ${state.message}'),
+              backgroundColor: Colors.red.shade600,
+            ),
+          );
+          log('Staff DeleteStaffBatchFailure: ${state.message}');
+          isImporting = false;
+        }
+      },
+
+      builder: (context, state) {
+        return LoadingOverlay(
           isLoading: isImporting,
           message: 'Đang nhập dữ liệu nhân viên...',
           child: Scaffold(
@@ -388,8 +397,8 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
               ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

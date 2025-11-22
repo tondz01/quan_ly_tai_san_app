@@ -692,6 +692,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
                               state.additionalSigners
                                 ..clear()
                                 ..addAll(list);
+                                log('message additionalSigners: ${jsonEncode(state.additionalSigners)}');
                             });
                           },
                           initialSignerData: state.additionalSignersDetailed,
@@ -1040,6 +1041,7 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
       // Thêm dòng này - Cập nhật người ký nếu có thay đổi
       if (_signatoriesChanged()) {
+        log('message [additionalSigners] _handleSave syncSignatories: ${jsonEncode(state.additionalSignersDetailed)}');
         await UpdateSignerData().syncSignatories(
           state.item!.id!,
           state.additionalSignersDetailed,
@@ -1107,9 +1109,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
         //load date value dropdown
         state.donViGiao = widget.provider.getPhongBanByID(
           state.item?.idDonViGiao ?? '',
-        );
-        log(
-          'messge assetByDepartment donViGiao: ${state.donViGiao?.id} -- ${state.item?.idDonViGiao}',
         );
 
         state.donViDeNghi = widget.provider.getPhongBanByID(

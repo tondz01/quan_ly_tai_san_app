@@ -563,10 +563,8 @@ class AssetTransferRepository extends ApiBase {
 
     return result;
   }
-  
-  Future<Map<String, dynamic>> getAssetByUnit(
-    String idDonViBandau,
-  ) async {
+
+  Future<Map<String, dynamic>> getAssetByUnit(String idDonViBandau) async {
     Map<String, dynamic> result = {
       'data': [],
       'status_code': Numeral.STATUS_CODE_DEFAULT,
@@ -613,6 +611,39 @@ class AssetTransferRepository extends ApiBase {
       log("message result: ${result['data']}");
     } catch (e) {
       log("Error at getAssetByUnit - AssetTransferRepository: $e");
+    }
+
+    return result;
+  }
+
+  Future<Map<String, dynamic>> updateSignatory(
+    String idTaiLieu,
+    List<SignatoryDto> listSignatory,
+  ) async {
+    Map<String, dynamic> result = {
+      'data': <SignatoryDto>[],
+      'status_code': Numeral.STATUS_CODE_DEFAULT,
+    };
+
+    try {
+      final response = await put(
+        '${EndPointAPI.SIGNATORY}/update/$idTaiLieu',
+        data: listSignatory,
+      );
+      if (response.statusCode != Numeral.STATUS_CODE_SUCCESS) {
+        result['status_code'] = response.statusCode;
+        return result;
+      }
+
+      result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+
+      // Parse response data using the common ResponseParser utility
+      result['data'] = ResponseParser.parseToList<SignatoryDto>(
+        response.data,
+        SignatoryDto.fromJson,
+      );
+    } catch (e) {
+      log("Error at updateSignatory - AssetTransferRepository: $e");
     }
 
     return result;

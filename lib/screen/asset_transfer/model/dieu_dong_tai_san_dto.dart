@@ -206,8 +206,8 @@ class DieuDongTaiSanDto {
               .map((e) => ChiTietDieuDongTaiSan.fromJson(e))
               .toList()
           : null,
-      listSignatory: (json['chuKyList'] is List)
-          ? (json['chuKyList'] as List)
+      listSignatory: (json['nguoiKyList'] is List)
+          ? (json['nguoiKyList'] as List)
               .whereType<Map<String, dynamic>>()
               .map((e) => SignatoryDto.fromJson(e))
               .toList()

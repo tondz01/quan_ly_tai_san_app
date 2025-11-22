@@ -330,6 +330,7 @@ class _AssetDetailState extends State<AssetDetail> {
                         });
                       },
                       onChangeCurrentUnit: (value) {
+                        log('message value 111: $value');
                         setState(() {
                           phongBanHienThoi = value;
                         });

@@ -295,11 +295,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // getDataAll(context);
 
     // Start auto reload every 20 seconds
-    // _autoReloadTimer?.cancel();
-    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-    //   // onReloadDataAssetTransfer();
-    //   onReloadDataPage(context, false);
-    // });
+    _autoReloadTimer?.cancel();
+    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      // onReloadDataAssetTransfer();
+      onReloadDataPage(context, false);
+    });
   }
 
   void onDispose() {
@@ -452,18 +452,18 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
-    _itemsDDPhongBan = [
-      for (var element in _dataPhongBan!)
-        DropdownMenuItem<PhongBan>(
-          value: element,
-          child: Text(element.tenPhongBan ?? ''),
-        ),
-    ];
-
+    _itemsDDPhongBan = _dataPhongBan
+        ?.where((element) => element.isKho != true)
+        .map((element) => DropdownMenuItem<PhongBan>(
+              value: element,
+              child: Text(element.tenPhongBan ?? ''),
+            ))
+        .toList() ?? [];
+    
     if (typeDieuDongTaiSan == 1) {
       List<PhongBan> dataDVGiao =
-          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
-          [];
+          _dataPhongBan?.where((element) => element.isKho == true).toList() ?? [];
+          log('message dataDVGiao: ${dataDVGiao.length} -- ${_dataPhongBan?.length}');
       _itemsDVGiao =
           dataDVGiao
               .map(
@@ -474,7 +474,19 @@ class DieuDongTaiSanProvider with ChangeNotifier {
               )
               .toList();
     } else {
-      _itemsDVGiao = _itemsDDPhongBan;
+      List<PhongBan> dataDV =
+          _dataPhongBan?.where((element) => element.isKho == false).toList() ??
+          [];
+
+      _itemsDVGiao =
+          dataDV
+              .map(
+                (element) => DropdownMenuItem<PhongBan>(
+                  value: element,
+                  child: Text(element.tenPhongBan ?? ''),
+                ),
+              )
+              .toList();
     }
 
     _dataNhanVien = AccountHelper.instance.getNhanVien();

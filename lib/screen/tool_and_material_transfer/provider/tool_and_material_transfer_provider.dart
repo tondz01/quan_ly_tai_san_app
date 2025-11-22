@@ -478,26 +478,45 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
+    _itemsDDPhongBan =
+        _dataPhongBan
+            ?.where((element) => element.isKho == false)
+            .map(
+              (element) => DropdownMenuItem<PhongBan>(
+                value: element,
+                child: Text(element.tenPhongBan ?? ''),
+              ),
+            )
+            .toList() ??
+        [];
 
-    _itemsDDPhongBan = [
-      for (var element in _dataPhongBan!)
-        DropdownMenuItem<PhongBan>(
-          value: element,
-          child: Text(element.tenPhongBan ?? ''),
-        ),
-    ];
     if (type == 1) {
-      _dataPhongBan =
-          _dataPhongBan?.where((element) => element.isKho == true).toList();
-      _itemsDDPhongBanKho = [
-        for (var element in _dataPhongBan!)
-          DropdownMenuItem<PhongBan>(
-            value: element,
-            child: Text(element.tenPhongBan ?? ''),
-          ),
-      ];
-    }else{
-      _itemsDDPhongBanKho = _itemsDDPhongBan;
+      List<PhongBan> dataDVGiao =
+          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
+          [];
+      _itemsDDPhongBanKho =
+          dataDVGiao
+              .map(
+                (element) => DropdownMenuItem<PhongBan>(
+                  value: element,
+                  child: Text(element.tenPhongBan ?? ''),
+                ),
+              )
+              .toList();
+    } else {
+      List<PhongBan> dataDV =
+          _dataPhongBan?.where((element) => element.isKho == false).toList() ??
+          [];
+
+      _itemsDDPhongBanKho =
+          dataDV
+              .map(
+                (element) => DropdownMenuItem<PhongBan>(
+                  value: element,
+                  child: Text(element.tenPhongBan ?? ''),
+                ),
+              )
+              .toList();
     }
     _dataNhanVien = AccountHelper.instance.getNhanVien();
     _itemsDDNhanVien = [

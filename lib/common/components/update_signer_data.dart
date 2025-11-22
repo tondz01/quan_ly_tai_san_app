@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/widgets/additional_signers_selector.dart';
 import 'package:quan_ly_tai_san_app/core/utils/uuid_generator.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/signatory_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/signatory_repository.dart';
 
 class UpdateSignerData {
@@ -30,33 +32,25 @@ class UpdateSignerData {
     List<AdditionalSignerData> additionalSignersDetailed,
   ) async {
     try {
-      final repo = SignatoryRepository();
+      // final repo = SignatoryRepository();
 
-      // Lấy danh sách signatories hiện tại từ server
-      final existingSignatories = await repo.getAll(idTaiLieu);
-
-      // Xóa tất cả signatories hiện tại
-      for (final signatory in existingSignatories) {
-        if (signatory.id != null && signatory.id!.isNotEmpty) {
-          await repo.delete(signatory.id!);
-        }
-      }
-
-      // Tạo lại signatories mới
-      for (final signerData in additionalSignersDetailed) {
-        if (signerData.department?.id != null &&
-            signerData.employee?.id != null) {
-          final signatory = SignatoryDto(
-            id: UUIDGenerator.generateWithFormat('NK-************'),
-            idTaiLieu: idTaiLieu,
-            idNguoiKy: signerData.employee?.id,
-            idPhongBan: signerData.department?.id,
-            tenNguoiKy: signerData.employee?.hoTen,
-            trangThai: 0,
-          );
-          await repo.create(signatory);
-        }
-      }
+      log('message additionalSigners idTaiLieu: $idTaiLieu');
+      final result = await AssetTransferRepository().updateSignatory(
+        idTaiLieu,
+        additionalSignersDetailed
+            .map(
+              (e) => SignatoryDto(
+                id: UUIDGenerator.generateWithFormat('NK-************'),
+                idTaiLieu: idTaiLieu,
+                idNguoiKy: e.employee?.id,
+                idPhongBan: e.department?.id,
+                tenNguoiKy: e.employee?.hoTen,
+                trangThai: 0,
+              ),
+            )
+            .toList(),
+      );
+      log('message [additionalSigners] syncSignatories result: ${jsonEncode(result)}');
     } catch (e) {
       log('Sync signatories error: $e');
     }
