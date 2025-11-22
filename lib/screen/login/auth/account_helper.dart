@@ -141,17 +141,18 @@ class AccountHelper {
       if (raw is List<PhongBan>) {
         departments = List<PhongBan>.from(raw);
       } else if (raw is List) {
-        departments = raw
-            .map((e) {
-              if (e is PhongBan) return e;
-              if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
-              if (e is Map) {
-                return PhongBan.fromJson(Map<String, dynamic>.from(e));
-              }
-              return null;
-            })
-            .whereType<PhongBan>()
-            .toList();
+        departments =
+            raw
+                .map((e) {
+                  if (e is PhongBan) return e;
+                  if (e is Map<String, dynamic>) return PhongBan.fromJson(e);
+                  if (e is Map) {
+                    return PhongBan.fromJson(Map<String, dynamic>.from(e));
+                  }
+                  return null;
+                })
+                .whereType<PhongBan>()
+                .toList();
       }
 
       // Thêm "Toàn công ty" vào đầu danh sách
@@ -262,7 +263,10 @@ class AccountHelper {
 
   //ASSET GROUP
   setAssetGroup(List<AssetGroupDto> assetGroups) {
-    StorageService.write(StorageKey.ASSET_GROUP, assetGroups);
+    StorageService.write(
+      StorageKey.ASSET_GROUP,
+      assetGroups.map((e) => e.toJson()).toList(),
+    );
   }
 
   void clearAssetGroup() {
@@ -302,7 +306,10 @@ class AccountHelper {
 
   //CCDC GROUP
   setCcdcGroup(List<CcdcGroup> ccdcGroups) {
-    StorageService.write(StorageKey.CCDC_GROUP, ccdcGroups);
+    StorageService.write(
+      StorageKey.CCDC_GROUP,
+      ccdcGroups.map((e) => e.toJson()).toList(),
+    );
   }
 
   void clearCcdcGroup() {
@@ -328,7 +335,10 @@ class AccountHelper {
 
   //REASON INCREASE
   setReasonIncrease(List<ReasonIncrease> reasonIncrease) {
-    StorageService.write(StorageKey.REASON_INCREASE, reasonIncrease);
+    StorageService.write(
+      StorageKey.REASON_INCREASE,
+      reasonIncrease.map((e) => e.toJson()).toList(),
+    );
   }
 
   void clearReasonIncrease() {
@@ -391,7 +401,10 @@ class AccountHelper {
 
   // ASSET CATEGORY
   setAssetCategory(List<AssetCategoryDto> assetCategory) {
-    StorageService.write(StorageKey.ASSET_CATEGORY, assetCategory);
+    StorageService.write(
+      StorageKey.ASSET_CATEGORY,
+      assetCategory.map((e) => e.toJson()).toList(),
+    );
   }
 
   List<AssetCategoryDto>? getAssetCategory() {
@@ -970,7 +983,12 @@ class AccountHelper {
 
   setListAsset(List<AssetManagementDto> assets) {
     if (assets.isNotEmpty) {
+      log('Setting list of assets with length: ${assets.length}');
+      // Convert to List<Map> before saving to ensure GetStorage handles it correctly
+      // and StorageService.write can check size properly.
       StorageService.write(StorageKey.ASSETS, assets);
+      final raw = StorageService.read(StorageKey.ASSETS);
+      log('message result setListAsset: ${raw?.length}');
     }
   }
 

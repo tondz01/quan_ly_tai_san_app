@@ -44,9 +44,9 @@ class AssetManagementRepository extends ApiBase {
         response.data,
         AssetManagementDto.fromJson,
       );
-
+      log('message result: ${result['data'].length}');
       // Lưu trữ dữ liệu vào bộ nhớ đệm
-      AccountHelper.instance.setListAsset(result['data']);
+      AccountHelper.instance.setListAsset(response.data);
       if (AccountHelper.instance.getAllAssets().isEmpty) {
         log("setCache [ASSET]: No assets cached in storage.");
         result['message'] = "Không có dữ liệu tài sản trong bộ nhớ đệm";

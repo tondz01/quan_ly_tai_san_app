@@ -282,7 +282,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // onDispose();
     this.typeDieuDongTaiSan = typeDieuDongTaiSan;
     _userInfo = AccountHelper.instance.getUserInfo();
-
+    _dataAsset = AccountHelper.instance.getAllAssets();
     // Khởi tạo các biến pagination
     totalEntries = 0;
     totalPages = 1;
@@ -291,7 +291,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     currentPage = 1;
     controllerDropdownPage = TextEditingController(text: '10');
     getDataDropdown();
-    _dataAsset = AccountHelper.instance.getAllAssets();
+    if (_dataAsset == null || _dataAsset!.isEmpty) {
+      onGetDataAsset();
+    }
+
     // getDataAll(context);
 
     // Start auto reload every 20 seconds
@@ -300,6 +303,20 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       // onReloadDataAssetTransfer();
       onReloadDataPage(context, false);
     });
+  }
+
+  onGetDataAsset() async {
+    if (AccountHelper.instance.getAllAssets().isEmpty) {
+      final args = await AssetManagementRepository().getListAssetManagement(
+        'ct001',
+      );
+      log('message result _dataAsset args: ${args['data'].length}');
+      AccountHelper.instance.setListAsset(args['data'] ?? []);
+      _dataAsset = args['data'];
+      log('message result _dataAsset: ${_dataAsset?.length}');
+    } else {
+      _dataAsset = AccountHelper.instance.getAllAssets();
+    }
   }
 
   void onDispose() {
@@ -356,25 +373,33 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   }
 
   void onChangeDetailDieuDongTaiSan(DieuDongTaiSanDto? item) async {
-    // onChangeScreen(item: item, isMainScreen: false, isEdit: true);
-    _isLoading = true;
-    notifyListeners();
-    _loadingMessage = 'Đang tải dữ liệu...';
-    if (AccountHelper.instance.getAllAssets().isNotEmpty) {
-      _dataAsset = AccountHelper.instance.getAllAssets();
-    } else {
-      Map<String, dynamic> args = await AssetManagementRepository()
-          .getListAssetManagement('ct001');
-      if (args['data'] != null) {
-        _dataAsset = args['data'];
-      }
-    }
+    // Kiểm tra nếu chưa có dữ liệu tài sản trong cache thì tải mới
+    // if (AccountHelper.instance.getAllAssets().isEmpty) {
+    //   _isLoading = true;
+    //   _loadingMessage = 'Đang tải dữ liệu...';
+    //   notifyListeners();
+
+    //   try {
+    //     final args = await AssetManagementRepository()
+    //         .getListAssetManagement('ct001');
+    //     AccountHelper.instance.setListAsset(args['data'] ?? []);
+    //   } catch (e) {
+    //     SGLog.debug("AssetTransferProvider", "Lỗi tải dữ liệu tài sản: $e");
+    //   }
+    // }
+    onGetDataAsset();
+    // // Cập nhật dữ liệu từ cache
+    // _dataAsset = AccountHelper.instance.getAllAssets();
+
     _itemPreview = null;
     _item = item;
-    isShowInput = true;
-    isShowCollapse = true;
+
+    // Cập nhật biến private trực tiếp để tránh notifyListeners nhiều lần
+    _isShowInput = true;
+    _isShowCollapse = true;
     _isLoading = false;
     _loadingMessage = '';
+
     notifyListeners();
   }
 
@@ -452,18 +477,25 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
-    _itemsDDPhongBan = _dataPhongBan
-        ?.where((element) => element.isKho != true)
-        .map((element) => DropdownMenuItem<PhongBan>(
-              value: element,
-              child: Text(element.tenPhongBan ?? ''),
-            ))
-        .toList() ?? [];
-    
+    _itemsDDPhongBan =
+        _dataPhongBan
+            ?.where((element) => element.isKho != true)
+            .map(
+              (element) => DropdownMenuItem<PhongBan>(
+                value: element,
+                child: Text(element.tenPhongBan ?? ''),
+              ),
+            )
+            .toList() ??
+        [];
+
     if (typeDieuDongTaiSan == 1) {
       List<PhongBan> dataDVGiao =
-          _dataPhongBan?.where((element) => element.isKho == true).toList() ?? [];
-          log('message dataDVGiao: ${dataDVGiao.length} -- ${_dataPhongBan?.length}');
+          _dataPhongBan?.where((element) => element.isKho == true).toList() ??
+          [];
+      log(
+        'message dataDVGiao: ${dataDVGiao.length} -- ${_dataPhongBan?.length}',
+      );
       _itemsDVGiao =
           dataDVGiao
               .map(
