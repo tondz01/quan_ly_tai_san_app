@@ -230,7 +230,7 @@ class ToolAndMaterialTransferDto {
       detailToolAndMaterialTransfers: parseDetails(
         json['chiTietToolAndMaterialTransfers'],
       ),
-      listSignatory: parseSignatory(json['listSignatory']),
+      listSignatory: parseSignatory(json['nguoiKyList']),
       daBanGiao: json['daBanGiao'],
       byStep: json['byStep'],
       trangThaiPhieu: json['trangThaiPhieu'],

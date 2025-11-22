@@ -282,7 +282,16 @@ Widget buildOtherInformation(
           controller: ctrlDonViBanDau,
           value: phongBanBanDau,
           isEditing: isEditing,
-          items: itemsPhongBan,
+          items: [
+            ...listPhongBan
+                .where((element) => element.isKho == true)
+                .map(
+                  (e) => DropdownMenuItem<PhongBan>(
+                    value: e,
+                    child: Text(e.tenPhongBan ?? ''),
+                  ),
+                ),
+          ],
           defaultValue:
               ctrlDonViBanDau.text.isNotEmpty
                   ? getPhongBan(
@@ -300,7 +309,20 @@ Widget buildOtherInformation(
         controller: ctrlDonViHienThoi,
         value: phongBanHienThoi,
         isEditing: isEditing,
-        items: itemsPhongBan,
+        items: [
+          DropdownMenuItem<PhongBan>(
+            value: PhongBan(id: '', tenPhongBan: '', idCongTy: '', nguoiTao: ''),
+            child: Text('Không chọn'),
+          ),
+          ...listPhongBan
+              .where((element) => element.isKho != true)
+              .map(
+                (e) => DropdownMenuItem<PhongBan>(
+                  value: e,
+                  child: Text(e.tenPhongBan ?? ''),
+                ),
+              ),
+        ],
         defaultValue:
             ctrlDonViHienThoi.text.isNotEmpty
                 ? getPhongBan(

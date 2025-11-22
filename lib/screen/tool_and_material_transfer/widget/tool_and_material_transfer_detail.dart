@@ -1412,6 +1412,7 @@ class _ToolAndMaterialTransferDetailState
       }
 
       if (_signatoriesChanged()) {
+        log('message additionalSigners syncSignatories: ${jsonEncode(additionalSignersDetailed)}');
         await UpdateSignerData().syncSignatories(
           item!.id!,
           additionalSignersDetailed,

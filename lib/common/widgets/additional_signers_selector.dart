@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:quan_ly_tai_san_app/common/input/common_form_dropdown_object.dart';
 import 'package:quan_ly_tai_san_app/common/widgets/material_components.dart';
@@ -260,11 +258,9 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
     PhongBan? dept,
   ) {
     if (!_hasDepartment) {
-      log('AdditionalSignersSelector: _hasDepartment=false. Using itemsNhanVien (len: ${widget.itemsNhanVien.length})');
       return widget.itemsNhanVien;
     }
     if (dept == null) {
-      log('AdditionalSignersSelector: dept=null. Returning empty list.');
       return <DropdownMenuItem<NhanVien>>[];
     }
     final filtered =
@@ -277,19 +273,15 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
               ),
             )
             .toList();
-    log('AdditionalSignersSelector: Filtered staff for dept ${dept.tenPhongBan} (id: ${dept.id}): ${filtered.length} items');
-
     if (filtered.isEmpty) {
       // Fallback 1: Default department match
       if (widget.defaultDepartment != null &&
           dept.id == widget.defaultDepartment!.id &&
           widget.itemsNhanVien.isNotEmpty) {
-        log('AdditionalSignersSelector: Filtered list empty for default dept, using itemsNhanVien fallback');
         return widget.itemsNhanVien;
       }
       // Fallback 2: If listNhanVien is empty (should be covered by _hasDepartment check but safe to keep)
       if (widget.listNhanVien == null || widget.listNhanVien!.isEmpty) {
-        log('AdditionalSignersSelector: listNhanVien empty/null, using itemsNhanVien fallback');
         return widget.itemsNhanVien;
       }
     }
@@ -348,12 +340,10 @@ class _AdditionalSignersSelectorState extends State<AdditionalSignersSelector> {
                     ? (_signersData[index].department ??
                         widget.defaultDepartment)
                     : null;
-            log('message dept selected: $_hasDepartment');
             var staffItems =
                 _hasDepartment
                     ? _buildStaffItemsForDepartment(dept)
                     : widget.itemsNhanVien;
-            log('AdditionalSignersSelector: staffItems length: ${staffItems.length}');
             NhanVien? nhanVien = _signersData[index].employee;
             TextEditingController controller = _controllers[index];
             controller.text = nhanVien?.hoTen ?? '';

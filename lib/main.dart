@@ -14,13 +14,13 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 
 class Config {
-  static const String environment = "prd";
+  static const String environment = "dev";
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
-    defaultValue: '${environment}_0.0.8',
+    defaultValue: '${environment}_0.0.9',
   );
-  static const String appBuild = String.fromEnvironment(
+  static String appBuild = String.fromEnvironment(
     'APP_BUILD',
     defaultValue: '1',
   );
@@ -28,7 +28,7 @@ class Config {
   static String get baseUrl {
     switch (environment) {
       case 'dev':
-        return 'http://103.112.211.148:8386';
+        return 'https://ecotel-odoo.id.vn:8386';
       default:
         return 'http://42.119.110.246:8386';
     }
