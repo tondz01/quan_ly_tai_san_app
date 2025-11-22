@@ -13,6 +13,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/m
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
@@ -478,9 +479,13 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   getDataDropdown() {
     _dataPhongBan = AccountHelper.instance.getDepartment();
+    // if(_dataPhongBan == null){
+    //   AuthRepository().loadUserDepartments('ct001');
+    //   _dataPhongBan = AccountHelper.instance.getDepartment();
+    // }
     _itemsDDPhongBan =
         _dataPhongBan
-            ?.where((element) => element.isKho == false)
+            ?.where((element) => element.isKho != true)
             .map(
               (element) => DropdownMenuItem<PhongBan>(
                 value: element,

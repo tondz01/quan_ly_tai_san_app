@@ -15,14 +15,15 @@ import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 
 class Config {
   static const String environment = "dev";
+  static String dateBuild = DateFormat('dd/MM/yyyy').format(DateTime.now());
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
     defaultValue: '${environment}_0.0.8',
   );
-  static const String appBuild = String.fromEnvironment(
+  static String appBuild = String.fromEnvironment(
     'APP_BUILD',
-    defaultValue: '1',
+    defaultValue: '1_${Config.dateBuild}',
   );
 
   static String get baseUrl {
