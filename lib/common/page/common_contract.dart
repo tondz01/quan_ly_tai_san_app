@@ -67,23 +67,10 @@ class _CommonContractState extends State<CommonContract> {
   late List<GlobalKey> _pageKeys;
 
   bool _isDigital = false;
+  int _selectedSigningType =
+      2; // 1: Ký nháy, 2: Ký thường, 3: Ký số ký hiệu, 4: Ký số hình ảnh
 
   // ===== Helpers UI =====
-  Widget _buildFab(
-    IconData icon,
-    String label,
-    Color color,
-    VoidCallback onPressed,
-  ) {
-    return FloatingActionButton.extended(
-      heroTag: label,
-      backgroundColor: color,
-      icon: Icon(icon, size: 20),
-      label: Text(label, style: const TextStyle(fontSize: 14)),
-      onPressed: onPressed,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    );
-  }
 
   // ===== Add signatures =====
   void _addSignature(
@@ -127,7 +114,9 @@ class _CommonContractState extends State<CommonContract> {
     }
     try {
       final url =
-          loaiKy == 2 ? widget.signatureList[1] : widget.signatureList.first;
+          loaiKy == 2 || loaiKy == 4
+              ? widget.signatureList[1]
+              : widget.signatureList.first;
       log('Check link chữ ký: $url');
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -208,11 +197,18 @@ class _CommonContractState extends State<CommonContract> {
         signatureUrl = sig["chuKyNhay"].toString();
       } else if (loaiKy == 2) {
         signatureUrl = sig["chuKyThuong"].toString();
+      } else if (loaiKy == 4) {
+        signatureUrl = sig["chuKyThuong"].toString();
+        if (signatureUrl.isEmpty || signatureUrl == "null") {
+          signatureUrl = sig["chuKyNhay"].toString();
+        }
       }
       if (loaiKy == 3 || loaiKy == 4) {
         setState(() {
           _isDigital = true;
         });
+      }
+      if (loaiKy == 3) {
         // Lấy ngày ký từ API, format nếu có
         String? formattedDate;
         if (ngayKy != null && ngayKy.isNotEmpty) {
@@ -608,226 +604,6 @@ class _CommonContractState extends State<CommonContract> {
     );
   }
 
-  // (Không dùng) Hàm tạo ảnh chữ ký kèm thông tin. Giữ lại nếu cần tái sử dụng về sau.
-
-  // ===== Build EndDrawer for digital signature type selection =====
-  Widget _buildDigitalSignatureTypeDrawer({
-    required double top,
-    required double left,
-  }) {
-    return Drawer(
-      width: 320,
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.vpn_key, color: Colors.blue, size: 28),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Chọn loại ký số',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: const Text(
-                'Vui lòng chọn loại ký số bạn muốn sử dụng:',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  // Option 1: Pure digital signature (type 4)
-                  InkWell(
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      // Proceed with pure digital signature (type 4) with image from type 2
-                      if (widget.nhanVien == null) {
-                        AppUtility.showSnackBar(
-                          context,
-                          "Không tìm thấy thông tin nhân viên",
-                        );
-                        return;
-                      }
-                      if (!(widget.nhanVien!.savePin ?? false)) {
-                        showPopupInputPin(
-                          context: context,
-                          title: "Xác nhận mã Pin",
-                          description: "Vui lòng nhập mã Pin để xác nhận",
-                          onConfirm: (value) async {
-                            if (value == widget.pin) {
-                              await signingWithImageType4(
-                                widget.nhanVien!,
-                                top: top,
-                                left: left,
-                              );
-                            } else {
-                              AppUtility.showSnackBar(
-                                context,
-                                "Mã pin chưa chính xác, vui lòng nhập lại!",
-                                isError: true,
-                              );
-                            }
-                          },
-                        );
-                        return;
-                      }
-                      await signingWithImageType4(
-                        widget.nhanVien!,
-                        top: top,
-                        left: left,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blue, width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.image, color: Colors.blue, size: 32),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Ký số dạng hình ảnh',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Chữ ký số với hình ảnh từ chữ ký',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Option 2: Image-based digital signature (type 2)
-                  InkWell(
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      // Proceed with image-based signature (type 2) but with full signing process
-                      if (widget.nhanVien == null) {
-                        AppUtility.showSnackBar(
-                          context,
-                          "Không tìm thấy thông tin nhân viên",
-                        );
-                        return;
-                      }
-                      if (!(widget.nhanVien!.savePin ?? false)) {
-                        showPopupInputPin(
-                          context: context,
-                          title: "Xác nhận mã Pin",
-                          description: "Vui lòng nhập mã Pin để xác nhận",
-                          onConfirm: (value) async {
-                            if (value == widget.pin) {
-                              await signingWithImageType(
-                                widget.nhanVien!,
-                                top: top,
-                                left: left,
-                              );
-                            } else {
-                              AppUtility.showSnackBar(
-                                context,
-                                "Mã pin chưa chính xác, vui lòng nhập lại!",
-                                isError: true,
-                              );
-                            }
-                          },
-                        );
-                        return;
-                      }
-                      await signingWithImageType(
-                        widget.nhanVien!,
-                        top: top,
-                        left: left,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.green, width: 2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.vpn_key,
-                            color: Colors.green,
-                            size: 32,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Ký số thuần',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Sử dụng con dấu chữ ký số',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ===== Ký hash =====
   Future<void> signing(
     NhanVien nhanVien, {
@@ -950,8 +726,9 @@ class _CommonContractState extends State<CommonContract> {
       Uint8List? imgBytes;
       if (widget.signatureList.isNotEmpty && widget.signatureList.length > 1) {
         try {
-          final url = widget.signatureList.first; // URL của chữ ký type 2
-          log('Lấy hình ảnh chữ ký type 2 từ: $url');
+          final url = widget.signatureList.first;
+
+          print('Lấy hình ảnh chữ ký type 2 từ: $url');
           final response = await http.get(Uri.parse(url));
           if (response.statusCode == 200) {
             imgBytes = response.bodyBytes;
@@ -1133,250 +910,324 @@ class _CommonContractState extends State<CommonContract> {
     }
   }
 
+  Future<void> _handleSigning(double top, double left) async {
+    if (_selectedSigningType == 1) {
+      // Ký nháy
+      _addFirstSignatureFromList(1, top: top, left: left);
+    } else if (_selectedSigningType == 2) {
+      // Ký thường
+      _addFirstSignatureFromList(2, top: top, left: left);
+    } else {
+      // Ký số (3 hoặc 4)
+      if (widget.nhanVien == null) {
+        AppUtility.showSnackBar(context, "Không tìm thấy thông tin nhân viên");
+        return;
+      }
+
+      if (!(widget.nhanVien!.savePin ?? false)) {
+        showPopupInputPin(
+          context: context,
+          title: "Xác nhận mã Pin",
+          description: "Vui lòng nhập mã Pin để xác nhận",
+          onConfirm: (value) async {
+            if (value == widget.pin) {
+              if (_selectedSigningType == 3) {
+                await signing(widget.nhanVien!, top: top, left: left);
+              } else {
+                await signingWithImageType4(
+                  widget.nhanVien!,
+                  top: top,
+                  left: left,
+                );
+              }
+            } else {
+              AppUtility.showSnackBar(
+                context,
+                "Mã pin chưa chính xác, vui lòng nhập lại!",
+                isError: true,
+              );
+            }
+          },
+        );
+      } else {
+        if (_selectedSigningType == 3) {
+          await signing(widget.nhanVien!, top: top, left: left);
+        } else {
+          await signingWithImageType4(widget.nhanVien!, top: top, left: left);
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      endDrawer: _buildDigitalSignatureTypeDrawer(
-        top: screenHeight / 2,
-        left: (screenWidth - 200) / 4,
-      ),
+      backgroundColor: Colors.grey[100],
       body: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
           final screenHeight = constraints.maxHeight;
 
-          return Center(
-            child: SizedBox(
-              width: 960,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Thanh tiêu đề
-                  Container(
-                    // height: 800 * (297 / 210),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+          return Column(
+            children: [
+              // Thanh tiêu đề
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
                     ),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.description, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.showTitle ?? 'Soạn & Ký Tài Liệu',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          '${widget.contractPages.length} trang',
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        const Spacer(),
-                        TextButton.icon(
-                          onPressed: _exportToPdf,
-                          icon: const Icon(Icons.picture_as_pdf),
-                          label: const Text('Xuất PDF'),
-                        ),
-                        IconButton(
-                          tooltip: 'Đóng',
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close, color: Colors.green),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Nội dung cuộn được
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Center(
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              top:
-                                  (MediaQuery.of(context).size.height - 100) /
-                                  2,
-                              left:
-                                  (MediaQuery.of(context).size.width - 200) / 2,
-                              child: RepaintBoundary(
-                                key: _captureKey,
-                                child: buildSignatureValidContainer(
-                                  _currentSignatureName ?? widget.tenNguoiKy,
-                                  _currentSignatureDate ??
-                                      DateFormat(
-                                        'dd/MM/yyyy',
-                                      ).format(DateTime.now()),
-                                ),
-                              ),
-                            ),
-                            // Tài liệu A4
-                            RepaintBoundary(
-                              key: _contractKey,
-                              child: Stack(
-                                children: [
-                                  // Nội dung hợp đồng
-                                  Column(
-                                    children: [
-                                      // Tạo các trang động từ contractPages
-                                      ...widget.contractPages
-                                          .asMap()
-                                          .entries
-                                          .map((entry) {
-                                            final int index = entry.key;
-                                            final Widget pageContent =
-                                                entry.value;
-
-                                            return RepaintBoundary(
-                                              key: _pageKeys[index],
-                                              child: pageContent,
-                                            );
-                                          }),
-                                    ],
-                                  ),
-                                  // Các chữ ký kéo thả
-                                  ...images,
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.description, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.showTitle ?? 'Soạn & Ký Tài Liệu',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 16),
+                    Text(
+                      '${widget.contractPages.length} trang',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const Spacer(),
+                    TextButton.icon(
+                      onPressed: _exportToPdf,
+                      icon: const Icon(Icons.picture_as_pdf),
+                      label: const Text('Xuất PDF'),
+                    ),
+                    IconButton(
+                      tooltip: 'Đóng',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: Colors.green),
+                    ),
+                  ],
+                ),
+              ),
 
-                  // Thanh nút ký & xác nhận
-                  if (widget.isShowKy && widget.nhanVien != null)
+              // Nội dung chính
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tab công cụ bên trái
                     Container(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                      width: 250,
                       color: Colors.white,
-                      child: Row(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              //adas
-                              Visibility(
-                                visible: widget.isKyNhay,
-                                child: _buildFab(
-                                  Icons.edit,
-                                  'Ký nháy',
-                                  Colors.orange,
-                                  () {
-                                    _addFirstSignatureFromList(
-                                      1,
-                                      top: screenHeight / 2,
-                                      left: (screenWidth - 200) / 4,
-                                    );
-                                  },
+                          const Text(
+                            "Công cụ ký",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          if (widget.isKyThuong)
+                            RadioListTile<int>(
+                              title: const Text("Ký thường"),
+                              value: 2,
+                              groupValue: _selectedSigningType,
+                              contentPadding: EdgeInsets.zero,
+                              onChanged: (val) {
+                                setState(() {
+                                  _selectedSigningType = val!;
+                                });
+                              },
+                            ),
+                          if (widget.isKyNhay)
+                            RadioListTile<int>(
+                              title: const Text("Ký nháy"),
+                              value: 1,
+                              groupValue: _selectedSigningType,
+                              contentPadding: EdgeInsets.zero,
+                              onChanged: (val) {
+                                setState(() {
+                                  _selectedSigningType = val!;
+                                });
+                              },
+                            ),
+                          if (widget.isKySo) ...[
+                            RadioListTile<int>(
+                              title: const Text("Ký số hình ảnh"),
+                              value: 4,
+                              groupValue: _selectedSigningType,
+                              contentPadding: EdgeInsets.zero,
+                              onChanged: (val) {
+                                setState(() {
+                                  _selectedSigningType = val!;
+                                });
+                              },
+                            ),
+                            RadioListTile<int>(
+                              title: const Text("Ký số ký hiệu"),
+                              value: 3,
+                              groupValue: _selectedSigningType,
+                              contentPadding: EdgeInsets.zero,
+                              onChanged: (val) {
+                                setState(() {
+                                  _selectedSigningType = val!;
+                                });
+                              },
+                            ),
+                          ],
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              Visibility(
-                                visible: widget.isKyThuong,
-                                child: _buildFab(
-                                  Icons.brush,
-                                  'Ký',
-                                  Colors.green,
-                                  () => _addFirstSignatureFromList(
-                                    2,
-                                    top: screenHeight / 2,
-                                    left: (screenWidth - 200) / 4,
-                                  ),
-                                ),
-                              ),
-                              Visibility(
-                                visible: widget.isKySo,
-                                child: _buildFab(
-                                  Icons.vpn_key,
-                                  'Ký số',
-                                  Colors.blue,
-                                  () {
-                                    // Open EndDrawer to choose digital signature type
-                                    Scaffold.of(context).openEndDrawer();
-                                  },
-                                ),
-                              ),
-                            ],
+                              onPressed: () {
+                                // Tính toán vị trí center của phần content
+                                final contentWidth = screenWidth - 250;
+                                final centerX = contentWidth / 2;
+                                final centerY = screenHeight / 2;
+                                _handleSigning(centerY, centerX);
+                              },
+                              icon: const Icon(Icons.edit),
+                              label: const Text("Ký"),
+                            ),
                           ),
                           const Spacer(),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 14,
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 2,
-                            ),
-                            onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.close, color: Colors.white),
-                            label: Text(
-                              "Hủy",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
+                              onPressed:
+                                  _submitting ? null : _confirmSignatures,
+                              icon:
+                                  _submitting
+                                      ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                      : const Icon(Icons.check_circle),
+                              label: Text(
+                                _submitting ? 'Đang lưu...' : 'Xác nhận',
                               ),
                             ),
                           ),
-                          SizedBox(width: 14),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 14,
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.redAccent,
+                                side: const BorderSide(color: Colors.redAccent),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 2,
-                            ),
-                            onPressed: _submitting ? null : _confirmSignatures,
-                            icon:
-                                _submitting
-                                    ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                    : const Icon(Icons.check_circle),
-                            label: Text(
-                              _submitting ? 'Đang lưu...' : 'Xác nhận',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: const Icon(Icons.close),
+                              label: const Text("Hủy"),
                             ),
                           ),
                         ],
                       ),
                     ),
-                ],
+
+                    // Nội dung tài liệu
+                    Expanded(
+                      child: Container(
+                        color: Colors.grey[200],
+                        child: SingleChildScrollView(
+                          child: Center(
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  top: (screenHeight - 100) / 2,
+                                  left: (screenWidth - 250 - 200) / 2,
+                                  child: RepaintBoundary(
+                                    key: _captureKey,
+                                    child: buildSignatureValidContainer(
+                                      _currentSignatureName ??
+                                          widget.tenNguoiKy,
+                                      _currentSignatureDate ??
+                                          DateFormat(
+                                            'dd/MM/yyyy',
+                                          ).format(DateTime.now()),
+                                    ),
+                                  ),
+                                ),
+                                // Tài liệu A4
+                                RepaintBoundary(
+                                  key: _contractKey,
+                                  child: Stack(
+                                    children: [
+                                      // Nội dung hợp đồng
+                                      Column(
+                                        children: [
+                                          // Tạo các trang động từ contractPages
+                                          ...widget.contractPages
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                                final int index = entry.key;
+                                                final Widget pageContent =
+                                                    entry.value;
+
+                                                return RepaintBoundary(
+                                                  key: _pageKeys[index],
+                                                  child: pageContent,
+                                                );
+                                              }),
+                                        ],
+                                      ),
+                                      // Các chữ ký kéo thả
+                                      ...images,
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           );
         },
       ),
