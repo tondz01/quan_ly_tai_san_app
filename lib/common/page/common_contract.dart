@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:quan_ly_tai_san_app/common/components/popup_input_pin.dart';
+import 'package:quan_ly_tai_san_app/common/download_file.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:se_gay_components/base_api/api_config.dart';
@@ -325,7 +327,8 @@ class _CommonContractState extends State<CommonContract> {
                 as RenderRepaintBoundary?;
 
         if (boundary != null && boundary.debugNeedsPaint == false) {
-          final image = await boundary.toImage(pixelRatio: 2.0);
+          final double pixelRatio = kIsWeb ? 1.5 : 2.0;
+          final image = await boundary.toImage(pixelRatio: pixelRatio);
           final byteData = await image.toByteData(
             format: ui.ImageByteFormat.png,
           );
@@ -409,10 +412,16 @@ class _CommonContractState extends State<CommonContract> {
         }
       }
 
-      await Printing.sharePdf(
-        bytes: await pdf.save(),
-        filename: 'document.pdf',
-      );
+      final pdfBytes = await pdf.save();
+
+      if (kIsWeb) {
+        await downloadFileFromBytes(pdfBytes, 'document.pdf', context);
+      } else {
+        await Printing.sharePdf(
+          bytes: pdfBytes,
+          filename: 'document.pdf',
+        );
+      }
 
       // Khôi phục trạng thái chọn
       for (int i = 0; i < images.length; i++) {

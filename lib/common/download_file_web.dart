@@ -1,5 +1,6 @@
 // ignore: deprecated_member_use, avoid_web_libraries_in_flutter
 import 'dart:html' as html;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
 
@@ -54,6 +55,25 @@ Future<void> downloadForWeb(
     // Tạo anchor element để download file trực tiếp
   } catch (e) {
     _showNotification(context, '❌ Download thất bại: $e', false);
+  }
+}
+
+Future<void> downloadBytesForWeb(
+  Uint8List bytes,
+  String fileName,
+  BuildContext context,
+) async {
+  try {
+    final blob = html.Blob([bytes]);
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", fileName)
+      ..click();
+    html.Url.revokeObjectUrl(url);
+    
+    _showNotification(context, '✅ Đã tải xuống: $fileName', true);
+  } catch (e) {
+    _showNotification(context, '❌ Lỗi download: $e', false);
   }
 }
 

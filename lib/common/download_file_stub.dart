@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 
 Future<void> downloadForWeb(String url, String fileName, BuildContext context) async {
   // Stub implementation cho các platform không phải web
   _showNotification(context, '⚠️ Download trên Web chưa được hỗ trợ trên platform này', false);
+}
+
+Future<void> downloadBytesForWeb(Uint8List bytes, String fileName, BuildContext context) async {
+  _showNotification(context, '⚠️ Download bytes trên Web chưa được hỗ trợ trên platform này', false);
 }
 
 void _showNotification(BuildContext context, String message, bool isSuccess) {
@@ -33,4 +38,4 @@ void _showNotification(BuildContext context, String message, bool isSuccess) {
       ),
     ),
   );
-} 
+}
