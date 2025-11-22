@@ -209,7 +209,7 @@ class _CommonContractState extends State<CommonContract> {
       } else if (loaiKy == 2) {
         signatureUrl = sig["chuKyThuong"].toString();
       }
-      if (loaiKy == 3) {
+      if (loaiKy == 3 || loaiKy == 4) {
         setState(() {
           _isDigital = true;
         });
@@ -417,10 +417,7 @@ class _CommonContractState extends State<CommonContract> {
       if (kIsWeb) {
         await downloadFileFromBytes(pdfBytes, 'document.pdf', context);
       } else {
-        await Printing.sharePdf(
-          bytes: pdfBytes,
-          filename: 'document.pdf',
-        );
+        await Printing.sharePdf(bytes: pdfBytes, filename: 'document.pdf');
       }
 
       // Khôi phục trạng thái chọn
@@ -460,7 +457,7 @@ class _CommonContractState extends State<CommonContract> {
           "x": state.left,
           "y": state.top,
           "idNguoiKy": widget.idNguoiKy,
-          "chuKySo": img.loaiKy == 3 ? signatureValue : null,
+          "chuKySo": img.loaiKy == 3 || img.loaiKy == 4 ? signatureValue : null,
           "ngayKy": DateTime.now().toIso8601String(),
           "stt": i + 1,
           // Có thể thêm "Scale": state.scale nếu DB cần
@@ -613,184 +610,221 @@ class _CommonContractState extends State<CommonContract> {
 
   // (Không dùng) Hàm tạo ảnh chữ ký kèm thông tin. Giữ lại nếu cần tái sử dụng về sau.
 
-  // ===== Show popup to choose digital signature type =====
-  Future<void> _showDigitalSignatureTypeDialog({
+  // ===== Build EndDrawer for digital signature type selection =====
+  Widget _buildDigitalSignatureTypeDrawer({
     required double top,
     required double left,
-  }) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text(
-            'Chọn loại ký số',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
+  }) {
+    return Drawer(
+      width: 320,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.vpn_key, color: Colors.blue, size: 28),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Chọn loại ký số',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: const Text(
                 'Vui lòng chọn loại ký số bạn muốn sử dụng:',
-                style: TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
-              const SizedBox(height: 20),
-              // Option 1: Pure digital signature
-              InkWell(
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  // Proceed with pure digital signature (type 3)
-                  if (widget.nhanVien == null) {
-                    AppUtility.showSnackBar(
-                      context,
-                      "Không tìm thấy thông tin nhân viên",
-                    );
-                    return;
-                  }
-                  if (!(widget.nhanVien!.savePin ?? false)) {
-                    showPopupInputPin(
-                      context: context,
-                      title: "Xác nhận mã Pin",
-                      description: "Vui lòng nhập mã Pin để xác nhận",
-                      onConfirm: (value) async {
-                        if (value == widget.pin) {
-                          await signing(widget.nhanVien!, top: top, left: left);
-                        } else {
-                          AppUtility.showSnackBar(
-                            context,
-                            "Mã pin chưa chính xác, vui lòng nhập lại!",
-                            isError: true,
-                          );
-                        }
-                      },
-                    );
-                    return;
-                  }
-                  await signing(widget.nhanVien!, top: top, left: left);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.vpn_key, color: Colors.blue, size: 32),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Ký số thuần',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Chữ ký số với thông tin xác thực',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  // Option 1: Pure digital signature (type 4)
+                  InkWell(
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      // Proceed with pure digital signature (type 4) with image from type 2
+                      if (widget.nhanVien == null) {
+                        AppUtility.showSnackBar(
+                          context,
+                          "Không tìm thấy thông tin nhân viên",
+                        );
+                        return;
+                      }
+                      if (!(widget.nhanVien!.savePin ?? false)) {
+                        showPopupInputPin(
+                          context: context,
+                          title: "Xác nhận mã Pin",
+                          description: "Vui lòng nhập mã Pin để xác nhận",
+                          onConfirm: (value) async {
+                            if (value == widget.pin) {
+                              await signingWithImageType4(
+                                widget.nhanVien!,
+                                top: top,
+                                left: left,
+                              );
+                            } else {
+                              AppUtility.showSnackBar(
+                                context,
+                                "Mã pin chưa chính xác, vui lòng nhập lại!",
+                                isError: true,
+                              );
+                            }
+                          },
+                        );
+                        return;
+                      }
+                      await signingWithImageType4(
+                        widget.nhanVien!,
+                        top: top,
+                        left: left,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blue, width: 2),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Option 2: Image-based digital signature
-              InkWell(
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  // Proceed with image-based signature (type 2) but with full signing process
-                  if (widget.nhanVien == null) {
-                    AppUtility.showSnackBar(
-                      context,
-                      "Không tìm thấy thông tin nhân viên",
-                    );
-                    return;
-                  }
-                  if (!(widget.nhanVien!.savePin ?? false)) {
-                    showPopupInputPin(
-                      context: context,
-                      title: "Xác nhận mã Pin",
-                      description: "Vui lòng nhập mã Pin để xác nhận",
-                      onConfirm: (value) async {
-                        if (value == widget.pin) {
-                          await signingWithImageType(
-                            widget.nhanVien!,
-                            top: top,
-                            left: left,
-                          );
-                        } else {
-                          AppUtility.showSnackBar(
-                            context,
-                            "Mã pin chưa chính xác, vui lòng nhập lại!",
-                            isError: true,
-                          );
-                        }
-                      },
-                    );
-                    return;
-                  }
-                  await signingWithImageType(
-                    widget.nhanVien!,
-                    top: top,
-                    left: left,
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.image, color: Colors.green, size: 32),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Ký số dạng hình ảnh',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.image, color: Colors.blue, size: 32),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Ký số dạng hình ảnh',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Chữ ký số với hình ảnh từ chữ ký',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Sử dụng hình ảnh chữ ký của bạn',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  // Option 2: Image-based digital signature (type 2)
+                  InkWell(
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      // Proceed with image-based signature (type 2) but with full signing process
+                      if (widget.nhanVien == null) {
+                        AppUtility.showSnackBar(
+                          context,
+                          "Không tìm thấy thông tin nhân viên",
+                        );
+                        return;
+                      }
+                      if (!(widget.nhanVien!.savePin ?? false)) {
+                        showPopupInputPin(
+                          context: context,
+                          title: "Xác nhận mã Pin",
+                          description: "Vui lòng nhập mã Pin để xác nhận",
+                          onConfirm: (value) async {
+                            if (value == widget.pin) {
+                              await signingWithImageType(
+                                widget.nhanVien!,
+                                top: top,
+                                left: left,
+                              );
+                            } else {
+                              AppUtility.showSnackBar(
+                                context,
+                                "Mã pin chưa chính xác, vui lòng nhập lại!",
+                                isError: true,
+                              );
+                            }
+                          },
+                        );
+                        return;
+                      }
+                      await signingWithImageType(
+                        widget.nhanVien!,
+                        top: top,
+                        left: left,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.green, width: 2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.vpn_key,
+                            color: Colors.green,
+                            size: 32,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Ký số thuần',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Sử dụng con dấu chữ ký số',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Hủy'),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -834,6 +868,127 @@ class _CommonContractState extends State<CommonContract> {
 
       // 3️⃣ Thêm chữ ký vào màn hình
       _addSignature(imgBytes, 3, top, left, true);
+
+      // 4️⃣ Gọi API ký
+      final String url = "https://rms.efy.com.vn/signing/hash";
+      final Map<String, dynamic> signingPayload = {
+        "agreementUUID": "02e80096-912a-4b30-a38e-334ddc110a1e",
+        "authMode": "EXPLICIT/PIN",
+        "authorizeCode": "efyvn@123",
+        "encryption": "RSA",
+        "hash": hash,
+        "hashAlgorithm": "SHA-256",
+        "mimeType": "application/sha256-binary",
+      };
+      final Map<String, String> headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      };
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(signingPayload),
+      );
+
+      // 5️⃣ Xử lý kết quả
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final Map<String, dynamic> result = jsonDecode(response.body);
+        setState(() {
+          signatureValue = result['signatureValue'] ?? '';
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Đã ký thành công')));
+        }
+      } else {
+        SGLog.error('Ký', 'HTTP ${response.statusCode}: ${response.body}');
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Ký không thành công')));
+        }
+      }
+    } catch (e) {
+      SGLog.error('Ký', 'Lỗi ký: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Ký không thành công')));
+      }
+    }
+  }
+
+  // ===== Ký hash với loại ký = 4 (ký số thuần với hình ảnh từ type 2) =====
+  Future<void> signingWithImageType4(
+    NhanVien nhanVien, {
+    double top = 500,
+    double left = 500,
+  }) async {
+    if (widget.idNguoiKy == null || widget.idTaiLieu == null) {
+      return;
+    }
+
+    String value = widget.idNguoiKy! + widget.idTaiLieu!;
+    String hash = generateSha256(value);
+    SGLog.info('Chu ky', 'Chu ky SHA-256: $hash');
+
+    // 1️⃣ Lấy token trước
+    final token = await login();
+    if (token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login thất bại, không thể ký')),
+        );
+      }
+      return;
+    }
+
+    try {
+      // 2️⃣ Lấy hình ảnh từ chữ ký type 2 (widget.signatureList[1])
+      Uint8List? imgBytes;
+      if (widget.signatureList.isNotEmpty && widget.signatureList.length > 1) {
+        try {
+          final url = widget.signatureList.first; // URL của chữ ký type 2
+          log('Lấy hình ảnh chữ ký type 2 từ: $url');
+          final response = await http.get(Uri.parse(url));
+          if (response.statusCode == 200) {
+            imgBytes = response.bodyBytes;
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Không tải được ảnh chữ ký: $url (HTTP ${response.statusCode})',
+                  ),
+                ),
+              );
+            }
+            return;
+          }
+        } catch (e) {
+          SGLog.error('Ký', 'Lỗi tải ảnh chữ ký type 2: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Lỗi tải ảnh chữ ký: $e')));
+          }
+          return;
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không tìm thấy hình ảnh chữ ký type 2'),
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3️⃣ Thêm chữ ký vào màn hình với loaiKy = 4
+      _addSignature(imgBytes, 4, top, left, true);
 
       // 4️⃣ Gọi API ký
       final String url = "https://rms.efy.com.vn/signing/hash";
@@ -980,8 +1135,15 @@ class _CommonContractState extends State<CommonContract> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
+      endDrawer: _buildDigitalSignatureTypeDrawer(
+        top: screenHeight / 2,
+        left: (screenWidth - 200) / 4,
+      ),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = constraints.maxWidth;
@@ -1145,12 +1307,9 @@ class _CommonContractState extends State<CommonContract> {
                                   Icons.vpn_key,
                                   'Ký số',
                                   Colors.blue,
-                                  () async {
-                                    // Show dialog to choose digital signature type
-                                    await _showDigitalSignatureTypeDialog(
-                                      top: screenHeight / 2,
-                                      left: (screenWidth - 200) / 4,
-                                    );
+                                  () {
+                                    // Open EndDrawer to choose digital signature type
+                                    Scaffold.of(context).openEndDrawer();
                                   },
                                 ),
                               ),
@@ -1272,7 +1431,7 @@ Widget buildSignatureValidContainer(String? name, String date) {
 
 class DraggableImage extends StatefulWidget {
   final Uint8List bytes;
-  final int loaiKy; // 1: ký nháy, 2: ký, 3: ký số
+  final int loaiKy; // 1: ký nháy, 2: ký, 3: ký số, 4: ký số dạng hình ảnh
   final double top;
   final double left;
   final bool isEdit;
