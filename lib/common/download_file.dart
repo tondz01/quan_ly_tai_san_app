@@ -115,7 +115,18 @@ Future<void> _downloadForIOS(String url, String fileName, BuildContext context) 
   }
 }
 
-
+Future<void> downloadFileFromBytes(Uint8List bytes, String fileName, BuildContext context) async {
+  if (kIsWeb) {
+    await downloadBytesForWeb(bytes, fileName, context);
+  } else {
+    // For mobile/desktop, we might want to save to file system
+    // But for now, the user only asked for web direct export fix.
+    // We can implement a basic file save for other platforms if needed, 
+    // but Printing.sharePdf handles it well for PDF.
+    // This function is primarily for the web direct download request.
+    print("downloadFileFromBytes is mainly for Web. Use other methods for native.");
+  }
+}
 
 void _showNotification(BuildContext context, String message, bool isSuccess) {
   ScaffoldMessenger.of(context).showSnackBar(
