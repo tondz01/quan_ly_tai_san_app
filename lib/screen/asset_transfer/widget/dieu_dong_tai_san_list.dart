@@ -317,7 +317,6 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         ),
       ],
       child: Container(
-        height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),

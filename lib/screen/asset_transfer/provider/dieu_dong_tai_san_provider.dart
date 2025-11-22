@@ -572,6 +572,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     AppUtility.showSnackBar(context, 'Tạo mới thành công!');
     // getDataAll(context);
     // AccountHelper.refreshAllCounts();
+    onReloadDataPage(context);
     notifyListeners();
   }
 
