@@ -317,6 +317,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
         ),
       ],
       child: Container(
+        height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
@@ -527,7 +528,7 @@ class _DieuDongTaiSanListState extends State<DieuDongTaiSanList> {
                             ),
                           ],
                           actionsColumnWidth: 120,
-                          maxHeight: MediaQuery.of(context).size.height * 0.8,
+                          maxHeight: MediaQuery.of(context).size.height * 0.7,
                         );
                       },
                     ),
