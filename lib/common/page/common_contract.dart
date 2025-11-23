@@ -124,15 +124,26 @@ class _CommonContractState extends State<CommonContract> {
     try {
       String url = "";
       if (loaiKy == 2) {
-        url = widget.nhanVien?.chuKyThuong ?? "";
+        String name = widget.nhanVien?.chuKyThuong ?? "";
+
+        url = widget.signatureList.firstWhere((e) => e.contains(name));
         print('loai ky 2');
+        print(url);
       } else if (loaiKy == 1) {
-        url = widget.nhanVien?.chuKyNhay ?? "";
+        String name = widget.nhanVien?.chuKyNhay ?? "";
+        url = widget.signatureList.firstWhere((e) => e.contains(name));
         print('loai ky 1');
+        print(url);
       } else if (loaiKy == 4) {
-        url = widget.nhanVien?.chuKyThuong ?? "";
+        String name = widget.nhanVien?.chuKyThuong ?? "";
+        url = widget.signatureList.firstWhere((e) => e.contains(name));
+        print('loai ky 4');
+        print(url);
       } else if (loaiKy == 5) {
-        url = widget.nhanVien?.chuKyNhay ?? "";
+        String name = widget.nhanVien?.chuKyNhay ?? "";
+        url = widget.signatureList.firstWhere((e) => e.contains(name));
+        print('loai ky 5');
+        print(url);
       }
       if (url.isEmpty) {
         if (mounted) {
