@@ -759,7 +759,8 @@ class _CommonContractState extends State<CommonContract> {
       Uint8List? imgBytes;
       if (widget.signatureList.isNotEmpty && widget.signatureList.length > 1) {
         try {
-          final url = widget.signatureList.first;
+          String name = widget.nhanVien?.chuKyThuong ?? "";
+          final url = widget.signatureList.firstWhere((e) => e.contains(name));
 
           print('Lấy hình ảnh chữ ký type 2 từ: $url');
           final response = await http.get(Uri.parse(url));
