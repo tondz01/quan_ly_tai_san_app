@@ -158,7 +158,7 @@ class _StaffManagerState extends State<StaffManager> with RouteAware {
         filePath,
         fileBytes,
       );
-      if (checkStatusCodeDone(resultSave['status_code'])) {
+      if (checkStatusCodeDone(resultSave)) {
         isImporting = false;
         AppUtility.showSnackBar(context, 'Import thành công');
         context.read<StaffBloc>().add(const LoadStaffs());

@@ -577,9 +577,9 @@ class AssetManagementRepository extends ApiBase {
     try {
       String url = '';
       if (typeAsset == 0) {
-        url = 'paged';
+        url = 'paged-da-ban-giao';
       } else if (typeAsset == 1) {
-        url = 'paged-ban-giao';
+        url = 'paged-chua-ban-giao';
       }
       log('API URL: $url -- tab: $typeAsset');
       final response = await get(
@@ -592,20 +592,24 @@ class AssetManagementRepository extends ApiBase {
       }
 
       result['status_code'] = Numeral.STATUS_CODE_SUCCESS;
+      // Lấy data từ response.data['data'] vì API trả về cấu trúc bọc trong data
+      final responseData = response.data;
+      final paginationData = (responseData is Map && responseData['data'] is Map) 
+          ? responseData['data'] 
+          : responseData;
 
       // Parse response data using the correct key 'items', chỉ parse nếu là List
-      final itemsData = response.data['items'];
+      final itemsData = paginationData['items'];
       if (itemsData is List) {
         result['data'] = ResponseParser.parseToList<AssetManagementDto>(
           itemsData,
           AssetManagementDto.fromJson,
         );
       }
-      result['totalPages'] = response.data['totalPages'];
-      result['currentPage'] = response.data['currentPage'];
-      result['totalItems'] = response.data['totalItems'];
-      result['totalPages'] = response.data['totalPages'];
-      result['groupCounts'] = response.data['groupCounts'];
+      result['totalPages'] = paginationData['totalPages'];
+      result['currentPage'] = paginationData['page'] ?? paginationData['currentPage'];
+      result['totalItems'] = paginationData['totalItems'];
+      result['groupCounts'] = paginationData['groupCounts'];
     } catch (e) {
       log("Error at updateState - ToolAndMaterialTransferRepository: $e");
     }
