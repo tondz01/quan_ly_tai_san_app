@@ -14,11 +14,11 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:dynamic_path_url_strategy/dynamic_path_url_strategy.dart';
 
 class Config {
-  static const String environment = "dev";
+  static const String environment = "prd";
 
   static const String appVersion = String.fromEnvironment(
     'APP_VERSION',
-    defaultValue: '${environment}_0.0.12_23/11/2025',
+    defaultValue: '${environment}_0.0.13_25/11/2025',
   );
   static const String appBuild = String.fromEnvironment(
     'APP_BUILD',
