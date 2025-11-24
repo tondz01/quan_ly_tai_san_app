@@ -53001,7 +53001,7 @@ if(J.f(r.h(a,s),200)||J.f(r.h(a,s),201)||J.f(r.h(a,s),204))return!0
 return!1},
 i1(a){if(a!==200&&a!==201&&a!==204)return!0
 return!1},
-jE(){switch("prod"){case"dev":return"http://localhost:8386"
+jE(){switch("prod"){case"dev":return"https://ecotel-odoo.id.vn:8386"
 default:return"http://42.119.110.246:8386"}},
 Tb(){var s=0,r=A.n(t.H),q,p,o,n,m,l,k
 var $async$Tb=A.o(function(a,b){if(a===1)return A.k(b,r)
@@ -156902,41 +156902,45 @@ case 1:return A.l(q,r)
 case 2:return A.k(o.at(-1),r)}})
 return A.m($async$Ti,r)},
 ly(a,b,c,d,e){return this.axy(a,b,c,d,e)},
-axy(a,b,c,d,e){var s=0,r=A.n(t.P),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f
-var $async$ly=A.o(function(a0,a1){if(a0===1){o.push(a1)
-s=p}while(true)switch(s){case 0:h=t.z
-g=A.w(["data",A.a([],t.U),"status_code",0,"totalPages",0,"currentPage",0,"totalItems",0,"groupCounts",A.y(h,h)],t.N,h)
+axy(a,b,c,a0,a1){var s=0,r=A.n(t.P),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f,e,d
+var $async$ly=A.o(function(a2,a3){if(a2===1){o.push(a3)
+s=p}while(true)switch(s){case 0:f=t.z
+e=A.w(["data",A.a([],t.U),"status_code",0,"totalPages",0,"currentPage",0,"totalItems",0,"groupCounts",A.y(f,f)],t.N,f)
 p=4
 m=""
-if(e===0)m="paged"
-else if(e===1)m="paged-ban-giao"
+if(a1===0)m="paged-da-ban-giao"
+else if(a1===1)m="paged-chua-ban-giao"
 A.c(m)
 s=7
-return A.i(n.eG(0,"/api/taisan/"+A.c(m)+"?idcongty=ct001&page="+a+"&size="+b+"&search="+c+"&idNhomTaiSan="+d,h),$async$ly)
-case 7:l=a1
-if(l.c!==200){J.p(g,"status_code",l.c)
-q=g
+return A.i(n.eG(0,"/api/taisan/"+A.c(m)+"?idcongty=ct001&page="+a+"&size="+b+"&search="+c+"&idNhomTaiSan="+a0,f),$async$ly)
+case 7:l=a3
+if(l.c!==200){J.p(e,"status_code",l.c)
+q=e
 s=1
-break}J.p(g,"status_code",200)
-k=J.d(l.a,"items")
-if(t.j.b(k))J.p(g,"data",A.cp(k,A.aIu(),t.yn))
-J.p(g,"totalPages",J.d(l.a,"totalPages"))
-J.p(g,"currentPage",J.d(l.a,"currentPage"))
-J.p(g,"totalItems",J.d(l.a,"totalItems"))
-J.p(g,"totalPages",J.d(l.a,"totalPages"))
-J.p(g,"groupCounts",J.d(l.a,"groupCounts"))
+break}J.p(e,"status_code",200)
+k=l.a
+f=t.G
+j=f.b(k)&&f.b(J.d(k,"data"))?J.d(k,"data"):k
+i=J.d(j,"items")
+if(t.j.b(i))J.p(e,"data",A.cp(i,A.aIu(),t.yn))
+J.p(e,"totalPages",J.d(j,"totalPages"))
+f=J.d(j,"page")
+if(f==null)f=J.d(j,"currentPage")
+J.p(e,"currentPage",f)
+J.p(e,"totalItems",J.d(j,"totalItems"))
+J.p(e,"groupCounts",J.d(j,"groupCounts"))
 p=2
 s=6
 break
 case 4:p=3
-f=o.pop()
-j=A.D(f)
-A.c(j)
+d=o.pop()
+h=A.D(d)
+A.c(h)
 s=6
 break
 case 3:s=2
 break
-case 6:q=g
+case 6:q=e
 s=1
 break
 case 1:return A.l(q,r)
@@ -167082,7 +167086,7 @@ s=q}while(true)switch(s){case 0:q=3
 s=6
 return A.i(A.an_().UX(a,b),$async$UW)
 case 6:n=d
-if(A.cc(J.d(n,"status_code"))){o.db=!1
+if(A.cc(n)){o.db=!1
 l=o.c
 l.toString
 A.av(l,"Import th\xe0nh c\xf4ng",!1,B.q,2)
