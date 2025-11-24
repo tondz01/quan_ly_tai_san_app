@@ -15,6 +15,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/m
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/tool_and_material_transfer_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/repository/tool_and_material_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_bloc.dart';
@@ -291,6 +292,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     onDispose();
 
     _body = Container();
+    onLoadDataDropdown();
     getListToolAndSuppliesHandover(context);
     _dataAssetTransfer =
         await ToolAndMaterialTransferRepository()
@@ -303,6 +305,19 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     reloadDataService.reloadData(() async {
       onReloadDataToolAndMaterialHandover();
     });
+  }
+
+  onLoadDataDropdown() {
+    _dataDepartment = AccountHelper.instance.getDepartment();
+    _dataStaff = AccountHelper.instance.getNhanVien();
+    if (_dataStaff == null) {
+      AuthRepository().loadUserEmployee('ct001');
+      _dataStaff = AccountHelper.instance.getNhanVien();
+    }
+    if (_dataDepartment == null) {
+      AuthRepository().loadUserDepartments('ct001');
+      _dataDepartment = AccountHelper.instance.getDepartment();
+    }
   }
 
   void onReloadDataToolAndMaterialHandover() async {
@@ -383,8 +398,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   ) {
     _error = null;
 
-    _dataDepartment = state.dataDepartment;
-    _dataStaff = state.dataStaff;
+    // _dataDepartment = state.dataDepartment;
+    // _dataStaff = state.dataStaff;
     _dataCcdc = state.dataCcdc;
     _filteredData.clear();
     _data?.clear();

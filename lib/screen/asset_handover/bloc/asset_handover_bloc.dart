@@ -4,7 +4,6 @@ import 'package:quan_ly_tai_san_app/screen/asset_handover/repository/asset_hando
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/dieu_dong_tai_san_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/repository/asset_transfer_reponsitory.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/models/department.dart';
-import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/repository/departments_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:se_gay_components/core/utils/sg_log.dart';
@@ -39,9 +38,15 @@ class AssetHandoverBloc extends Bloc<AssetHandoverEvent, AssetHandoverState> {
         await AssetHandoverRepository().getListAssetHandover();
     Map<String, dynamic> resultAssetTransfer =
         await AssetTransferRepository().getListDieuDongTaiSan();
-    Map<String, dynamic> resultDepartment = await DepartmentRepository()
-        .getListDepartment('');
-    dataDepartment = resultDepartment['data'];
+    // Map<String, dynamic> resultDepartment = await DepartmentRepository()
+    //     .getListDepartment('');
+
+    // if (result['status_code'] == Numeral.STATUS_CODE_SUCCESS) {
+    //   resultDepartment = result['data'];
+    // } else {
+    //   resultDepartment = <PhongBan>[] as Map<String, dynamic>;
+    // }
+    // dataDepartment = resultDepartment['data'];
     // dataStaff = await NhanVienProvider().fetchNhanViens();
     dataAssetHandoverDto = result['data'];
     dataDieuDongTaiSanDto = resultAssetTransfer['data'];

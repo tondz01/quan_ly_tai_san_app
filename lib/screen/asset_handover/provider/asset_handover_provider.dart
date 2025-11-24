@@ -20,6 +20,7 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/m
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
+import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:se_gay_components/common/table/sg_table_component.dart';
 
 enum FilterStatus {
@@ -296,6 +297,7 @@ class AssetHandoverProvider with ChangeNotifier {
     controllerDropdownPage = TextEditingController(text: '10');
 
     _body = Container();
+    onLoadDataDropdown();
     getListAssetHandover(context);
     // _autoReloadTimer?.cancel();
     // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
@@ -305,6 +307,19 @@ class AssetHandoverProvider with ChangeNotifier {
     reloadDataService.reloadData(() async {
       onReloadDataAssetHandover();
     });
+  }
+
+  onLoadDataDropdown() {
+    _dataDepartment = AccountHelper.instance.getDepartment();
+    _dataStaff = AccountHelper.instance.getNhanVien();
+    if (_dataStaff == null) {
+      AuthRepository().loadUserEmployee('ct001');
+      _dataStaff = AccountHelper.instance.getNhanVien();
+    }
+    if (_dataDepartment == null) {
+      AuthRepository().loadUserDepartments('ct001');
+      _dataDepartment = AccountHelper.instance.getDepartment();
+    }
   }
 
   void onReloadDataAssetHandover() async {
@@ -426,8 +441,8 @@ class AssetHandoverProvider with ChangeNotifier {
   ) {
     _error = null;
 
-    _dataDepartment = state.dataDepartment;
-    _dataStaff = state.dataStaff;
+    // _dataDepartment = state.dataDepartment;
+    // _dataStaff = state.dataStaff;
     _dataAssetTransfer = state.dataAssetTransfer;
 
     if (state.data.isEmpty) {
