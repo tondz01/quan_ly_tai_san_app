@@ -21,9 +21,23 @@ class PermissionSignService {
           return;
         }
         await AssetTransferRepository().getListDieuDongTaiSan();
-        await ToolAndSuppliesHandoverRepository().getListToolAndSuppliesHandover();
+        await ToolAndSuppliesHandoverRepository()
+            .getListToolAndSuppliesHandover();
         await AssetHandoverRepository().getListAssetHandover();
-        await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(-1);
+        await ToolAndMaterialTransferRepository().getAllToolAndMeterialTransfer(
+          -1,
+        );
+      } catch (e) {
+        SGLog.error('PermissionSignService', 'Lỗi call API: $e');
+      }
+    });
+  }
+
+  void reloadData(Future<void> Function() callback) {
+    _timer?.cancel(); // Hủy timer cũ trước khi tạo mới
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
+      try {
+        callback();
       } catch (e) {
         SGLog.error('PermissionSignService', 'Lỗi call API: $e');
       }

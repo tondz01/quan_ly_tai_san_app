@@ -5,6 +5,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
@@ -107,6 +108,7 @@ class AssetHandoverProvider with ChangeNotifier {
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
+  final reloadDataService = PermissionSignService();
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -138,7 +140,7 @@ class AssetHandoverProvider with ChangeNotifier {
 
   UserInfoDTO? _userInfo;
 
-  Timer? _autoReloadTimer;
+  // Timer? _autoReloadTimer;
 
   // Method để refresh data và filter
   void refreshData(BuildContext context) {
@@ -295,10 +297,13 @@ class AssetHandoverProvider with ChangeNotifier {
 
     _body = Container();
     getListAssetHandover(context);
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   onReloadDataAssetHandover();
+    //   print("reload data asset handover");
+    // });
+    reloadDataService.reloadData(() async {
       onReloadDataAssetHandover();
-      print("reload data asset handover");
     });
   }
 
@@ -332,8 +337,8 @@ class AssetHandoverProvider with ChangeNotifier {
       controllerDropdownPage!.dispose();
       controllerDropdownPage = null;
     }
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = null;
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = null;
   }
 
   void onTapBackHeader() {

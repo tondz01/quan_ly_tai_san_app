@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -13,7 +14,6 @@ import 'package:quan_ly_tai_san_app/screen/category_manager/department_manager/m
 import 'package:quan_ly_tai_san_app/screen/category_manager/staff/models/nhan_vien.dart';
 import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/login/model/user/user_info_dto.dart';
-import 'package:quan_ly_tai_san_app/screen/login/repository/auth_repository.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/bloc/tool_and_material_transfer_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_material_transfer/model/detail_tool_and_material_transfer_dto.dart';
@@ -125,6 +125,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   List<DropdownMenuItem<PhongBan>> _itemsDDPhongBanKho = [];
   List<DropdownMenuItem<NhanVien>> _itemsDDNhanVien = [];
 
+  final reloadDataService = PermissionSignService();
+
   // List status
   // late List<ListStatus> _listStatus;
 
@@ -150,7 +152,7 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
 
   String idCongTy = 'CT001';
 
-  Timer? _autoReloadTimer;
+  // Timer? _autoReloadTimer;
 
   bool _isLoading = false;
 
@@ -289,12 +291,15 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
   void onInit(BuildContext context, int type) {
     type = type;
     _initData(context);
-    _autoReloadTimer?.cancel();
+    // _autoReloadTimer?.cancel();
     _dataAsset = AccountHelper.instance.getAllCCDC();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      // onReloadDataToolAndMaterialTransfer();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   // onReloadDataToolAndMaterialTransfer();
+    //   onReloadData(context);
+    // });
+
+    reloadDataService.reloadData(() async {
       onReloadData(context);
-      print("reload data tool and material transfer");
     });
   }
 
@@ -387,8 +392,8 @@ class ToolAndMaterialTransferProvider with ChangeNotifier {
       controllerDropdownPage = null;
     }
 
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = null;
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = null;
   }
 
   // void getDataAll(BuildContext context) {

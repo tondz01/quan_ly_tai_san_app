@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -79,7 +80,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   String get searchTerm => _searchTerm;
   set searchTerm(String value) {
     _searchTerm = value;
-    _applyFilters();
     notifyListeners();
   }
 
@@ -98,6 +98,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   int rowsPerPage = 10;
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
+
+  final reloadDataService = PermissionSignService();
 
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
@@ -132,7 +134,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   String idCongTy = 'CT001';
 
-  Timer? _autoReloadTimer;
+  // Timer? _autoReloadTimer;
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -159,27 +161,11 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // void setFilterStatus(FilterStatus status, bool? value) {
-  //   _filterStatus[status] = value ?? false;
-  //   if (status == FilterStatus.all && value == true) {
-  //     for (var key in _filterStatus.keys) {
-  //       if (key != FilterStatus.all) {
-  //         _filterStatus[key] = false;
-  //       }
-  //     }
-  //   } else if (status != FilterStatus.all && value == true) {
-  //     _filterStatus[FilterStatus.all] = false;
-  //   }
-
-  //   _applyFilters();
-  //   notifyListeners();
-  // }
   void setFilterStatus(BuildContext context, FilterStatus status, bool? value) {
     // Nếu đang bỏ chọn (value == false), chỉ cần bỏ chọn checkbox đó
     if (value == false) {
       _filterStatus[status] = false;
     } else {
-      // Nếu đang chọn (value == true), bỏ chọn tất cả các checkbox khác trước
       // Sau đó mới chọn checkbox được chọn
       for (var key in _filterStatus.keys) {
         _filterStatus[key] = false;
@@ -206,67 +192,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
         break;
     }
     notifyListeners();
-  }
-
-  void _applyFilters() {
-    if (_data == null) return;
-
-    bool hasActiveFilter = _filterStatus.entries
-        .where((entry) => entry.key != FilterStatus.all)
-        .any((entry) => entry.value == true);
-
-    List<DieuDongTaiSanDto> statusFiltered;
-    if (_filterStatus[FilterStatus.all] == true || !hasActiveFilter) {
-      statusFiltered = List.from(_data!);
-    } else {
-      statusFiltered =
-          _data!.where((item) {
-            int itemStatus = item.trangThai ?? 0;
-            if (_filterStatus[FilterStatus.draft] == true &&
-                (itemStatus == 0)) {
-              return true;
-            }
-            if (_filterStatus[FilterStatus.approve] == true &&
-                (itemStatus == 1)) {
-              return true;
-            }
-            if (_filterStatus[FilterStatus.cancel] == true &&
-                (itemStatus == 2)) {
-              return true;
-            }
-
-            if (_filterStatus[FilterStatus.complete] == true &&
-                (itemStatus == 3)) {
-              return true;
-            }
-            return false;
-          }).toList();
-    }
-
-    if (_searchTerm.isNotEmpty) {
-      String searchLower = _searchTerm.toLowerCase();
-      _filteredData =
-          statusFiltered.where((item) {
-            return (item.tenPhieu?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.soQuyetDinh?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenNguoiDeNghi?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.nguoiTao?.toLowerCase().contains(searchLower) ?? false) ||
-                (item.chiTietDieuDongTaiSans?.any(
-                      (detail) =>
-                          detail.tenTaiSan.toLowerCase().contains(searchLower),
-                    ) ??
-                    false) ||
-                (item.tenDonViGiao?.toLowerCase().contains(searchLower) ??
-                    false) ||
-                (item.tenDonViNhan?.toLowerCase().contains(searchLower) ??
-                    false);
-          }).toList();
-    } else {
-      _filteredData = statusFiltered;
-    }
   }
 
   final Map<FilterStatus, bool> _filterStatus = {
@@ -298,9 +223,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // getDataAll(context);
 
     // Start auto reload every 20 seconds
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      // onReloadDataAssetTransfer();
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   // onReloadDataAssetTransfer();
+    //   onReloadDataPage(context, false);
+    // });
+    reloadDataService.reloadData(() async {
       onReloadDataPage(context, false);
     });
   }
@@ -341,8 +269,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
 
     // Stop auto reload timer
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = null;
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = null;
   }
 
   onReloadDataPage(BuildContext context, [bool isRefresh = true]) {
@@ -358,17 +286,10 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     onReloadDataPage(context);
   }
 
-  void onPageChanged(int page) {
-    currentPage = page;
-    // _updatePagination();
-    _applyFilters();
-    notifyListeners();
-  }
 
   void onCloseDetail(BuildContext context) {
     _isShowCollapse = true;
     _isShowInput = false;
-    _applyFilters();
     notifyListeners();
   }
 
@@ -410,7 +331,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     if (index != -1) {
       _data![index] = updatedItem;
       // _updatePagination();
-      _applyFilters();
       notifyListeners();
     }
   }
@@ -531,38 +451,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     ];
     notifyListeners();
   }
-
-  // getDataDropdownSuccess(
-  //   BuildContext context,
-  //   GetDataDropdownSuccessState state,
-  // ) {
-  //   _error = null;
-  //   if (state.dataPb.isEmpty) {
-  //     _dataPhongBan = [];
-  //   } else {
-  //     _dataPhongBan = state.dataPb;
-  //     _itemsDDPhongBan = [
-  //       for (var element in _dataPhongBan!)
-  //         DropdownMenuItem<PhongBan>(
-  //           value: element,
-  //           child: Text(element.tenPhongBan ?? ''),
-  //         ),
-  //     ];
-  //   }
-  //   if (state.dataNv.isEmpty) {
-  //     _dataNhanVien = [];
-  //   } else {
-  //     _dataNhanVien = state.dataNv;
-  //     _itemsDDNhanVien = [
-  //       for (var element in _dataNhanVien!)
-  //         DropdownMenuItem<NhanVien>(
-  //           value: element,
-  //           child: Text(element.hoTen ?? ''),
-  //         ),
-  //     ];
-  //   }
-  //   notifyListeners();
-  // }
 
   void createDieuDongSuccess(
     BuildContext context,
@@ -748,7 +636,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
       _filteredData = List.from(_data!);
       // _updatePagination();
-      _applyFilters();
       notifyListeners();
     }
   }
@@ -764,64 +651,6 @@ class DieuDongTaiSanProvider with ChangeNotifier {
       default:
         return 'Quản lý tài sản';
     }
-  }
-
-  int isCheckSigningStatus(DieuDongTaiSanDto item) {
-    final signatureFlow =
-        [
-          {"id": item.nguoiTao, "signed": -1, "label": "Người tạo"},
-          if (item.nguoiLapPhieuKyNhay == true)
-            {
-              "id": item.idNguoiKyNhay,
-              "signed": item.trangThaiKyNhay == true,
-              "label": "Người ký nháy",
-            },
-          {
-            "id": item.idTrinhDuyetCapPhong,
-            "signed": item.trinhDuyetCapPhongXacNhan == true,
-            "label": "Trình duyệt cấp phòng",
-          },
-          {
-            "id": item.idTrinhDuyetGiamDoc,
-            "signed": item.trinhDuyetGiamDocXacNhan == true,
-            "label": "Giám đốc",
-          },
-          if (item.listSignatory != null)
-            ...item.listSignatory!.map(
-              (e) => {
-                "id": e.idNguoiKy,
-                "signed": e.trangThai == 1,
-                "label": e.tenNguoiKy,
-              },
-            ),
-        ].toList();
-
-    final currentIndex = signatureFlow.indexWhere(
-      (s) => s["id"] == userInfo.tenDangNhap,
-    );
-
-    if (currentIndex == -1 || currentIndex >= signatureFlow.length) {
-      return -1;
-    }
-
-    final currentSigner = signatureFlow[currentIndex];
-
-    if (item.nguoiLapPhieuKyNhay == true &&
-        item.idNguoiKyNhay == userInfo.tenDangNhap) {
-      return item.trangThaiKyNhay == true ? 2 : 4;
-    }
-
-    if (item.nguoiTao == userInfo.tenDangNhap &&
-        currentSigner["signed"] != -1) {
-      return currentSigner["signed"] == true ? 3 : 5;
-    }
-
-    // Logic cũ
-    if (currentSigner["signed"] == -1) {
-      return -1;
-    }
-
-    return currentSigner["signed"] == true ? 1 : 0;
   }
 
   void refreshData(BuildContext context, int type) {
