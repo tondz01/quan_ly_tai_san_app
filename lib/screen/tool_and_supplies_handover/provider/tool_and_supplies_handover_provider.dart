@@ -7,6 +7,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quan_ly_tai_san_app/common/diagram/thread_lines.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 
@@ -103,7 +104,7 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   String? get error => _error;
   String? get subScreen => _subScreen;
   String _searchTerm = '';
-  Timer? _autoReloadTimer;
+  // Timer? _autoReloadTimer;
 
   int typeAssetTransfer = 1;
 
@@ -129,6 +130,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
   final List<SgTableColumn<ToolAndSuppliesHandoverDto>> _columns = [];
 
   ToolAndSuppliesHandoverDto? _item;
+
+  final reloadDataService = PermissionSignService();
 
   // Chi tiết CCDC theo lệnh điều động
 
@@ -292,10 +295,13 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _dataAssetTransfer =
         await ToolAndMaterialTransferRepository()
             .getAllToolAndMeterialTransferByCT();
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   onReloadDataToolAndMaterialHandover();
+    //   print("reload data tool and supplies handover");
+    // });
+    reloadDataService.reloadData(() async {
       onReloadDataToolAndMaterialHandover();
-      print("reload data tool and supplies handover");
     });
   }
 
@@ -324,8 +330,8 @@ class ToolAndSuppliesHandoverProvider with ChangeNotifier {
     _error = null;
     _filterStatus.clear();
     _filterStatus[FilterStatus.all] = true;
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = null;
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = null;
   }
 
   void onTapBackHeader() {

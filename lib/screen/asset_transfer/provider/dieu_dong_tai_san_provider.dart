@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.dart';
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
@@ -98,6 +99,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
   int currentPage = 1;
   TextEditingController? controllerDropdownPage;
 
+  final reloadDataService = PermissionSignService();
+
   final List<DropdownMenuItem<int>> items = [
     const DropdownMenuItem(value: 5, child: Text('5')),
     const DropdownMenuItem(value: 10, child: Text('10')),
@@ -131,7 +134,7 @@ class DieuDongTaiSanProvider with ChangeNotifier {
 
   String idCongTy = 'CT001';
 
-  Timer? _autoReloadTimer;
+  // Timer? _autoReloadTimer;
 
   set subScreen(String? value) {
     _subScreen = value;
@@ -220,9 +223,12 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     // getDataAll(context);
 
     // Start auto reload every 20 seconds
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      // onReloadDataAssetTransfer();
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+    //   // onReloadDataAssetTransfer();
+    //   onReloadDataPage(context, false);
+    // });
+    reloadDataService.reloadData(() async {
       onReloadDataPage(context, false);
     });
   }
@@ -263,8 +269,8 @@ class DieuDongTaiSanProvider with ChangeNotifier {
     }
 
     // Stop auto reload timer
-    _autoReloadTimer?.cancel();
-    _autoReloadTimer = null;
+    // _autoReloadTimer?.cancel();
+    // _autoReloadTimer = null;
   }
 
   onReloadDataPage(BuildContext context, [bool isRefresh = true]) {

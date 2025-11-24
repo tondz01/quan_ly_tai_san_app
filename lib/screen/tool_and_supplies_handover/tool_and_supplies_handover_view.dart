@@ -3,15 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
-import 'package:quan_ly_tai_san_app/main.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
-import 'package:quan_ly_tai_san_app/screen/login/auth/account_helper.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/bloc/tool_and_supplies_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/model/tool_and_supplies_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tab_bar_table_ccdc.dart';
 import 'package:quan_ly_tai_san_app/screen/tool_and_supplies_handover/widget/tool_and_supplies_handover_detail.dart';
-import 'package:quan_ly_tai_san_app/services/websocket_service.dart';
 
 import 'package:se_gay_components/core/utils/sg_log.dart';
 
@@ -50,27 +47,6 @@ class _ToolAndSuppliesHandoverViewState
     _scrollController.removeListener(_onScrollStateChanged);
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _initWebSocket() async {
-    final user = AccountHelper.instance.getUserInfo();
-    final companyId = user?.idCongTy ?? '';
-    final userId = user?.id ?? '';
-    if (companyId.isEmpty || userId.isEmpty) return;
-
-    final ws = WebSocketService();
-    await ws.initializeNotifications();
-    await ws.connect(
-      serverUrl: Config.baseUrl,
-      companyId: companyId,
-      userId: userId,
-      onNotification: (n) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(n.title.isNotEmpty ? n.title : n.message)),
-        );
-      },
-    );
   }
 
   void _onScrollStateChanged() {
