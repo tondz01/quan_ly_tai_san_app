@@ -45,7 +45,6 @@ class SignatoryRepository {
         res.data["data"],
         SignatoryDto.fromJson,
       );
-      log('message [additionalSigners] signatoryRepository getAll signatories: ${jsonEncode(signatories)}');
       return signatories;
     } on DioException catch (e) {
       // Thử fallback key tham số khác trong trường hợp API yêu cầu tên khác

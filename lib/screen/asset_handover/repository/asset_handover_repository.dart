@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:quan_ly_tai_san_app/common/reponsitory/update_ownership_unit.dart';
+import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/constants/numeral.dart';
 import 'package:quan_ly_tai_san_app/core/network/Services/end_point_api.dart';
 import 'package:quan_ly_tai_san_app/core/utils/check_status_code_done.dart';
 import 'package:quan_ly_tai_san_app/core/utils/response_parser.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/detai_asset_handover_dto.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/model/chi_tiet_dieu_dong_tai_san.dart';
@@ -19,6 +21,7 @@ import 'package:se_gay_components/core/utils/sg_log.dart';
 
 class AssetHandoverRepository extends ApiBase {
   late final SignatoryRepository _signatoryRepository;
+  final jsonMsg = MessageServiceRealtime().listenLatestJson();
 
   AssetHandoverRepository() {
     _signatoryRepository = SignatoryRepository();
@@ -148,6 +151,7 @@ class AssetHandoverRepository extends ApiBase {
     };
 
     try {
+      log('createAssetHandover request: ${jsonEncode(request)}');
       final response = await post(EndPointAPI.ASSET_TRANSFER, data: request);
 
       final int? status = response.statusCode;
@@ -160,6 +164,17 @@ class AssetHandoverRepository extends ApiBase {
         return result;
       }
       log('listDetailAssetHandover: ${jsonEncode(listDetailAssetHandover)}');
+      String newSignatory = listSignatory.map((e) => e.idNguoiKy).join(',');
+      //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+      String idNeedToDo =
+          "${request['idDaiDiendonviBanHanhQD']},${request['idDaiDienBenGiao']},${request['idDaiDienBenNhan']},${request['idGiamDoc']},$newSignatory";
+
+      log('idNeedToDo: $idNeedToDo');
+      MessageServiceRealtime().pushJsonMessage(
+        typeFunc: FunctionType.ASSET_HANDOVER,
+        typeAction: ActionType.CREATE,
+        idNeedToDo: idNeedToDo,
+      );
       final responseDetail = await post(
         '${EndPointAPI.DETAIL_ASSET_HANDOVER}/batch',
         data: jsonEncode(listDetailAssetHandover),

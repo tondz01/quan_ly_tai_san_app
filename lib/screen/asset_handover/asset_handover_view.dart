@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/model/asset_handover_dto.dart';
@@ -17,20 +20,24 @@ import 'bloc/asset_handover_bloc.dart';
 import 'bloc/asset_handover_state.dart';
 import 'provider/asset_handover_provider.dart';
 
-class AssetHandoverView extends StatefulWidget {
+class AssetHandoverView extends riverpod.ConsumerStatefulWidget {
   const AssetHandoverView({super.key});
 
   @override
-  State<AssetHandoverView> createState() => _AssetHandoverViewState();
+  riverpod.ConsumerState<AssetHandoverView> createState() =>
+      _AssetHandoverViewState();
 }
 
-class _AssetHandoverViewState extends State<AssetHandoverView> {
+class _AssetHandoverViewState
+    extends riverpod.ConsumerState<AssetHandoverView> {
   AssetHandoverDto? assetHandoverData;
   Map<String, dynamic>? menuSelectionData;
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late HomeScrollController _scrollController;
   AssetHandoverProvider? _providerRef;
+  int? _lastTimestamp;
+
   @override
   void initState() {
     super.initState();
@@ -146,6 +153,24 @@ class _AssetHandoverViewState extends State<AssetHandoverView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(messageLatestJsonProvider, (previous, next) {
+      if (next == null || next.isEmpty) return;
+      try {
+        // Tìm message có timestamp lớn nhất
+        final latestMessage = next.values.reduce((a, b) {
+          return (a['time'] as int) > (b['time'] as int) ? a : b;
+        });
+
+        final currentTimestamp = latestMessage['time'] as int;
+
+        // Chỉ cập nhật nếu message thực sự mới hơn lần trước
+        if (_lastTimestamp == null || currentTimestamp > _lastTimestamp!) {
+          _lastTimestamp = currentTimestamp;
+          // Gọi update
+          context.read<AssetHandoverProvider>().onRealtimeUpdate(latestMessage);
+        }
+      } catch (_) {}
+    });
     return BlocConsumer<AssetHandoverBloc, AssetHandoverState>(
       listener: (context, state) {
         if (state is AssetHandoverLoadingState) {

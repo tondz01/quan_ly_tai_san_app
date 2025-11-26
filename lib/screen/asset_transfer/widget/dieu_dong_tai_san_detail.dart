@@ -1041,7 +1041,6 @@ class _DieuDongTaiSanDetailState extends State<DieuDongTaiSanDetail> {
 
       // Thêm dòng này - Cập nhật người ký nếu có thay đổi
       if (_signatoriesChanged()) {
-        log('message [additionalSigners] _handleSave syncSignatories: ${jsonEncode(state.additionalSignersDetailed)}');
         await UpdateSignerData().syncSignatories(
           state.item!.id!,
           state.additionalSignersDetailed,
