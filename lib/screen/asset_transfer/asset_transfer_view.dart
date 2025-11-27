@@ -2,11 +2,14 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:provider/provider.dart';
 import 'package:quan_ly_tai_san_app/common/components/loading_overlay.dart';
 import 'package:quan_ly_tai_san_app/common/page/common_page_view.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_providers.dart';
 import 'package:quan_ly_tai_san_app/routes/routes.dart';
+import 'package:quan_ly_tai_san_app/screen/asset_handover/provider/asset_handover_provider.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/bloc/dieu_dong_tai_san_state.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_transfer/provider/dieu_dong_tai_san_provider.dart';
@@ -15,14 +18,15 @@ import 'package:quan_ly_tai_san_app/screen/asset_transfer/widget/dieu_dong_tai_s
 import 'package:quan_ly_tai_san_app/common/components/header_component.dart';
 import 'package:quan_ly_tai_san_app/screen/home/scroll_controller.dart';
 
-class AssetTransferView extends StatefulWidget {
+class AssetTransferView extends riverpod.ConsumerStatefulWidget {
   const AssetTransferView({super.key});
 
   @override
-  State<AssetTransferView> createState() => _AssetTransferViewState();
+  riverpod.ConsumerState<AssetTransferView> createState() =>
+      _AssetTransferViewState();
 }
 
-class _AssetTransferViewState extends State<AssetTransferView> {
+class _AssetTransferViewState extends riverpod.ConsumerState<AssetTransferView> {
   final TextEditingController _searchController = TextEditingController();
   String searchTerm = "";
   late int currentType;
@@ -118,6 +122,13 @@ class _AssetTransferViewState extends State<AssetTransferView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(messageLatestJsonProvider, (previous, next) {
+      log('message [ref.listen][AssetHandoverView]  next $next');
+      if (next == null || next.isEmpty) return;
+      log('message [ref.listen][AssetHandoverView]  next not null');
+      // Gọi update
+      context.read<AssetHandoverProvider>().onRealtimeUpdate(next);
+    });
     return BlocConsumer<DieuDongTaiSanBloc, DieuDongTaiSanState>(
       builder: (context, state) {
         return ChangeNotifierProvider.value(

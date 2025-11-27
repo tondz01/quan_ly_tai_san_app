@@ -133,6 +133,7 @@ previewDocument({
                   userInfo.tenDangNhap,
                 ),
               );
+              provider.onPushMessage(item);
             },
           ),
         ),

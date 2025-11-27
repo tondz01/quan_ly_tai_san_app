@@ -35,7 +35,6 @@ class _AssetHandoverViewState
   String searchTerm = "";
   late HomeScrollController _scrollController;
   AssetHandoverProvider? _providerRef;
-  int? _lastTimestamp;
 
   @override
   void initState() {
@@ -153,10 +152,9 @@ class _AssetHandoverViewState
   @override
   Widget build(BuildContext context) {
     ref.listen(messageLatestJsonProvider, (previous, next) {
-      log('message [ref.listen]  next $next');
+      log('message [ref.listen][AssetHandoverView]  next $next');
       if (next == null || next.isEmpty) return;
-      log('message [ref.listen]  next not null');
-
+      log('message [ref.listen][AssetHandoverView]  next not null');
       // Gọi update
       context.read<AssetHandoverProvider>().onRealtimeUpdate(next);
     });

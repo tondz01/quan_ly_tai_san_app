@@ -9,6 +9,7 @@ import 'package:quan_ly_tai_san_app/common/reponsitory/permission_sign_service.d
 import 'package:quan_ly_tai_san_app/core/constants/app_colors.dart';
 import 'package:quan_ly_tai_san_app/core/constants/function_type.dart';
 import 'package:quan_ly_tai_san_app/core/utils/utils.dart';
+import 'package:quan_ly_tai_san_app/message/message_service_realtime.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_bloc.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_event.dart';
 import 'package:quan_ly_tai_san_app/screen/asset_handover/bloc/asset_handover_state.dart';
@@ -640,5 +641,19 @@ class AssetHandoverProvider with ChangeNotifier {
     } else {
       return const NhanVien();
     }
+  }
+
+  onPushMessage(AssetHandoverDto item) {
+    String newSignatory =
+        item.listSignatory?.map((e) => e.idNguoiKy).join(',') ?? '';
+    //Gửi message đến server để cập nhật trạng thái phiếu ký nội sinh
+    String idNeedToDo =
+        "${item.idDaiDiendonviBanHanhQD},${item.idDaiDienBenGiao},${item.idDaiDienBenNhan},${item.idGiamDoc},$newSignatory, admin";
+
+    MessageServiceRealtime().pushJsonMessage(
+      typeFunc: FunctionType.ASSET_HANDOVER,
+      typeAction: ActionType.CREATE,
+      idNeedToDo: idNeedToDo,
+    );
   }
 }
